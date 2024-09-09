@@ -2,7 +2,6 @@ import { Component, Input, Inject, OnChanges, SimpleChanges } from '@angular/cor
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 import { MapService } from '../../../upgrade/ajs-upgraded-providers';
 import { Feature } from 'geojson';
-import { FeedPanelService } from '../../../feed-panel/feed-panel.service';
 import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
 
 @Component({
@@ -20,7 +19,7 @@ export class FeedItemSummaryComponent implements OnChanges {
   secondary: string;
   iconUrl?: string;
 
-  constructor(private feedPanelService: FeedPanelService, @Inject(MapService) private mapService: any) { }
+  constructor(@Inject(MapService) private mapService: any) { }
 
   ngOnChanges(_changes: SimpleChanges): void {
     if (!this.feed || !this.item.properties) return;
@@ -45,7 +44,6 @@ export class FeedItemSummaryComponent implements OnChanges {
   }
 
   onItemSelect(): void {
-    this.feedPanelService.selectFeedItem(this.feed, this.item);
     this.mapService.zoomToFeatureInLayer(this.item, `feed-${this.feed.id}`);
   }
 }

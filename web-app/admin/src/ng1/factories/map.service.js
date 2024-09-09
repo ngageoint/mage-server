@@ -2,9 +2,9 @@ const _ = require('underscore');
 
 module.exports = MapService;
 
-MapService.$inject = ['EventService', 'LocationService', 'FeatureService', 'LocalStorageService', 'MapPopupService'];
+MapService.$inject = ['EventService', 'LocationService', 'FeatureService', 'LocalStorageService'];
 
-function MapService(EventService, LocationService, FeatureService, LocalStorageService, MapPopupService) {
+function MapService(EventService, LocationService, FeatureService, LocalStorageService) {
 
   // Map Service should delegate to some map provider that implements delegate interface
   // In this case should delegate to leaflet directive.  See if this is possible
@@ -94,10 +94,8 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
           observationLayer.featureIdToLayer[feature.id] = layer;
         },
         popup: (layer, feature) => {
-          MapPopupService.popupObservation(layer, feature);
         },
         onLayer: (layer, feature) => {
-          MapPopupService.registerObservation(layer, feature);
         }
       }
     };
@@ -117,10 +115,8 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
           colorBuckets: LocationService.colorBuckets
         },
         popup: (layer, feature) => {
-          MapPopupService.popupUser(layer, feature);
         },
         onLayer: (layer, feature) => {
-          MapPopupService.registerUser(layer, usersById[feature.id]);
         }
       }
     };
@@ -230,10 +226,8 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
           iconWidth: 24,
           selected: true,
           popup: (layer, feature) => {
-            MapPopupService.popupFeedItem(layer, feed, feature);
           },
           onLayer: (layer, feature) => {
-            MapPopupService.registerFeedItem(layer, feed, feature);
           },
           iconUrl
         }

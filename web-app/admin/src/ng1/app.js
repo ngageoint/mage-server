@@ -8,7 +8,6 @@ import { downgradeComponent, downgradeInjectable } from '@angular/upgrade/static
 import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
 
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed'
-import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { PluginService } from '../app/plugin/plugin.service'
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
@@ -46,7 +45,6 @@ app
 
 app
   .factory('FeedService', downgradeInjectable(FeedService))
-  .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('PluginService', downgradeInjectable(PluginService))
   // TODO: remove this once we have a new user service
   .factory('UserReadService', downgradeInjectable(UserReadService))

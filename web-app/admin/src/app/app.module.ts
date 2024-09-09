@@ -61,7 +61,6 @@ import { FilenamePipe } from './filename/filename.pipe';
 import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
-import { FeedListComponent } from './feed/feed-list/feed-list.component';
 
 import {
   mapServiceProvider,
@@ -101,7 +100,6 @@ import {
 
 import { FeedItemComponent } from './feed/feed-item/feed-item.component';
 import { FeedItemSummaryModule } from './feed/feed-item/feed-item-summary/feed-item-summary.module';
-import { FeedPanelTabComponent } from './feed-panel/feed-panel-tab.component';
 import { AdminFeedsModule } from './admin/admin-feeds/admin-feeds.module';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
@@ -143,8 +141,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     DMSValidatorDirective,
     MGRSValidatorDirective,
     FeedItemComponent,
-    FeedListComponent,
-    FeedPanelTabComponent,
     ObservationEditComponent,
     ObservationEditAttachmentComponent,
     ObservationEditFormComponent,
