@@ -58,8 +58,6 @@ import { SearchComponent } from './map/controls/search.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LayersComponent } from './map/layers/layers.component'
 import { LayersControlComponent } from './map/controls/layers-control.component';
-import { LeafletComponent } from './map/leaflet.component';
-import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
@@ -133,12 +131,9 @@ import {
 } from './observation/observation-edit/observation-edit';
 
 import { FeedItemComponent } from './feed/feed-item/feed-item.component';
-import { FeedItemMapPopupComponent } from './feed/feed-item/feed-item-map/feed-item-map-popup.component';
 import { FeedItemSummaryModule } from './feed/feed-item/feed-item-summary/feed-item-summary.module';
 import { FeedPanelTabComponent } from './feed-panel/feed-panel-tab.component';
 import { AdminFeedsModule } from './admin/admin-feeds/admin-feeds.module';
-import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
-import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
 import { AdminModule } from './admin/admin.module'
@@ -187,8 +182,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     LocationComponent,
     SearchComponent,
     LayersControlComponent,
-    LeafletComponent,
-    LeafletDirective,
     LayersComponent,
     LayerHeaderComponent,
     LayerContentComponent,
@@ -196,7 +189,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     DMSValidatorDirective,
     MGRSValidatorDirective,
     FeedItemComponent,
-    FeedItemMapPopupComponent,
     FeedListComponent,
     FeedPanelComponent,
     FeedPanelTabComponent,
@@ -239,8 +231,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     UserViewComponent,
     UserListItemComponent,
     UserListComponent,
-    ObservationPopupComponent,
-    UserPopupComponent,
     AdminSettingsComponent,
     PasswordPolicyComponent,
     AccountLockComponent,

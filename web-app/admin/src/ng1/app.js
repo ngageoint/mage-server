@@ -11,13 +11,10 @@ import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { ExportService } from '../app/export/export.service'
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
-import { MapPopupService } from '../app/map/map-popup.service'
 import { PluginService } from '../app/plugin/plugin.service'
 
 import { FeedPanelComponent } from '../app/feed-panel/feed-panel.component';
-import { FeedItemMapPopupComponent } from '../app/feed/feed-item/feed-item-map/feed-item-map-popup.component'
 
-import { ObservationPopupComponent } from '../app/observation/observation-popup/observation-popup.component';
 import { ObservationListItemComponent } from '../app/observation/observation-list/observation-list-item.component';
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
@@ -57,7 +54,6 @@ app
   .factory('FeedService', downgradeInjectable(FeedService))
   .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
-  .factory('MapPopupService', downgradeInjectable(MapPopupService))
   .factory('PluginService', downgradeInjectable(PluginService))
   // TODO: remove this once we have a new user service
   .factory('UserReadService', downgradeInjectable(UserReadService))
@@ -65,10 +61,8 @@ app
 // Downgraded Angular components
 app
   .directive('feedPanel', downgradeComponent({ component: FeedPanelComponent }))
-  .directive('observationPopup', downgradeComponent({ component: ObservationPopupComponent }))
   .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
   .directive('userAvatar', downgradeComponent({ component: UserAvatarComponent }))
-  .directive('feedItemMapPopup', downgradeComponent({ component: FeedItemMapPopupComponent }))
   .directive('feeds', downgradeComponent({ component: AdminFeedsComponent }))
   .directive('adminFeed', downgradeComponent({ component: AdminFeedComponent }))
   .directive('adminService', downgradeComponent({ component: AdminServiceComponent }))
