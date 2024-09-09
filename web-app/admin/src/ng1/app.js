@@ -1,6 +1,5 @@
 import _ from 'underscore';
 import angular from 'angular';
-import mage from './mage/mage.component';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 import uiRouter from "@uirouter/angularjs";
@@ -82,7 +81,6 @@ app
   .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
 
 app
-  .component('mage', mage)
   .component('navbar', require('./navbar/navbar.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('fileUpload', fileUpload)
