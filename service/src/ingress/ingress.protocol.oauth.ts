@@ -1,42 +1,50 @@
 'use strict';
 
-const OAuth2Strategy = require('passport-oauth2').Strategy
-   , TokenAssertion = require('./verification').TokenAssertion
-   , base64 = require('base-64')
-   , api = require('../api')
-   , log = require('../logger')
-   , User = require('../models/user')
-   , Role = require('../models/role')
-   , { app, passport, tokenService } = require('./index');
+import { InternalOAuthError, Strategy as OAuth2Strategy, StrategyOptions as OAuth2Options, VerifyFunction } from 'passport-oauth2'
+import { TokenAssertion, JWTService } from './verification'
+import base64 from 'base-64'
+const api = require('../api')
+const log = require('../logger')
+const User = require('../models/user')
+const Role = require('../models/role')
+const { app, passport, tokenService } = require('./index');
+
+interface MageOAuth2Options extends OAuth2Options {
+   profileURL: string
+}
 
 class OAuth2ProfileStrategy extends OAuth2Strategy {
-   constructor(options, verify) {
-      super(options, verify);
 
-      if (!options.profileURL) { throw new TypeError('OAuth2Strategy requires a profileURL option'); }
-      this._profileURL = options.profileURL;
+   private _profileURL: string
 
-      this._oauth2.useAuthorizationHeaderforGET(true);
+   constructor(options: MageOAuth2Options, verify: VerifyFunction) {
+      super(options, verify)
+      if (!options.profileURL) {
+         throw new TypeError('OAuth2: missing profileURL')
+      }
+      this._profileURL = options.profileURL
+      this._oauth2.useAuthorizationHeaderforGET(true)
    }
 
-   userProfile(accessToken, done) {
-      this._oauth2.get(this._profileURL, accessToken, function (err, body) {
-         if (err) { return done(new InternalOAuthError('Failed to fetch user profile', err)); }
-
-         try {
-            const json = JSON.parse(body);
-
-            const profile = {};
-            profile.provider = 'oauth2';
-            profile.raw = body;
-            profile.json = json;
-
-            done(null, profile);
-         } catch (e) {
-            log.warn('Error parsing oauth profile', e);
-            done(e);
+   async userProfile(accessToken: string, done: (err: unknown, profile?: any) => void): Promise<void> {
+      this._oauth2.get(this._profileURL, accessToken, (err, body) => {
+         if (err) {
+            return done(new InternalOAuthError('error fetching oauth2 user profile', err))
          }
-      });
+         try {
+            const parsedBody = JSON.parse(body as string)
+            const profile = {
+               provider: 'oauth2',
+               json: parsedBody,
+               raw: body,
+            }
+            done(null, profile)
+         }
+         catch (err) {
+            log.error('error parsing oauth profile', err)
+            done(err)
+         }
+      })
    }
 }
 
