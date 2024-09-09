@@ -86,7 +86,6 @@ app
   .component('fileUpload', fileUpload)
   .component('fileBrowser', fileBrowser)
   .controller('NavController', require('./mage/mage-nav.controller'))
-  .controller('NotInEventController', require('./error/not.in.event.controller'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
   .animation('.slide-down', function() {
     return {
