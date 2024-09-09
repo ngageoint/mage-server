@@ -13,8 +13,6 @@ import { ExportService } from '../app/export/export.service'
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { PluginService } from '../app/plugin/plugin.service'
 
-import { ObservationListItemComponent } from '../app/observation/observation-list/observation-list-item.component';
-
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserReadService } from '@ngageoint/mage.web-core-lib/user';
 
@@ -58,7 +56,6 @@ app
 
 // Downgraded Angular components
 app
-  .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
   .directive('userAvatar', downgradeComponent({ component: UserAvatarComponent }))
   .directive('feeds', downgradeComponent({ component: AdminFeedsComponent }))
   .directive('adminFeed', downgradeComponent({ component: AdminFeedComponent }))

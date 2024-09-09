@@ -58,8 +58,6 @@ import { ExportDialogComponent } from "./export/export-dialog.component";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
-import { ObservationDeleteComponent } from './observation/observation-delete/observation-delete.component';
-import { ObservationListItemComponent } from './observation/observation-list/observation-list-item.component';
 import { MomentModule } from './moment/moment.module';
 import { BootstrapComponent } from './bootstrap/bootstrap.component';
 import { AttachmentComponent } from './observation/attachment/attachment.component';
@@ -67,7 +65,6 @@ import { FilenamePipe } from './filename/filename.pipe';
 import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
-import { ObservationListComponent } from './observation/observation-list/observation-list.component';
 import { FeedListComponent } from './feed/feed-list/feed-list.component';
 
 import {
@@ -155,9 +152,7 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     FeedItemComponent,
     FeedListComponent,
     FeedPanelTabComponent,
-    ObservationListItemComponent,
     ObservationEditComponent,
-    ObservationDeleteComponent,
     ObservationEditAttachmentComponent,
     ObservationEditFormComponent,
     ObservationEditFormPickerComponent,
@@ -173,7 +168,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     ObservationEditGeometryMapComponent,
     ObservationEditGeometryFormComponent,
     ObservationEditDateComponent,
-    ObservationListComponent,
     MapClipComponent,
     BootstrapComponent,
     AttachmentComponent,
