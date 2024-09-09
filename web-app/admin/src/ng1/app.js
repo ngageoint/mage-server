@@ -109,7 +109,6 @@ require('./mage');
 require('./authentication') // for modal in admin pages if token expires
 require('./factories');
 require('./filters');
-require('./leaflet-extensions');
 require('./admin');
 require('./material-components');
 
