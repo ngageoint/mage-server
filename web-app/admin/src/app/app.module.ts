@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, ApplicationRef, DoBootstrap, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule, ApplicationRef, DoBootstrap } from '@angular/core';
 
 import { UpgradeModule } from '@angular/upgrade/static';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
@@ -73,8 +73,6 @@ import { BootstrapComponent } from './bootstrap/bootstrap.component';
 import { AttachmentComponent } from './observation/attachment/attachment.component';
 import { FilenamePipe } from './filename/filename.pipe';
 import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
-import { ObservationViewFormComponent } from './observation/observation-view/observation-view-form.component';
-import { ObservationViewComponent } from './observation/observation-view/observation-view.component';
 import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
@@ -83,7 +81,6 @@ import { UserViewComponent } from './user/user-view/user-view.component';
 import { UserListItemComponent } from './user/user-list/user-list-item.component';
 import { UserListComponent } from './user/user-list/user-list.component';
 import { FeedListComponent } from './feed/feed-list/feed-list.component';
-import { FeedPanelComponent } from './feed-panel/feed-panel.component';
 
 import {
   mapServiceProvider,
@@ -101,15 +98,6 @@ import {
   authenticationConfigurationServiceProvider,
   userPagingServiceProvider
 } from './upgrade/ajs-upgraded-providers';
-
-import {
-  ObservationViewCheckboxComponent,
-  ObservationViewDateComponent,
-  ObservationViewGeometryComponent,
-  ObservationViewMultiselectdropdownComponent,
-  ObservationViewTextComponent,
-  ObservationViewTextareaComponent
-} from './observation/observation-view/observation-view';
 
 import {
   DMSValidatorDirective,
@@ -143,14 +131,10 @@ import { ContactInfoComponent } from './admin/admin-settings/admin-settings';
 import { SecurityBannerComponent, SecurityDisclaimerComponent } from './admin/admin-settings/admin-settings';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
-import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
 import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
 import { ObservationEditDiscardComponent } from './observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
-import { ObservationViewAttachmentComponent } from './observation/observation-view/observation-view-attachment/observation-view-attachment.component';
 import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
 import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
-import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
-import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 import { ContactComponent } from './contact/contact.component';
 import { ContactDialogComponent } from "./contact/contact-dialog.component";
 import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
@@ -190,7 +174,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     MGRSValidatorDirective,
     FeedItemComponent,
     FeedListComponent,
-    FeedPanelComponent,
     FeedPanelTabComponent,
     ObservationListItemComponent,
     ObservationEditComponent,
@@ -210,18 +193,8 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     ObservationEditGeometryMapComponent,
     ObservationEditGeometryFormComponent,
     ObservationEditDateComponent,
-    ObservationViewComponent,
-    ObservationViewAttachmentComponent,
-    ObservationViewTextComponent,
-    ObservationViewTextareaComponent,
-    ObservationViewCheckboxComponent,
-    ObservationViewDateComponent,
-    ObservationViewGeometryComponent,
-    ObservationViewMultiselectdropdownComponent,
-    ObservationViewFormComponent,
     ObservationFavoritesComponent,
     ObservationListComponent,
-    ObservationOptionsComponent,
     MapClipComponent,
     BootstrapComponent,
     AttachmentComponent,
@@ -247,8 +220,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     NoExportsComponent,
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
-    ObservationViewPasswordComponent,
-    PasswordPipe,
     ContactComponent,
     ContactDialogComponent,
     AdminAuthenticationOidcComponent,

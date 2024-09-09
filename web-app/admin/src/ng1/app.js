@@ -13,8 +13,6 @@ import { ExportService } from '../app/export/export.service'
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { PluginService } from '../app/plugin/plugin.service'
 
-import { FeedPanelComponent } from '../app/feed-panel/feed-panel.component';
-
 import { ObservationListItemComponent } from '../app/observation/observation-list/observation-list-item.component';
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
@@ -60,7 +58,6 @@ app
 
 // Downgraded Angular components
 app
-  .directive('feedPanel', downgradeComponent({ component: FeedPanelComponent }))
   .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
   .directive('userAvatar', downgradeComponent({ component: UserAvatarComponent }))
   .directive('feeds', downgradeComponent({ component: AdminFeedsComponent }))
