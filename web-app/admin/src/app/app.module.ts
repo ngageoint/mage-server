@@ -49,17 +49,9 @@ import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
 import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
 import { InputMaskModule } from '@ngneat/input-mask'
 
-import { ZoomComponent } from './map/controls/zoom.component';
-import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
 
-import { LocationComponent } from './map/controls/location.component';
-import { SearchComponent } from './map/controls/search.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { LayersComponent } from './map/layers/layers.component'
-import { LayersControlComponent } from './map/controls/layers-control.component';
-import { LayerHeaderComponent } from './map/layers/layer-header.component';
-import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportComponent } from './export/export.component';
 import { ExportDialogComponent } from "./export/export-dialog.component";
@@ -157,14 +149,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
 @NgModule({
   declarations: [
     SwaggerComponent,
-    ZoomComponent,
-    AddObservationComponent,
-    LocationComponent,
-    SearchComponent,
-    LayersControlComponent,
-    LayersComponent,
-    LayerHeaderComponent,
-    LayerContentComponent,
     ColorPickerComponent,
     DMSValidatorDirective,
     MGRSValidatorDirective,
