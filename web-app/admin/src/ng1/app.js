@@ -96,6 +96,7 @@ require('./authentication') // for modal in admin pages if token expires
 require('./factories');
 require('./filters');
 require('./admin');
+require('./user');
 require('./material-components');
 
 config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$animateProvider'];

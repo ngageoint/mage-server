@@ -73,7 +73,6 @@ import { BootstrapComponent } from './bootstrap/bootstrap.component';
 import { AttachmentComponent } from './observation/attachment/attachment.component';
 import { FilenamePipe } from './filename/filename.pipe';
 import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
-import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
 import { ObservationListComponent } from './observation/observation-list/observation-list.component';
@@ -190,7 +189,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     ObservationEditGeometryMapComponent,
     ObservationEditGeometryFormComponent,
     ObservationEditDateComponent,
-    ObservationFavoritesComponent,
     ObservationListComponent,
     MapClipComponent,
     BootstrapComponent,
