@@ -77,9 +77,6 @@ import { ObservationFavoritesComponent } from './observation/observation-favorit
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
 import { ObservationListComponent } from './observation/observation-list/observation-list.component';
-import { UserViewComponent } from './user/user-view/user-view.component';
-import { UserListItemComponent } from './user/user-list/user-list-item.component';
-import { UserListComponent } from './user/user-list/user-list.component';
 import { FeedListComponent } from './feed/feed-list/feed-list.component';
 
 import {
@@ -201,9 +198,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     FilenamePipe,
     AttachUploadComponent,
     UserAvatarComponent,
-    UserViewComponent,
-    UserListItemComponent,
-    UserListComponent,
     AdminSettingsComponent,
     PasswordPolicyComponent,
     AccountLockComponent,
