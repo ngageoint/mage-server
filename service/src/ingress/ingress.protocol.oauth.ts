@@ -18,7 +18,7 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
   private _profileURL: string
 
   constructor(options: MageOAuth2Options, verify: VerifyFunction) {
-    super(options, verify)
+    super(options as OAuth2Options, verify)
     if (!options.profileURL) {
       throw new TypeError('OAuth2: missing profileURL')
     }
@@ -26,7 +26,7 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
     this._oauth2.useAuthorizationHeaderforGET(true)
   }
 
-  async userProfile(accessToken: string, done: (err: unknown, profile?: any) => void): Promise<void> {
+  userProfile(accessToken: string, done: (err: unknown, profile?: any) => void): void {
     this._oauth2.get(this._profileURL, accessToken, (err, body) => {
       if (err) {
         return done(new InternalOAuthError('error fetching oauth2 user profile', err))
@@ -49,95 +49,94 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
 }
 
 function configure(strategy) {
-  log.info('Configuring ' + strategy.title + ' authentication');
+  log.info(`configuring ${strategy.title} oauth2 authentication`);
+  const customHeaders = strategy.settings.headers?.basic ? {
+    authorization: `Basic ${base64.encode(`${strategy.settings.clientID}:${strategy.settings.clientSecret}`)}`
+  } : undefined
+  passport.use(strategy.name, new OAuth2ProfileStrategy(
+    {
+      clientID: strategy.settings.clientID,
+      clientSecret: strategy.settings.clientSecret,
+      callbackURL: `/auth/${strategy.name}/callback`,
+      authorizationURL: strategy.settings.authorizationURL,
+      tokenURL: strategy.settings.tokenURL,
+      profileURL: strategy.settings.profileURL,
+      customHeaders: customHeaders,
+      scope: strategy.settings.scope,
+      pkce: strategy.settings.pkce,
+      /**
+       * cast to `any` because `@types/passport-oauth2` incorrectly does not allow `boolean` for the `store` entry
+       * https://github.com/jaredhanson/passport-oauth2/blob/master/lib/strategy.js#L107
+       */
+      store: true as any
+    },
+    function (accessToken, refreshToken, profileResponse, done) {
+      const profile = profileResponse.json;
 
-  let customHeaders = null;
-
-  if (strategy.settings.headers) {
-    customHeaders = {};
-    if (strategy.settings.headers.basic) {
-      customHeaders['Authorization'] = `Basic ${base64.encode(`${strategy.settings.clientID}:${strategy.settings.clientSecret}`)}`;
-    }
-  }
-
-  passport.use(strategy.name, new OAuth2ProfileStrategy({
-    clientID: strategy.settings.clientID,
-    clientSecret: strategy.settings.clientSecret,
-    callbackURL: `/auth/${strategy.name}/callback`,
-    authorizationURL: strategy.settings.authorizationURL,
-    tokenURL: strategy.settings.tokenURL,
-    profileURL: strategy.settings.profileURL,
-    customHeaders: customHeaders,
-    scope: strategy.settings.scope,
-    pkce: strategy.settings.pkce,
-    store: true
-  }, function (accessToken, refreshToken, profileResponse, done) {
-    const profile = profileResponse.json;
-
-    if (!profile[strategy.settings.profile.id]) {
-      log.warn("JSON: " + JSON.stringify(profile) + " RAW: " + profileResponse.raw);
-      return done(`OAuth2 user profile does not contain id property named ${strategy.settings.profile.id}`);
-    }
-
-    const profileId = profile[strategy.settings.profile.id];
-
-    // TODO: users-next
-    // TODO: should be by strategy name, not strategy type
-    User.getUserByAuthenticationStrategy(strategy.type, profileId, function (err, user) {
-      if (err) return done(err);
-
-      if (!user) {
-        // Create an account for the user
-        Role.getRole('USER_ROLE', function (err, role) {
-          if (err) return done(err);
-
-          let email = null;
-          if (profile[strategy.settings.profile.email]) {
-            if (Array.isArray(profile[strategy.settings.profile.email])) {
-              email = profile[strategy.settings.profile.email].find(email => {
-                email.verified === true
-              });
-            } else {
-              email = profile[strategy.settings.profile.email];
-            }
-          } else {
-            log.warn(`OAuth2 user profile does not contain email property named ${strategy.settings.profile.email}`);
-            log.debug(JSON.stringify(profile));
-          }
-
-          const user = {
-            username: profileId,
-            displayName: profile[strategy.settings.profile.displayName] || profileId,
-            email: email,
-            active: false,
-            roleId: role._id,
-            authentication: {
-              type: strategy.type,
-              id: profileId,
-              authenticationConfiguration: {
-                name: strategy.name
-              }
-            }
-          };
-          // TODO: users-next
-          new api.User().create(user).then(newUser => {
-            if (!newUser.authentication.authenticationConfiguration.enabled) {
-              log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
-              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-            }
-            return done(null, newUser);
-          }).catch(err => done(err));
-        });
-      } else if (!user.active) {
-        return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-      } else if (!user.authentication.authenticationConfiguration.enabled) {
-        log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
-        return done(null, user, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-      } else {
-        return done(null, user);
+      if (!profile[strategy.settings.profile.id]) {
+        log.warn("JSON: " + JSON.stringify(profile) + " RAW: " + profileResponse.raw);
+        return done(`OAuth2 user profile does not contain id property named ${strategy.settings.profile.id}`);
       }
-    });
-  }));
+
+      const profileId = profile[strategy.settings.profile.id];
+
+      // TODO: users-next
+      // TODO: should be by strategy name, not strategy type
+      User.getUserByAuthenticationStrategy(strategy.type, profileId, function (err, user) {
+        if (err) return done(err);
+
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
+            if (err) return done(err);
+
+            let email = null;
+            if (profile[strategy.settings.profile.email]) {
+              if (Array.isArray(profile[strategy.settings.profile.email])) {
+                email = profile[strategy.settings.profile.email].find(email => {
+                  email.verified === true
+                });
+              } else {
+                email = profile[strategy.settings.profile.email];
+              }
+            } else {
+              log.warn(`OAuth2 user profile does not contain email property named ${strategy.settings.profile.email}`);
+              log.debug(JSON.stringify(profile));
+            }
+
+            const user = {
+              username: profileId,
+              displayName: profile[strategy.settings.profile.displayName] || profileId,
+              email: email,
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: strategy.type,
+                id: profileId,
+                authenticationConfiguration: {
+                  name: strategy.name
+                }
+              }
+            };
+            // TODO: users-next
+            new api.User().create(user).then(newUser => {
+              if (!newUser.authentication.authenticationConfiguration.enabled) {
+                log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
+                return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+              }
+              return done(null, newUser);
+            }).catch(err => done(err));
+          });
+        } else if (!user.active) {
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+        } else if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
+          return done(null, user, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+        } else {
+          return done(null, user);
+        }
+      });
+    }));
 }
 
 function setDefaults(strategy) {
