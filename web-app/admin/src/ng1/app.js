@@ -84,8 +84,6 @@ app
 app
   .component('mage', mage)
   .component('navbar', require('./navbar/navbar.component'))
-  .component('filterPanel', require('./filter/filter'))
-  .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('fileUpload', fileUpload)
   .component('fileBrowser', fileBrowser)
