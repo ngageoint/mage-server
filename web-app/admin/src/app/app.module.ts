@@ -49,8 +49,6 @@ import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
 import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
 import { InputMaskModule } from '@ngneat/input-mask'
 
-import { SwaggerComponent } from './swagger/swagger.component';
-
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportComponent } from './export/export.component';
@@ -145,7 +143,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
 
 @NgModule({
   declarations: [
-    SwaggerComponent,
     ColorPickerComponent,
     DMSValidatorDirective,
     MGRSValidatorDirective,

@@ -4,7 +4,6 @@ import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 import uiRouter from "@uirouter/angularjs";
 import { downgradeComponent, downgradeInjectable } from '@angular/upgrade/static';
-import { SwaggerComponent } from "../app/swagger/swagger.component";
 
 import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
 
@@ -61,7 +60,6 @@ app
   .directive('adminFeed', downgradeComponent({ component: AdminFeedComponent }))
   .directive('adminService', downgradeComponent({ component: AdminServiceComponent }))
   .directive('feedEdit', downgradeComponent({ component: AdminFeedEditComponent }))
-  .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
   .directive('upgradedAdminMapSettings', downgradeComponent({ component: AdminMapComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
   .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
