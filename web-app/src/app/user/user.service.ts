@@ -1,6 +1,5 @@
 import { HttpClient, HttpContext, HttpEvent } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Router } from '@angular/router'
 import { Observable, Subject, tap } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
 import { BYPASS_TOKEN } from '../http/token.interceptor'
@@ -15,7 +14,6 @@ export class UserService {
   amAdmin: boolean
 
   constructor(
-    private router: Router,
     private httpClient: HttpClient,
     private localStorageService: LocalStorageService
   ) { }
@@ -133,13 +131,13 @@ export class UserService {
   }
 
   logout() {
-    const observable = this.httpClient.post('/api/logout', null, { responseType: 'text' })
-    observable.subscribe(() => {
-      this.clearUser();
-      this.router.navigate(['landing']);
-    })
-
-    return observable;
+    return this.httpClient
+      .post('/api/logout', { responseType: 'text' })
+      .pipe(
+        tap(() => {
+          this.clearUser()
+        })
+      )
   }
 
   saveProfile(user: any): Observable<HttpEvent<any>> {

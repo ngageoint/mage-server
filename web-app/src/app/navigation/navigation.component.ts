@@ -5,6 +5,7 @@ import { UserService } from '../user/user.service';
 import { EventService } from '../event/event.service';
 import { PollingService } from '../event/polling.service';
 import * as _ from 'underscore';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'navigation',
@@ -22,6 +23,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   feedChangedUsers = {}
 
   constructor(
+    private router: Router,
     private mapService: MapService,
     private userService: UserService,
     private eventService: EventService,
@@ -69,7 +71,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-    this.userService.logout()
+    this.userService.logout().subscribe(() => {
+      this.router.navigate(['landing']);
+    })
   }
 
   onFilterChanged(filter) {
