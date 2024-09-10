@@ -1,15 +1,10 @@
+mat-toolbar {
+  background-color: white;
+}
+
 .navigation {
   display: flex;
-}
-
-.navigation__icon {
-  margin-right: 24px;
-}
-
-.navigation__title {
-  flex: 1 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  justify-content: space-between;
 }
 
 .item-content {

@@ -1,14 +1,11 @@
 <div>
-  <mat-toolbar color="primary">
+  <mat-toolbar>
     <mat-toolbar-row class="navigation">
-      <button mat-icon-button class="navigation__icon" (click)="onClose()">
+      <button mat-icon-button color="primary" (click)="onClose()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <div class="navigation__title">
-        <span>{{primaryFeedField?.value}}</span>
-      </div>
   
-      <button *ngIf="canEdit" mat-button (click)="editObservation()">EDIT</button>
+      <button *ngIf="canEdit" mat-button color="primary" (click)="editObservation()">EDIT</button>
     </mat-toolbar-row>
   </mat-toolbar>
 
