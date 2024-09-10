@@ -57,7 +57,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
       layers: []
     },
-    'MAGE': {
+    'mage': {
       offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
       layers: []
     },

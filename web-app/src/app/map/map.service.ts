@@ -37,7 +37,7 @@ export class MapService {
     const observationLayer = {
       id: 'observations',
       name: 'Observations',
-      group: 'MAGE',
+      group: 'mage',
       type: 'geojson',
       featureIdToLayer: {},
       options: {
@@ -64,7 +64,7 @@ export class MapService {
     const peopleLayer = {
       id: 'people',
       name: 'People',
-      group: 'MAGE',
+      group: 'mage',
       type: 'geojson',
       options: {
         selected: true,

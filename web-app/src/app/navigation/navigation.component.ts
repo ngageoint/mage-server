@@ -41,7 +41,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.filterService.setFilter({ event: recentEvent });
         this.pollingService.setPollingInterval(this.pollingService.getPollingInterval());
       } else if (events.length > 0) {
-        // TODO 'welcome to MAGE dialog'
+        // TODO 'welcome to Mage dialog'
         this.filterService.setFilter({ event: events[0] });
         this.pollingService.setPollingInterval(this.pollingService.getPollingInterval());
       } else {

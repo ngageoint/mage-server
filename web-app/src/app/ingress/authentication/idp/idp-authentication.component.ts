@@ -23,12 +23,12 @@ export class IdpAuthenticationComponent {
     this.userService.idpSignin(this.strategy.name).subscribe({
       next: (response: any) => {
         if (!response.token || !response.user) {
-          let message = 'There was a problem signing in, Please contact a MAGE administrator for assistance.'
+          let message = 'There was a problem signing in, Please contact a Mage administrator for assistance.'
           if (response.user) {
             if (!response.user.active) {
-              message = 'Your account has been created but it is not active. A MAGE administrator needs to activate your account before you can log in.'
+              message = 'Your account has been created but it is not active. A Mage administrator needs to activate your account before you can log in.'
             } else if (!response.user.enabled) {
-              message = 'Your account has been disabled, please contact a MAGE administrator for assistance.'
+              message = 'Your account has been disabled, please contact a Mage administrator for assistance.'
             }
           }
 

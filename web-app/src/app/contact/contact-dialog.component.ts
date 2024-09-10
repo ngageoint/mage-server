@@ -39,7 +39,7 @@ export class ContactDialogComponent  {
 				var message = ""
         if (emailLink || phoneLink) {
             message += "<br /><br />"
-					  message += "You may contact your MAGE administrator via "
+          message += "You may contact your Mage administrator via "
             if (emailLink) {
 							message += "<a href=" + emailLink + ">Email</a>"
             }
