@@ -79,20 +79,18 @@ export class UserService {
   }
 
   authorize(token: string, deviceId: string): Observable<{ user: User, token: string}> {
-    const body = {
-      uid: deviceId,
-      appVersion: 'Web Client'
-    }
-
-    const observable = this.httpClient.post<{ user: User, token: string }>('/auth/token?createDevice=false', body, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-
-    observable.subscribe((response) => {
-      this.setUser(response.user)
-    })
-
-    return observable
+    return this.httpClient
+      .post<{ user: User, token: string }>('/auth/token?createDevice=false', {
+        uid: deviceId,
+        appVersion: 'Web Client'
+      },{
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .pipe(
+        tap((response: any) => {
+          this.setUser(response.user)
+        })
+      )
   }
 
   getMyself(): Observable<any> {

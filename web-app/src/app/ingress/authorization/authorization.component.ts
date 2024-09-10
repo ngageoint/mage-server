@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { UserService } from 'src/app/user/user.service';
 
 export interface AuthorizationEvent {
@@ -19,11 +18,8 @@ export class AuthorizationComponent {
   deviceId = new FormControl('', [Validators.required])
 
   constructor(
-    private router: Router,
     private userService: UserService
-  ) {
-    this.token = this.router.getCurrentNavigation()?.extras?.state?.token
-  }
+  ) {}
 
   authorize(): void {
     this.deviceId.setErrors(null)
