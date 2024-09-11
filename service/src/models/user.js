@@ -1,15 +1,7 @@
 "use strict";
 
 const mongoose = require('mongoose')
-  , async = require('async')
   , moment = require('moment')
-  , Token = require('./token')
-  , Login = require('./login')
-  , Event = require('./event')
-  , Team = require('./team')
-  , Observation = require('./observation')
-  , Location = require('./location')
-  , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
   , { pageQuery } = require('../adapters/base/adapters.base.db.mongoose')

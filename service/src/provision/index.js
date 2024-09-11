@@ -1,4 +1,3 @@
-const Setting = require('../models/setting');
 const { modulesPathsInDir } = require('../utilities/loader');
 const log = require('../logger');
 const AuthenticationConfiguration = require('../models/authenticationconfiguration');
@@ -46,7 +45,7 @@ Provision.prototype.check = function (type, name, options) {
         next();
       });
     }).catch(err => {
-      next(err);;
+      next(err);
     });
   };
 };

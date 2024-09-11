@@ -1,4 +1,3 @@
-/// <reference path="./user.d.ts" />
 var mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')

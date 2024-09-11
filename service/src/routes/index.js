@@ -101,6 +101,7 @@ module.exports = function(app, security) {
   // Grab the feature for any endpoint that uses observationId
   app.param('observationId', function(req, res, next, observationId) {
     req.observationId = observationId;
+    // TODO: obs types: use repo
     new api.Observation(req.event).getById(observationId, function(
       err,
       observation
