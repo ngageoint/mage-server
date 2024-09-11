@@ -12,6 +12,7 @@ const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema(
   {
+    // TODO: type is really not necessary
     type: { type: String, required: true },
     id: { type: String, required: false },
     authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: false }
