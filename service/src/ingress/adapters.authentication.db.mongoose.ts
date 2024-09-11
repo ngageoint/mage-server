@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import mongoose, { Schema } from 'mongoose'
 import { UserDocumentExpanded } from '../adapters/users/adapters.users.db.mongoose'
 import { UserId } from '../entities/users/entities.users'
-import { Session, SessionRepository } from './entities.authentication'
+import { Session, SessionRepository } from './ingress.entities'
 
 export interface SessionDocument {
   token: string
@@ -26,7 +26,7 @@ const SessionSchema = new Schema<SessionDocument, SessionModel>(
 )
 
 // TODO: index token
-SessionSchema.index({ token: 1 })
+SessionSchema.index({ token: 1, unique: 1 })
 SessionSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
 const populateSessionUserRole: mongoose.PopulateOptions = {
@@ -65,8 +65,13 @@ export function createSessionRepository(conn: mongoose.Connection, collectionNam
       return await model.findOneAndUpdate(query, update,
         { upsert: true, new: true, populate: populateSessionUserRole })
     },
-    async removeSession(token: string): Promise<void> {
-      await model.deleteOne({ token })
+    async removeSession(token: string): Promise<Session | null> {
+      const session = await this.findSessionByToken(token)
+      if (!session) {
+        return null
+      }
+      const removed = await this.model.deleteOne({ token })
+      return removed.deletedCount === 1 ? session : null
     },
     async removeSessionsForUser(userId: UserId): Promise<number> {
       const { deletedCount } = await model.deleteMany({ userId: new mongoose.Types.ObjectId(userId) })

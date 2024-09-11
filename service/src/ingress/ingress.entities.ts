@@ -33,6 +33,8 @@ export interface AuthenticationProtocol {
   name: string
 }
 
+export type IdentityProviderId = string
+
 /**
  * An identity provider (IDP) is a service maintains user profiles and that Mage trusts to authenticate user
  * credentials via a specific authentication protocol.  Mage delegates user authentication to identity providers.
@@ -40,6 +42,7 @@ export interface AuthenticationProtocol {
  * user profile.
  */
 export interface IdentityProvider {
+  id: IdentityProviderId
   name: string
   title: string
   protocol: AuthenticationProtocol
@@ -47,6 +50,7 @@ export interface IdentityProvider {
   enabled: boolean
   lastUpdated: Date
   enrollmentPolicy: EnrollmentPolicy
+  deviceEnrollmentPolicy: DeviceEnrollmentPolicy
   description?: string | null
   textColor?: string | null
   buttonColor?: string | null
@@ -62,11 +66,14 @@ export interface EnrollmentPolicy {
   assignToTeams: TeamId[]
   assignToEvents: MageEventId[]
   requireAccountApproval: boolean
-  // TODO: move to different policy?
+
+}
+
+export interface DeviceEnrollmentPolicy {
   requireDeviceApproval: boolean
 }
 
 export interface IdentityProviderRepository {
-  findById(): Promise<IdentityProvider | null>
+  findById(id: IdentityProviderId): Promise<IdentityProvider | null>
   findByName(name: string): Promise<IdentityProvider | null>
 }
