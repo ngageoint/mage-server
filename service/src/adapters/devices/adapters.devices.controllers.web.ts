@@ -1,10 +1,10 @@
 import express from 'express'
 import { entityNotFound, invalidInput } from '../../app.api/app.api.errors'
 import { DevicePermissionService } from '../../app.api/devices/app.api.devices'
-import { SessionRepository } from '../../authentication/entities.authentication'
 import { Device, DeviceRepository, FindDevicesSpec } from '../../entities/devices/entities.devices'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { User, UserFindParameters, UserRepository } from '../../entities/users/entities.users'
+import { SessionRepository } from '../../ingress/ingress.entities'
 import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 
 
@@ -58,7 +58,7 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
         try {
           if (update.registered === false) {
             console.info(`update device ${idInPath} to unregistered`)
-            const sessionsRemovedCount = await sessionRepo.removeSessionForDevice(idInPath)
+            const sessionsRemovedCount = await sessionRepo.removeSessionsForDevice(idInPath)
             console.info(`removed ${sessionsRemovedCount} session(s) for device ${idInPath}`)
           }
           const updated = await deviceRepo.update({ ...update, id: idInPath })
@@ -79,7 +79,7 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
           const idInPath = req.params.id
           console.info(`delete device`, idInPath)
           const deleted = await deviceRepo.removeById(idInPath)
-          const removedSessionsCount = sessionRepo.removeSessionForDevice(idInPath)
+          const removedSessionsCount = sessionRepo.removeSessionsForDevice(idInPath)
           console.info(`removed ${removedSessionsCount} session(s) for device ${idInPath}`)
           // TODO: the old observation model had a middleware that removed the device id from created observations,
           // but do we really care that much
