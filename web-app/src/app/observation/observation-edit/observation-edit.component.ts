@@ -241,7 +241,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         observation.style = style
         this.geometryStyle = style
 
-        this.mapService.updateFeatureForLayer(observation, 'Observations')
+        this.mapService.updateFeatureForLayer(observation, 'observations')
       }
     }
   }

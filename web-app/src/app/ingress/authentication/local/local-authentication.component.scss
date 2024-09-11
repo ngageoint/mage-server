@@ -35,8 +35,8 @@ mat-form-field {
   align-items: center;
   gap: 16px;
   margin-top: 16px;
-  color: rgb(96 17 10);
-  background-color: rgb(249 220 215);
+  color: mat.get-color-from-palette($app-warn);
+  background-color: rgba(mat.get-color-from-palette($app-warn, 100), .5);
   border-radius: 4px;
   padding: 0 16px;
 }

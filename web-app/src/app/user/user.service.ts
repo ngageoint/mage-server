@@ -1,6 +1,5 @@
 import { HttpClient, HttpContext, HttpEvent } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Router } from '@angular/router'
 import { Observable, Subject, tap } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
 import { BYPASS_TOKEN } from '../http/token.interceptor'
@@ -15,7 +14,6 @@ export class UserService {
   amAdmin: boolean
 
   constructor(
-    private router: Router,
     private httpClient: HttpClient,
     private localStorageService: LocalStorageService
   ) { }
@@ -73,7 +71,7 @@ export class UserService {
       username,
       password,
       appVersion: 'Web Client'
-    }, {
+    },{
       context: new HttpContext().set(BYPASS_TOKEN, true)
     })
   }

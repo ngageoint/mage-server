@@ -272,80 +272,77 @@ export class EventService {
     return this.eventsById[eventId];
   }
 
-  saveObservation(observation) {
+  saveObservation(observation: any) {
     const event = this.eventsById[observation.eventId];
     const isNewObservation = !observation.id;
-    const observable = this.observationService.saveObservationForEvent(event, observation)
 
-    observable.subscribe((observation: any) => {
-      event.observationsById[observation.id] = observation;
+    return this.observationService.saveObservationForEvent(event, observation)
+      .pipe(
+        tap((update: any) => {
+          event.observationsById[update.id] = update;
 
-      // Check if this new observation passes the current filter
-      if (this.filterService.observationInFilter(observation)) {
-        event.filteredObservationsById[observation.id] = observation;
-        isNewObservation ? this.observationsChanged({ added: [observation] }) : this.observationsChanged({ updated: [observation] });
-      }
-    })
-
-    return observable;
+          // Check if this new observation passes the current filter
+          if (this.filterService.observationInFilter(update)) {
+            event.filteredObservationsById[update.id] = update;
+            isNewObservation ? this.observationsChanged({ added: [update] }) : this.observationsChanged({ updated: [update] });
+          }
+        })
+      )
   }
 
   addObservationFavorite(observation) {
     var event = this.eventsById[observation.eventId];
-
-    var observable = this.observationService.addObservationFavorite(event, observation);
-
-    observable.subscribe((updatedObservation: any) => {
-      event.observationsById[updatedObservation.id] = updatedObservation;
-      this.observationsChanged({ updated: [updatedObservation] });
-    });
-
-    return observable;
+    return this.observationService.addObservationFavorite(event, observation)
+      .pipe(
+        tap((update: any) => {
+          event.observationsById[update.id] = update;
+          this.observationsChanged({ updated: [update] });
+        })
+      )
   }
 
   removeObservationFavorite(observation) {
     var event = this.eventsById[observation.eventId];
-
-    var observable = this.observationService.removeObservationFavorite(event, observation);
-    observable.subscribe((updatedObservation: any) => {
-      event.observationsById[updatedObservation.id] = updatedObservation;
-      this.observationsChanged({ updated: [updatedObservation] });
-    });
-
-    return observable;
+    return this.observationService.removeObservationFavorite(event, observation)
+      .pipe(
+        tap((update: any) => {
+          event.observationsById[update.id] = update;
+          this.observationsChanged({ updated: [update] });
+        })
+      )
   }
 
   markObservationAsImportant(observation, important): Observable<any> {
     var event = this.eventsById[observation.eventId];
-    const observable = this.observationService.markObservationAsImportantForEvent(event, observation, important)
-    observable.subscribe((updatedObservation: any) => {
-      event.observationsById[updatedObservation.id] = updatedObservation;
-      this.observationsChanged({ updated: [updatedObservation] });
-    })
-
-    return observable
+    return this.observationService.markObservationAsImportantForEvent(event, observation, important)
+      .pipe(
+        tap((update: any) => {
+          event.observationsById[update.id] = update;
+          this.observationsChanged({ updated: [update] });
+        })
+      )
   }
 
   clearObservationAsImportant(observation): Observable<any> {
     var event = this.eventsById[observation.eventId];
-    const observable = this.observationService.clearObservationAsImportantForEvent(event, observation)
-    observable.subscribe((updatedObservation: any) => {
-      event.observationsById[updatedObservation.id] = updatedObservation;
-      this.observationsChanged({ updated: [updatedObservation] });
-    })
-
-    return observable
+    return this.observationService.clearObservationAsImportantForEvent(event, observation)
+      .pipe(
+        tap((update: any) => {
+          event.observationsById[update.id] = update;
+          this.observationsChanged({ updated: [update] });
+        })
+      )
   }
 
   archiveObservation(observation): Observable<any> {
     var event = this.eventsById[observation.eventId]
-    const observable = this.observationService.archiveObservationForEvent(event, observation)
-    observable.subscribe((archivedObservation: any) => {
-      delete event.observationsById[archivedObservation.id]
-      this.observationsChanged({ removed: [archivedObservation] })
-    })
-
-    return observable
+    return this.observationService.archiveObservationForEvent(event, observation)
+      .pipe(
+        tap((archived: any) => {
+          delete event.observationsById[archived.id]
+          this.observationsChanged({ removed: [archived] })
+        })
+      )
   }
 
   addAttachmentToObservation(observation, attachment) {

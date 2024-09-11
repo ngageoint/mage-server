@@ -3,6 +3,7 @@ import { LocalStorageService } from "../http/local-storage.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable, map, mergeMap } from "rxjs";
 import * as _ from 'underscore';
+import { MageEvent } from "core-lib-src/event";
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class ObservationService {
     private localStorageService: LocalStorageService
   ) { }
 
-  getId(eventId: string): Observable<any> {
+  getId(eventId: number): Observable<any> {
     return this.client.post<any>(`/api/events/${eventId}/observations/id/`, { eventId: eventId });
   }
 
@@ -22,7 +23,7 @@ export class ObservationService {
     return this.client.get<any>(`/api/events/${eventId}/observations/${observationId}`);
   }
 
-  getObservationsForEvent(event: any, options: any): Observable<any> {
+  getObservationsForEvent(event: MageEvent, options: any): Observable<any> {
     const parameters: any = { eventId: event.id, states: 'active', populate: 'true' };
     if (options.interval) {
       parameters.observationStartDate = options.interval.start;
@@ -36,19 +37,21 @@ export class ObservationService {
     )
   }
 
-  saveObservationForEvent(event, observation): Observable<any> {
+  saveObservationForEvent(event: MageEvent, observation: any): Observable<any> {
     return this.saveObservation(event, observation).pipe(
-      map((observation) => this.transformObservations(observation, event))
+      map((observation) => {
+        return this.transformObservations(observation, event)[0]
+     })
     )
   }
 
-  private saveObservation(eventId: string, observation: any): Observable<any> {
+  private saveObservation(event: MageEvent, observation: any): Observable<any> {
     if (observation.id) {
-      return this.client.put<any>(`/api/events/${eventId}/observations/${observation.id}`, observation);
+      return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}`, observation);
     } else {
-      return this.getId(eventId).pipe(
+      return this.getId(event.id).pipe(
         mergeMap(result => {
-          return this.client.put<any>(`/api/events/${eventId}/observations/${result.id}`, observation);
+          return this.client.put<any>(`/api/events/${event.id}/observations/${result.id}`, observation);
         })
       )
     }

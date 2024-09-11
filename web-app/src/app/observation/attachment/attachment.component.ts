@@ -31,7 +31,8 @@ export class AttachmentComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private localStorageService: LocalStorageService) {
+    localStorageService: LocalStorageService
+  ) {
     this.token = localStorageService.getToken()
   }
 

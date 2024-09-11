@@ -1,66 +1,11 @@
 @use '@angular/material' as mat;
 
-$warn-palette: (
-  50: #ffebee,
-  100: #ffcdd2,
-  200: #ef9a9a,
-  300: #e57373,
-  400: #ef5350,
-  500: #f44336,
-  600: #93000a,
-  700: #d32f2f,
-  800: #c62828,
-  900: #b71c1c,
-  A100: #ff8a80,
-  A200: #ff5252,
-  A400: #ff1744,
-  A700: #d50000,
-  contrast: (
-    50: rgba(0, 0, 0, 0.87),
-    100: rgba(0, 0, 0, 0.87),
-    200: rgba(0, 0, 0, 0.87),
-    300: rgba(0, 0, 0, 0.87),
-    400: rgba(0, 0, 0, 0.87),
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(0, 0, 0, 0.87),
-    A200: white,
-    A400: white,
-    A700: white
-  ),
-  default: #f44336,
-  lighter:#ffcdd2,
-  darker: #d32f2f,
-  text: #f44336,
-  default-contrast: white,
-  lighter-contrast: rgba(0, 0, 0, 0.87),
-  darker-contrast: white,
-  "50-contrast": rgba(0, 0, 0, 0.87),
-  "100-contrast": rgba(0, 0, 0, 0.87),
-  "200-contrast": rgba(0, 0, 0, 0.87),
-  "300-contrast": rgba(0, 0, 0, 0.87),
-  "400-contrast": rgba(0, 0, 0, 0.87),
-  "500-contrast": white,
-  "600-contrast": white,
-  "700-contrast": white,
-  "800-contrast": white,
-  "900-contrast": white,
-  "A100-contrast": rgba(0, 0, 0, 0.87),
-  "A200-contrast": white,
-  "A400-contrast": white,
-  "A700-contrast": white,
-  "contrast-contrast": null
-);
-
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
 $app-primary: mat.define-palette(mat.$blue-palette, 600, 200, 800);
 $app-accent: mat.define-palette(mat.$orange-palette, A700, A100, A700);
-$app-warn: mat.define-palette($warn-palette, 600, 200, 800);
+$app-warn: mat.define-palette(mat.$red-palette, 600, 200, 800);
 
 // Custom Sass colors vars (will be available in all the project)
 $primary: mat.get-color-from-palette($app-primary);

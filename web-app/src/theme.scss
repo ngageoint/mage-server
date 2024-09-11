@@ -10,12 +10,7 @@
 // Be sure that you only ever include this mixin once!
 @include mat.core();
 
-// Create the theme object (a Sass map containing all of the palettes).
-// $app-theme: mat.define-light-theme($app-primary, $app-accent, $app-warn);
-
-// // Define a light theme
-// $light-primary: mat.define-palette(mat.$indigo-palette);
-// $light-accent: mat.define-palette(mat.$pink-palette);
+// Define a light theme
 $app-theme: mat.define-light-theme((
   color: (
     primary: $app-primary,
@@ -23,8 +18,6 @@ $app-theme: mat.define-light-theme((
     warn: $app-warn
   )
 ));
-
-@debug $app-warn;
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
