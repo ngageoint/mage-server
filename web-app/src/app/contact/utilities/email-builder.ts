@@ -33,32 +33,23 @@ export class EmailBuilder {
             }
         } else {
             if (upperStatusMsg.includes('APPROVED') || upperStatusMsg.includes('ACTIVATE')) {
-                this._subject = "Please activate my account"
+                this._subject = "Please activate my Mage account"
             } else if (upperStatusMsg.includes('DISABLED')) {
-                this._subject = "Please enable my account"
+                this._subject = "Please enable my Mage account"
             } else if (upperStatusMsg.includes('LOCKED')) {
-                this._subject = "Please unlock my account"
+                this._subject = "Please unlock my Mage account"
             } else if (upperStatusMsg.includes('CAPTCHA')) {
-                this._subject = "CAPTCHA issue"
+                this._subject = "Mage CAPTCHA issue"
             } else if (upperStatusMsg.includes('EVENT')) {
-                this._subject = "Please add me to an event";
+                this._subject = "Please add me to a Mage event";
             } else {
-                this._subject = 'User login issue';
+                this._subject = 'Mage signin issue';
             }
         }
 
         if (this._identifier) {
             this._subject += ' - ' + this._identifier;
             this._body += 'Identifier (username or device id): ' + this._identifier + '\n';
-        }
-        if (this._strategy) {
-            this._body += 'Authentication Method: ';
-            if (this._strategy.title) {
-                this._body += this._strategy.title;
-            } else {
-                this._body += this._strategy;
-            }
-            this._body += '\n';
         }
 
         this._body += 'Error Message Received: ' + this._statusMessage;

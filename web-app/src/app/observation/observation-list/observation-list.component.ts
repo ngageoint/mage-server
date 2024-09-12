@@ -1,6 +1,7 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { EventService, FilterService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
+import { EventService } from '../../event/event.service';
+import { FilterService } from '../../filter/filter.service';
 
 @Component({
   selector: 'observation-list',
@@ -23,8 +24,8 @@ export class ObservationListComponent implements OnInit, OnDestroy {
   filterChangedListener: any
 
   constructor(
-    @Inject(EventService) private eventService: any,
-    @Inject(FilterService) private filterService: any) {
+    private eventService: EventService,
+    private filterService: FilterService) {
   }
 
   ngOnInit(): void {

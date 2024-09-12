@@ -1,0 +1,40 @@
+<div>
+  <div [ngSwitch]="preview">
+    <div *ngSwitchCase="previewType.LOADING">
+      <mat-spinner [color]="'primary'"></mat-spinner>
+    </div>
+    <div *ngSwitchCase="previewType.IMAGE">
+      <img class="upload-preview" [src]="attachment?.preview" />
+    </div>
+    <div *ngSwitchCase="previewType.VIDEO">
+      <img class="upload-preview" [src]="attachment?.preview" />
+      <div class="upload-preview--mask">
+        <mat-icon class="upload-preview--mask__icon">play_circle_outline</mat-icon>
+      </div>
+    </div>
+    <div *ngSwitchCase="previewType.AUDIO">
+      <div class="preview-container">
+        <mat-icon class="preview__icon">mic_none_outlined</mat-icon>
+        <div class="preview">{{attachment?.name | filename:12}}</div>
+      </div>
+    </div>
+    <div *ngSwitchDefault>
+      <div class="preview-container">
+        <mat-icon class="preview__icon">attach_file</mat-icon>
+        <div class="preview__text">{{attachment?.name | filename:12}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="upload-delete" *ngIf="preview !== previewType.LOADING">
+  <button mat-mini-fab color="warn" (click)="removeAttachment(attachment?.id)" [disabled]="attachment?.action === actions.DELETE">
+    <mat-icon>delete</mat-icon>
+  </button>
+</div>
+<div class="upload-container" *ngIf="attachment?.uploading">
+  <div class="upload-progress">
+    <div class="upload__label mat-title">Uploading {{attachment?.uploadProgress}}%</div>
+    <mat-progress-bar mode="determinate" [value]="attachment.uploadProgress"></mat-progress-bar>
+  </div>
+</div>

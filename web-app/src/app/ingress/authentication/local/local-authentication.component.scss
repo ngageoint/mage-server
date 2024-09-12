@@ -1,0 +1,52 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
+mat-form-field {
+  width: 100%;
+}
+
+.auth-button {
+  width: 100%;
+}
+
+.signup {
+  display: flex;
+  margin-top: 32px;
+  justify-content: center;
+  gap: 8px;
+}
+
+.signup-text {
+  opacity: 60%;
+}
+
+.signup-button {
+  cursor: pointer;
+  color: $primary;
+}
+
+.error-container {
+  overflow: hidden;
+}
+
+.error {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  color: mat.get-color-from-palette($app-warn);
+  background-color: rgba(mat.get-color-from-palette($app-warn, 100), .5);
+  border-radius: 4px;
+  padding: 0 16px;
+}
+
+.error__icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.error__message {
+  flex: 1;
+}

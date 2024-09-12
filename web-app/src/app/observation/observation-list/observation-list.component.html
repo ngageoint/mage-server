@@ -17,7 +17,7 @@
       <mat-label>Observation Page</mat-label>
       <mat-select [(ngModel)]="currentObservationPage">
         <mat-option *ngFor="let observationPage of observationPages; index as i; trackBy: trackByPageId" [value]="i">
-          {{observationPage[0].properties.timestamp | moment: 'fromNow'}}
+          {{observationPage[0]?.properties?.timestamp | moment: 'fromNow'}}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -27,7 +27,7 @@
     <div *ngIf="loaded; else mask">
       <ng-container *ngFor="let observation of observationPages[currentObservationPage]; trackBy: trackByObservationId">
         <div class="feed-observation">
-          <observation-list-item [observation]="observation" [event]="event" [form]=[event.form]></observation-list-item>
+          <observation-list-item [observation]="observation" [event]="event" [form]=[event?.form]></observation-list-item>
         </div>
       </ng-container>
     </div>

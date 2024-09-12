@@ -41,7 +41,7 @@ export interface User {
    * The authorization role of this user account that defines the actions this
    * user account has permission to perform
    */
-  roleId: string
+  role: string
   email?: string
   /**
    * URL of the image that identifies this user account in the user feed, etc.;

@@ -1,0 +1,64 @@
+<div class="container">
+  <div class="welcome">
+    <div class="welcome__title">Admin Account Creation</div>
+    <div class="welcome__message">Create an account to access and administor Mage</div>
+  </div>
+
+  <div class="account" [formGroup]="account">
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput placeholder="Username" [formControl]="account.controls.username" required>
+        <mat-error *ngIf="account.controls.username.hasError('required')">Username is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput placeholder="Password" type="password" [formControl]="account.controls.password" required (input)="onPasswordChanged(account.controls.password.value)">
+        <mat-error *ngIf="account.controls.password.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="account.controls.password.hasError('match')">Passwords must match</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput placeholder="Confirm Password" type="password" [formControl]="account.controls.passwordconfirm" required>
+        <mat-error *ngIf="account.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="password-strength">
+      <div class="password-strength__text">
+        <div class="mat-body-1">Password Strengh</div>
+        <div class="mat-body-2">{{passwordStrength?.text}}</div>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"></mat-progress-bar>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Access Code</mat-label>
+        <input matInput placeholder="Access Code" type="text" [formControl]="account.controls.accessCode" required>
+        <mat-hint>This code will allow users to access Mage via the web client</mat-hint>
+        <mat-error *ngIf="account.controls.accessCode.hasError('required')">Access code is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="actions">
+      <button mat-flat-button color="primary" class="actions__button" (click)="onInitialize()">Create Account</button>
+    </div>
+
+    <div *ngIf="error" class="error-container" [@slide]>
+      <div class="error">
+        <mat-icon class="error__icon">error</mat-icon>
+        <div class="error__message">
+          <p>{{error?.message}}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

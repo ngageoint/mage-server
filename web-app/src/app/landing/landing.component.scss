@@ -1,0 +1,56 @@
+@import "variables.scss";
+
+.outer-container {
+  display: inline;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.authentication-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.authentication-info-container {
+  height: 100%;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  flex: 1;
+}
+
+.authentication {
+  width: 75%;
+  height: 100vh;
+  margin: auto;
+  min-width: 285px;
+  max-width: 600px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.mage-info-container {
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  color: #fff;
+  background-color: rgba(16, 69, 130, .5);
+}
+
+@media (max-width: 1025px) {
+  .authentication-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .authentication-info-container {
+    width: 100%;
+  }
+}

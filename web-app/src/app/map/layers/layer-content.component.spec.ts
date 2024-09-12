@@ -9,7 +9,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { CheckboardModule, SaturationModule, HueModule, AlphaModule } from 'ngx-color';
 import { FormsModule } from '@angular/forms';
-import { LayerService } from './layer.service';
+import { MapLayerService } from './layer.service';
 import { Component, ViewChild } from '@angular/core';
 
 @Component({
@@ -35,7 +35,7 @@ describe('LayerContentComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ FormsModule, MatInputModule, MatFormFieldModule, MatCardModule, MatSliderModule, MatIconModule, CheckboardModule, SaturationModule, HueModule, AlphaModule ],
-      providers: [ LayerService ],
+      providers: [MapLayerService ],
       declarations: [ ColorPickerComponent, TestHostComponent, LayerContentComponent ]
     })
     .compileComponents();

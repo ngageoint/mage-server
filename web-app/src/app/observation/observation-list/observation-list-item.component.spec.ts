@@ -3,9 +3,12 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { GeometryPipe } from 'src/app/geometry/geometry.pipe';
 import { MomentPipe } from 'src/app/moment/moment.pipe';
-import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 import { ObservationListItemComponent } from './observation-list-item.component';
+import { MapService } from 'src/app/map/map.service';
+import { UserService } from 'src/app/user/user.service';
+import { EventService } from 'src/app/event/event.service';
+import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 class MockMapService {}
 

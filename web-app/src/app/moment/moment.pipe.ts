@@ -1,6 +1,6 @@
-import { Pipe, PipeTransform, Inject } from '@angular/core';
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers';
+import { Pipe, PipeTransform } from '@angular/core';
 import * as moment from 'moment';
+import { LocalStorageService } from '../http/local-storage.service';
 
 @Pipe({
   name: 'moment',
@@ -8,7 +8,7 @@ import * as moment from 'moment';
 })
 export class MomentPipe implements PipeTransform {
 
-  constructor(@Inject(LocalStorageService) private localStorageService: any) { }
+  constructor(private localStorageService: LocalStorageService) { }
 
   transform(value: any, args?: any): any {
     switch (this.localStorageService.getTimeFormat()) {

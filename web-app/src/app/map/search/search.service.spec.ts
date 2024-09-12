@@ -60,8 +60,6 @@ describe('SearchService', () => {
 
     const search = '123 South Madeup Way';
     service.search(mapSettings, search).subscribe((response: PlacenameSearchResult[]) => {
-      console.log("response", response)
-      console.log("results", results)
       expect(results).toEqual(response);
     });
 

@@ -1,0 +1,12 @@
+<div class="header">
+  <mat-icon>schedule</mat-icon>
+  <div class="mat-body-2">Time Format</div>
+</div>
+
+<mat-form-field>
+  <mat-select [(value)]="formatOption" (selectionChange)="updateTimeFormat($event)" [compareWith]="compareFormat">
+    <mat-option *ngFor="let option of formatOptions" [value]="option">
+      {{option.title}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>

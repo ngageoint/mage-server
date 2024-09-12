@@ -59,16 +59,16 @@ export function CreateReadSystemInfo(
 	const legacyUsers = Users as any;   
     const userCount = await new Promise(resolve => {
       legacyUsers.count({}, (err:any, count:any) => {
-	    resolve(count)
-	  });
+      resolve(count)
+      });
     });
     
     // Initialize with base system info
     let systemInfoResponse: ExoRedactedSystemInfo = {	  
       version: versionInfo,	  
-	  initial: userCount == 0,
-      disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
-      contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
+      initial: userCount == 0,
+      disclaimer: (await settingsModule.getSetting('disclaimer'))?.settings || {},
+      contactInfo: (await settingsModule.getSetting('contactinfo'))?.settings || {}
     };
 
     // Add environment details for authenticated users with permission

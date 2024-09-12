@@ -13,7 +13,7 @@
 
   <div class="time">
     <mat-form-field appearance="fill">
-      <mat-label>{{title}} Time {{timeZone === 'gmt' ? '(GMT)' : '(Local)'}}</mat-label>
+      <mat-label>{{title}} Time {{timezone === 'gmt' ? '(GMT)' : '(Local)'}}</mat-label>
       <input matInput [matDatetimepicker]="timePicker" [(ngModel)]="time" (ngModelChange)="onTime()" #timeModel="ngModel" autocomplete="false">
       <mat-datetimepicker-toggle [for]="timePicker" matSuffix></mat-datetimepicker-toggle>
       <mat-datetimepicker #timePicker type="time" openOnFocus="false"></mat-datetimepicker>

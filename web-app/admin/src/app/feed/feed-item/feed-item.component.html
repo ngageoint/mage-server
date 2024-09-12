@@ -1,0 +1,40 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="close()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  <span>{{feed?.title}}</span>
+</mat-toolbar>
+
+<div class="card-content">
+  <mat-card>
+    <div class="card-header">
+      <div class="card-header-text">
+        <div class="card-overline">{{date}}</div>
+        <div class="card-title">{{primary}}</div>
+        <div class="card-subtitle">{{secondary}}</div>
+      </div>
+      <mat-icon mat-card-avatar *ngIf="!feed.icon" color="primary">place</mat-icon>
+      <mage-static-icon-img mat-card-avatar *ngIf="feed.icon" [iconRef]="feed.icon"></mage-static-icon-img>
+    </div>
+    <div mat-card-image>
+      <map-clip class="map" [feature]=mapFeature></map-clip>
+    </div>
+    <div class="card-actions">
+      <button mat-button color="primary" (click)="onLocationClick()">
+        <mat-icon>gps_fixed</mat-icon>
+        {{item?.geometry|geometry:5}}
+      </button>
+    </div>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <div *ngFor="let property of properties">
+        <div class="item">
+          <div class="mat-body-1">{{property.key}}</div>
+          <div class="mat-body-2">{{property.value}}</div>
+        </div>
+        <mat-divider></mat-divider>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

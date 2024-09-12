@@ -1,0 +1,60 @@
+:host {
+  height: 100%;
+}
+
+#map {
+  height: 100%;
+  background-color: #c0d9e4;
+}
+
+.map-container {
+  height: 100%;
+}
+
+.map-content {
+  height: 100%;
+}
+
+.map-controls-layers {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  justify-content: space-between;
+  z-index: 1000;
+}
+
+.map-controls-left {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+}
+
+.map-controls-left__top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-controls-right {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 16px;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+}
+
+mat-sidenav {
+  min-width: 350px;
+  max-width: 400px;
+}

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
-import { LayerService } from './layer.service';
+import { MapLayerService } from './layer.service';
 import { state, style, trigger } from '@angular/animations';
 
 @Component({
@@ -21,7 +21,7 @@ export class LayerHeaderComponent {
 
   expanded = false;
   
-  constructor(private layerService: LayerService) {}
+  constructor(private layerService: MapLayerService) {}
 
   hasBounds(): boolean {
     const mapLayer = this.layer.layer;

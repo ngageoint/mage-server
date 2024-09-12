@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { NgModel } from '@angular/forms';
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 import * as moment from 'moment'
+import { LocalStorageService } from '../http/local-storage.service';
 
 @Component({
   selector: 'datetime-picker',
@@ -13,6 +13,8 @@ export class DatetimePickerComponent implements OnChanges {
   @Input() title: string
   @Input() required: boolean
   @Input() datetime: Date
+  @Input() timezone: 'local' | 'gmt'
+
   @Output() dateTimeChange = new EventEmitter<Date>()
 
   @ViewChild('dateModel') dateModel: NgModel
@@ -20,11 +22,6 @@ export class DatetimePickerComponent implements OnChanges {
 
   date: moment.Moment
   time: moment.Moment
-  timeZone: string
-
-  constructor(@Inject(LocalStorageService) localStorageService: any) {
-    this.timeZone = localStorageService.getTimeZoneEdit();
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.datetime && changes.datetime.currentValue) {
@@ -58,7 +55,7 @@ export class DatetimePickerComponent implements OnChanges {
       second: this.time ? this.time.get('second') : 0,
     })
 
-    if (this.timeZone === 'gmt') {
+    if (this.timezone === 'gmt') {
       date.utc(true)
     }
 

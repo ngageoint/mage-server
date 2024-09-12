@@ -1,6 +1,7 @@
+import { LocalStorageService } from '../http/local-storage.service';
 import { MomentPipe } from './moment.pipe';
 
-class MockLocalStorageService {
+class MockLocalStorageService extends LocalStorageService {
   getTimeFormat(): string {
     return 'relative';
   }

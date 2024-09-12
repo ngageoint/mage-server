@@ -1,0 +1,37 @@
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 500px;
+}
+
+.title {
+  font: 400 20px / 32px Roboto, "Helvetica Neue", sans-serif;
+}
+
+.icon {
+  font-size: 96px;
+  font-variation-settings: 'fill' 0, 'wght' 200, 'grad' 0, 'opsz' 96;
+  margin-bottom: 32px;
+}
+
+.icon--active {
+  color: #4CAF50;
+}
+
+.icon-inactive {
+  color: red;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin-top: 32px;
+}
+
+.actions__button {
+  flex: 1
+}

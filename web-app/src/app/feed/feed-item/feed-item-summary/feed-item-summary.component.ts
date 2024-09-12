@@ -1,9 +1,9 @@
-import { Component, Input, Inject, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
-import { MapService } from '../../../upgrade/ajs-upgraded-providers';
 import { Feature } from 'geojson';
 import { FeedPanelService } from '../../../feed-panel/feed-panel.service';
 import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
+import { MapService } from '../../../map/map.service';
 
 @Component({
   selector: 'feed-item-summary',
@@ -20,7 +20,7 @@ export class FeedItemSummaryComponent implements OnChanges {
   secondary: string;
   iconUrl?: string;
 
-  constructor(private feedPanelService: FeedPanelService, @Inject(MapService) private mapService: any) { }
+  constructor(private feedPanelService: FeedPanelService, private mapService: MapService) { }
 
   ngOnChanges(_changes: SimpleChanges): void {
     if (!this.feed || !this.item.properties) return;

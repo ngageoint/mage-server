@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { EventService } from 'src/app/upgrade/ajs-upgraded-providers'
+import { EventService } from '../../event/event.service';
 
 export interface Observation {
   id: string;
@@ -17,7 +17,7 @@ export class ObservationDeleteComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ObservationDeleteComponent>,
-    @Inject(EventService) private eventService: any,
+    private eventService: EventService,
     @Inject(MAT_DIALOG_DATA) public observation: Observation) { 
       this.event = eventService.getEventById(observation.eventId);
   }
@@ -27,7 +27,7 @@ export class ObservationDeleteComponent {
   }
 
   delete(): void {
-    this.eventService.archiveObservation(this.observation).then(() => {
+    this.eventService.archiveObservation(this.observation).subscribe(() => {
       this.dialogRef.close('delete');
     })
   }

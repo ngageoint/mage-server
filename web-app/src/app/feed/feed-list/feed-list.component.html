@@ -1,9 +1,9 @@
-<div class="feed-list">
+<div class="feed">
   <mat-toolbar>
-    <span class="feed-toolbar__title">{{feed?.title}}</span>
+    <span class="feed__title">{{feed?.title}}</span>
   </mat-toolbar>
 
-  <mat-nav-list>
+  <mat-nav-list class="items">
     <ng-container *ngFor="let item of items">
       <feed-item-summary [item]="item" [feed]="feed"></feed-item-summary>
       <mat-divider></mat-divider>

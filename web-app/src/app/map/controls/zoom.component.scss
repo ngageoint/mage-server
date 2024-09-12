@@ -1,6 +1,7 @@
 .zoom {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
+  gap: 8px;
 }
 
 button:not(:last-child) {
