@@ -31,6 +31,6 @@
     "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
     "@ngageoint/mage.random": "../plugins/random",
     "@ngageoint/mage.service": "../service",
-    "@ngageoint/mage.web-app": "../web-app/dist/app"
+    "@ngageoint/mage.web-app": "../web-app/dist"
   }
 }
