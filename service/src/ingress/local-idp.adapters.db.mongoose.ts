@@ -1,12 +1,14 @@
 "use strict";
 
-const mongoose = require('mongoose')
-  , async = require('async')
-  , hasher = require('../utilities/pbkdf2')()
-  , User = require('./user')
-  , Token = require('./token')
-  , AuthenticationConfiguration = require('./authenticationconfiguration')
-  , PasswordValidator = require('../utilities/passwordValidator');
+import mongoose from 'mongoose'
+import { LocalIdpAccount, LocalIdpRepository } from './local-idp.entities'
+
+const async = require('async')
+const hasher = require('../utilities/pbkdf2')()
+const User = require('./user')
+const Token = require('./token')
+// TODO: users-next
+const PasswordValidator = require('../utilities/passwordValidator');
 
 const Schema = mongoose.Schema;
 
@@ -210,3 +212,32 @@ exports.updateAuthentication = function (authentication) {
 exports.removeAuthenticationById = function (authenticationId, done) {
   Authentication.findByIdAndRemove(authenticationId, done);
 };
+
+export class LocalIdpMongooseRepository implements LocalIdpRepository {
+
+  constructor(private UserModel: UserModel, private AuthenticationModel: AuthenticationModel) {
+
+  }
+
+  createLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount> {
+    throw new Error('Method not implemented.')
+  }
+
+  async readLocalAccount(id: LocalIdpAccountId): Promise<LocalIdpAccount | null> {
+    const dbId = new mongoose.Types.ObjectId(id)
+    const userModelInstance = await this.UserModel.findOne({ username })
+      .populate({ path: 'authenticationId', populate: 'authenticationConfigurationId' })
+    if (!userModelInstance) {
+      return null
+    }
+    return userModelInstance.authenticationId
+  }
+
+  updateLocalAccount(update: Partial<LocalIdpAccount> & Pick<LocalIdpAccount, 'username'>): Promise<LocalIdpAccount | null> {
+    throw new Error('Method not implemented.')
+  }
+
+  deleteLocalAccount(id: string): Promise<LocalIdpAccount | null> {
+    throw new Error('Method not implemented.')
+  }
+}
