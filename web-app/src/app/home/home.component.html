@@ -1,4 +1,4 @@
-<div *ngIf="user" class="home">
+<div *ngIf="myself" class="home">
   <banner [banner]="banners?.header">Hello</banner>
 
   <navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>

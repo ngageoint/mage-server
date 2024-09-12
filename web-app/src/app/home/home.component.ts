@@ -7,6 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 import { User } from 'core-lib-src/user';
 import { Banners, SettingsService } from '../setttings/settings.service';
 import * as _ from 'underscore';
+import { UserService } from '../user/user.service';
+import { MageEvent } from '@ngageoint/mage.web-core-lib/event';
 
 @Component({
   selector: 'home',
@@ -16,9 +18,9 @@ import * as _ from 'underscore';
 export class HomeComponent implements OnInit, OnDestroy {
 
   banners: Banners
-  user: User
   map: any
-  event: any
+  myself: User
+  event: MageEvent
   hideFeed: boolean = false
   newObservation: any
 
@@ -26,18 +28,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private mapService: MapService,
+    private userService: UserService,
     private filterService: FilterService,
     private locationService: LocationService,
     private settingsService: SettingsService,
     private activatedRoute: ActivatedRoute
-  ) { }
+  ) {
+    this.userService.myself$.subscribe((myself: User) => {
+      this.myself = myself
+    })
+  }
 
   ngOnInit(): void {
     this.filterService.addListener(this)
     this.mapService.addListener(this)
 
     this.activatedRoute.data.subscribe(({ user }) => {
-      this.user = user
+      this.myself = user
     })
 
     this.settingsService.getBanner().subscribe((banners: Banners) => {

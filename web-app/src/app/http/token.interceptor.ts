@@ -4,6 +4,7 @@ import { catchError, Observable, Subject, switchMap, throwError } from 'rxjs';
 import { LocalStorageService } from './local-storage.service';
 import { AuthenticationDialogComponent } from '../ingress/authentication/authentication-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { UserService } from '../user/user.service';
 
 export const BYPASS_TOKEN = new HttpContextToken(() => false);
 
@@ -16,6 +17,7 @@ export class TokenInterceptorService implements HttpInterceptor {
 
   constructor(
     public dialog: MatDialog,
+    private userService: UserService,
     private localStorageService: LocalStorageService
   ) { }
 
@@ -30,6 +32,7 @@ export class TokenInterceptorService implements HttpInterceptor {
         catchError((error) => {
           if (error instanceof HttpErrorResponse) {
             if (error.status === HttpStatusCode.Unauthorized) {
+              this.userService.setUser(null)
               if (!this.isRefreshingToken) {
                 this.isRefreshingToken = true
                 this.dialog.open(AuthenticationDialogComponent, {

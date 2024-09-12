@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpEvent } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Observable, Subject, tap } from 'rxjs'
+import { BehaviorSubject, Observable, Subject, tap } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
 import { BYPASS_TOKEN } from '../http/token.interceptor'
 import { User } from 'core-lib-src/user'
@@ -9,9 +9,11 @@ import { User } from 'core-lib-src/user'
   providedIn: 'root'
 })
 export class UserService {
-
-  myself: any
   amAdmin: boolean
+
+  private _myself = new BehaviorSubject<any>(null)
+  myself: any
+  myself$ = this._myself.asObservable()
 
   constructor(
     private httpClient: HttpClient,
@@ -102,7 +104,8 @@ export class UserService {
   }
 
   setUser(user: any) {
-    this.myself = user;
+    this._myself.next(user)
+    this.myself = user
     // TODO don't just check for role name
     this.amAdmin = this.myself && this.myself.role && (this.myself.role.name === "ADMIN_ROLE" || this.myself.role.name === 'EVENT_MANAGER_ROLE');
   }
