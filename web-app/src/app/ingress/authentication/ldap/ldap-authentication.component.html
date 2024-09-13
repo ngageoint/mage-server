@@ -1,15 +1,17 @@
-<div class="container">
+<form [formGroup]="authenticationForm" (ngSubmit)="onSignin()">
   <div>
     <mat-form-field appearance="fill">
       <mat-label>{{strategy.title}} Username</mat-label>
-      <input matInput placeholder="{{strategy.title}} Username" [formControl]="username" required>
+      <input matInput placeholder="{{strategy.title}} Username" formControlName="username" required>
+      <mat-error>Username is required</mat-error>
     </mat-form-field>
   </div>
 
   <div>
     <mat-form-field appearance="fill">
       <mat-label>{{strategy.title}} Password</mat-label>
-      <input matInput placeholder="{{strategy.title}} Password" type="password" [formControl]="password" required>
+      <input matInput placeholder="{{strategy.title}} Password" type="password" formControlName="password" required>
+      <mat-error>Password is required</mat-error>
     </mat-form-field>
   </div>
 
@@ -23,11 +25,10 @@
 
   <div *ngIf="error" class="error-container" [@slide]>
     <div class="error">
-      <mat-icon class="error__icon">error</mat-icon>
+      <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
       <div class="error__message">
-        <p>{{error?.message}}</p>
-        <p *ngIf="contact" [innerHTML]="contact"></p>
+        <div>{{error?.message}} <span *ngIf="contact" class="contact" [innerHTML]="contact"></span></div>
       </div>
     </div>
   </div>
-</div>
+</form>

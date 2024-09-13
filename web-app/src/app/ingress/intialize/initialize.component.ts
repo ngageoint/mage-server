@@ -34,7 +34,7 @@ export class InitializeComponent implements OnInit {
 
   passwordStrength?: PasswordStrength
 
-  account = new FormGroup({
+  accountForm = new FormGroup({
     username: new FormControl<string>('', [Validators.required]),
     password: new FormControl<string>('', [Validators.required]),
     passwordconfirm: new FormControl<string>('', [Validators.required]),
@@ -49,7 +49,11 @@ export class InitializeComponent implements OnInit {
   constructor(
     private userService: UserService,
     private initializeService: InitializeService
-  ) {}
+  ) {
+    this.accountForm.controls.password.valueChanges.subscribe((password: string) => {
+      this.onPasswordChanged(password)
+    })
+  }
 
   ngOnInit(): void {
     zxcvbnOptions.setOptions({
@@ -64,7 +68,7 @@ export class InitializeComponent implements OnInit {
 
   onPasswordChanged(password: string) {
     if (password && password.length > 0) {
-      const score = password && password.length ? zxcvbn(password, [this.account.controls.username.value]).score : 0;
+      const score = password && password.length ? zxcvbn(password, [this.accountForm.value.username]).score : 0;
       this.passwordStrength = passwordStrengthScores[score]
     } else {
       this.passwordStrength = passwordStrengthScores[0]
@@ -73,20 +77,25 @@ export class InitializeComponent implements OnInit {
 
   onInitialize(): void {
     // TODO ensure for valid
-    if (this.account.controls.password.value !== this.account.controls.passwordconfirm.value) {
-      this.account.controls.password.setErrors({
+    const { username, password, passwordconfirm, accessCode } = this.accountForm.value
+
+    if (password !== passwordconfirm) {
+      this.accountForm.controls.password.setErrors({
         match: true
       });
     } else {
-      if (this.account.controls.password.value.length < 1) {
-        this.account.controls.password.setErrors({ required: true });
+      if (password.length < 1) {
+        this.accountForm.controls.password.setErrors({ required: true });
       } else {
-        this.account.controls.password.setErrors(null);
+        this.accountForm.controls.password.setErrors(null);
       }
     }
-    this.account.markAllAsTouched()
+    this.accountForm.markAllAsTouched()
 
-    const { username, password, accessCode } = this.account.value
+    if (this.accountForm.invalid) {
+      return
+    }
+
     this.initializeService.initialize(username, password, accessCode).subscribe({
       next: () => {
         this.userService.signin(username, password).subscribe({

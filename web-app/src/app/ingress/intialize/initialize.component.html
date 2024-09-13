@@ -4,29 +4,29 @@
     <div class="welcome__message">Create an account to access and administor Mage</div>
   </div>
 
-  <div class="account" [formGroup]="account">
+  <form class="form" [formGroup]="accountForm" (ngSubmit)="onInitialize()">
     <div>
       <mat-form-field appearance="fill">
         <mat-label>Username</mat-label>
-        <input matInput placeholder="Username" [formControl]="account.controls.username" required>
-        <mat-error *ngIf="account.controls.username.hasError('required')">Username is required</mat-error>
+        <input matInput placeholder="Username" formControlName="username" required>
+        <mat-error>Username is required</mat-error>
       </mat-form-field>
     </div>
 
     <div>
       <mat-form-field appearance="fill">
         <mat-label>Password</mat-label>
-        <input matInput placeholder="Password" type="password" [formControl]="account.controls.password" required (input)="onPasswordChanged(account.controls.password.value)">
-        <mat-error *ngIf="account.controls.password.hasError('required')">Password is required</mat-error>
-        <mat-error *ngIf="account.controls.password.hasError('match')">Passwords must match</mat-error>
+        <input matInput placeholder="Password" type="password" formControlName="password" required>
+        <mat-error *ngIf="accountForm.controls.password.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="accountForm.controls.password.hasError('match')">Passwords must match</mat-error>
       </mat-form-field>
     </div>
 
     <div>
       <mat-form-field appearance="fill">
         <mat-label>Confirm Password</mat-label>
-        <input matInput placeholder="Confirm Password" type="password" [formControl]="account.controls.passwordconfirm" required>
-        <mat-error *ngIf="account.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
+        <input matInput placeholder="Confirm Password" type="password" formControlName="passwordconfirm" required>
+        <mat-error *ngIf="accountForm.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
       </mat-form-field>
     </div>
 
@@ -41,24 +41,25 @@
     <div>
       <mat-form-field appearance="fill">
         <mat-label>Access Code</mat-label>
-        <input matInput placeholder="Access Code" type="text" [formControl]="account.controls.accessCode" required>
+        <input matInput placeholder="Access Code" type="text" formControlName="accessCode" required>
         <mat-hint>This code will allow users to access Mage via the web client</mat-hint>
-        <mat-error *ngIf="account.controls.accessCode.hasError('required')">Access code is required</mat-error>
+        <mat-error>Access code is required</mat-error>
       </mat-form-field>
     </div>
 
     <div class="actions">
-      <button mat-flat-button color="primary" class="actions__button" (click)="onInitialize()">Create Account</button>
+      <button mat-flat-button color="primary" class="actions__button">Create Account</button>
     </div>
 
     <div *ngIf="error" class="error-container" [@slide]>
       <div class="error">
-        <mat-icon class="error__icon">error</mat-icon>
+        <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
         <div class="error__message">
-          <p>{{error?.message}}</p>
+          <div>{{error?.title}}</div>
+          <div>{{error?.message}}</div>
         </div>
       </div>
     </div>
 
-  </div>
+  </form>
 </div>

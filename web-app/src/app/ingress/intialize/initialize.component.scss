@@ -1,3 +1,4 @@
+@use '@angular/material' as mat;
 @import "variables.scss";
 
 :host {
@@ -5,9 +6,15 @@
   height: 100%;
 }
 
+:host ::ng-deep a {
+  color: mat.get-color-from-palette($app-warn);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 mat-form-field {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .container {
@@ -18,7 +25,7 @@ mat-form-field {
   padding-top: 32px;
 }
 
-.account {
+.form {
   padding-bottom: 16px;
 }
 
@@ -67,22 +74,24 @@ mat-form-field {
 
 .error {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-top: 16px;
-  color: rgb(96 17 10);
-  background-color: rgb(249 220 215);
+  gap: 8px;
+  margin-top: 24px;
+  color: mat.get-color-from-palette($app-warn);
   border-radius: 4px;
   padding: 0 16px;
 }
 
 .error__icon {
-  font-size: 32px;
-  width: 32px;
-  height: 32px;
+  font-size: 48px;
+  font-variation-settings: 'fill' 0, 'wght' 400, 'grad' 0, 'opsz' 48;
 }
 
 .error__message {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  text-align: center;
+  gap: 4px;
 }

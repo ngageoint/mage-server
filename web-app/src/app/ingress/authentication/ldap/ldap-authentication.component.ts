@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { FormControl, Validators } from '@angular/forms'
+import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { Api, AuthenticationStrategy } from '../../../api/api.entity'
 import { UserService } from '../../../user/user.service'
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
@@ -15,8 +15,10 @@ export class LdapAuthenticationComponent {
 
   @Output() authenticated = new EventEmitter<any>();
   
-  username = new FormControl('', [Validators.required])
-  password = new FormControl('', [Validators.required])
+  authenticationForm = new FormGroup({
+    username: new FormControl('', [Validators.required]),
+    password: new FormControl('', [Validators.required])
+  })
   
   contact: string
 
@@ -30,10 +32,12 @@ export class LdapAuthenticationComponent {
   ) {}
 
   onSignin(): void {
-    this.userService.ldapSignin(
-      this.username.value,
-      this.password.value
-    ).subscribe({
+    if (this.authenticationForm.invalid) {
+      return
+    }
+
+    const { username, password } = this.authenticationForm.value
+    this.userService.ldapSignin(username, password).subscribe({
       next: (response: any) => {
         this.authenticated.emit(response)
       },
@@ -43,7 +47,7 @@ export class LdapAuthenticationComponent {
           message: response.error || 'Please check your username and password and try again.'
         }
 
-        const email = LinkGenerator.emailLink(this.api.contactInfo, response.error, this.username.value, this.strategy)
+        const email = LinkGenerator.emailLink(this.api.contactInfo, response.error, username, this.strategy)
         const phone = LinkGenerator.phoneLink(this.api.contactInfo)
         this.contact = `Should you need futher assistance you may contact your Mage administrator via ${[`<a href=${email}>email</a>`, `<a href=${phone}>phone</a>`].join(' or ')}.`
       }
