@@ -3081,7 +3081,6 @@ components:
         iconMetadata:
           type: object
           properties:
-            type: { $ref: '#/components/schemas/UserIcon/properties/type' }
             color: { $ref: '#/components/schemas/UserIcon/properties/color' }
             text: { $ref: '#/components/schemas/UserIcon/properties/text' }
         icon:
@@ -3115,13 +3114,6 @@ components:
         location.
       type: object
       properties:
-        type:
-          description: The origin of the icon
-          type: string
-          enum:
-            - create
-            - upload
-            - none
         color:
           description: Color is only applicable for `create` type icons.
           $ref: '#/components/schemas/ColorHex'
