@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { map, Observable } from "rxjs";
+import { filter, map, Observable } from "rxjs";
 
 interface Setting {
   type: string
@@ -26,8 +26,9 @@ export class SettingsService {
 
   getBanner(): Observable<Banners> {
     return this.httpClient.get<Setting>('/api/settings/banner')
+      .pipe(filter<Setting>(Boolean))
       .pipe(map((setting: Setting) => {
-        let banner = setting.settings as any
+        const banner = setting.settings as any
         return {
           header: banner.showHeader ? {
             text: banner.headerText,
