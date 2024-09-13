@@ -4,6 +4,7 @@ const log = require('winston')
   , AsyncLock = require('async-lock')
   , access = require('../access')
   , Authentication = require('../models/authentication')
+  // TODO: users-next
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
   , SecretStoreService = require('../security/secret-store-service')

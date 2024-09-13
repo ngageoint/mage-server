@@ -1,11 +1,12 @@
 'use strict';
 
 const SecretStoreService = require('../secret-store-service')
+// TODO: users-next
     , AuthenticationConfiguration = require('../../models/authenticationconfiguration')
 
 /**
  * Helper function to append secure properties to a configuration under the settings property.
- * 
+ *
  * @param {*} config Must contain the _id property
  * @returns A copy of the config with secure properties appended (if any exist)
  */

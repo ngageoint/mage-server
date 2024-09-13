@@ -4,6 +4,7 @@ module.exports = function (app, security) {
     , User = require('../models/user')
     , Device = require('../models/device')
     , userTransformer = require('../transformers/user')
+    // TODO: users-next
     , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
   function authorizeSetup(req, res, next) {
