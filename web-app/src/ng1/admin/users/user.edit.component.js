@@ -56,9 +56,8 @@ class AdminUserEditController {
     if (this.$stateParams.userId) {
       this.UserService.getUser(this.$stateParams.userId).then(user => {
         this.user = angular.copy(user);
-
         this.iconMetadata = {
-          type: this.user.icon.type,
+          type: this.user.icon.type || 'upload',
           text: this.user.icon.text,
           color: this.user.icon.color
         };

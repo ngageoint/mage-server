@@ -4,6 +4,7 @@ const UserModel = require('../models/user')
   , LoginModel = require('../models/login')
   , DeviceModel = require('../models/device')
   , TeamModel = require('../models/team')
+  // TODO: users-next
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , path = require('path')
   , fs = require('fs-extra')
@@ -145,18 +146,15 @@ User.prototype.create = async function (user, options = {}) {
     } catch { }
   }
 
-  if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
+  if (options.icon) {
     try {
       const icon = iconPath(newUser._id, newUser, options.icon);
       await fs.move(options.icon.path, icon.absolutePath);
-
-      newUser.icon.type = options.icon.type;
       newUser.icon.relativePath = icon.relativePath;
       newUser.icon.contentType = options.icon.mimetype;
       newUser.icon.size = options.icon.size;
       newUser.icon.text = options.icon.text;
       newUser.icon.color = options.icon.color;
-
       await newUser.save();
     } catch { }
   }

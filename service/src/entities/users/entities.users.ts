@@ -44,26 +44,15 @@ export interface Phone {
 }
 
 /**
- * TODO: There is not much value to retaining the `type`, `text`, and `color` attributes.  Only the web app's user
- * admin screen uses these to set default form values, but the web app always generates a raster png from those values
- * anyway.
+ * A user's icon is the image that appears on the map to indicate the user's location.  If the icon has text and color,
+ * a client can choose to render that rather than the raster image the server stores.
  */
 export interface UserIcon {
-  /**
-   * Type defaults to {@link UserIconType.None} via database layer.
-   */
-  type: UserIconType
   text?: string
   color?: string
   contentType?: string
   size?: number
   relativePath?: string
-}
-
-export enum UserIconType {
-  None = 'none',
-  Upload = 'upload',
-  Create = 'create',
 }
 
 export interface Avatar {
@@ -83,7 +72,7 @@ export interface UserRepository {
   findAllByIds(ids: UserId[]): Promise<{ [id: string]: User | null }>
   find<MappedResult>(which?: UserFindParameters, mapping?: (user: User) => MappedResult): Promise<PageOf<MappedResult>>
   saveMapIcon(userId: UserId, icon: UserIcon, content: NodeJS.ReadableStream | Buffer): Promise<User | UserRepositoryError>
-  saveAvatar(avatar: Avatar, content: NodeJS.ReadableStream | Buffer): Promise<User | UserRepositoryError>
+  saveAvatar(userId: UserId, avatar: Avatar, content: NodeJS.ReadableStream | Buffer): Promise<User | UserRepositoryError>
   deleteMapIcon(userId: UserId): Promise<User | UserRepositoryError>
   deleteAvatar(userId: UserId): Promise<User | UserRepositoryError>
 }

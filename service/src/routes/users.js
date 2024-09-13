@@ -45,30 +45,15 @@ module.exports = function (app, security) {
 
   function parseIconUpload(req, res, next) {
     let iconMetadata = req.param('iconMetadata') || {};
-    if (typeof iconMetadata === 'string' || iconMetadata instanceof String) {
+    if (typeof iconMetadata === 'string') {
       iconMetadata = JSON.parse(iconMetadata);
     }
-
     const files = req.files || {};
-    let [icon] = files.icon || [];
+    let [ icon ] = files.icon || [];
     if (icon) {
-      // default type to upload
-      if (!iconMetadata.type) iconMetadata.type = 'upload';
-
-      if (iconMetadata.type !== 'create' && iconMetadata.type !== 'upload') {
-        return res.status(400).send('invalid icon metadata');
-      }
-
-      icon.type = iconMetadata.type;
       icon.text = iconMetadata.text;
       icon.color = iconMetadata.color;
-    } else if (iconMetadata.type === 'none') {
-      icon = {
-        type: 'none'
-      };
-      files.icon = [icon];
     }
-
     next();
   }
 
