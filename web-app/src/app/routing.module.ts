@@ -14,6 +14,9 @@ const appRoutes: Routes =[{
     path: 'profile',
     loadChildren: () => import('./user/profile/profile.module').then(m => m.ProfileModule)
   },{
+    path: 'swagger',
+    loadChildren: () => import('./swagger/swagger.module').then(m => m.SwaggerModule)
+  },{
     path: '',
     redirectTo: 'landing',
     pathMatch: 'full'
