@@ -102,7 +102,7 @@ export class IngressComponent implements OnChanges {
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.api.currentValue.initial === true) {
+    if (changes.api?.currentValue?.initial === true) {
       this.ingress = new Initialize()
     }
   }
