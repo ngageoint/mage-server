@@ -1,12 +1,10 @@
-<div class="outer-container">
-  <div class="authentication-container">
-    <div class="mage-info-container">
-      <info></info>
-    </div>
-    <div class="authentication-info-container">
-      <div class="authentication">
-        <ingress landing="true" [api]="api" (complete)="onIngress()"></ingress>
-      </div>
+<div class="landing">
+  <div class="section info">
+    <info></info>
+  </div>
+  <div class="section ingress-container">
+    <div class="ingress">
+      <ingress landing="true" [api]="api" (complete)="onIngress()"></ingress>
     </div>
   </div>
 </div>

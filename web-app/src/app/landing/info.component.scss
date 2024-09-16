@@ -1,4 +1,3 @@
-$small-screen-breakpoint: 1025px;
 $background-images: '1', '2', '3', '4';
 
 :host {
@@ -37,7 +36,6 @@ $background-images: '1', '2', '3', '4';
 }
 
 .title-container {
-  margin: 16px 0;
   text-align: center;
 }
 
@@ -51,7 +49,6 @@ $background-images: '1', '2', '3', '4';
 }
 
 .features {
-  margin-top: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -62,7 +59,7 @@ $background-images: '1', '2', '3', '4';
   flex-direction: row;
   padding-bottom: 30px;
   padding-top: 30px;
-  width: 600px;
+  width: 550px;
 }
 
 .feature-icon {

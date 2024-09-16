@@ -19,11 +19,11 @@
     <button class="auth-button" mat-flat-button color="primary">Sign In</button>
   </div>
 
-  <div *ngIf="error" class="error-container" [@slide]>
+  <div #errorElement *ngIf="error" class="error-container" [@slide] (@slide.done)="scrollToError()">
     <div class="error" >
       <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
       <div class="error__message">
-        <div>{{error?.message}} <span *ngIf="contact" class="contact" [innerHTML]="contact"></span></div>
+        <div [innerHTML]="error.message"></div>
       </div>
     </div>
   </div>

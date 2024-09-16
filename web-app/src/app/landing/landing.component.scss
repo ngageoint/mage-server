@@ -1,56 +1,42 @@
-@import "variables.scss";
-
-.outer-container {
-  display: inline;
-  min-height: 100%;
-  overflow-y: auto;
-}
-
-.authentication-container {
+.landing {
   display: flex;
   flex-direction: row;
-  min-height: 100vh;
 }
 
-.authentication-info-container {
-  height: 100%;
-  background-color: #fff;
+.section {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  flex: 1;
 }
 
-.authentication {
-  width: 75%;
+.info {
   height: 100vh;
-  margin: auto;
-  min-width: 285px;
-  max-width: 600px;
-  position: relative;
-  overflow-x: hidden;
-}
-
-.mage-info-container {
-  min-height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
+  overflow: hidden;
   color: #fff;
   background-color: rgba(16, 69, 130, .5);
 }
 
-@media (max-width: 1025px) {
-  .authentication-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+.ingress-container {
+  overflow-y: scroll;
+  background-color: #fff;
+}
+
+.ingress {
+  width: 75%;
+  height: 100vh;
+  min-width: 285px;
+  max-width: 600px;
+  position: relative;
+}
+
+@media (max-width: 1100px) or (max-height: 460px) {
+  .ingress-container {
+    width: 100%;
   }
 
-  .authentication-info-container {
-    width: 100%;
+  .info {
+    display: none;
   }
 }

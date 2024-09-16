@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SecurityContext, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../api/api.service';
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
@@ -31,6 +31,8 @@ export class LocalAuthenticationComponent implements OnInit {
   @Output() signup = new EventEmitter<void>()
   @Output() authenticated = new EventEmitter<any>()
 
+  @ViewChild('errorElement') private errorElement: ElementRef;
+
   authenticationForm = new FormGroup({
     username: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required])
@@ -38,21 +40,14 @@ export class LocalAuthenticationComponent implements OnInit {
 
   error: {
     title: string,
-    message: string
+    message: SafeHtml
   }
-
-  contact: SafeHtml
-
-  test: SafeHtml
 
   constructor(
     private apiService: ApiService,
     private userService: UserService,
     private sanitizer: DomSanitizer
-  ) {
-    this.test = this.sanitizer.bypassSecurityTrustHtml('<a href="www.google.com">I am a link</a>')
-    // this.test = this.sanitizer.bypassSecurityTrustHtml('<h1 style="color:red">Hello World</h1>')
-  }
+  ) { }
 
   ngOnInit(): void {
     this.apiService.getApi().subscribe((api: any) => {
@@ -71,19 +66,30 @@ export class LocalAuthenticationComponent implements OnInit {
         this.authenticated.emit(response)
       },
       error: (response: any) => {
-        this.error = {
-          title: 'Error Signing In',
-          message: response.error || 'Please check your username and password and try again.'
+        let message = response.error || 'Please check your username and password and try again.'
+        if (this.api.contactInfo.email || this.api.contactInfo.phone) {
+          const email = LinkGenerator.emailLink(this.api.contactInfo, response.error, username, this.strategy)
+          const phone = LinkGenerator.phoneLink(this.api.contactInfo)
+          message = `${message} Should you need futher assistance you may contact your Mage administrator via ${[`<a href=${email}>email</a>`, `<a href=${phone}>phone</a>`].join(' or ')}.`
         }
 
-        const email = LinkGenerator.emailLink(this.api.contactInfo, response.error, username, this.strategy)
-        const phone = LinkGenerator.phoneLink(this.api.contactInfo)
-        this.contact = `Should you need futher assistance you may contact your Mage administrator via ${[`<a href=${email}>email</a>`, `<a href=${phone}>phone</a>`].join(' or ')}.`
+        this.error = {
+          title: 'Error Signing In',
+          message: this.sanitizer.sanitize(SecurityContext.HTML, message)
+        }
+
+        this.scrollToError()
       }
     })
   }
 
   onSignup(): void {
     this.signup.emit()
+  }
+
+  scrollToError(): void {
+    try {
+      this.errorElement.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) { }     
   }
 }

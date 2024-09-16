@@ -41,7 +41,7 @@ mat-form-field {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-top: 24px;
+  margin: 24px 0;
   color: mat.get-color-from-palette($app-warn);
   border-radius: 4px;
   padding: 0 16px;
