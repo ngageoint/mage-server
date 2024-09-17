@@ -1,190 +1,166 @@
-const util = require('util')
-  , log = require('winston')
-  , hasher = require('./pbkdf2')();
+import { defaultHashUtil } from './password-hashing'
 
-const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
-const validPassword = util.promisify(hasher.validPassword);
+const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-'
 
-async function validate(passwordPolicy, { password, previousPasswords: previousHashedPasswords }) {
+export type PasswordRequirements = {
+  passwordMinLengthEnabled: boolean
+  passwordMinLength: number
+  /** Minimum number of alpha characters, A-Z, case-insensitive */
+  minCharsEnabled: boolean
+  minChars: number
+  maxConCharsEnabled: boolean
+  maxConChars: number
+  lowLettersEnabled: boolean
+  lowLetters: number
+  highLettersEnabled: boolean
+  highLetters: number
+  numbersEnabled: boolean
+  numbers: number
+  specialCharsEnabled: boolean
+  specialChars: number
+  restrictSpecialCharsEnabled: boolean
+  restrictSpecialChars: string
+  passwordHistoryCountEnabled: boolean
+  passwordHistoryCount: number
+  helpText: string
+}
+
+export type PasswordValidationResult = {
+  valid: boolean
+  errorMsg: string | null
+}
+
+export async function validate(policy: PasswordRequirements, { password, previousPasswords }: { password: string, previousPasswords: string[] }): Promise<PasswordValidationResult> {
   if (!password) {
     return {
       valid: false,
       errorMsg: 'Password is missing'
-    };
-  }
-
-  const invalid = 
-    !validatePasswordLength(passwordPolicy, password) ||
-    !validateMinimumCharacters(passwordPolicy, password) ||
-    !validateMaximumConsecutiveCharacters(passwordPolicy, password) ||
-    !validateMinimumLowercaseCharacters(passwordPolicy, password) ||
-    !validateMinimumUppercaseCharacters(passwordPolicy, password) ||
-    !validateMinimumNumbers(passwordPolicy, password) ||
-    !validateMinimumSpecialCharacters(passwordPolicy, password) ||
-    !(await validatePasswordHistory(passwordPolicy, password, previousHashedPasswords));
-
-  return {
-    valid: !invalid,
-    errorMsg: invalid ? passwordPolicy.helpText : null
-  };
-}
-
-function validatePasswordLength(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.passwordMinLengthEnabled) {
-    isValid = password.length >= passwordPolicy.passwordMinLength;
-  }
-
-  log.debug('Password meets min length: ' + isValid);
-
-  return isValid;
-}
-
-function validateMinimumCharacters(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.minCharsEnabled) {
-    let passwordCount = 0;
-    for (let i = 0; i < password.length; i++) {
-      const a = password[i];
-
-      if (a.match(/[a-z]/i)) {
-        passwordCount++;
-      }
     }
-
-    isValid = passwordCount >= passwordPolicy.minChars;
-    log.debug('Password meets miniminum letters: ' + isValid);
   }
-  return isValid;
+  const valid =
+    validatePasswordLength(policy, password) &&
+    validateMinimumCharacters(policy, password) &&
+    validateMaximumConsecutiveCharacters(policy, password) &&
+    validateMinimumLowercaseCharacters(policy, password) &&
+    validateMinimumUppercaseCharacters(policy, password) &&
+    validateMinimumNumbers(policy, password) &&
+    validateMinimumSpecialCharacters(policy, password) &&
+    (await validatePasswordHistory(policy, password, previousPasswords))
+  return { valid, errorMsg: valid ? null : policy.helpText }
 }
 
-function validateMaximumConsecutiveCharacters(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.maxConCharsEnabled) {
-    let conCount = 0;
-    for (let i = 0; i < password.length; i++) {
-      const a = password[i];
-
-      if (a.match(/[a-z]/i)) {
-        conCount++;
-      } else {
-        conCount = 0;
-      }
-
-      if (conCount > passwordPolicy.maxConChars) {
-        isValid = false;
-        break;
-      }
-    }
-    log.debug('Password meets max consecutive letters: ' + isValid);
-  }
-  return isValid;
+function validatePasswordLength(policy: PasswordRequirements, password: string): boolean {
+  return policy.passwordMinLengthEnabled &&
+    password.length >= policy.passwordMinLength
 }
 
-function validateMinimumLowercaseCharacters(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.lowLettersEnabled) {
-    let passwordCount = 0;
-    for (let i = 0; i < password.length; i++) {
-      const a = password[i];
-
-      if (a.match(/[a-z]/)) {
-        passwordCount++;
-      }
-    }
-    isValid = passwordCount >= passwordPolicy.lowLetters;
-    log.debug('Password meets minimum lowercase letters: ' + isValid);
+function validateMinimumCharacters(policy: PasswordRequirements, password: string): boolean {
+  if (!policy.minCharsEnabled) {
+    return true
   }
-  return isValid;
+  let letterCount = 0
+  for (let i = 0; i < password.length; i++) {
+    if (password[i].match(/[a-z]/i)) {
+      letterCount++
+    }
+  }
+  return letterCount >= policy.minChars
 }
 
-function validateMinimumUppercaseCharacters(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.highLettersEnabled) {
-    let passwordCount = 0;
-    for (let i = 0; i < password.length; i++) {
-      const a = password[i];
-
-      if (a.match(/[A-Z]/)) {
-        passwordCount++;
-      }
-    }
-    isValid = passwordCount >= passwordPolicy.highLetters;
-    log.debug('Password meets minimum uppercase letters: ' + isValid);
+function validateMaximumConsecutiveCharacters(policy: PasswordRequirements, password: string): boolean {
+  if (!policy.maxConCharsEnabled) {
+    return true
   }
-  return isValid;
+  const tooManyConsecutiveLetters = new RegExp(`[a-z]{${policy.maxConChars + 1}}`, 'i')
+  return !tooManyConsecutiveLetters.test(password)
 }
 
-function validateMinimumNumbers(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.numbersEnabled) {
-    let passwordCount = 0;
-    for (let i = 0; i < password.length; i++) {
-      let a = password[i];
-
-      if (a.match(/[0-9]/)) {
-        passwordCount++;
-      }
-    }
-    isValid = passwordCount >= passwordPolicy.numbers;
-    log.debug('Password meets minimum numbers: ' + isValid);
+function validateMinimumLowercaseCharacters(policy: PasswordRequirements, password: string): boolean {
+  if (!policy.lowLettersEnabled) {
+    return true
   }
-  return isValid;
+  let letterCount = 0
+  for (let i = 0; i < password.length; i++) {
+    if (/[a-z]/.test(password[i])) {
+      letterCount++
+    }
+  }
+  return letterCount >= policy.lowLetters
 }
 
-function validateMinimumSpecialCharacters(passwordPolicy, password) {
-  let isValid = true;
-  if (passwordPolicy.specialCharsEnabled) {
-    let regex = null;
-    let nonAllowedRegex = null;
-    if (passwordPolicy.restrictSpecialCharsEnabled) {
-      nonAllowedRegex = new RegExp('[' + createRestrictedRegex(passwordPolicy.restrictSpecialChars) + ']');
-      regex = new RegExp('[' + passwordPolicy.restrictSpecialChars + ']');
-    } else {
-      regex = new RegExp('[' + SPECIAL_CHARS + ']');
-    }
-
-    let specialCharCount = 0;
-    for (let i = 0; i < password.length; i++) {
-      const a = password[i];
-
-      if (nonAllowedRegex && a.match(nonAllowedRegex)) {
-        specialCharCount = -1;
-        break;
-      }
-
-      if (a.match(regex)) {
-        specialCharCount++;
-      }
-    }
-    isValid = specialCharCount >= passwordPolicy.specialChars;
-    log.debug('Password meets special characters policy: ' + isValid);
+function validateMinimumUppercaseCharacters(policy: PasswordRequirements, password: string): boolean {
+  if (!policy.highLettersEnabled) {
+    return true
   }
-  return isValid;
+  let letterCount = 0
+  for (let i = 0; i < password.length; i++) {
+    if (/[A-Z]/.test(password[i])) {
+      letterCount++
+    }
+  }
+  return letterCount >= policy.highLetters
 }
 
-function createRestrictedRegex(restrictedChars) {
-  let nonAllowedRegex = '';
+function validateMinimumNumbers(policy: PasswordRequirements, password: string): boolean {
+  if (!policy.numbersEnabled) {
+    return true
+  }
+  let numberCount = 0
+  for (let i = 0; i < password.length; i++) {
+    if (/[0-9]/.test(password[i])) {
+      numberCount++
+    }
+  }
+  return numberCount >= policy.numbers
+}
 
+function validateMinimumSpecialCharacters(policy: PasswordRequirements, password: string): boolean {
+  if (!policy.specialCharsEnabled) {
+    return true
+  }
+  let allowedChars = null
+  let forbiddenChars = null
+  if (policy.restrictSpecialCharsEnabled) {
+    forbiddenChars = new RegExp('[' + createRestrictedRegex(policy.restrictSpecialChars) + ']')
+    allowedChars = new RegExp('[' + policy.restrictSpecialChars + ']')
+  }
+  else {
+    allowedChars = new RegExp('[' + SPECIAL_CHARS + ']')
+  }
+  let specialCharCount = 0
+  for (let i = 0; i < password.length && specialCharCount < policy.specialChars && specialCharCount > -1; i++) {
+    const char = password[i]
+    if (forbiddenChars && forbiddenChars.test(char)) {
+      specialCharCount = -1
+    }
+    else if (allowedChars.test(char)) {
+      specialCharCount++
+    }
+  }
+  return specialCharCount >= policy.specialChars
+}
+
+function createRestrictedRegex(restrictedChars: string): string {
+  let forbiddenRegex = ''
   for (let i = 0; i < SPECIAL_CHARS.length; i++) {
-    const specialChar = SPECIAL_CHARS[i];
-
+    const specialChar = SPECIAL_CHARS[i]
     if (!restrictedChars.includes(specialChar)) {
-      nonAllowedRegex += specialChar;
+      forbiddenRegex += specialChar
     }
   }
-
-  return nonAllowedRegex;
+  return forbiddenRegex
 }
 
-async function validatePasswordHistory(passwordPolicy, password, passwords) {
-  if (!passwordPolicy.passwordHistoryCountEnabled || !passwords) return Promise.resolve(true);
-
-  const policyPasswords = passwords.slice(0, passwordPolicy.passwordHistoryCount);
-  const results = await Promise.all(policyPasswords.map(policyPassword => validPassword(password, policyPassword)));
-  return !results.includes(true);
-}
-
-module.exports = {
-  validate
+async function validatePasswordHistory(policy: PasswordRequirements, password: string, previousPasswords: string[]): Promise<boolean> {
+  if (!policy.passwordHistoryCountEnabled || !previousPasswords) {
+    return true
+  }
+  const truncatedHistory = previousPasswords.slice(0, policy.passwordHistoryCount)
+  for (const previousPasswordHash of truncatedHistory) {
+    const used = await defaultHashUtil.validPassword(password, previousPasswordHash)
+    if (used) {
+      return false
+    }
+  }
+  return true
 }
