@@ -1,88 +1,98 @@
-module.exports = function(options) {
+import crypto from 'crypto'
+import util from 'util'
 
-  const crypto = require('crypto');
+const digest = 'sha512'
+const pbkdf2_promise = util.promisify(crypto.pbkdf2)
 
-  options = options || {};
-  const iterations = options.iterations || 12000;
-  const saltLength = options.saltLength || 128;
-  const derivedKeyLength = options.derivedKeyLength || 256;
+export type HashedPassword = {
+  salt: string
+  derivedKey: string
+  derivedKeyLength: number
+  iterations: number
+}
+
+export function formatHashedPassword(hashed: HashedPassword): string {
+  return `${hashed.salt}::${hashed.derivedKey}::${hashed.derivedKeyLength}::${hashed.iterations}`
+}
+
+export type PasswordHashOptions = {
+  iterations?: number
+  saltLength?: number
+  derivedKeyLength?: number
+}
+
+export const defaultPasswordHashOptions = {
+  iterations: 12000,
+  saltLength: 128,
+  derivedKeyLength: 256,
+} as const
+
+export class PasswordHashUtil {
+
+  private iterations: number
+  private saltLength: number
+  private derivedKeyLength: number
+
+  constructor(readonly options = defaultPasswordHashOptions) {
+    this.iterations = options.iterations || defaultPasswordHashOptions.iterations
+    this.saltLength = options.saltLength || defaultPasswordHashOptions.saltLength
+    this.derivedKeyLength = options.derivedKeyLength || defaultPasswordHashOptions.derivedKeyLength
+  }
 
   /**
    * Serialize a password object containing all the information needed to check a password into a string
    * The info is salt, derivedKey, derivedKey length and number of iterations
    */
-  function serializePassword(password) {
-    return password.salt + "::" +
-           password.derivedKey + "::" +
-           password.derivedKeyLength + "::" +
-           password.iterations;
+  serializePassword(hashed: HashedPassword): string {
+    return formatHashedPassword(hashed)
   }
 
   /**
-   * Deserialize a string into a password object
+   * Deserialize a string into a password object.
    * The info is salt, derivedKey, derivedKey length and number of iterations
    */
-  function deserializePassword(password) {
-    const items = password.split('::');
-
+  deserializePassword(password: string): HashedPassword {
+    const items = password.split('::')
     return {
       salt: items[0],
       derivedKey: items[1],
       derivedKeyLength: parseInt(items[2], 10),
       iterations: parseInt(items[3], 10)
-    };
+    }
   }
-
   /**
-   * Hash a password using node.js' crypto's PBKDF2
+   * Hash a password using Node crypto's PBKDF2
    * Description here: http://en.wikipedia.org/wiki/PBKDF2
    * Number of iterations are saved in case we change the setting in the future
-   * @param {String} password
-   * @param {Function} callback Signature: err, hashedPassword
    */
-  function hashPassword(password, callback) {
-    const salt = crypto.randomBytes(saltLength).toString('base64');
-
-    crypto.pbkdf2(password, salt, iterations, derivedKeyLength, 'sha1', function (err, derivedKey) {
-      if (err) { return callback(err); }
-
-      const hashedPassword = serializePassword({
-        salt: salt,
-        iterations: iterations,
-        derivedKeyLength: derivedKeyLength,
-        derivedKey: derivedKey.toString('base64')
-      });
-
-      callback(null, hashedPassword);
-    });
+  async hashPassword(password: string): Promise<HashedPassword> {
+    const salt = crypto.randomBytes(this.saltLength).toString('base64')
+    // TODO: upgrade hash algorithm
+    const derivedKey = await pbkdf2_promise(password, salt, this.iterations, this.derivedKeyLength, digest)
+    return {
+      salt,
+      iterations: this.iterations,
+      derivedKeyLength: this.derivedKeyLength,
+      derivedKey: derivedKey.toString('base64')
+    }
   }
 
   /**
-   * Compare a password to a hashed password
-   * @param {String} password
-   * @param {String} hashedPassword
-   * @param {Function} callback Signature: err, true/false
+   * Compare a password to a password hash
    */
-  function validPassword(password, hashedPassword, callback) {
-    if (!hashedPassword) return callback(false);
-
-    hashedPassword = deserializePassword(hashedPassword);
-
-    if (!hashedPassword.salt || !hashedPassword.derivedKey || !hashedPassword.iterations || !hashedPassword.derivedKeyLength) {
-      return callback(new Error("hashedPassword doesn't have the right format"));
+  async validPassword(password: string, serializedHash: string): Promise<boolean> {
+    if (!serializedHash) {
+      return false
     }
-
-    // Use the hashedPassword password's parameters to hash the candidate password
-    crypto.pbkdf2(password, hashedPassword.salt, hashedPassword.iterations, hashedPassword.derivedKeyLength, 'sha1', function (err, derivedKey) {
-      if (err) { return callback(err); }
-
-      callback(null, derivedKey.toString('base64') === hashedPassword.derivedKey);
-    });
+    const hash = this.deserializePassword(serializedHash)
+    if (!hash.salt || !hash.derivedKey || !hash.iterations || !hash.derivedKeyLength) {
+      throw new Error('invalid password hash')
+    }
+    const testHash = await pbkdf2_promise(password, hash.salt, hash.iterations, hash.derivedKeyLength, digest)
+    return testHash.toString('base64') === hash.derivedKey
   }
+}
 
-  return {
-    hashPassword: hashPassword,
-    validPassword: validPassword
-  };
 
-};
+
+
