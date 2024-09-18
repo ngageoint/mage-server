@@ -36,9 +36,11 @@ module.exports = {
         '@ngageoint/mage.image.service',
         '@ngageoint/mage.nga-msi',
         '@ngageoint/mage.random',
+        '@ngageoint/mage.sftp.service'
       ],
       webUIPlugins: [
-        '@ngageoint/mage.arc-web'
+        '@ngageoint/mage.arc-web',
+        '@ngageoint/mage.sftp.web',
       ],
     },
   }

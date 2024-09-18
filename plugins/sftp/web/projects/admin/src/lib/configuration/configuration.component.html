@@ -1,0 +1,120 @@
+<div class="plugin">
+  <div class="configuration">
+    <div class="card">
+      <div class="card__header">
+        <div class="card__header__title">SFTP Plugin Configuration</div>
+      </div>
+  
+      <div>
+        <div class="form-field-container">
+          <mat-slide-toggle color="primary" [(ngModel)]="configuration.enabled" [checked]="configuration.enabled">
+            <span class="slide-label">Enabled</span>
+          </mat-slide-toggle>
+        </div>
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Observation SFTP Format</mat-label>
+            <mat-select [(ngModel)]="configuration.archiveFormat" required>
+              <mat-option *ngFor="let format of formats" [value]="configuration.archiveFormat">
+                {{format}}
+              </mat-option>
+            </mat-select>
+            <mat-hint>Format for Observation metadata within SFTP archive.</mat-hint>
+          </mat-form-field>
+        </div>
+  
+        <div class="radio-group-container">
+          <span class="radio-label">Observation SFTP Rule</span>
+          <mat-radio-group class="radio-group" [(ngModel)]="configuration.initiation.rule">
+            <mat-radio-button class="radio-button" color="primary" *ngFor="let rule of triggerRules" [value]="rule.value">
+              <span class="radio-button-label">{{rule.title}}</span>
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-hint class="hint">Rule indicating when to SFTP observation</mat-hint>
+        </div>
+  
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Observation Create Timeout</mat-label>
+            <input matInput type="number" [(ngModel)]="configuration.initiation.timeout" required>
+            <mat-hint>Time in minutes to wait for attachments before observation SFTP.</mat-hint>
+          </mat-form-field>
+        </div>
+  
+        <div class="radio-group-container">
+          <span class="radio-label">Observation SFTP Success Action</span>
+          <mat-radio-group class="radio-group" [(ngModel)]="configuration.completionAction">
+            <mat-radio-button class="radio-button" color="primary" *ngFor="let action of completionActions"
+              [value]="action">
+              <span class="radio-button-label">{{action}}</span>
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-hint class="hint">Action to perform on observation after successful SFTP</mat-hint>
+        </div>
+  
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Poll Interval</mat-label>
+            <input matInput type="number" [(ngModel)]="configuration.interval" required>
+            <mat-hint>Interval plugin will poll when looking for observation changes.</mat-hint>
+          </mat-form-field>
+        </div>
+  
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Page Size</mat-label>
+            <input matInput type="number" [(ngModel)]="configuration.pageSize" required>
+            <mat-hint>Page size used when querying observations, smaller page size will reduce memory footprint on server.
+            </mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="configuration">
+    <div class="card">
+      <div class="card__header">
+        <div class="card__header__title">SFTP Client Options</div>
+      </div>
+  
+      <div>
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>SFTP Host</mat-label>
+            <input matInput type="text" [(ngModel)]="configuration.sftpClient.host" required>
+            <mat-hint>Hostname or IP of server.</mat-hint>
+          </mat-form-field>
+        </div>
+  
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>SFTP Path</mat-label>
+            <input matInput type="text" [(ngModel)]="configuration.sftpClient.path" required>
+            <mat-hint>Path to remote file.</mat-hint>
+          </mat-form-field>
+        </div>
+  
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>SFTP Username</mat-label>
+            <input matInput type="text" [(ngModel)]="configuration.sftpClient.username" required>
+            <mat-hint>Username for authentication.</mat-hint>
+          </mat-form-field>
+        </div>
+  
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>SFTP Password</mat-label>
+            <input matInput type="password" [(ngModel)]="configuration.sftpClient.password" required>
+            <mat-hint>Password for password based authentication.</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <button mat-flat-button color="primary" (click)="save()">
+    <mat-icon>save</mat-icon> Save Configuration
+  </button>
+</div>
