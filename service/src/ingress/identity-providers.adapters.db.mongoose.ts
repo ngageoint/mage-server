@@ -1,11 +1,39 @@
-"use strict";
+import mongoose from 'mongoose'
+import { BaseMongooseRepository } from '../adapters/base/adapters.base.db.mongoose'
+import { MageEventId } from '../entities/events/entities.events'
+import { TeamId } from '../entities/teams/entities.teams'
+import { DeviceEnrollmentPolicy, IdentityProvider, IdentityProviderRepository, UserEnrollmentPolicy } from './ingress.entities'
 
-const mongoose = require('mongoose');
+type ObjectId = mongoose.Types.ObjectId
 
-// Creates a new Mongoose Schema object
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
 
-const AuthenticationConfigurationSchema = new Schema(
+export type CommonIdpSettings = {
+  usersReqAdmin?: { enabled: boolean }
+  devicesReqAdmin?: { enabled: boolean }
+  newUserTeams?: TeamId[]
+  newUserEvents?: MageEventId[]
+}
+
+export type IdentityProviderDocument = {
+  _id: ObjectId
+  name: string
+  /**
+   * IDP type maps to an ingress authentication protocol.
+   */
+  type: string
+  lastUpdated: Date
+  enabled: boolean
+  title?: string
+  settings: CommonIdpSettings & Record<string, any>
+  textColor?: string
+  buttonColor?: string
+  icon?: Buffer
+}
+
+export type IdentityProviderModel = mongoose.Model<IdentityProviderDocument>
+
+export const IdentityProviderSchema = new Schema<IdentityProviderDocument>(
   {
     name: { type: String, required: true },
     type: { type: String, required: true },
@@ -21,14 +49,110 @@ const AuthenticationConfigurationSchema = new Schema(
       updatedAt: 'lastUpdated'
     },
     versionKey: false,
-    toObject: {
-      transform: DbAuthenticationConfigurationToObject
-    }
   }
-);
+)
 
-AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
+IdentityProviderSchema.index({ name: 1, type: 1 }, { unique: true })
 
+export function idpEntityForDocument(doc: IdentityProviderDocument): IdentityProvider {
+  const settings = doc.settings || {}
+  const userEnrollmentPolicy: UserEnrollmentPolicy = {
+    accountApprovalRequired: !!settings.usersReqAdmin?.enabled,
+    assignToTeams: doc.settings.newUserTeams || [],
+    assignToEvents: doc.settings.newUserEvents || [],
+  }
+  const deviceEnrollmentPolicy: DeviceEnrollmentPolicy = {
+    deviceApprovalRequired: !!settings.devicesReqAdmin?.enabled
+  }
+  return {
+    id: doc._id.toHexString(),
+    name: doc.name,
+    enabled: doc.enabled,
+    lastUpdated: doc.lastUpdated,
+    // TODO: use protocol instance if appropriate
+    protocol: { name: doc.type },
+    title: doc.title || doc.name,
+    protocolSettings: doc.settings,
+    textColor: doc.textColor,
+    buttonColor: doc.buttonColor,
+    icon: doc.icon,
+    userEnrollmentPolicy,
+    deviceEnrollmentPolicy,
+  }
+}
+
+export function idpDocumentForEntity(entity: Partial<IdentityProvider>): Partial<IdentityProviderDocument> {
+  // TODO: maybe delegate to protocol to copy settings
+  const settings = entity.protocolSettings ? { ...entity.protocolSettings } as CommonIdpSettings : undefined
+  const { userEnrollmentPolicy, deviceEnrollmentPolicy } = entity
+  if (settings && userEnrollmentPolicy) {
+    settings.usersReqAdmin = { enabled: !!userEnrollmentPolicy?.accountApprovalRequired }
+    settings.newUserTeams = userEnrollmentPolicy?.assignToTeams || []
+    settings.newUserEvents = userEnrollmentPolicy?.assignToEvents || []
+  }
+  if (settings && deviceEnrollmentPolicy) {
+    settings.devicesReqAdmin = { enabled: !!deviceEnrollmentPolicy?.deviceApprovalRequired }
+  }
+  const doc = {} as Partial<IdentityProviderDocument>
+  const entityHasKey = (key: keyof IdentityProvider): boolean => Object.prototype.hasOwnProperty.call(entity, key)
+  if (entityHasKey('id')) {
+    doc._id = new mongoose.Types.ObjectId(entity.id)
+  }
+  if (entityHasKey('buttonColor')) {
+    doc.buttonColor = entity.buttonColor
+  }
+  if (entityHasKey('enabled')) {
+    doc.enabled = entity.enabled
+  }
+  if (entityHasKey('icon')) {
+    doc.icon = entity.icon
+  }
+  if (entityHasKey('lastUpdated')) {
+    doc.lastUpdated = entity.lastUpdated ? new Date(entity.lastUpdated) : undefined
+  }
+  if (entityHasKey('name')) {
+    doc.name = entity.name
+  }
+  if (entityHasKey('protocol')) {
+    doc.type = entity.protocol?.name
+  }
+  if (entityHasKey('textColor')) {
+    doc.textColor = entity.textColor
+  }
+  if (entityHasKey('title')) {
+    doc.title = entity.title
+  }
+  return doc
+}
+
+export class IdentityProviderMongooseRepository extends BaseMongooseRepository<IdentityProviderDocument, IdentityProviderModel, IdentityProvider> implements IdentityProviderRepository {
+
+  constructor(model: IdentityProviderModel) {
+    super(model, { docToEntity: idpEntityForDocument, entityToDocStub: idpDocumentForEntity })
+  }
+
+  findIdpById(id: string): Promise<IdentityProvider | null> {
+    return super.findById(id)
+  }
+
+  async findIdpByName(name: string): Promise<IdentityProvider | null> {
+    const doc = await this.model.findOne({ name })
+    if (doc) {
+      return this.entityForDocument(doc)
+    }
+    return null
+  }
+
+  updateIdp(update: Partial<IdentityProvider> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null> {
+    throw new Error('Method not implemented.')
+  }
+
+  deleteIdp(id: string): Promise<IdentityProvider | null> {
+    return super.removeById(id)
+  }
+}
+
+// TODO: should be per protocol and identity provider and in entity layer
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryptionpvk'];
 const secureMask = '*****';
@@ -59,29 +183,7 @@ function DbAuthenticationConfigurationToObject(config, ret, options) {
   ret.icon = ret.icon ? ret.icon.toString('base64') : null;
 }
 
-exports.transform = DbAuthenticationConfigurationToObject;
-exports.secureMask = secureMask;
-exports.blacklist = blacklist;
-
-const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
-exports.Model = AuthenticationConfiguration;
-
-exports.getById = function (id) {
-  return AuthenticationConfiguration.findById(id).exec();
-};
-
-exports.getConfiguration = function (type, name) {
-  return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
-};
-
-exports.getConfigurationsByType = function (type) {
-  return AuthenticationConfiguration.find({ type: type }).exec();
-};
-
-exports.getAllConfigurations = function () {
-  return AuthenticationConfiguration.find({}).exec();
-};
-
+// TODO: move to api layer
 function manageIcon(config) {
   if (config.icon) {
     if (config.icon.startsWith('data')) {
@@ -94,6 +196,7 @@ function manageIcon(config) {
   }
 }
 
+// TODO: move to protocol
 function manageSettings(config) {
   if (config.settings.scope) {
     if (!Array.isArray(config.settings.scope)) {
@@ -108,20 +211,16 @@ function manageSettings(config) {
 
 //TODO move the 'manage' methods to a pre save method
 
-exports.create = function (config) {
-  manageIcon(config);
-  manageSettings(config);
+// exports.create = function (config) {
+//   manageIcon(config);
+//   manageSettings(config);
 
-  return AuthenticationConfiguration.create(config);
-};
+//   return AuthenticationConfiguration.create(config);
+// };
 
-exports.update = function (id, config) {
-  manageIcon(config);
-  manageSettings(config);
+// exports.update = function (id, config) {
+//   manageIcon(config);
+//   manageSettings(config);
 
-  return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
-};
-
-exports.remove = function (id) {
-  return AuthenticationConfiguration.findByIdAndRemove(id).exec();
-};
+//   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
+// };
