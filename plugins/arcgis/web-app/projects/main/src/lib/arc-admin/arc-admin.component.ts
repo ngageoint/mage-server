@@ -61,6 +61,9 @@ export class ArcAdminComponent implements OnInit {
       this.config = x;
       arcService.fetchPopulatedEvents().subscribe(x => this.handleEventResults(x));
     })
+    arcService.authenticate().subscribe(x => {
+      console.log(x)
+    })
   }
 
   configChanged(config: ArcGISPluginConfig) {

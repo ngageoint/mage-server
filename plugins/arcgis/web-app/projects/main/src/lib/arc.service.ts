@@ -30,6 +30,10 @@ export class ArcService {
     return this.http.get<FeatureServiceResult>(`${baseUrl}/arcgisLayers?featureUrl=${featureUrl}`)
   }
 
+  authenticate() {
+    return this.http.get(`${baseUrl}/sign-in`)
+  }
+
   fetchEvents() {
     return this.http.get<EventResult[]>(`${apiBaseUrl}/events?populate=false&projection={"name":true,"id":true}`)
   }

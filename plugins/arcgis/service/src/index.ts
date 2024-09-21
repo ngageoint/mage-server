@@ -7,8 +7,15 @@ import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authoriz
 import express from 'express'
 import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { ObservationProcessor } from './ObservationProcessor'
-import {HttpClient} from './HttpClient'
+import { HttpClient } from './HttpClient'
 import { FeatureServiceResult } from './FeatureServiceResult'
+import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
+
+const credentials = {
+  clientId: 'dzoVuv7Apb5gjJIP',
+  portal: "https://arcgis.geointnext.com/arcgis/sharing/rest",
+  redirectUri: 'http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/authenticate'
+}
 
 const logPrefix = '[mage.arcgis]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -74,6 +81,22 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             console.info(configString)
             processor.putConfig(arcConfig)
             res.status(200).json({})
+          })
+        routes.route('/sign-in')
+          .get(async (req, res, next) => {
+            ArcGISIdentityManager.authorize(credentials, res);
+          })
+        routes.route('/authenticate')
+          .get(async (req, res, next) => {
+            const code = req.query.code as string;
+            ArcGISIdentityManager.exchangeAuthorizationCode(credentials, code)
+              .then((identityManager: ArcGISIdentityManager) => {
+                identityManager.getUsername().then((username: string) => {
+                  console.info('logged in user', username)
+                })
+              }).catch((error) => {
+                console.error(error)
+              });
           })
         routes.route('/arcgisLayers')
           .get(async (req, res, next) => {
