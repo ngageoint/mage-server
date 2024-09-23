@@ -1,11 +1,9 @@
 import { Observable, of } from "rxjs";
-import { ArcService } from "dist/main/lib/arc.service";
+import { ArcServiceInterface } from "./arc.service";
 import { mockArcGISEventResult } from './EventsResult';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './ArcGISPluginConfig';
 
-// TODO: Remove partial once service is complete without errors
-export class MockArcService implements Partial<ArcService> {
-
+export class MockArcService implements ArcServiceInterface {
   fetchArcConfig(): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig)
   }

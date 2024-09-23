@@ -8,6 +8,16 @@ import { EventResult } from './EventsResult'
 export const baseUrl = '/plugins/@ngageoint/mage.arcgis.service'
 export const apiBaseUrl = '/api'
 
+export interface ArcServiceInterface {
+  fetchArcConfig(): Observable<ArcGISPluginConfig>;
+  fetchArcLayers(featureUrl: string): Observable<FeatureServiceResult>;
+  fetchEvents(): Observable<EventResult[]>;
+  fetchPopulatedEvents(): Observable<EventResult[]>;
+  putArcConfig(config: ArcGISPluginConfig): void;
+  removeUserTrack(userTrackId: string): Observable<ArcGISPluginConfig>;
+  removeOperation(operationId: string): Observable<ArcGISPluginConfig>;
+}
+
 @Injectable({
   providedIn: 'root'
   /*
@@ -17,7 +27,7 @@ export const apiBaseUrl = '/api'
   providedIn: MageArcServicesModule
   */
 })
-export class ArcService {
+export class ArcService implements ArcServiceInterface {
 
   constructor(private http: HttpClient) {
   }
