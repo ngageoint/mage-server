@@ -2,7 +2,7 @@
 
 declare module '@ngageoint/mongodb-migrations' {
 
-  import { MongoClientOptions } from 'mongodb'
+  import { MongoClientOptions, Db } from 'mongodb'
   export { MongoClientOptions } from 'mongodb'
 
   export class Migrator {
@@ -74,10 +74,15 @@ declare module '@ngageoint/mongodb-migrations' {
     options?: MongoClientOptions
   }
 
+  export type MigrationContext = {
+    db: Db
+    log: Console
+  }
+
   export interface Migration {
     id: string
-    up?: (callback: (err: any) => any) => any
-    down?: (callback: (err: any) => any) => any
+    up?: (this: MigrationContext, callback: (err: any) => any) => any
+    down?: (this: MigrationContext, callback: (err: any) => any) => any
   }
 
   export interface MigrationResult {
