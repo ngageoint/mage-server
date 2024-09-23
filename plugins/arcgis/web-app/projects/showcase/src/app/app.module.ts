@@ -5,6 +5,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MageArcModule } from 'projects/main/src/public-api';
 
+import { ArcService } from 'projects/main/src/lib/arc.service';
+import { MockArcService } from 'projects/main/src/lib/arc.service.mock';
+
 @NgModule({
   declarations: [
     AppComponent
@@ -14,7 +17,12 @@ import { MageArcModule } from 'projects/main/src/public-api';
     BrowserModule,
     AppRoutingModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: ArcService,
+      useClass: MockArcService
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
