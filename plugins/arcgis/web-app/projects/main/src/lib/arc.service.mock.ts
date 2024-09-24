@@ -1,8 +1,12 @@
 import { Observable, of } from "rxjs";
+import { Injectable } from '@angular/core'
 import { ArcServiceInterface } from "./arc.service";
 import { mockArcGISEventResult } from './EventsResult';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './ArcGISPluginConfig';
 
+@Injectable({
+  providedIn: 'root'
+})
 export class MockArcService implements ArcServiceInterface {
   fetchArcConfig(): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig)
