@@ -57,6 +57,7 @@
               "projects/showcase/src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "projects/showcase/src/styles.scss"
             ],
             "scripts": []
@@ -128,6 +129,7 @@
               "projects/showcase/src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "projects/showcase/src/styles.scss"
             ],
             "scripts": []
