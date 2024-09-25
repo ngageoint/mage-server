@@ -1,9 +1,9 @@
 import { EntityNotFoundError, InvalidInputError } from '../app.api/app.api.errors'
-import { AppRequest, AppResponse } from '../app.api/app.api.global'
+import { AppResponse } from '../app.api/app.api.global'
 import { LocalIdpAccount } from './local-idp.entities'
 
 
-export interface LocalIdpAuthenticateRequest extends AppRequest {
+export interface LocalIdpAuthenticateRequest {
   username: string
   password: string
 }
