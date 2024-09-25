@@ -57,38 +57,14 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, console);
     processor.start();
     return {
-      webRoutes(requestContext: GetAppRequestContext) {
-        const routes = express.Router()
-          .use(express.json())
-          .use(async (req, res, next) => {
-            const context = requestContext(req)
-            const user = context.requestingPrincipal()
-            // if (!user.role?.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
-            //   return res.status(403).json({ message: 'unauthorized' })
-            // }
-            next()
-          })
-        routes.route('/config')
-          .get(async (req, res, next) => {
-            console.info('Getting ArcGIS plugin config...')
-            const config = await processor.safeGetConfig();
-            res.json(config)
-          })
-          .put(async (req, res, next) => {
-            console.info('Applying ArcGIS plugin config...')
-            const arcConfig = req.body as ArcGISPluginConfig
-            const configString = JSON.stringify(arcConfig)
-            console.info(configString)
-            processor.putConfig(arcConfig)
-            res.status(200).json({})
-          })
-        // Get ArcGIS login status
-        routes.route('/sign-in')
-          .get(async (req, res, next) => {
+      webRoutes: {
+        public: (requestContext: GetAppRequestContext) => {
+          const routes = express.Router().use(express.json())
+          routes.get('/oauth/signin', async (req, res, next) => {
             ArcGISIdentityManager.authorize(credentials, res);
           })
-        routes.route('/authenticate')
-          .get(async (req, res, next) => {
+
+          routes.post('/oauth/authenticate', async (req, res, next) => {
             const code = req.query.code as string;
             ArcGISIdentityManager.exchangeAuthorizationCode(credentials, code)
               .then((identityManager: ArcGISIdentityManager) => {
@@ -101,27 +77,57 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 next();
               });
           })
-        routes.route('/arcgisLayers')
-          .get(async (req, res, next) => {
-            const featureUrl = req.query.featureUrl as string;
-            console.info('Getting ArcGIS layer info for ' + featureUrl)
-            const httpClient = new HttpClient(console);
-            httpClient.sendGetHandleResponse(featureUrl, (chunk) => {
-              console.info('ArcGIS layer info response ' + chunk);
-              try {
-                const featureServiceResult = JSON.parse(chunk) as FeatureServiceResult;
-                res.json(featureServiceResult);
-              } catch(e) {
-                if(e instanceof SyntaxError) {
-                  console.error('Problem with url response for url ' + featureUrl + ' error ' + e)
-                  res.status(200).json({})
-                } else {
-                  throw e;
-                }
+
+          return routes
+        },
+        protected: (requestContext: GetAppRequestContext) => {
+          const routes = express.Router()
+            .use(express.json())
+            .use(async (req, res, next) => {
+              const context = requestContext(req)
+              const user = context.requestingPrincipal()
+              if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
+                return res.status(403).json({ message: 'unauthorized' })
               }
-            });
-          })
-        return routes
+              next()
+            })
+          routes.route('/config')
+            .get(async (req, res, next) => {
+              console.info('Getting ArcGIS plugin config...')
+              const config = await processor.safeGetConfig();
+              res.json(config)
+            })
+            .put(async (req, res, next) => {
+              console.info('Applying ArcGIS plugin config...')
+              const arcConfig = req.body as ArcGISPluginConfig
+              const configString = JSON.stringify(arcConfig)
+              console.info(configString)
+              processor.putConfig(arcConfig)
+              res.status(200).json({})
+            })
+          routes.route('/arcgisLayers')
+            .get(async (req, res, next) => {
+              const featureUrl = req.query.featureUrl as string;
+              console.info('Getting ArcGIS layer info for ' + featureUrl)
+              const httpClient = new HttpClient(console);
+              httpClient.sendGetHandleResponse(featureUrl, (chunk) => {
+                console.info('ArcGIS layer info response ' + chunk);
+                try {
+                  const featureServiceResult = JSON.parse(chunk) as FeatureServiceResult;
+                  res.json(featureServiceResult);
+                } catch (e) {
+                  if (e instanceof SyntaxError) {
+                    console.error('Problem with url response for url ' + featureUrl + ' error ' + e)
+                    res.status(200).json({})
+                  } else {
+                    throw e;
+                  }
+                }
+              });
+            })
+
+          return routes
+        }
       }
     }
   }
