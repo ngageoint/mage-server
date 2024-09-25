@@ -14,6 +14,11 @@ export interface FeatureServiceConfig {
     token?: string
 
     /**
+     * Username and password for ArcGIS authentication
+     */
+    auth?: ArcGISAuthConfig
+
+    /**
      * Create layers that don't exist
      */
     createLayers?: boolean
@@ -70,6 +75,22 @@ export interface FeatureLayerConfig {
      */
     deleteFields?: boolean
 
+}
+
+/**
+ * Contains username and password for ArcGIS server authentication.
+ */
+export interface ArcGISAuthConfig {
+
+    /**
+     * The username for authentication.
+     */
+    username: string
+
+    /**
+     * The password for authentication.
+     */
+    password: string
 }
 
 /**
