@@ -7,6 +7,7 @@ import { MageArcModule } from 'projects/main/src/public-api';
 
 import { ArcService } from 'projects/main/src/lib/arc.service';
 import { MockArcService } from 'projects/main/src/lib/arc.service.mock';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { MockArcService } from 'projects/main/src/lib/arc.service.mock';
   imports: [
     MageArcModule,
     BrowserModule,
+    BrowserAnimationsModule, // ENABLES ANIMATIONS
     AppRoutingModule
   ],
   providers: [
