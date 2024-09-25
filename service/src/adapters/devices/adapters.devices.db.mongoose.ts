@@ -5,7 +5,7 @@ import { pageOf, PageOf } from '../../entities/entities.global'
 import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
 import { UserDocument } from '../users/adapters.users.db.mongoose'
 
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
 
 export type DeviceDocument = Omit<Device, 'id' | 'userId'> & {
   _id: mongoose.Types.ObjectId

@@ -1,3 +1,4 @@
+import { User } from '../entities/users/entities.users'
 import { Device, DeviceId } from '../entities/devices/entities.devices'
 import { MageEventId } from '../entities/events/entities.events'
 import { TeamId } from '../entities/teams/entities.teams'
@@ -36,10 +37,11 @@ export interface AuthenticationProtocol {
 export type IdentityProviderId = string
 
 /**
- * An identity provider (IDP) is a service maintains user profiles and that Mage trusts to authenticate user
- * credentials via a specific authentication protocol.  Mage delegates user authentication to identity providers.
- * Within Mage, the identity provider implementation maps the provider's user profile/account attributes to a Mage
- * user profile.
+ * An identity provider (IDP) is a service that maintains user profiles and that Mage trusts to authenticate user
+ * credentials using a specific authentication protocol.  Mage delegates user authentication to identity providers.
+ * Within Mage, the identity provider's protocol implementation maps the provider's user profile/account attributes to
+ * a Mage user profile.  This identity provider entity encapsulates the authentication protocol parameters to enable
+ * communication to a specific identity provider service.
  */
 export interface IdentityProvider {
   id: IdentityProviderId
@@ -49,31 +51,61 @@ export interface IdentityProvider {
   protocolSettings: Record<string, any>
   enabled: boolean
   lastUpdated: Date
-  enrollmentPolicy: EnrollmentPolicy
+  userEnrollmentPolicy: UserEnrollmentPolicy
   deviceEnrollmentPolicy: DeviceEnrollmentPolicy
-  description?: string | null
-  textColor?: string | null
-  buttonColor?: string | null
-  icon?: Buffer | null
+  textColor?: string
+  buttonColor?: string
+  icon?: Buffer
 }
 
 /**
  * Enrollment policy defines rules and effects to apply when a new user establishes a Mage account.
  */
-export interface EnrollmentPolicy {
+export interface UserEnrollmentPolicy {
+  /**
+   * When true, an administrator must approve and activate new user accounts.
+   */
+  accountApprovalRequired: boolean
   // TODO: configurable role assignment
   // assignRole: string
   assignToTeams: TeamId[]
   assignToEvents: MageEventId[]
-  requireAccountApproval: boolean
-
 }
 
 export interface DeviceEnrollmentPolicy {
-  requireDeviceApproval: boolean
+  /**
+   * When true, an administrator must approve and activate new devices associated with user accounts.
+   */
+  deviceApprovalRequired: boolean
+}
+
+/**
+ * The identity provider user is the result of mapping a specific IDP account to a Mage user account.
+ */
+export type IdentityProviderUser = Pick<User, 'username' | 'displayName' | 'email' | 'phones'>
+
+export interface IdentityProviderHooks {
+  /**
+   * Indicate that a user has authenticated with the given identity provider and Mage can continue enrollment and/or
+   * establish a session for the user.
+   */
+  admitUserFromIdentityProvider(account: IdentityProviderUser, idp: IdentityProvider): unknown
+  /**
+   * Indicate the given user has ended their session and logged out of the given identity provider, or the user has
+   * revoked access for Mage to use the IDP for authentication.
+   */
+  terminateSessionsForUser(username: string, idp: IdentityProvider): unknown
+  accountDisabled(username: string, idp: IdentityProvider): unknown
+  accountEnabled(username: string, idp: IdentityProvider): unknown
 }
 
 export interface IdentityProviderRepository {
-  findById(id: IdentityProviderId): Promise<IdentityProvider | null>
-  findByName(name: string): Promise<IdentityProvider | null>
+  findIdpById(id: IdentityProviderId): Promise<IdentityProvider | null>
+  findIdpByName(name: string): Promise<IdentityProvider | null>
+  /**
+   * Update the IDP according to patch semantics.  Remove keys in the given update with `undefined` values from the
+   * saved record.  Keys not present in the given update will have no affect on the saved record.
+   */
+  updateIdp(update: Partial<IdentityProvider> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null>
+  deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null>
 }

@@ -22,6 +22,33 @@ export type UserSearchResult = Pick<User, 'id' | 'username' | 'displayName' | 'e
 export interface SearchUsers {
   (req: UserSearchRequest): Promise<AppResponse<PageOf<UserSearchResult>, PermissionDeniedError>>
 }
+export interface ReadMyAccountRequest extends AppRequest<User> {}
+
+export interface ReadMyAccountOperation {
+  (req: ReadMyAccountRequest): Promise<AppResponse<User, PermissionDeniedError>>
+}
+
+export interface UpdateMyAccountRequest extends AppRequest<User> {}
+
+export interface UpdateMyAccountOperation {
+  (req: UpdateMyAccountRequest): Promise<AppResponse<UserExpanded, PermissionDeniedError | InvalidInputError>>
+}
+
+export interface DisableUserRequest extends AppRequest {
+  userId: UserId
+}
+
+export interface DisableUserOperation {
+  (req: DisableUserOperation): Promise<AppResponse<void, PermissionDeniedError | EntityNotFoundError>>
+}
+
+export interface RemoveUserRequest extends AppRequest {
+  userId: UserId
+}
+
+export interface RemoveUserOperation {
+  (req: RemoveUserRequest): Promise<AppResponse<UserExpanded, PermissionDeniedError | EntityNotFoundError>>
+}
 
 export interface UsersPermissionService {
   ensureReadUsersPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>

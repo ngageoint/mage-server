@@ -30,7 +30,7 @@ export class TokenGenerateError extends Error {
   }
 }
 
-class TokenVerificationError extends Error {
+export class TokenVerificationError extends Error {
 
   /**
    * @param reason why the verification failed

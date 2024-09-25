@@ -1,9 +1,10 @@
 import { PasswordRequirements } from '../utilities/password-policy'
-
-export type LocalIdpAccountId = string
+import { IdentityProvider } from './ingress.entities'
 
 export interface LocalIdpAccount {
-  id: LocalIdpAccountId
+  username: string
+  createdAt: Date
+  lastUpdated: Date
   hashedPassword: string
   previousHashedPasswords: string[]
   security: {
@@ -17,9 +18,6 @@ export interface LocalIdpAccount {
 export interface LocalIdpEnrollment {
   username: string
   password: string
-  displayName: string
-  email?: string
-  phone?: string
 }
 
 export interface AccountLockPolicy {
@@ -44,10 +42,29 @@ export interface SecurityPolicy {
 }
 
 export interface LocalIdpRepository {
-  readSecurityPolicy(): Promise<SecurityPolicy>
-  updateSecurityPolicy(policy: SecurityPolicy): Promise<SecurityPolicy>
-  createLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount>
-  readLocalAccount(id: LocalIdpAccountId): Promise<LocalIdpAccount | null>
-  updateLocalAccount(update: Partial<LocalIdpAccount> & Pick<LocalIdpAccount, 'id'>): Promise<LocalIdpAccount | null>
-  deleteLocalAccount(id: LocalIdpAccountId): Promise<LocalIdpAccount | null>
+  // readSecurityPolicy(): Promise<SecurityPolicy>
+  // updateSecurityPolicy(policy: SecurityPolicy): Promise<SecurityPolicy>
+  createLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount | DuplicateUsernameError>
+  readLocalAccount(username: string): Promise<LocalIdpAccount | null>
+  updateLocalAccount(update: Partial<LocalIdpAccount> & Pick<LocalIdpAccount, 'username'>): Promise<LocalIdpAccount | null>
+  deleteLocalAccount(username: string): Promise<LocalIdpAccount | null>
+}
+
+export function localIdpSecurityPolicyFromIdenityProvider(localIdp: IdentityProvider): SecurityPolicy {
+  const settings = localIdp.protocolSettings
+  return {
+    accountLock: { ...settings.accountLock },
+    passwordRequirements: { ...settings.passwordPolicy }
+  }
+}
+
+export class LocalIdpError extends Error {
+
+}
+
+export class DuplicateUsernameError extends LocalIdpError {
+
+  constructor(public username: string) {
+    super(`duplicate account username: ${username}`)
+  }
 }

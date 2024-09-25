@@ -6,9 +6,6 @@ function AuthenticationConfigurationService($http, $httpParamSerializer) {
         return $http.get('/api/authentication/configuration/', { params: options });
     }
 
-    /**
-     * TODO: why is this using form encoding instead of straight json?
-     */
     function updateConfiguration(config) {
         return $http.put('/api/authentication/configuration/' + config._id, config, {
             headers: {

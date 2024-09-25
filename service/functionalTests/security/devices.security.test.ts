@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 
-describe('device operations', function() {
+describe('device management security', function() {
 
-  describe('removing', function() {
+  describe('removing a device', function() {
 
     it('invalidates associated sessions', async function() {
       expect.fail('todo')
@@ -13,9 +13,12 @@ describe('device operations', function() {
     })
   })
 
-  describe('disabling', function() {
+  /**
+   * AKA, set `registered` to `false`.
+   */
+  describe('disabling a device', function() {
 
-    it('invalidates existing associated sessions', async function() {
+    it('invalidates associated sessions', async function() {
       expect.fail('todo')
     })
 
@@ -24,6 +27,9 @@ describe('device operations', function() {
     })
   })
 
+  /**
+   * AKA, approving; set `registered` to `true`.
+   */
   describe('enabling', function() {
 
     it('allows the owning user to authenticate with the device', async function() {
