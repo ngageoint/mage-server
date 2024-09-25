@@ -124,7 +124,7 @@ describe('CreateReadSystemInfo', () => {
       .getSetting('disclaimer')
       .returns(Promise.resolve(mockDisclaimer as any));
     mockedSettingsModule
-      .getSetting('contactInfo')
+      .getSetting('contactinfo')
       .returns(Promise.resolve(mockContactInfo as any));
     mockedAuthConfigModule.getAllConfigurations().returns(Promise.resolve([]));
     mockedAuthConfigTransformerModule.transform(Arg.any()).returns([]);

@@ -139,9 +139,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase()
   const repos = await initRepositories(dbLayer, config)
   const appLayer = await initAppLayer(repos)
-  const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
-  const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
-  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
+  const { webController, addPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
+  const routesForPluginId: {[pluginId: string]: WebRoutesHooks } = {}
+  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
     routesForPluginId[pluginId] = initPluginRoutes
   }
   const globalScopeServices = new Map<InjectionToken<any>, any>([
@@ -191,7 +191,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   }
   const pluginRoutePathsDescending = Object.keys(routesForPluginId).sort().reverse()
   for (const pluginId of pluginRoutePathsDescending) {
-    addAuthenticatedPluginRoutes(pluginId, routesForPluginId[pluginId])
+    addPluginRoutes(pluginId, routesForPluginId[pluginId])
   }
 
   try {
@@ -532,8 +532,11 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
 
 const observationEventScopeKey = 'observationEventScope' as const
 
-async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
-  Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
+async function initWebLayer(
+  repos: Repositories,
+  app: AppLayer,
+  webUIPlugins: string[]
+): Promise<{ webController: express.Application, addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void }> {
   // load routes the old way
   const webLayer = await import('./express')
   const webController = webLayer.app
@@ -648,13 +651,20 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   }
   return {
     webController,
-    addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
-      const routes = initPluginRoutes(pluginAppRequestContext)
-      webController.use(`/plugins/${pluginId}`, [ bearerAuth, routes ])
+    addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
+      if (initPluginRoutes.webRoutes.public) {
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [routes])
+      }
+
+      if (initPluginRoutes.webRoutes.protected) {
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [bearerAuth, routes])
+      }
     }
   }
 }
-
+ 
 function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),
