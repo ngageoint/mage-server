@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Observable } from 'rxjs'
+import { Observable, Subject } from 'rxjs'
 import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { FeatureServiceResult } from './FeatureServiceResult'
 import { EventResult } from './EventsResult'
@@ -30,8 +30,27 @@ export class ArcService {
     return this.http.get<FeatureServiceResult>(`${baseUrl}/arcgisLayers?featureUrl=${featureUrl}`)
   }
 
-  authenticate() {
-    return this.http.get(`${baseUrl}/sign-in`)
+  authenticate(): Observable<any> {
+    let subject = new Subject<any>();
+
+    const url = `${baseUrl}/sign-in`;
+    const authWindow = window.open(url, "_blank");
+
+    function onMessage(event: any) {
+      window.removeEventListener('message', onMessage, false);
+
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      subject.next(event.data)
+
+      authWindow?.close();
+    }
+
+    authWindow?.addEventListener('message', onMessage, false);
+
+    return subject.asObservable()
   }
 
   fetchEvents() {

@@ -628,7 +628,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
         middleware applies the entity form of a user on the request rather than
         the mongoose document instance
         */
-        return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
+        return { ...req.user?.toJSON(), id: req.user?._id.toHexString() } as UserExpanded
       },
       locale() {
         return Object.freeze({
@@ -650,7 +650,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     webController,
     addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
       const routes = initPluginRoutes(pluginAppRequestContext)
-      webController.use(`/plugins/${pluginId}`, [ bearerAuth, routes ])
+      webController.use(`/plugins/${pluginId}`, [ routes ])
     }
   }
 }

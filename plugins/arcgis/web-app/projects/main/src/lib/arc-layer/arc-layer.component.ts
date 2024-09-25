@@ -24,7 +24,7 @@ export class ArcLayerComponent implements OnInit {
   isLoading: boolean;
   currentUrl?: string;
   private timeoutId: number;
-
+  
   @ViewChild('addLayerDialog', { static: true })
   private addLayerTemplate: TemplateRef<unknown>
   @ViewChild('deleteLayerDialog', { static: true })
@@ -101,6 +101,20 @@ export class ArcLayerComponent implements OnInit {
       }
       this.isLoading = false;
     })
+  }
+
+  onSignIn() {
+    this.arcService.authenticate().subscribe({
+      next(x) {
+        console.log('got value ' + JSON.stringify(x));
+      },
+      error(err) {
+        console.error('something wrong occurred: ' + err);
+      },
+      complete() {
+        console.log('done');
+      },
+    });
   }
 
   onAddLayer() {

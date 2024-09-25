@@ -8,6 +8,10 @@
       <button mat-button mat-stroked-button color="primary" aria-label="Add ArcGIS feature layer"
         (click)="onAddLayer()">ADD FEATURE SERVICE</button>
     </div>
+    <div>
+      <button mat-button mat-stroked-button color="primary" aria-label="Sign in with OAuth"
+        (click)="onSignIn()">Sign in with OAuth</button>
+    </div>
     <div class="arcLayers" *ngIf="!config.featureServices.length">
       <div class="arcLayer">
         There are no ArcGIS feature services currently being synchronized.
