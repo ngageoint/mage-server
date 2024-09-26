@@ -10,6 +10,7 @@ import { ObservationProcessor } from './ObservationProcessor'
 import { HttpClient } from './HttpClient'
 import { FeatureServiceResult } from './FeatureServiceResult'
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
+// import { IQueryFeaturesOptions, queryFeatures } from '@esri/arcgis-rest-feature-service'
 
 // TODO: Move configuration to be supplied by the user instead of hardcoded
 const oauthCreds = {
@@ -41,6 +42,69 @@ const InjectedServices = {
 }
 
 /**
+ * Provides the portal URL from a given feature URL.
+ *
+ * @param {string} featureServiceUrl - The URL of the feature service.
+ * @returns {string} The portal URL.
+ */
+function getPortalUrl(featureServiceUrl: string): string {
+  const url = new URL(featureServiceUrl);
+  return `https://${url.hostname}/arcgis/sharing/rest`;
+}
+
+/**
+ * Provides the server URL from a given feature URL.
+ *
+ * @param {string} featureServiceUrl - The URL of the feature service.
+ * @returns {string} The server URL.
+ */
+function getServerUrl(featureServiceUrl: string): string {
+  const url = new URL(featureServiceUrl);
+  return `https://${url.hostname}/arcgis`;
+}
+
+  /**
+   * Handles authentication for a given request.
+   *
+   * @param {express.Request} req The express request object.
+   * @returns {Promise<ArcGISIdentityManager>} The authenticated identity manager.
+   *
+   * @throws {Error} If the identity manager could not be created due to missing required query parameters.
+   */
+async function handleAuthentication(req: express.Request): Promise<ArcGISIdentityManager> {
+  const featureUsername = req.query.username as string | undefined;
+  const featurePassword = req.query.password as string | undefined;
+  const featureServer = req.query.server as string | undefined;
+  const featurePortal = req.query.portal as string | undefined;
+  const featureToken = req.query.token as string | undefined;
+
+  let identityManager: ArcGISIdentityManager;
+
+  try {
+    if (featureToken) {
+      console.log('Token provided for authentication');
+      identityManager = await ArcGISIdentityManager.fromToken({ token: featureToken, server: getServerUrl(req.query.featureUrl as string ?? ''), portal: getPortalUrl(req.query.featureUrl as string ?? '') });
+    } else if (featureUsername && featurePassword) {
+      console.log('Username and password provided for authentication, username:' + featureUsername);
+      identityManager = await ArcGISIdentityManager.signIn({
+        username: featureUsername,
+        password: featurePassword,
+        portal: getPortalUrl(req.query.featureUrl as string ?? ''),
+      });
+    } else {
+      throw new Error('Missing required query parameters to authenticate (token or username/password).');
+    }
+
+    console.log('Identity Manager token', identityManager.token);
+    console.log('Identity Manager token expires', identityManager.tokenExpires); //TODO - is expiration arbitrary from ArcGISIdentityManager or actually the correct expiration allowed by server? Why undefined days later?
+  } catch (error) {
+    console.error('Error during authentication:', error);
+    throw new Error('Authentication failed.');
+  }
+  return identityManager;
+}
+
+/**
  * The MAGE ArcGIS Plugin finds new MAGE observations and if configured to send the observations
  * to an ArcGIS server, it will then transform the observation to an ArcGIS feature and
  * send them to the configured ArcGIS feature layer.
@@ -55,6 +119,12 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
   init: async (services): Promise<WebRoutesHooks> => {
     console.info('Intializing ArcGIS plugin...')
     const { stateRepo, eventRepo, obsRepoForEvent, userRepo } = services
+    // TODO
+    // - Move getServerUrl to Helper file
+    // - Move getPortalUrl to Helper file
+    // - Update layer token to get token from identity manager
+    // - Move plugins/arcgis/web-app/projects/main/src/lib/arc-layer/arc-layer.component.ts addLayer to helper file and use instead of encodeURIComponent
+
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, console);
     processor.start();
     return {
@@ -106,28 +176,39 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               const configString = JSON.stringify(arcConfig)
               console.info(configString)
               processor.putConfig(arcConfig)
-              res.status(200).json({})
+              res.status(200).json({}) // TODO: Why returning 200 with an empty object here, should we update?
             })
           routes.route('/arcgisLayers')
             .get(async (req, res, next) => {
               const featureUrl = req.query.featureUrl as string;
               console.info('Getting ArcGIS layer info for ' + featureUrl)
+              let identityManager: ArcGISIdentityManager;
+
+            try {
+              identityManager = await handleAuthentication(req);
+
+              const featureUrlAndToken = featureUrl + '?token=' + encodeURIComponent(identityManager.token);
+              console.log('featureUrlAndToken', featureUrlAndToken);
               const httpClient = new HttpClient(console);
-              httpClient.sendGetHandleResponse(featureUrl, (chunk) => {
-                console.info('ArcGIS layer info response ' + chunk);
-                try {
-                  const featureServiceResult = JSON.parse(chunk) as FeatureServiceResult;
-                  res.json(featureServiceResult);
-                } catch (e) {
-                  if (e instanceof SyntaxError) {
-                    console.error('Problem with url response for url ' + featureUrl + ' error ' + e)
-                    res.status(200).json({})
-                  } else {
-                    throw e;
+  
+              httpClient.sendGetHandleResponse(featureUrlAndToken, (chunk) => {
+                  console.info('ArcGIS layer info response ' + chunk);
+                  try {
+                    const featureServiceResult = JSON.parse(chunk) as FeatureServiceResult;
+                    res.json(featureServiceResult);
+                  } catch  (e) {
+                    if (e instanceof SyntaxError) {
+                      console.error('Problem with url response for url ' + featureUrl + ' error ' + e)
+                      res.status(200).json({}) // TODO: Why returning 200 with an empty object here, should we update?
+                    } else {
+                      throw e;
+                    }
                   }
-                }
-              });
-            })
+                });
+              } catch (err) {
+              res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err });
+            }
+          })
 
           return routes
         }
