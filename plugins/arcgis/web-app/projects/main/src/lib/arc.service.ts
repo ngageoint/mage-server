@@ -33,7 +33,7 @@ export class ArcService {
   authenticate(): Observable<any> {
     let subject = new Subject<any>();
 
-    const url = `${baseUrl}/sign-in`;
+    const url = `${baseUrl}/oauth/sign-in`;
     const authWindow = window.open(url, "_blank");
 
     function onMessage(event: any) {
@@ -45,7 +45,7 @@ export class ArcService {
 
       subject.next(event.data)
 
-      authWindow?.close();
+      // authWindow?.close();
     }
 
     authWindow?.addEventListener('message', onMessage, false);

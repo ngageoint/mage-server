@@ -11,10 +11,11 @@ import { HttpClient } from './HttpClient'
 import { FeatureServiceResult } from './FeatureServiceResult'
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
 
-const credentials = {
+// TODO: Move configuration to be supplied by the user instead of hardcoded
+const oauthCreds = {
   clientId: 'dzoVuv7Apb5gjJIP',
   portal: "https://arcgis.geointnext.com/arcgis/sharing/rest",
-  redirectUri: 'http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/authenticate'
+  redirectUri: 'http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/oauth/authenticate'
 }
 
 const logPrefix = '[mage.arcgis]'
@@ -59,15 +60,17 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
     return {
       webRoutes: {
         public: (requestContext: GetAppRequestContext) => {
-          const routes = express.Router().use(express.json())
-          routes.get('/oauth/signin', async (req, res, next) => {
-            ArcGISIdentityManager.authorize(credentials, res);
-          })
+          const routes = express.Router().use(express.json());
+          routes.get('/oauth/sign-in', async (req, res, next) => {
+            ArcGISIdentityManager.authorize(oauthCreds, res);
+          });
 
-          routes.post('/oauth/authenticate', async (req, res, next) => {
+          routes.get('/oauth/authenticate', async (req, res, next) => {
             const code = req.query.code as string;
-            ArcGISIdentityManager.exchangeAuthorizationCode(credentials, code)
+            ArcGISIdentityManager.exchangeAuthorizationCode(oauthCreds, code)
               .then((identityManager: ArcGISIdentityManager) => {
+
+                
                 identityManager.getUsername().then((username: string) => {
                   console.info('logged in user', username)
                   res.status(200).json({ username })
@@ -76,7 +79,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 console.error(error)
                 next();
               });
-          })
+          });
 
           return routes
         },
