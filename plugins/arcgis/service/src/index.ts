@@ -12,13 +12,6 @@ import { FeatureServiceResult } from './FeatureServiceResult'
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
 // import { IQueryFeaturesOptions, queryFeatures } from '@esri/arcgis-rest-feature-service'
 
-// TODO: Move configuration to be supplied by the user instead of hardcoded
-const oauthCreds = {
-  clientId: 'dzoVuv7Apb5gjJIP',
-  portal: "https://arcgis.geointnext.com/arcgis/sharing/rest",
-  redirectUri: 'http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/oauth/authenticate'
-}
-
 const logPrefix = '[mage.arcgis]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
 const consoleOverrides = logMethods.reduce((overrides, fn) => {
@@ -71,25 +64,44 @@ function getServerUrl(featureServiceUrl: string): string {
    *
    * @throws {Error} If the identity manager could not be created due to missing required query parameters.
    */
-async function handleAuthentication(req: express.Request): Promise<ArcGISIdentityManager> {
+async function handleAuthentication(req: express.Request, httpClient: HttpClient): Promise<ArcGISIdentityManager> {
   const featureUsername = req.query.username as string | undefined;
   const featurePassword = req.query.password as string | undefined;
+  const featureClientId = req.query.clientId as string | undefined;
+  const featureClientSecret = req.query.clientSecret as string | undefined;
   const featureServer = req.query.server as string | undefined;
   const featurePortal = req.query.portal as string | undefined;
   const featureToken = req.query.token as string | undefined;
+  const portalUrl = getPortalUrl(req.query.featureUrl as string ?? '');
 
   let identityManager: ArcGISIdentityManager;
 
   try {
     if (featureToken) {
       console.log('Token provided for authentication');
-      identityManager = await ArcGISIdentityManager.fromToken({ token: featureToken, server: getServerUrl(req.query.featureUrl as string ?? ''), portal: getPortalUrl(req.query.featureUrl as string ?? '') });
+      identityManager = await ArcGISIdentityManager.fromToken({ token: featureToken, server: getServerUrl(req.query.featureUrl as string ?? ''), portal: portalUrl });
     } else if (featureUsername && featurePassword) {
       console.log('Username and password provided for authentication, username:' + featureUsername);
       identityManager = await ArcGISIdentityManager.signIn({
         username: featureUsername,
         password: featurePassword,
-        portal: getPortalUrl(req.query.featureUrl as string ?? ''),
+        portal: portalUrl,
+      });
+    } else if (featureClientId && featureClientSecret) {
+      console.log('ClientId and Client secret provided for authentication');
+      const params = {
+        client_id: featureClientId,
+        client_secret: featureClientSecret,
+        grant_type: 'client_credentials',
+        expiration: 900
+      }
+
+      const url = `${portalUrl}/oauth2/token?client_id=${params.client_id}&client_secret=${oauthCreds.clientSecret}&grant_type=${params.grant_type}&expiration=${params.expiration}`
+      const response = await httpClient.sendGet(url);
+      identityManager = await ArcGISIdentityManager.fromToken({
+        clientId: featureClientId,
+        token: JSON.parse(response)?.access_token || '',
+        portal: portalUrl
       });
     } else {
       throw new Error('Missing required query parameters to authenticate (token or username/password).');
@@ -124,6 +136,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
     // - Move getPortalUrl to Helper file
     // - Update layer token to get token from identity manager
     // - Move plugins/arcgis/web-app/projects/main/src/lib/arc-layer/arc-layer.component.ts addLayer to helper file and use instead of encodeURIComponent
+    // - Remove Client secret from returned Config object if applicable
 
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, console);
     processor.start();
@@ -131,26 +144,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
       webRoutes: {
         public: (requestContext: GetAppRequestContext) => {
           const routes = express.Router().use(express.json());
-          routes.get('/oauth/sign-in', async (req, res, next) => {
-            ArcGISIdentityManager.authorize(oauthCreds, res);
-          });
-
-          routes.get('/oauth/authenticate', async (req, res, next) => {
-            const code = req.query.code as string;
-            ArcGISIdentityManager.exchangeAuthorizationCode(oauthCreds, code)
-              .then((identityManager: ArcGISIdentityManager) => {
-
-                
-                identityManager.getUsername().then((username: string) => {
-                  console.info('logged in user', username)
-                  res.status(200).json({ username })
-                })
-              }).catch((error) => {
-                console.error(error)
-                next();
-              });
-          });
-
+          // TODO: Add User initiated Oauth
           return routes
         },
         protected: (requestContext: GetAppRequestContext) => {
@@ -183,15 +177,15 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               const featureUrl = req.query.featureUrl as string;
               console.info('Getting ArcGIS layer info for ' + featureUrl)
               let identityManager: ArcGISIdentityManager;
-
-            try {
-              identityManager = await handleAuthentication(req);
-
-              const featureUrlAndToken = featureUrl + '?token=' + encodeURIComponent(identityManager.token);
-              console.log('featureUrlAndToken', featureUrlAndToken);
               const httpClient = new HttpClient(console);
-  
-              httpClient.sendGetHandleResponse(featureUrlAndToken, (chunk) => {
+
+              try {
+                identityManager = await handleAuthentication(req, httpClient);
+
+                const featureUrlAndToken = featureUrl + '?token=' + encodeURIComponent(identityManager.token);
+                console.log('featureUrlAndToken', featureUrlAndToken);
+    
+                httpClient.sendGetHandleResponse(featureUrlAndToken, (chunk) => {
                   console.info('ArcGIS layer info response ' + chunk);
                   try {
                     const featureServiceResult = JSON.parse(chunk) as FeatureServiceResult;
@@ -206,8 +200,8 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   }
                 });
               } catch (err) {
-              res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err });
-            }
+                res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err });
+              }
           })
 
           return routes

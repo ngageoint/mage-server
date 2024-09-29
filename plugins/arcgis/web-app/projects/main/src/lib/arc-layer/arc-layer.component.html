@@ -74,7 +74,7 @@
   <mat-dialog-actions align="end">
     <button mat-button matDialogClose>CANCEL</button>
     <button [disabled]="isSaveDisabled()" mat-flat-button color="primary" matDialogClose
-      (click)="onAddLayerUrl(layerUrl.value, layerToken.value, layers)">SAVE</button>
+      (click)="onAddLayerUrl({ layerUrl: layerUrl.value, selectableLayers: layers, layerToken: layerToken.value })">SAVE</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #deleteLayerDialog let-data>

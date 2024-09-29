@@ -165,12 +165,6 @@ export class ArcLayerComponent implements OnInit {
     this.arcService.putArcConfig(this.config);
   }
 
-
-  // Define the overloads
-  onAddLayerUrl(layerUrl: string, layerToken: string, layers: ArcLayerSelectable[]): void;
-  onAddLayerUrl(layerUrl: string, username: string, password: string, layers: ArcLayerSelectable[]): void;
-
-  // Implement the function
   /**
    * Adds a new layer to the configuration if it does not already exist.
    * 
@@ -188,8 +182,17 @@ export class ArcLayerComponent implements OnInit {
    * 6. Updates the configuration and emits the change.
    * 7. Persists the updated configuration using `arcService`.
    */
-  onAddLayerUrl(layerUrl: string, arg2: string, arg3: string | ArcLayerSelectable[], arg4?: ArcLayerSelectable[]): void {
+  onAddLayerUrl(params: {
+    layerUrl: string,
+    selectableLayers: ArcLayerSelectable[],
+    layerToken?: string,
+    username?: string,
+    password?: string,
+    clientId?: string,
+    clientSecret?: string
+  }): void {
     let serviceConfigToEdit = null;
+    const { layerUrl, selectableLayers, layerToken, username, password, clientId, clientSecret } = params;
 
     // Search if the layer in config to edit
     for (const service of this.config.featureServices) {
@@ -197,34 +200,30 @@ export class ArcLayerComponent implements OnInit {
         serviceConfigToEdit = service;
       }
     }
-    // Determine if layers in 3rd or 4th argument
-    const layers = typeof arg3 === 'string' ? arg4 : arg3;
 
     // Add layer if it doesn't exist
     if (serviceConfigToEdit == null) {
       console.log('Adding layer ' + layerUrl);
-      let token: string | null = null;
 
       const featureLayer: FeatureServiceConfig = {
         url: layerUrl,
         token: undefined,
-        auth: {
-          username: '',
-          password: ''
-        },
+        auth: {},
         layers: []
       } as FeatureServiceConfig;
 
-      if (typeof arg3 === 'string') {
+      if (username) {
         // Handle username and password case
-        featureLayer.auth = { username: arg2, password: arg3 };
-      } else {
+        featureLayer.auth = { username, password };
+      } else if (clientId) {
+        featureLayer.auth = { clientId, clientSecret };
+      }else {
         // Handle token case
-        featureLayer.token = arg2;
+        featureLayer.token = layerToken;
       }
       
-      if (layers) {
-        for (const aLayer of layers) {
+      if (selectableLayers) {
+        for (const aLayer of selectableLayers) {
           if (aLayer.isSelected) {
             const layerConfig = {
               layer: aLayer.name,
@@ -243,8 +242,8 @@ export class ArcLayerComponent implements OnInit {
     } else { // Edit existing layer
       console.log('Saving edited layer ' + layerUrl)
       const editedLayers = [];
-      if (layers) {
-        for (const aLayer of layers) {
+      if (selectableLayers) {
+        for (const aLayer of selectableLayers) {
           if (aLayer.isSelected) {
             let layerConfig = null
             if (serviceConfigToEdit.layers != null) {
