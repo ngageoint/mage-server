@@ -631,7 +631,7 @@ async function initWebLayer(
         middleware applies the entity form of a user on the request rather than
         the mongoose document instance
         */
-        return { ...req.user?.toJSON(), id: req.user?._id.toHexString() } as UserExpanded
+        return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
       },
       locale() {
         return Object.freeze({

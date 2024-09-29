@@ -96,7 +96,7 @@ async function handleAuthentication(req: express.Request, httpClient: HttpClient
         expiration: 900
       }
 
-      const url = `${portalUrl}/oauth2/token?client_id=${params.client_id}&client_secret=${oauthCreds.clientSecret}&grant_type=${params.grant_type}&expiration=${params.expiration}`
+      const url = `${portalUrl}/oauth2/token?client_id=${params.client_id}&client_secret=${params.client_secret}&grant_type=${params.grant_type}&expiration=${params.expiration}`
       const response = await httpClient.sendGet(url);
       identityManager = await ArcGISIdentityManager.fromToken({
         clientId: featureClientId,
