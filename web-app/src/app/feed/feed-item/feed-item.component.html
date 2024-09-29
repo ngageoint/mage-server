@@ -1,13 +1,13 @@
-<mat-toolbar color="primary">
-  <button mat-icon-button (click)="close()">
+<mat-toolbar>
+  <button mat-icon-button color="primary" (click)="close()">
     <mat-icon>arrow_back</mat-icon>
   </button>
 
-  <span>{{feed?.title}}</span>
+  <span class="title">{{feed?.title}}</span>
 </mat-toolbar>
 
-<div class="card-content">
-  <mat-card>
+<div class="feed-item">
+  <mat-card class="feed-item__card">
     <div class="card-header">
       <div class="card-header-text">
         <div class="card-overline">{{date}}</div>
@@ -26,7 +26,10 @@
         {{item?.geometry|geometry:5}}
       </button>
     </div>
-    <mat-divider></mat-divider>
+  </mat-card>
+
+  <mat-card class="feed-item__card">
+    <div class="mat-title">Properties</div>
     <mat-card-content>
       <div *ngFor="let property of properties">
         <div class="item">
@@ -38,3 +41,4 @@
     </mat-card-content>
   </mat-card>
 </div>
+

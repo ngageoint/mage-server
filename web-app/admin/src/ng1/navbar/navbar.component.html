@@ -1,0 +1,49 @@
+<header class="mdc-top-app-bar">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <a class="material-icons mdc-top-app-bar__navigation-icon mobile-only" ng-click="$ctrl.openMenu = !$ctrl.openMenu">menu</a>
+      <button class="material-icons mdc-icon-button" ng-if="$ctrl.state === 'map'" ng-click="$ctrl.toggleFeed()">menu</button>
+      <a class="mdc-button top-app-bar-button" href="/#/home">
+        <span class="mdc-top-app-bar__title">MAGE</span>
+      </a>
+    </section>
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+      <div class="mage-tooltip">
+        <a class="mdc-button top-app-bar-button" href="/#/profile">
+          <span class="mdc-button__icon">
+            <user-avatar [user]="$ctrl.myself" avatar-width="25" avatar-height="25"></user-avatar>
+          </span>
+          <span style="padding-left: 10px;" class="mdc-button__label">{{$ctrl.myself.displayName}}</span>
+        </a>
+        <span class="tooltiptext">My Profile</span>
+      </div>
+      <div class="mage-tooltip">
+        <a class="material-icons mdc-icon-button" aria-label="About" href="/#/about">info</a>
+        <span class="tooltiptext">About MAGE</span>
+      </div>
+      <div class="mage-tooltip">
+        <button class="material-icons mdc-icon-button" aria-label="Log Out" ng-click="$ctrl.logout()">exit_to_app</button>
+        <span class="tooltiptext">Logout</span>
+      </div>
+    </section>
+  </div>
+  <div class="slide-left menu-drawer ng-animatable" ng-if="$ctrl.openMenu">
+    <header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
+      <div class="mdc-top-app-bar__row">
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+          <i ng-click="$ctrl.openMenu = false" class="material-icons mdc-top-app-bar__navigation-icon">arrow_back</i>
+          <span class="mdc-top-app-bar__title"><i class="icon-magic icon-brand app-bar-brand-icon"></i>MAGE</span>
+        </section>
+      </div>
+    </header>
+    <div class="menu-drawer-content mdc-elevation--z4">
+      <ul class="mdc-list">
+        <filter-button drawer="true"></filter-button>
+        <polling-button drawer="true"></polling-button>
+        <preferences-button drawer="true"></preferences-button>
+        <export-button drawer="true" myself="$ctrl.myself"></export-button>
+      </ul>
+    </div>
+    <div class="menu-drawer-scrim"></div>
+  </div>
+</header>

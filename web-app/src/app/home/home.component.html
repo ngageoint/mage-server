@@ -1,0 +1,22 @@
+<div *ngIf="myself" class="home">
+  <banner [banner]="banners?.header">Hello</banner>
+
+  <navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
+
+  <div class="home-content">
+    <mat-sidenav-container hasBackdrop="false">
+      <mat-sidenav #feed mode="side" position="start" opened>
+        <feed-panel class="feed" [event]="event" [observationLocation]="newObservation"></feed-panel>
+      </mat-sidenav>
+    
+      <mat-sidenav #preferences mode="slide" position="end" disableClose="true">
+        <preferences></preferences>
+      </mat-sidenav>
+    
+      <map (addObservation)="onAddObservation($event)"></map>
+    
+    </mat-sidenav-container>
+  </div>
+
+  <banner [banner]="banners?.footer">Hello</banner>
+</div>

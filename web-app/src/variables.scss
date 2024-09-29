@@ -5,7 +5,7 @@
 // hue. Available color palettes: https://material.io/design/color/
 $app-primary: mat.define-palette(mat.$blue-palette, 600, 200, 800);
 $app-accent: mat.define-palette(mat.$orange-palette, A700, A100, A700);
-$app-warn: mat.define-palette(mat.$red-palette); // The warn palette is optional (defaults to red).
+$app-warn: mat.define-palette(mat.$red-palette, 600, 200, 800);
 
 // Custom Sass colors vars (will be available in all the project)
 $primary: mat.get-color-from-palette($app-primary);

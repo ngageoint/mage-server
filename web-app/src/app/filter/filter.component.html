@@ -1,0 +1,69 @@
+<div class="content">
+  <div>
+    <h2 mat-dialog-title>Filter</h2>
+    <div mat-dialog-content>
+      <div>
+        <mat-form-field appearance="fill">
+          <mat-label>Event</mat-label>
+          <input type="text" matInput [formControl]="eventControl" [matAutocomplete]="autoEvent">
+          <mat-autocomplete #autoEvent="matAutocomplete" [displayWith]="onDisplayEvent" (optionSelected)="onSelectEvent()">
+            <mat-option *ngFor="let event of filteredEvents | async" [value]="event">
+              <div class="option-text">{{event.name}}</div>
+              <div class="option-description">{{event.description}}</div>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+    
+      <div>
+        <mat-form-field appearance="fill">
+          <mat-label>Teams</mat-label>
+          <mat-chip-list #chipList>
+            <mat-chip *ngFor="let team of selectedTeams" [removable]="true" (removed)="onRemoveTeam(team)">
+              {{team.name}}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+            <input [formControl]="teamControl" [matAutocomplete]="autoTeam" [matChipInputFor]="chipList"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="onSelectTeam($event)">
+          </mat-chip-list>
+          <mat-autocomplete #autoTeam="matAutocomplete" [displayWith]="onDisplayTeam"
+            (optionSelected)="onSelectTeam($event)">
+            <mat-option *ngFor="let team of filteredTeams | async" [value]="team">
+              <span>{{team.name}}</span>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+    
+      <div>
+        <mat-form-field appearance="fill">
+          <mat-label>Time</mat-label>
+          <mat-select [(value)]="intervalChoice" [compareWith]="compareIntervalChoices">
+            <mat-option *ngFor="let choice of intervalChoices" [value]="choice">
+              <span>{{choice.label}}</span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="datetime" *ngIf="intervalChoice.filter === 'custom'">
+          <div>
+            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone" (dateTimeChange)="onStartDate($event)"></datetime-picker>
+            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone" (dateTimeChange)="onStartDate($event)"></datetime-picker>
+          </div>
+          <div class="timezone">
+            <button mat-stroked-button class="timezone__button" (click)="onTimezone()">
+              <span *ngIf="timeZone === 'local'">Local ({{localOffset}})</span>
+              <span *ngIf="timeZone === 'gmt'">GMT (+00:00)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-button color="primary" cdkFocusInitial (click)="onFilter()">Filter</button>
+  </div>
+
+</div>

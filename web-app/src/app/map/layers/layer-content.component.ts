@@ -1,6 +1,6 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
-import { LayerService, SimpleStyle } from './layer.service';
+import { MapLayerService, SimpleStyle } from './layer.service';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { trigger, style, transition, animate } from '@angular/animations';
 
@@ -29,7 +29,7 @@ export class LayerContentComponent {
   showColorPicker = false;
   stroke = '#000000';
 
-  constructor(private layerService: LayerService) {}
+  constructor(private layerService: MapLayerService) {}
 
   toggleStyle(): void {
     if (this.style) {

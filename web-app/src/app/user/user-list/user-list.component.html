@@ -8,7 +8,7 @@
       <mat-label>User Page</mat-label>
       <mat-select [(ngModel)]="currentUserPage">
         <mat-option *ngFor="let userPage of userPages; index as i; trackBy: trackByPageId" [value]="i">
-          {{userPage[0].location.properties.timestamp | moment: 'fromNow'}}
+          {{userPage[0]?.location?.properties?.timestamp | moment: 'fromNow'}}
         </mat-option>
       </mat-select>
     </mat-form-field>

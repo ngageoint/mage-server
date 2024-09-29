@@ -1,0 +1,37 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
+.content {
+  width: 50vw;
+  margin: 0 auto;
+  padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.mat-h1 {
+  color: mat.get-color-from-palette($app-primary);
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  margin-left: 16px;
+}
+
+.app-store {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+.app-store-icon {
+  height: 48px;
+}

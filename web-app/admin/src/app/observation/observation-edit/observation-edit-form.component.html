@@ -1,0 +1,71 @@
+<mat-card>
+  <div class="form-header">
+    <div class="form-header-summary">
+      <div class="form-header-title">
+        <mat-icon class="form-header-title__icon" [style.color]="definition.color">description</mat-icon>
+        <div class="form-header-title__text">{{definition.name}}</div>
+      </div>
+      <div *ngIf="primaryFieldValue" class="form-header-summary__primary">
+        <span [ngSwitch]="primaryField?.type">
+          <span *ngSwitchCase="'geometry'">
+            {{primaryFieldValue | geometry:5}}
+          </span>
+          <span *ngSwitchDefault>
+            {{primaryFieldValue}}
+          </span>
+        </span>
+      </div>
+      <div *ngIf="secondaryFieldValue" class="form-header-summary__secondary">
+        <span [ngSwitch]="secondaryField?.type">
+          <span *ngSwitchCase="'geometry'">
+            {{secondaryFieldValue | geometry:5}}
+          </span>
+          <span *ngSwitchDefault>
+            {{secondaryFieldValue}}
+          </span>
+        </span>
+      </div>
+    </div>
+  
+    <div class="form-header-actions">
+      <button mat-icon-button (click)="expand = !expand">
+        <mat-icon [@rotate]="expand" class="form-header-actions__expand" [style.color]="formGroup.invalid && formGroup.touched ? 'red' : ''">expand_more</mat-icon>
+      </button>
+      <div class="form-header-actions__drag" #dragHandle>
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="expand" @expand class="form-content">
+    <div *ngFor="let fieldName of fieldNames">
+      <div [ngSwitch]="fieldDefinitions[fieldName].type">
+        <observation-edit-attachment *ngSwitchCase="'attachment'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]" [attachments]="observation?.attachments" [url]="attachmentUrl"></observation-edit-attachment>
+        <observation-edit-checkbox *ngSwitchCase="'checkbox'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-checkbox>
+        <observation-edit-date *ngSwitchCase="'date'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-date>
+        <observation-edit-dropdown *ngSwitchCase="'dropdown'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-dropdown>
+        <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-multiselect>
+        <observation-edit-email *ngSwitchCase="'email'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-email>
+        <observation-edit-number *ngSwitchCase="'numberfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-number>
+        <observation-edit-radio *ngSwitchCase="'radio'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-radio>
+        <observation-edit-text *ngSwitchCase="'textfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-text>
+        <observation-edit-textarea *ngSwitchCase="'textarea'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-textarea>
+        <observation-edit-password *ngSwitchCase="'password'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-password>
+        <observation-edit-geometry *ngSwitchCase="'geometry'"
+          [formGroup]="formGroup"
+          [definition]="fieldDefinitions[fieldName]"
+          featureId="{{formGroup.get('formId').value}}_{{fieldDefinitions[fieldName].id}}"
+          [featureStyle]="geometryStyle"
+          (onFeatureEdit)="onGeometryEdit($event)">
+        </observation-edit-geometry>
+      </div>
+    </div>
+  
+    <div class="form-actions" *ngIf="deletable">
+      <mat-divider></mat-divider>
+      <div class="form-actions-content">
+        <button mat-button color="warn" (click)="removeForm()">DELETE FORM</button>
+      </div>
+    </div>
+  </div>
+</mat-card>

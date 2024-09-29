@@ -1,0 +1,118 @@
+<mat-toolbar color="primary">
+  <div class="navigation">
+    <button mat-icon-button (click)="onBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <span class="navigation-title">{{info.controls.displayName.value}}</span>
+  </div>
+</mat-toolbar>
+
+<div class="container">
+  <div class="cards">
+    <mat-card class="card">
+      <div class="mat-h1">General Information</div>
+    
+      <form [formGroup]="info">
+        <div class="avatar-container" >
+          <div class="avatar">
+            <user-avatar [user]="user" [file]="avatar" [avatarWidth]="120" [avatarHeight]="120" ></user-avatar>
+            <input hidden (change)="onAvatar($event)" #fileInput type="file">
+          </div>
+          <div class="avatar-container__button">
+            <button mat-icon-button (click)="fileInput.click()">
+              <mat-icon>photo_camera</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
+          <mat-form-field appearance="fill">
+            <mat-label>Username</mat-label>
+            <input matInput placeholder="Username" [formControl]="info.controls.username" disabled>
+          </mat-form-field>
+    
+          <mat-form-field appearance="fill">
+            <mat-label>Display Name</mat-label>
+            <input matInput placeholder="Display Name" [formControl]="info.controls.displayName">
+          </mat-form-field>
+        </div>
+    
+        <div class="row">
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Username" [formControl]="info.controls.email">
+          </mat-form-field>
+    
+          <mat-form-field appearance="fill">
+            <mat-label>Phone</mat-label>
+            <input matInput placeholder="Phone" [formControl]="info.controls.phone">
+          </mat-form-field>
+        </div>
+      </form>
+    
+      <div *ngIf="infoError" class="error">
+        <mat-icon>error</mat-icon>
+        <p class="error__text">{{infoError}}</p>
+      </div>
+    
+      <div class="actions">
+        <button mat-flat-button (click)="onCancel()">Cancel</button>
+        <button mat-flat-button color="primary" (click)="onSave()">Save</button>
+      </div>
+    </mat-card>
+    
+    <mat-card class="card" *ngIf="user.authentication.type === 'local'">
+      <div>
+        <div class="mat-h1">Password</div>
+        <div class="mat-caption">It's a good idea to use a strong password that you're not using elsewhere.</div>
+      </div>
+
+      <form [formGroup]="password">
+        <mat-form-field appearance="fill">
+          <mat-label>Type your current password</mat-label>
+          <input matInput type="password" placeholder="Current Password" [formControl]="password.controls.currentPassword">
+          <mat-error *ngIf="password.controls.currentPassword.hasError('required')">Current password is required</mat-error>
+          <mat-error *ngIf="password.controls.currentPassword.hasError('invalid')">Invalid password</mat-error>
+          <div *ngIf="password.controls.currentPassword['required']">Password is required.</div>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Type your new password</mat-label>
+          <input matInput type="password" placeholder="New Password" [formControl]="password.controls.newPassword" (input)="onPasswordChanged(password.controls.newPassword.value)">
+          <mat-error *ngIf="password.controls.newPassword.hasError('required')">New password is required</mat-error>
+          <mat-error *ngIf="password.controls.newPassword.hasError('matches')">Passwords must match</mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Confirm your new password</mat-label>
+          <input matInput type="password" placeholder="New Password confirmation" [formControl]="password.controls.newPasswordConfirm">
+          <mat-error *ngIf="password.controls.newPasswordConfirm.hasError('required')">New password confirmation is required</mat-error>
+        </mat-form-field>
+      </form>
+
+      <div>
+        <div class="password-strength">
+          <div class="mat-body-1">Password Strengh</div>
+          <div class="mat-body-2">{{passwordStrength?.text}}</div>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"></mat-progress-bar>
+      </div>
+    
+      <div *ngIf="passwordError" class="error">
+        <mat-icon>error</mat-icon>
+        <p class="error__text">{{passwordError}}</p>
+      </div>
+    
+      <div class="actions">
+        <button mat-flat-button (click)="onCancelPassword()">Cancel</button>
+        <button mat-flat-button color="primary" (click)="onResetPassword()">Reset Password</button>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="mask" *ngIf="saving">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+
+</div>

@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { EventService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
+import { UserService } from '../../user/user.service';
 
 interface Data {
   userIds: any
@@ -19,8 +19,7 @@ export class ObservationFavoritesComponent {
   constructor(
     public dialogRef: MatDialogRef<ObservationFavoritesComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Data,
-    @Inject(UserService) userService: any,
-    @Inject(EventService) private eventService: any) {
+    userService: UserService) {
 
     this.observation = data.observation
     

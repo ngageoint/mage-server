@@ -1,0 +1,24 @@
+// Undo Bootstrap styles
+:host ::ng-deep label {
+  max-width: unset;
+  margin-bottom: unset;
+  font-weight: unset
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.radio-button {
+  margin: 5px;
+}
+
+.mat-error {
+  font-size: 75%;
+  margin-top: 8px;
+  margin-left: 28px;
+  height: 14px;
+}

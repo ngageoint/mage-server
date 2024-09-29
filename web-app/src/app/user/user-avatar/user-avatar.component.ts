@@ -9,17 +9,30 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser'
 })
 export class UserAvatarComponent implements OnChanges {
   @Input() user
+  @Input() file
   @Input() avatarWidth = 40
   @Input() avatarHeight = 40
 
-  url: string | SafeUrl = '/assets/images/baseline-account_circle-24px.svg';
+  data: string | ArrayBuffer
+  url?: SafeUrl = null
 
   constructor(
     private httpClient: HttpClient,
     private sanitizer: DomSanitizer) { }
     
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.user && this.user) {
+    if (changes.file && this.file) {
+      if (window.FileReader) {
+        const reader = new FileReader()
+        reader.onload = ((file: any) => {
+          return e => {
+            this.data = e.target.result
+          };
+        })(changes.file.currentValue);
+
+        reader.readAsDataURL(changes.file.currentValue);
+      }
+    } else if (changes.user && this.user) {
       this.fetchAvatar()
     }
   }

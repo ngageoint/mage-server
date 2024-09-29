@@ -1,11 +1,13 @@
-import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
+import { Component, Directive, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
 import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/geometry/geometry-dms'
 import * as DMS from 'src/app/geometry/geometry-dms'
-import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { createMask } from '@ngneat/input-mask'
+import { LocalStorageService } from '../../../http/local-storage.service'
+import { MapService } from '../../../map/map.service'
+import { GeometryService } from '../../../geometry/geometry.service'
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -94,9 +96,9 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   })
 
   constructor(
-    @Inject(MapService) private mapService: any,
-    @Inject(GeometryService) private geometryService: any,
-    @Inject(LocalStorageService) private localStorageService: any,
+    private mapService: MapService,
+    private geometryService: GeometryService,
+    private localStorageService: LocalStorageService,
     private snackBar: MatSnackBar)
   {
     this.coordinateSystem = this.localStorageService.getCoordinateSystemEdit()

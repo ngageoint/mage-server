@@ -34,10 +34,8 @@
               }
             ],
             "styles": [
-              "src/ng1/vendor/bootstrap/css/bootstrap.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/@ngageoint/md-date-time-picker/dist/css/mdDateTimePicker.css",
-              "src/ng1/vendor/material-design-icons/icons.css",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
@@ -55,7 +53,6 @@
               "node_modules/systemjs/dist/extras/named-register.js",
               "node_modules/js_cols/dist/js_cols.min.js"
             ],
-            "plugin": "~/post_build.js",
             "allowedCommonJsDependencies": [
               "ajv",
               "angular",
@@ -151,6 +148,182 @@
             },
             "scripts": [],
             "codeCoverage": true
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "e2e/protractor.conf.js",
+            "devServerTarget": "app:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "app:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "admin": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "admin/src",
+      "prefix": "mage",
+      "architect": {
+        "build": {
+          "builder": "ngx-build-plus:browser",
+          "options": {
+            "extraWebpackConfig": "webpack.extra.js",
+            "outputPath": "dist/admin",
+            "index": "admin/src/index.html",
+            "main": "admin/src/main.ts",
+            "polyfills": "admin/src/polyfills.ts",
+            "tsConfig": "tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "admin/src/favicon.ico",
+              "admin/src/assets",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/leaflet/dist/images",
+                "output": "/"
+              }
+            ],
+            "styles": [
+              "admin/src/ng1/vendor/bootstrap/css/bootstrap.min.css",
+              "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/@ngageoint/md-date-time-picker/dist/css/mdDateTimePicker.css",
+              "admin/src/ng1/vendor/material-design-icons/icons.css",
+              "admin/src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "admin/src",
+                "node_modules"
+              ]
+            },
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/jquery-minicolors/jquery.minicolors.min.js",
+              "node_modules/jquery-file-download/src/Scripts/jquery.fileDownload.js",
+              "node_modules/systemjs/dist/system.js",
+              "node_modules/systemjs/dist/extras/amd.js",
+              "node_modules/systemjs/dist/extras/named-register.js",
+              "node_modules/js_cols/dist/js_cols.min.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "ajv",
+              "angular",
+              "core-js-pure",
+              "ev-emitter",
+              "focus-trap",
+              "lodash",
+              "traverse"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "admin/src/environments/environment.ts",
+                  "with": "admin/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "15mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "admin/src/environments/environment.ts",
+                  "with": "admin/src/environments/environment.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true
+            }
+          }
+        },
+        "serve": {
+          "builder": "ngx-build-plus:dev-server",
+          "options": {
+            "extraWebpackConfig": "webpack.extra.js",
+            "proxyConfig": "proxy.conf.json",
+            "browserTarget": "admin:build",
+            "port": 4201
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "admin:build:production"
+            },
+            "development": {
+              "browserTarget": "admin:build:development"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "admin:build"
+          }
+        },
+        "test": {
+          "builder": "ngx-build-plus:karma",
+          "options": {
+            "main": "admin/src/test.ts",
+            "polyfills": "admin/src/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "assets": [
+              "admin/src/favicon.ico",
+              "admin/src/assets"
+            ],
+            "styles": [
+              "admin/src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "admin/src",
+                "node_modules"
+              ]
+            },
+            "scripts": [],
+            "codeCoverage": true
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "e2e/protractor.conf.js",
+            "devServerTarget": "admin:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "admin:serve:production"
+            }
           }
         }
       }
@@ -296,6 +469,18 @@
               "projects/core-lib-showcase/src/styles.scss"
             ],
             "scripts": []
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/core-lib-showcase/e2e/protractor.conf.js",
+            "devServerTarget": "core-lib-showcase:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "core-lib-showcase:serve:production"
+            }
           }
         }
       }

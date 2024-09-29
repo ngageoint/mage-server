@@ -1,0 +1,34 @@
+<form [formGroup]="authenticationForm" (ngSubmit)="onSignin()">
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>{{strategy.title}} Username</mat-label>
+      <input matInput placeholder="{{strategy.title}} Username" formControlName="username" required>
+      <mat-error>Username is required</mat-error>
+    </mat-form-field>
+  </div>
+
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>{{strategy.title}} Password</mat-label>
+      <input matInput placeholder="{{strategy.title}} Password" type="password" formControlName="password" required>
+      <mat-error>Password is required</mat-error>
+    </mat-form-field>
+  </div>
+
+  <authentication-button
+    [text]="strategy.title"
+    [textColor]="strategy.textColor"
+    [color]="strategy.buttonColor"
+    [icon]="strategy.icon"
+    (click)="onSignin()">
+  </authentication-button>
+
+  <div *ngIf="error" class="error-container" [@slide]>
+    <div class="error">
+      <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
+      <div class="error__message">
+        <div>{{error?.message}} <span *ngIf="contact" class="contact" [innerHTML]="contact"></span></div>
+      </div>
+    </div>
+  </div>
+</form>

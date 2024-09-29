@@ -6,6 +6,9 @@ export interface GetAppRequestContext {
   (req: express.Request): AppRequestContext<UserExpanded>
 }
 
-export interface WebRoutesHooks {
-  webRoutes(requestContext: GetAppRequestContext): express.Router
+export type WebRoutesHooks = {
+  webRoutes: {
+    public?: (requestContext: GetAppRequestContext) => express.Router,
+    protected?: (requestContext: GetAppRequestContext) => express.Router
+  }
 }

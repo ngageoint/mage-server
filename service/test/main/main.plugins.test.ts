@@ -18,7 +18,7 @@ class Service1Impl implements Service1 {}
 class Service2Impl implements Service2 {}
 const serviceMap = new Map([[ Service1Token, new Service1Impl() ], [ Service2Token, new Service2Impl() ]])
 const injectService: plugins.InjectableServices = (token: any) => serviceMap.get(token) as any
-const initPluginRoutes: AddPluginWebRoutes = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => void(0)
+const initPluginRoutes: AddPluginWebRoutes = (pluginId: string, initPluginRoutes: WebRoutesHooks) => void(0)
 
 interface InjectServiceHandle {
   injectService: typeof injectService
@@ -71,7 +71,13 @@ describe('loading plugins', function() {
       service2: Service2Token
     }
     const routes = express.Router()
-    const hook: WebRoutesHooks['webRoutes'] = (appRequestContext: (req: express.Request) => AppRequestContext<UserExpanded>) => routes
+    const hook = {
+      webRoutes: {
+        public: (appRequestContext: (req: express.Request) => AppRequestContext<UserExpanded>) => routes,
+        protected: (appRequestContext: (req: express.Request) => AppRequestContext<UserExpanded>) => routes
+      }
+    }
+
     let injected: any = null
     const initPlugin: InitPluginHook<typeof injectRequest> = {
       inject: {
@@ -79,9 +85,7 @@ describe('loading plugins', function() {
       },
       init: async (services): Promise<WebRoutesHooks> => {
         injected = services
-        return {
-          webRoutes: hook
-        }
+        return hook
       }
     }
     initPlugin.inject = injectRequest
