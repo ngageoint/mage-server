@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { MageArcModule } from 'projects/main/src/public-api';
 
 import { ArcService } from 'projects/main/src/lib/arc.service';
-import { MockArcService } from 'projects/main/src/lib/arc.service.mock';
+import { MockArcService } from './arc.service.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({

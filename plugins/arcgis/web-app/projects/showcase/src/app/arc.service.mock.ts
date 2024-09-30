@@ -1,8 +1,20 @@
 import { Observable, of } from "rxjs";
 import { Injectable } from '@angular/core'
-import { ArcServiceInterface } from "./arc.service";
-import { mockArcGISEventResult } from './EventsResult';
-import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './ArcGISPluginConfig';
+import { ArcServiceInterface } from "../../../main/src/lib/arc.service";
+import { EventResult } from '../../../main/src/lib/EventsResult';
+import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../../../main/src/lib/ArcGISPluginConfig';
+
+export const mockArcGISEventResult = Object.freeze<EventResult>({
+  id: 0,
+  name: 'test event result name',
+  forms: [{
+    id: 1,
+    name: 'test form result name',
+    fields: [{
+      title: 'test field'
+    }]
+  }]
+})
 
 @Injectable({
   providedIn: 'root'

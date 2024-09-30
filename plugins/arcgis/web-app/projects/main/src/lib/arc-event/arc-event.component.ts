@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ArcEventsModel } from './ArcEventsModel';
 import { ArcEvent } from './ArcEvent';
 import { ArcEventLayer } from './ArcEventLayer';
-import { Observable, Subscription, EMPTY } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { EventResult } from '../EventsResult';
 
 
@@ -22,7 +22,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
   @Input('config') config: ArcGISPluginConfig = defaultArcGISPluginConfig;
   private configSet = false;
 
-  @Input() configChangedNotifier: Observable<void> = EMPTY; // Default to an empty observable
+  @Input() configChangedNotifier: Observable<void>; // Default to an empty observable
 
   @Output() configChanged = new EventEmitter<ArcGISPluginConfig>();
 
@@ -42,11 +42,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    if (this.configChangedNotifier) {
-      this.eventsSubscription = this.configChangedNotifier.subscribe(() => this.handleConfigChanged());
-    } else {
-      console.warn('configChangedNotifier is undefined, cannot subscribe.');
-    }
+    this.eventsSubscription = this.configChangedNotifier.subscribe(() => this.handleConfigChanged());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
