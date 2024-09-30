@@ -11,7 +11,7 @@ export interface FeatureServiceConfig {
     /**
      * Access token
      */
-    token?: string
+    token?: string // TODO?: Perhaps move to the auth property?
 
     /**
      * Username and password for ArcGIS authentication
@@ -82,15 +82,27 @@ export interface FeatureLayerConfig {
  */
 export interface ArcGISAuthConfig {
 
+    // TODO?: May want to add authType property
+
     /**
      * The username for authentication.
      */
-    username: string
+    username?: string
 
     /**
      * The password for authentication.
      */
-    password: string
+    password?: string
+
+    /**
+     * The Client Id for OAuth
+     */
+    clientId?: string
+
+    /**
+     * The Client secret for OAuth
+     */
+    clientSecret?: string
 }
 
 /**

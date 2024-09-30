@@ -85,12 +85,22 @@ export interface ArcGISAuthConfig {
     /**
      * The username for authentication.
      */
-    username: string
+    username?: string
 
     /**
      * The password for authentication.
      */
-    password: string
+    password?: string
+
+    /**
+     * The Client Id for OAuth
+     */
+    clientId?: string
+
+    /**
+     * The Client secret for OAuth
+     */
+    clientSecret?: string
 }
 
 /**

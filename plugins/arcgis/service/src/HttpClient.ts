@@ -121,11 +121,14 @@ export class HttpClient {
      * Sends a get request to the specified url.
      * @param url The url of the get request.
      */
-    sendGet(url: string) {
+    async sendGet(url: string): Promise<any> {
         const console = this._console
+        let response;
         this.sendGetHandleResponse(url, function (chunk) {
             console.log('Response: ' + chunk);
+            response = chunk;
         })
+        return response;
     }
 
     /**
