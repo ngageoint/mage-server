@@ -12,6 +12,13 @@ import { FeatureServiceResult } from './FeatureServiceResult'
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
 // import { IQueryFeaturesOptions, queryFeatures } from '@esri/arcgis-rest-feature-service'
 
+// TODO: Remove hard coded creds
+const credentials = {
+  clientId: 'kbHGOg5BFjYf1sTA',
+  portal: 'https://arcgis.geointnext.com/arcgis/sharing/rest',
+  redirectUri: 'http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/oauth/authenticate'
+}
+
 const logPrefix = '[mage.arcgis]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
 const consoleOverrides = logMethods.reduce((overrides, fn) => {
@@ -64,11 +71,10 @@ function getServerUrl(featureServiceUrl: string): string {
    *
    * @throws {Error} If the identity manager could not be created due to missing required query parameters.
    */
-async function handleAuthentication(req: express.Request, httpClient: HttpClient): Promise<ArcGISIdentityManager> {
+async function handleAuthentication(req: express.Request, httpClient: HttpClient, processor: ObservationProcessor): Promise<ArcGISIdentityManager> {
   const featureUsername = req.query.username as string | undefined;
   const featurePassword = req.query.password as string | undefined;
   const featureClientId = req.query.clientId as string | undefined;
-  const featureClientSecret = req.query.clientSecret as string | undefined;
   const featureServer = req.query.server as string | undefined;
   const featurePortal = req.query.portal as string | undefined;
   const featureToken = req.query.token as string | undefined;
@@ -79,7 +85,11 @@ async function handleAuthentication(req: express.Request, httpClient: HttpClient
   try {
     if (featureToken) {
       console.log('Token provided for authentication');
-      identityManager = await ArcGISIdentityManager.fromToken({ token: featureToken, server: getServerUrl(req.query.featureUrl as string ?? ''), portal: portalUrl });
+      identityManager = await ArcGISIdentityManager.fromToken({
+        token: featureToken,
+        server: getServerUrl(req.query.featureUrl as string ?? ''),
+        portal: portalUrl
+      });
     } else if (featureUsername && featurePassword) {
       console.log('Username and password provided for authentication, username:' + featureUsername);
       identityManager = await ArcGISIdentityManager.signIn({
@@ -87,22 +97,39 @@ async function handleAuthentication(req: express.Request, httpClient: HttpClient
         password: featurePassword,
         portal: portalUrl,
       });
-    } else if (featureClientId && featureClientSecret) {
-      console.log('ClientId and Client secret provided for authentication');
-      const params = {
-        client_id: featureClientId,
-        client_secret: featureClientSecret,
-        grant_type: 'client_credentials',
-        expiration: 900
-      }
+    } else if (featureClientId) {
+      console.log('Client ID provided for authentication');
 
-      const url = `${portalUrl}/oauth2/token?client_id=${params.client_id}&client_secret=${params.client_secret}&grant_type=${params.grant_type}&expiration=${params.expiration}`
-      const response = await httpClient.sendGet(url);
-      identityManager = await ArcGISIdentityManager.fromToken({
-        clientId: featureClientId,
-        token: JSON.parse(response)?.access_token || '',
-        portal: portalUrl
-      });
+      // Check if feature service has refresh token and use that to generate token to use
+      // Else complain
+      const config = await processor.safeGetConfig();
+      const featureService = config.featureServices.find((service) => service.auth?.clientId === featureClientId);
+      const authToken = featureService?.auth?.authToken;
+      const authTokenExpires = featureService?.auth?.authTokenExpires as string;
+      if (authToken && new Date(authTokenExpires) > new Date()) {
+        // TODO: error handling
+        identityManager = await ArcGISIdentityManager.fromToken({
+          clientId: featureClientId,
+          token: authToken,
+          portal: portalUrl
+        });
+      } else {
+        const refreshToken = featureService?.auth?.refreshToken;
+        const refreshTokenExpires = featureService?.auth?.refreshTokenExpires as string;
+        if (refreshToken && new Date(refreshTokenExpires) > new Date()) {
+          const url = `${portalUrl}/oauth2/token?client_id=${featureClientId}&refresh_token=${refreshToken}&grant_type=refresh_token`
+          const response = await httpClient.sendGet(url)
+          // TODO: error handling
+          identityManager = await ArcGISIdentityManager.fromToken({
+            clientId: featureClientId,
+            token: response.access_token,
+            portal: portalUrl
+          });
+          // TODO: update authToken to new token
+        } else {
+          throw new Error('Refresh token missing or expired.')
+        }
+      }
     } else {
       throw new Error('Missing required query parameters to authenticate (token or username/password).');
     }
@@ -144,7 +171,51 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
       webRoutes: {
         public: (requestContext: GetAppRequestContext) => {
           const routes = express.Router().use(express.json());
-          // TODO: Add User initiated Oauth
+          routes.get("/oauth/sign-in", async (req, res) => {
+            const clientId = req.query.clientId as string;
+            const portal = req.query.portalUrl as string;
+            const redirectUri = req.query.redirectUrl as string;
+            // TODO: Replace with better way if possible to pass creds to /oauth/authenticate
+            const config = await processor.safeGetConfig();
+            config.featureServices.push({
+              url: portal,
+              layers: [],
+              auth: {
+                clientId: clientId,
+                redirectUri: redirectUri
+              }
+            })
+            await processor.putConfig(config);
+            ArcGISIdentityManager.authorize({
+              clientId,
+              portal,
+              redirectUri
+            }, res);
+          })
+          routes.get('/oauth/authenticate', async (req, res) => {
+            const code = req.query.code as string;
+            // TODO: Use req or session data to find correct feature service instead of hard coding
+            // TODO: error handling
+            const config = await processor.safeGetConfig();
+            const featureService = config.featureServices[0];
+            const creds = {
+              clientId: featureService.auth?.clientId as string,
+              redirectUri: featureService.auth?.redirectUri as string,
+              portal: featureService.url as string
+            }
+            ArcGISIdentityManager.exchangeAuthorizationCode(creds, code)
+              .then(async (idManager: ArcGISIdentityManager) => {
+                featureService.auth = {
+                  ...featureService.auth,
+                  authToken: idManager.token,
+                  authTokenExpires: idManager.tokenExpires.toISOString(),
+                  refreshToken: idManager.refreshToken,
+                  refreshTokenExpires: idManager.refreshTokenExpires.toISOString()
+                }
+                await processor.putConfig(config);
+                res.status(200).json({})
+              }).catch((error) => res.status(400).json(error))
+          })
           return routes
         },
         protected: (requestContext: GetAppRequestContext) => {
@@ -180,7 +251,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               const httpClient = new HttpClient(console);
 
               try {
-                identityManager = await handleAuthentication(req, httpClient);
+                identityManager = await handleAuthentication(req, httpClient, processor);
 
                 const featureUrlAndToken = featureUrl + '?token=' + encodeURIComponent(identityManager.token);
                 console.log('featureUrlAndToken', featureUrlAndToken);
