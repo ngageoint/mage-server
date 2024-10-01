@@ -123,12 +123,16 @@ export class HttpClient {
      */
     async sendGet(url: string): Promise<any> {
         const console = this._console
-        let response;
-        this.sendGetHandleResponse(url, function (chunk) {
-            console.log('Response: ' + chunk);
-            response = chunk;
-        })
-        return response;
+        return new Promise((resolve, reject) => {
+            try {
+                this.sendGetHandleResponse(url, function (chunk) {
+                    console.log('Response: ' + chunk);
+                    resolve(JSON.parse(chunk));
+                })
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**

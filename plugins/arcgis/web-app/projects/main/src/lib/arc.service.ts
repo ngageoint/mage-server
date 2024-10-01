@@ -44,7 +44,7 @@ export class ArcService {
       }
 
       subject.next(event.data)
-
+      // TODO: Fix window to send data
       // authWindow?.close();
     }
 

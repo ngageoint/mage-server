@@ -98,9 +98,29 @@ export interface ArcGISAuthConfig {
     clientId?: string
 
     /**
-     * The Client secret for OAuth
+     * The redirectUri for OAuth
      */
-    clientSecret?: string
+    redirectUri?: string
+
+    /**
+     * The temporary auth token for OAuth
+     */
+    authToken?: string
+
+        /**
+     * The expiration date for the temporary token
+     */
+    authTokenExpires?: string
+
+    /**
+     * The Refresh token for OAuth
+     */
+    refreshToken?: string
+
+    /**
+     * The expiration date for the Refresh token
+     */
+    refreshTokenExpires?: string
 }
 
 /**
