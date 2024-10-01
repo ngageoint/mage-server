@@ -248,7 +248,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               try {
                 identityManager = await handleAuthentication(req, httpClient, processor);
 
-                const featureUrlAndToken = featureUrl + '?token=' + identityManager.token;
+                const featureUrlAndToken = featureUrl + '?token=' + encodeURIComponent(identityManager.token);
                 console.log('featureUrlAndToken', featureUrlAndToken);
     
                 httpClient.sendGetHandleResponse(featureUrlAndToken, (chunk) => {
