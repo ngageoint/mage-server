@@ -1,6 +1,81 @@
 <div class="arc-admin">
   <h1>ArcGIS Configuration</h1>
-  <section class="arc-processing">
+  <br/>
+
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>
+        Processing <button class="edit-button" mat-icon-button (click)="onEditProcessing()"><mat-icon>edit</mat-icon></button>
+      </mat-card-title>
+      <mat-card-subtitle>MAGE ArcGIS plugin processing settings.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="processing">
+        <table class="processing-table">
+          <tr>
+            <th>Enabled
+              <button class="info-button" mat-icon-button
+                (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.enabled}}</td>
+          </tr>
+          <tr>
+            <th>Interval (s)
+              <button class="info-button" mat-icon-button
+                (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.intervalSeconds}}</td>
+          </tr>
+          <tr>
+            <th>Startup Interval (s)
+              <button class="info-button" mat-icon-button
+                (click)="showInfo('Startup Interval', 'Startup interval in seconds to wait for feature layer processors to be ready')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.startupIntervalSeconds}}</td>
+          </tr>
+          <tr>
+            <th>Update Interval (s)
+              <button class="info-button" mat-icon-button
+                (click)="showInfo('Update Interval', 'Processing wait time interval in seconds when pending observation updates exist')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.updateIntervalSeconds}}</td>
+          </tr>
+          <tr>
+            <th>Batch Size
+              <button class="info-button" mat-icon-button
+                (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.batchSize}}</td>
+          </tr>
+          <tr>
+            <th>Attachment Tolerance (ms)
+              <button class="info-button" mat-icon-button
+                (click)="showInfo('Attachment Tolerance', 'Time tolerance in milliseconds to consider an attachment as modified compared to the observation')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.attachmentModifiedTolerance}}</td>
+          </tr>
+        </table>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button (click)="onEditProcessing()" mat-button>Edit</button>
+    </mat-card-actions>
+  </mat-card>
+
+
+  <!-- <section class="arc-processing">
     <header>
       <h2>Processing <button class="edit-button" mat-icon-button (click)="onEditProcessing()"><mat-icon>edit</mat-icon></button></h2>
       <p class="subheading">MAGE ArcGIS plugin processing settings.</p>
@@ -71,7 +146,7 @@
         </tr>
       </table>
     </div>
-  </section>
+  </section> -->
   <arc-layer [config]=config (configChanged)=configChanged($event)></arc-layer>
   <arc-event [config]=config (configChanged)=configChanged($event) [configChangedNotifier]=configChangedNotifier.asObservable()></arc-event>
   <section class="arc-fields">
