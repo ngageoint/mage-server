@@ -22,7 +22,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
   @Input('config') config: ArcGISPluginConfig = defaultArcGISPluginConfig;
   private configSet = false;
 
-  @Input() configChangedNotifier: Observable<void>; // Default to an empty observable
+  @Input() configChangedNotifier: Observable<void>;
 
   @Output() configChanged = new EventEmitter<ArcGISPluginConfig>();
 
