@@ -175,17 +175,17 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             const clientId = req.query.clientId as string;
             const portal = req.query.portalUrl as string;
             const redirectUri = req.query.redirectUrl as string;
-            // TODO: Replace with better way if possible
-            // const config = await processor.safeGetConfig();
-            // config.featureServices.push({
-            //   url: portal,
-            //   layers: [],
-            //   auth: {
-            //     clientId: clientId,
-            //     redirectUri: redirectUri
-            //   }
-            // })
-            // processor.putConfig(config);
+            // TODO: Replace with better way if possible to pass creds to /oauth/authenticate
+            const config = await processor.safeGetConfig();
+            config.featureServices.push({
+              url: portal,
+              layers: [],
+              auth: {
+                clientId: clientId,
+                redirectUri: redirectUri
+              }
+            })
+            await processor.putConfig(config);
             ArcGISIdentityManager.authorize({
               clientId,
               portal,
@@ -194,20 +194,25 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
           })
           routes.get('/oauth/authenticate', async (req, res) => {
             const code = req.query.code as string;
-            // TODO: get creds from /oauth/sign-in
-            // const config = await processor.safeGetConfig();
-            // const featureService = config.featureServices[0];
-            ArcGISIdentityManager.exchangeAuthorizationCode(credentials, code)
+            // TODO: Use req or session data to find correct feature service instead of hard coding
+            // TODO: error handling
+            const config = await processor.safeGetConfig();
+            const featureService = config.featureServices[0];
+            const creds = {
+              clientId: featureService.auth?.clientId as string,
+              redirectUri: featureService.auth?.redirectUri as string,
+              portal: featureService.url as string
+            }
+            ArcGISIdentityManager.exchangeAuthorizationCode(creds, code)
               .then(async (idManager: ArcGISIdentityManager) => {
-                const config = await processor.safeGetConfig();
-                config.featureServices[0].auth = {
-                  ...config.featureServices[0].auth,
+                featureService.auth = {
+                  ...featureService.auth,
                   authToken: idManager.token,
                   authTokenExpires: idManager.tokenExpires.toISOString(),
                   refreshToken: idManager.refreshToken,
                   refreshTokenExpires: idManager.refreshTokenExpires.toISOString()
                 }
-                processor.putConfig(config);
+                await processor.putConfig(config);
                 res.status(200).json({})
               }).catch((error) => res.status(400).json(error))
           })
