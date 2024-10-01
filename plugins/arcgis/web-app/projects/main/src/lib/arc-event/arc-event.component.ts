@@ -19,7 +19,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
 
   private eventsSubscription: Subscription;
 
-  @Input('config') config: ArcGISPluginConfig;
+  @Input('config') config: ArcGISPluginConfig = defaultArcGISPluginConfig;
   private configSet = false;
 
   @Input() configChangedNotifier: Observable<void>;
