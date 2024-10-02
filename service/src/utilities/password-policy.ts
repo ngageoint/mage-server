@@ -27,14 +27,14 @@ export type PasswordRequirements = {
 
 export type PasswordValidationResult = {
   valid: boolean
-  errorMsg: string | null
+  errorMessage: string | null
 }
 
-export async function validate(policy: PasswordRequirements, { password, previousPasswords }: { password: string, previousPasswords: string[] }): Promise<PasswordValidationResult> {
+export async function validatePasswordRequirements(password: string, policy: PasswordRequirements, previousPasswords: string[]): Promise<PasswordValidationResult> {
   if (!password) {
     return {
       valid: false,
-      errorMsg: 'Password is missing'
+      errorMessage: 'Password is missing'
     }
   }
   const valid =
@@ -46,7 +46,7 @@ export async function validate(policy: PasswordRequirements, { password, previou
     validateMinimumNumbers(policy, password) &&
     validateMinimumSpecialCharacters(policy, password) &&
     (await validatePasswordHistory(policy, password, previousPasswords))
-  return { valid, errorMsg: valid ? null : policy.helpText }
+  return { valid, errorMessage: valid ? null : policy.helpText }
 }
 
 function validatePasswordLength(policy: PasswordRequirements, password: string): boolean {
@@ -151,11 +151,11 @@ function createRestrictedRegex(restrictedChars: string): string {
   return forbiddenRegex
 }
 
-async function validatePasswordHistory(policy: PasswordRequirements, password: string, previousPasswords: string[]): Promise<boolean> {
-  if (!policy.passwordHistoryCountEnabled || !previousPasswords) {
+async function validatePasswordHistory(policy: PasswordRequirements, password: string, previousPasswordHashes: string[]): Promise<boolean> {
+  if (!policy.passwordHistoryCountEnabled || !previousPasswordHashes) {
     return true
   }
-  const truncatedHistory = previousPasswords.slice(0, policy.passwordHistoryCount)
+  const truncatedHistory = previousPasswordHashes.slice(0, policy.passwordHistoryCount)
   for (const previousPasswordHash of truncatedHistory) {
     const used = await defaultHashUtil.validPassword(password, previousPasswordHash)
     if (used) {

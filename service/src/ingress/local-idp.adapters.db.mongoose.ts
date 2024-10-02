@@ -1,8 +1,8 @@
 "use strict";
 
 import mongoose from 'mongoose'
-import { IdentityProviderModel } from './identity-providers.adapters.db.mongoose'
-import { DuplicateUsernameError, LocalIdpAccount, LocalIdpRepository, SecurityPolicy } from './local-idp.entities'
+import { IdentityProviderDocument, IdentityProviderModel } from './identity-providers.adapters.db.mongoose'
+import { LocalIdpDuplicateUsernameError, LocalIdpAccount, LocalIdpRepository, SecurityPolicy, localIdpSecurityPolicyFromIdenityProvider } from './local-idp.entities'
 
 const Schema = mongoose.Schema
 
@@ -209,11 +209,27 @@ function documentForEntity(entity: Partial<LocalIdpAccount>): Partial<LocalIdpAc
   return doc
 }
 
+function localIdpSecurityPolicyFromIdenityProvider(localIdp: IdentityProviderDocument): SecurityPolicy {
+  const settings = localIdp.settings
+  return {
+    accountLock: { ...settings.accountLock },
+    passwordRequirements: { ...settings.passwordPolicy }
+  }
+}
+
 export class LocalIdpMongooseRepository implements LocalIdpRepository {
 
-  constructor(private LocalIdpAccountModel: LocalIdpAccountModel) {}
+  constructor(private LocalIdpAccountModel: LocalIdpAccountModel, private IdentityProviderModel: IdentityProviderModel) {}
 
-  async createLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount | DuplicateUsernameError> {
+  async readSecurityPolicy(): Promise<SecurityPolicy> {
+    const idpDoc = await this.IdentityProviderModel.findOne({ name: 'local' })
+    if (idpDoc) {
+      return localIdpSecurityPolicyFromIdenityProvider(idpDoc)
+    }
+    throw new Error('local identity provider not found')
+  }
+
+  async createLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError> {
     const doc = documentForEntity(account)
     const created = await this.LocalIdpAccountModel.create(doc)
     return entityForDocument(created)
