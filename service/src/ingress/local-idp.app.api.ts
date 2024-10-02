@@ -8,5 +8,5 @@ export interface LocalIdpAuthenticateOperation {
 }
 
 export interface LocalIdpCreateAccountOperation {
-  (req: LocalIdpCredentials): Promise<AppResponse<LocalIdpAccount, EntityNotFoundError | InvalidInputError>>
+  (req: LocalIdpCredentials): Promise<AppResponse<LocalIdpAccount, InvalidInputError>>
 }
