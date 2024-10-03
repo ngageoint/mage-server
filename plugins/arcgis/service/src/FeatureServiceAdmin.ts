@@ -523,7 +523,7 @@ export class FeatureServiceAdmin {
     private httpClient(service: FeatureServiceConfig): HttpClient {
         let token = service.adminToken
         if (token == null) {
-            token = service.token
+            token = service.auth?.type == 'token' ? service.auth.token : ""
         }
         return new HttpClient(console, token)
     }
