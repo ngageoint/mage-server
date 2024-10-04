@@ -14,7 +14,7 @@ import { EventTransform } from './EventTransform';
 import { GeometryChangedHandler } from './GeometryChangedHandler';
 import { EventDeletionHandler } from './EventDeletionHandler';
 import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig"
+import { FeatureServiceConfig, FeatureLayerConfig, AuthType } from "./ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 
@@ -173,12 +173,12 @@ export class ObservationProcessor {
      * @param config The plugins configuration.
      */
     private getFeatureServiceLayers(config: ArcGISPluginConfig) {
-
+        // TODO: What is the impact of what this is doing? Do we need to account for usernamePassword auth type services?
         for (const service of config.featureServices) {
 
             const services: FeatureServiceConfig[] = []
 
-            if (service.token == null) {
+            if (service.auth?.type !== AuthType.Token || service.auth?.token == null) {
                 const tokenServices = new Map()
                 const nonTokenLayers = []
                 for (const layer of service.layers) {
@@ -204,7 +204,7 @@ export class ObservationProcessor {
             }
 
             for (const serv of services) {
-                const featureService = new FeatureService(console, serv.token)
+                const featureService = new FeatureService(console, (serv.auth?.type === AuthType.Token && serv.auth?.token != null) ? serv.auth.token : '')
                 featureService.queryFeatureService(serv.url, (featureServiceResult: FeatureServiceResult) => this.handleFeatureService(featureServiceResult, serv, config))
             }
         }
@@ -233,7 +233,7 @@ export class ObservationProcessor {
             for (const featureLayer of featureServiceConfig.layers) {
 
                 if (featureLayer.token == null) {
-                    featureLayer.token = featureServiceConfig.token
+                    featureLayer.token = featureServiceConfig.auth?.type == AuthType.Token ? featureServiceConfig.auth.token : ""
                 }
 
                 const eventNames: string[] = []

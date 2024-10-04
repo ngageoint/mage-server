@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild 
 import { FormControl, Validators } from '@angular/forms'
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { ArcService } from '../arc.service'
-import { FeatureLayerConfig, FeatureServiceConfig } from '../ArcGISConfig';
+import { AuthType, OAuthAuthConfig, TokenAuthConfig, UsernamePasswordAuthConfig, FeatureServiceConfig } from '../ArcGISConfig';
 import { MatDialog } from '@angular/material/dialog'
 import { ArcLayerSelectable } from './ArcLayerSelectable';
 import { EventResult } from '../EventsResult';
@@ -50,17 +50,25 @@ export class ArcLayerComponent implements OnInit {
   }
 
   onEditLayer(arcService: FeatureServiceConfig) {
-    console.log('Editing layer ' + arcService.url + ', token: ' + arcService.token)
-    if (arcService.token) {
-      this.currentUrl = this.addToken(arcService.url, arcService.token);
-    } else if (arcService.auth?.username && arcService.auth?.password) {
+    console.log('Editing layer ' + arcService.url)
+    if (arcService.auth?.type === AuthType.Token && arcService.auth?.token) {
+      this.currentUrl = this.addToken(arcService.url, arcService.auth.token);
+    } else if (arcService.auth?.type === AuthType.UsernamePassword && arcService.auth?.username && arcService.auth?.password) {
       this.currentUrl = this.addCredentials(arcService.url, arcService.auth?.username, arcService.auth?.password);
+    } else if (arcService.auth?.type === AuthType.OAuth && arcService.auth?.clientId) {
+      // TODO: what needs to be sent in url for this to work?
+      this.currentUrl = this.addOAuth(arcService.url, arcService.auth?.clientId);
     } else {
       throw new Error('Invalid layer config, auth credentials: ' + JSON.stringify(arcService))
     }
     
     this.arcLayerControl.setValue(arcService.url)
-    this.arcTokenControl.setValue(arcService.token != null ? arcService.token : '')
+    // Safely set the token control value based on the type
+    if (arcService.auth?.type === AuthType.Token) {
+      this.arcTokenControl.setValue(arcService.auth.token);
+    } else {
+      this.arcTokenControl.setValue('');
+    }
     this.layers = []
     let selectedLayers = new Array<string>()
     for (const layer of arcService.layers) {
@@ -166,25 +174,24 @@ export class ArcLayerComponent implements OnInit {
   }
 
   /**
-   * Adds a new layer to the configuration if it does not already exist.
+   * Adds or edits a layer configuration based on the provided parameters.
    * 
-   * @param layerUrl - The URL of the layer to be added.
-   * @param arg2 - Either the username for authentication or the token for the layer.
-   * @param arg3 - Either the password for authentication or an array of selectable layers.
-   * @param arg4 - Optional array of selectable layers if `arg3` is a string (username).
+   * @param params - The parameters for adding or editing a layer.
+   * @param params.layerUrl - The URL of the layer to add or edit.
+   * @param params.selectableLayers - An array of selectable layers.
+   * @param params.authType - The type of authentication to use.
+   * @param params.layerToken - Optional. The token for token-based authentication.
+   * @param params.username - Optional. The username for username/password authentication.
+   * @param params.password - Optional. The password for username/password authentication.
+   * @param params.clientId - Optional. The client ID for OAuth authentication.
+   * @param params.clientSecret - Optional. The client secret for OAuth authentication.
    * 
-   * This method performs the following steps:
-   * 1. Checks if the layer already exists in the configuration.
-   * 2. If the layer does not exist, it logs the addition of the layer.
-   * 3. Authenticates and retrieves a token if `arg3` is a string (password).
-   * 4. Creates a new feature layer configuration.
-   * 5. Adds selected layers to the feature layer configuration.
-   * 6. Updates the configuration and emits the change.
-   * 7. Persists the updated configuration using `arcService`.
+   * @throws Will throw an error if the provided authentication type is invalid.
    */
   onAddLayerUrl(params: {
     layerUrl: string,
     selectableLayers: ArcLayerSelectable[],
+    authType: AuthType,
     layerToken?: string,
     username?: string,
     password?: string,
@@ -192,7 +199,7 @@ export class ArcLayerComponent implements OnInit {
     clientSecret?: string
   }): void {
     let serviceConfigToEdit = null;
-    const { layerUrl, selectableLayers, layerToken, username, password, clientId, clientSecret } = params;
+    const { layerUrl, selectableLayers, authType, layerToken, username, password, clientId, clientSecret } = params;
 
     // Search if the layer in config to edit
     for (const service of this.config.featureServices) {
@@ -205,23 +212,25 @@ export class ArcLayerComponent implements OnInit {
     if (serviceConfigToEdit == null) {
       console.log('Adding layer ' + layerUrl);
 
+      const authConfigMap = {
+        [AuthType.Token]: { type: AuthType.Token, token: layerToken } as TokenAuthConfig,
+        [AuthType.UsernamePassword]: { type: AuthType.UsernamePassword, username, password } as UsernamePasswordAuthConfig,
+        [AuthType.OAuth]: { type: AuthType.OAuth, clientId, clientSecret } as OAuthAuthConfig
+      };
+
+      const authConfig = authConfigMap[authType];
+      if (!authConfig) {
+        throw new Error('Invalid authorization type: ' + authType);
+      }
+
+      // Creates a new feature layer configuration.
       const featureLayer: FeatureServiceConfig = {
         url: layerUrl,
-        token: undefined,
-        auth: {},
+        auth: authConfig,
         layers: []
       } as FeatureServiceConfig;
 
-      if (username) {
-        // Handle username and password case
-        featureLayer.auth = { username, password };
-      } else if (clientId) {
-        featureLayer.auth = { clientId, clientSecret };
-      }else {
-        // Handle token case
-        featureLayer.token = layerToken;
-      }
-      
+      // Adds selected layers to the feature layer configuration.
       if (selectableLayers) {
         for (const aLayer of selectableLayers) {
           if (aLayer.isSelected) {
@@ -233,9 +242,10 @@ export class ArcLayerComponent implements OnInit {
           }
         }
 
-        // Add the new featureLayer to the config
+        // Add the new featureLayer to the config and emits the change.
         this.config.featureServices.push(featureLayer);
         this.configChanged.emit(this.config);
+        // Persists the updated configuration using `arcService`.
         this.arcService.putArcConfig(this.config);
       }
 
@@ -266,27 +276,35 @@ export class ArcLayerComponent implements OnInit {
       }
       serviceConfigToEdit.layers = editedLayers
     }
-
+    // Emit and persist the updated configuration.
     this.configChanged.emit(this.config);
     this.arcService.putArcConfig(this.config);
   }
+  // Provide html access to auth types
+  public AuthType = AuthType;
 
+  // Helper method to add token to the URL
+  // append to layerURL query parameter, outer url already contains ? separator
   addToken(url: string, token?: string) {
     let newUrl = url
     if (token != null && token.length > 0) {
-      // TODO - appending to query param featureURL because there is an outer url using ? separater already
-      // const separator = url.includes('?') ? '&' : '?';
-      // newUrl += separator + 'token=' + token
-      newUrl += '&' + 'token=' + token
+      newUrl += '&' + 'token=' + encodeURIComponent(token)
     }
     return newUrl
   }
 
   // Helper method to add credentials to the URL
+  // append to layerURL query parameter, outer url already contains ? separator
   private addCredentials(layerUrl: string, username: string, password: string): string {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    // append to layerURL query parameter, outer url already contains ? separator
     return `${layerUrl}&username=${encodedUsername}&password=${encodedPassword}`;
+  }
+
+  // Helper method to add OAuth credentials to the URL
+  // append to layerURL query parameter, outer url already contains ? separator
+  private addOAuth(layerUrl: string, clientId: string): string {
+    const encodedClientId = encodeURIComponent(clientId);
+    return `${layerUrl}&client_id=${encodedClientId}`;
   }
 }

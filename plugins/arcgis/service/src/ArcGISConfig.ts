@@ -9,11 +9,6 @@ export interface FeatureServiceConfig {
     url: string
 
     /**
-     * Access token
-     */
-    token?: string
-
-    /**
      * Username and password for ArcGIS authentication
      */
     auth?: ArcGISAuthConfig
@@ -58,8 +53,7 @@ export interface FeatureLayerConfig {
     /**
      * Access token
      */
-    token?: string
-
+    token?: string // TODO - can this be removed? Will Layers have a token too?
     /**
      * The event ids or names that sync to this arc feature layer.
      */
@@ -77,26 +71,47 @@ export interface FeatureLayerConfig {
 
 }
 
+export enum AuthType {
+    Token = 'token',
+    UsernamePassword = 'usernamePassword',
+    OAuth = 'oauth'
+  }
+  
+
+/**
+ * Contains token-based authentication configuration.
+ */
+export interface TokenAuthConfig {
+    type: AuthType.Token
+    token: string
+    authTokenExpires?: string
+}
+
 /**
  * Contains username and password for ArcGIS server authentication.
  */
-export interface ArcGISAuthConfig {
-
+export interface UsernamePasswordAuthConfig {
+    type: AuthType.UsernamePassword
     /**
      * The username for authentication.
      */
-    username?: string
+    username: string
 
     /**
      * The password for authentication.
      */
-    password?: string
+    password: string
+}
 
+/**
+ * Contains OAuth authentication configuration.
+ */
+export interface OAuthAuthConfig {
+    type: AuthType.OAuth
     /**
      * The Client Id for OAuth
      */
-    clientId?: string
-
+    clientId: string
     /**
      * The redirectUri for OAuth
      */
@@ -122,6 +137,14 @@ export interface ArcGISAuthConfig {
      */
     refreshTokenExpires?: string
 }
+
+/**
+ * Union type for authentication configurations.
+ */
+export type ArcGISAuthConfig = 
+    | TokenAuthConfig
+    | UsernamePasswordAuthConfig
+    | OAuthAuthConfig
 
 /**
  * Attribute configurations

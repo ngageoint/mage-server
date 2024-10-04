@@ -6,6 +6,7 @@ import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plu
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
 import express from 'express'
 import { ArcGISPluginConfig } from './ArcGISPluginConfig'
+import { OAuthAuthConfig, AuthType } from './ArcGISConfig'
 import { ObservationProcessor } from './ObservationProcessor'
 import { HttpClient } from './HttpClient'
 import { FeatureServiceResult } from './FeatureServiceResult'
@@ -103,9 +104,9 @@ async function handleAuthentication(req: express.Request, httpClient: HttpClient
       // Check if feature service has refresh token and use that to generate token to use
       // Else complain
       const config = await processor.safeGetConfig();
-      const featureService = config.featureServices.find((service) => service.auth?.clientId === featureClientId);
-      const authToken = featureService?.auth?.authToken;
-      const authTokenExpires = featureService?.auth?.authTokenExpires as string;
+      const featureService = config.featureServices.find((service) => service.auth?.type === AuthType.OAuth);
+      const authToken = (featureService?.auth as OAuthAuthConfig)?.authToken;
+      const authTokenExpires = (featureService?.auth as OAuthAuthConfig)?.authTokenExpires as string;
       if (authToken && new Date(authTokenExpires) > new Date()) {
         // TODO: error handling
         identityManager = await ArcGISIdentityManager.fromToken({
@@ -114,8 +115,8 @@ async function handleAuthentication(req: express.Request, httpClient: HttpClient
           portal: portalUrl
         });
       } else {
-        const refreshToken = featureService?.auth?.refreshToken;
-        const refreshTokenExpires = featureService?.auth?.refreshTokenExpires as string;
+        const refreshToken = (featureService?.auth as OAuthAuthConfig)?.refreshToken;
+        const refreshTokenExpires = (featureService?.auth as OAuthAuthConfig)?.refreshTokenExpires as string;
         if (refreshToken && new Date(refreshTokenExpires) > new Date()) {
           const url = `${portalUrl}/oauth2/token?client_id=${featureClientId}&refresh_token=${refreshToken}&grant_type=refresh_token`
           const response = await httpClient.sendGet(url)
@@ -131,7 +132,7 @@ async function handleAuthentication(req: express.Request, httpClient: HttpClient
         }
       }
     } else {
-      throw new Error('Missing required query parameters to authenticate (token or username/password).');
+      throw new Error('Missing required query parameters to authenticate (token or username/password or oauth parameters).');
     }
 
     console.log('Identity Manager token', identityManager.token);
@@ -181,6 +182,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               url: portal,
               layers: [],
               auth: {
+                type: AuthType.OAuth,
                 clientId: clientId,
                 redirectUri: redirectUri
               }
@@ -199,8 +201,8 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             const config = await processor.safeGetConfig();
             const featureService = config.featureServices[0];
             const creds = {
-              clientId: featureService.auth?.clientId as string,
-              redirectUri: featureService.auth?.redirectUri as string,
+              clientId: (featureService.auth as OAuthAuthConfig)?.clientId as string,
+              redirectUri: (featureService.auth as OAuthAuthConfig)?.redirectUri as string,
               portal: featureService.url as string
             }
             ArcGISIdentityManager.exchangeAuthorizationCode(creds, code)
@@ -210,7 +212,9 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   authToken: idManager.token,
                   authTokenExpires: idManager.tokenExpires.toISOString(),
                   refreshToken: idManager.refreshToken,
-                  refreshTokenExpires: idManager.refreshTokenExpires.toISOString()
+                  refreshTokenExpires: idManager.refreshTokenExpires.toISOString(),
+                  type: AuthType.OAuth,
+                  clientId: creds.clientId
                 }
                 await processor.putConfig(config);
                 res.status(200).json({})
