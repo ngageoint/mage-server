@@ -2,9 +2,8 @@ import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog'
 import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, AttributeValueConfig } from '../ArcGISConfig';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
-import { ArcService } from '../arc.service'
+import { ArcService, Form, MageEvent } from '../arc.service'
 import { Subject } from 'rxjs';
-import { EventResult, FormResult } from '../EventsResult';
 
 @Component({
   selector: 'arc-admin',
@@ -26,7 +25,7 @@ export class ArcAdminComponent implements OnInit {
   editName: string;
   editValue: any;
   editOptions: any[];
-  events: EventResult[] = [];
+  events: MageEvent[] = [];
 
   @ViewChild('infoDialog', { static: true })
   private infoTemplate: TemplateRef<unknown>
@@ -59,6 +58,9 @@ export class ArcAdminComponent implements OnInit {
     this.editFieldMappings = false;
     arcService.fetchArcConfig().subscribe(x => {
       this.config = x;
+      if (!this.config.baseUrl) {
+        this.config.baseUrl = window.location.origin
+      }
       arcService.fetchPopulatedEvents().subscribe(x => this.handleEventResults(x));
     })
   }
@@ -71,7 +73,7 @@ export class ArcAdminComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  handleEventResults(x: EventResult[]) {
+  handleEventResults(x: MageEvent[]) {
     this.events = x
   }
 
@@ -311,7 +313,7 @@ export class ArcAdminComponent implements OnInit {
     return omit
   }
 
-  findEvent(event: string): EventResult | undefined {
+  findEvent(event: string): MageEvent | undefined {
     let eventResult = undefined
     if (this.events != undefined) {
       const index = this.events.findIndex((element) => {
@@ -324,7 +326,7 @@ export class ArcAdminComponent implements OnInit {
     return eventResult
   }
 
-  findForm(event: string, form: string): FormResult | undefined {
+  findForm(event: string, form: string): Form | undefined {
     let formResult = undefined
     let eventResult = this.findEvent(event)
     if (eventResult != undefined && eventResult.forms != undefined) {

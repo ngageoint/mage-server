@@ -1,0 +1,97 @@
+<div class="dialog">
+  <div mat-dialog-title>ArcGIS Feature Service</div>
+
+  <mat-dialog-content>
+    <div class="dialog-content">
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate">
+          <mat-expansion-panel-header>
+            <mat-panel-title>Feature Service</mat-panel-title>
+          </mat-expansion-panel-header>
+          
+          <form class="validate" [formGroup]="layerForm" class="form">
+            <mat-form-field>
+              <mat-label>URL</mat-label>
+              <input matInput formControlName="url" required
+                placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer" />
+              <mat-error *ngIf="layerForm.hasError('required')">URL is required</mat-error>
+            </mat-form-field>
+          
+            <mat-form-field appearance="fill">
+              <mat-label>Authentication</mat-label>
+              <mat-select formControlName="authenticationType">
+                <mat-option *ngFor="let authenticationType of authenticationTypes" [value]="authenticationType.value">
+                  {{authenticationType.title}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          
+            <ng-container [ngSwitch]="layerForm.controls.authenticationType.value">
+              <div *ngSwitchCase="AuthenticationType.Token" formGroupName="token">
+                <mat-form-field appearance="fill">
+                  <mat-label>Token</mat-label>
+                  <input matInput formControlName="token" required />
+                  <mat-error>Token is required</mat-error>
+                </mat-form-field>
+              </div>
+              <div *ngSwitchCase="AuthenticationType.OAuth" formGroupName="oauth">
+                <mat-form-field appearance="fill">
+                  <mat-label>Client Id</mat-label>
+                  <input matInput formControlName="clientId" required />
+                  <mat-error>Client Id is required</mat-error>
+                </mat-form-field>
+              </div>
+              <div *ngSwitchCase="AuthenticationType.UsernamePassword" formGroupName="local">
+                <mat-form-field appearance="fill">
+                  <mat-label>Username</mat-label>
+                  <input matInput formControlName="username" required />
+                  <mat-error>Username Id is required</mat-error>
+                </mat-form-field>
+          
+                <mat-form-field appearance="fill">
+                  <mat-label>Password</mat-label>
+                  <input matInput formControlName="password" type="password" required />
+                  <mat-error>Password is required</mat-error>
+                </mat-form-field>
+              </div>
+            </ng-container>
+          </form>
+      
+          <div class="actions">
+            <button mat-flat-button color="primary" [disabled]="loading" (click)="onValidate()">
+              <div class="actions__save">
+                <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
+                <span>Validate</span>
+              </div>
+            </button>
+          </div>
+        </mat-expansion-panel>
+      
+        <mat-expansion-panel [expanded]="state === State.Layers"  (opened)="state = State.Layers">
+          <mat-expansion-panel-header>
+            <mat-panel-title>Layers</mat-panel-title>
+          </mat-expansion-panel-header>
+      
+          <form [formGroup]="layerForm" class="form">      
+            <div>
+              <mat-selection-list #layerList color="primary" class="layers">
+                <mat-list-option *ngFor="let layer of layers" [value]="layer.name" [selected]="hasLayer(layer)">
+                  {{layer.name}}
+                </mat-list-option>
+              </mat-selection-list>
+            </div>
+
+            <div class="actions">
+              <button mat-flat-button color="primary" [disabled]="loading" (click)="onSave()">
+                <div class="actions__save">
+                  <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
+                  <span>Save</span>
+                </div>
+              </button>
+            </div>
+          </form>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+  </mat-dialog-content>
+</div>

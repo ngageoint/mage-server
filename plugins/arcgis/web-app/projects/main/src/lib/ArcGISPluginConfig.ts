@@ -11,6 +11,11 @@ export interface ArcGISPluginConfig {
   enabled: boolean
 
   /**
+   * Mage base server url
+   */
+  baseUrl: string
+
+  /**
    * Query the database for new observations to process at the given
    * repeating time interval in seconds.
    */
@@ -128,7 +133,8 @@ export interface ArcGISPluginConfig {
 }
 
 export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
-  enabled: true,
+  enabled: false,
+  baseUrl: '',
   intervalSeconds: 60,
   startupIntervalSeconds: 1,
   updateIntervalSeconds: 1,
