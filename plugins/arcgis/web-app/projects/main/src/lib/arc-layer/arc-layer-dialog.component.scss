@@ -1,0 +1,39 @@
+mat-form-field {
+  width: 100%;
+}
+
+mat-dialog-content {
+  flex: 1
+}
+
+.dialog {
+  min-width: 700px;
+  min-height: 450px;
+  position: relative;
+}
+
+.dialog-content {
+  margin: 16px 0;
+}
+
+.form {
+  font-size: 16px;
+}
+
+.layers {
+  margin-bottom: 16px;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+}
+
+.actions__save {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}

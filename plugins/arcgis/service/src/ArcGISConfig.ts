@@ -32,7 +32,6 @@ export interface FeatureServiceConfig {
      * The feature layers.
      */
     layers: FeatureLayerConfig[]
-
 }
 
 /**
@@ -125,7 +124,7 @@ export interface OAuthAuthConfig {
         /**
      * The expiration date for the temporary token
      */
-    authTokenExpires?: string
+    authTokenExpires?: number
 
     /**
      * The Refresh token for OAuth
@@ -135,7 +134,7 @@ export interface OAuthAuthConfig {
     /**
      * The expiration date for the Refresh token
      */
-    refreshTokenExpires?: string
+    refreshTokenExpires?: number
 }
 
 /**
