@@ -122,12 +122,10 @@ export async function getIdentityManager(
 			const portal = getPortalUrl(featureService)
 			const { clientId, authToken, authTokenExpires, refreshToken, refreshTokenExpires } = featureService.auth
 			if (authToken && new Date(authTokenExpires || 0) > new Date()) {
-				return new ArcGISIdentityManager({
+				return ArcGISIdentityManager.fromToken({
 					clientId: clientId,
 					token: authToken,
 					tokenExpires: new Date(authTokenExpires || 0),
-					refreshToken: refreshToken,
-					refreshTokenExpires: new Date(refreshTokenExpires || 0),
 					portal: getPortalUrl(featureService),
 					server: getServerUrl(featureService)
 				})
