@@ -54,15 +54,13 @@ export class ArcService implements ArcServiceInterface {
     return this.http.get<FeatureLayer[]>(`${baseUrl}/featureService/layers?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}`)
   }
 
-  oauth(featureServiceUrl: string, clientId: string): Observable<any> {
-    let subject = new Subject<any>();
+  oauth(featureServiceUrl: string, clientId: string): Observable<FeatureServiceConfig> {
+    let subject = new Subject<FeatureServiceConfig>();
 
     const url = `${baseUrl}/oauth/signin?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}&clientId=${encodeURIComponent(clientId)}`;
     const oauthWindow = window.open(url, "_blank");
 
     const listener = (event: any) => {
-      console.log('got window message', event)
-
       window.removeEventListener('message', listener, false);
 
       if (event.origin !== window.location.origin) {
@@ -79,8 +77,8 @@ export class ArcService implements ArcServiceInterface {
     return subject.asObservable()
   }
 
-  validateFeatureService(service: FeatureServiceConfig): Observable<any> {
-    return this.http.post(`${baseUrl}/featureService/validate`, service) 
+  validateFeatureService(service: FeatureServiceConfig): Observable<FeatureServiceConfig> {
+    return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/validate`, service) 
   }
 
   fetchEvents(): Observable<MageEvent[]> {

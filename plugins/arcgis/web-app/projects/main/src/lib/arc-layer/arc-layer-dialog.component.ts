@@ -102,30 +102,31 @@ export class ArcLayerDialogComponent {
 			case AuthType.Token: {
 				const { token } = this.layerForm.controls.token.value
 				this.featureService = { url, auth: { type: AuthType.Token, token }, layers: [] }
-				this.arcService.validateFeatureService(this.featureService).subscribe(() => this.validated(url))
+				this.arcService.validateFeatureService(this.featureService).subscribe((service) => this.validated(service))
 
 				break;
 			}
 			case AuthType.OAuth: {
 				const { clientId } = this.layerForm.controls.oauth.value
 				this.featureService = { url, auth: { type: AuthType.OAuth, clientId }, layers: [] }
-				this.arcService.oauth(url, clientId).subscribe(() => this.validated(url))
+				this.arcService.oauth(url, clientId).subscribe((service) => this.validated(service))
 
 				break;
 			}
 			case AuthType.UsernamePassword: {
 				const { username, password } = this.layerForm.controls.local.value
 				this.featureService = { url, auth: { type: AuthType.UsernamePassword, username, password }, layers: [] }
-				this.arcService.validateFeatureService(this.featureService).subscribe(() => this.validated(url))
+				this.arcService.validateFeatureService(this.featureService).subscribe((service) => this.validated(service))
 
 				break;
 			}
 		}
 	}
 
-	validated(url:  string): void {
-		this.fetchLayers(url)
+	validated(service: FeatureServiceConfig): void {
 		this.state = State.Layers
+		this.featureService = service
+		this.fetchLayers(service.url)
 	}
 
 	onSave(): void {

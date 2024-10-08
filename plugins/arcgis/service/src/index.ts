@@ -125,7 +125,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 <html>
                   <head>
                     <script>
-                      window.opener.postMessage('authenticated', '${req.protocol}://${req.headers.host}');
+                      window.opener.postMessage(${JSON.stringify(service)}, '${req.protocol}://${req.headers.host}');
                     </script>
                   </head>
                 </html>
