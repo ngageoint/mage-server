@@ -75,9 +75,7 @@ export class ObservationService {
 
   archiveObservationForEvent(event, observation): Observable<any> {
     return this.client.post<any>(`/api/events/${event.id}/observations/${observation.id}/states`, { name: 'archive' }).pipe(
-      map(observation => {
-        return this.transformObservations(observation, event)
-      })
+      map(() => observation)
     )
   }
 
