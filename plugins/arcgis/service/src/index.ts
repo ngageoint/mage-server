@@ -12,7 +12,7 @@ import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { FeatureServiceConfig } from './ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
-import { getIdentityManager, getPortalUrl } from './FeatureService'
+import { getIdentityManager, getPortalUrl } from './ArcGISIdentityManagerFactory'
 
 const logPrefix = '[mage.arcgis]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -157,7 +157,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               console.info('Applying ArcGIS plugin config...')
               const arcConfig = req.body as ArcGISPluginConfig
               const configString = JSON.stringify(arcConfig)
-              console.info(configString)
+              console.info(configString) //TODO this puts user password in logs. Should we use debug or avoid logging?
               processor.putConfig(arcConfig)
               res.sendStatus(200)
             })
@@ -181,6 +181,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
             try {
               const httpClient = new HttpClient(console)
+              // Create the IdentityManager instance to validate credentials
               await getIdentityManager(service!, httpClient)
               let existingService = config.featureServices.find(service => service.url === url)
               if (existingService) {
@@ -192,7 +193,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               await processor.putConfig(config)
               return res.send(service)
             } catch (err) {
-              return res.send('Invalid username/password').status(400)
+              return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
           })
             

@@ -1,9 +1,6 @@
 import { LayerInfoResult } from "./LayerInfoResult";
 import { FeatureServiceResult } from "./FeatureServiceResult";
 import { HttpClient } from "./HttpClient";
-import { AuthType, FeatureServiceConfig } from "./ArcGISConfig";
-import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
-import { URL } from "node:url"
 
 /**
  * Queries arc feature services and layers.
@@ -80,72 +77,5 @@ export class FeatureService {
 				this._console.error(e)
 			}
 		}
-	}
-}
-
-export function getPortalUrl(featureService: FeatureServiceConfig | string): string {
-	const url = getFeatureServiceUrl(featureService)
-	return `https://${new URL(url).hostname}/arcgis/sharing/rest`
-}
-
-export function getServerUrl(featureService: FeatureServiceConfig | string): string {
-	const url = getFeatureServiceUrl(featureService)
-	return `https://${url.hostname}/arcgis`
-}
-
-export function getFeatureServiceUrl(featureService: FeatureServiceConfig | string): URL {
-	const url = typeof featureService === 'string' ? featureService : featureService.url
-	return new URL(url)
-}
-
-export async function getIdentityManager(
-	featureService: FeatureServiceConfig,
-	httpClient: HttpClient // TODO remove in favor of an open source lib like axios
-): Promise<ArcGISIdentityManager> {
-	switch (featureService.auth?.type) {
-		case AuthType.Token: {
-			return ArcGISIdentityManager.fromToken({
-				token: featureService.auth?.token,
-				portal: getPortalUrl(featureService),
-				server: getServerUrl(featureService)
-			})
-		}
-		case AuthType.UsernamePassword: {
-			return ArcGISIdentityManager.signIn({
-				username: featureService.auth?.username,
-				password: featureService.auth?.password,
-				portal: getPortalUrl(featureService),
-			})
-		}
-		case AuthType.OAuth: {
-			// Check if feature service has refresh token and use that to generate token to use
-			const portal = getPortalUrl(featureService)
-			const { clientId, authToken, authTokenExpires, refreshToken, refreshTokenExpires } = featureService.auth
-			if (authToken && new Date(authTokenExpires || 0) > new Date()) {
-				return ArcGISIdentityManager.fromToken({
-					clientId: clientId,
-					token: authToken,
-					tokenExpires: new Date(authTokenExpires || 0),
-					portal: getPortalUrl(featureService),
-					server: getServerUrl(featureService)
-				})
-			} else {
-				if (refreshToken && new Date(refreshTokenExpires || 0) > new Date()) {
-					const url = `${portal}/oauth2/token?client_id=${clientId}&refresh_token=${refreshToken}&grant_type=refresh_token`
-					const response = await httpClient.sendGet(url)
-					// TODO: error handling
-					return ArcGISIdentityManager.fromToken({
-						clientId: clientId,
-						token: response.access_token,
-						portal: portal
-					});
-					// TODO: update authToken to new token
-				} else {
-					// TODO the config, we need to let the user know UI side they need to authenticate again
-					throw new Error('Refresh token missing or expired')
-				}
-			}
-		}
-		default: throw new Error('Authentication type not supported')
 	}
 }
