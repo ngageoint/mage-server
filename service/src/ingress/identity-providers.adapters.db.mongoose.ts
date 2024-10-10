@@ -15,20 +15,8 @@ export type CommonIdpSettings = {
   newUserEvents?: MageEventId[]
 }
 
-export type IdentityProviderDocument = {
+export type IdentityProviderDocument = Omit<IdentityProvider, 'id'> & {
   _id: ObjectId
-  name: string
-  /**
-   * IDP type maps to an ingress authentication protocol.
-   */
-  type: string
-  lastUpdated: Date
-  enabled: boolean
-  title?: string
-  settings: CommonIdpSettings & Record<string, any>
-  textColor?: string
-  buttonColor?: string
-  icon?: Buffer
 }
 
 export type IdentityProviderModel = mongoose.Model<IdentityProviderDocument>
@@ -36,13 +24,22 @@ export type IdentityProviderModel = mongoose.Model<IdentityProviderDocument>
 export const IdentityProviderSchema = new Schema<IdentityProviderDocument>(
   {
     name: { type: String, required: true },
-    type: { type: String, required: true },
+    protocol: { type: String, required: true },
+    protocolSettings: Schema.Types.Mixed,
+    userEnrollmentPolicy: {
+      accountApprovalRequired: { type: Boolean, required: true, default: true },
+      assignRole: { type: String, required: true },
+      assignToEvents: { type: [Number], default: [] },
+      assignToTeams: { type: [String], default: [] },
+    },
+    deviceEnrollmentPolicy: {
+      deviceApprovalRequired: { type: Boolean, required: true, default: true },
+    },
     title: { type: String, required: false },
     textColor: { type: String, required: false },
     buttonColor: { type: String, required: false },
     icon: { type: Buffer, required: false },
     enabled: { type: Boolean, default: true },
-    settings: Schema.Types.Mixed
   },
   {
     timestamps: {
@@ -55,24 +52,16 @@ export const IdentityProviderSchema = new Schema<IdentityProviderDocument>(
 IdentityProviderSchema.index({ name: 1, type: 1 }, { unique: true })
 
 export function idpEntityForDocument(doc: IdentityProviderDocument): IdentityProvider {
-  const settings = doc.settings || {}
-  const userEnrollmentPolicy: UserEnrollmentPolicy = {
-    accountApprovalRequired: !!settings.usersReqAdmin?.enabled,
-    assignToTeams: doc.settings.newUserTeams || [],
-    assignToEvents: doc.settings.newUserEvents || [],
-  }
-  const deviceEnrollmentPolicy: DeviceEnrollmentPolicy = {
-    deviceApprovalRequired: !!settings.devicesReqAdmin?.enabled
-  }
+  const userEnrollmentPolicy: UserEnrollmentPolicy = { ...doc.userEnrollmentPolicy }
+  const deviceEnrollmentPolicy: DeviceEnrollmentPolicy = { ...doc.deviceEnrollmentPolicy }
   return {
     id: doc._id.toHexString(),
     name: doc.name,
     enabled: doc.enabled,
     lastUpdated: doc.lastUpdated,
-    // TODO: use protocol instance if appropriate
-    protocol: { name: doc.type },
+    protocol: doc.protocol,
     title: doc.title || doc.name,
-    protocolSettings: doc.settings,
+    protocolSettings: { ...doc.protocolSettings },
     textColor: doc.textColor,
     buttonColor: doc.buttonColor,
     icon: doc.icon,
@@ -82,21 +71,23 @@ export function idpEntityForDocument(doc: IdentityProviderDocument): IdentityPro
 }
 
 export function idpDocumentForEntity(entity: Partial<IdentityProvider>): Partial<IdentityProviderDocument> {
-  // TODO: maybe delegate to protocol to copy settings
-  const settings = entity.protocolSettings ? { ...entity.protocolSettings } as CommonIdpSettings : undefined
-  const { userEnrollmentPolicy, deviceEnrollmentPolicy } = entity
-  if (settings && userEnrollmentPolicy) {
-    settings.usersReqAdmin = { enabled: !!userEnrollmentPolicy?.accountApprovalRequired }
-    settings.newUserTeams = userEnrollmentPolicy?.assignToTeams || []
-    settings.newUserEvents = userEnrollmentPolicy?.assignToEvents || []
-  }
-  if (settings && deviceEnrollmentPolicy) {
-    settings.devicesReqAdmin = { enabled: !!deviceEnrollmentPolicy?.deviceApprovalRequired }
-  }
   const doc = {} as Partial<IdentityProviderDocument>
   const entityHasKey = (key: keyof IdentityProvider): boolean => Object.prototype.hasOwnProperty.call(entity, key)
   if (entityHasKey('id')) {
     doc._id = new mongoose.Types.ObjectId(entity.id)
+  }
+  if (entityHasKey('protocol')) {
+    doc.protocol = entity.protocol
+  }
+  if (entityHasKey('protocolSettings')) {
+    // TODO: maybe delegate to protocol to copy settings
+    doc.protocolSettings = { ...entity.protocolSettings }
+  }
+  if (entityHasKey('userEnrollmentPolicy')) {
+    doc.userEnrollmentPolicy = { ...entity.userEnrollmentPolicy! }
+  }
+  if (entityHasKey('deviceEnrollmentPolicy')) {
+    doc.deviceEnrollmentPolicy = { ...entity.deviceEnrollmentPolicy! }
   }
   if (entityHasKey('buttonColor')) {
     doc.buttonColor = entity.buttonColor
@@ -114,7 +105,7 @@ export function idpDocumentForEntity(entity: Partial<IdentityProvider>): Partial
     doc.name = entity.name
   }
   if (entityHasKey('protocol')) {
-    doc.type = entity.protocol?.name
+    doc.protocol = entity.protocol
   }
   if (entityHasKey('textColor')) {
     doc.textColor = entity.textColor

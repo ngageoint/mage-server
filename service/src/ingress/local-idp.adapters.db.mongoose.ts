@@ -210,7 +210,7 @@ function documentForEntity(entity: Partial<LocalIdpAccount>): Partial<LocalIdpAc
 }
 
 function localIdpSecurityPolicyFromIdenityProvider(localIdp: IdentityProviderDocument): SecurityPolicy {
-  const settings = localIdp.settings
+  const settings = localIdp.protocolSettings
   return {
     accountLock: { ...settings.accountLock },
     passwordRequirements: { ...settings.passwordPolicy }
@@ -232,6 +232,7 @@ export class LocalIdpMongooseRepository implements LocalIdpRepository {
   async createLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError> {
     const doc = documentForEntity(account)
     const created = await this.LocalIdpAccountModel.create(doc)
+    // TODO: handle duplicate username error
     return entityForDocument(created)
   }
 
