@@ -157,7 +157,6 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               console.info('Applying ArcGIS plugin config...')
               const arcConfig = req.body as ArcGISPluginConfig
               const configString = JSON.stringify(arcConfig)
-              console.info(configString) //TODO this puts user password in logs. Should we use debug or avoid logging?
               processor.putConfig(arcConfig)
               res.sendStatus(200)
             })
