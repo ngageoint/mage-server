@@ -3,6 +3,7 @@ import { Device, DeviceId } from '../entities/devices/entities.devices'
 import { MageEventId } from '../entities/events/entities.events'
 import { TeamId } from '../entities/teams/entities.teams'
 import { UserExpanded, UserId } from '../entities/users/entities.users'
+import { RoleId } from '../entities/authorization/entities.authorization'
 
 export interface Session {
   token: string
@@ -30,9 +31,7 @@ export interface SessionRepository {
  * that the user is valid.  Authentication protocols are OpenID Connect, OAuth, SAML, LDAP, and Mage's own local
  * password authentication database.
  */
-export interface AuthenticationProtocol {
-  name: string
-}
+export type AuthenticationProtocolId = 'local' | 'ldap' | 'oauth' | 'oidc' | 'saml'
 
 export type IdentityProviderId = string
 
@@ -47,7 +46,7 @@ export interface IdentityProvider {
   id: IdentityProviderId
   name: string
   title: string
-  protocol: AuthenticationProtocol
+  protocol: AuthenticationProtocolId
   protocolSettings: Record<string, any>
   enabled: boolean
   lastUpdated: Date
@@ -66,8 +65,7 @@ export interface UserEnrollmentPolicy {
    * When true, an administrator must approve and activate new user accounts.
    */
   accountApprovalRequired: boolean
-  // TODO: configurable role assignment
-  // assignRole: string
+  assignRole: RoleId
   assignToTeams: TeamId[]
   assignToEvents: MageEventId[]
 }
@@ -108,4 +106,26 @@ export interface IdentityProviderRepository {
    */
   updateIdp(update: Partial<IdentityProvider> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null>
   deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null>
+}
+
+/**
+ * Return a new user object from the given identity provider account information suitable to persist as newly enrolled
+ * user.  The enrollment policy for the identity provider determines the `active` flag and assigned role for the new
+ * user.
+ */
+export function createEnrollmentCandidateUser(idpAccount: IdentityProviderUser, idp: IdentityProvider): Omit<User, 'id'> {
+  const policy = idp.userEnrollmentPolicy
+  const now = new Date()
+  const candidate: Omit<User, 'id'> = {
+    active: !policy.accountApprovalRequired,
+    roleId: policy.assignRole,
+    enabled: true,
+    createdAt: now,
+    lastUpdated: now,
+    avatar: {},
+    icon: {},
+    recentEventIds: [],
+    ...idpAccount
+  }
+  return candidate
 }
