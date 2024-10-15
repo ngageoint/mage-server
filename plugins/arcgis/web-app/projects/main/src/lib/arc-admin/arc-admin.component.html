@@ -1,7 +1,5 @@
 <div class="arc-admin">
   <h1>ArcGIS Configuration</h1>
-  <br/>
-
   <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title>
@@ -73,199 +71,111 @@
       <button (click)="onEditProcessing()" mat-button>Edit</button>
     </mat-card-actions>
   </mat-card>
-
-
-  <!-- <section class="arc-processing">
-    <header>
-      <h2>Processing <button class="edit-button" mat-icon-button (click)="onEditProcessing()"><mat-icon>edit</mat-icon></button></h2>
-      <p class="subheading">MAGE ArcGIS plugin processing settings.</p>
-    </header>
-    <div class="processing">
-      <table class="processing-table">
-        <tr>
-          <th>Enabled
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.enabled}}</td>
-        </tr>
-        <tr>
-          <th>Base URL
-            <button class="info-button" mat-icon-button (click)="showInfo('Base URL', 'MAGE server base URL')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.baseUrl}}</td>
-        </tr>
-        <tr>
-          <th>Interval (s)
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.intervalSeconds}}</td>
-        </tr>
-        <tr>
-          <th>Startup Interval (s)
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Startup Interval', 'Startup interval in seconds to wait for feature layer processors to be ready')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.startupIntervalSeconds}}</td>
-        </tr>
-        <tr>
-          <th>Update Interval (s)
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Update Interval', 'Processing wait time interval in seconds when pending observation updates exist')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.updateIntervalSeconds}}</td>
-        </tr>
-        <tr>
-          <th>Batch Size
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.batchSize}}</td>
-        </tr>
-        <tr>
-          <th>Attachment Tolerance (ms)
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Attachment Tolerance', 'Time tolerance in milliseconds to consider an attachment as modified compared to the observation')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.attachmentModifiedTolerance}}</td>
-        </tr>
-      </table>
-    </div>
-  </section> -->
-  <arc-layer [config]=config (configChanged)=configChanged($event)></arc-layer>
-  <arc-event [config]=config (configChanged)=configChanged($event) [configChangedNotifier]=configChangedNotifier.asObservable()></arc-event>
-  <section class="arc-fields">
-    <header>
-      <h2>Attributes <button class="edit-button" mat-icon-button (click)="onEditAttributes()"><mat-icon>edit</mat-icon></button></h2>
-      <p class="subheading">MAGE Field to ArcGIS Attribute mappings.</p>
-    </header>
-    <div class="attributes">
-      <table class="attributes-table">
-        <tr>
-          <th>Observation Id Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the MAGE observation id')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.observationIdField}}</td>
-        </tr>
-        <tr>
-          <th>Id Separator
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Id Separator', 'When event id field is not configured, the separator combining observation ids and event ids in the observation id field')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.idSeparator}}</td>
-        </tr>
-        <tr>
-          <th>Event Id Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the MAGE event id')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.eventIdField}}</td>
-        </tr>
-        <tr>
-          <th>Last Edited Date Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Last Edited Date Field', 'The last edited date field attribute name on the ArcGIS layer')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.lastEditedDateField}}</td>
-        </tr>
-        <tr>
-          <th>Event Name Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the MAGE event name')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.eventNameField}}</td>
-        </tr>
-        <tr>
-          <th>User Id Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the MAGE user id')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.userIdField}}</td>
-        </tr>
-        <tr>
-          <th>Username Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the MAGE username')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.usernameField}}</td>
-        </tr>
-        <tr>
-          <th>User Display Name Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the MAGE user display name')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.userDisplayNameField}}</td>
-        </tr>
-        <tr>
-          <th>Device Id Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the MAGE device id')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.deviceIdField}}</td>
-        </tr>
-        <tr>
-          <th>Created At Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the MAGE created at date')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.createdAtField}}</td>
-        </tr>
-        <tr>
-          <th>Last Modified Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the same as last edited date field if editable)')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.lastModifiedField}}</td>
-        </tr>
-        <tr>
-          <th>Geometry Type Field
-            <button class="info-button" mat-icon-button
-              (click)="showInfo('Geometry Type Field', 'The ArcGIS layer text field attribute name to store the Esri geometry type')">
-              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-            </button>
-          </th>
-          <td>{{config.geometryType}}</td>
-        </tr>
-      </table>
-    </div>
+    <arc-layer [config]="config" (configChanged)="configChanged($event)"></arc-layer>
+    <arc-event [config]="config" (configChanged)="configChanged($event)" [configChangedNotifier]="configChangedNotifier.asObservable()"></arc-event>
+ <section class="arc-fields"></section>
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Attributes</mat-card-title>
+        <mat-card-subtitle>MAGE Field to ArcGIS Attribute mappings.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="attributesForm">
+          <div class="edit-attributes-form">
+            <div class="observation-id-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Observation Id Field</mat-label>
+                <input type="text" matInput formControlName="observationIdField" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE observation id</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="id-separator-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Id Separator</mat-label>
+                <input type="text" matInput formControlName="idSeparator" />
+                <mat-hint>When event id field is not configured, the separator combining observation ids and event ids in the observation id field</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="event-id-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Event Id Field</mat-label>
+                <input type="text" matInput formControlName="eventIdField" />
+                <mat-hint>The ArcGIS layer integer field attribute name to store the MAGE event id</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="last-edited-date-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Last Edited Date Field</mat-label>
+                <input type="text" matInput formControlName="lastEditedDateField" />
+                <mat-hint>The last edited date field attribute name on the ArcGIS layer</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="event-name-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Event Name Field</mat-label>
+                <input type="text" matInput formControlName="eventNameField" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE event name</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="user-id-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>User Id Field</mat-label>
+                <input type="text" matInput formControlName="userIdField" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user id</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="username-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Username Field</mat-label>
+                <input type="text" matInput formControlName="usernameField" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE username</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="user-display-name-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>User Display Name Field</mat-label>
+                <input type="text" matInput formControlName="userDisplayNameField" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user display name</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="device-id-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Device Id Field</mat-label>
+                <input type="text" matInput formControlName="deviceIdField" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE device id</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="created-at-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Created At Field</mat-label>
+                <input type="text" matInput formControlName="createdAtField" />
+                <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE created at date</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="last-modified-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Last Modified Field</mat-label>
+                <input type="text" matInput formControlName="lastModifiedField" />
+                <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the
+                  same as last edited date field if editable)</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="geometry-type-field">
+              <mat-form-field [style.width.%]="90" appearance="fill">
+                <mat-label>Geometry Type Field</mat-label>
+                <input type="text" matInput formControlName="geometryType" />
+                <mat-hint>The ArcGIS layer text field attribute name to store the Esri geometry type</mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="button-group">
+              <button mat-raised-button color="primary" type="submit" [disabled]="attributesForm.invalid">Save</button>
+              <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
     <div class="fieldOverrides">
       Field Mappings
       <button class="info-button" mat-icon-button
@@ -725,8 +635,6 @@
         </ng-container>
       </table>
     </div>
-  </section>
-</div>
 <ng-template #infoDialog let-data>
   <h3 matDialogTitle>{{infoTitle}}</h3>
   <mat-dialog-content>
