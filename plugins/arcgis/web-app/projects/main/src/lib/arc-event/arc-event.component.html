@@ -1,9 +1,13 @@
 <div class="arc-event">
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>
+        Events 
+      </mat-card-title>
+      <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
   <section class="arc-event-sync">
-    <header>
-      <h2>Events</h2>
-      <p class="subheading">Change the ArcGIS layers each MAGE event sends its observations to.</p>
-    </header>
     <div class="arcEvents" *ngIf="!model.events.length">
       <div class="arcEvent">
         There are no events synchronizing to ArcGIS layers.
@@ -32,7 +36,9 @@
       </ng-container>
     </div>
   </section>
-</div>
+</mat-card-content>
+</mat-card>
+
 <ng-template #editEventDialog let-data>
   <h2 matDialogTitle>ArcGIS layers that MAGE event named {{currentEditingEvent.name}} is synchronizing</h2>
   <mat-dialog-content>
@@ -49,3 +55,4 @@
       (click)="saveChanges()">SAVE</button>
   </mat-dialog-actions>
 </ng-template>
+</div>
