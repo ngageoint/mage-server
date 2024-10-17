@@ -1,6 +1,7 @@
 import _ from 'underscore'
 import { Component, OnInit, Inject, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
+import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { StateService } from '@uirouter/angular';
@@ -16,6 +17,11 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
   @Output() deleteComplete = new EventEmitter<boolean>();
   @Output() onDirty = new EventEmitter<boolean>();
   @Input() beginSave: any;
+
+  readonly breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Security',
+    icon: 'shield'
+  }];
 
   teams: any[] = [];
   events: any[] = [];

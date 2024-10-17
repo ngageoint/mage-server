@@ -17,10 +17,10 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
 })
 export class AuthenticationCreateComponent implements OnInit {
    breadcrumbs: AdminBreadcrumb[] = [{
-      title: 'Settings',
-      icon: 'build',
+      title: 'Security',
+      icon: 'shield',
       state: {
-         name: 'admin.settings'
+         name: 'admin.security'
       }
    }];
    strategy: Strategy;
@@ -124,13 +124,13 @@ export class AuthenticationCreateComponent implements OnInit {
 
    save(): void {
       this.authenticationConfigurationService.createConfiguration(this.strategy).then(() => {
-         this.stateService.go('admin.settings');
+         this.stateService.go('admin.security');
       }).catch((err: any) => {
          console.error(err);
          this.snackBar.open('An error occured while creating ' + this.strategy.title, null, {
             duration: 2000,
          })
-         this.stateService.go('admin.settings');
+         this.stateService.go('admin.security');
       });
    }
 

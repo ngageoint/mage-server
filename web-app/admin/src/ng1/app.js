@@ -16,6 +16,7 @@ import { UserReadService } from '@ngageoint/mage.web-core-lib/user';
 import { ContactComponent } from '../app/contact/contact.component';
 
 import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
+import { AdminAuthenticationComponent } from '../app/admin/admin-authentication/admin-authentication.component';
 import { AdminMapComponent } from '../app/admin/admin-map/admin-map.component';
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
@@ -58,6 +59,7 @@ app
   .directive('feedEdit', downgradeComponent({ component: AdminFeedEditComponent }))
   .directive('upgradedAdminMapSettings', downgradeComponent({ component: AdminMapComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
+  .directive('upgradedAdminAuthentication', downgradeComponent({ component: AdminAuthenticationComponent }))
   .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
   .directive('contact', downgradeComponent({ component: ContactComponent }))
   .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
@@ -346,16 +348,23 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
     resolve: resolveAdmin()
   });
 
-  // Admin settings routes
-  $stateProvider.state('admin.settings', {
-    url: '/settings',
-    component: "upgradedAdminSettings",
+  // Security settings routes
+  $stateProvider.state('admin.security', {
+    url: '/security',
+    component: "upgradedAdminAuthentication",
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.authenticationCreate', {
-    url: '/settings/new',
+    url: '/security/new',
     component: "authenticationCreate",
+    resolve: resolveAdmin()
+  });
+
+  // Admin settings routes
+  $stateProvider.state('admin.settings', {
+    url: '/settings',
+    component: "upgradedAdminSettings",
     resolve: resolveAdmin()
   });
 }
