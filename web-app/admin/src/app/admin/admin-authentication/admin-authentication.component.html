@@ -1,4 +1,7 @@
 <section class="mat-typography">
+    <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+</section>
+<section class="mat-typography">
     <div class="auth__action--new">
         <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); createAuthentication()"
             *ngIf="hasAuthConfigEditPermission">

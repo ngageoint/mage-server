@@ -5,11 +5,6 @@
     <div class="page-container">
         <div class="content">
             <mat-tab-group color="primary" mat-stretch-tabs>
-                <mat-tab label="Authentication">
-                    <admin-authentication (saveComplete)="onAuthenticationSaved($event)"
-                        (onDirty)="onAuthenticationDirty($event)" (deleteComplete)="onAuthenticationDeleted($event)" [beginSave]="(onSave)">
-                    </admin-authentication>
-                </mat-tab>
                 <mat-tab label="Banner">
                     <security-banner (saveComplete)="onBannerSaved($event)" (onDirty)="onBannerDirty($event)"
                         [beginSave]="(onSave)"></security-banner>
