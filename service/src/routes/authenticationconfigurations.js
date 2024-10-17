@@ -101,7 +101,7 @@ module.exports = function (app, security) {
 
       const securityData = {};
 
-      const settings = JSON.parse(req.body.settings);
+      const { settings } = req.body;
 
       Object.keys(settings).forEach(key => {
         if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
@@ -184,7 +184,7 @@ module.exports = function (app, security) {
 
       const securityData = {};
 
-      const settings = JSON.parse(req.body.settings);
+      const { settings } = req.body;
 
       Object.keys(settings).forEach(key => {
         if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {

@@ -58,6 +58,12 @@
       <div>Map</div>
     </div>
 
+    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.security'}" ng-click="$ctrl.tabChanged('admin.security')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.security'}"></div>
+      <i class="fa fa-shield"></i>
+      <div>Security</div>
+    </div>
+
     <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.settings'}" ng-click="$ctrl.tabChanged('admin.settings')">
       <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.settings'}"></div>
       <i class="fa fa-wrench"></i>
