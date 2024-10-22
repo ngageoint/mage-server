@@ -20,6 +20,14 @@
             <td>{{config.enabled}}</td>
           </tr>
           <tr>
+            <th>Base URL
+              <button class="info-button" mat-icon-button (click)="showInfo('Base URL', 'MAGE server base URL')">
+                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+              </button>
+            </th>
+            <td>{{config.baseUrl}}</td>
+          </tr>
+          <tr>
             <th>Interval (s)
               <button class="info-button" mat-icon-button
                 (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
@@ -657,6 +665,17 @@
         </mat-form-field>
         <button class="info-button" mat-icon-button
           (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="edit-enabled-field">
+        <mat-form-field [style.width.%]="90">
+          <input type="text" matInput value="{{editConfig.baseUrl}}"
+            (keyup)="setField('baseUrl', baseUrlField.value)"
+            (input)="setField('baseUrl', baseUrlField.value)" #baseUrlField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Base URL', 'Mage server base URL')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
       </div>
