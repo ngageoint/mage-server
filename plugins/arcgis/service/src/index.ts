@@ -120,7 +120,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
 
               await processor.putConfig(config)
-
+              // TODO: This seems like a bad idea to send the access tokens to the front end. It has no use for them and could potentially be a security concern
               res.send(`
                 <html>
                   <head>
@@ -181,7 +181,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             try {
               const httpClient = new HttpClient(console)
               // Create the IdentityManager instance to validate credentials
-              await getIdentityManager(service!, httpClient)
+              await getIdentityManager(service!, httpClient, processor)
               let existingService = config.featureServices.find(service => service.url === url)
               if (existingService) {
                 existingService = { ...existingService }
@@ -206,7 +206,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               
             const httpClient = new HttpClient(console)
             try {
-              const identityManager = await getIdentityManager(featureService, httpClient)
+              const identityManager = await getIdentityManager(featureService, httpClient, processor)
               const response = await request(url, {
                 authentication: identityManager
               })
