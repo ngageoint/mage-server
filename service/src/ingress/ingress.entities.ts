@@ -82,19 +82,18 @@ export interface DeviceEnrollmentPolicy {
  */
 export type IdentityProviderUser = Pick<User, 'username' | 'displayName' | 'email' | 'phones'>
 
-export interface IdentityProviderHooks {
-  /**
-   * Indicate that a user has authenticated with the given identity provider and Mage can continue enrollment and/or
-   * establish a session for the user.
-   */
-  admitUserFromIdentityProvider(account: IdentityProviderUser, idp: IdentityProvider): unknown
-  /**
-   * Indicate the given user has ended their session and logged out of the given identity provider, or the user has
-   * revoked access for Mage to use the IDP for authentication.
-   */
-  terminateSessionsForUser(username: string, idp: IdentityProvider): unknown
-  accountDisabled(username: string, idp: IdentityProvider): unknown
-  accountEnabled(username: string, idp: IdentityProvider): unknown
+/**
+ * A user ingress binding is the bridge between a Mage user and an identity provider account.  When a user attempts
+ * to authenticate to Mage through an identity provider, a binding must exist between the Mage user account and the
+ * identity provider for Mage to map the identity provider account to the Mage user account.
+ */
+export interface UserIngressBinding {
+  userId: UserId
+  idpId: IdentityProviderId
+  verified: boolean
+  enabled: boolean
+  idpAccountId?: string
+  idpAccountAttrs?: Record<string, any>
 }
 
 export interface IdentityProviderRepository {
@@ -106,6 +105,14 @@ export interface IdentityProviderRepository {
    */
   updateIdp(update: Partial<IdentityProvider> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null>
   deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null>
+}
+
+export type UserIngressBindings = Map<IdentityProviderId, UserIngressBinding>
+
+export interface UserIngressBindingRepository {
+  readBindingsForUser(userId: UserId): Promise<UserIngressBindings>
+  saveUserIngressBinding(userId: UserId, binding: UserIngressBinding): Promise<UserIngressBindings | Error>
+  deleteBinding(userId: UserId, idpId: IdentityProviderId): Promise<UserIngressBinding | null>
 }
 
 /**
