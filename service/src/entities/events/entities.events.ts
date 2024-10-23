@@ -184,8 +184,6 @@ export interface MageEventRepository {
   findActiveEvents(): Promise<MageEvent[]>
   /**
    * Add a reference to the given feed ID on the given event.
-   * @param event an Event ID
-   * @param feed a Feed ID
    */
   addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null>
   findTeamsInEvent(event: MageEventId): Promise<Team[] | null>
@@ -193,7 +191,6 @@ export interface MageEventRepository {
   /**
    * Remove the given feeds from any events that reference the feed.  Return the
    * count of events the operation modified.
-   * @param feed the ID of the feed to remove from events
    */
   removeFeedsFromEvents(...feed: FeedId[]): Promise<number>
 }

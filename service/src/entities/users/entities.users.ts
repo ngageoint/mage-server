@@ -13,7 +13,7 @@ export interface User {
    */
   active: boolean
   /**
-   * The enabled flag indicates whether a user can access Mage and preform any operations.  An administrator can
+   * The enabled flag indicates whether a user can access Mage and perform any operations.  An administrator can
    * disable a user account at any time to block the user's access.
    */
   enabled: boolean
@@ -23,13 +23,12 @@ export interface User {
   email?: string
   phones: Phone[]
   /**
-   * A user's avatar is the profile picture that represents the user in list
-   * views and such.
+   * A user's avatar is the profile picture that represents the user in list views and such.
    * TODO: make this nullable rather than an empty object. that is a symptom of the mongoose schema. make sure a null value does not break clients
    */
   avatar: Avatar
   /**
-   * A user's icon is to indicate the user's location on a map display.
+   * The purpose of the user icon is to represent the user's location on a map display.
    */
   icon: UserIcon
   recentEventIds: MageEventId[]
