@@ -1,7 +1,10 @@
+import { AnyPermission } from './entities.permissions'
+
+export type RoleId = string
 
 export interface Role {
-  id: string
+  id: RoleId
   name: string
   description?: string
-  permissions: string[]
+  permissions: AnyPermission[]
 }
