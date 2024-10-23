@@ -4,17 +4,27 @@ import { Authenticator } from 'passport'
 import { Strategy as BearerStrategy } from 'passport-http-bearer'
 import { defaultHashUtil } from '../utilities/password-hashing'
 import { JWTService, Payload, TokenVerificationError, VerificationErrorReason } from './verification'
-import { LocalIdpEnrollment } from './local-idp.entities'
 import { invalidInput, InvalidInputError, MageError } from '../app.api/app.api.errors'
-import { IdentityProviderHooks } from './ingress.entities'
-import { EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
+import { IdentityProviderRepository } from './ingress.entities'
+import { AdmitFromIdentityProviderOperation, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
+import { IngressProtocolWebBinding } from './ingress.protocol.bindings'
 
-
-export type LocalIdpOperations = {
-  enrollMyself: EnrollMyselfOperation
+declare module 'express-serve-static-core' {
+  interface Request {
+    identityProviderService?: IngressProtocolWebBinding
+  }
 }
 
-export function CreateLocalIdpRoutes(localIdpApp: LocalIdpOperations, tokenService: JWTService, passport: Authenticator): express.Router {
+export type IngressOperations = {
+  enrollMyself: EnrollMyselfOperation
+  admitFromIdentityProvider: AdmitFromIdentityProviderOperation
+}
+
+function bindingFor(idpName: string): IngressProtocolWebBinding {
+  throw new Error('unimplemented')
+}
+
+export function CreateIngressRoutes(ingressApp: IngressOperations, idpRepo: IdentityProviderRepository, tokenService: JWTService, passport: Authenticator): express.Router {
 
   const captchaBearer = new BearerStrategy((token, done) => {
     const expectation = {
@@ -32,26 +42,60 @@ export function CreateLocalIdpRoutes(localIdpApp: LocalIdpOperations, tokenServi
   // TODO: signup
   // TODO: signin
 
-  // TODO: mount to /auth/local/signin
-  routes.route('/signin')
-    .post((req, res, next) => {
+  const routeToIdp = express.Router().all('/',
+    ((req, res, next) => {
+      const idpService = req.identityProviderService!
+      idpService.handleRequest(req, res, next)
+    }) as express.RequestHandler,
+    (async (err, req, res, next) => {
+      if (err) {
+        console.error('identity provider authentication error:', err)
+        return res.status(500).send('unexpected authentication result')
+      }
+      if (req.user?.from !== 'identityProvider') {
+        console.error('unexpected authentication user type:', req.user?.from)
+        return res.status(500).send('unexpected authentication result')
+      }
+      const identityProviderName = req.identityProviderService!.idp.name
+      const identityProviderUser = req.user.account
+      const ingressResult = await ingressApp.admitFromIdentityProvider({ identityProviderName, identityProviderUser })
+      if (ingressResult.error) {
+        next(ingressResult.error)
+      }
+      // if user active and enabled, send authenticated JWT and proceed to verification
+      // else
+      const account = ingressResult.success!
 
-    })
+    }) as express.ErrorRequestHandler
+  )
+
+  routes.use('/:identityProviderName',
+    (req, res, next) => {
+      const idpName = req.params.identityProviderName
+      const idpService = bindingFor(idpName)
+      if (idpService) {
+        req.identityProviderService = idpService
+        return next()
+      }
+      res.status(404).send(`${idpName} not found`)
+    },
+    routeToIdp
+  )
 
   // TODO: mount to /api/users/signups
   routes.route('/signups')
     .post(async (req, res, next) => {
       try {
-        const username = typeof req.body.username === 'string' ? req.body.username.trime() : ''
+        const username = typeof req.body.username === 'string' ? req.body.username.trim() : null
         if (!username) {
-          return res.status(400).send('Invalid signup; username is required.')
+          return res.status(400).send('Invalid signup - username is required.')
         }
-        const background = req.body.background || '#FFFFFF'
+        const background = typeof req.body.background === 'string' ? req.body.background.toLowerCase() : '#ffffff'
         const captcha = svgCaptcha.create({
           size: 6,
           noise: 4,
           color: false,
-          background: background.toLowerCase() !== '#ffffff' ? background : null
+          background: background !== '#ffffff' ? background : null
         })
         const captchaHash = await defaultHashUtil.hashPassword(captcha.text)
         const claims = { captcha: captchaHash }
@@ -99,7 +143,7 @@ export function CreateLocalIdpRoutes(localIdpApp: LocalIdpOperations, tokenServi
             ...parsedEnrollment,
             username
           }
-          const appRes = await localIdpApp.enrollMyself(enrollment)
+          const appRes = await ingressApp.enrollMyself(enrollment)
           if (appRes.success) {
             return res.json(appRes.success)
           }
