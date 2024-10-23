@@ -4,6 +4,7 @@ import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, 
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { ArcService, Form, MageEvent } from '../arc.service'
 import { Subject } from 'rxjs';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'arc-admin',
@@ -52,7 +53,9 @@ export class ArcAdminComponent implements OnInit {
   @ViewChild('editAttributeConfigDialog', { static: true })
   private editAttributeConfigTemplate: TemplateRef<unknown>
 
-  constructor(private arcService: ArcService, private dialog: MatDialog) {
+  attributesForm: FormGroup;
+
+  constructor(private arcService: ArcService, private dialog: MatDialog, private fb: FormBuilder) {
     this.config = defaultArcGISPluginConfig;
     this.editConfig = defaultArcGISPluginConfig;
     this.editFieldMappings = false;
@@ -70,13 +73,63 @@ export class ArcAdminComponent implements OnInit {
     this.configChangedNotifier.next();
   }
 
+  //map attribute form to fields 
   ngOnInit(): void {
+    this.attributesForm = this.fb.group({
+      observationIdField: [this.editConfig.observationIdField],
+      idSeparator: [this.editConfig.idSeparator],
+      eventIdField: [this.editConfig.eventIdField],
+      lastEditedDateField: [this.editConfig.lastEditedDateField],
+      eventNameField: [this.editConfig.eventNameField],
+      userIdField: [this.editConfig.userIdField],
+      usernameField: [this.editConfig.usernameField],
+      userDisplayNameField: [this.editConfig.userDisplayNameField],
+      deviceIdField: [this.editConfig.deviceIdField],
+      createdAtField: [this.editConfig.createdAtField],
+      lastModifiedField: [this.editConfig.lastModifiedField],
+      geometryType: [this.editConfig.geometryType]
+    });
   }
+  
+  //save attributes form
+  onSubmit(): void {
+    if (this.attributesForm.valid) {
+      const formValue = this.attributesForm.value;
+  
+      this.editConfig = {
+        ...this.editConfig,
+        observationIdField: formValue.observationIdField,
+        idSeparator: formValue.idSeparator,
+        eventIdField: formValue.eventIdField,
+        lastEditedDateField: formValue.lastEditedDateField,
+        eventNameField: formValue.eventNameField,
+        userIdField: formValue.userIdField,
+        usernameField: formValue.usernameField,
+        userDisplayNameField: formValue.userDisplayNameField,
+        deviceIdField: formValue.deviceIdField,
+        createdAtField: formValue.createdAtField,
+        lastModifiedField: formValue.lastModifiedField,
+        geometryType: formValue.geometryType
+      };
+  
+      console.log('Form Submitted:', this.editConfig);
 
+      this.editConfig = this.copyConfig();
+      }
+    }
+  
+  //when edit attributes is canceled, preserve initial data
+  onCancel(): void {
+    this.attributesForm.reset({
+      ...this.editConfig
+    });
+
+    console.log('Canceled edit');
+
+  }
   handleEventResults(x: MageEvent[]) {
     this.events = x
   }
-
   onDeleteLayer(layerUrl: string) {
     let index = 0;
     for (const featureServiceConfig of this.config.featureServices) {
@@ -94,11 +147,6 @@ export class ArcAdminComponent implements OnInit {
   onEditProcessing() {
     this.editConfig = this.copyConfig()
     this.dialog.open<unknown, unknown, string>(this.editProcessingTemplate)
-  }
-
-  onEditAttributes() {
-    this.editConfig = this.copyConfig()
-    this.dialog.open<unknown, unknown, string>(this.editAttributesTemplate)
   }
 
   setField(field: string, value: any) {
