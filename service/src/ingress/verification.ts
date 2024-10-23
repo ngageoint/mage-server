@@ -18,8 +18,8 @@ export enum VerificationErrorReason {
 }
 
 export enum TokenAssertion {
-  Authorized = 'urn:mage:auth:authorized',
-  Captcha = 'urn:mage:signup:captcha'
+  Authenticated = 'urn:mage:ingress:authenticated',
+  IsHuman = 'urn:mage:ingress:is_human'
 }
 
 export class TokenGenerateError extends Error {
