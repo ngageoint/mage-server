@@ -106,11 +106,14 @@ export interface UsernamePasswordAuthConfig {
  * Contains OAuth authentication configuration.
  */
 export interface OAuthAuthConfig {
+
     type: AuthType.OAuth
+
     /**
      * The Client Id for OAuth
      */
     clientId: string
+
     /**
      * The redirectUri for OAuth
      */
@@ -121,7 +124,7 @@ export interface OAuthAuthConfig {
      */
     authToken?: string
 
-        /**
+    /**
      * The expiration date for the temporary token
      */
     authTokenExpires?: number

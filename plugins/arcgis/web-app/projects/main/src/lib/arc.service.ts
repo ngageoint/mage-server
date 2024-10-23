@@ -61,15 +61,17 @@ export class ArcService implements ArcServiceInterface {
     const oauthWindow = window.open(url, "_blank");
 
     const listener = (event: any) => {
-      window.removeEventListener('message', listener, false);
+      if (event.data.url) {
+        window.removeEventListener('message', listener, false);
 
-      if (event.origin !== window.location.origin) {
-        subject.error('target origin mismatch')
+        if (event.origin !== window.location.origin) {
+          subject.error('target origin mismatch')
+        }
+  
+        subject.next(event.data)
+  
+        oauthWindow?.close();
       }
-
-      subject.next(event.data)
-
-      oauthWindow?.close();
     }
 
     window.addEventListener('message', listener, false);
