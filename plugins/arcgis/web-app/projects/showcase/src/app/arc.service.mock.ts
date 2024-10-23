@@ -1,10 +1,10 @@
 import { Observable, of } from "rxjs";
 import { Injectable } from '@angular/core'
-import { ArcServiceInterface } from "../../../main/src/lib/arc.service";
-import { EventResult } from '../../../main/src/lib/EventsResult';
+import { ArcServiceInterface, FeatureLayer } from "../../../main/src/lib/arc.service";
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../../../main/src/lib/ArcGISPluginConfig';
+import { MageEvent } from "../../../main/src/lib/arc.service";
 
-export const mockArcGISEventResult = Object.freeze<EventResult>({
+export const mockArcGISEventResult = Object.freeze<MageEvent>({
   id: 0,
   name: 'test event result name',
   forms: [{
@@ -20,6 +20,9 @@ export const mockArcGISEventResult = Object.freeze<EventResult>({
   providedIn: 'root'
 })
 export class MockArcService implements ArcServiceInterface {
+  fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]> {
+    throw new Error("Method not implemented.");
+  }
   fetchArcConfig(): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig)
   }
