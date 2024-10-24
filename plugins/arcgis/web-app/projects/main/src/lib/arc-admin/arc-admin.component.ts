@@ -72,59 +72,74 @@ export class ArcAdminComponent implements OnInit {
     this.config = config;
     this.configChangedNotifier.next();
   }
-
-  //map attribute form to fields 
+// Visually blank but has underlying value in editConfig
   ngOnInit(): void {
     this.attributesForm = this.fb.group({
-      observationIdField: [this.editConfig.observationIdField],
-      idSeparator: [this.editConfig.idSeparator],
-      eventIdField: [this.editConfig.eventIdField],
-      lastEditedDateField: [this.editConfig.lastEditedDateField],
-      eventNameField: [this.editConfig.eventNameField],
-      userIdField: [this.editConfig.userIdField],
-      usernameField: [this.editConfig.usernameField],
-      userDisplayNameField: [this.editConfig.userDisplayNameField],
-      deviceIdField: [this.editConfig.deviceIdField],
-      createdAtField: [this.editConfig.createdAtField],
-      lastModifiedField: [this.editConfig.lastModifiedField],
-      geometryType: [this.editConfig.geometryType]
+      observationIdField: [''], 
+      idSeparator: [''],
+      eventIdField: [''],
+      lastEditedDateField: [''],
+      eventNameField: [''],
+      userIdField: [''],
+      usernameField: [''],
+      userDisplayNameField: [''],
+      deviceIdField: [''],
+      createdAtField: [''],
+      lastModifiedField: [''],
+      geometryType: ['']
     });
   }
   
-  //save attributes form
+  //Save attributes form. If left blank, assign default value
   onSubmit(): void {
+    console.log('submitting form...');
+
     if (this.attributesForm.valid) {
       const formValue = this.attributesForm.value;
-  
       this.editConfig = {
         ...this.editConfig,
-        observationIdField: formValue.observationIdField,
-        idSeparator: formValue.idSeparator,
-        eventIdField: formValue.eventIdField,
-        lastEditedDateField: formValue.lastEditedDateField,
-        eventNameField: formValue.eventNameField,
-        userIdField: formValue.userIdField,
-        usernameField: formValue.usernameField,
-        userDisplayNameField: formValue.userDisplayNameField,
-        deviceIdField: formValue.deviceIdField,
-        createdAtField: formValue.createdAtField,
-        lastModifiedField: formValue.lastModifiedField,
-        geometryType: formValue.geometryType
-      };
+        observationIdField: formValue.observationIdField || this.editConfig.observationIdField,
+        idSeparator: formValue.idSeparator || this.editConfig.idSeparator,
+        eventIdField: formValue.eventIdField || this.editConfig.eventIdField,
+        lastEditedDateField: formValue.lastEditedDateField || this.editConfig.lastEditedDateField,
+        eventNameField: formValue.eventNameField || this.editConfig.eventNameField,
+        userIdField: formValue.userIdField || this.editConfig.userIdField,
+        usernameField: formValue.usernameField || this.editConfig.usernameField,
+        userDisplayNameField: formValue.userDisplayNameField || this.editConfig.userDisplayNameField,
+        deviceIdField: formValue.deviceIdField || this.editConfig.deviceIdField,
+        createdAtField: formValue.createdAtField || this.editConfig.createdAtField,
+        lastModifiedField: formValue.lastModifiedField || this.editConfig.lastModifiedField,
+        geometryType: formValue.geometryType || this.editConfig.geometryType
+  };
   
       console.log('Form Submitted:', this.editConfig);
+      console.log('formValue: ', formValue);
 
       this.editConfig = this.copyConfig();
       }
+      else{
+        console.log('Form is invalid, please correct the errors.')
+      }
     }
   
-  //when edit attributes is canceled, preserve initial data
+  //when edit attributes is canceled, display and empty form but preserved data in editConfig
   onCancel(): void {
     this.attributesForm.reset({
-      ...this.editConfig
+      observationIdField: '',  
+      idSeparator: '',
+      eventIdField: '',
+      lastEditedDateField: '',
+      eventNameField: '',
+      userIdField: '',
+      usernameField: '',
+      userDisplayNameField: '',
+      deviceIdField: '',
+      createdAtField: '',
+      lastModifiedField: '',
+      geometryType: ''
     });
-
     console.log('Canceled edit');
+    console.log('Current data: ', this.editConfig)
 
   }
   handleEventResults(x: MageEvent[]) {
