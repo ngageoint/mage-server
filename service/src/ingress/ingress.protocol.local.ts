@@ -14,7 +14,7 @@ function userForLocalIdpAccount(account: LocalIdpAccount): IdentityProviderUser 
   }
 }
 
-function createProtocolMiddleware(localIdpAuthenticate: LocalIdpAuthenticateOperation): passport.Strategy {
+function createAuthenticationMiddleware(localIdpAuthenticate: LocalIdpAuthenticateOperation): passport.Strategy {
   const verify: LocalStrategyVerifyFunction = async function LocalIngressProtocolVerify(username, password, done) {
     const authResult = await localIdpAuthenticate({ username, password })
     if (authResult.success) {
@@ -27,7 +27,7 @@ function createProtocolMiddleware(localIdpAuthenticate: LocalIdpAuthenticateOper
   return new LocalStrategy(verify)
 }
 
-const validateRequest: express.RequestHandler = function LocalProtocolIngressHandler(req, res, next) {
+const validateSigninRequest: express.RequestHandler = function LocalProtocolIngressHandler(req, res, next) {
   if (req.method !== 'POST' || !req.body) {
     return res.status(400).send(`invalid request method ${req.method}`)
   }
@@ -39,14 +39,13 @@ const validateRequest: express.RequestHandler = function LocalProtocolIngressHan
   next()
 }
 
-export function createIngressStack(passport: passport.Authenticator, localIdpAuthenticate: LocalIdpAuthenticateOperation): express.RequestHandler[] {
-  const authStrategy = createProtocolMiddleware(localIdpAuthenticate)
-  const authHandler: express.RequestHandler = async (req, res, next) => {
-    passport.authenticate(authStrategy)(req, res, next)
-  }
-  return [
-    express.urlencoded(),
-    validateRequest,
-    authHandler,
-  ]
+export function createWebBinding(passport: passport.Authenticator, localIdpAuthenticate: LocalIdpAuthenticateOperation): express.RequestHandler {
+  const authStrategy = createAuthenticationMiddleware(localIdpAuthenticate)
+  const handleRequest = express.Router()
+    .post('/signin',
+      express.urlencoded(),
+      validateSigninRequest,
+      passport.authenticate(authStrategy)
+    )
+  return handleRequest
 }
