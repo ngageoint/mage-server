@@ -5,7 +5,7 @@ import { LayerInfo } from "./LayerInfo";
 import { ObservationBinner } from "./ObservationBinner";
 import { ObservationBins } from "./ObservationBins";
 import { ObservationsSender } from "./ObservationsSender";
-
+import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
 /**
  * Processes new, updated, and deleted observations and sends the changes to a specific arc feature layer.
  */
@@ -42,10 +42,10 @@ export class FeatureLayerProcessor {
      * @param config Contains certain parameters that can be configured.
      * @param console Used to log messages to the console.
      */
-    constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, console: Console) {
+    constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this.layerInfo = layerInfo;
         this.lastTimeStamp = 0;
-        this.featureQuerier = new FeatureQuerier(layerInfo, config, console);
+        this.featureQuerier = new FeatureQuerier(layerInfo, config, identityManager,console);
         this._binner = new ObservationBinner(layerInfo, this.featureQuerier, config);
         this.sender = new ObservationsSender(layerInfo, config, console);
     }

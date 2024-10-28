@@ -17,6 +17,9 @@ import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
 import { FeatureServiceConfig, FeatureLayerConfig, AuthType } from "./ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
+import { HttpClient } from './HttpClient'
+import { getIdentityManager } from "./ArcGISIdentityManagerFactory"
+import { request } from '@esri/arcgis-rest-request';
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -172,7 +175,7 @@ export class ObservationProcessor {
      * Gets information on all the configured features service layers.
      * @param config The plugins configuration.
      */
-    private getFeatureServiceLayers(config: ArcGISPluginConfig) {
+    private async getFeatureServiceLayers(config: ArcGISPluginConfig) {
         // TODO: What is the impact of what this is doing? Do we need to account for usernamePassword auth type services?
         for (const service of config.featureServices) {
 
@@ -204,8 +207,18 @@ export class ObservationProcessor {
             }
 
             for (const serv of services) {
-                const featureService = new FeatureService(console, (serv.auth?.type === AuthType.Token && serv.auth?.token != null) ? serv.auth.token : '')
-                featureService.queryFeatureService(serv.url, (featureServiceResult: FeatureServiceResult) => this.handleFeatureService(featureServiceResult, serv, config))
+                try {
+                    const identityManager = await getIdentityManager(serv, new HttpClient(console))
+                    const response = await request(serv.url, {
+                      authentication: identityManager
+                    }) as FeatureServiceResult
+                    this.handleFeatureService(response, serv, config);
+                  } catch (err) {
+                    console.error(err)
+                    // res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err })
+                  }
+                
+                
             }
         }
     }
@@ -267,9 +280,11 @@ export class ObservationProcessor {
 
                 if (layerId != null) {
                     featureLayer.layer = layerId
-                    const featureService = new FeatureService(console, featureLayer.token)
-                    const url = featureServiceConfig.url + '/' + layerId
-                    featureService.queryLayerInfo(url, (layerInfo: LayerInfoResult) => this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config))
+                    const identityManager = await getIdentityManager(featureServiceConfig, new HttpClient(console))
+                    const featureService = new FeatureService(console, featureServiceConfig, identityManager)
+                    const layerInfo = await featureService.queryLayerInfo(layerId);
+                    const url = `${featureServiceConfig.url}/${layerId}`;
+                    this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config);
                 }
 
             }
@@ -293,7 +308,8 @@ export class ObservationProcessor {
                 await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
             }
             const info = new LayerInfo(url, events, layerInfo, featureLayer.token)
-            const layerProcessor = new FeatureLayerProcessor(info, config, this._console);
+            const identityManager = await getIdentityManager(featureServiceConfig, new HttpClient(console))
+            const layerProcessor = new FeatureLayerProcessor(info, config, identityManager,this._console);
             this._layerProcessors.push(layerProcessor);
             clearTimeout(this._nextTimeout);
             this.scheduleNext(config);

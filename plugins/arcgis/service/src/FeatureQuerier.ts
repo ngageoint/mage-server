@@ -1,7 +1,7 @@
 import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { HttpClient } from "./HttpClient";
 import { LayerInfo } from "./LayerInfo";
 import { QueryObjectResult } from "./QueryObjectResult";
+import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request";
 
 /**
  * Performs various queries on observations for a specific arc feature layer.
@@ -9,14 +9,9 @@ import { QueryObjectResult } from "./QueryObjectResult";
 export class FeatureQuerier {
 
     /**
-     * Used to query the arc server to figure out if an observation exists.
-     */
-    private _httpClient: HttpClient;
-
-    /**
      * The query url to find out if an observations exists on the server.
      */
-    private _url: string;
+    private _url: URL;
 
     /**
      * Used to log to console.
@@ -29,14 +24,22 @@ export class FeatureQuerier {
     private _config: ArcGISPluginConfig;
 
     /**
+     * An instance of `ArcGISIdentityManager` used to manage authentication and identity for ArcGIS services.
+     * This private member handles the authentication process, ensuring that requests to ArcGIS services
+     * are properly authenticated using the credentials provided.
+     */
+    private _identityManager: ArcGISIdentityManager;
+
+    /**
      * Constructor.
      * @param layerInfo The layer info.
      * @param config The plugins configuration.
      * @param console Used to log to the console.
      */
-    constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, console: Console) {
-        this._httpClient = new HttpClient(console, layerInfo.token);
-        this._url = layerInfo.url + '/query?where=';
+    constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
+        this._identityManager = identityManager;
+        this._url = new URL(layerInfo.url);
+        this._url.pathname += '/query';
         this._console = console;
         this._config = config;
     }
@@ -48,19 +51,23 @@ export class FeatureQuerier {
      * @param fields fields to query, all fields if not provided
      * @param geometry query the geometry, default is true
      */
-    queryObservation(observationId: string, response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
-        let queryUrl = this._url + this._config.observationIdField
+    async queryObservation(observationId: string, response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
+        const queryUrl = new URL(this._url)
         if (this._config.eventIdField == null) {
-            queryUrl += ' LIKE \'' + observationId + this._config.idSeparator + '%\''
+            queryUrl.searchParams.set('where', `${this._config.observationIdField} LIKE '${observationId}${this._config.idSeparator}%'`);
         } else {
-            queryUrl += '=\'' + observationId + '\''
+            queryUrl.searchParams.set('where', `${this._config.observationIdField} = ${observationId}`);
         }
-        queryUrl += this.outFields(fields) + this.returnGeometry(geometry)
-        this._httpClient.sendGetHandleResponse(queryUrl, (chunk) => {
-            this._console.info('ArcGIS response for ' + queryUrl + ' ' + chunk)
-            const result = JSON.parse(chunk) as QueryObjectResult
-            response(result)
+        queryUrl.searchParams.set('outFields', this.outFields(fields))
+        queryUrl.searchParams.set('returnGeometry', this.returnGeometry(geometry))
+        
+        const queryResponse = await request(queryUrl.toString(), {
+            authentication: this._identityManager
         });
+
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
+        const result = JSON.parse(queryResponse) as QueryObjectResult
+        response(result);
     }
 
     /**
@@ -69,13 +76,18 @@ export class FeatureQuerier {
      * @param fields fields to query, all fields if not provided
      * @param geometry query the geometry, default is true
      */
-    queryObservations(response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
-        let queryUrl = this._url + this._config.observationIdField + ' IS NOT NULL' + this.outFields(fields) + this.returnGeometry(geometry)
-        this._httpClient.sendGetHandleResponse(queryUrl, (chunk) => {
-            this._console.info('ArcGIS response for ' + queryUrl + ' ' + chunk)
-            const result = JSON.parse(chunk) as QueryObjectResult
-            response(result)
+    async queryObservations(response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
+        const queryUrl = new URL(this._url)
+        queryUrl.searchParams.set('where', `${this._config.observationIdField} IS NOT NULL`);
+        queryUrl.searchParams.set('outFields', this.outFields(fields));
+        queryUrl.searchParams.set('returnGeometry', this.returnGeometry(geometry));        
+        const queryResponse = await request(queryUrl.toString(), {
+            authentication: this._identityManager
         });
+
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
+            const result = JSON.parse(queryResponse) as QueryObjectResult
+            response(result)
     }
 
     /**
@@ -83,13 +95,19 @@ export class FeatureQuerier {
      * @param response Function called once query is complete.
      * @param field field to query
      */
-    queryDistinct(response: (result: QueryObjectResult) => void, field: string) {
-        let queryUrl = this._url + field + ' IS NOT NULL&returnDistinctValues=true' + this.outFields([field]) + this.returnGeometry(false)
-        this._httpClient.sendGetHandleResponse(queryUrl, (chunk) => {
-            this._console.info('ArcGIS response for ' + queryUrl + ' ' + chunk)
-            const result = JSON.parse(chunk) as QueryObjectResult
-            response(result)
-        });
+    async queryDistinct(response: (result: QueryObjectResult) => void, field: string) {
+        const queryUrl = new URL(this._url);
+        queryUrl.searchParams.set('where', `${field} IS NOT NULL`);
+        queryUrl.searchParams.set('returnDistinctValues', 'true');
+        queryUrl.searchParams.set('outFields', this.outFields([field]));
+        queryUrl.searchParams.set('returnGeometry', this.returnGeometry(false));       
+        const queryResponse = await request(queryUrl.toString(), {
+            authentication: this._identityManager
+
+        });  
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
+        const result = JSON.parse(queryResponse) as QueryObjectResult
+        response(result)
     }
 
     /**

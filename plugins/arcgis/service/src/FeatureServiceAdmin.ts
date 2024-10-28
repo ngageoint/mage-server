@@ -7,6 +7,8 @@ import { ObservationsTransformer } from "./ObservationsTransformer"
 import { HttpClient } from './HttpClient'
 import { LayerInfoResult, LayerField } from "./LayerInfoResult"
 import FormData from 'form-data'
+import { request } from '@esri/arcgis-rest-request'
+import { getIdentityManager } from './ArcGISIdentityManagerFactory'
 
 /**
  * Administers hosted feature services such as layer creation and updates.
@@ -432,9 +434,10 @@ export class FeatureServiceAdmin {
      * @param service feature service
      * @param layer layer
      */
-    private create(service: FeatureServiceConfig, layer: Layer) {
+    private async create(service: FeatureServiceConfig, layer: Layer) {
 
         const httpClient = this.httpClient(service)
+        const identityManager = await getIdentityManager(service, httpClient)
         const url = this.adminUrl(service) + 'addToDefinition'
 
         this._console.info('ArcGIS feature service addToDefinition (create layer) url ' + url)
@@ -442,7 +445,12 @@ export class FeatureServiceAdmin {
         const form = new FormData()
         form.append('addToDefinition', JSON.stringify(layer))
 
-        httpClient.sendPostForm(url, form)
+        const postResponse = request(url, {
+            authentication: identityManager,
+            httpMethod: 'POST',
+            params: form
+        });
+        console.log('Response: ' + postResponse)
 
     }
 
@@ -452,12 +460,13 @@ export class FeatureServiceAdmin {
      * @param featureLayer feature layer
      * @param fields fields to add
      */
-    private addFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: Field[]) {
+    private async addFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: Field[]) {
 
         const layer = {} as Layer
         layer.fields = fields
 
         const httpClient = this.httpClient(service)
+        const identityManager = await getIdentityManager(service, httpClient)
         const url = this.adminUrl(service) + featureLayer.layer.toString() + '/addToDefinition'
 
         this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url)
@@ -465,7 +474,12 @@ export class FeatureServiceAdmin {
         const form = new FormData()
         form.append('addToDefinition', JSON.stringify(layer))
 
-        httpClient.sendPostForm(url, form)
+        const postResponse = request(url, {
+            authentication: identityManager,
+            httpMethod: 'POST',
+            params: form
+        });
+        console.log('Response: ' + postResponse)
 
     }
 
@@ -475,7 +489,7 @@ export class FeatureServiceAdmin {
      * @param featureLayer feature layer
      * @param fields fields to delete
      */
-    private deleteFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: LayerField[]) {
+    private async deleteFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: LayerField[]) {
 
         const deleteFields = []
         for (const layerField of fields) {
@@ -488,6 +502,7 @@ export class FeatureServiceAdmin {
         layer.fields = deleteFields
 
         const httpClient = this.httpClient(service)
+        const identityManager = await getIdentityManager(service, httpClient)
         const url = this.adminUrl(service) + featureLayer.layer.toString() + '/deleteFromDefinition'
 
         this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url)
@@ -496,7 +511,12 @@ export class FeatureServiceAdmin {
         form.append('deleteFromDefinition', JSON.stringify(layer))
 
         httpClient.sendPostForm(url, form)
-
+        const postResponse = request(url, {
+            authentication: identityManager,
+            httpMethod: 'POST',
+            params: form
+        });
+        console.log('Response: ' + postResponse)
     }
 
     /**
