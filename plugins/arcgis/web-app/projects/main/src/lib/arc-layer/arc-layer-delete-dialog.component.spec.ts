@@ -1,28 +1,39 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { HttpClientModule } from '@angular/common/http'; 
+import { MatDialogModule } from '@angular/material/dialog'; 
 import { ArcLayerDeleteDialogComponent } from './arc-layer-delete-dialog.component';
+import { ArcService } from '../arc.service'
 
 describe('Arc Layer Delete Dialog', () => {
   let component: ArcLayerDeleteDialogComponent;
   let fixture: ComponentFixture<ArcLayerDeleteDialogComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientModule, MatDialogModule], 
       declarations: [ArcLayerDeleteDialogComponent],
-      imports: [HttpClientTestingModule],
-      providers: [{
-        provide: MatDialogRef,
-        useValue: {}
-      },]
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: jasmine.createSpy('close')
+          }
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {} 
+        },
+        ArcService 
+      ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArcLayerDeleteDialogComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
-
 
   it('should create', () => {
     expect(component).toBeTruthy();
