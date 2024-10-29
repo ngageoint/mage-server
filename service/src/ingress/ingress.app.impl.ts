@@ -4,7 +4,7 @@ import { MageEventId } from '../entities/events/entities.events'
 import { Team, TeamId } from '../entities/teams/entities.teams'
 import { User, UserId, UserRepository, UserRepositoryError } from '../entities/users/entities.users'
 import { AdmitFromIdentityProviderOperation, AdmitFromIdentityProviderRequest, authenticationFailedError, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
-import { createEnrollmentCandidateUser, IdentityProvider, IdentityProviderRepository, IdentityProviderUser, UserIngressBinding, UserIngressBindingRepository, UserIngressBindings } from './ingress.entities'
+import { createEnrollmentCandidateUser, IdentityProvider, IdentityProviderRepository, IdentityProviderUser, UserIngressBindingRepository, UserIngressBindings } from './ingress.entities'
 import { LocalIdpCreateAccountOperation } from './local-idp.app.api'
 import { JWTService, TokenAssertion } from './verification'
 
@@ -38,13 +38,6 @@ export interface AssignTeamMember {
 
 export interface FindEventTeam {
   (mageEventId: MageEventId): Promise<Team | null>
-}
-
-type TeamAssignmentResult = { teamId: TeamId, assigned: boolean }
-type EventAssignmentResult = { eventId: MageEventId, teamId: TeamId | null, assigned: boolean }
-type EnrollmentTeamAssignmentResult = {
-  teamAssignments: TeamAssignmentResult[]
-  eventAssignments: EventAssignmentResult[]
 }
 
 async function enrollNewUser(idpAccount: IdentityProviderUser, idp: IdentityProvider, userRepo: UserRepository, ingressBindingRepo: UserIngressBindingRepository, findEventTeam: FindEventTeam, assignTeamMember: AssignTeamMember): Promise<{ mageAccount: User, ingressBindings: UserIngressBindings }> {
