@@ -23,6 +23,15 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - Protect against disabling all authentications.
 - Problem with OAuth web login
 
+## [6.2.13](https://github.com/ngageoint/mage-server/releases/tag/6.2.13)
+### Service
+#### Features
+* Support absolute callback URL configuration for SAML authentication module.
+* Remove long deprecated `/authorize` device authorization endpoint from SAML authentication module.
+### Web App
+#### Features
+* Add _Redirect Host_ field to SAML configuration form to align with Service SAML change.
+
 ## [6.2.12](https://github.com/ngageoint/mage-server/releases/tag/6.2.12)
 ### Service
 #### Security
