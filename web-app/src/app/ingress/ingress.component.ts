@@ -76,10 +76,10 @@ class Initialize extends Ingress {
     trigger('slide', [
       transition(':enter', [
         style({ transform: 'translateX(100%)' }),
-        animate('250ms', style({ transform: 'translateX(0%)' })),
+        animate('250ms', style({ transform: 'translateX(0%)', opacity: 1 })),
       ]),
       transition(':leave', [
-        animate('250ms', style({ transform: 'translateX(-100%)' }))
+        animate('250ms', style({ transform: 'translateX(-100%)', opacity: 0 }))
       ])
     ])
   ]

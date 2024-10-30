@@ -1,14 +1,19 @@
-<div class="title">Access Code</div>
-<div class="subtitle">Please enter your Mage access code. If you do not have an access code please ask you Mage administrator to provide you with one.</div>
+<div class="authorization">
+  <div class="header">
+    <div class="header__title">Access Code</div>
+    <div class="header__message">Please enter your Mage access code. If you do not have an access code please ask you Mage
+      administrator to provide you with one.</div>
+  </div>
 
-<div>
-  <mat-form-field appearance="fill">
-    <mat-label>Access Code</mat-label>
-    <input matInput placeholder="Access Code" type="deviceId" [formControl]="deviceId" required>
-    <mat-error *ngIf="deviceId.hasError('invalid')">Invalid access code</mat-error>
-  </mat-form-field>
-</div>
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Access Code</mat-label>
+      <input matInput placeholder="Access Code" type="deviceId" [formControl]="deviceId" required>
+      <mat-error *ngIf="deviceId.hasError('invalid')">Invalid access code</mat-error>
+    </mat-form-field>
+  </div>
 
-<div class="authorize">
-  <button mat-flat-button color="primary" (click)="authorize()">Continue to Mage</button>
+  <div class="authorize">
+    <button mat-flat-button color="primary" (click)="authorize()">Continue to Mage</button>
+  </div>
 </div>
