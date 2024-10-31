@@ -120,13 +120,10 @@ export class ObservationProcessor {
      * Gets the current configuration from the database.
      * @returns The current configuration from the database.
      */
-    public async safeGetConfig(showFeatureAuth?: boolean): Promise<ArcGISPluginConfig> {
+    public async safeGetConfig(): Promise<ArcGISPluginConfig> {
         const state = await this._stateRepo.get();
         if (!state) return await this._stateRepo.put(defaultArcGISPluginConfig);
-        if (!showFeatureAuth) {
-            state.featureServices = state.featureServices.map((service) => this.sanitizeFeatureService(service, AuthType.OAuth));
-        }
-        return state;
+        return await this._stateRepo.get().then((state) => state ? state : this._stateRepo.put(defaultArcGISPluginConfig));
     }
 
     /**
@@ -162,19 +159,6 @@ export class ObservationProcessor {
             this._firstRun = true;
         }
         return config
-    }
-
-    public sanitizeFeatureService(config: FeatureServiceConfig, type: AuthType): FeatureServiceConfig {
-        if (type === AuthType.OAuth) {
-            const newAuth = Object.assign({}, config.auth) as OAuthAuthConfig;
-            delete newAuth.refreshToken;
-            delete newAuth.refreshTokenExpires;
-            return {
-                ...config,
-                auth: newAuth
-            }
-        }
-        return config;
     }
 
     /**

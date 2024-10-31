@@ -8,7 +8,7 @@ import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { AuthType } from './ArcGISConfig'
 import { ObservationProcessor } from './ObservationProcessor'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
-import { FeatureServiceConfig } from './ArcGISConfig'
+import { FeatureServiceConfig, OAuthAuthConfig } from './ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { getIdentityManager, getPortalUrl } from './ArcGISIdentityManagerFactory'
@@ -36,6 +36,19 @@ const InjectedServices = {
 }
 
 const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service"
+
+const sanitizeFeatureService = (config: FeatureServiceConfig, type: AuthType): FeatureServiceConfig => {
+  if (type === AuthType.OAuth) {
+      const newAuth = Object.assign({}, config.auth) as OAuthAuthConfig;
+      delete newAuth.refreshToken;
+      delete newAuth.refreshTokenExpires;
+      return {
+          ...config,
+          auth: newAuth
+      }
+  }
+  return config;
+}
 
 /**
  * The MAGE ArcGIS Plugin finds new MAGE observations and if configured to send the observations
@@ -74,7 +87,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               return res.status(404).send('clientId is required')
             }
 
-            const config = await processor.safeGetConfig(true)
+            const config = await processor.safeGetConfig()
             ArcGISIdentityManager.authorize({
               clientId,
               portal: getPortalUrl(url),
@@ -95,7 +108,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               return res.sendStatus(500)
             }
 
-            const config = await processor.safeGetConfig(true)
+            const config = await processor.safeGetConfig()
             const creds = {
               clientId: state.clientId,
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
@@ -150,6 +163,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             .get(async (req, res, next) => {
               console.info('Getting ArcGIS plugin config...')
               const config = await processor.safeGetConfig()
+              config.featureServices = config.featureServices.map((service) => sanitizeFeatureService(service, AuthType.OAuth));
               res.json(config)
             })
             .put(async (req, res, next) => {
@@ -161,7 +175,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             })
 
           routes.post('/featureService/validate', async (req, res) => {
-            const config = await processor.safeGetConfig(true)
+            const config = await processor.safeGetConfig()
             const { url, auth = {} } = req.body
             const { token, username, password } = auth
             if (!URL.canParse(url)) {
@@ -186,9 +200,8 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               } else {
                 config.featureServices.push(service)
               }
-              console.log('values patch')
               await processor.patchConfig(config)
-              return res.send(processor.sanitizeFeatureService(service, AuthType.OAuth))
+              return res.send(sanitizeFeatureService(service, AuthType.OAuth))
             } catch (err) {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
@@ -196,7 +209,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             
           routes.get('/featureService/layers', async (req, res, next) => {
             const url = req.query.featureServiceUrl as string
-            const config = await processor.safeGetConfig(true)
+            const config = await processor.safeGetConfig()
             const featureService = config.featureServices.find(featureService => featureService.url === url)
             if (!featureService) {
               return res.status(400)

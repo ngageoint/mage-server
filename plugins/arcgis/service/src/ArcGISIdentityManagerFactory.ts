@@ -28,7 +28,7 @@ const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
         });
 
         // Update authToken to new token 
-        const config = await processor.safeGetConfig(true);
+        const config = await processor.safeGetConfig();
         let service = config.featureServices.find(service => service.url === portal)?.auth as OAuthAuthConfig;
         const date = new Date();
         date.setSeconds(date.getSeconds() + response.expires_in || 0);
