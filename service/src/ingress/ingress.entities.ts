@@ -96,6 +96,8 @@ export interface UserIngressBinding {
   idpAccountAttrs?: Record<string, any>
 }
 
+export type IdentityProviderMutableAttrs = Omit<IdentityProvider, 'id' | 'name' | 'protocol'>
+
 export interface IdentityProviderRepository {
   findIdpById(id: IdentityProviderId): Promise<IdentityProvider | null>
   findIdpByName(name: string): Promise<IdentityProvider | null>
@@ -103,7 +105,7 @@ export interface IdentityProviderRepository {
    * Update the IDP according to patch semantics.  Remove keys in the given update with `undefined` values from the
    * saved record.  Keys not present in the given update will have no affect on the saved record.
    */
-  updateIdp(update: Partial<IdentityProvider> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null>
+  updateIdp(update: Partial<IdentityProviderMutableAttrs> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null>
   deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null>
 }
 
