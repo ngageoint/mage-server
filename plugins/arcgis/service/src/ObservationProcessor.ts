@@ -164,7 +164,7 @@ export class ObservationProcessor {
         return config
     }
 
-    private sanitizeFeatureService(config: FeatureServiceConfig, type: AuthType): FeatureServiceConfig {
+    public sanitizeFeatureService(config: FeatureServiceConfig, type: AuthType): FeatureServiceConfig {
         if (type === AuthType.OAuth) {
             const newAuth = Object.assign({}, config.auth) as OAuthAuthConfig;
             delete newAuth.refreshToken;

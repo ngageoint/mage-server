@@ -74,7 +74,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               return res.status(404).send('clientId is required')
             }
 
-            const config = await processor.safeGetConfig()
+            const config = await processor.safeGetConfig(true)
             ArcGISIdentityManager.authorize({
               clientId,
               portal: getPortalUrl(url),
@@ -95,7 +95,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               return res.sendStatus(500)
             }
 
-            const config = await processor.safeGetConfig()
+            const config = await processor.safeGetConfig(true)
             const creds = {
               clientId: state.clientId,
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
@@ -161,7 +161,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             })
 
           routes.post('/featureService/validate', async (req, res) => {
-            const config = await processor.safeGetConfig()
+            const config = await processor.safeGetConfig(true)
             const { url, auth = {} } = req.body
             const { token, username, password } = auth
             if (!URL.canParse(url)) {
@@ -188,7 +188,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
               console.log('values patch')
               await processor.patchConfig(config)
-              return res.send(service)
+              return res.send(processor.sanitizeFeatureService(service, AuthType.OAuth))
             } catch (err) {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
@@ -196,7 +196,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             
           routes.get('/featureService/layers', async (req, res, next) => {
             const url = req.query.featureServiceUrl as string
-            const config = await processor.safeGetConfig()
+            const config = await processor.safeGetConfig(true)
             const featureService = config.featureServices.find(featureService => featureService.url === url)
             if (!featureService) {
               return res.status(400)
