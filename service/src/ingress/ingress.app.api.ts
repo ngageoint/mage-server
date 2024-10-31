@@ -4,6 +4,7 @@ import { Avatar, User, UserExpanded, UserIcon } from '../entities/users/entities
 import { IdentityProviderUser } from './ingress.entities'
 
 
+
 export interface EnrollMyselfRequest {
   username: string
   password: string
@@ -51,6 +52,18 @@ export interface AdmitFromIdentityProviderResult {
  */
 export interface AdmitFromIdentityProviderOperation {
   (req: AdmitFromIdentityProviderRequest): Promise<AppResponse<AdmitFromIdentityProviderResult, EntityNotFoundError | AuthenticationFailedError | InfrastructureError>>
+}
+
+export interface UpdateIdentityProviderRequest {
+
+}
+
+export interface UpdateIdentityProviderResult {
+
+}
+
+export interface UpdateIdentityProviderOperation {
+  (req: UpdateIdentityProviderRequest): Promise<AppResponse<UpdateIdentityProviderResult, PermissionDeniedError | EntityNotFoundError>>
 }
 
 export const ErrAuthenticationFailed = Symbol.for('MageError.Ingress.AuthenticationFailed')
