@@ -92,6 +92,7 @@ export class FeatureServiceAdmin {
         const eventFields = this.fields(events)
         const layerFields = layerInfo.fields
 
+        // TODO - better naming: addFields is a boolean, array of fields, and a method. Ditto for deleteFields
         if (featureLayer.addFields) {
 
             const layerFieldSet = new Set()
@@ -110,6 +111,7 @@ export class FeatureServiceAdmin {
                 }
             }
 
+            // TODO - where does New_field and New_field_2 come from with each startup?
             if (addFields.length > 0) {
                 this.addFields(service, featureLayer, addFields)
             }
@@ -462,8 +464,7 @@ export class FeatureServiceAdmin {
      */
     private async addFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: Field[]) {
 
-        const layer = {} as Layer
-        layer.fields = fields
+        const layer = { fields: fields} as Layer
 
         const httpClient = this.httpClient(service)
         const identityManager = await getIdentityManager(service, httpClient)
@@ -471,15 +472,19 @@ export class FeatureServiceAdmin {
 
         this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url)
 
-        const form = new FormData()
-        form.append('addToDefinition', JSON.stringify(layer))
-
-        const postResponse = request(url, {
+        await request(url, {
             authentication: identityManager,
-            httpMethod: 'POST',
-            params: form
+            params: {
+                addToDefinition: JSON.stringify(layer),
+                f: "json"
+            }
+        }).then((postResponse) => {
+            console.log('Response: ' + postResponse)
+        }).catch((error) => {
+            console.log('Error: ' + error)
         });
-        console.log('Response: ' + postResponse)
+
+        console.log('Remove me')
 
     }
 
@@ -507,14 +512,12 @@ export class FeatureServiceAdmin {
 
         this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url)
 
-        const form = new FormData()
-        form.append('deleteFromDefinition', JSON.stringify(layer))
-
-        httpClient.sendPostForm(url, form)
         const postResponse = request(url, {
             authentication: identityManager,
             httpMethod: 'POST',
-            params: form
+            params: {
+                deleteFromDefinition:  JSON.stringify(layer)
+            }
         });
         console.log('Response: ' + postResponse)
     }

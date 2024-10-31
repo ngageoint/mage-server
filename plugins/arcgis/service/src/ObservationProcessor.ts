@@ -244,6 +244,8 @@ export class ObservationProcessor {
             }
 
             for (const featureLayer of featureServiceConfig.layers) {
+                // Initiate the feature layer and event fields to sync with the feature service
+                featureLayer.addFields = true
 
                 if (featureLayer.token == null) {
                     featureLayer.token = featureServiceConfig.auth?.type == AuthType.Token ? featureServiceConfig.auth.token : ""
@@ -311,8 +313,8 @@ export class ObservationProcessor {
             const identityManager = await getIdentityManager(featureServiceConfig, new HttpClient(console))
             const layerProcessor = new FeatureLayerProcessor(info, config, identityManager,this._console);
             this._layerProcessors.push(layerProcessor);
-            clearTimeout(this._nextTimeout);
-            this.scheduleNext(config);
+            clearTimeout(this._nextTimeout); // TODO why is this needed?
+            // this.scheduleNext(config); // TODO why is this needed when processAndScheduleNext is called upstream and ends with scheduleNext() This causes a query before updateLayer.
         }
     }
 
