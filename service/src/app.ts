@@ -38,7 +38,7 @@ import { MageEventRepositoryToken } from './plugins.api/plugins.api.events'
 import { FeedRepositoryToken, FeedServiceRepositoryToken, FeedServiceTypeRepositoryToken, FeedsAppServiceTokens } from './plugins.api/plugins.api.feeds'
 import { UserRepositoryToken } from './plugins.api/plugins.api.users'
 import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
-import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
+import { UserModel, MongooseUserRepository, UserModelName } from './adapters/users/adapters.users.db.mongoose'
 import { UserRepository, UserExpanded } from './entities/users/entities.users'
 import { EnvironmentService } from './entities/systemInfo/entities.systemInfo'
 import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
@@ -61,9 +61,6 @@ import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInf
 import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
 import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
 import Settings from "./models/setting";
-// TODO: users-next
-import AuthenticationConfiguration from "./models/authenticationconfiguration";
-import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
 import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
 import { RoleBasedSystemInfoPermissionService } from './permissions/permissions.systemInfo'
 import { SettingsAppLayer, SettingsRoutes } from './adapters/settings/adapters.settings.controllers.web'
@@ -252,6 +249,7 @@ type AppLayer = {
     allocateObservationId: observationsApi.AllocateObservationId
     saveObservation: observationsApi.SaveObservation
     readObservation: observationsApi.ReadObservation
+    readObservations: observationsApi.ReadObservations
     storeAttachmentContent: observationsApi.StoreAttachmentContent
     readAttachmentContent: observationsApi.ReadAttachmentContent
   },
@@ -322,7 +320,7 @@ async function initDatabase(): Promise<DatabaseLayer> {
       staticIcon: StaticIconModel(conn)
     },
     users: {
-      user: require('./models/user').Model
+      user: UserModel(conn)
     },
     settings: {
       setting: require('./models/setting').Model
@@ -465,6 +463,7 @@ async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['
     allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
     saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo),
     readObservation: observationsImpl.ReadObservation(obsPermissionsService),
+    readObservations: observationsImpl.ReadObservations(obsPermissionsService),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(obsPermissionsService, repos.observations.attachmentStore),
     readAttachmentContent: observationsImpl.ReadAttachmentContent(obsPermissionsService, repos.observations.attachmentStore)
   }
@@ -524,6 +523,7 @@ function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
       repos.enviromentInfo,
       versionInfo,
       Settings,
+      // TODO: users-next: new auth elements
       AuthenticationConfiguration,
       AuthenticationConfigurationTransformer,
       permissionsService
@@ -599,6 +599,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     const context: observationsApi.ObservationRequestContext = {
       ...baseAppRequestContext(req),
       mageEvent: req[observationEventScopeKey]!.mageEvent,
+      // TODO: users-next
       userId: req.user.id,
       deviceId: req.provisionedDeviceId,
       observationRepository: req[observationEventScopeKey]!.observationRepository
@@ -644,7 +645,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
         middleware applies the entity form of a user on the request rather than
         the mongoose document instance
         */
-        return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
+        return { ...req.user?.account as UserExpanded }
       },
       locale(): Locale | null {
         return Object.freeze({
