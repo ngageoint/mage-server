@@ -1,14 +1,13 @@
-import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
+import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { ArcGISAuthConfig, AuthType, FeatureServiceConfig, OAuthAuthConfig, TokenAuthConfig, UsernamePasswordAuthConfig } from './ArcGISConfig'
-import { HttpClient } from "./HttpClient";
 import { ObservationProcessor } from "./ObservationProcessor";
 
 interface ArcGISIdentityManagerFactory {
-  create(portal: string, server: string, config: ArcGISAuthConfig, httpClient?: HttpClient, processor?: ObservationProcessor): Promise<ArcGISIdentityManager>
+  create(portal: string, server: string, config: ArcGISAuthConfig, processor?: ObservationProcessor): Promise<ArcGISIdentityManager>
 }
 
 const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
-  async create(portal: string, server: string, auth: OAuthAuthConfig, httpClient: HttpClient, processor: ObservationProcessor): Promise<ArcGISIdentityManager> {
+  async create(portal: string, server: string, auth: OAuthAuthConfig, processor: ObservationProcessor): Promise<ArcGISIdentityManager> {
     console.debug('Client ID provided for authentication')
     const { clientId, authToken, authTokenExpires, refreshToken, refreshTokenExpires } = auth
 
@@ -24,7 +23,10 @@ const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
       // TODO: find a way without using constructor nor httpClient
       const url = `${portal}/oauth2/token?client_id=${clientId}&refresh_token=${refreshToken}&grant_type=refresh_token`
       try {
-        const response = await httpClient.sendGet(url)
+        const response = await request(url, {
+          httpMethod: 'GET'
+        });
+
         // Update authToken to new token 
         const config = await processor.safeGetConfig();
         let service = config.featureServices.find(service => service.url === portal)?.auth as OAuthAuthConfig;
@@ -85,7 +87,6 @@ const authConfigMap: { [key: string]: ArcGISIdentityManagerFactory } = {
 
 export function getIdentityManager(
   config: FeatureServiceConfig,
-  httpClient: HttpClient, // TODO remove in favor of an open source lib like axios
   processor: ObservationProcessor
 ): Promise<ArcGISIdentityManager> {
   const auth = config.auth
@@ -97,7 +98,7 @@ export function getIdentityManager(
   if (!factory) {
     throw new Error(`No factory found for type ${authType}`)
   }
-  return factory.create(getPortalUrl(config.url), getServerUrl(config.url), auth, httpClient, processor)
+  return factory.create(getPortalUrl(config.url), getServerUrl(config.url), auth, processor)
 }
 
 

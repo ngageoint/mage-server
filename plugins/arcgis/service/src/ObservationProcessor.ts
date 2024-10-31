@@ -14,7 +14,7 @@ import { EventTransform } from './EventTransform';
 import { GeometryChangedHandler } from './GeometryChangedHandler';
 import { EventDeletionHandler } from './EventDeletionHandler';
 import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
-import { FeatureServiceConfig, FeatureLayerConfig, AuthType } from "./ArcGISConfig"
+import { FeatureServiceConfig, FeatureLayerConfig, AuthType, OAuthAuthConfig } from "./ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 
@@ -120,8 +120,13 @@ export class ObservationProcessor {
      * Gets the current configuration from the database.
      * @returns The current configuration from the database.
      */
-    public async safeGetConfig(): Promise<ArcGISPluginConfig> {
-        return await this._stateRepo.get().then(x => !!x ? x : this._stateRepo.put(defaultArcGISPluginConfig))
+    public async safeGetConfig(showFeatureAuth?: boolean): Promise<ArcGISPluginConfig> {
+        const state = await this._stateRepo.get();
+        if (!state) return await this._stateRepo.put(defaultArcGISPluginConfig);
+        if (!showFeatureAuth) {
+            state.featureServices = state.featureServices.map((service) => this.sanitizeFeatureService(service, AuthType.OAuth));
+        }
+        return state;
     }
 
     /**
@@ -130,6 +135,14 @@ export class ObservationProcessor {
      */
     public async putConfig(newConfig: ArcGISPluginConfig): Promise<ArcGISPluginConfig> {
         return await this._stateRepo.put(newConfig);
+    }
+
+    /**
+     * Updates the confguration in the state repo.
+     * @param newConfig The new config to put into the state repo.
+     */
+    public async patchConfig(newConfig: ArcGISPluginConfig): Promise<ArcGISPluginConfig> {
+        return await this._stateRepo.patch(newConfig);
     }
 
     /**
@@ -149,6 +162,19 @@ export class ObservationProcessor {
             this._firstRun = true;
         }
         return config
+    }
+
+    private sanitizeFeatureService(config: FeatureServiceConfig, type: AuthType): FeatureServiceConfig {
+        if (type === AuthType.OAuth) {
+            const newAuth = Object.assign({}, config.auth) as OAuthAuthConfig;
+            delete newAuth.refreshToken;
+            delete newAuth.refreshTokenExpires;
+            return {
+                ...config,
+                auth: newAuth
+            }
+        }
+        return config;
     }
 
     /**

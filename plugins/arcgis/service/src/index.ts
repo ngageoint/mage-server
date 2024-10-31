@@ -7,7 +7,6 @@ import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authoriz
 import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { AuthType } from './ArcGISConfig'
 import { ObservationProcessor } from './ObservationProcessor'
-import { HttpClient } from './HttpClient'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { FeatureServiceConfig } from './ArcGISConfig'
 import { URL } from "node:url"
@@ -157,7 +156,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               console.info('Applying ArcGIS plugin config...')
               const arcConfig = req.body as ArcGISPluginConfig
               const configString = JSON.stringify(arcConfig)
-              processor.putConfig(arcConfig)
+              processor.patchConfig(arcConfig)
               res.sendStatus(200)
             })
 
@@ -179,17 +178,16 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             }
 
             try {
-              const httpClient = new HttpClient(console)
               // Create the IdentityManager instance to validate credentials
-              await getIdentityManager(service!, httpClient, processor)
+              await getIdentityManager(service!, processor)
               let existingService = config.featureServices.find(service => service.url === url)
               if (existingService) {
                 existingService = { ...existingService }
               } else {
                 config.featureServices.push(service)
               }
-
-              await processor.putConfig(config)
+              console.log('values patch')
+              await processor.patchConfig(config)
               return res.send(service)
             } catch (err) {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
@@ -203,10 +201,9 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             if (!featureService) {
               return res.status(400)
             }
-              
-            const httpClient = new HttpClient(console)
+
             try {
-              const identityManager = await getIdentityManager(featureService, httpClient, processor)
+              const identityManager = await getIdentityManager(featureService, processor)
               const response = await request(url, {
                 authentication: identityManager
               })
