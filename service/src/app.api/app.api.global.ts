@@ -51,17 +51,17 @@ export interface Descriptor<T extends string> extends JsonObject {
  */
 export type AnyMageError<KnownErrors> = KnownErrors extends MageError<infer Code, infer Data> ? MageError<Code, Data> : never
 
-export class AppResponse<Success, KnownErrors> {
+export const AppResponse = Object.freeze({
 
-  static success<Success, KnownErrors>(result: Success, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
-    return new AppResponse<Success, AnyMageError<KnownErrors>>(result, null, contentLanguage)
-  }
+  success<Success, KnownErrors>(result: Success, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
+    return Object.freeze({ success: result, error: null,  contentLanguage })
+  },
 
-  static error<KnownErrors>(result: KnownErrors, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<any, KnownErrors> {
-    return new AppResponse<any, KnownErrors>(null, result, contentLanguage)
-  }
+  error<KnownErrors>(result: KnownErrors, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<any, KnownErrors> {
+    return Object.freeze({ success: null, error: result, contentLanguage })
+  },
 
-  static resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
+  resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
     return promise.then(
       successOrKnownError => {
         if (successOrKnownError instanceof MageError) {
@@ -70,9 +70,11 @@ export class AppResponse<Success, KnownErrors> {
         return AppResponse.success(successOrKnownError)
       })
   }
+})
 
-  private constructor(readonly success: Success | null, readonly error: KnownErrors | null, readonly contentLanguage?: LanguageTag[] | null | undefined) {}
-}
+export type AppResponse<Success, KnownErrors> =
+  & { contentLanguage?: LanguageTag[] | null | undefined }
+  & ({ success: Success, error: null } | { success: null, error: KnownErrors })
 
 /**
  * This type provides a shorthand to map the given operation type argument to
