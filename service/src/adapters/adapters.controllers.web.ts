@@ -3,7 +3,7 @@ import { ErrEntityNotFound, ErrInfrastructure, ErrInvalidInput, ErrPermissionDen
 import { AppRequest } from '../app.api/app.api.global'
 
 export interface WebAppRequestFactory<Req extends AppRequest = AppRequest> {
-  <RequestParams extends object = object>(webReq: express.Request, params?: RequestParams): Req & RequestParams
+  <RequestParams extends Record<string, any> = Record<string, any>>(webReq: express.Request, params?: RequestParams): Req & RequestParams
 }
 
 /**
