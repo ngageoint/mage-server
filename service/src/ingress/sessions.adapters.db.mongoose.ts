@@ -25,7 +25,6 @@ const SessionSchema = new Schema<SessionDocument, SessionModel>(
   { versionKey: false }
 )
 
-// TODO: index token
 SessionSchema.index({ token: 1, unique: 1 })
 SessionSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
