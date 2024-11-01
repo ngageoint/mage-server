@@ -14,10 +14,9 @@ import { EventTransform } from './EventTransform';
 import { GeometryChangedHandler } from './GeometryChangedHandler';
 import { EventDeletionHandler } from './EventDeletionHandler';
 import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
-import { FeatureServiceConfig, FeatureLayerConfig, AuthType, OAuthAuthConfig } from "./ArcGISConfig"
+import { FeatureServiceConfig, FeatureLayerConfig, AuthType } from "./ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
-import { HttpClient } from './HttpClient'
 import { getIdentityManager } from "./ArcGISIdentityManagerFactory"
 import { request } from '@esri/arcgis-rest-request';
 
@@ -218,7 +217,7 @@ export class ObservationProcessor {
 
             for (const serv of services) {
                 try {
-                    const identityManager = await getIdentityManager(serv, new HttpClient(console))
+                    const identityManager = await getIdentityManager(serv)
                     const response = await request(serv.url, {
                       authentication: identityManager
                     }) as FeatureServiceResult
@@ -292,7 +291,7 @@ export class ObservationProcessor {
 
                 if (layerId != null) {
                     featureLayer.layer = layerId
-                    const identityManager = await getIdentityManager(featureServiceConfig, new HttpClient(console))
+                    const identityManager = await getIdentityManager(featureServiceConfig)
                     const featureService = new FeatureService(console, featureServiceConfig, identityManager)
                     const layerInfo = await featureService.queryLayerInfo(layerId);
                     const url = `${featureServiceConfig.url}/${layerId}`;
@@ -320,7 +319,7 @@ export class ObservationProcessor {
                 await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
             }
             const info = new LayerInfo(url, events, layerInfo, featureLayer.token)
-            const identityManager = await getIdentityManager(featureServiceConfig, new HttpClient(console))
+            const identityManager = await getIdentityManager(featureServiceConfig)
             const layerProcessor = new FeatureLayerProcessor(info, config, identityManager,this._console);
             this._layerProcessors.push(layerProcessor);
             // clearTimeout(this._nextTimeout); // TODO why is this needed?

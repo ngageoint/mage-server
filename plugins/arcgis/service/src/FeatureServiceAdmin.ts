@@ -4,7 +4,6 @@ import { MageEvent, MageEventRepository } from '@ngageoint/mage.service/lib/enti
 import { Layer, Field } from "./AddLayersRequest"
 import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 import { ObservationsTransformer } from "./ObservationsTransformer"
-import { HttpClient } from './HttpClient'
 import { LayerInfoResult, LayerField } from "./LayerInfoResult"
 import FormData from 'form-data'
 import { request } from '@esri/arcgis-rest-request'
@@ -433,8 +432,7 @@ export class FeatureServiceAdmin {
      */
     private async create(service: FeatureServiceConfig, layer: Layer) {
 
-        const httpClient = this.httpClient(service)
-        const identityManager = await getIdentityManager(service, httpClient)
+        const identityManager = await getIdentityManager(service)
         const url = this.adminUrl(service) + 'addToDefinition'
 
         this._console.info('ArcGIS feature service addToDefinition (create layer) url ' + url)
@@ -461,8 +459,7 @@ export class FeatureServiceAdmin {
 
         const layer = { fields: fields} as Layer
 
-        const httpClient = this.httpClient(service)
-        const identityManager = await getIdentityManager(service, httpClient)
+        const identityManager = await getIdentityManager(service)
         const url = this.adminUrl(service) + featureLayer.layer.toString() + '/addToDefinition'
 
         this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url)
@@ -501,8 +498,7 @@ export class FeatureServiceAdmin {
         const layer = {} as Layer
         layer.fields = deleteFields
 
-        const httpClient = this.httpClient(service)
-        const identityManager = await getIdentityManager(service, httpClient)
+        const identityManager = await getIdentityManager(service)
         const url = this.adminUrl(service) + featureLayer.layer.toString() + '/deleteFromDefinition'
 
         this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url)
@@ -532,18 +528,4 @@ export class FeatureServiceAdmin {
         }
         return url
     }
-
-    /**
-     * Get a HTTP Client with administration token
-     * @param service feature service
-     * @returns http client
-     */
-    private httpClient(service: FeatureServiceConfig): HttpClient {
-        let token = service.adminToken
-        if (token == null) {
-            token = service.auth?.type == 'token' ? service.auth.token : ""
-        }
-        return new HttpClient(console, token)
-    }
-
 }

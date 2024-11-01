@@ -193,7 +193,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
             try {
               // Create the IdentityManager instance to validate credentials
-              await getIdentityManager(service!, processor)
+              await getIdentityManager(service)
               let existingService = config.featureServices.find(service => service.url === url)
               if (existingService) {
                 existingService = { ...existingService }
@@ -216,7 +216,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             }
 
             try {
-              const identityManager = await getIdentityManager(featureService, processor)
+              const identityManager = await getIdentityManager(featureService)
               const response = await request(url, {
                 authentication: identityManager
               })

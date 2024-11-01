@@ -1,13 +1,12 @@
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { ArcGISAuthConfig, AuthType, FeatureServiceConfig, OAuthAuthConfig, TokenAuthConfig, UsernamePasswordAuthConfig } from './ArcGISConfig'
-import { ObservationProcessor } from "./ObservationProcessor";
 
 interface ArcGISIdentityManagerFactory {
-  create(portal: string, server: string, config: ArcGISAuthConfig, processor?: ObservationProcessor): Promise<ArcGISIdentityManager>
+  create(portal: string, server: string, config: ArcGISAuthConfig): Promise<ArcGISIdentityManager>
 }
 
 const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
-  async create(portal: string, server: string, auth: OAuthAuthConfig, processor: ObservationProcessor): Promise<ArcGISIdentityManager> {
+  async create(portal: string, server: string, auth: OAuthAuthConfig): Promise<ArcGISIdentityManager> {
     console.debug('Client ID provided for authentication')
     const { clientId, authToken, authTokenExpires, refreshToken, refreshTokenExpires } = auth
 
@@ -27,24 +26,27 @@ const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
           httpMethod: 'GET'
         });
 
+        // TODO Factory should not handle config changes
         // Update authToken to new token 
-        const config = await processor.safeGetConfig();
-        let service = config.featureServices.find(service => service.url === portal)?.auth as OAuthAuthConfig;
-        const date = new Date();
-        date.setSeconds(date.getSeconds() + response.expires_in || 0);
-        service = {
-          ...service,
-          authToken: response.access_token,
-          authTokenExpires: date.getTime()
-        }
+        // const config = await processor.safeGetConfig();
+        // let service = config.featureServices.find(service => service.url === portal)?.auth as OAuthAuthConfig;
+        // const date = new Date();
+        // date.setSeconds(date.getSeconds() + response.expires_in || 0);
+        // service = {
+        //   ...service,
+        //   authToken: response.access_token,
+        //   authTokenExpires: date.getTime()
+        // }
+        // await processor.putConfig(config)
 
-        await processor.putConfig(config)
-        return ArcGISIdentityManager.fromToken({
-          clientId: clientId,
-          token: response.access_token,
-          tokenExpires: date,
-          portal: portal
-        });
+        // return ArcGISIdentityManager.fromToken({
+        //   clientId: clientId,
+        //   token: response.access_token,
+        //   tokenExpires: date,
+        //   portal: portal
+        // });
+
+        throw new Error('TODO Unsupported')
       } catch (error) {
         throw new Error('Error occurred when using refresh token')
       }
@@ -86,8 +88,7 @@ const authConfigMap: { [key: string]: ArcGISIdentityManagerFactory } = {
 }
 
 export function getIdentityManager(
-  config: FeatureServiceConfig,
-  processor: ObservationProcessor
+  config: FeatureServiceConfig
 ): Promise<ArcGISIdentityManager> {
   const auth = config.auth
   const authType = config.auth?.type
@@ -98,7 +99,7 @@ export function getIdentityManager(
   if (!factory) {
     throw new Error(`No factory found for type ${authType}`)
   }
-  return factory.create(getPortalUrl(config.url), getServerUrl(config.url), auth, processor)
+  return factory.create(getPortalUrl(config.url), getServerUrl(config.url), auth)
 }
 
 
