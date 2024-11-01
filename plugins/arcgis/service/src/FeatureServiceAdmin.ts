@@ -352,16 +352,13 @@ export class FeatureServiceAdmin {
      * @param fieldNames set of all field names
      */
     private createFormField(form: Form, formField: FormField, fields: Field[], fieldNames: Set<string>) {
-
         const field = this.initField(formField.type)
 
         if (field != null) {
-
-            let name = ObservationsTransformer.replaceSpaces(formField.title)
-
-            if (fieldNames.has(name)) {
-                name = form.name + '_' + name
-            }
+            const sanitizedName = ObservationsTransformer.replaceSpaces(formField.title)
+            const sanitizedFormName = ObservationsTransformer.replaceSpaces(form.name)
+            const name = `${sanitizedFormName}_${sanitizedName}`
+            
             fieldNames.add(name)
 
             field.name = name
@@ -372,7 +369,6 @@ export class FeatureServiceAdmin {
 
             fields.push(field)
         }
-
     }
 
     /**
