@@ -126,16 +126,6 @@ export interface OAuthAuthConfig {
      * The expiration date for the temporary token
      */
     authTokenExpires?: string
-
-    /**
-     * The Refresh token for OAuth
-     */
-    refreshToken?: string
-
-    /**
-     * The expiration date for the Refresh token
-     */
-    refreshTokenExpires?: string
 }
 
 /**
