@@ -1,13 +1,13 @@
-import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
+import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { ArcGISAuthConfig, AuthType, FeatureServiceConfig, OAuthAuthConfig, TokenAuthConfig, UsernamePasswordAuthConfig } from './ArcGISConfig'
-import { HttpClient } from "./HttpClient";
+import { ObservationProcessor } from "./ObservationProcessor";
 
 interface ArcGISIdentityManagerFactory {
-  create(portal: string, server: string, config: ArcGISAuthConfig, httpClient?: HttpClient): Promise<ArcGISIdentityManager>
+  create(portal: string, server: string, config: ArcGISAuthConfig, processor?: ObservationProcessor): Promise<ArcGISIdentityManager>
 }
 
 const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
-  async create(portal: string, server: string, auth: OAuthAuthConfig, httpClient: HttpClient): Promise<ArcGISIdentityManager> {
+  async create(portal: string, server: string, auth: OAuthAuthConfig, processor: ObservationProcessor): Promise<ArcGISIdentityManager> {
     console.debug('Client ID provided for authentication')
     const { clientId, authToken, authTokenExpires, refreshToken, refreshTokenExpires } = auth
 
@@ -22,14 +22,33 @@ const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
     } else if (refreshToken && new Date(refreshTokenExpires || 0) > new Date()) {
       // TODO: find a way without using constructor nor httpClient
       const url = `${portal}/oauth2/token?client_id=${clientId}&refresh_token=${refreshToken}&grant_type=refresh_token`
-      const response = await httpClient.sendGet(url)
-      // TODO: error handling
-      return ArcGISIdentityManager.fromToken({
-        clientId: clientId,
-        token: response.access_token,
-        portal: portal
-      });
-      // TODO: update authToken to new token
+      try {
+        const response = await request(url, {
+          httpMethod: 'GET'
+        });
+
+        // Update authToken to new token 
+        const config = await processor.safeGetConfig();
+        let service = config.featureServices.find(service => service.url === portal)?.auth as OAuthAuthConfig;
+        const date = new Date();
+        date.setSeconds(date.getSeconds() + response.expires_in || 0);
+        service = {
+          ...service,
+          authToken: response.access_token,
+          authTokenExpires: date.getTime()
+        }
+
+        await processor.putConfig(config)
+        return ArcGISIdentityManager.fromToken({
+          clientId: clientId,
+          token: response.access_token,
+          tokenExpires: date,
+          portal: portal
+        });
+      } catch (error) {
+        throw new Error('Error occurred when using refresh token')
+      }
+
     } else {
       // TODO the config, we need to let the user know UI side they need to authenticate again
       throw new Error('Refresh token missing or expired')
@@ -46,7 +65,7 @@ const TokenIdentityManagerFactory: ArcGISIdentityManagerFactory = {
       server: server,
       // TODO: what do we really want to do here? esri package seems to need this optional parameter. 
       // Use authTokenExpires if defined, otherwise set to now plus a day
-      tokenExpires: auth.authTokenExpires ? new Date(auth.authTokenExpires) : new Date(Date.now() + 24 * 60 * 60 * 1000) 
+      tokenExpires: auth.authTokenExpires ? new Date(auth.authTokenExpires) : new Date(Date.now() + 24 * 60 * 60 * 1000)
     })
     return identityManager
   }
@@ -68,7 +87,7 @@ const authConfigMap: { [key: string]: ArcGISIdentityManagerFactory } = {
 
 export function getIdentityManager(
   config: FeatureServiceConfig,
-  httpClient: HttpClient // TODO remove in favor of an open source lib like axios
+  processor: ObservationProcessor
 ): Promise<ArcGISIdentityManager> {
   const auth = config.auth
   const authType = config.auth?.type
@@ -79,7 +98,7 @@ export function getIdentityManager(
   if (!factory) {
     throw new Error(`No factory found for type ${authType}`)
   }
-  return factory.create(getPortalUrl(config.url), getServerUrl(config.url), auth, httpClient)
+  return factory.create(getPortalUrl(config.url), getServerUrl(config.url), auth, processor)
 }
 
 

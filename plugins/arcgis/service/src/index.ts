@@ -7,9 +7,8 @@ import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authoriz
 import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { AuthType } from './ArcGISConfig'
 import { ObservationProcessor } from './ObservationProcessor'
-import { HttpClient } from './HttpClient'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
-import { FeatureServiceConfig } from './ArcGISConfig'
+import { FeatureServiceConfig, OAuthAuthConfig } from './ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { getIdentityManager, getPortalUrl } from './ArcGISIdentityManagerFactory'
@@ -37,6 +36,19 @@ const InjectedServices = {
 }
 
 const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service"
+
+const sanitizeFeatureService = (config: FeatureServiceConfig, type: AuthType): FeatureServiceConfig => {
+  if (type === AuthType.OAuth) {
+      const newAuth = Object.assign({}, config.auth) as OAuthAuthConfig;
+      delete newAuth.refreshToken;
+      delete newAuth.refreshTokenExpires;
+      return {
+          ...config,
+          auth: newAuth
+      }
+  }
+  return config;
+}
 
 /**
  * The MAGE ArcGIS Plugin finds new MAGE observations and if configured to send the observations
@@ -120,7 +132,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
 
               await processor.putConfig(config)
-
+              // TODO: This seems like a bad idea to send the access tokens to the front end. It has no use for them and could potentially be a security concern
               res.send(`
                 <html>
                   <head>
@@ -151,13 +163,14 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             .get(async (req, res, next) => {
               console.info('Getting ArcGIS plugin config...')
               const config = await processor.safeGetConfig()
+              config.featureServices = config.featureServices.map((service) => sanitizeFeatureService(service, AuthType.OAuth));
               res.json(config)
             })
             .put(async (req, res, next) => {
               console.info('Applying ArcGIS plugin config...')
               const arcConfig = req.body as ArcGISPluginConfig
               const configString = JSON.stringify(arcConfig)
-              processor.putConfig(arcConfig)
+              processor.patchConfig(arcConfig)
               res.sendStatus(200)
             })
 
@@ -179,18 +192,16 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             }
 
             try {
-              const httpClient = new HttpClient(console)
               // Create the IdentityManager instance to validate credentials
-              await getIdentityManager(service!, httpClient)
+              await getIdentityManager(service!, processor)
               let existingService = config.featureServices.find(service => service.url === url)
               if (existingService) {
                 existingService = { ...existingService }
               } else {
                 config.featureServices.push(service)
               }
-
-              await processor.putConfig(config)
-              return res.send(service)
+              await processor.patchConfig(config)
+              return res.send(sanitizeFeatureService(service, AuthType.OAuth))
             } catch (err) {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
@@ -203,10 +214,9 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             if (!featureService) {
               return res.status(400)
             }
-              
-            const httpClient = new HttpClient(console)
+
             try {
-              const identityManager = await getIdentityManager(featureService, httpClient)
+              const identityManager = await getIdentityManager(featureService, processor)
               const response = await request(url, {
                 authentication: identityManager
               })

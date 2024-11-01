@@ -2,18 +2,15 @@ const SamlStrategy = require('@node-saml/passport-saml').Strategy
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
-  , Device = require('../models/device')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
-  , userTransformer = require('../transformers/user')
-  , AuthenticationInitializer = require('./index')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , AuthenticationInitializer = require('./index');
 
 function configure(strategy) {
   log.info('Configuring ' + strategy.title + ' authentication');
 
   const options = {
-    path: `/auth/${strategy.name}/callback`,
+    callbackUrl: `${strategy.redirectHost}/auth/${strategy.name}/callback`,
     entryPoint: strategy.settings.entryPoint,
     cert: strategy.settings.cert,
     issuer: strategy.settings.issuer
@@ -27,49 +24,49 @@ function configure(strategy) {
   if (strategy.settings.signatureAlgorithm) {
     options.signatureAlgorithm = strategy.settings.signatureAlgorithm;
   }
-  if(strategy.settings.audience) {
+  if (strategy.settings.audience) {
     options.audience = strategy.settings.audience;
   }
-  if(strategy.settings.identifierFormat) {
+  if (strategy.settings.identifierFormat) {
     options.identifierFormat = strategy.settings.identifierFormat;
   }
-  if(strategy.settings.acceptedClockSkewMs) {
+  if (strategy.settings.acceptedClockSkewMs) {
     options.acceptedClockSkewMs = strategy.settings.acceptedClockSkewMs;
   }
-  if(strategy.settings.attributeConsumingServiceIndex) {
+  if (strategy.settings.attributeConsumingServiceIndex) {
     options.attributeConsumingServiceIndex = strategy.settings.attributeConsumingServiceIndex;
   }
-  if(strategy.settings.disableRequestedAuthnContext) {
+  if (strategy.settings.disableRequestedAuthnContext) {
     options.disableRequestedAuthnContext = strategy.settings.disableRequestedAuthnContext;
   }
-  if(strategy.settings.authnContext) {
+  if (strategy.settings.authnContext) {
     options.authnContext = strategy.settings.authnContext;
   }
-  if(strategy.settings.forceAuthn) {
+  if (strategy.settings.forceAuthn) {
     options.forceAuthn = strategy.settings.forceAuthn;
   }
-  if(strategy.settings.skipRequestCompression) {
+  if (strategy.settings.skipRequestCompression) {
     options.skipRequestCompression = strategy.settings.skipRequestCompression;
   }
-  if(strategy.settings.authnRequestBinding) {
+  if (strategy.settings.authnRequestBinding) {
     options.authnRequestBinding = strategy.settings.authnRequestBinding;
   }
-  if(strategy.settings.RACComparison) {
+  if (strategy.settings.RACComparison) {
     options.RACComparison = strategy.settings.RACComparison;
   }
-  if(strategy.settings.providerName) {
+  if (strategy.settings.providerName) {
     options.providerName = strategy.settings.providerName;
   }
-  if(strategy.settings.idpIssuer) {
+  if (strategy.settings.idpIssuer) {
     options.idpIssuer = strategy.settings.idpIssuer;
   }
-  if(strategy.settings.validateInResponseTo) {
+  if (strategy.settings.validateInResponseTo) {
     options.validateInResponseTo = strategy.settings.validateInResponseTo;
   }
-  if(strategy.settings.requestIdExpirationPeriodMs) {
+  if (strategy.settings.requestIdExpirationPeriodMs) {
     options.requestIdExpirationPeriodMs = strategy.settings.requestIdExpirationPeriodMs;
   }
-  if(strategy.settings.logoutUrl) {
+  if (strategy.settings.logoutUrl) {
     options.logoutUrl = strategy.settings.logoutUrl;
   }
 
@@ -220,19 +217,10 @@ function setDefaults(strategy) {
 function initialize(strategy) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
-  const provision = AuthenticationInitializer.provision;
 
   setDefaults(strategy);
   configure(strategy);
 
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
-  }
   app.get(
     '/auth/' + strategy.name + '/signin',
     function (req, res, next) {
@@ -244,83 +232,6 @@ function initialize(strategy) {
       passport.authenticate(strategy.name, {
         additionalParams: { RelayState: JSON.stringify(state) }
       })(req, res, next);
-    }
-  );
-
-  // DEPRECATED retain old routes as deprecated until next major version.
-  // Create a new device
-  // Any authenticated user can create a new device, the registered field
-  // will be set to false.
-  app.post('/auth/' + strategy.name + '/devices',
-    function (req, res, next) {
-      if (req.user) {
-        next();
-      } else {
-        res.sendStatus(401);
-      }
-    },
-    function (req, res, next) {
-      const newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userAgent: req.headers['user-agent'],
-        appVersion: req.param('appVersion'),
-        userId: req.user.id
-      };
-
-      Device.getDeviceByUid(newDevice.uid)
-        .then(device => {
-          if (device) {
-            // already exists, do not register
-            return res.json(device);
-          }
-
-          Device.createDevice(newDevice)
-            .then(device => res.json(device))
-            .catch(err => next(err));
-        })
-        .catch(err => next(err));
-    }
-  );
-
-  // DEPRECATED session authorization, remove in next version.
-  app.post(
-    '/auth/' + strategy.name + '/authorize',
-    function (req, res, next) {
-      if (req.user) {
-        log.warn('session authorization is deprecated, please use jwt');
-        return next();
-      }
-
-      passport.authenticate('authorization', function (err, user, info = {}) {
-        if (!user) return res.status(401).send(info.message);
-
-        req.user = user;
-        next();
-      })(req, res, next);
-    },
-    provision.check(strategy.name),
-    parseLoginMetadata,
-    function (req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
-        if (err) return next(err);
-
-        authenticationApiAppender.append(strategy.api).then(api => {
-          res.json({
-            token: token.token,
-            expirationDate: token.expirationDate,
-            user: userTransformer.transform(req.user, { path: req.getRoot() }),
-            device: req.provisionedDevice,
-            api: api
-          });
-        }).catch(err => {
-          next(err);
-        });
-      });
-
-      req.session = null;
     }
   );
 }

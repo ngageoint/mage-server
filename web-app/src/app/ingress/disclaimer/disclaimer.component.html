@@ -1,13 +1,15 @@
-<div>
-  <div class="title">{{title}}</div>
+<div class="container">
+  <div class="header">
+    <div class="header__title">{{title}}</div>
+  </div>
 
   <div class="disclaimer">
-    <div class="subtitle">{{text}}</div>
-    
-    <div class="actions">
-      <button class="actions__button" mat-stroked-button (click)="onReject()">Exit</button>
-      <button class="actions__button" mat-flat-button color="primary" (click)="onAccept()">Accept</button>
-    </div>
+    <div class="disclaimer__text">{{text}}</div>
+  </div>
+
+  <div class="actions">
+    <button class="actions__button" mat-stroked-button (click)="onReject()">Exit</button>
+    <button class="actions__button" mat-flat-button color="primary" (click)="onAccept()">Accept</button>
   </div>
 
 </div>
