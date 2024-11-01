@@ -59,13 +59,14 @@ export class FeatureQuerier {
             queryUrl.searchParams.set('where', `${this._config.observationIdField} = ${observationId}`);
         }
         queryUrl.searchParams.set('outFields', this.outFields(fields))
-        queryUrl.searchParams.set('returnGeometry', this.returnGeometry(geometry))
-        
+        queryUrl.searchParams.set('returnGeometry', geometry === false ? 'false' : 'true')
+        this._console.info('ArcGIS query: ' + queryUrl)
+
         const queryResponse = await request(queryUrl.toString(), {
             authentication: this._identityManager
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse.toString)
         const result = JSON.parse(queryResponse) as QueryObjectResult
         response(result);
     }
@@ -80,9 +81,13 @@ export class FeatureQuerier {
         const queryUrl = new URL(this._url)
         queryUrl.searchParams.set('where', `${this._config.observationIdField} IS NOT NULL`);
         queryUrl.searchParams.set('outFields', this.outFields(fields));
-        queryUrl.searchParams.set('returnGeometry', this.returnGeometry(geometry));        
+        queryUrl.searchParams.set('returnGeometry', geometry === false ? 'false' : 'true');
+        
+        this._console.info('ArcGIS query: ' + queryUrl)
+
         const queryResponse = await request(queryUrl.toString(), {
-            authentication: this._identityManager
+            authentication: this._identityManager,
+            params: { f: 'json' }
         });
 
         this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
@@ -100,7 +105,9 @@ export class FeatureQuerier {
         queryUrl.searchParams.set('where', `${field} IS NOT NULL`);
         queryUrl.searchParams.set('returnDistinctValues', 'true');
         queryUrl.searchParams.set('outFields', this.outFields([field]));
-        queryUrl.searchParams.set('returnGeometry', this.returnGeometry(false));       
+        queryUrl.searchParams.set('returnGeometry', 'false');      
+        this._console.info('ArcGIS query: ' + queryUrl)
+ 
         const queryResponse = await request(queryUrl.toString(), {
             authentication: this._identityManager
 
@@ -116,31 +123,11 @@ export class FeatureQuerier {
      * @returns out fields
      */
     private outFields(fields?: string[]): string {
-        let outFields = '&outFields='
         if (fields != null && fields.length > 0) {
-            for (let i = 0; i < fields.length; i++) {
-                if (i > 0) {
-                    outFields += ","
-                }
-                outFields += fields[i]
-            }
-        } else{
-            outFields += '*'
+            return fields.join(',');
+        } else {
+            return '*';
         }
-        return outFields
-    }
-
-    /**
-     * Build the return geometry query parameter
-     * @param fields query fields
-     * @returns out fields
-     */
-    private returnGeometry(geometry?: boolean): string {
-        let returnGeometry = ''
-        if (geometry != null && !geometry) {
-            returnGeometry = '&returnGeometry=false'
-        }
-        return returnGeometry
     }
 
 }

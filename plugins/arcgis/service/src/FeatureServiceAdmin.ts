@@ -111,7 +111,6 @@ export class FeatureServiceAdmin {
                 }
             }
 
-            // TODO - where does New_field and New_field_2 come from with each startup?
             if (addFields.length > 0) {
                 this.addFields(service, featureLayer, addFields)
             }
