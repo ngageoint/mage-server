@@ -91,7 +91,7 @@ export interface Links {
   prev: number | null
 }
 
-export function calculateLinks(paging: PagingParameters, totalCount: number | null): Links {
+export function calculatePagingLinks(paging: PagingParameters, totalCount: number | null): Links {
   const limit = paging.pageSize
   const start = paging.pageIndex * limit
   const next = start + paging.pageSize < (totalCount || 0) ? paging.pageIndex + 1 : null
@@ -101,7 +101,7 @@ export function calculateLinks(paging: PagingParameters, totalCount: number | nu
 
 export const pageOf = <T>(items: T[], paging: PagingParameters, totalCount?: number | null): PageOf<T> => {
   const resolvedTotalCount = totalCount || 0;
-  const links = calculateLinks(paging, resolvedTotalCount)
+  const links = calculatePagingLinks(paging, resolvedTotalCount)
   return {
     totalCount: totalCount || null,
     pageSize: typeof paging.pageSize === 'number' ? paging.pageSize : -1,
