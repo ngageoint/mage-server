@@ -475,9 +475,6 @@ export class FeatureServiceAdmin {
         }).catch((error) => {
             console.log('Error: ' + error)
         });
-
-        console.log('Remove me')
-
     }
 
     /**

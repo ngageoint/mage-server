@@ -19,7 +19,6 @@ const OAuthIdentityManagerFactory: ArcGISIdentityManagerFactory = {
         server: server
       })
     } else if (refreshToken && new Date(refreshTokenExpires || 0) > new Date()) {
-      // TODO: find a way without using constructor nor httpClient
       const url = `${portal}/oauth2/token?client_id=${clientId}&refresh_token=${refreshToken}&grant_type=refresh_token`
       try {
         const response = await request(url, {

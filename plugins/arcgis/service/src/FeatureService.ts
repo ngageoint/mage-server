@@ -1,6 +1,5 @@
 import { LayerInfoResult } from "./LayerInfoResult";
 import { FeatureServiceResult } from "./FeatureServiceResult";
-import { HttpClient } from "./HttpClient";
 import { getIdentityManager } from "./ArcGISIdentityManagerFactory"
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { queryFeatures, applyEdits, IQueryFeaturesOptions } from "@esri/arcgis-rest-feature-service";
@@ -10,11 +9,6 @@ import { FeatureServiceConfig } from "./ArcGISConfig";
  * Queries arc feature services and layers.
  */
 export class FeatureService {
-
-	/**
-	 * Used to make the get request about the feature layer.
-	 */
-	// private _httpClient: HttpClient;
 
 	/**
 	 * Used to log messages.
@@ -32,7 +26,6 @@ export class FeatureService {
 	constructor(console: Console, config: FeatureServiceConfig, identityManager: ArcGISIdentityManager) {
         this._config = config;
         this._identityManager = identityManager;
-		// this._httpClient = new HttpClient(console, token);
 		this._console = console;
 	}
 
