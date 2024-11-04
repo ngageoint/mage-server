@@ -159,7 +159,7 @@ export class UserIngressBindingsMongooseRepository implements UserIngressBinding
 
   async readBindingsForUser(userId: UserId): Promise<UserIngressBindings> {
     const doc = await this.model.findById(userId, null, { lean: true })
-    return { userId, bindings: new Map(Object.entries(doc?.bindings || {})) }
+    return { userId, bindingsByIdp: new Map(Object.entries(doc?.bindings || {})) }
   }
 
   async readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters | undefined): Promise<PageOf<UserIngressBindings>> {
@@ -170,7 +170,7 @@ export class UserIngressBindingsMongooseRepository implements UserIngressBinding
     const _id = new ObjectId(userId)
     const bindingsUpdate = { $set: { [`bindings.${binding.idpId}`]: binding } }
     const doc = await this.model.findOneAndUpdate({ _id }, bindingsUpdate, { upsert: true, new: true })
-    return { userId, bindings: new Map(Object.entries(doc.bindings)) }
+    return { userId, bindingsByIdp: new Map(Object.entries(doc.bindings)) }
   }
 
   async deleteBinding(userId: UserId, idpId: IdentityProviderId): Promise<UserIngressBinding | null> {
