@@ -47,7 +47,7 @@ export class FeatureLayerProcessor {
         this.lastTimeStamp = 0;
         this.featureQuerier = new FeatureQuerier(layerInfo, config, identityManager,console);
         this._binner = new ObservationBinner(layerInfo, this.featureQuerier, config);
-        this.sender = new ObservationsSender(layerInfo, config, console);
+        this.sender = new ObservationsSender(layerInfo, config, identityManager, console);
     }
 
     /**

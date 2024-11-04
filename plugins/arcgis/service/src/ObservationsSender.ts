@@ -9,6 +9,7 @@ import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'
 import FormData from 'form-data';
+import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 
 /**
  * Class that transforms observations into a json string that can then be sent to an arcgis server.
@@ -50,13 +51,15 @@ export class ObservationsSender {
      */
     private _config: ArcGISPluginConfig;
 
+    private _identityManager: ArcGISIdentityManager;
+
     /**
      * Constructor.
      * @param layerInfo The layer info.
      * @param config The plugins configuration.
      * @param console Used to log to the console.
      */
-    constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, console: Console) {
+    constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this._url = layerInfo.url;
         this._urlAdd = this._url + '/addFeatures';
         this._urlUpdate = this._url + '/updateFeatures';
@@ -64,6 +67,7 @@ export class ObservationsSender {
         this._httpClient = new HttpClient(console, layerInfo.token);
         this._attachmentDirectory = environment.attachmentBaseDirectory;
         this._config = config;
+        this._identityManager = identityManager;
     }
 
     /**
