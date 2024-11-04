@@ -63,12 +63,12 @@ export class FeatureQuerier {
         this._console.info('ArcGIS query: ' + queryUrl)
 
         const queryResponse = await request(queryUrl.toString(), {
-            authentication: this._identityManager
+            authentication: this._identityManager,
+            params: { f: 'json' }
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse.toString)
-        const result = JSON.parse(queryResponse) as QueryObjectResult
-        response(result);
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
+        response(queryResponse as QueryObjectResult)
     }
 
     /**
@@ -90,9 +90,8 @@ export class FeatureQuerier {
             params: { f: 'json' }
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
-            const result = JSON.parse(queryResponse) as QueryObjectResult
-            response(result)
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
+        response(queryResponse as QueryObjectResult)
     }
 
     /**
@@ -109,12 +108,13 @@ export class FeatureQuerier {
         this._console.info('ArcGIS query: ' + queryUrl)
  
         const queryResponse = await request(queryUrl.toString(), {
-            authentication: this._identityManager
+            authentication: this._identityManager,
+            params: { f: 'json' }
 
         });  
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
-        const result = JSON.parse(queryResponse) as QueryObjectResult
-        response(result)
+
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
+        response(queryResponse as QueryObjectResult)
     }
 
     /**
