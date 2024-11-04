@@ -2,13 +2,13 @@ import { entityNotFound, infrastructureError } from '../app.api/app.api.errors'
 import { AppResponse } from '../app.api/app.api.global'
 import { UserRepository } from '../entities/users/entities.users'
 import { AdmitFromIdentityProviderOperation, AdmitFromIdentityProviderRequest, authenticationFailedError, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
-import { IdentityProviderRepository, IdentityProviderUser, UserIngressBindingRepository } from './ingress.entities'
-import { ProcessNewUserEnrollment } from './ingress.services.api'
+import { IdentityProviderRepository, IdentityProviderUser, UserIngressBindingsRepository } from './ingress.entities'
+import { EnrollNewUser } from './ingress.services.api'
 import { LocalIdpCreateAccountOperation } from './local-idp.app.api'
 import { JWTService, TokenAssertion } from './verification'
 
 
-export function CreateEnrollMyselfOperation(createLocalIdpAccount: LocalIdpCreateAccountOperation, idpRepo: IdentityProviderRepository, enrollNewUser: ProcessNewUserEnrollment): EnrollMyselfOperation {
+export function CreateEnrollMyselfOperation(createLocalIdpAccount: LocalIdpCreateAccountOperation, idpRepo: IdentityProviderRepository, enrollNewUser: EnrollNewUser): EnrollMyselfOperation {
   return async function enrollMyself(req: EnrollMyselfRequest): ReturnType<EnrollMyselfOperation> {
     const localAccountCreate = await createLocalIdpAccount(req)
     if (localAccountCreate.error) {
@@ -37,7 +37,7 @@ export function CreateEnrollMyselfOperation(createLocalIdpAccount: LocalIdpCreat
   }
 }
 
-export function CreateAdmitFromIdentityProviderOperation(idpRepo: IdentityProviderRepository, ingressBindingRepo: UserIngressBindingRepository, userRepo: UserRepository, enrollNewUser: ProcessNewUserEnrollment, tokenService: JWTService): AdmitFromIdentityProviderOperation {
+export function CreateAdmitFromIdentityProviderOperation(idpRepo: IdentityProviderRepository, ingressBindingRepo: UserIngressBindingsRepository, userRepo: UserRepository, enrollNewUser: EnrollNewUser, tokenService: JWTService): AdmitFromIdentityProviderOperation {
   return async function admitFromIdentityProvider(req: AdmitFromIdentityProviderRequest): ReturnType<AdmitFromIdentityProviderOperation> {
     const idp = await idpRepo.findIdpByName(req.identityProviderName)
     if (!idp) {
@@ -56,7 +56,7 @@ export function CreateAdmitFromIdentityProviderOperation(idpRepo: IdentityProvid
       })
       .then(enrolled => {
         const { mageAccount, ingressBindings } = enrolled
-        if (ingressBindings.has(idp.id)) {
+        if (ingressBindings.bindingsByIdp.has(idp.id)) {
           return mageAccount
         }
         console.error(`user ${mageAccount.username} has no ingress binding to identity provider ${idp.name}`)

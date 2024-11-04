@@ -1,19 +1,12 @@
 import mongoose from 'mongoose'
 import { BaseMongooseRepository } from '../adapters/base/adapters.base.db.mongoose'
-import { MageEventId } from '../entities/events/entities.events'
-import { TeamId } from '../entities/teams/entities.teams'
-import { DeviceEnrollmentPolicy, IdentityProvider, IdentityProviderRepository, UserEnrollmentPolicy } from './ingress.entities'
+import { PagingParameters, PageOf } from '../entities/entities.global'
+import { UserId } from '../entities/users/entities.users'
+import { DeviceEnrollmentPolicy, IdentityProvider, IdentityProviderId, IdentityProviderMutableAttrs, IdentityProviderRepository, UserEnrollmentPolicy, UserIngressBinding, UserIngressBindings, UserIngressBindingsRepository } from './ingress.entities'
 
 type ObjectId = mongoose.Types.ObjectId
-
+const ObjectId = mongoose.Types.ObjectId
 const Schema = mongoose.Schema
-
-export type CommonIdpSettings = {
-  usersReqAdmin?: { enabled: boolean }
-  devicesReqAdmin?: { enabled: boolean }
-  newUserTeams?: TeamId[]
-  newUserEvents?: MageEventId[]
-}
 
 export type IdentityProviderDocument = Omit<IdentityProvider, 'id'> & {
   _id: ObjectId
@@ -127,19 +120,72 @@ export class IdentityProviderMongooseRepository extends BaseMongooseRepository<I
   }
 
   async findIdpByName(name: string): Promise<IdentityProvider | null> {
-    const doc = await this.model.findOne({ name })
+    const doc = await this.model.findOne({ name }, null, { lean: true })
     if (doc) {
       return this.entityForDocument(doc)
     }
     return null
   }
 
-  updateIdp(update: Partial<IdentityProvider> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null> {
+  updateIdp(update: Partial<IdentityProviderMutableAttrs> & Pick<IdentityProvider, 'id'>): Promise<IdentityProvider | null> {
+    return super.update(update)
+  }
+
+  deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null> {
+    return super.removeById(id)
+  }
+}
+
+
+export type UserIngressBindingsDocument = {
+  /**
+   * The ingress bindings `_id` is actually the `_id` of the related user document.
+   */
+  _id: ObjectId
+  bindings: { [idpId: IdentityProviderId]: UserIngressBinding }
+}
+
+export type UserIngressBindingsModel = mongoose.Model<UserIngressBindingsDocument>
+
+export const UserIngressBindingsSchema = new Schema<UserIngressBindingsDocument>(
+  {
+    bindings: { type: Schema.Types.Mixed, required: true }
+  }
+)
+
+export class UserIngressBindingsMongooseRepository implements UserIngressBindingsRepository {
+
+  constructor(readonly model: UserIngressBindingsModel) {}
+
+  async readBindingsForUser(userId: UserId): Promise<UserIngressBindings> {
+    const doc = await this.model.findById(userId, null, { lean: true })
+    return { userId, bindings: new Map(Object.entries(doc?.bindings || {})) }
+  }
+
+  async readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters | undefined): Promise<PageOf<UserIngressBindings>> {
     throw new Error('Method not implemented.')
   }
 
-  deleteIdp(id: string): Promise<IdentityProvider | null> {
-    return super.removeById(id)
+  async saveUserIngressBinding(userId: UserId, binding: UserIngressBinding): Promise<Error | UserIngressBindings> {
+    const _id = new ObjectId(userId)
+    const bindingsUpdate = { $set: { [`bindings.${binding.idpId}`]: binding } }
+    const doc = await this.model.findOneAndUpdate({ _id }, bindingsUpdate, { upsert: true, new: true })
+    return { userId, bindings: new Map(Object.entries(doc.bindings)) }
+  }
+
+  async deleteBinding(userId: UserId, idpId: IdentityProviderId): Promise<UserIngressBinding | null> {
+    const _id = new ObjectId(userId)
+    const bindingsUpdate = { $unset: [`bindings.${idpId}`] }
+    const doc = await this.model.findOneAndUpdate({ _id }, bindingsUpdate)
+    return doc?.bindings[idpId] || null
+  }
+
+  async deleteBindingsForUser(userId: UserId): Promise<UserIngressBindings | null> {
+    throw new Error('Method not implemented.')
+  }
+
+  async deleteAllBindingsForIdp(idpId: IdentityProviderId): Promise<number> {
+    throw new Error('Method not implemented.')
   }
 }
 
@@ -174,7 +220,7 @@ function DbAuthenticationConfigurationToObject(config, ret, options) {
   ret.icon = ret.icon ? ret.icon.toString('base64') : null;
 }
 
-// TODO: move to api layer
+// TODO: move to api/web layer
 function manageIcon(config) {
   if (config.icon) {
     if (config.icon.startsWith('data')) {

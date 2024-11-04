@@ -1,8 +1,8 @@
 import { MageEventId } from '../entities/events/entities.events'
 import { Team, TeamId } from '../entities/teams/entities.teams'
 import { User, UserId, UserRepository, UserRepositoryError } from '../entities/users/entities.users'
-import { createEnrollmentCandidateUser, IdentityProvider, IdentityProviderUser, UserIngressBindingRepository, UserIngressBindings } from './ingress.entities'
-import { ProcessNewUserEnrollment } from './ingress.services.api'
+import { createEnrollmentCandidateUser, IdentityProvider, IdentityProviderUser, UserIngressBindingsRepository, UserIngressBindings } from './ingress.entities'
+import { EnrollNewUser } from './ingress.services.api'
 
 export interface AssignTeamMember {
   (member: UserId, team: TeamId): Promise<boolean>
@@ -12,7 +12,7 @@ export interface FindEventTeam {
   (mageEventId: MageEventId): Promise<Team | null>
 }
 
-export function CreateProcessNewUserEnrollmentService(userRepo: UserRepository, ingressBindingRepo: UserIngressBindingRepository, findEventTeam: FindEventTeam, assignTeamMember: AssignTeamMember): ProcessNewUserEnrollment {
+export function CreateProcessNewUserEnrollmentService(userRepo: UserRepository, ingressBindingRepo: UserIngressBindingsRepository, findEventTeam: FindEventTeam, assignTeamMember: AssignTeamMember): EnrollNewUser {
   return async function processNewUserEnrollment(idpAccount: IdentityProviderUser, idp: IdentityProvider): Promise<{ mageAccount: User, ingressBindings: UserIngressBindings }> {
     console.info(`enrolling new user account ${idpAccount.username} from identity provider ${idp.name}`)
     const candidate = createEnrollmentCandidateUser(idpAccount, idp)
@@ -23,13 +23,9 @@ export function CreateProcessNewUserEnrollmentService(userRepo: UserRepository, 
     const ingressBindings = await ingressBindingRepo.saveUserIngressBinding(
       mageAccount.id,
       {
-        userId: mageAccount.id,
         idpId: idp.id,
         idpAccountId: idpAccount.username,
         idpAccountAttrs: {},
-        // TODO: these do not have functionality yet
-        verified: true,
-        enabled: true,
       }
     )
     if (ingressBindings instanceof Error) {

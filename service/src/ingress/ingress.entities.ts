@@ -4,6 +4,7 @@ import { MageEventId } from '../entities/events/entities.events'
 import { TeamId } from '../entities/teams/entities.teams'
 import { UserExpanded, UserId } from '../entities/users/entities.users'
 import { RoleId } from '../entities/authorization/entities.authorization'
+import { PageOf, PagingParameters } from '../entities/entities.global'
 
 export interface Session {
   token: string
@@ -88,12 +89,25 @@ export type IdentityProviderUser = Pick<User, 'username' | 'displayName' | 'emai
  * identity provider for Mage to map the identity provider account to the Mage user account.
  */
 export interface UserIngressBinding {
-  userId: UserId
   idpId: IdentityProviderId
-  verified: boolean
-  enabled: boolean
+  // TODO: evaluate for utility of disabling a single ingress/idp path for a user as opposed to the entire account
+  // verified: boolean
+  // enabled: boolean
+  /**
+   * The identity provider account ID is the identifier of the account native to the owning identity provider.  This is
+   * only necessary if the identifier differs from the Mage account's username, especially if a Mage account has
+   * multiple ingress bindings for different identity providers with different account identifiers.
+   */
   idpAccountId?: string
+  /**
+   * Any attributes the identity provider or protocol needs to persist about the account mapping
+   */
   idpAccountAttrs?: Record<string, any>
+}
+
+export type UserIngressBindings = {
+  userId: UserId
+  bindingsByIdp: Map<IdentityProviderId, UserIngressBinding>
 }
 
 export type IdentityProviderMutableAttrs = Omit<IdentityProvider, 'id' | 'name' | 'protocol'>
@@ -109,12 +123,22 @@ export interface IdentityProviderRepository {
   deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null>
 }
 
-export type UserIngressBindings = Map<IdentityProviderId, UserIngressBinding>
-
-export interface UserIngressBindingRepository {
+export interface UserIngressBindingsRepository {
   readBindingsForUser(userId: UserId): Promise<UserIngressBindings>
+  readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters): Promise<PageOf<UserIngressBindings>>
   saveUserIngressBinding(userId: UserId, binding: UserIngressBinding): Promise<UserIngressBindings | Error>
+  /**
+   * Return the binding that was deleted, or null if the user did not have a binding to the given IDP.
+   */
   deleteBinding(userId: UserId, idpId: IdentityProviderId): Promise<UserIngressBinding | null>
+  /**
+   * Return the bindings that were deleted for the given user, or null if the user had no ingress bindings.
+   */
+  deleteBindingsForUser(userId: UserId): Promise<UserIngressBindings | null>
+  /**
+   * Return the number of deleted bindings.
+   */
+  deleteAllBindingsForIdp(idpId: IdentityProviderId): Promise<number>
 }
 
 /**
