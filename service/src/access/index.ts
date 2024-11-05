@@ -4,8 +4,7 @@
 
 import express from 'express'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
-import { RoleDocument } from '../models/role'
-import { UserDocument } from '../models/user'
+import { UserExpanded } from '../entities/users/entities.users'
 
 export = Object.freeze({
 
@@ -20,28 +19,21 @@ export = Object.freeze({
    */
   authorize(permission: AnyPermission): express.RequestHandler {
     return function(req, res, next): any {
-      if (!req.user) {
+      if (req.user?.from !== 'sessionToken') {
         return next()
       }
-      const role = req.user.roleId as RoleDocument
-      if (!role) {
-        return res.sendStatus(403)
-      }
+      const role = req.user.account.role
       const userPermissions = role.permissions
-      const ok = userPermissions.indexOf(permission) !== -1
-      if (!ok) {
-        return res.sendStatus(403)
+      if (userPermissions.includes(permission)) {
+        return next()
       }
-      next()
+      return res.sendStatus(403)
     }
   },
 
   // TODO: users-next
-  userHasPermission(user: UserDocument, permission: AnyPermission) {
-    if (!user || !user.roleId) {
-      return false
-    }
-    const role = user.roleId as RoleDocument
-    return role.permissions.indexOf(permission) !== -1
+  userHasPermission(user: UserExpanded | null | undefined, permission: AnyPermission): boolean {
+    const role = user?.role
+    return role ? role.permissions.indexOf(permission) !== -1 : false
   }
 })
