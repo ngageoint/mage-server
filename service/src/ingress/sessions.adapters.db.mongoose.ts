@@ -33,7 +33,7 @@ const populateSessionUserRole: mongoose.PopulateOptions = {
   populate: 'roleId'
 }
 
-export function createSessionRepository(conn: mongoose.Connection, collectionName: string, sessionTimeoutSeconds: number): SessionRepository {
+export function SessionsMongooseRepository(conn: mongoose.Connection, collectionName: string, sessionTimeoutSeconds: number): SessionRepository {
   const model = conn.model('Token', SessionSchema, collectionName)
   return Object.freeze({
     model,
