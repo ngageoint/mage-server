@@ -1,15 +1,14 @@
 const api = require('../api')
-const userTransformer = require('../transformers/user')
 
 import async from 'async'
 import util from 'util'
 import fileType from 'file-type'
+import mongoose from 'mongoose'
 import EventModel, { FormDocument, MageEventDocument } from '../models/event'
 import express from 'express'
 import access from '../access'
 import { AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
 import { JsonObject } from '../entities/entities.json_types'
-import authentication from '../authentication'
 import fs from 'fs-extra'
 import { EventAccessType, MageEvent } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
@@ -42,10 +41,10 @@ function determineReadAccess(req: express.Request, res: express.Response, next: 
 function middlewareAuthorizeAccess(collectionPermission: AnyPermission, aclPermission: EventAccessType): express.RequestHandler {
   return async (req, res, next) => {
     const denied = await defaultEventPermissionsService.authorizeEventAccess(req.event!, req.user, collectionPermission, aclPermission)
-    if (!denied) {
-      return next()
+    if (denied) {
+      return res.sendStatus(403)
     }
-    return res.sendStatus(403)
+    next()
   }
 }
 
@@ -167,10 +166,10 @@ function reduceStyle(style: any): LineStyle {
 }
 
 
-
-function EventRoutes(app: express.Application, security: { authentication: authentication.AuthLayer }): void {
-
-  const passport = security.authentication.passport;
+/**
+ * TODO: users-next: replace old authentication reference
+ */
+function EventRoutes(app: express.Application): void {
 
   /*
   TODO: this just sends whatever is in the body straight through the API level
@@ -180,7 +179,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   */
   app.post(
     '/api/events',
-    passport.authenticate('bearer'),
     access.authorize(MageEventPermission.CREATE_EVENT),
     function(req, res, next) {
       new api.Event().createEvent(req.body, req.user, function(err: any, event: MageEventDocument) {
@@ -194,7 +192,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events',
-    passport.authenticate('bearer'),
     determineReadAccess,
     parseEventQueryParams,
     function (req, res, next) {
@@ -217,7 +214,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/count',
-    passport.authenticate('bearer'),
     determineReadAccess,
     function(req, res, next) {
       EventModel.count({access: req.access}, function(err, count) {
@@ -230,7 +226,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:eventId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     determineReadAccess,
     parseEventQueryParams,
@@ -248,7 +243,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.put(
     '/api/events/:eventId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       new api.Event(req.event).updateEvent(req.body, {}, function(err: any, event: MageEventDocument) {
@@ -267,7 +261,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.delete(
     '/api/events/:eventId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.DELETE_EVENT, EventAccessType.Delete),
     function(req, res, next) {
       new api.Event(req.event).deleteEvent(function(err: any) {
@@ -279,7 +272,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.post(
     '/api/events/:eventId/forms',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     upload.single('form'),
     function(req, res, next) {
@@ -321,12 +313,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.post(
     '/api/events/:eventId/forms',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     parseForm,
     function(req, res, next) {
       const form = req.form;
-      new api.Event(req.event).addForm(form, function(err: any, form: FormDocument) {
+      new api.Event(req.event).addForm(form, function(err: any, form: mongoose.HydratedDocument<FormDocument>) {
         if (err) return next(err);
 
         async.parallel([
@@ -350,7 +341,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.put(
     '/api/events/:eventId/forms/:formId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     parseForm,
     function(req, res, next) {
@@ -374,7 +364,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   // TODO: why not /api/events/:eventId/forms/:formId.zip?
   app.get(
     '/api/events/:eventId/:formId/form.zip',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function(req, res, next) {
       new api.Form(req.event).export(parseInt(req.params.formId, 10), function(err: any, form: any) {
@@ -389,7 +378,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:eventId/form/icons.zip',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function(req, res) {
       new api.Icon(req.event!._id).getZipPath(function(err: any, zipPath: string) {
@@ -407,7 +395,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   // the eventId parameter is not even used.
   app.get(
     '/api/events/:eventId/form/icons*',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function(req, res) {
       res.sendFile(api.Icon.defaultIconPath);
@@ -416,7 +403,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:eventId/icons/:formId.json',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function(req, res, next) {
       new api.Icon(req.event!._id, req.params.formId).getIcons(function(err: any, icons: any) {
@@ -457,7 +443,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   // TODO: should be PUT?
   app.post(
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     upload.single('icon'),
     function(req, res, next) {
@@ -473,7 +458,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   // get icon
   app.get(
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function(req, res, next) {
       new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err: any, icon: any) {
@@ -507,7 +491,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   // Delete an icon
   app.delete(
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).delete(function(err: any) {
@@ -520,7 +503,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.post(
     '/api/events/:eventId/layers',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       EventModel.addLayer(req.event!, req.body, function(err: any, event?: MageEventDocument) {
@@ -534,7 +516,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.delete(
     '/api/events/:eventId/layers/:id',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       EventModel.removeLayer(req.event!, {id: req.params.id}, function(err: any, event?: MageEventDocument) {
@@ -548,7 +529,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:eventId/users',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     determineReadAccess,
     function (req, res, next) {
@@ -564,7 +544,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.post(
     '/api/events/:eventId/teams',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       EventModel.addTeam(req.event!, req.body, function(err, event) {
@@ -578,7 +557,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.delete(
     '/api/events/:eventId/teams/:teamId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       EventModel.removeTeam(req.event!, req.team, function(err, event) {
@@ -592,7 +570,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.put(
     '/api/events/:eventId/acl/:targetUserId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       EventModel.updateUserInAcl(req.event!._id, req.params.targetUserId, req.body.role, function(err, event) {
@@ -606,7 +583,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.delete(
     '/api/events/:eventId/acl/:targetUserId',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     function(req, res, next) {
       EventModel.removeUserFromAcl(req.event!._id, req.params.targetUserId, function(err, event) {
@@ -620,7 +596,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:id/members',
-    passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
       const options = {
@@ -641,7 +616,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:id/nonMembers',
-    passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
       const options = {
@@ -674,7 +648,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:eventId/teams',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function (req, res, next) {
       const options = teamQueryOptionsFromRequest(req)
@@ -694,7 +667,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   app.get(
     '/api/events/:eventId/nonTeams',
-    passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function (req, res, next) {
       const options = teamQueryOptionsFromRequest(req)
