@@ -169,7 +169,9 @@ function reduceStyle(style: any): LineStyle {
 /**
  * TODO: users-next: replace old authentication reference
  */
-function EventRoutes(app: express.Application): void {
+function EventRoutes(): express.Router {
+
+  const app = express.Router()
 
   /*
   TODO: this just sends whatever is in the body straight through the API level
@@ -678,6 +680,8 @@ function EventRoutes(app: express.Application): void {
       }).catch(err => next(err));
     }
   );
+
+  return app
 }
 
 export = EventRoutes
