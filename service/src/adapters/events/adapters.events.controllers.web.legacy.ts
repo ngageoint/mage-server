@@ -4,22 +4,23 @@ import async from 'async'
 import util from 'util'
 import fileType from 'file-type'
 import mongoose from 'mongoose'
-import EventModel, { FormDocument, MageEventDocument } from '../models/event'
+import EventModel, { FormDocument, MageEventDocument } from '../../models/event'
 import express from 'express'
-import access from '../access'
-import { AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
-import { JsonObject } from '../entities/entities.json_types'
+import access from '../../access'
+import { AnyPermission, MageEventPermission } from '../../entities/authorization/entities.permissions'
+import { JsonObject } from '../../entities/entities.json_types'
 import fs from 'fs-extra'
-import { EventAccessType, MageEvent } from '../entities/events/entities.events'
-import { defaultHandler as upload } from '../upload'
-import { defaultEventPermissionsService } from '../permissions/permissions.events'
-import { LineStyle, PagingParameters } from '../entities/entities.global'
+import { EventAccessType, MageEvent } from '../../entities/events/entities.events'
+import { defaultHandler as upload } from '../../upload'
+import { defaultEventPermissionsService } from '../../permissions/permissions.events'
+import { LineStyle, PagingParameters } from '../../entities/entities.global'
+import { UserId } from '../../entities/users/entities.users'
 
 declare module 'express-serve-static-core' {
   export interface Request {
     event?: EventModel.MageEventDocument
     eventEntity?: MageEvent
-    access?: { user: express.Request['user'], permission: EventAccessType }
+    access?: { userId: UserId, permission: EventAccessType }
     parameters?: EventQueryParams
     form?: FormJson
     team?: any
@@ -27,10 +28,11 @@ declare module 'express-serve-static-core' {
 }
 
 function determineReadAccess(req: express.Request, res: express.Response, next: express.NextFunction): void {
-  if (!access.userHasPermission(req.user, MageEventPermission.READ_EVENT_ALL)) {
-    req.access = { user: req.user, permission: EventAccessType.Read };
+  const requestingUser = req.user?.from === 'sessionToken' ? req.user.account : null
+  if (requestingUser && !access.userHasPermission(requestingUser, MageEventPermission.READ_EVENT_ALL)) {
+    req.access = { userId: requestingUser.id, permission: EventAccessType.Read }
   }
-  next();
+  next()
 }
 
 /**
@@ -251,6 +253,7 @@ function EventRoutes(): express.Router {
         if (err) {
           return next(err);
         }
+        // TODO: scale: should avoid this for large user sets
         new api.Form(event).populateUserFields(function(err: any) {
           if (err) {
             return next(err);

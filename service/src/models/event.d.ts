@@ -1,12 +1,13 @@
 import mongoose, { ToObjectOptions } from 'mongoose'
-import { UserDocument } from './user'
+import { UserDocument } from '../adapters/users/adapters.users.db.mongoose'
 import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventAccessType, EventRole } from '../entities/events/entities.events'
 import { Team, TeamMemberRole } from '../entities/teams/entities.teams'
 import { Form, FormField, FormFieldChoice } from '../entities/events/entities.events.forms'
 import { PageInfo } from '../utilities/paging';
+import { UserId } from '../entities/users/entities.users'
 
 export interface MageEventDocumentToObjectOptions extends ToObjectOptions {
-  access: { user: UserDocument, permission: EventAccessType }
+  access: { userId: UserId, permission: EventAccessType }
   projection: any
 }
 
@@ -67,7 +68,6 @@ export type Callback<Result = unknown> = (err: Error | null, result?: Result) =>
 export declare function count(options: TODO, callback: Callback<number>): void
 export declare function getEvents(options: TODO, callback: Callback<MageEventModelInstance[]>): void
 export declare function getById(id: MageEventId, options: TODO, callback: Callback<MageEventModelInstance | null>): void
-export declare function filterEventsByUserId(events: MageEventDocument[], userId: string, callback: Callback<MageEventModelInstance[]>): void
 export declare function create(event: MageEventCreateAttrs, user: Partial<UserDocument> & Pick<UserDocument, '_id'>, callback: Callback<MageEventModelInstance>): void
 export declare function addForm(eventId: MageEventId, form: any, callback: Callback<MageEventModelInstance>): void
 export declare function addLayer(event: MageEventDocument, layer: any, callback: Callback<MageEventModelInstance>): void

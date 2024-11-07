@@ -208,11 +208,11 @@ function transform(event, ret, options) {
   // if read only permissions in event acl, only return users acl
   // TODO: move this business logic
   if (options.access) {
-    const roleOfUserOnEvent = ret.acl[options.access.user._id];
+    const roleOfUserOnEvent = ret.acl[options.access.userId];
     const rolesThatCanModify = rolesWithPermission('update').concat(rolesWithPermission('delete'));
     if (!roleOfUserOnEvent || rolesThatCanModify.indexOf(roleOfUserOnEvent) === -1) {
       const acl = {};
-      acl[options.access.user._id] = ret.acl[options.access.user._id];
+      acl[options.access.userId] = ret.acl[options.access.userId];
       ret.acl = acl;
     }
   }
@@ -268,18 +268,14 @@ function filterEventsByUserId(events, userId, callback) {
     if (err) return callback(err);
 
     const filteredEvents = events.filter(function (event) {
-      // Check if user has read access to the event based on
-      // being on a team that is in the event
+      // Check if user has read access to the event based on being on a team that is in the event
       if (event.teamIds.some(function (team) { return team.userIds.indexOf(userId) !== -1; })) {
         return true;
       }
-
-      // Check if user has read access to the event based on
-      // being in the events access control list
+      // Check if user has read access to the event based on being in the event access control list
       if (event.acl[userId] && rolesWithPermission('read').some(function (role) { return role === event.acl[userId]; })) {
         return true;
       }
-
       return false;
     });
 
@@ -297,9 +293,7 @@ exports.count = function (options, callback) {
   if (options.access) {
     const accesses = [];
     rolesWithPermission(options.access.permission).forEach(function (role) {
-      const access = {};
-      access['acl.' + options.access.user._id.toString()] = role;
-      accesses.push(access);
+      accesses.push({ [`acl.${options.access.userId}`]: role });
     });
     conditions['$or'] = accesses;
   }
@@ -335,9 +329,9 @@ exports.getEvents = function (options, callback) {
     const filters = [];
 
     // First filter out events user cannot access
-    if (options.access && options.access.user) {
+    if (options.access && options.access.userId) {
       filters.push(function (done) {
-        filterEventsByUserId(events, options.access.user._id, function (err, filteredEvents) {
+        filterEventsByUserId(events, options.access.userId, function (err, filteredEvents) {
           if (err) return done(err);
 
           events = filteredEvents;
@@ -410,9 +404,6 @@ exports.getById = function (id, options, callback) {
     });
   });
 };
-
-// TODO probably should live in event api
-exports.filterEventsByUserId = filterEventsByUserId;
 
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
@@ -549,22 +540,16 @@ exports.updateForm = function (event, form, callback) {
 exports.getMembers = async function (eventId, options) {
   const query = { _id: eventId };
   if (options.access) {
-    const accesses = [{
-      userIds: {
-        '$in': [options.access.user._id]
-      }
-    }];
-
+    const accesses = [
+      { userIds: { '$in': [ new mongoose.Types.ObjectId(options.access.userId) ] } }
+    ];
     rolesWithPermission(options.access.permission).forEach(role => {
-      const access = {};
-      access['acl.' + options.access.user._id.toString()] = role;
-      accesses.push(access);
+      accesses.push({ [`acl.${options.access.userId}`]: role });
     });
-
     query['$or'] = accesses;
   }
-  const event = await Event.findOne(query)
 
+  const event = await Event.findOne(query)
   if (event) {
     const { searchTerm } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')
@@ -609,22 +594,16 @@ exports.getMembers = async function (eventId, options) {
 exports.getNonMembers = async function (eventId, options) {
   const query = { _id: eventId };
   if (options.access) {
-    const accesses = [{
-      userIds: {
-        '$in': [options.access.user._id]
-      }
-    }];
-
+    const accesses = [
+      { userIds: { '$in': [ new mongoose.Types.ObjectId(options.access.userId) ] } }
+    ];
     rolesWithPermission(options.access.permission).forEach(role => {
-      const access = {};
-      access['acl.' + options.access.user._id.toString()] = role;
-      accesses.push(access);
+      accesses.push({ [`acl.${options.access.userId}`]: role });
     });
-
     query['$or'] = accesses;
   }
-  const event = await Event.findOne(query)
 
+  const event = await Event.findOne(query)
   if (event) {
     const { searchTerm } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')
