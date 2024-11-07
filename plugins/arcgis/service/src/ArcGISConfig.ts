@@ -8,26 +8,11 @@ export interface FeatureServiceConfig {
      */
     url: string
 
-    /**
-     * Username and password for ArcGIS authentication
-     */
-    auth?: ArcGISAuthConfig
-
-    /**
-     * Create layers that don't exist
-     */
-    createLayers?: boolean
-
-    /**
-     * The administration url to the arc feature service.
-     */
-    adminUrl?: string
-
-    /**
-     * Administration access token
-     */
-    adminToken?: string
-
+		/**
+		 * Serialized ArcGISIdentityManager
+		 */
+		identityManager: string
+		
     /**
      * The feature layers.
      */
@@ -50,10 +35,6 @@ export interface FeatureLayerConfig {
     geometryType?: string
 
     /**
-     * Access token
-     */
-    token?: string // TODO - can this be removed? Will Layers have a token too?
-    /**
      * The event ids or names that sync to this arc feature layer.
      */
     events?: (number|string)[]
@@ -67,86 +48,8 @@ export interface FeatureLayerConfig {
      * Delete editable layer fields missing from form fields
      */
     deleteFields?: boolean
-
 }
 
-export enum AuthType {
-    Token = 'token',
-    UsernamePassword = 'usernamePassword',
-    OAuth = 'oauth'
-  }
-  
-
-/**
- * Contains token-based authentication configuration.
- */
-export interface TokenAuthConfig {
-    type: AuthType.Token
-    token: string
-    authTokenExpires?: string
-}
-
-/**
- * Contains username and password for ArcGIS server authentication.
- */
-export interface UsernamePasswordAuthConfig {
-    type: AuthType.UsernamePassword
-    /**
-     * The username for authentication.
-     */
-    username: string
-
-    /**
-     * The password for authentication.
-     */
-    password: string
-}
-
-/**
- * Contains OAuth authentication configuration.
- */
-export interface OAuthAuthConfig {
-
-    type: AuthType.OAuth
-
-    /**
-     * The Client Id for OAuth
-     */
-    clientId: string
-
-    /**
-     * The redirectUri for OAuth
-     */
-    redirectUri?: string
-
-    /**
-     * The temporary auth token for OAuth
-     */
-    authToken?: string
-
-    /**
-     * The expiration date for the temporary token
-     */
-    authTokenExpires?: number
-
-    /**
-     * The Refresh token for OAuth
-     */
-    refreshToken?: string
-
-    /**
-     * The expiration date for the Refresh token
-     */
-    refreshTokenExpires?: number
-}
-
-/**
- * Union type for authentication configurations.
- */
-export type ArcGISAuthConfig = 
-    | TokenAuthConfig
-    | UsernamePasswordAuthConfig
-    | OAuthAuthConfig
 
 /**
  * Attribute configurations

@@ -37,9 +37,8 @@ export class LayerInfo {
      * @param layerInfo The layer info.
      * @param token The access token.
      */
-    constructor(url: string, events: string[], layerInfo: LayerInfoResult, token?: string) {
+    constructor(url: string, events: string[], layerInfo: LayerInfoResult) {
         this.url = url
-        this.token = token
         if (events != undefined && events != null && events.length == 0) {
             this.events.add('nothing to sync')
         }
