@@ -78,51 +78,44 @@ export class FeatureServiceAdmin {
 		const eventFields = this.fields(events)
 		const layerFields = layerInfo.fields
 
-		// TODO - better naming: addFields is a boolean, array of fields, and a method. Ditto for deleteFields
-		if (featureLayer.addFields) {
-
-				const layerFieldSet = new Set()
-				for (const field of layerFields) {
-						layerFieldSet.add(field.name)
-				}
-
-				const addFields = []
-				for (const field of eventFields) {
-						if (!layerFieldSet.has(field.name)) {
-								addFields.push(field)
-								const layerField = {} as LayerField
-								layerField.name = field.name
-								layerField.editable = true
-								layerFields.push(layerField)
-						}
-				}
-
-				if (addFields.length > 0) {
-						this.addFields(service, featureLayer, addFields)
-				}
-
+		const layerFieldSet = new Set()
+		for (const field of layerFields) {
+			layerFieldSet.add(field.name)
 		}
 
-		if (featureLayer.deleteFields) {
-			const eventFieldSet = new Set()
-			for (const field of eventFields) {
-					eventFieldSet.add(field.name)
+		const addFields = []
+		for (const field of eventFields) {
+			if (!layerFieldSet.has(field.name)) {
+				addFields.push(field)
+				const layerField = {} as LayerField
+				layerField.name = field.name
+				layerField.editable = true
+				layerFields.push(layerField)
 			}
+		}
 
-			const deleteFields = []
-			const remainingFields = []
-			for (const field of layerFields) {
-				if (field.editable && !eventFieldSet.has(field.name)) {
-					deleteFields.push(field)
-				} else {
-					remainingFields.push(field)
-				}
-			}
+		if (addFields.length > 0) {
+			this.addFields(service, featureLayer, addFields)
+		}
 
-			if (deleteFields.length > 0) {
-				layerInfo.fields = remainingFields
-				this.deleteFields(service, featureLayer, deleteFields)
+		const eventFieldSet = new Set()
+		for (const field of eventFields) {
+			eventFieldSet.add(field.name)
+		}
+
+		const deleteFields = []
+		const remainingFields = []
+		for (const field of layerFields) {
+			if (field.editable && !eventFieldSet.has(field.name)) {
+				deleteFields.push(field)
+			} else {
+				remainingFields.push(field)
 			}
+		}
+
+		if (deleteFields.length > 0) {
+			layerInfo.fields = remainingFields
+			this.deleteFields(service, featureLayer, deleteFields)
 		}
 	}
 
@@ -331,7 +324,7 @@ export class FeatureServiceAdmin {
 		if (field != null) {
 			const sanitizedName = ObservationsTransformer.replaceSpaces(formField.title)
 			const sanitizedFormName = ObservationsTransformer.replaceSpaces(form.name)
-			const name = `${sanitizedFormName}_${sanitizedName}`
+			const name = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
 			
 			fieldNames.add(name)
 
@@ -438,7 +431,7 @@ export class FeatureServiceAdmin {
 		await request(url, {
 			authentication: identityManager,
 			params: {
-					addToDefinition: JSON.stringify(layer),
+					addToDefinition: layer,
 					f: "json"
 			}
 		}).then((postResponse) => {
@@ -474,7 +467,7 @@ export class FeatureServiceAdmin {
 			authentication: identityManager,
 			httpMethod: 'POST',
 			params: {
-				deleteFromDefinition:  JSON.stringify(layer)
+				deleteFromDefinition:  layer
 			}
 		});
 		console.log('Response: ' + postResponse)

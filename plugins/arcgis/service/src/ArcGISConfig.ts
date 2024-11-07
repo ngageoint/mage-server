@@ -38,16 +38,6 @@ export interface FeatureLayerConfig {
      * The event ids or names that sync to this arc feature layer.
      */
     events?: (number|string)[]
-
-    /**
-     * Add layer fields from form fields
-     */
-    addFields?: boolean
-
-    /**
-     * Delete editable layer fields missing from form fields
-     */
-    deleteFields?: boolean
 }
 
 

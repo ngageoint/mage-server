@@ -230,9 +230,6 @@ export class ObservationProcessor {
 			}
 
 			for (const featureLayer of featureServiceConfig.layers) {
-				// Initiate the feature layer and event fields to sync with the feature service
-				featureLayer.addFields = true
-
 				const eventNames: string[] = []
 				const events = featureLayer.events
 				if (events != null) {
@@ -285,10 +282,8 @@ export class ObservationProcessor {
 	private async handleLayerInfo(url: string, featureServiceConfig: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, config: ArcGISPluginConfig) {
 		if (layerInfo.geometryType != null) {
 			const events = featureLayer.events as string[]
-			if (featureLayer.addFields || featureLayer.deleteFields) {
-				const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-				await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
-			}
+			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
+			await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
 			const info = new LayerInfo(url, events, layerInfo)
 			const identityManager = await this._identityService.getIdentityManager(featureServiceConfig)
 			const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
