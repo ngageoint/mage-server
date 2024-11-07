@@ -85,7 +85,7 @@ export class FeatureLayerProcessor {
 
         for (const arcObservation of observations.deletions) {
             if (this.layerInfo.geometryType == arcObservation.esriGeometryType) {
-                this.sender.sendDelete(arcObservation.id)
+                this.sender.sendDelete(Number(arcObservation.id));
             }
         }
     }

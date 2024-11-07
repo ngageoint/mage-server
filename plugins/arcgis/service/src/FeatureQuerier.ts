@@ -67,7 +67,7 @@ export class FeatureQuerier {
         });
 
         this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse.toString)
-        const result = JSON.parse(queryResponse) as QueryObjectResult
+        const result = queryResponse as QueryObjectResult
         response(result);
     }
 
@@ -91,7 +91,7 @@ export class FeatureQuerier {
         });
 
         this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
-            const result = JSON.parse(queryResponse) as QueryObjectResult
+            const result = queryResponse as QueryObjectResult
             response(result)
     }
 
@@ -113,7 +113,7 @@ export class FeatureQuerier {
 
         });  
         this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
-        const result = JSON.parse(queryResponse) as QueryObjectResult
+        const result = queryResponse as QueryObjectResult
         response(result)
     }
 
