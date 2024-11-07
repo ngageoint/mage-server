@@ -63,7 +63,8 @@ export class FeatureQuerier {
         this._console.info('ArcGIS query: ' + queryUrl)
 
         const queryResponse = await request(queryUrl.toString(), {
-            authentication: this._identityManager
+            authentication: this._identityManager,
+            params: { f: 'json' }
         });
 
         this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse.toString)
@@ -107,10 +108,9 @@ export class FeatureQuerier {
         queryUrl.searchParams.set('outFields', this.outFields([field]));
         queryUrl.searchParams.set('returnGeometry', 'false');      
         this._console.info('ArcGIS query: ' + queryUrl)
- 
+        
         const queryResponse = await request(queryUrl.toString(), {
             authentication: this._identityManager
-
         });  
         this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
         const result = queryResponse as QueryObjectResult

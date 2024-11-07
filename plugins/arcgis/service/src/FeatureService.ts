@@ -1,7 +1,3 @@
-import { LayerInfoResult } from "./LayerInfoResult";
-import { FeatureServiceResult } from "./FeatureServiceResult";
-import { HttpClient } from "./HttpClient";
-import { getIdentityManager } from "./ArcGISIdentityManagerFactory"
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { queryFeatures, applyEdits, IQueryFeaturesOptions } from "@esri/arcgis-rest-feature-service";
 import { FeatureServiceConfig } from "./ArcGISConfig";
@@ -11,28 +7,13 @@ import { FeatureServiceConfig } from "./ArcGISConfig";
  */
 export class FeatureService {
 
-	/**
-	 * Used to make the get request about the feature layer.
-	 */
-	// private _httpClient: HttpClient;
-
-	/**
-	 * Used to log messages.
-	 */
 	private _console: Console;
+  private _config: FeatureServiceConfig;
+  private _identityManager: ArcGISIdentityManager;
 
-    private _config: FeatureServiceConfig;
-    private _identityManager: ArcGISIdentityManager;
-
-	/**
-	 * Constructor.
-	 * @param console Used to log messages. 
-	 * @param token The access token.
-	 */
 	constructor(console: Console, config: FeatureServiceConfig, identityManager: ArcGISIdentityManager) {
-        this._config = config;
-        this._identityManager = identityManager;
-		// this._httpClient = new HttpClient(console, token);
+    this._config = config;
+    this._identityManager = identityManager;
 		this._console = console;
 	}
 
@@ -40,7 +21,7 @@ export class FeatureService {
   // By finishing this class, we can transition from low-level generic requests that leverage ArcGISIdentityManager for auth to higher-level strongly typed requests.
 
 
-    // Query features using arcgis-rest-js's queryFeatures
+  // Query features using arcgis-rest-js's queryFeatures
   async queryFeatureService(whereClause: string): Promise<any> {
     const queryParams = {
         url: this._config.url,
