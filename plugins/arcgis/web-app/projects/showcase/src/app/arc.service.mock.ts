@@ -4,14 +4,38 @@ import { ArcServiceInterface, FeatureLayer } from "../../../main/src/lib/arc.ser
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../../../main/src/lib/ArcGISPluginConfig';
 import { MageEvent } from "../../../main/src/lib/arc.service";
 
-export const mockArcGISEventResult = Object.freeze<MageEvent>({
+export const mockArcGISEventResult1 = Object.freeze<MageEvent>({
   id: 0,
-  name: 'test event result name',
+  name: 'test event result name 1',
   forms: [{
     id: 1,
-    name: 'test form result name',
+    name: 'test form result name 1',
     fields: [{
-      title: 'test field'
+      title: 'test field 1'
+    }]
+  }]
+});
+
+export const mockArcGISEventResult2 = Object.freeze<MageEvent>({
+  id: 1,
+  name: 'test event result name 2',
+  forms: [{
+    id: 2,
+    name: 'test form result name 2',
+    fields: [{
+      title: 'test field 2'
+    }]
+  }]
+});
+
+export const mockArcGISEventResult3 = Object.freeze<MageEvent>({
+  id: 2,
+  name: 'test event result name 3',
+  forms: [{
+    id: 3,
+    name: 'test form result name 3',
+    fields: [{
+      title: 'test field 3'
     }]
   }]
 })
@@ -83,11 +107,11 @@ export class MockArcService implements ArcServiceInterface {
   }
 
   fetchEvents() {
-    return of([mockArcGISEventResult])
+    return of([mockArcGISEventResult1, mockArcGISEventResult2, mockArcGISEventResult3])
   }
 
   fetchPopulatedEvents() {
-    return of([mockArcGISEventResult])
+    return of([mockArcGISEventResult1, mockArcGISEventResult2, mockArcGISEventResult3])
   }
 
   putArcConfig(config: ArcGISPluginConfig) {}
