@@ -95,7 +95,7 @@ export class FeatureServiceAdmin {
 		}
 
 		if (addFields.length > 0) {
-			this.addFields(service, featureLayer, addFields)
+			await this.addFields(service, featureLayer, addFields)
 		}
 
 		const eventFieldSet = new Set()
@@ -115,7 +115,7 @@ export class FeatureServiceAdmin {
 
 		if (deleteFields.length > 0) {
 			layerInfo.fields = remainingFields
-			this.deleteFields(service, featureLayer, deleteFields)
+			await this.deleteFields(service, featureLayer, deleteFields)
 		}
 	}
 

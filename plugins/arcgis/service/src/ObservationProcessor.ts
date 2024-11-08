@@ -169,7 +169,7 @@ export class ObservationProcessor {
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
 			this._eventDeletionHandler = new EventDeletionHandler(this._console, config);
 			this._layerProcessors = [];
-			this.getFeatureServiceLayers(config);
+			await this.getFeatureServiceLayers(config);
 			this._previousConfig = configJson
 			this._firstRun = true;
 		}
