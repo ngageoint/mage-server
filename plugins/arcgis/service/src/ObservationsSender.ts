@@ -270,20 +270,22 @@ export class ObservationsSender {
      * @param objectId The arc object id of the observation.
      */
     private async sendAttachment(attachment: ArcAttachment, objectId: number) {
-        const file = path.join(this._attachmentDirectory, attachment.contentLocator!)
+        if (attachment.contentLocator) {
+            const file = path.join(this._attachmentDirectory, attachment.contentLocator!)
 
-        const fileName = this.attachmentFileName(attachment)
-        this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-
-        const readStream = await fs.openAsBlob(file)
-        const test = new File([readStream], fileName)
-
-        addAttachment({
-            url: this._url,
-            authentication: this._identityManager,
-            featureId: objectId,
-            attachment: test
-        }).catch((error) => this._console.error(error));
+            const fileName = this.attachmentFileName(attachment)
+            this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
+    
+            const readStream = await fs.openAsBlob(file)
+            const attachmentFile = new File([readStream], fileName)
+    
+            addAttachment({
+                url: this._url,
+                authentication: this._identityManager,
+                featureId: objectId,
+                attachment: attachmentFile
+            }).catch((error) => this._console.error(error));
+        }
     }
 
     /**
@@ -293,21 +295,23 @@ export class ObservationsSender {
      * @param attachmentId The observation arc attachment id.
      */
     private async updateAttachment(attachment: ArcAttachment, objectId: number, attachmentId: number) {
-        const file = path.join(this._attachmentDirectory, attachment.contentLocator!)
+        if (attachment.contentLocator) {
+            const file = path.join(this._attachmentDirectory, attachment.contentLocator!)
 
-        const fileName = this.attachmentFileName(attachment)
-        this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-
-        const readStream = await fs.openAsBlob(file)
-        const test = new File([readStream], fileName)
-
-        updateAttachment({
-            url: this._url,
-            authentication: this._identityManager,
-            featureId: objectId,
-            attachmentId,
-            attachment: test
-        }).catch((error) => this._console.error(error));
+            const fileName = this.attachmentFileName(attachment)
+            this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
+    
+            const readStream = await fs.openAsBlob(file)
+            const attachmentFile = new File([readStream], fileName)
+    
+            updateAttachment({
+                url: this._url,
+                authentication: this._identityManager,
+                featureId: objectId,
+                attachmentId,
+                attachment: attachmentFile
+            }).catch((error) => this._console.error(error));
+        }
     }
 
     /**

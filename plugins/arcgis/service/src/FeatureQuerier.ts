@@ -67,9 +67,8 @@ export class FeatureQuerier {
             params: { f: 'json' }
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse.toString)
-        const result = queryResponse as QueryObjectResult
-        response(result);
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
+        response(queryResponse as QueryObjectResult)
     }
 
     /**
@@ -91,9 +90,8 @@ export class FeatureQuerier {
             params: { f: 'json' }
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
-            const result = queryResponse as QueryObjectResult
-            response(result)
+        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
+        response(queryResponse as QueryObjectResult)
     }
 
     /**
@@ -108,13 +106,19 @@ export class FeatureQuerier {
         queryUrl.searchParams.set('outFields', this.outFields([field]));
         queryUrl.searchParams.set('returnGeometry', 'false');      
         this._console.info('ArcGIS query: ' + queryUrl)
-        
-        const queryResponse = await request(queryUrl.toString(), {
-            authentication: this._identityManager
-        });  
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + queryResponse)
-        const result = queryResponse as QueryObjectResult
-        response(result)
+
+        try {
+            const queryResponse = await request(queryUrl.toString(), {
+                authentication: this._identityManager,
+                params: { f: 'json' }
+
+            });  
+
+            this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
+            response(queryResponse as QueryObjectResult)
+        } catch (err) {
+            console.error("could not query", err)
+        }
     }
 
     /**
