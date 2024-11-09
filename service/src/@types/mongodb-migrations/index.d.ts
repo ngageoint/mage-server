@@ -76,7 +76,7 @@ declare module '@ngageoint/mongodb-migrations' {
 
   export type MigrationContext = {
     db: Db
-    log: Console
+    log: Console['log']
   }
 
   export interface Migration {
