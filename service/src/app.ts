@@ -38,7 +38,7 @@ import { MageEventRepositoryToken } from './plugins.api/plugins.api.events'
 import { FeedRepositoryToken, FeedServiceRepositoryToken, FeedServiceTypeRepositoryToken, FeedsAppServiceTokens } from './plugins.api/plugins.api.feeds'
 import { UserRepositoryToken } from './plugins.api/plugins.api.users'
 import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
-import { UserModel, MongooseUserRepository, UserModelName } from './adapters/users/adapters.users.db.mongoose'
+import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
 import { UserRepository, UserExpanded } from './entities/users/entities.users'
 import { EnvironmentService } from './entities/systemInfo/entities.systemInfo'
 import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
@@ -563,6 +563,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
       }
     }
   }
+  // TODO: users-next: initialize new ingress components
   const bearerAuth = webAuth.passport.authenticate('bearer')
 
   const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory)
@@ -599,8 +600,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     const context: observationsApi.ObservationRequestContext = {
       ...baseAppRequestContext(req),
       mageEvent: req[observationEventScopeKey]!.mageEvent,
-      // TODO: users-next
-      userId: req.user.id,
+      userId: req.user!.admitted!.account.id,
       deviceId: req.provisionedDeviceId,
       observationRepository: req[observationEventScopeKey]!.observationRepository
     }
@@ -640,12 +640,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     return {
       requestToken: Symbol(),
       requestingPrincipal(): UserExpanded {
-        /*
-        TODO: users-next: this should ideally change so that the existing passport login
-        middleware applies the entity form of a user on the request rather than
-        the mongoose document instance
-        */
-        return { ...req.user?.account as UserExpanded }
+        return { ...req.user?.admitted?.account as UserExpanded }
       },
       locale(): Locale | null {
         return Object.freeze({

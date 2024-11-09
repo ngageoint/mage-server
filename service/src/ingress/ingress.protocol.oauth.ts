@@ -3,7 +3,6 @@ import { InternalOAuthError, Strategy as OAuth2Strategy, StrategyOptions as OAut
 import base64 from 'base-64'
 import { IdentityProvider, IdentityProviderUser } from './ingress.entities'
 import { Authenticator } from 'passport'
-import { WebIngressUserFromIdentityProvider } from '../@types/express'
 
 export type OAuth2ProtocolSettings =
   Pick<OAuth2Options,
@@ -118,11 +117,7 @@ export function createWebBinding(idp: IdentityProvider, passport: Authenticator,
     const displayName = profile[profileKeys.displayName] || username
     const email = profile[profileKeys.email]
     const idpUser: IdentityProviderUser = { username, displayName, email, phones: [] }
-    const ingressUser: WebIngressUserFromIdentityProvider = {
-      from: 'identityProvider',
-      account: idpUser
-    }
-    return done(null, ingressUser)
+    return done(null, { admittingFromIdentityProvider: { idpName: idp.name, account: idpUser }})
   }
   const oauth2Strategy = new OAuth2ProfileStrategy(strategyOptions, profileURL, verify)
   return express.Router()

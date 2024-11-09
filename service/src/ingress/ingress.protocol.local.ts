@@ -20,7 +20,7 @@ function createAuthenticationMiddleware(localIdpAuthenticate: LocalIdpAuthentica
     if (authResult.success) {
       const localAccount = authResult.success
       const localIdpUser = userForLocalIdpAccount(localAccount)
-      return done(null, { from: 'identityProvider', account: localIdpUser })
+      return done(null, { admittingFromIdentityProvider: { idpName: 'local', account: localIdpUser } })
     }
     return done(authResult.error)
   }
