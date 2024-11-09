@@ -1,8 +1,8 @@
 "use strict";
 
 import mongoose from 'mongoose'
-import { IdentityProviderDocument, IdentityProviderModel } from './identity-providers.adapters.db.mongoose'
-import { LocalIdpDuplicateUsernameError, LocalIdpAccount, LocalIdpRepository, SecurityPolicy, localIdpSecurityPolicyFromIdenityProvider } from './local-idp.entities'
+import { IdentityProviderDocument, IdentityProviderModel } from './ingress.adapters.db.mongoose'
+import { LocalIdpDuplicateUsernameError, LocalIdpAccount, LocalIdpRepository, SecurityPolicy } from './local-idp.entities'
 
 const Schema = mongoose.Schema
 
