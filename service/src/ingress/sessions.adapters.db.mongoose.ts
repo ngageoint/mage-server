@@ -37,7 +37,7 @@ export function SessionsMongooseRepository(conn: mongoose.Connection, collection
   const model = conn.model('Token', SessionSchema, collectionName)
   return Object.freeze({
     model,
-    async findSessionByToken(token: string): Promise<Session | null> {
+    async readSessionByToken(token: string): Promise<Session | null> {
       const doc = await model.findOne({ token }).lean()
       if (!doc) {
         return null
@@ -64,19 +64,19 @@ export function SessionsMongooseRepository(conn: mongoose.Connection, collection
       return await model.findOneAndUpdate(query, update,
         { upsert: true, new: true, populate: populateSessionUserRole })
     },
-    async removeSession(token: string): Promise<Session | null> {
-      const session = await this.findSessionByToken(token)
+    async deleteSession(token: string): Promise<Session | null> {
+      const session = await this.readSessionByToken(token)
       if (!session) {
         return null
       }
       const removed = await this.model.deleteOne({ token })
       return removed.deletedCount === 1 ? session : null
     },
-    async removeSessionsForUser(userId: UserId): Promise<number> {
+    async deleteSessionsForUser(userId: UserId): Promise<number> {
       const { deletedCount } = await model.deleteMany({ userId: new mongoose.Types.ObjectId(userId) })
       return deletedCount
     },
-    async removeSessionsForDevice(deviceId: string): Promise<number> {
+    async deleteSessionsForDevice(deviceId: string): Promise<number> {
       const { deletedCount } = await model.deleteMany({ deviceId: new mongoose.Types.ObjectId(deviceId) })
       return deletedCount
     }
