@@ -167,6 +167,10 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               })
 
               await stateRepo.patch({ ...updateConfig, featureServices })
+              
+              // Sync configuration with feature servers by restarting observation processor
+              processor.stop()
+              processor.start()
 
               res.sendStatus(200)
             })
