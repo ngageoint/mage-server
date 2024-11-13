@@ -188,8 +188,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
           routes.post('/featureService/validate', async (req, res) => {
             const config = await processor.safeGetConfig()
-            const { url, auth = {} } = req.body
-            const { token, username, password } = auth
+            const { url, token, username, password } = req.body
             if (!URL.canParse(url)) {
               return res.send('Invalid feature service url').status(400)
             }
@@ -197,14 +196,12 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             let service: FeatureServiceConfig
             let identityManager: ArcGISIdentityManager
             if (token) {
-              identityManager = await ArcGISIdentityManager.fromToken({
-                token: token
-              }) 
+              identityManager = await ArcGISIdentityManager.fromToken({ token }) 
               service = { url, layers: [], identityManager: identityManager.serialize() }
             } else if (username && password) {
               identityManager = await ArcGISIdentityManager.signIn({
-                username: auth?.username,
-                password: auth?.password,
+                username,
+                password,
                 portal: getPortalUrl(url)
               })
               service = { url, layers: [], identityManager: identityManager.serialize() }
@@ -220,7 +217,8 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
 
               await processor.patchConfig(config)
-              return res.send(sanitizeFeatureService(service, identityService))
+              const sanitized = await sanitizeFeatureService(service, identityService)
+              return res.send(sanitized)
             } catch (err) {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
