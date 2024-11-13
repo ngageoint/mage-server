@@ -31,10 +31,9 @@ export class ArcLayerComponent {
 
   onAddService() {
     this.dialog.open<ArcLayerDialogComponent, DialogData, FeatureServiceConfig>(ArcLayerDialogComponent, {
-      data: {
-        featureService: undefined
-      },
-      autoFocus: false
+      data: { featureService: undefined },
+      autoFocus: false,
+      disableClose: true
     }).afterClosed().subscribe(featureService => {
       if (featureService) {
         this.addFeatureService(featureService)
@@ -42,12 +41,15 @@ export class ArcLayerComponent {
     })
   }
 
+  onOpenService(featureService: FeatureLayerConfig) {
+    
+  }
+
   onEditService(featureService: FeatureServiceConfig) {
     this.dialog.open<ArcLayerDialogComponent, DialogData, FeatureServiceConfig>(ArcLayerDialogComponent, {
-      data: {
-        featureService: featureService
-      },
-      autoFocus: false
+      data: { featureService },
+      autoFocus: false,
+      disableClose: true
     }).afterClosed().subscribe(featureService => {
       if (featureService) {
         this.addFeatureService(featureService)

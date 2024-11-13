@@ -9,7 +9,7 @@ import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
 import { FeatureServiceConfig } from './ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
-import { createArcGISIdentityService, getPortalUrl } from './ArcGISService'
+import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
 
 const logPrefix = '[mage.arcgis]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -35,9 +35,15 @@ const InjectedServices = {
 
 const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service"
 
-const sanitizeFeatureService = (config: FeatureServiceConfig): Omit<FeatureServiceConfig, 'identityManager'>  => {
+const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>>  => {
+  let authenticated = false
+  try {
+    await identityService.signin(config)
+    authenticated = true
+  } catch(ignore) {}
+
   const { identityManager, ...sanitized } = config;
-  return sanitized;
+  return { ...sanitized, authenticated }
 }
 
 /**
@@ -117,7 +123,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               config.featureServices.push(service)
 
               await processor.putConfig(config)
-              const sanitizedService = sanitizeFeatureService(service)
+              const sanitizedService = await sanitizeFeatureService(service, identityService)
               res.send(`
                 <html>
                   <head>
@@ -148,8 +154,13 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             .get(async (req, res, next) => {
               console.info('Getting ArcGIS plugin config...')
               const config = await processor.safeGetConfig()
-              const { featureServices, ...remaining } = config 
-              res.json({ ...remaining, featureServices: featureServices.map((service) => sanitizeFeatureService(service)) })
+              const { featureServices, ...remaining } = config
+
+              const sanitizeFeatureServices = await Promise.all(
+                featureServices.map(async (service) => await sanitizeFeatureService(service, identityService))
+              )
+
+              res.json({ ...remaining, featureServices: sanitizeFeatureServices })
             })
             .put(async (req, res, next) => {
               console.info('Applying ArcGIS plugin config...')
@@ -209,7 +220,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
 
               await processor.patchConfig(config)
-              return res.send(sanitizeFeatureService(service))
+              return res.send(sanitizeFeatureService(service, identityService))
             } catch (err) {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
@@ -224,7 +235,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             }
 
             try {
-              const identityManager = await identityService.getIdentityManager(featureService)
+              const identityManager = await identityService.signin(featureService)
               const response = await request(url, {
                 authentication: identityManager
               })

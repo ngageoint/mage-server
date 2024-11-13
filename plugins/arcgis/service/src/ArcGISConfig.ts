@@ -12,7 +12,7 @@ export interface FeatureServiceConfig {
 		 * Serialized ArcGISIdentityManager
 		 */
 		identityManager: string
-		
+
     /**
      * The feature layers.
      */

@@ -6,6 +6,12 @@ mat-dialog-content {
   flex: 1
 }
 
+.cancel {
+  position: absolute;
+  top: -16px;
+  right: -16px;
+}
+
 .dialog {
   min-width: 700px;
   min-height: 450px;
@@ -22,6 +28,13 @@ mat-dialog-content {
 
 .layers {
   margin-bottom: 16px;
+}
+
+.invalid-credentials {
+  color: #F44336;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .actions {

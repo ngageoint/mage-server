@@ -200,7 +200,7 @@ export class ObservationProcessor {
 	private async getFeatureServiceLayers(config: ArcGISPluginConfig) {
 		for (const service of config.featureServices) {
 			try {
-				const identityManager = await this._identityService.getIdentityManager(service)
+				const identityManager = await this._identityService.signin(service)
 				const response = await request(service.url, { authentication: identityManager })
 				this.handleFeatureService(response, service, config)
 			} catch (err) {
@@ -261,7 +261,7 @@ export class ObservationProcessor {
 
 				if (layerId != null) {
 					featureLayer.layer = layerId
-					const identityManager = await this._identityService.getIdentityManager(featureServiceConfig)
+					const identityManager = await this._identityService.signin(featureServiceConfig)
 					const featureService = new FeatureService(console, featureServiceConfig, identityManager)
 					const layerInfo = await featureService.queryLayerInfo(layerId);
 					const url = `${featureServiceConfig.url}/${layerId}`;
@@ -285,7 +285,7 @@ export class ObservationProcessor {
 			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
 			await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
 			const info = new LayerInfo(url, events, layerInfo)
-			const identityManager = await this._identityService.getIdentityManager(featureServiceConfig)
+			const identityManager = await this._identityService.signin(featureServiceConfig)
 			const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
 			this._layerProcessors.push(layerProcessor);
 			// clearTimeout(this._nextTimeout); // TODO why is this needed?

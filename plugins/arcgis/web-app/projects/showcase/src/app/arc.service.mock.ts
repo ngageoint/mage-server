@@ -1,8 +1,9 @@
 import { Observable, of } from "rxjs";
 import { Injectable } from '@angular/core'
-import { ArcServiceInterface, FeatureLayer } from "../../../main/src/lib/arc.service";
+import { ArcServiceInterface, FeatureLayer, ValidationRequest } from "../../../main/src/lib/arc.service";
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../../../main/src/lib/ArcGISPluginConfig';
 import { MageEvent } from "../../../main/src/lib/arc.service";
+import { FeatureServiceConfig } from "projects/main/src/lib/ArcGISConfig";
 
 export const mockArcGISEventResult = Object.freeze<MageEvent>({
   id: 0,
@@ -21,7 +22,11 @@ export const mockArcGISEventResult = Object.freeze<MageEvent>({
 })
 export class MockArcService implements ArcServiceInterface {
   fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]> {
-    throw new Error("Method not implemented.");
+    return of([{
+      id: 0,
+      name: 'mock_arcgis_layer',
+      geometryType: 'point'
+    }])
   }
   fetchArcConfig(): Observable<ArcGISPluginConfig> {
     return of({
@@ -31,7 +36,21 @@ export class MockArcService implements ArcServiceInterface {
       startupIntervalSeconds: 1,
       updateIntervalSeconds: 1,
       batchSize: 100,
-      featureServices: [],
+      featureServices: [{
+        url: 'https://arcgis.mock.com/1',
+        authenticated: false,
+        layers: [{
+          layer: 'Mock ArcGIS Layer 1'
+        },{
+          layer: 'Mock ArcGIS Layer 2'
+        }]
+      },{
+        url: 'https://arcgis.mock.com/2',
+        authenticated: true,
+        layers: [{
+          layer: 'Mock ArcGIS Layer 1'
+        }]
+      }],
       attachmentModifiedTolerance: 5000,
       textFieldLength: 100,
       textAreaFieldLength: 256,
@@ -102,5 +121,15 @@ export class MockArcService implements ArcServiceInterface {
     return of(
       defaultArcGISPluginConfig
     )
+  }
+
+  validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig> {
+      return of({
+        url: 'https://arcgis.mock.com/1',
+        authenticated: true,
+        layers: [{
+          layer: 'Mock ArcGIS Layer 1'
+        }]
+      })
   }
 }

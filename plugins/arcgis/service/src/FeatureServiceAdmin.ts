@@ -7,7 +7,7 @@ import { ObservationsTransformer } from "./ObservationsTransformer"
 import { LayerInfoResult, LayerField } from "./LayerInfoResult"
 import FormData from 'form-data'
 import { request } from '@esri/arcgis-rest-request'
-import { ArcGISIdentityService, getFeatureServiceUrl } from "./ArcGISService"
+import { ArcGISIdentityService } from "./ArcGISService"
 
 /**
  * Administers hosted feature services such as layer creation and updates.
@@ -405,7 +405,7 @@ export class FeatureServiceAdmin {
 		const form = new FormData()
 		form.append('addToDefinition', JSON.stringify(layer))
 
-		const identityManager = await this._identityService.getIdentityManager(service)
+		const identityManager = await this._identityService.signin(service)
 		const postResponse = await request(url, {
 			authentication: identityManager,
 			httpMethod: 'POST',
@@ -427,12 +427,12 @@ export class FeatureServiceAdmin {
 
 		this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url)
 
-		const identityManager = await this._identityService.getIdentityManager(service)
+		const identityManager = await this._identityService.signin(service)
 		await request(url, {
 			authentication: identityManager,
 			params: {
-					addToDefinition: layer,
-					f: "json"
+				addToDefinition: layer,
+				f: "json"
 			}
 		}).then((postResponse) => {
 			console.log('Response: ' + postResponse)
@@ -462,7 +462,7 @@ export class FeatureServiceAdmin {
 
 		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url)
 
-		const identityManager = await this._identityService.getIdentityManager(service)
+		const identityManager = await this._identityService.signin(service)
 		const postResponse = request(url, {
 			authentication: identityManager,
 			httpMethod: 'POST',

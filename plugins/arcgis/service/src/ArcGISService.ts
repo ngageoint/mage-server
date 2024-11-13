@@ -3,7 +3,7 @@ import { FeatureServiceConfig } from './ArcGISConfig'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 
 export interface ArcGISIdentityService {
-  getIdentityManager(featureService: FeatureServiceConfig): Promise<ArcGISIdentityManager>
+  signin(featureService: FeatureServiceConfig): Promise<ArcGISIdentityManager>
   updateIndentityManagers(): Promise<void>
 }
 
@@ -13,7 +13,7 @@ export function createArcGISIdentityService(
   const identityManagerCache: Map<string, Promise<ArcGISIdentityManager>> = new Map()
 
   return {
-    async getIdentityManager(featureService: FeatureServiceConfig): Promise<ArcGISIdentityManager> {
+    async signin(featureService: FeatureServiceConfig): Promise<ArcGISIdentityManager> {
       let cached = await identityManagerCache.get(featureService.url)
       if (!cached) {
         const identityManager = ArcGISIdentityManager.deserialize(featureService.identityManager)

@@ -13,6 +13,7 @@ export interface ArcServiceInterface {
   fetchEvents(): Observable<MageEvent[]>
   fetchPopulatedEvents(): Observable<MageEvent[]>
   fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]>
+  validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig>
 }
 
 export class MageEvent {
@@ -36,6 +37,10 @@ export interface FeatureLayer {
   name: string
   geometryType: string
 }
+
+export type ValidationRequest = {
+  url: string
+} & { token: string } | { username: string, password: string }
 
 @Injectable({
   providedIn: 'root'
@@ -79,8 +84,8 @@ export class ArcService implements ArcServiceInterface {
     return subject.asObservable()
   }
 
-  validateFeatureService(service: FeatureServiceConfig): Observable<FeatureServiceConfig> {
-    return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/validate`, service) 
+  validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig> {
+    return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/validate`, request) 
   }
 
   fetchEvents(): Observable<MageEvent[]> {
