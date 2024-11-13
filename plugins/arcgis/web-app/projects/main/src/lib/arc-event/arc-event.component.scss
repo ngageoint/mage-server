@@ -5,6 +5,12 @@
     margin-top: 16px;
 }
 
+.arc-event {
+    mat-card-subtitle {
+      margin-bottom: 0px; 
+    }
+  }
+
 .arcEvent__info {
     flex-grow: 1; 
 }

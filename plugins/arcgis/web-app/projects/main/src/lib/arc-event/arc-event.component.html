@@ -16,25 +16,24 @@
             <mat-list-item class="arcEvent">
               <div class="arcEvent__info">
                 <a href="/#/admin/events/{{event.id}}" target="_blank">{{event.name}}</a>
-
-                <div *ngIf="!event.layers.length" class="featureLayer_value">
-                  <div>This event is not synchronizing to any ArcGIS layers.</div>
-                  <br/>
-                  <mat-divider *ngIf="!last"></mat-divider>
+                
+                <div *ngIf="event.layers.length; else noLayers">
+                  <div>
+                    <ng-container *ngFor="let featureLayer of event.layers; let i = index">
+                      {{ layerDisplay(featureLayer) }}<span *ngIf="i < event.layers.length - 1">, </span>
+                    </ng-container>
+                  </div>
                 </div>
+                
+                <ng-template #noLayers>
+                  <div>This event is not synchronizing to any ArcGIS layers.</div>
+                </ng-template>
               </div>
               <div class="arcEvent__edit">
                 <button mat-button color="primary" (click)="onEditEvent(event)">Edit</button>
               </div>
             </mat-list-item>
-          
-            <mat-list *ngIf="event.layers.length">
-              <mat-list-item *ngFor="let featureLayer of event.layers">
-                <div>{{ layerDisplay(featureLayer) }}</div>
-                  <mat-divider></mat-divider>
-              </mat-list-item>
-            </mat-list>
-            
+            <mat-divider *ngIf="!last"></mat-divider>
           </ng-container>
         </mat-list>
       </section>
