@@ -125,13 +125,17 @@ export function createWebBinding(idp: IdentityProvider, passport: Authenticator,
   const oauth2Strategy = new OAuth2ProfileStrategy(strategyOptions, profileURL, verify)
   const handleIngressFlowRequest = express.Router()
     .get('/callback', (req, res, next) => {
-      passport.authenticate(oauth2Strategy,
+      const finishIngressFlow = passport.authenticate(
+        oauth2Strategy,
         (err: Error | null | undefined, account: IdentityProviderUser, info: OAuth2Info) => {
           if (err) {
             return next(err)
           }
           req.user = { admittingFromIdentityProvider: { idpName: idp.name, account, flowState: info.state }}
-        })(req, res, next)
+          next()
+        }
+      )
+      finishIngressFlow(req, res, next)
     })
   return {
     ingressResponseType: IngressResponseType.Redirect,
