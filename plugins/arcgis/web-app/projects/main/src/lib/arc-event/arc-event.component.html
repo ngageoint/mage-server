@@ -1,9 +1,7 @@
-<div class="arc-event">
-  <mat-card appearance="outlined">
-    <mat-card-header>
+<div>
+    <mat-card appearance="outlined">
       <mat-card-title>Events</mat-card-title>
       <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
-    </mat-card-header>
     <mat-card-content>
       <section class="arc-event-sync">
         <div *ngIf="!model.events.length">
@@ -15,8 +13,9 @@
           <ng-container *ngFor="let event of model.events; let last = last">
             <mat-list-item class="arcEvent">
               <div class="arcEvent__info">
-                <a href="/#/admin/events/{{event.id}}" target="_blank">{{event.name}}</a>
-                
+                <div>
+                  {{ event.name }}
+                </div>
                 <div *ngIf="event.layers.length; else noLayers">
                   <div>
                     <ng-container *ngFor="let featureLayer of event.layers; let i = index">
@@ -29,13 +28,18 @@
                   <div>This event is not synchronizing to any ArcGIS layers.</div>
                 </ng-template>
               </div>
-              <div class="arcEvent__edit">
-                <button mat-button color="primary" (click)="onEditEvent(event)">Edit</button>
+              <div class="arcEvent__icons">
+                <a mat-icon-button color="primary" href="/#/admin/events/{{event.id}}" target="_blank">
+                  <mat-icon>open_in_new</mat-icon>
+                </a>
+                <button mat-icon-button color="primary" (click)="onEditEvent(event)">
+                  <mat-icon>edit</mat-icon>
+                </button>
               </div>
             </mat-list-item>
             <mat-divider *ngIf="!last"></mat-divider>
           </ng-container>
-        </mat-list>
+        </mat-list>        
       </section>
     </mat-card-content>
   </mat-card>

@@ -1,16 +1,8 @@
-.arcEvent {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    margin-top: 16px;
+.arcEvent__info {
+    flex-grow: 1;
 }
 
-.arc-event {
-    mat-card-subtitle {
-      margin-bottom: 0px; 
-    }
-  }
-
-.arcEvent__info {
-    flex-grow: 1; 
+.mat-divider {
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
