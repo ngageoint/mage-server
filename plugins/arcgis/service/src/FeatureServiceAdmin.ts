@@ -406,12 +406,11 @@ export class FeatureServiceAdmin {
 		form.append('addToDefinition', JSON.stringify(layer))
 
 		const identityManager = await this._identityService.signin(service)
-		const postResponse = await request(url, {
+		await request(url, {
 			authentication: identityManager,
 			httpMethod: 'POST',
 			params: form
-		});
-		console.log('Response: ' + JSON.stringify(postResponse))
+		}).catch((error) => this._console.error('FeatureServiceAdmin create() error ' + error));
 	}
 
 	/**
@@ -434,8 +433,6 @@ export class FeatureServiceAdmin {
 				addToDefinition: layer,
 				f: "json"
 			}
-		}).then((postResponse) => {
-			console.log('Response: ' + postResponse)
 		}).catch((error) => {
 			console.log('Error: ' + error)
 		});
@@ -463,14 +460,13 @@ export class FeatureServiceAdmin {
 		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url)
 
 		const identityManager = await this._identityService.signin(service)
-		const postResponse = request(url, {
+		request(url, {
 			authentication: identityManager,
 			httpMethod: 'POST',
 			params: {
 				deleteFromDefinition:  layer
 			}
-		});
-		console.log('Response: ' + postResponse)
+		}).catch((error) => this._console.error('FeatureServiceAdmin deleteFields() error ' + error));
 	}
 
 	/**

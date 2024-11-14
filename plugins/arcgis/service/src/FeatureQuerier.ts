@@ -67,8 +67,7 @@ export class FeatureQuerier {
             params: { f: 'json' }
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
-        response(queryResponse as QueryObjectResult)
+        response(queryResponse as QueryObjectResult);
     }
 
     /**
@@ -90,8 +89,7 @@ export class FeatureQuerier {
             params: { f: 'json' }
         });
 
-        this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
-        response(queryResponse as QueryObjectResult)
+        response(queryResponse as QueryObjectResult);
     }
 
     /**
@@ -114,8 +112,7 @@ export class FeatureQuerier {
 
             });  
 
-            this._console.info('ArcGIS response for ' + queryUrl + ' ' + JSON.stringify(queryResponse, null, 2))
-            response(queryResponse as QueryObjectResult)
+            response(queryResponse as QueryObjectResult);
         } catch (err) {
             console.error("could not query", err)
         }

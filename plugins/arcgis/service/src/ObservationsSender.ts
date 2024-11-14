@@ -213,7 +213,6 @@ export class ObservationsSender {
             authentication: this._identityManager,
             featureId: objectId
         }).then((response) => {
-            this._console.info('ArcGIS response for ' + queryUrl + ' ' + response)
             const result = response as AttachmentInfosResult
             this.updateAttachments(observation, objectId, result.attachmentInfos)
         }).catch((error) => this._console.error(error));
@@ -352,7 +351,6 @@ export class ObservationsSender {
      * @return attachment file name.
      */
     private attachmentFileName(attachment: ArcAttachment): string {
-
         let fileName = attachment.field + "_" + attachment.name
 
         const extensionIndex = attachment.contentLocator.lastIndexOf('.')
