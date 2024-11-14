@@ -4,25 +4,64 @@ import { ArcServiceInterface, FeatureLayer } from "../../../main/src/lib/arc.ser
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../../../main/src/lib/ArcGISPluginConfig';
 import { MageEvent } from "../../../main/src/lib/arc.service";
 
-export const mockArcGISEventResult = Object.freeze<MageEvent>({
+export const mockArcGISEventResult1 = Object.freeze<MageEvent>({
   id: 0,
-  name: 'test event result name',
+  name: 'test event result name 1',
   forms: [{
     id: 1,
-    name: 'test form result name',
+    name: 'test form result name 1',
     fields: [{
-      title: 'test field'
+      title: 'test field 1'
     }]
   }]
-})
+});
+
+export const mockArcGISEventResult2 = Object.freeze<MageEvent>({
+  id: 1,
+  name: 'test event result name 2',
+  forms: [{
+    id: 2,
+    name: 'test form result name 2',
+    fields: [{
+      title: 'test field 2'
+    }]
+  }]
+});
+
+export const mockArcGISEventResult3 = Object.freeze<MageEvent>({
+  id: 2,
+  name: 'test event result name 3',
+  forms: [{
+    id: 3,
+    name: 'test form result name 3',
+    fields: [{
+      title: 'test field 3'
+    }]
+  }]
+});
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class MockArcService implements ArcServiceInterface {
   fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]> {
-    throw new Error("Method not implemented.");
+    return of([
+      {
+        id: 1,
+        name: 'Layer 1',
+        geometryType: 'esriGeometryPoint',
+        events: ['test event result name 1', 'test event result name 2']
+      },
+      {
+        id: 2,
+        name: 'Layer 2',
+        geometryType: 'esriGeometryPolygon',
+        events: ['test event result name 2']
+      }
+    ]);
   }
+
   fetchArcConfig(): Observable<ArcGISPluginConfig> {
     return of({
       enabled: true,
@@ -31,7 +70,21 @@ export class MockArcService implements ArcServiceInterface {
       startupIntervalSeconds: 1,
       updateIntervalSeconds: 1,
       batchSize: 100,
-      featureServices: [],
+      featureServices: [
+        {
+          url: 'https://mock.service.com/FeatureServer/0',
+          layers: [
+            {
+              layer: 'Layer 1',
+              events: ['test event result name 1', 'test event result name 2']
+            },
+            {
+              layer: 'Layer 2',
+              events: ['test event result name 2']
+            }
+          ]
+        }
+      ],
       attachmentModifiedTolerance: 5000,
       textFieldLength: 100,
       textAreaFieldLength: 256,
@@ -72,35 +125,31 @@ export class MockArcService implements ArcServiceInterface {
   fetchArcLayers(featureUrl: string) {
     return of({
       layers: [
-          {
-            id: 0, 
-            name: 'mage_sync', 
-            geometryType: 'esriGeometryPoint'
-          },
-        ]
-      }
-    )
+        {
+          id: 0,
+          name: 'mage_sync',
+          geometryType: 'esriGeometryPoint'
+        },
+      ]
+    }
+   )
   }
 
   fetchEvents() {
-    return of([mockArcGISEventResult])
+    return of([mockArcGISEventResult1, mockArcGISEventResult2, mockArcGISEventResult3]);
   }
 
   fetchPopulatedEvents() {
-    return of([mockArcGISEventResult])
+    return of([mockArcGISEventResult1, mockArcGISEventResult2, mockArcGISEventResult3]);
   }
 
   putArcConfig(config: ArcGISPluginConfig) {}
 
   removeUserTrack(userTrackId: string): Observable<ArcGISPluginConfig> {
-    return of(
-      defaultArcGISPluginConfig
-    )
+    return of(defaultArcGISPluginConfig);
   }
 
   removeOperation(operationId: string): Observable<ArcGISPluginConfig> {
-    return of(
-      defaultArcGISPluginConfig
-    )
+    return of(defaultArcGISPluginConfig);
   }
 }
