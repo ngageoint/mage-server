@@ -92,7 +92,6 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
           routes.get('/oauth/authenticate', async (req, res) => {
             const code = req.query.code as string
-            // TODO is clientId here in req or response
             let state: { url: string, clientId: string }
             try {
               const { url, clientId } = JSON.parse(req.query.state as string)
@@ -210,7 +209,6 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             }
 
             try {
-              // TODO can you validate existing services?
               let existingService = config.featureServices.find(service => service.url === url)
               if (!existingService) {
                 config.featureServices.push(service)
