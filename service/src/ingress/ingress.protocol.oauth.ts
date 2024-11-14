@@ -3,6 +3,7 @@ import { InternalOAuthError, Strategy as OAuth2Strategy, StrategyOptions as OAut
 import base64 from 'base-64'
 import { IdentityProvider, IdentityProviderUser } from './ingress.entities'
 import { Authenticator } from 'passport'
+import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
 
 export type OAuth2ProtocolSettings =
   Pick<OAuth2Options,
@@ -59,7 +60,7 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
         done(null, profile)
       }
       catch (err) {
-        log.error('error parsing oauth profile', err)
+        console.error('error parsing oauth profile', err)
         done(err)
       }
     })
@@ -81,11 +82,13 @@ function applyDefaultProtocolSettings(idp: IdentityProvider): OAuth2ProtocolSett
   return settings
 }
 
+type OAuth2Info = { state: string }
+
 /**
  * The `baseUrl` parameter is the URL at which Mage will mount the returned `express.Router`, including any
  * distinguishing component of the given `IdentityProvider`, without a trailing slash, e.g. `/auth/example-idp`.
  */
-export function createWebBinding(idp: IdentityProvider, passport: Authenticator, baseUrl: string): express.Router {
+export function createWebBinding(idp: IdentityProvider, passport: Authenticator, baseUrl: string): IngressProtocolWebBinding {
   const settings = applyDefaultProtocolSettings(idp)
   const profileURL = settings.profileURL
   const customHeaders = settings.headers?.basic ? {
@@ -110,24 +113,31 @@ export function createWebBinding(idp: IdentityProvider, passport: Authenticator,
     const profile = profileResponse.json
     const profileKeys = settings.profile
     if (!profile[profileKeys.id]) {
-      log.warn("JSON: " + JSON.stringify(profile) + " RAW: " + profileResponse.raw);
-      return done(`OAuth2 user profile does not contain id property named ${profileKeys.id}`)
+      console.error(`oauth2 profile missing id for key ${profileKeys.id}:\n`, JSON.stringify(profile, null, 2))
+      return done(new Error(`oauth2 user profile does not contain id property ${profileKeys.id}`))
     }
     const username = profile[profileKeys.id]
     const displayName = profile[profileKeys.displayName] || username
     const email = profile[profileKeys.email]
     const idpUser: IdentityProviderUser = { username, displayName, email, phones: [] }
-    return done(null, { admittingFromIdentityProvider: { idpName: idp.name, account: idpUser }})
+    return done(null, { admittingFromIdentityProvider: { idpName: idp.name, account: idpUser, flowState: '' }})
   }
   const oauth2Strategy = new OAuth2ProfileStrategy(strategyOptions, profileURL, verify)
-  return express.Router()
-    .get('/signin',
-      /*
-      TODO:
-      this used to pass state in the options argument like { state: req.query.state }
-      to propagate the mobile clients passing state=mobile. test whether this is actually necessary
-      */
-      passport.authenticate(oauth2Strategy, { scope: settings.scope })
-    )
-    .get('/callback', passport.authenticate(oauth2Strategy))
+  const handleIngressFlowRequest = express.Router()
+    .get('/callback', (req, res, next) => {
+      passport.authenticate(oauth2Strategy,
+        (err: Error | null | undefined, account: IdentityProviderUser, info: OAuth2Info) => {
+          if (err) {
+            return next(err)
+          }
+          req.user = { admittingFromIdentityProvider: { idpName: idp.name, account, flowState: info.state }}
+        })(req, res, next)
+    })
+  return {
+    ingressResponseType: IngressResponseType.Redirect,
+    beginIngressFlow(req, res, next, flowState): any {
+      passport.authenticate(oauth2Strategy, { state: flowState })(req, res, next)
+    },
+    handleIngressFlowRequest
+  }
 }

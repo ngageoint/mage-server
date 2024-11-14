@@ -4,23 +4,31 @@ import { Authenticator } from 'passport'
 import { Strategy as BearerStrategy } from 'passport-http-bearer'
 import { defaultHashUtil } from '../utilities/password-hashing'
 import { JWTService, Payload, TokenVerificationError, VerificationErrorReason, TokenAssertion } from './verification'
-import { invalidInput, InvalidInputError, MageError } from '../app.api/app.api.errors'
-import { IdentityProviderRepository } from './ingress.entities'
+import { invalidInput, InvalidInputError, MageError, permissionDenied } from '../app.api/app.api.errors'
+import { IdentityProvider, IdentityProviderRepository } from './ingress.entities'
 import { AdmitFromIdentityProviderOperation, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
-import { IngressProtocolWebBinding } from './ingress.protocol.bindings'
+import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
+import { createWebBinding as LocalBinding } from './ingress.protocol.local'
+import { createWebBinding as OAuthBinding } from './ingress.protocol.oauth'
 
 declare module 'express-serve-static-core' {
   interface Request {
     ingress?: IngressRequestContext
+    localEnrollment?: LocalEnrollmentContext
   }
 }
 
-type IngressRequestContext = { identityProviderService: IngressProtocolWebBinding } & (
-  | { state: 'init' }
-  | { state: 'localEnrollment', localEnrollment: LocalEnrollment }
-)
+enum UserAgentType {
+  MobileApp = 'MobileApp',
+  WebApp = 'WebApp'
+}
 
-type LocalEnrollment =
+type IngressRequestContext = {
+  idp: IdentityProvider
+  idpBinding: IngressProtocolWebBinding
+}
+
+type LocalEnrollmentContext =
   | {
     state: 'humanTokenVerified'
     captchaTokenPayload: Payload
@@ -30,7 +38,7 @@ type LocalEnrollment =
     subject: string
   }
 
-export type IngressOperations = {
+export type IngressUseCases = {
   enrollMyself: EnrollMyselfOperation
   admitFromIdentityProvider: AdmitFromIdentityProviderOperation
 }
@@ -40,78 +48,77 @@ export type IngressRoutes = {
   idpAdmission: express.Router
 }
 
-function bindingFor(idpName: string): IngressProtocolWebBinding {
-  throw new Error('unimplemented')
-}
+export function CreateIngressRoutes(ingressApp: IngressUseCases, idpRepo: IdentityProviderRepository, tokenService: JWTService, passport: Authenticator): IngressRoutes {
 
-export function CreateIngressRoutes(ingressApp: IngressOperations, idpRepo: IdentityProviderRepository, tokenService: JWTService, passport: Authenticator): IngressRoutes {
-
-  const captchaBearer = new BearerStrategy((token, done) => {
-    const expectation = {
-      subject: null,
-      expiration: null,
-      assertion: TokenAssertion.IsHuman
+  const idpBindings = new Map<string, IngressProtocolWebBinding>()
+  async function bindingFor(idpName: string): Promise<IngressProtocolWebBinding | null> {
+    const idp = await idpRepo.findIdpByName(idpName)
+    if (!idp) {
+      return null
     }
-    tokenService.verifyToken(token, expectation)
-      .then(payload => done(null, payload))
-      .catch(err => done(err))
-  })
+    if (idp.protocol === 'local') {
+      return LocalBinding(passport, )
+    }
+    throw new Error('unimplemented')
+  }
 
-  // TODO: separate routers for /auth/idp/* and /api/users/signups/* for backward compatibility
-
-  const routeToIdp = express.Router().all('/',
-    ((req, res, next) => {
-      const idpService = req.ingress?.identityProviderService
-      if (idpService) {
-        return idpService.handleRequest(req, res, next)
-      }
-      next(new Error(`no identity provider for ingress request: ${req.method} ${req.originalUrl}`))
-    }) as express.RequestHandler,
-    (async (err, req, res, next) => {
-      if (err) {
-        console.error('identity provider authentication error:', err)
-        return res.status(500).send('unexpected authentication result')
-      }
-      if (req.user?.from !== 'identityProvider') {
-        console.error('unexpected authentication user type:', req.user?.from)
-        return res.status(500).send('unexpected authentication result')
-      }
-      const identityProviderName = req.ingress!.identityProviderService!.idp.name
-      const identityProviderUser = req.user.account
-      const admission = await ingressApp.admitFromIdentityProvider({ identityProviderName, identityProviderUser })
-      if (admission.error) {
-        return next(admission.error)
-      }
-      const { admissionToken, mageAccount } = admission.success
-      /*
-      TODO: copied from redirecting protocols - cleanup and adapt here
-      local/ldap use direct json response
-      saml uses RelayState body property
-      oauth/oidc use state query parameter
-      can all use direct json response and handle redirect windows client side?
-      */
-      if (req.query.state === 'mobile') {
-        let uri;
-        if (!mageAccount.active || !mageAccount.enabled) {
-          uri = `mage://app/invalid_account?active=${mageAccount.active}&enabled=${mageAccount.enabled}`;
-        } else {
-          uri = `mage://app/authentication?token=${req.token}`
+  const routeToIdp = express.Router()
+    .all('/',
+      ((req, res, next) => {
+        const idpService = req.ingress?.idpBinding
+        if (!idpService) {
+          return next(new Error(`no identity provider for ingress request: ${req.method} ${req.originalUrl}`))
         }
-        res.redirect(uri);
-      } else {
-        res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
-      }
-    }) as express.ErrorRequestHandler
-  )
+        if (req.path.endsWith('/signin')) {
+          const userAgentType: UserAgentType = req.params.state === 'mobile' ? UserAgentType.MobileApp : UserAgentType.WebApp
+          return idpService.beginIngressFlow(req, res, next, userAgentType)
+        }
+        idpService.handleIngressFlowRequest(req, res, next)
+      }) as express.RequestHandler,
+      (async (err, req, res, next) => {
+        if (err) {
+          console.error('identity provider authentication error:', err)
+          return res.status(500).send('unexpected authentication result')
+        }
+        if (!req.user?.admittingFromIdentityProvider) {
+          console.error('unexpected ingress user type:', req.user)
+          return res.status(500).send('unexpected authentication result')
+        }
+        const idpAdmission = req.user.admittingFromIdentityProvider
+        const { idpBinding, idp } = req.ingress!
+        const identityProviderUser = idpAdmission.account
+        const admission = await ingressApp.admitFromIdentityProvider({ identityProviderName: idp.name, identityProviderUser })
+        if (admission.error) {
+          return next(admission.error)
+        }
+        const { admissionToken, mageAccount } = admission.success
+        if (idpBinding.ingressResponseType === IngressResponseType.Direct) {
+          return res.json({ user: mageAccount, token: admissionToken })
+        }
+        if (idpAdmission.flowState === UserAgentType.MobileApp) {
+          if (mageAccount.active && mageAccount.enabled) {
+            return res.redirect(`mage://app/authentication?token=${req.token}`)
+          }
+          else {
+            return res.redirect(`mage://app/invalid_account?active=${mageAccount.active}&enabled=${mageAccount.enabled}`)
+          }
+        }
+        else if (idpAdmission.flowState === UserAgentType.WebApp) {
+          return res.render('authentication', { host: req.getRoot(), success: true, login: { token: admissionToken, user: mageAccount } })
+        }
+        return res.status(500).send('invalid authentication state')
+      }) as express.ErrorRequestHandler
+    )
 
   // TODO: mount to /auth
   const idpAdmission = express.Router()
   idpAdmission.use('/:identityProviderName',
-    (req, res, next) => {
+    async (req, res, next) => {
       const idpName = req.params.identityProviderName
-      const idpService = bindingFor(idpName)
-      if (idpService) {
-        req.ingress = { state: 'init', identityProviderService: idpService }
+      const idp = await idpRepo.findIdpByName(idpName)
+      const idpBinding = await bindingFor(idpName)
+      if (idpBinding && idp) {
+        req.ingress = { idpBinding, idp }
         return next()
       }
       res.status(404).send(`${idpName} not found`)
@@ -149,6 +156,17 @@ export function CreateIngressRoutes(ingressApp: IngressOperations, idpRepo: Iden
       }
     })
 
+  const captchaBearer = new BearerStrategy((token, done) => {
+    const expectation = {
+      subject: null,
+      expiration: null,
+      assertion: TokenAssertion.IsHuman
+    }
+    tokenService.verifyToken(token, expectation)
+      .then(payload => done(null, payload))
+      .catch(err => done(err))
+  })
+
   // TODO: mount to /api/users/signups/verifications
   localEnrollment.route('/signups/verifications')
     .post(
@@ -163,19 +181,16 @@ export function CreateIngressRoutes(ingressApp: IngressOperations, idpRepo: Iden
           if (!captchaTokenPayload) {
             return res.status(400).send('Missing captcha token')
           }
-          req.ingress = {
-            ...req.ingress!,
-            state: 'localEnrollment',
-            localEnrollment: { state: 'humanTokenVerified', captchaTokenPayload } }
+          req.localEnrollment = { state: 'humanTokenVerified', captchaTokenPayload }
           next()
         })(req, res, next)
       },
       async (req, res, next) => {
         try {
-          if (req.ingress?.state !== 'localEnrollment' || req.ingress.localEnrollment.state !== 'humanTokenVerified') {
+          if (req.localEnrollment?.state !== 'humanTokenVerified') {
             return res.status(500).send('invalid ingress state')
           }
-          const tokenPayload = req.ingress.localEnrollment.captchaTokenPayload
+          const tokenPayload = req.localEnrollment.captchaTokenPayload
           const hashedCaptchaText = tokenPayload.captcha as string
           const userCaptchaText = req.body.captchaText
           const isHuman = await defaultHashUtil.validPassword(userCaptchaText, hashedCaptchaText)
