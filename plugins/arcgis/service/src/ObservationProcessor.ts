@@ -163,7 +163,12 @@ export class ObservationProcessor {
 	 */
 	private async updateConfig(): Promise<ArcGISPluginConfig> {
 		const config = await this.safeGetConfig()
-		const configJson = JSON.stringify(config)
+		
+		// Include form definitions while detecting changes in config
+		const eventForms = await this._eventRepo.findAll();
+		const fullConfig = { ...config, eventForms };
+
+		const configJson = JSON.stringify(fullConfig)
 		if (this._previousConfig == null || this._previousConfig != configJson) {
 			this._transformer = new ObservationsTransformer(config, console);
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
