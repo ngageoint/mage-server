@@ -157,9 +157,9 @@ export class UserIngressBindingsMongooseRepository implements UserIngressBinding
 
   constructor(readonly model: UserIngressBindingsModel) {}
 
-  async readBindingsForUser(userId: UserId): Promise<UserIngressBindings> {
+  async readBindingsForUser(userId: UserId): Promise<UserIngressBindings | null> {
     const doc = await this.model.findById(userId, null, { lean: true })
-    return { userId, bindingsByIdp: new Map(Object.entries(doc?.bindings || {})) }
+    return doc ? { userId, bindingsByIdp: new Map(Object.entries(doc?.bindings || {})) } : null
   }
 
   async readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters | undefined): Promise<PageOf<UserIngressBindings>> {

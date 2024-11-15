@@ -19,11 +19,11 @@ export type SessionExpanded = Omit<Session, 'user' | 'device'> & {
 }
 
 export interface SessionRepository {
-  findSessionByToken(token: string): Promise<Session | null>
+  readSessionByToken(token: string): Promise<Session | null>
   createOrRefreshSession(userId: UserId, deviceId?: string): Promise<Session>
-  removeSession(token: string): Promise<Session | null>
-  removeSessionsForUser(userId: UserId): Promise<number>
-  removeSessionsForDevice(deviceId: DeviceId): Promise<number>
+  deleteSession(token: string): Promise<Session | null>
+  deleteSessionsForUser(userId: UserId): Promise<number>
+  deleteSessionsForDevice(deviceId: DeviceId): Promise<number>
 }
 
 /**
@@ -82,6 +82,10 @@ export interface DeviceEnrollmentPolicy {
  * The identity provider user is the result of mapping a specific IDP account to a Mage user account.
  */
 export type IdentityProviderUser = Pick<User, 'username' | 'displayName' | 'email' | 'phones'>
+  & {
+    idpAccountId?: string
+    idpAccountAttrs?: Record<string, any>
+  }
 
 /**
  * A user ingress binding is the bridge between a Mage user and an identity provider account.  When a user attempts
@@ -90,6 +94,8 @@ export type IdentityProviderUser = Pick<User, 'username' | 'displayName' | 'emai
  */
 export interface UserIngressBinding {
   idpId: IdentityProviderId
+  created: Date
+  updated: Date
   // TODO: evaluate for utility of disabling a single ingress/idp path for a user as opposed to the entire account
   // verified: boolean
   // enabled: boolean
@@ -124,8 +130,15 @@ export interface IdentityProviderRepository {
 }
 
 export interface UserIngressBindingsRepository {
-  readBindingsForUser(userId: UserId): Promise<UserIngressBindings>
+  /**
+   * Return null if the user has no persisted bindings entry.
+   */
+  readBindingsForUser(userId: UserId): Promise<UserIngressBindings | null>
   readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters): Promise<PageOf<UserIngressBindings>>
+  /**
+   * Save the given ingress binding to the bindings dictionary for the given user, creating or updating as necessary.
+   * Return the modified ingress bindings.
+   */
   saveUserIngressBinding(userId: UserId, binding: UserIngressBinding): Promise<UserIngressBindings | Error>
   /**
    * Return the binding that was deleted, or null if the user did not have a binding to the given IDP.
