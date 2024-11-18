@@ -2,14 +2,20 @@ import { Component, Inject, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectionList } from '@angular/material/list';
-import { AuthType, FeatureServiceConfig } from '../ArcGISConfig';
+import { FeatureServiceConfig } from '../ArcGISConfig';
 import { ArcService, FeatureLayer } from '../arc.service';
 
 enum State { Validate, Layers }
 
-interface AuthenticationType {
-	title: string
-	value: string
+enum AuthenticationType {
+	Token = 'token',
+	UsernamePassword = 'usernamePassword',
+	OAuth = 'oauth'
+}
+
+type AuthenticationState = {
+	text: string
+	value: AuthenticationType
 }
 
 export interface DialogData {
@@ -27,16 +33,16 @@ export class ArcLayerDialogComponent {
 
 	loading = false
 
-	AuthenticationType = AuthType
-	authenticationTypes: AuthenticationType[] = [{
-		title: 'OAuth',
-		value: AuthType.OAuth
+	AuthenticationType = AuthenticationType
+	authenticationStates: AuthenticationState[] = [{
+		text: 'OAuth',
+		value: AuthenticationType.OAuth
 	},{
-		title: 'Username/Password',
-		value: AuthType.UsernamePassword
+		text: 'Username/Password',
+		value: AuthenticationType.UsernamePassword
 	},{
-		title: 'Token',
-		value: AuthType.Token
+		text: 'API Key',
+		value: AuthenticationType.Token
 	}]
 
 	layerForm: FormGroup
@@ -53,23 +59,20 @@ export class ArcLayerDialogComponent {
 		if (data.featureService) {
 			this.featureService = data.featureService
 		}
-		const auth: any = this.featureService?.auth || {}
-		const { type, token, username, password, clientId } = auth
 
-		this.state = this.featureService === undefined ? State.Validate : State.Layers
-		// TODO update all fields with info from pass in service
+		this.state = this.featureService === undefined || !this.featureService.authenticated ? State.Validate : State.Layers
 		this.layerForm = new FormGroup({
-			url: new FormControl(this.featureService?.url, [Validators.required]),
-			authenticationType: new FormControl(type || AuthType.OAuth, [Validators.required]),
+			url: new FormControl({value: this.featureService?.url, disabled: this.featureService !== undefined }, [Validators.required]),
+			authenticationType: new FormControl('', [Validators.required]),
 			token: new FormGroup({
-				token: new FormControl(token, [Validators.required])
+				token: new FormControl('', [Validators.required])
 			}),
 			oauth: new FormGroup({
-				clientId: new FormControl(clientId, [Validators.required])
+				clientId: new FormControl('', [Validators.required])
 			}),
 			local: new FormGroup({
-				username: new FormControl(username, [Validators.required]),
-				password: new FormControl(password, [Validators.required])
+				username: new FormControl('', [Validators.required]),
+				password: new FormControl('', [Validators.required])
 			})
 		})
 
@@ -99,25 +102,19 @@ export class ArcLayerDialogComponent {
 		const { url, authenticationType } = this.layerForm.value
 
 		switch (authenticationType) {
-			case AuthType.Token: {
+			case AuthenticationType.Token: {
 				const { token } = this.layerForm.controls.token.value
-				this.featureService = { url, auth: { type: AuthType.Token, token }, layers: [] }
-				this.arcService.validateFeatureService(this.featureService).subscribe((service) => this.validated(service))
-
+				this.arcService.validateFeatureService({ url, token }).subscribe((service) => this.validated(service))
 				break;
 			}
-			case AuthType.OAuth: {
+			case AuthenticationType.OAuth: {
 				const { clientId } = this.layerForm.controls.oauth.value
-				this.featureService = { url, auth: { type: AuthType.OAuth, clientId }, layers: [] }
 				this.arcService.oauth(url, clientId).subscribe((service) => this.validated(service))
-
 				break;
 			}
-			case AuthType.UsernamePassword: {
+			case AuthenticationType.UsernamePassword: {
 				const { username, password } = this.layerForm.controls.local.value
-				this.featureService = { url, auth: { type: AuthType.UsernamePassword, username, password }, layers: [] }
-				this.arcService.validateFeatureService(this.featureService).subscribe((service) => this.validated(service))
-
+				this.arcService.validateFeatureService({url, username, password}).subscribe((service) => this.validated(service))
 				break;
 			}
 		}
@@ -134,5 +131,9 @@ export class ArcLayerDialogComponent {
 			return { layer: `${option.value}` }
 		})
 		this.dialogRef.close(this.featureService)
+	}
+
+	onCancel(): void {
+		this.dialogRef.close()
 	}
 }

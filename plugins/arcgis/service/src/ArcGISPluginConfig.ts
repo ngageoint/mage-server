@@ -145,7 +145,7 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
   textAreaFieldLength: 256,
   observationIdField: 'description',
   idSeparator: '-',
-  // eventIdField: 'event_id',
+  eventIdField: 'event_id',
   lastEditedDateField: 'last_edited_date',
   eventNameField: 'event_name',
   userIdField: 'user_id',
