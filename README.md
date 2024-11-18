@@ -287,15 +287,9 @@ npm run build
 ```
 Build optional plugin packages similarly.:
 ```bash
-cd plugins/arcgis/service
+cd plugins/nga-msi
 npm ci
-npm link ../../../service # **IMPORTANT** see below
-npm run build
-```
-```bash
-cd plugins/arcgis/web-app
-npm ci
-npm link ../../../web-app # **IMPORTANT** see below
+npm link ../../service # **IMPORTANT** see below
 npm run build
 ```
 After building the core packages, install them as dependencies in the `instance` package.
