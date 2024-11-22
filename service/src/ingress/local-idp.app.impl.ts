@@ -36,7 +36,7 @@ export function CreateLocalIdpCreateAccountOperation(repo: LocalIdpRepository): 
     const createdAccount = await repo.createLocalAccount(candidateAccount)
     if (createdAccount instanceof LocalIdpError) {
       if (createdAccount instanceof LocalIdpDuplicateUsernameError) {
-        console.info(`attempted to create local account with duplicate username ${req.username}`)
+        console.error(`attempted to create local account with duplicate username ${req.username}`, createdAccount)
       }
       return AppResponse.error(invalidInput(`Failed to create account ${req.username}.`))
     }

@@ -1,9 +1,8 @@
 import { entityNotFound, infrastructureError } from '../app.api/app.api.errors'
 import { AppResponse } from '../app.api/app.api.global'
-import { UserRepository } from '../entities/users/entities.users'
 import { AdmitFromIdentityProviderOperation, AdmitFromIdentityProviderRequest, authenticationFailedError, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
-import { IdentityProviderRepository, IdentityProviderUser, UserIngressBindingsRepository } from './ingress.entities'
-import { EnrollNewUser } from './ingress.services.api'
+import { IdentityProviderRepository, IdentityProviderUser } from './ingress.entities'
+import { AdmissionDeniedReason, AdmitUserFromIdentityProviderAccount, EnrollNewUser } from './ingress.services.api'
 import { LocalIdpCreateAccountOperation } from './local-idp.app.api'
 import { JWTService, TokenAssertion } from './verification'
 
@@ -32,12 +31,13 @@ export function CreateEnrollMyselfOperation(createLocalIdpAccount: LocalIdpCreat
     }
     const enrollmentResult = await enrollNewUser(candidateMageAccount, localIdp)
 
+
     // TODO: auto-activate account after enrollment policy
     throw new Error('unimplemented')
   }
 }
 
-export function CreateAdmitFromIdentityProviderOperation(idpRepo: IdentityProviderRepository, ingressBindingRepo: UserIngressBindingsRepository, userRepo: UserRepository, enrollNewUser: EnrollNewUser, tokenService: JWTService): AdmitFromIdentityProviderOperation {
+export function CreateAdmitFromIdentityProviderOperation(idpRepo: IdentityProviderRepository, admitFromIdpAccount: AdmitUserFromIdentityProviderAccount, tokenService: JWTService): AdmitFromIdentityProviderOperation {
   return async function admitFromIdentityProvider(req: AdmitFromIdentityProviderRequest): ReturnType<AdmitFromIdentityProviderOperation> {
     const idp = await idpRepo.findIdpByName(req.identityProviderName)
     if (!idp) {
@@ -45,42 +45,24 @@ export function CreateAdmitFromIdentityProviderOperation(idpRepo: IdentityProvid
     }
     const idpAccount = req.identityProviderUser
     console.info(`admitting user ${idpAccount.username} from identity provider ${idp.name}`)
-    const mageAccount = await userRepo.findByUsername(idpAccount.username)
-      .then(existingAccount => {
-        if (existingAccount) {
-          return ingressBindingRepo.readBindingsForUser(existingAccount.id).then(ingressBindings => {
-            return { mageAccount: existingAccount, ingressBindings }
-          })
+    const admission = await admitFromIdpAccount(idpAccount, idp)
+    if (admission.action === 'denied') {
+      if (admission.mageAccount) {
+        if (admission.reason === AdmissionDeniedReason.PendingApproval) {
+          return AppResponse.error(authenticationFailedError(admission.mageAccount.username, idp.name, 'Your account requires approval from a Mage administrator.'))
         }
-        return enrollNewUser(idpAccount, idp)
-      })
-      .then(enrolled => {
-        const { mageAccount, ingressBindings } = enrolled
-        if (ingressBindings.bindingsByIdp.has(idp.id)) {
-          return mageAccount
+        if (admission.reason === AdmissionDeniedReason.Disabled) {
+          return AppResponse.error(authenticationFailedError(admission.mageAccount.username, idp.name, 'Your account is disabled.'))
         }
-        console.error(`user ${mageAccount.username} has no ingress binding to identity provider ${idp.name}`)
-        return null
-      })
-      .catch(err => {
-        console.error(`error creating user account ${idpAccount.username} from identity provider ${idp.name}`, err)
-        return null
-      })
-    if (!mageAccount) {
+      }
       return AppResponse.error(authenticationFailedError(idpAccount.username, idp.name))
     }
-    if (!mageAccount.active) {
-      return AppResponse.error(authenticationFailedError(mageAccount.username, idp.name, 'Your account requires approval from a Mage administrator.'))
-    }
-    if (!mageAccount.enabled) {
-      return AppResponse.error(authenticationFailedError(mageAccount.username, idp.name, 'Your account is disabled.'))
-    }
     try {
-      const admissionToken = await tokenService.generateToken(mageAccount.id, TokenAssertion.Authenticated, 5 * 60)
-      return AppResponse.success({ mageAccount, admissionToken })
+      const admissionToken = await tokenService.generateToken(admission.mageAccount.id, TokenAssertion.Authenticated, 5 * 60)
+      return AppResponse.success({ mageAccount: admission.mageAccount, admissionToken })
     }
     catch (err) {
-      console.error(`error generating admission token while authenticating user ${mageAccount.username}`, err)
+      console.error(`error generating admission token while authenticating user ${admission.mageAccount.username}`, err)
       return AppResponse.error(infrastructureError('An unexpected error occurred while generating an authentication token.'))
     }
   }

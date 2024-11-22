@@ -105,15 +105,13 @@ export interface UserIngressBinding {
    * multiple ingress bindings for different identity providers with different account identifiers.
    */
   idpAccountId?: string
-  /**
-   * Any attributes the identity provider or protocol needs to persist about the account mapping
-   */
-  idpAccountAttrs?: Record<string, any>
+  // TODO: unused for now
+  // idpAccountAttrs?: Record<string, any>
 }
 
 export type UserIngressBindings = {
   userId: UserId
-  bindingsByIdp: Map<IdentityProviderId, UserIngressBinding>
+  bindingsByIdpId: Map<IdentityProviderId, UserIngressBinding>
 }
 
 export type IdentityProviderMutableAttrs = Omit<IdentityProvider, 'id' | 'name' | 'protocol'>
@@ -133,7 +131,7 @@ export interface UserIngressBindingsRepository {
   /**
    * Return null if the user has no persisted bindings entry.
    */
-  readBindingsForUser(userId: UserId): Promise<UserIngressBindings | null>
+  readBindingsForUser(userId: UserId): Promise<UserIngressBindings>
   readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters): Promise<PageOf<UserIngressBindings>>
   /**
    * Save the given ingress binding to the bindings dictionary for the given user, creating or updating as necessary.
@@ -154,10 +152,29 @@ export interface UserIngressBindingsRepository {
   deleteAllBindingsForIdp(idpId: IdentityProviderId): Promise<number>
 }
 
+export type AdmissionAction =
+  | { admitNew: UserIngressBinding, admitExisting: false, deny: false }
+  | { admitExisting: UserIngressBinding, admitNew: false, deny: false }
+  | { deny: true, admitNew: false, admitExisting: false }
+
+export function determinUserIngressBindingAdmission(idpAccount: IdentityProviderUser, idp: IdentityProvider, bindings: UserIngressBindings): AdmissionAction {
+  if (bindings.bindingsByIdpId.size === 0) {
+    // new user account
+    const now = new Date(Date.now())
+    return { admitNew: { created: now, updated: now, idpId: idp.id, idpAccountId: idpAccount.idpAccountId }, admitExisting: false, deny: false }
+  }
+  const binding = bindings.bindingsByIdpId.get(idp.id)
+  if (binding) {
+    // existing account bound to idp
+    return { admitExisting: binding, admitNew: false, deny: false }
+  }
+  return { deny: true, admitNew: false, admitExisting: false }
+}
+
 /**
- * Return a new user object from the given identity provider account information suitable to persist as newly enrolled
- * user.  The enrollment policy for the identity provider determines the `active` flag and assigned role for the new
- * user.
+ * Return a new user object from the given identity provider account information suitable to persist as a newly
+ * enrolled user.  The enrollment policy for the identity provider determines the `active` flag and assigned role for
+ * the new user.
  */
 export function createEnrollmentCandidateUser(idpAccount: IdentityProviderUser, idp: IdentityProvider): Omit<User, 'id'> {
   const policy = idp.userEnrollmentPolicy
