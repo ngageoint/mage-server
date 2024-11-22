@@ -4,7 +4,7 @@ import express from 'express'
 import fs from 'fs'
 import log from '../logger'
 import { exportDirectory } from '../environment/env'
-import Event, { MageEventDocument } from '../models/event'
+import Event, { MageEventModelInstance } from '../models/event'
 import access from '../access'
 import exportXform from '../transformers/export'
 import { exportFactory, ExportFormat } from '../export'
@@ -12,12 +12,12 @@ import { defaultEventPermissionsService as eventPermissions } from '../permissio
 import { MageRouteDefinitions } from './routes.types'
 import { ExportPermission, ObservationPermission } from '../entities/authorization/entities.permissions'
 import { EventAccessType } from '../entities/events/entities.events'
-import Export, { ExportDocument } from '../models/export'
+import Export, { ExportId, ExportModelInstance } from '../models/export'
 
 type ExportRequest = express.Request & {
-  export?: ExportDocument | null
+  export?: ExportModelInstance | null
   parameters?: {
-    exportId?: ExportDocument['_id']
+    exportId?: ExportModelInstance['_id']
     filter: any
   },
 }
@@ -75,7 +75,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
       Export.createExport(document).then(result => {
         const response = exportXform.transform(result, { path: req.getPath() });
         res.location(`${req.route.path}/${result._id.toString()}`).status(201).json(response);
-        exportData(result._id, exportReq.event!);
+        exportData(result.id, exportReq.event!);
       })
       .catch(err => next(err))
     }
@@ -240,7 +240,7 @@ function getEvent(req: express.Request, res: express.Response, next: express.Nex
   })
 }
 
-async function exportData(exportId: ExportDocument['_id'], event: MageEventDocument): Promise<void> {
+async function exportData(exportId: ExportId, event: MageEventModelInstance): Promise<void> {
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
   if (!exportDocument) {
     return

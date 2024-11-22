@@ -1,12 +1,15 @@
 import mongoose from 'mongoose'
 import * as ObservationModelModule from '../models/observation'
 import * as UserLocationModelModule from '../models/location'
-import { MageEventDocument } from '../models/event'
+import { MageEventModelInstance } from '../models/event'
 import { MageEvent } from '../entities/events/entities.events'
+import { UserId } from '../entities/users/entities.users'
+import { ObservationStateName } from '../entities/observations/entities.observations'
+import { ObservationModelInstance } from '../adapters/observations/adapters.observations.db.mongoose'
 
 
 export interface ExportOptions {
-  event: MageEventDocument
+  event: MageEventModelInstance
   filter: ExportFilter
 }
 
@@ -15,7 +18,7 @@ export interface ExportFilter {
   exportLocations?: boolean
   startDate?: Date
   endDate?: Date
-  favorites?: false | { userId: mongoose.Types.ObjectId }
+  favorites?: false | { userId: UserId }
   important?: boolean
   /**
    * Unintuitively, `attachments: true` will EXCLUDE attachments from the
@@ -29,7 +32,7 @@ export type LocationFetchOptions = Pick<ExportFilter, 'startDate' | 'endDate'>
 
 export class Exporter {
 
-  protected eventDoc: MageEventDocument
+  protected eventDoc: MageEventModelInstance
   protected _event: MageEvent
   protected _filter: ExportFilter
 
@@ -39,10 +42,10 @@ export class Exporter {
     this._filter = options.filter;
   }
 
-  requestObservations(filter: ExportFilter): mongoose.Cursor<ObservationModelModule.ObservationDocument> {
+  requestObservations(filter: ExportFilter): mongoose.Cursor<ObservationModelInstance> {
     const options: ObservationModelModule.ObservationReadStreamOptions = {
       filter: {
-        states: [ 'active' ] as [ 'active' ],
+        states: [ ObservationStateName.Active ],
         observationStartDate: filter.startDate,
         observationEndDate: filter.endDate,
         favorites: filter.favorites,

@@ -61,13 +61,13 @@ export interface Avatar {
 }
 
 export interface UserRepository {
-  create(userAttrs: Omit<User, 'id' | 'icon' | 'avatar'>): Promise<User | UserRepositoryError>
+  create(userAttrs: Omit<User, 'id' | 'icon' | 'avatar'>): Promise<UserExpanded | UserRepositoryError>
   /**
    * Return `null` if the specified user ID does not exist.
    */
   update(userAttrs: Partial<User> & Pick<User, 'id'>): Promise<User | null | UserRepositoryError>
-  findById(id: UserId): Promise<User | null>
-  findByUsername(username: string): Promise<User | null>
+  findById(id: UserId): Promise<UserExpanded | null>
+  findByUsername(username: string): Promise<UserExpanded | null>
   findAllByIds(ids: UserId[]): Promise<{ [id: string]: User | null }>
   find<MappedResult>(which?: UserFindParameters, mapping?: (user: User) => MappedResult): Promise<PageOf<MappedResult>>
   saveMapIcon(userId: UserId, icon: UserIcon, content: NodeJS.ReadableStream | Buffer): Promise<User | UserRepositoryError>

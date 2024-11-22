@@ -1,7 +1,6 @@
 import { Geometry } from 'geojson'
 import mongoose from 'mongoose'
-import { MageEventAttrs, MageEventId } from '../entities/events/entities.events'
-import { Attachment, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
+import { ObservationId, ObservationState } from '../entities/observations/entities.observations'
 import { MageEventDocument } from './event'
 
 export interface ObservationReadOptions {
@@ -12,7 +11,7 @@ export interface ObservationReadOptions {
     observationStartDate?: Date
     observationEndDate?: Date
     states?: ObservationState['name'][]
-    favorites?: false | { userId?: mongoose.Types.ObjectId }
+    favorites?: false | { userId?: UserId }
     important?: boolean
     attachments?: boolean
   }
@@ -28,5 +27,4 @@ export type ObservationReadStreamOptions = Omit<ObservationReadOptions, 'stream'
 }
 export function getObservations(event: MageEventDocument, options: ObservationReadOptions, callback: (err: any, results: ObservationDocument[]) => any): void
 export function getObservations(event: MageEventDocument, options: ObservationReadStreamOptions): mongoose.QueryCursor<ObservationDocument>
-
 export function updateObservation(event: MageEventDocument, observationId: ObservationId, update: any, callback: (err: any | null, obseration: ObservationDocument) => any): void

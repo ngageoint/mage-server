@@ -18,7 +18,7 @@ import { UserId } from '../../entities/users/entities.users'
 
 declare module 'express-serve-static-core' {
   export interface Request {
-    event?: EventModel.MageEventDocument
+    event?: EventModel.MageEventModelInstance
     eventEntity?: MageEvent
     access?: { userId: UserId, permission: EventAccessType }
     parameters?: EventQueryParams
@@ -28,7 +28,7 @@ declare module 'express-serve-static-core' {
 }
 
 function determineReadAccess(req: express.Request, res: express.Response, next: express.NextFunction): void {
-  const requestingUser = req.user?.from === 'sessionToken' ? req.user.account : null
+  const requestingUser = req.user?.admitted ? req.user.admitted.account : null
   if (requestingUser && !access.userHasPermission(requestingUser, MageEventPermission.READ_EVENT_ALL)) {
     req.access = { userId: requestingUser.id, permission: EventAccessType.Read }
   }

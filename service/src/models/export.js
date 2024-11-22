@@ -61,9 +61,7 @@ function transform(exportDocument, ret, options) {
   }
 }
 
-ExportSchema.set('toJSON', {
-  transform: transform
-});
+ExportSchema.set('toJSON', { transform });
 
 const Export = mongoose.model('Export', ExportSchema);
 exports.ExportModel = Export;
@@ -80,7 +78,6 @@ exports.createExport = function (data) {
     },
     expirationDate: new Date(Date.now() + exportExpiration)
   });
-
   return Export.create(document);
 };
 
@@ -89,7 +86,6 @@ exports.getExportById = function (id, options = {}) {
   if (options.populate) {
     query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
   }
-
   return query.exec()
 };
 
@@ -98,7 +94,6 @@ exports.getExportsByUserId = function (userId, options = {}) {
   if (options.populate) {
     query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
   }
-
   return query.exec();
 };
 
@@ -107,22 +102,18 @@ exports.getExports = function (options = {}) {
   if (options.populate) {
     query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
   }
-
   return query.exec();
 };
 
 exports.count = function (options) {
   options = options || {};
   const filter = options.filter || {};
-
   const conditions = FilterParser.parse(filter);
-
   return Export.count(conditions).exec();
 };
 
 exports.updateExport = function (id, exp) {
   return Export.findByIdAndUpdate(id, exp, { new: true }).exec();
-
 };
 
 exports.removeExport = function (id) {

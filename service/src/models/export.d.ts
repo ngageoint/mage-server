@@ -19,24 +19,32 @@ export type ExportErrorAttrs = {
   updatedAt: Date,
 }
 
+export type ExportId = string
+
 export type ExportAttrs = {
-  userId: UserId,
-  relativePath?: string,
-  filename?: string,
-  exportType: ExportFormat,
-  status?: ExportStatus,
+  id: ExportId
+  userId: UserId
+  relativePath?: string
+  filename?: string
+  exportType: ExportFormat
+  status?: ExportStatus
   options: {
-    eventId: MageEventId,
+    eventId: MageEventId
     filter: any
   },
-  processingErrors?: ExportErrorAttrs[],
-  expirationDate: Date,
-  lastUpdated: Date,
+  processingErrors?: ExportErrorAttrs[]
+  expirationDate: Date
+  lastUpdated: Date
 }
 
-export type ExportDocument = ExportAttrs & mongoose.Document
+export type ExportDocument = Omit<ExportAttrs, 'id' | 'userId'> & {
+  _id: mongoose.Types.ObjectId
+  userId: mongoose.Types.ObjectId
+}
 
-export type ExportDocumentPopulated = Omit<ExportDocument, 'userId' | 'options'> & {
+export type ExportModelInstance = mongoose.HydratedDocument<ExportDocument>
+
+export type ExportModelInstancePopulated = Omit<ExportModelInstance, 'userId' | 'options'> & {
   // TODO: users-next
   userId: UserDocument | null,
   options: Omit<ExportOptions, 'eventId'> & {
@@ -46,14 +54,14 @@ export type ExportDocumentPopulated = Omit<ExportDocument, 'userId' | 'options'>
 
 export type PopulateQueryOption = { populate: true }
 
-export function createExport(spec: Pick<ExportAttrs, 'userId' | 'options' | 'exportType'>): Promise<ExportDocument>
-export function getExportById(id: mongoose.Types.ObjectId | string): Promise<ExportDocument | null>
-export function getExportById(id: mongoose.Types.ObjectId | string, options: PopulateQueryOption): Promise<ExportDocumentPopulated | null>
-export function getExportsByUserId(userId: UserId): Promise<ExportDocument[]>
-export function getExportsByUserId(userId: UserId, options: PopulateQueryOption): Promise<ExportDocumentPopulated[]>
-export function getExports(): Promise<ExportDocument[]>
-export function getExports(options: PopulateQueryOption): Promise<ExportDocument[]>
+export function createExport(spec: Pick<ExportAttrs, 'userId' | 'options' | 'exportType'>): Promise<ExportModelInstance>
+export function getExportById(id: mongoose.Types.ObjectId | ExportId): Promise<ExportModelInstance | null>
+export function getExportById(id: mongoose.Types.ObjectId | ExportId, options: PopulateQueryOption): Promise<ExportModelInstancePopulated | null>
+export function getExportsByUserId(userId: UserId): Promise<ExportModelInstance[]>
+export function getExportsByUserId(userId: UserId, options: PopulateQueryOption): Promise<ExportModelInstancePopulated[]>
+export function getExports(): Promise<ExportModelInstance[]>
+export function getExports(options: PopulateQueryOption): Promise<ExportModelInstance[]>
 export function count(options?: { filter: any }): Promise<number>
-export function updateExport(id: mongoose.Types.ObjectId, spec: Partial<ExportAttrs>): Promise<ExportDocument | null>
-export function removeExport(id: mongoose.Types.ObjectId | string): Promise<ExportDocument | null>
+export function updateExport(id: ExportId, spec: Partial<ExportAttrs>): Promise<ExportModelInstance | null>
+export function removeExport(id: ExportId): Promise<ExportModelInstance | null>
 
