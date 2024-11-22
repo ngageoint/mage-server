@@ -15,11 +15,11 @@ import { EventAccessType } from '../entities/events/entities.events'
 import Export, { ExportDocument } from '../models/export'
 
 type ExportRequest = express.Request & {
-    export?: ExportDocument | null
-    parameters?: {
-      exportId?: ExportDocument['_id']
-      filter: any
-    },
+  export?: ExportDocument | null
+  parameters?: {
+    exportId?: ExportDocument['_id']
+    filter: any
+  },
 }
 
 const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
@@ -27,12 +27,13 @@ const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
   const passport = security.authentication.passport;
 
   async function authorizeEventAccess(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
-    if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_ALL)) {
+    const account = req.user?.admitted?.account
+    if (access.userHasPermission(account, ObservationPermission.READ_OBSERVATION_ALL)) {
       return next();
     }
-    else if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_EVENT)) {
+    else if (account && access.userHasPermission(account, ObservationPermission.READ_OBSERVATION_EVENT)) {
       // Make sure I am part of this event
-      const allowed = await eventPermissions.userHasEventPermission(req.event!, req.user.id, EventAccessType.Read)
+      const allowed = await eventPermissions.userHasEventPermission(req.event!, account.id, EventAccessType.Read)
       if (allowed) {
         return next();
       }
@@ -43,13 +44,15 @@ const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
   function authorizeExportAccess(permission: ExportPermission): express.RequestHandler {
     return async function authorizeExportAccess(req, res, next) {
       const exportReq = req as ExportRequest
+      const account = exportReq.user?.admitted?.account
       exportReq.export = await Export.getExportById(req.params.exportId)
-      if (access.userHasPermission(exportReq.user, permission)) {
-        next()
+      if (access.userHasPermission(account, permission)) {
+        return next()
       }
-      else {
-        exportReq.user._id.toString() === exportReq.export?.userId.toString() ? next() : res.sendStatus(403);
+      else if (account && account.id === exportReq.export?.userId.toString()) {
+        return next()
       }
+      res.sendStatus(403)
     }
   }
 
@@ -60,8 +63,9 @@ const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
     authorizeEventAccess,
     function (req, res, next) {
       const exportReq = req as ExportRequest
+      const userId = exportReq.user!.admitted!.account.id
       const document = {
-        userId: exportReq.user._id,
+        userId,
         exportType: exportReq.body.exportType,
         options: {
           eventId: req.body.eventId,
@@ -97,7 +101,8 @@ const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
   app.get('/api/exports/myself',
     passport.authenticate('bearer'),
     function (req, res, next) {
-      Export.getExportsByUserId(req.user._id, { populate: true }).then(exports => {
+      const userId = req.user!.admitted!.account.id
+      Export.getExportsByUserId(userId, { populate: true }).then(exports => {
         const response = exportXform.transform(exports, { path: `${req.getRoot()}/api/exports` });
         res.json(response);
       }).catch(err => next(err));
@@ -209,7 +214,7 @@ function parseQueryParams(req: express.Request, res: express.Response, next: exp
     parameters.filter.favorites = String(body.favorites).toLowerCase() === 'true';
     if (parameters.filter.favorites) {
       parameters.filter.favorites = {
-        userId: req.user._id
+        userId: req.user?.admitted?.account.id
       };
     }
     parameters.filter.important = String(body.important).toLowerCase() === 'true';

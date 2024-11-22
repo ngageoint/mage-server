@@ -94,7 +94,7 @@ exports.getExportById = function (id, options = {}) {
 };
 
 exports.getExportsByUserId = function (userId, options = {}) {
-  let query = Export.find({ userId: userId });
+  let query = Export.find({ userId });
   if (options.populate) {
     query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
   }

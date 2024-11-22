@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { MageEventId } from '../entities/events/entities.events'
+import { UserId } from '../entities/users/entities.users'
 import { ExportFormat } from '../export'
 import { ExportOptions } from '../export/exporter'
 import { UserDocument } from './user'
@@ -19,7 +20,7 @@ export type ExportErrorAttrs = {
 }
 
 export type ExportAttrs = {
-  userId: mongoose.Types.ObjectId,
+  userId: UserId,
   relativePath?: string,
   filename?: string,
   exportType: ExportFormat,
@@ -48,8 +49,8 @@ export type PopulateQueryOption = { populate: true }
 export function createExport(spec: Pick<ExportAttrs, 'userId' | 'options' | 'exportType'>): Promise<ExportDocument>
 export function getExportById(id: mongoose.Types.ObjectId | string): Promise<ExportDocument | null>
 export function getExportById(id: mongoose.Types.ObjectId | string, options: PopulateQueryOption): Promise<ExportDocumentPopulated | null>
-export function getExportsByUserId(userId: mongoose.Types.ObjectId): Promise<ExportDocument[]>
-export function getExportsByUserId(userId: mongoose.Types.ObjectId, options: PopulateQueryOption): Promise<ExportDocumentPopulated[]>
+export function getExportsByUserId(userId: UserId): Promise<ExportDocument[]>
+export function getExportsByUserId(userId: UserId, options: PopulateQueryOption): Promise<ExportDocumentPopulated[]>
 export function getExports(): Promise<ExportDocument[]>
 export function getExports(options: PopulateQueryOption): Promise<ExportDocument[]>
 export function count(options?: { filter: any }): Promise<number>
