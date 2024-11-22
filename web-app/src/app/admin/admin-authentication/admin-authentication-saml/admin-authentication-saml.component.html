@@ -203,7 +203,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>RAC Comparison</mat-label>
-    <mat-select [(ngModel)]="strategy.settings.RACComparison" (selectionChange)="setDirty(true)">
+    <mat-select [(ngModel)]="strategy.settings.racComparison" (selectionChange)="setDirty(true)">
       <mat-option *ngFor="let rac of racs" [value]="rac.value">
         {{rac.viewValue}}
       </mat-option>
