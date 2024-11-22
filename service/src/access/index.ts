@@ -19,11 +19,10 @@ export = Object.freeze({
    */
   authorize(permission: AnyPermission): express.RequestHandler {
     return function(req, res, next): any {
-      if (req.user?.from !== 'sessionToken') {
+      if (!req.user?.admitted) {
         return next()
       }
-      const role = req.user.account.role
-      const userPermissions = role.permissions
+      const userPermissions = req.user.admitted.account.role.permissions
       if (userPermissions.includes(permission)) {
         return next()
       }
