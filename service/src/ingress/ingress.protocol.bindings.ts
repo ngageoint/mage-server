@@ -3,7 +3,7 @@ import { IdentityProviderUser } from './ingress.entities'
 
 export type IdentityProviderAdmissionWebUser = {
   idpName: string
-  account: IdentityProviderUser | undefined
+  account: IdentityProviderUser
   flowState?: string | undefined
 }
 
