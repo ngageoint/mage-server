@@ -66,6 +66,18 @@ export interface UpdateIdentityProviderOperation {
   (req: UpdateIdentityProviderRequest): Promise<AppResponse<UpdateIdentityProviderResult, PermissionDeniedError | EntityNotFoundError>>
 }
 
+export interface DeleteIdentityProviderRequest {
+
+}
+
+export interface DeleteIdentityProviderResult {
+
+}
+
+export interface DeleteIdentityProviderOperation {
+  (req: DeleteIdentityProviderRequest): Promise<AppResponse<DeleteIdentityProviderResult, PermissionDeniedError | EntityNotFoundError>>
+}
+
 export const ErrAuthenticationFailed = Symbol.for('MageError.Ingress.AuthenticationFailed')
 export type AuthenticationFailedErrorData = { username: string, identityProviderName: string }
 export type AuthenticationFailedError = MageError<typeof ErrAuthenticationFailed, AuthenticationFailedErrorData>
