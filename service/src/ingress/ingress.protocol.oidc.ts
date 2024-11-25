@@ -52,7 +52,7 @@ function applyDefaultProtocolSettings(idp: IdentityProvider): OpenIdConnectProto
   return settings
 }
 
-export function createWebBinding(idp: IdentityProvider, passport: passport.Authenticator, baseUrl: string): IngressProtocolWebBinding {
+export function createOIDCProtocolWebBinding(idp: IdentityProvider, passport: passport.Authenticator, baseUrl: string): IngressProtocolWebBinding {
   const settings = applyDefaultProtocolSettings(idp)
   const verify: OpenIdConnectStrategy.VerifyFunction = (
     issuer: string,

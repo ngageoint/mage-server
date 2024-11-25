@@ -58,7 +58,7 @@ function strategyOptionsFromProtocolSettings(settings: ReadyLdapProtocolSettings
   }
 }
 
-export function createWebBinding(idp: IdentityProvider, passport: passport.Authenticator): IngressProtocolWebBinding {
+export function createLdapProtocolWebBinding(idp: IdentityProvider, passport: passport.Authenticator): IngressProtocolWebBinding {
   const settings = applyDefaultProtocolSettings(idp)
   const profileKeys = settings.profile
   const strategyOptions = strategyOptionsFromProtocolSettings(settings)

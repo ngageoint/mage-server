@@ -88,7 +88,7 @@ type OAuth2Info = { state: string }
  * The `baseUrl` parameter is the URL at which Mage will mount the returned `express.Router`, including any
  * distinguishing component of the given `IdentityProvider`, without a trailing slash, e.g. `/auth/example-idp`.
  */
-export function createWebBinding(idp: IdentityProvider, passport: Authenticator, baseUrl: string): IngressProtocolWebBinding {
+export function createOAuthProtocolWebBinding(idp: IdentityProvider, passport: Authenticator, baseUrl: string): IngressProtocolWebBinding {
   const settings = applyDefaultProtocolSettings(idp)
   const profileURL = settings.profileURL
   const customHeaders = settings.headers?.basic ? {
