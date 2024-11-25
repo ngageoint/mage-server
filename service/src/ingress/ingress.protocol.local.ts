@@ -3,8 +3,9 @@ import express from 'express'
 import { Strategy as LocalStrategy, VerifyFunction as LocalStrategyVerifyFunction } from 'passport-local'
 import { LocalIdpAccount } from './local-idp.entities'
 import { IdentityProviderUser } from './ingress.entities'
-import { LocalIdpAuthenticateOperation } from './local-idp.app.api'
 import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
+import { MageLocalIdentityProviderService } from './local-idp.services.api'
+import { permissionDenied } from '../app.api/app.api.errors'
 
 
 function userForLocalIdpAccount(account: LocalIdpAccount): IdentityProviderUser {
@@ -15,15 +16,15 @@ function userForLocalIdpAccount(account: LocalIdpAccount): IdentityProviderUser 
   }
 }
 
-function createLocalStrategy(localIdpAuthenticate: LocalIdpAuthenticateOperation, flowState: string | undefined): passport.Strategy {
+function createLocalStrategy(localIdp: MageLocalIdentityProviderService, flowState: string | undefined): passport.Strategy {
   const verify: LocalStrategyVerifyFunction = async function LocalIngressProtocolVerify(username, password, done) {
-    const authResult = await localIdpAuthenticate({ username, password })
-    if (authResult.success) {
-      const localAccount = authResult.success
-      const localIdpUser = userForLocalIdpAccount(localAccount)
-      return done(null, { admittingFromIdentityProvider: { idpName: 'local', account: localIdpUser, flowState } })
+    const authResult = await localIdp.authenticate({ username, password })
+    if (!authResult || authResult.failed) {
+      return done(permissionDenied('local authentication failed', username))
     }
-    return done(authResult.error)
+    const localAccount = authResult.authenticated
+    const localIdpUser = userForLocalIdpAccount(localAccount)
+    return done(null, { admittingFromIdentityProvider: { idpName: 'local', account: localIdpUser, flowState } })
   }
   return new LocalStrategy(verify)
 }
@@ -40,7 +41,7 @@ const validateSigninRequest: express.RequestHandler = function LocalProtocolIngr
   next()
 }
 
-export function createWebBinding(passport: passport.Authenticator, localIdpAuthenticate: LocalIdpAuthenticateOperation): IngressProtocolWebBinding {
+export function createLocalProtocolWebBinding(passport: passport.Authenticator, localIdpAuthenticate: MageLocalIdentityProviderService): IngressProtocolWebBinding {
   return {
     ingressResponseType: IngressResponseType.Direct,
     beginIngressFlow: (req, res, next, flowState): any => {

@@ -158,6 +158,10 @@ export class LocalIdpFailedAuthenticationError extends LocalIdpError {
   }
 }
 
+export class LocalIdpAccountNotFoundError extends LocalIdpError {
+
+}
+
 function invalidPasswordError(reason: string): LocalIdpError {
   return new LocalIdpError(reason)
 }

@@ -1,21 +1,25 @@
-import { entityNotFound, infrastructureError } from '../app.api/app.api.errors'
+import { entityNotFound, infrastructureError, invalidInput } from '../app.api/app.api.errors'
 import { AppResponse } from '../app.api/app.api.global'
 import { AdmitFromIdentityProviderOperation, AdmitFromIdentityProviderRequest, authenticationFailedError, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
 import { IdentityProviderRepository, IdentityProviderUser } from './ingress.entities'
 import { AdmissionDeniedReason, AdmitUserFromIdentityProviderAccount, EnrollNewUser } from './ingress.services.api'
-import { LocalIdpCreateAccountOperation } from './local-idp.app.api'
+import { LocalIdpError, LocalIdpInvalidPasswordError } from './local-idp.entities'
+import { MageLocalIdentityProviderService } from './local-idp.services.api'
 import { JWTService, TokenAssertion } from './verification'
 
 
-export function CreateEnrollMyselfOperation(createLocalIdpAccount: LocalIdpCreateAccountOperation, idpRepo: IdentityProviderRepository, enrollNewUser: EnrollNewUser): EnrollMyselfOperation {
+export function CreateEnrollMyselfOperation(localIdp: MageLocalIdentityProviderService, idpRepo: IdentityProviderRepository, enrollNewUser: EnrollNewUser): EnrollMyselfOperation {
   return async function enrollMyself(req: EnrollMyselfRequest): ReturnType<EnrollMyselfOperation> {
-    const localAccountCreate = await createLocalIdpAccount(req)
-    if (localAccountCreate.error) {
-      return AppResponse.error(localAccountCreate.error)
+    const localIdpAccount = await localIdp.createAccount(req)
+    if (localIdpAccount instanceof LocalIdpError) {
+      if (localIdpAccount instanceof LocalIdpInvalidPasswordError) {
+        return AppResponse.error(invalidInput(localIdpAccount.message))
+      }
+      console.error('error creating local idp account for self-enrollment', localIdpAccount)
+      return AppResponse.error(invalidInput('Error creating local Mage account'))
     }
-    const localAccount = localAccountCreate.success!
     const candidateMageAccount: IdentityProviderUser = {
-      username: localAccount.username,
+      username: localIdpAccount.username,
       displayName: req.displayName,
       phones: [],
     }
@@ -25,12 +29,11 @@ export function CreateEnrollMyselfOperation(createLocalIdpAccount: LocalIdpCreat
     if (req.phone) {
       candidateMageAccount.phones = [ { number: req.phone, type: 'Main' } ]
     }
-    const localIdp = await idpRepo.findIdpByName('local')
-    if (!localIdp) {
+    const idp = await idpRepo.findIdpByName('local')
+    if (!idp) {
       throw new Error('local idp not found')
     }
-    const enrollmentResult = await enrollNewUser(candidateMageAccount, localIdp)
-
+    const enrollmentResult = await enrollNewUser(candidateMageAccount, idp)
 
     // TODO: auto-activate account after enrollment policy
     throw new Error('unimplemented')
