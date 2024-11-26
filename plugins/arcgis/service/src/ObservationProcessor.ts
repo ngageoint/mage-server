@@ -1,4 +1,5 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
+import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 import { MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { EventScopedObservationRepository, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
@@ -164,8 +165,13 @@ export class ObservationProcessor {
 	private async updateConfig(): Promise<ArcGISPluginConfig> {
 		const config = await this.safeGetConfig()
 		
-		// Include form definitions while detecting changes in config
-		const eventForms = await this._eventRepo.findAll();
+		// Include configured eventform definitions while detecting changes in config
+		const eventIds = config.featureServices
+    .flatMap(service => service.layers)
+    .flatMap(layer => layer.eventIds)
+    .filter((eventId): eventId is MageEventId => typeof eventId === 'number');
+
+		const eventForms = await this._eventRepo.findAllByIds(eventIds);
 		const fullConfig = { ...config, eventForms };
 
 		const configJson = JSON.stringify(fullConfig)
@@ -207,7 +213,7 @@ export class ObservationProcessor {
 			try {
 				const identityManager = await this._identityService.signin(service)
 				const response = await request(service.url, { authentication: identityManager })
-				this.handleFeatureService(response, service, config)
+				await this.handleFeatureService(response, service, config)
 			} catch (err) {
 				console.error(err)
 			}
@@ -235,25 +241,7 @@ export class ObservationProcessor {
 			}
 
 			for (const featureLayer of featureServiceConfig.layers) {
-				const eventNames: string[] = []
-				const events = featureLayer.events
-				if (events != null) {
-					for (const event of events) {
-						const eventId = Number(event);
-						if (isNaN(eventId)) {
-							eventNames.push(String(event));
-						} else {
-							const mageEvent = await this._eventRepo.findById(eventId)
-							if (mageEvent != null) {
-								eventNames.push(mageEvent.name);
-							}
-						}
-					}
-				}
-				if (eventNames.length > 0) {
-					featureLayer.events = eventNames
-				}
-
+				// TODO - this used to convert event ids to names and set back on featureLayer.events. What is impact of not doing? 			
 				const layer = serviceLayers.get(featureLayer.layer)
 
 				let layerId = undefined
@@ -270,7 +258,7 @@ export class ObservationProcessor {
 					const featureService = new FeatureService(console, featureServiceConfig, identityManager)
 					const layerInfo = await featureService.queryLayerInfo(layerId);
 					const url = `${featureServiceConfig.url}/${layerId}`;
-					this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config);
+					await this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config);
 				}
 			}
 		}
@@ -286,10 +274,10 @@ export class ObservationProcessor {
 	 */
 	private async handleLayerInfo(url: string, featureServiceConfig: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, config: ArcGISPluginConfig) {
 		if (layerInfo.geometryType != null) {
-			const events = featureLayer.events as string[]
 			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
+			const eventIds = featureLayer.eventIds || []
 			await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
-			const info = new LayerInfo(url, events, layerInfo)
+			const info = new LayerInfo(url, eventIds, layerInfo)
 			const identityManager = await this._identityService.signin(featureServiceConfig)
 			const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
 			this._layerProcessors.push(layerProcessor);
@@ -310,9 +298,13 @@ export class ObservationProcessor {
 					layerProcessor.processPendingUpdates();
 				}
 				this._console.info('ArcGIS plugin processing new observations...');
-				const activeEvents = await this._eventRepo.findActiveEvents();
-				this._eventDeletionHandler.checkForEventDeletion(activeEvents, this._layerProcessors, this._firstRun);
-				const eventsToProcessors = this._organizer.organize(activeEvents, this._layerProcessors);
+				const enabledEvents = (await this._eventRepo.findActiveEvents()).filter(event =>
+					this._layerProcessors.some(layerProcessor =>
+						layerProcessor.layerInfo.hasEvent(event.id)
+					)
+				);
+				this._eventDeletionHandler.checkForEventDeletion(enabledEvents, this._layerProcessors, this._firstRun);
+				const eventsToProcessors = this._organizer.organize(enabledEvents, this._layerProcessors);
 				const nextQueryTime = Date.now();
 				for (const pair of eventsToProcessors) {
 					this._console.info('ArcGIS getting newest observations for event ' + pair.event.name);

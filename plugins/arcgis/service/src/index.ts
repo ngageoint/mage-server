@@ -4,9 +4,10 @@ import { ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
+import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationProcessor } from './ObservationProcessor'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
-import { FeatureServiceConfig } from './ArcGISConfig'
+import { FeatureServiceConfig, FeatureLayerConfig } from './ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
@@ -166,16 +167,49 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               const config = await stateRepo.get()
               const { featureServices: updatedServices, ...updateConfig } = req.body
 
-              // Map exisiting identityManager, client does not send this
-              const featureServices: FeatureServiceConfig[] = updatedServices.map((updateService: FeatureServiceConfig) => {
-                const existingService = config.featureServices.find((featureService: FeatureServiceConfig) => featureService.url === updateService.url)
+              
+              // Convert event names to event IDs
+              // Fetch all events and create a mapping of event names to event IDs
+              const allEvents = await eventRepo.findAll();
+              const eventNameToIdMap = new Map<string, MageEventId>();
+              allEvents.forEach(event => {
+                eventNameToIdMap.set(event.name, event.id);
+              });
+
+               // Process the incoming feature services with eventIds instead of event names
+              const featureServices: FeatureServiceConfig[] = updatedServices.map((updateService: any) => {
+                const existingService = config.featureServices.find(
+                  (featureService: FeatureServiceConfig) => featureService.url === updateService.url
+                );
+
+                // Process layers
+                const layers: FeatureLayerConfig[] = updateService.layers.map((layer: any) => {
+                  // Extract event names from the incoming layer data
+                  const eventNames: string[] = layer.events || [];
+
+                  // Convert event names to event IDs using the mapping
+                  const eventIds = eventNames
+                    .map(eventName => eventNameToIdMap.get(eventName))
+                    .filter((id): id is MageEventId => id !== undefined);
+
+                  // Construct the FeatureLayerConfig with eventIds
+                  const featureLayerConfig: FeatureLayerConfig = {
+                    layer: layer.layer,
+                    geometryType: layer.geometryType,
+                    eventIds: eventIds,
+                  };
+
+                  return featureLayerConfig;
+                });
+
                 return {
                   url: updateService.url,
-                  layers: updateService.layers,
-                  identityManager: existingService?.identityManager
-                }
-              })
-
+                  layers: layers,
+                  // Map exisiting identityManager, client does not send this
+                  identityManager: existingService?.identityManager,
+                };
+              });
+              
               await stateRepo.patch({ ...updateConfig, featureServices })
               
               // Sync configuration with feature servers by restarting observation processor
