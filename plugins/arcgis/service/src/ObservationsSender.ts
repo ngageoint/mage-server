@@ -22,16 +22,6 @@ export class ObservationsSender {
     private _url: string;
 
     /**
-     * The full url to the feature layer receiving observations.
-     */
-    private _urlAdd: string;
-
-    /**
-     * The full url to the feature layer receiving updates.
-     */
-    private _urlUpdate: string;
-
-    /**
      * Used to log to the console.
      */
     private _console: Console;
@@ -56,8 +46,6 @@ export class ObservationsSender {
      */
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this._url = layerInfo.url;
-        this._urlAdd = this._url + '/addFeatures';
-        this._urlUpdate = this._url + '/updateFeatures';
         this._console = console;
         this._attachmentDirectory = environment.attachmentBaseDirectory;
         this._config = config;
@@ -70,7 +58,7 @@ export class ObservationsSender {
      * @param observations The observations to convert.
      */
     sendAdds(observations: ArcObjects) {
-        this._console.info('ArcGIS addFeatures url ' + this._urlAdd);
+        this._console.info('ArcGIS addFeatures');
 
         let responseHandler = this.addResponseHandler(observations);
         addFeatures({
@@ -87,7 +75,7 @@ export class ObservationsSender {
      * @returns The json string of the observations.
      */
     sendUpdates(observations: ArcObjects) {
-        this._console.info('ArcGIS updateFeatures url ' + this._urlUpdate);
+        this._console.info('ArcGIS updateFeatures');
 
         let responseHandler = this.updateResponseHandler(observations);
         updateFeatures({
@@ -101,36 +89,34 @@ export class ObservationsSender {
      * Delete an observation.
      * @param id The observation id.
      */
-    sendDelete(id: number) {
-        const url = this._url + '/deleteFeatures'
-        this._console.info('ArcGIS deleteFeatures url ' + url + ', ' + this._config.observationIdField + ': ' + id)
+    sendDelete(id: string) {
+        this._console.info('ArcGIS deleteFeatures id: ' + id)
 
-        deleteFeatures({
-            url,
+        request(`${this._url}/deleteFeatures`, {
+            httpMethod: 'POST',
             authentication: this._identityManager,
-            objectIds: [id]
-        }).catch((error) => this._console.error(error));
+            params: {
+                where: `${this._config.observationIdField} LIKE \'%${id}\'`
+            }
+        }).catch((error) => this._console.error('Error in ObservationSender.sendDelete :: ' + error));
     }
 
     /**
      * Deletes all observations that are apart of a specified event.
      * @param id The event id.
      */
-    sendDeleteEvent(id: number) {
+    sendDeleteEvent(id: string) {
+        this._console.info('ArcGIS deleteFeatures by event ' + this._config.observationIdField + ': ' + id);
 
-        const url = this._url + '/deleteFeatures'
-
-        this._console.info('ArcGIS deleteFeatures by event url ' + url + ', ' + this._config.observationIdField + ': ' + id)
-
-        const form = new FormData()
-
-        if (this._config.eventIdField == null) {
-            form.append('where', this._config.observationIdField + ' LIKE\'%' + this._config.idSeparator + id + '\'')
-        } else {
-            form.append('where', this._config.eventIdField + '=' + id)
-        }
-
-        this.sendDelete(id);
+        request(`${this._url}/deleteFeatures`, {
+            httpMethod: 'POST',
+            authentication: this._identityManager,
+            params: {
+                where: !!this._config.eventIdField 
+                    ? this._config.eventIdField + '=' + id 
+                    : this._config.observationIdField + ' LIKE\'%' + this._config.idSeparator + id + '\''
+            }
+        }).catch((error) => this._console.error('Error in ObservationSender.sendDeleteEvent :: ' + error));
     }
 
     /**
@@ -207,7 +193,6 @@ export class ObservationsSender {
      */
     private queryAndUpdateAttachments(observation: ArcObservation, objectId: number) {
         // Query for existing attachments
-        const queryUrl = this._url + '/' + objectId + '/attachments'
         getAttachments({
             url: this._url,
             authentication: this._identityManager,
@@ -225,7 +210,6 @@ export class ObservationsSender {
      * @param attachmentInfos The arc attachment infos.
      */
     private updateAttachments(observation: ArcObservation, objectId: number, attachmentInfos: AttachmentInfo[]) {
-
         // Build a mapping between existing arc attachment names and the attachment infos
         let nameAttachments = new Map<string, AttachmentInfo>()
         if (attachmentInfos != null) {
@@ -319,7 +303,6 @@ export class ObservationsSender {
      * @param attachmentInfos The arc attachment infos.
      */
     private deleteAttachments(objectId: number, attachmentInfos: AttachmentInfo[]) {
-
         const attachmentIds: number[] = []
 
         for (const attachmentInfo of attachmentInfos) {

@@ -62,12 +62,12 @@ export class FeatureQuerier {
         queryUrl.searchParams.set('returnGeometry', geometry === false ? 'false' : 'true')
         this._console.info('ArcGIS query: ' + queryUrl)
 
-        const queryResponse = await request(queryUrl.toString(), {
+        await request(queryUrl.toString(), {
             authentication: this._identityManager,
             params: { f: 'json' }
-        });
-
-        response(queryResponse as QueryObjectResult);
+        })
+        .then((queryResponse) => response(queryResponse as QueryObjectResult))
+        .catch((error) => this._console.error('Error in FeatureQuerier.queryObservation :: ' + error));
     }
 
     /**
@@ -84,12 +84,12 @@ export class FeatureQuerier {
         
         this._console.info('ArcGIS query: ' + queryUrl)
 
-        const queryResponse = await request(queryUrl.toString(), {
+        await request(queryUrl.toString(), {
             authentication: this._identityManager,
             params: { f: 'json' }
-        });
-
-        response(queryResponse as QueryObjectResult);
+        })
+        .then((queryResponse) => response(queryResponse as QueryObjectResult))
+        .catch((error) => this._console.error('Error in FeatureQuerier.queryObservations :: ' + error));
     }
 
     /**
