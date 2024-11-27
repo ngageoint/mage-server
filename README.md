@@ -295,8 +295,15 @@ npm run build
 After building the core packages, install them as dependencies in the `instance` package.
 ```bash
 cd instance
+npm i 
+```
+
+In the case that the dev dependencies need to be over ridden (eg nga-msi plugin)
+```bash
+cd instance
 npm i --omit dev ../service ../web-app/dist ../plugins/nga-msi
 ```
+
 The project's root [`package.json`](./package.json) provides some convenience script entries to install, build, and run
 the MAGE server components, however, those are deprecated and will likely go away after migrating to NPM 7+'s
 [workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) feature.
