@@ -34,8 +34,9 @@ export interface User {
   recentEventIds: MageEventId[]
 }
 
-export type UserExpanded = Omit<User, 'roleId'>
-  & { role: Role }
+export interface UserExpanded extends User {
+  role: Role
+}
 
 export interface Phone {
   type: string,
