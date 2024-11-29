@@ -4,12 +4,10 @@ import { Authenticator } from 'passport'
 import { Strategy as BearerStrategy } from 'passport-http-bearer'
 import { defaultHashUtil } from '../utilities/password-hashing'
 import { JWTService, Payload, TokenVerificationError, VerificationErrorReason, TokenAssertion } from './verification'
-import { invalidInput, InvalidInputError, MageError, permissionDenied } from '../app.api/app.api.errors'
-import { IdentityProvider, IdentityProviderRepository } from './ingress.entities'
+import { invalidInput, InvalidInputError, MageError } from '../app.api/app.api.errors'
+import { IdentityProvider } from './ingress.entities'
 import { AdmitFromIdentityProviderOperation, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
 import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
-import { createWebBinding as LocalBinding } from './ingress.protocol.local'
-import { createWebBinding as OAuthBinding } from './ingress.protocol.oauth'
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -43,37 +41,29 @@ export type IngressUseCases = {
   admitFromIdentityProvider: AdmitFromIdentityProviderOperation
 }
 
+export type IngressProtocolWebBindingCache = {
+  idpWebBindingForIdpName(idpName: string): Promise<{ idp: IdentityProvider, idpBinding: IngressProtocolWebBinding } | null>
+}
+
 export type IngressRoutes = {
   localEnrollment: express.Router
   idpAdmission: express.Router
 }
 
-export function CreateIngressRoutes(ingressApp: IngressUseCases, idpRepo: IdentityProviderRepository, tokenService: JWTService, passport: Authenticator): IngressRoutes {
-
-  const idpBindings = new Map<string, IngressProtocolWebBinding>()
-  async function bindingFor(idpName: string): Promise<IngressProtocolWebBinding | null> {
-    const idp = await idpRepo.findIdpByName(idpName)
-    if (!idp) {
-      return null
-    }
-    if (idp.protocol === 'local') {
-      return LocalBinding(passport, )
-    }
-    throw new Error('unimplemented')
-  }
+export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: IngressProtocolWebBindingCache, tokenService: JWTService, passport: Authenticator): IngressRoutes {
 
   const routeToIdp = express.Router()
     .all('/',
       ((req, res, next) => {
-        const idpService = req.ingress?.idpBinding
-        if (!idpService) {
+        const idpBinding = req.ingress?.idpBinding
+        if (!idpBinding) {
           return next(new Error(`no identity provider for ingress request: ${req.method} ${req.originalUrl}`))
         }
         if (req.path.endsWith('/signin')) {
           const userAgentType: UserAgentType = req.params.state === 'mobile' ? UserAgentType.MobileApp : UserAgentType.WebApp
-          return idpService.beginIngressFlow(req, res, next, userAgentType)
+          return idpBinding.beginIngressFlow(req, res, next, userAgentType)
         }
-        idpService.handleIngressFlowRequest(req, res, next)
+        idpBinding.handleIngressFlowRequest(req, res, next)
       }) as express.RequestHandler,
       (async (err, req, res, next) => {
         if (err) {
@@ -97,7 +87,7 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpRepo: Identi
         }
         if (idpAdmission.flowState === UserAgentType.MobileApp) {
           if (mageAccount.active && mageAccount.enabled) {
-            return res.redirect(`mage://app/authentication?token=${req.token}`)
+            return res.redirect(`mage://app/authentication?token=${admissionToken}`)
           }
           else {
             return res.redirect(`mage://app/invalid_account?active=${mageAccount.active}&enabled=${mageAccount.enabled}`)
@@ -115,15 +105,15 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpRepo: Identi
   idpAdmission.use('/:identityProviderName',
     async (req, res, next) => {
       const idpName = req.params.identityProviderName
-      const idp = await idpRepo.findIdpByName(idpName)
-      const idpBinding = await bindingFor(idpName)
-      if (idpBinding && idp) {
-        req.ingress = { idpBinding, idp }
+      const idpBindingEntry = await idpCache.idpWebBindingForIdpName(idpName)
+      if (idpBindingEntry) {
+        const { idp, idpBinding } = idpBindingEntry
+        req.ingress = { idp, idpBinding }
         return next()
       }
       res.status(404).send(`${idpName} not found`)
     },
-    // use a sub-router so express implicitly strips the base url /auth/:identityProviderName before routing idp handler
+    // use a sub-router so express implicitly strips the base url /auth/:identityProviderName before routing to idp handler
     routeToIdp
   )
 
