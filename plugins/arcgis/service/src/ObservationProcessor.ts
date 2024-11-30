@@ -178,11 +178,10 @@ export class ObservationProcessor {
 		if (this._previousConfig == null || this._previousConfig != configJson) {
 			this._transformer = new ObservationsTransformer(config, console);
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
-			this._eventDeletionHandler = new EventDeletionHandler(this._console, config);
+			this._eventDeletionHandler.updateConfig(config);			
 			this._layerProcessors = [];
 			await this.getFeatureServiceLayers(config);
 			this._previousConfig = configJson
-			this._firstRun = true;
 		}
 		return config
 	}
@@ -192,7 +191,6 @@ export class ObservationProcessor {
 	 */
 	async start() {
 		this._isRunning = true;
-		this._firstRun = true;
 		this.processAndScheduleNext();
 	}
 

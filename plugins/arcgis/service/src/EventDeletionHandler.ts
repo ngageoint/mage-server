@@ -34,6 +34,10 @@ export class EventDeletionHandler {
         this._config = config;
     }
 
+    public updateConfig(newConfig: ArcGISPluginConfig): void {
+        this._config = newConfig;
+    }
+
     /**
      * 
      * @param activeEvents The current set of active events.
