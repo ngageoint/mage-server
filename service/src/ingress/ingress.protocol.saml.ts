@@ -1,5 +1,5 @@
 import express from 'express'
-import { Authenticator } from 'passport'
+import passport from 'passport'
 import { SamlConfig, Strategy as SamlStrategy, VerifyWithRequest } from '@node-saml/passport-saml'
 import { IdentityProvider, IdentityProviderUser } from './ingress.entities'
 import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
@@ -64,7 +64,7 @@ function applyDefaultProtocolSettings(idp: IdentityProvider): SamlProtocolSettin
   return settings
 }
 
-export function createSamlProtocolWebBinding(idp: IdentityProvider, passport: Authenticator, baseUrlPath: string): IngressProtocolWebBinding {
+export function createSamlProtocolWebBinding(idp: IdentityProvider, passport: passport.Authenticator, baseUrlPath: string): IngressProtocolWebBinding {
   const { profile: profileKeys, ...settings } = applyDefaultProtocolSettings(idp)
   // TODO: this will need the the saml callback override change
   settings.path = `${baseUrlPath}/callback`

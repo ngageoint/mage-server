@@ -2,7 +2,7 @@ import express from 'express'
 import { InternalOAuthError, Strategy as OAuth2Strategy, StrategyOptions as OAuth2Options, VerifyCallback, VerifyFunction } from 'passport-oauth2'
 import base64 from 'base-64'
 import { IdentityProvider, IdentityProviderUser } from './ingress.entities'
-import { Authenticator } from 'passport'
+import passport from 'passport'
 import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
 
 export type OAuth2ProtocolSettings =
@@ -88,7 +88,7 @@ type OAuth2Info = { state: string }
  * The `baseUrl` parameter is the URL at which Mage will mount the returned `express.Router`, including any
  * distinguishing component of the given `IdentityProvider`, without a trailing slash, e.g. `/auth/example-idp`.
  */
-export function createOAuthProtocolWebBinding(idp: IdentityProvider, passport: Authenticator, baseUrl: string): IngressProtocolWebBinding {
+export function createOAuthProtocolWebBinding(idp: IdentityProvider, passport: passport.Authenticator, baseUrl: string): IngressProtocolWebBinding {
   const settings = applyDefaultProtocolSettings(idp)
   const profileURL = settings.profileURL
   const customHeaders = settings.headers?.basic ? {
