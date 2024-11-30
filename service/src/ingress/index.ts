@@ -6,7 +6,7 @@ import provision, { ProvisionStatic } from '../provision'
 import { User, UserRepository } from '../entities/users/entities.users'
 import bearer from 'passport-http-bearer'
 import { UserDocument } from '../adapters/users/adapters.users.db.mongoose'
-import { SessionRepository } from './entities.authentication'
+import { SessionRepository } from './ingress.entities'
 const api = require('../api/')
 const config = require('../config.js')
 const log = require('../logger')
@@ -16,90 +16,10 @@ const AuthenticationConfiguration = require('../models/authenticationconfigurati
 const SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 
-
-export async function initializeAuthenticationStack(
-  userRepo: UserRepository,
-  sessionRepo: SessionRepository,
-  verificationService: JWTService,
-  provisioning: provision.ProvisionStatic,
-  passport: passport.Authenticator,
-): Promise<express.Router> {
-  passport.serializeUser((user, done) => done(null, user.id))
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await userRepo.findById(String(id))
-      done(null, user)
-    }
-    catch (err) {
-      done(err)
-    }
-  })
-  registerAuthenticatedBearerTokenHandling(passport, sessionRepo, userRepo)
-  registerIdpAuthenticationVerification(passport, verificationService, userRepo)
-  const routes = express.Router()
-  registerTokenGenerationEndpointWithDeviceVerification(routes, passport)
-}
-
-const VerifyIdpAuthenticationToken = 'verifyIdpAuthenticationToken'
-
-function registerAuthenticatedBearerTokenHandling(passport: passport.Authenticator, sessionRepo: SessionRepository, userRepo: UserRepository): passport.Authenticator {
-  return passport.use(
-    /*
-    This is the default bearer token authentication, registered to the passport instance under the default `bearer`
-    name.
-    */
-    new bearer.Strategy(
-      { passReqToCallback: true },
-      async function (req: express.Request, token: string, done: (err: Error | null, user?: User, access?: bearer.IVerifyOptions) => any) {
-        try {
-          const session = await sessionRepo.findSessionByToken(token)
-          if (!session) {
-            console.warn('no session for token', token, req.method, req.url)
-            return done(null)
-          }
-          const user = await userRepo.findById(session.user)
-          if (!user) {
-            console.warn('no user for token', token, 'user id', session.user, req.method, req.url)
-            return done(null)
-          }
-          req.token = session.token
-          if (session.device) {
-            req.provisionedDeviceId = session.device
-          }
-          return done(null, user, { scope: 'all' });
-        }
-        catch (err) {
-          return done(err as Error)
-        }
-      }
-    )
-  )
-}
-
 /**
- * Register a `BearerStrategy` that expects a JWT in the `Authorization` header that contains the
- * {@link TokenAssertion.Authorized} claim.  The claim indicates the subject has authenticated with an IDP and can
- * continue the sign-in process.  Decode and verify the JWT signature, retrieve the `User` for the JWT subject, and set
- * `Request.user`.
+ * Register the route to generate an API access token, the final step in the ingress process after enrollment,
+ * authentication.  This step includes provisioning a device based on the configured policy.
  */
-function registerIdpAuthenticationVerification(passport: passport.Authenticator, verificationService: JWTService, userRepo: UserRepository): passport.Authenticator {
-  passport.use(VerifyIdpAuthenticationToken, new bearer.Strategy(async function(token, done: (error: any, user?: User) => any) {
-    try {
-      const expectation: Payload = { assertion: TokenAssertion.Authorized, subject: null, expiration: null }
-      const payload = await verificationService.verifyToken(token, expectation)
-      const user = payload.subject ? await userRepo.findById(payload.subject) : null
-      if (user) {
-        return done(null, user)
-      }
-      done(new Error(`user id ${payload.subject} not found for transient token ${String(payload)}`))
-    }
-    catch (err) {
-      done(err)
-    }
-  }))
-  return passport
-}
-
 function registerDeviceVerificationAndTokenGenerationEndpoint(routes: express.Router, passport: passport.Authenticator, deviceProvisioning: ProvisionStatic, sessionRepo: SessionRepository) {
   routes.post('/auth/token',
     passport.authenticate(VerifyIdpAuthenticationToken),
@@ -158,31 +78,9 @@ export class AuthenticationInitializer {
       });
     });
 
-    passport.use(
-      new bearer.Strategy(
-        { passReqToCallback: true },
-        async function (req: express.Request, token: string, done: (err: Error | null, user?: UserDocument, access?: bearer.IVerifyOptions) => any) {
-          try {
-            const session = await lookupSession(token)
-            if (!session || !session.user) {
-              return done(null)
-            }
-            req.token = session.token;
-            if (session.deviceId) {
-              req.provisionedDeviceId = session.deviceId.toHexString();
-            }
-            return done(null, session.user, { scope: 'all' });
-          }
-          catch (err) {
-            return done(err as Error)
-          }
-        }
-      )
-    )
-
     passport.use('authorization', new BearerStrategy(function (token, done) {
       const expectation = {
-        assertion: TokenAssertion.Authorized
+        assertion: TokenAssertion.Authenticated
       };
 
       AuthenticationInitializer.tokenService.verifyToken(token, expectation)
