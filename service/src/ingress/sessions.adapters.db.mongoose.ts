@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import mongoose, { Schema } from 'mongoose'
-import { UserDocumentExpanded } from '../adapters/users/adapters.users.db.mongoose'
+import { UserExpandedDocument } from '../adapters/users/adapters.users.db.mongoose'
 import { UserId } from '../entities/users/entities.users'
 import { Session, SessionRepository } from './ingress.entities'
 
@@ -10,8 +10,8 @@ export interface SessionDocument {
   userId: mongoose.Types.ObjectId
   deviceId?: mongoose.Types.ObjectId | undefined
 }
-export type SessionDocumentExpanded = SessionDocument & {
-  userId: UserDocumentExpanded
+export type SessionExpandedDocument = SessionDocument & {
+  userId: UserExpandedDocument
 }
 export type SessionModel = mongoose.Model<SessionDocument>
 
