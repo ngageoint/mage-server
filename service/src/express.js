@@ -54,10 +54,11 @@ app.use('/private',
   express.static(path.join(__dirname, 'private')));
 
 // Configure authentication
+// TODO: users-next: remove this and initialize in main app module
 const authentication = AuthenticationInitializer.initialize(app, passport, provision);
 
 // Configure routes
-// TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
+// TODO: users-next: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
 require('./routes')(app, { authentication });
 
 // Express requires a 4 parameter function callback, do not remove unused next parameter
