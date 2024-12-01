@@ -42,7 +42,7 @@ export interface AdmitFromIdentityProviderRequest {
 
 export interface AdmitFromIdentityProviderResult {
   mageAccount: UserExpanded
-  admissionToken: string
+  idpAuthenticationToken: string
 }
 
 /**
