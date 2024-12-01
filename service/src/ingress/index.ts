@@ -15,46 +15,9 @@ const authenticationApiAppender = require('../utilities/authenticationApiAppende
 const AuthenticationConfiguration = require('../models/authenticationconfiguration')
 const SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
-
 /**
- * Register the route to generate an API access token, the final step in the ingress process after enrollment,
- * authentication.  This step includes provisioning a device based on the configured policy.
+ * TODO: users-next: this module should go away. this remains for now as a reference to migrate legacy logic to new architecture
  */
-function registerDeviceVerificationAndTokenGenerationEndpoint(routes: express.Router, passport: passport.Authenticator, deviceProvisioning: ProvisionStatic, sessionRepo: SessionRepository) {
-  routes.post('/auth/token',
-    passport.authenticate(VerifyIdpAuthenticationToken),
-    async (req, res, next) => {
-      deviceProvisioning.check()
-      const options = {
-        userAgent: req.headers['user-agent'],
-        appVersion: req.body.appVersion
-      }
-      // TODO: users-next
-      new api.User().login(req.user, req.provisionedDevice, options, function (err, session) {
-        if (err) return next(err);
-
-        authenticationApiAppender.append(config.api).then(api => {
-          res.json({
-            token: session.token,
-            expirationDate: session.expirationDate,
-            user: userTransformer.transform(req.user, { path: req.getRoot() }),
-            device: req.provisionedDevice,
-            api: api
-          });
-        }).catch(err => {
-          next(err);
-        });
-      });
-
-      req.session = null;
-    }
-  );
-}
-
-function registerLocalAuthenticationProtocol(): void {
-
-}
-
 
 export class AuthenticationInitializer {
   static tokenService = new JWTService(crypto.randomBytes(64).toString('hex'), 'urn:mage');
