@@ -40,7 +40,6 @@ app.use(
     express.json(jsonOptions),
     express.urlencoded( { ...jsonOptions, extended: true }));
 
-app.use(passport.initialize());
 app.get('/api/docs/openapi.yaml', async function(req, res) {
   const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
   fs.readFile(docPath, (err, contents) => {
