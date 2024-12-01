@@ -1,13 +1,14 @@
 import express from 'express'
 import svgCaptcha from 'svg-captcha'
-import { Authenticator } from 'passport'
-import { Strategy as BearerStrategy } from 'passport-http-bearer'
+import passport from 'passport'
+import bearer from 'passport-http-bearer'
 import { defaultHashUtil } from '../utilities/password-hashing'
 import { JWTService, Payload, TokenVerificationError, VerificationErrorReason, TokenAssertion } from './verification'
 import { invalidInput, InvalidInputError, MageError } from '../app.api/app.api.errors'
 import { IdentityProvider } from './ingress.entities'
 import { AdmitFromIdentityProviderOperation, EnrollMyselfOperation, EnrollMyselfRequest } from './ingress.app.api'
 import { IngressProtocolWebBinding, IngressResponseType } from './ingress.protocol.bindings'
+import { User, UserRepository } from '../entities/users/entities.users'
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -50,7 +51,30 @@ export type IngressRoutes = {
   idpAdmission: express.Router
 }
 
-export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: IngressProtocolWebBindingCache, tokenService: JWTService, passport: Authenticator): IngressRoutes {
+/**
+ * Register a `BearerStrategy` that expects a JWT in the `Authorization` header that contains the
+ * {@link TokenAssertion.Authenticated} claim.  The claim indicates the subject has authenticated with an IDP and can
+ * continue the ingress process.  Decode and verify the JWT signature, retrieve the `User` for the JWT subject, and set
+ * `Request.user`.
+ */
+function createIdpAuthenticationTokenVerificationStrategy(passport: passport.Authenticator, verificationService: JWTService, userRepo: UserRepository): bearer.Strategy {
+  return new bearer.Strategy(async function(token, done: (error: any, user?: User) => any) {
+    try {
+      const expectation: Payload = { assertion: TokenAssertion.Authenticated, subject: null, expiration: null }
+      const payload = await verificationService.verifyToken(token, expectation)
+      const user = payload.subject ? await userRepo.findById(payload.subject) : null
+      if (user) {
+        return done(null, user)
+      }
+      done(new Error(`user id ${payload.subject} not found for transient token ${String(payload)}`))
+    }
+    catch (err) {
+      done(err)
+    }
+  })
+}
+
+export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: IngressProtocolWebBindingCache, tokenService: JWTService, passport: passport.Authenticator): IngressRoutes {
 
   const routeToIdp = express.Router()
     .all('/',
@@ -81,28 +105,29 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: Ingre
         if (admission.error) {
           return next(admission.error)
         }
-        const { admissionToken, mageAccount } = admission.success
+        const { idpAuthenticationToken, mageAccount } = admission.success
         if (idpBinding.ingressResponseType === IngressResponseType.Direct) {
-          return res.json({ user: mageAccount, token: admissionToken })
+          return res.json({ user: mageAccount, token: idpAuthenticationToken })
         }
         if (idpAdmission.flowState === UserAgentType.MobileApp) {
           if (mageAccount.active && mageAccount.enabled) {
-            return res.redirect(`mage://app/authentication?token=${admissionToken}`)
+            return res.redirect(`mage://app/authentication?token=${idpAuthenticationToken}`)
           }
           else {
             return res.redirect(`mage://app/invalid_account?active=${mageAccount.active}&enabled=${mageAccount.enabled}`)
           }
         }
         else if (idpAdmission.flowState === UserAgentType.WebApp) {
-          return res.render('authentication', { host: req.getRoot(), success: true, login: { token: admissionToken, user: mageAccount } })
+          return res.render('authentication', { host: req.getRoot(), success: true, login: { token: idpAuthenticationToken, user: mageAccount } })
         }
         return res.status(500).send('invalid authentication state')
       }) as express.ErrorRequestHandler
     )
 
   // TODO: mount to /auth
-  const idpAdmission = express.Router()
-  idpAdmission.use('/:identityProviderName',
+  const admission = express.Router()
+
+  admission.use('/:identityProviderName',
     async (req, res, next) => {
       const idpName = req.params.identityProviderName
       const idpBindingEntry = await idpCache.idpWebBindingForIdpName(idpName)
@@ -117,7 +142,43 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: Ingre
     routeToIdp
   )
 
-  // TODO: mount to /api/users/signups
+  const verifyIdpAuthenticationTokenStrategy = createIdpAuthenticationTokenVerificationStrategy(passport, tokenService, userRepo)
+  admission.post('/token',
+    passport.authenticate(verifyIdpAuthenticationTokenStrategy),
+    async (req, res, next) => {
+      deviceProvisioning.check()
+      const options = {
+        userAgent: req.headers['user-agent'],
+        appVersion: req.body.appVersion
+      }
+      /*
+      TODO: users-next
+      insert a new login record for the user and start a new session
+      retrieve the server api descriptor
+      add the available identity providers to the api descriptor
+      return a json object shaped as below
+      */
+      // new api.User().login(req.user, req.provisionedDevice, options, function (err, session) {
+      //   if (err) return next(err);
+
+      //   authenticationApiAppender.append(config.api).then(api => {
+      //     res.json({
+      //       token: session.token,
+      //       expirationDate: session.expirationDate,
+      //       user: userTransformer.transform(req.user, { path: req.getRoot() }),
+      //       device: req.provisionedDevice,
+      //       api: api
+      //     });
+      //   }).catch(err => {
+      //     next(err);
+      //   });
+      // });
+
+      // req.session = null;
+    }
+  )
+
+  // TODO: users-next: mount to /api/users/signups
   const localEnrollment = express.Router()
   localEnrollment.route('/signups')
     .post(async (req, res, next) => {
@@ -146,7 +207,7 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: Ingre
       }
     })
 
-  const captchaBearer = new BearerStrategy((token, done) => {
+  const captchaBearer = new bearer.Strategy((token, done) => {
     const expectation = {
       subject: null,
       expiration: null,
@@ -157,7 +218,7 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: Ingre
       .catch(err => done(err))
   })
 
-  // TODO: mount to /api/users/signups/verifications
+  // TODO: users-next: mount to /api/users/signups/verifications
   localEnrollment.route('/signups/verifications')
     .post(
       async (req, res, next) => {
@@ -208,7 +269,7 @@ export function CreateIngressRoutes(ingressApp: IngressUseCases, idpCache: Ingre
       }
     )
 
-  return { localEnrollment, idpAdmission }
+  return { localEnrollment, idpAdmission: admission }
 }
 
 function validateEnrollment(input: any): Omit<EnrollMyselfRequest, 'username'> | InvalidInputError {

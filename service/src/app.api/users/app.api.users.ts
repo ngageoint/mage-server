@@ -1,8 +1,16 @@
 import { AppResponse, AppRequest, AppRequestContext } from '../app.api.global'
-import { PermissionDeniedError, InvalidInputError } from '../app.api.errors'
+import { EntityNotFoundError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
-import { User } from '../../entities/users/entities.users'
+import { User, UserExpanded, UserId } from '../../entities/users/entities.users'
 
+
+export interface CreateUserRequest extends AppRequest {
+
+}
+
+export interface CreateUserOperation {
+  (req: CreateUserRequest): Promise<AppResponse<UserExpanded, PermissionDeniedError | InvalidInputError>>
+}
 
 export interface UserSearchRequest extends AppRequest {
   userSearch: PagingParameters & {
@@ -22,6 +30,7 @@ export type UserSearchResult = Pick<User, 'id' | 'username' | 'displayName' | 'e
 export interface SearchUsers {
   (req: UserSearchRequest): Promise<AppResponse<PageOf<UserSearchResult>, PermissionDeniedError>>
 }
+
 export interface ReadMyAccountRequest extends AppRequest<User> {}
 
 export interface ReadMyAccountOperation {
