@@ -29,9 +29,6 @@ app.use(function(req, res, next) {
   return next();
 });
 
-const secret = crypto.randomBytes(64).toString('hex');
-app.use(session({ secret }));
-
 app.set('config', config);
 app.enable('trust proxy');
 
@@ -44,7 +41,6 @@ app.use(
     express.urlencoded( { ...jsonOptions, extended: true }));
 
 app.use(passport.initialize());
-app.use(passport.session());
 app.get('/api/docs/openapi.yaml', async function(req, res) {
   const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
   fs.readFile(docPath, (err, contents) => {

@@ -68,20 +68,6 @@ export async function initializeIngress(
   provisioning: provision.ProvisionStatic,
   passport: passport.Authenticator,
 ): Promise<express.Router> {
-  // TODO: users-next: these serialization functions are probably no longer necessary
-  passport.serializeUser((user, done) => done(null, user.id))
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await userRepo.findById(String(id))
-      done(null, user)
-    }
-    catch (err) {
-      done(err)
-    }
-  })
-  const routes = express.Router()
-  registerAuthenticatedBearerTokenHandling(passport, sessionRepo, userRepo)
-  return routes
 }
 
 /**
