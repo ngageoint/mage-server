@@ -58,7 +58,7 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
         try {
           if (update.registered === false) {
             console.info(`update device ${idInPath} to unregistered`)
-            const sessionsRemovedCount = await sessionRepo.removeSessionsForDevice(idInPath)
+            const sessionsRemovedCount = await sessionRepo.deleteSessionsForDevice(idInPath)
             console.info(`removed ${sessionsRemovedCount} session(s) for device ${idInPath}`)
           }
           const updated = await deviceRepo.update({ ...update, id: idInPath })
@@ -79,7 +79,7 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
           const idInPath = req.params.id
           console.info(`delete device`, idInPath)
           const deleted = await deviceRepo.removeById(idInPath)
-          const removedSessionsCount = sessionRepo.removeSessionsForDevice(idInPath)
+          const removedSessionsCount = sessionRepo.deleteSessionsForDevice(idInPath)
           console.info(`removed ${removedSessionsCount} session(s) for device ${idInPath}`)
           // TODO: the old observation model had a middleware that removed the device id from created observations,
           // but do we really care that much
