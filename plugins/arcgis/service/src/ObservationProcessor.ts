@@ -410,7 +410,7 @@ export class ObservationProcessor {
 			}
 			arcObjects.firstRun = this._firstRun;
 			for (const layerProcessor of layerProcessors) {
-				layerProcessor.processArcObjects(JSON.parse(JSON.stringify(arcObjects)));
+				layerProcessor.processArcObjects(arcObjects);
 			}
 			newNumberLeft -= latestObs.items.length;
 			pagingSettings.pageIndex++;

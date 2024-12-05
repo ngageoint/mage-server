@@ -7,9 +7,8 @@ import { AttachmentInfosResult, AttachmentInfo } from './AttachmentInfosResult';
 import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'
-import FormData from 'form-data';
 import { ArcGISIdentityManager, IFeature, request } from "@esri/arcgis-rest-request"
-import { addFeatures, updateFeatures, deleteFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
+import { addFeatures, updateFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
 
 /**
  * Class that transforms observations into a json string that can then be sent to an arcgis server.
@@ -60,12 +59,11 @@ export class ObservationsSender {
     sendAdds(observations: ArcObjects) {
         this._console.info('ArcGIS addFeatures');
 
-        let responseHandler = this.addResponseHandler(observations);
         addFeatures({
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
-        }).then(responseHandler).catch((error) => this._console.error(error));
+        }).then(this.responseHandler(observations)).catch((error) => this._console.error(error));
     }
 
     /**
@@ -77,12 +75,11 @@ export class ObservationsSender {
     sendUpdates(observations: ArcObjects) {
         this._console.info('ArcGIS updateFeatures');
 
-        let responseHandler = this.updateResponseHandler(observations);
         updateFeatures({
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
-        }).then(responseHandler).catch((error) => this._console.error(error));
+        }).then(this.responseHandler(observations, true)).catch((error) => this._console.error(error));
     }
 
     /**
@@ -105,7 +102,7 @@ export class ObservationsSender {
      * Deletes all observations that are apart of a specified event.
      * @param id The event id.
      */
-    sendDeleteEvent(id: string) {
+    sendDeleteEvent(id: number) {
         this._console.info('ArcGIS deleteFeatures by event ' + this._config.observationIdField + ': ' + id);
 
         request(`${this._url}/deleteFeatures`, {
@@ -120,30 +117,12 @@ export class ObservationsSender {
     }
 
     /**
-     * Creates an add observation response handler.
-     * @param observations The observations sent.
-     * @returns The response handler.
-     */
-    private addResponseHandler(observations: ArcObjects): (chunk: any) => void {
-        return this.responseHandler(observations, false)
-    }
-
-    /**
-     * Creates an update observation response handler.
-     * @param observations The observations sent.
-     * @returns The response handler.
-     */
-    private updateResponseHandler(observations: ArcObjects): (chunk: any) => void {
-        return this.responseHandler(observations, true)
-    }
-
-    /**
      * Creates an observation response handler.
      * @param observations The observations sent.
      * @param update The update or add flag value.
      * @returns The response handler.
      */
-    private responseHandler(observations: ArcObjects, update: boolean): (chunk: any) => void {
+    private responseHandler(observations: ArcObjects, update?: boolean): (chunk: any) => void {
         const console = this._console
         return (chunk: any) => {
             console.log('ArcGIS ' + (update ? 'Update' : 'Add') + ' Response: ' + JSON.stringify(chunk))
