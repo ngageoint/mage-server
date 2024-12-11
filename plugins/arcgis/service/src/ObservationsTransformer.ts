@@ -328,7 +328,9 @@ export class ObservationsTransformer {
                             if (fields != undefined) {
                                 const fieldTitle = fields.get(title)
                                 if (fieldTitle != undefined) {
-                                    title = fieldTitle
+                                    const sanitizedName = ObservationsTransformer.replaceSpaces(fieldTitle)
+                                    const sanitizedFormName = ObservationsTransformer.replaceSpaces(fields.name)
+                                    title = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
                                 }
                             }
                             if (field.type == FormFieldType.Geometry) {

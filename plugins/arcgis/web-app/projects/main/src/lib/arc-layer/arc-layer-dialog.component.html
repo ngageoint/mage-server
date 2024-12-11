@@ -1,27 +1,37 @@
 <div class="dialog">
-  <div mat-dialog-title>ArcGIS Feature Service</div>
+  <div class="cancel">
+    <button mat-icon-button (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
+  <div mat-dialog-title>ArcGIS Feature Service</div>
   <mat-dialog-content>
     <div class="dialog-content">
       <mat-accordion>
-        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate">
+        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate" [disabled]="featureService?.authenticated">
           <mat-expansion-panel-header>
-            <mat-panel-title>Feature Service</mat-panel-title>
+            <mat-panel-title *ngIf="!featureService?.authenticated">Feature Service</mat-panel-title>
+            <mat-panel-title *ngIf="featureService?.authenticated">{{featureService?.url}}</mat-panel-title>
+            <mat-panel-description *ngIf="featureService && !featureService?.authenticated">
+              <div class="invalid-credentials">
+                <mat-icon>error_outline</mat-icon> Credentials invalid or expired
+              </div>
+            </mat-panel-description>
           </mat-expansion-panel-header>
           
           <form class="validate" [formGroup]="layerForm" class="form">
             <mat-form-field>
               <mat-label>URL</mat-label>
-              <input matInput formControlName="url" required
-                placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer" />
+              <input matInput formControlName="url" required placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer"/>
               <mat-error *ngIf="layerForm.hasError('required')">URL is required</mat-error>
             </mat-form-field>
           
             <mat-form-field appearance="fill">
               <mat-label>Authentication</mat-label>
               <mat-select formControlName="authenticationType">
-                <mat-option *ngFor="let authenticationType of authenticationTypes" [value]="authenticationType.value">
-                  {{authenticationType.title}}
+                <mat-option *ngFor="let authenticationState of authenticationStates" [value]="authenticationState.value">
+                  {{authenticationState.text}}
                 </mat-option>
               </mat-select>
             </mat-form-field>
@@ -29,9 +39,9 @@
             <ng-container [ngSwitch]="layerForm.controls.authenticationType.value">
               <div *ngSwitchCase="AuthenticationType.Token" formGroupName="token">
                 <mat-form-field appearance="fill">
-                  <mat-label>Token</mat-label>
+                  <mat-label>API Key</mat-label>
                   <input matInput formControlName="token" required />
-                  <mat-error>Token is required</mat-error>
+                  <mat-error>API Key is required</mat-error>
                 </mat-form-field>
               </div>
               <div *ngSwitchCase="AuthenticationType.OAuth" formGroupName="oauth">
@@ -61,7 +71,8 @@
             <button mat-flat-button color="primary" [disabled]="loading" (click)="onValidate()">
               <div class="actions__save">
                 <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
-                <span>Validate</span>
+                <span *ngIf="!featureService">Create Feature Server</span>
+                <span *ngIf="featureService">Update Feature Server</span>
               </div>
             </button>
           </div>
@@ -85,7 +96,7 @@
               <button mat-flat-button color="primary" [disabled]="loading" (click)="onSave()">
                 <div class="actions__save">
                   <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
-                  <span>Save</span>
+                  <span>Set Layers</span>
                 </div>
               </button>
             </div>

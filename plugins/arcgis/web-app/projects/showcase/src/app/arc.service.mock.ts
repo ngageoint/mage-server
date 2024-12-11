@@ -1,6 +1,6 @@
 import { Observable, of } from "rxjs";
 import { Injectable } from '@angular/core'
-import { ArcServiceInterface, FeatureLayer } from "../../../main/src/lib/arc.service";
+import { ArcServiceInterface, FeatureLayer, ValidationRequest } from "../../../main/src/lib/arc.service";
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../../../main/src/lib/ArcGISPluginConfig';
 import { MageEvent } from "../../../main/src/lib/arc.service";
 
@@ -151,5 +151,15 @@ export class MockArcService implements ArcServiceInterface {
 
   removeOperation(operationId: string): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig);
+  }
+
+  validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig> {
+      return of({
+        url: 'https://arcgis.mock.com/1',
+        authenticated: true,
+        layers: [{
+          layer: 'Mock ArcGIS Layer 1'
+        }]
+      })
   }
 }
