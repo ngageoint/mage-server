@@ -8,10 +8,10 @@ export interface FeatureServiceConfig {
      */
     url: string
 
-		/**
-		 * Serialized ArcGISIdentityManager
-		 */
-		identityManager: string
+    /**
+     * Serialized ArcGISIdentityManager
+     */
+    identityManager: string
 
     /**
      * The feature layers.

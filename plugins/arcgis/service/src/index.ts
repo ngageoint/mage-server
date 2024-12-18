@@ -172,7 +172,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 return {
                   url: updateService.url,
                   layers: updateService.layers,
-                  identityManager: existingService?.identityManager
+                  identityManager: existingService?.identityManager || ''
                 }
               })
 
