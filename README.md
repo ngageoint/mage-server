@@ -319,6 +319,11 @@ That [NPM script](./instance/package.json) will run the `mage.service` script fr
 [configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
 your needs.
 
+## Local development
+
+These steps will ensure all necessary packages are installed and built correctly. This will also ensure that changes are applied in real time, rather than having to rebuild packages and restart the instance. First, ensure you have the correct version of node installed as mentioned above. From the root directory, run 'npm run install'. This will install all of the necessary node_modules for each app. If there is an additional plugin you would like to install packages for, see the 'postinstall' script and make adjustments there.
+Next, run 'npm run build:local'
+
 ### Local runtime issues
 
 You may run into some problems running the Mage instance from your working tree due to NPM's dependency installation

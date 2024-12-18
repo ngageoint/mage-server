@@ -14,6 +14,7 @@
   "scripts": {
     "build:tsc": "tsc -b src",
     "build": "npm-run-all build:tsc",
+    "build:local": "npm link ../../../service && tsc -b src --watch &",
     "test:run": "jest lib",
     "test": "npm-run-all build test:run",
     "clean": "rm -rf lib"
@@ -44,7 +45,7 @@
     "form-data": "^4.0.1"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.2.9 || ^6.3.0-beta",
+    "@ngageoint/mage.service": "^6.2.13 || ^6.3.0-beta",
     "express": "^4.17.0"
   },
   "devDependencies": {

@@ -152,6 +152,7 @@
   },
   "scripts": {
     "build:compile": "tsc -b src",
+    "build:compile-local": "tsc -b src --watch &",
     "build:copy_assets": "cpy --cwd=src './assets/**/*' '../lib/assets/'",
     "build:copy_docs": "cpy --cwd=src './docs/**/*' '../lib/docs/'",
     "build:copy_package": "cpy --rename=dist-package.json 'package.json' 'lib'",
@@ -159,6 +160,7 @@
     "build:copy_views": "cpy --cwd=src './views/**/*' '../lib/views/'",
     "build:after_compile": "npm-run-all build:copy_assets build:copy_types build:copy_docs build:copy_package build:copy_views",
     "build": "npm-run-all build:compile build:after_compile",
+    "build:local": "npm-run-all build:compile-local build:copy_assets",
     "test:compile": "tsc -b test",
     "test:copy_resources": "cpy --cwd=test 'environment/*.pem' '../test-lib/environment/'",
     "test:copy_node_modules": "cpy --cwd=test 'node_modules/**/*' '../test-lib/node_modules/'",

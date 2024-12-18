@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "npm-run-all build:main",
+    "build:local": "npm link ../../../web-app && ng build --project=main --watch &",
     "build:main": "ng build --project=main",
     "test": "ng test --project=main",
     "test-headless": "ng test --watch=false --browsers=ChromeHeadless --project=main",
