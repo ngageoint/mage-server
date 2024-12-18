@@ -299,6 +299,7 @@ export class ArcAdminComponent implements OnInit {
 
   cancelEdit() {
     console.log('Canceled configuration edit')
+    this.editConfig = this.copyConfig();
   }
 
   keys(value: any): string[] {

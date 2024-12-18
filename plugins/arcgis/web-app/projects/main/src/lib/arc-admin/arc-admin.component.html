@@ -83,8 +83,8 @@
       </div>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
       <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+      <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
     </mat-card-actions>
   </mat-card>
     <arc-layer [config]="config" (configChanged)="configChanged($event)"></arc-layer>
@@ -798,8 +798,8 @@
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
-    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
     <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #deleteFieldDialog let-data>
