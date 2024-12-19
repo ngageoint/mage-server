@@ -701,3 +701,16 @@ declare module 'express' {
     }
   }
 }
+
+if (require.main === module) {
+  (async () => {
+    try {
+      const config = ;
+      const mageService = await boot(config);
+      mageService.open();
+      console.log('Local development server is running...');
+    } catch (err) {
+      
+    }
+  })
+}
