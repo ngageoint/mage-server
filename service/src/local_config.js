@@ -34,7 +34,7 @@ module.exports = {
     plugins: {
       servicePlugins: [
         '@ngageoint/mage.arcgis.service',
-        '@ngageoint/mage.image.service',
+        '../../plugins/image',
         '@ngageoint/mage.nga-msi',
         '@ngageoint/mage.random',
       ],

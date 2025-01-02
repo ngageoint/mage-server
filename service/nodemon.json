@@ -1,0 +1,9 @@
+{
+    "execMap": {
+      "js": "ts-node --transpile-only",
+      "ts": "ts-node --transpile-only"
+    },
+    "watch": ["src/**/*"],
+    "ext": "ts,js",
+    "ignore": ["node_modules"]
+  }

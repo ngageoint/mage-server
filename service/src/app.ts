@@ -641,10 +641,10 @@ async function initWebLayer(
     }
   }
   try {
-    const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json')
+    const webappPackagePath = require.resolve('../../web-app/package.json')
     const webAppPath = path.dirname(webappPackagePath)
-    webController.use(express.static(path.join(webAppPath, 'app')))
-    webController.use('/admin', express.static(path.join(webAppPath, 'admin')))
+    webController.use(express.static(path.join(__dirname, '../../web-app/dist/app')))
+    webController.use('/admin', express.static(path.join(__dirname, '../../web-app/dist/admin')))
   }
   catch (err) {
     console.warn('failed to load mage web app package', err)
@@ -705,12 +705,14 @@ declare module 'express' {
 if (require.main === module) {
   (async () => {
     try {
-      const config = ;
+      console.log('Starting things...')
+      const config = JSON.parse(fs.readFileSync(path.resolve('./local_config.js'), 'utf-8'));;
       const mageService = await boot(config);
       mageService.open();
       console.log('Local development server is running...');
     } catch (err) {
-      
+      console.log('error starting stuff', err);
+      process.exit(1)
     }
   })
 }

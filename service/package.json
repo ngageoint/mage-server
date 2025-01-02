@@ -78,6 +78,7 @@
     "rfc5646": "^3.0.0",
     "superagent": "^8.0.0",
     "svg-captcha": "^1.4.0",
+    "ts-node": "^10.9.2",
     "uniqid": "^5.2.0",
     "walk": "2.3.4",
     "winston": "1.0.1",
