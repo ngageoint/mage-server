@@ -142,7 +142,7 @@ export class ArcAdminComponent implements OnInit {
       console.log('Form Submitted:', this.editConfig);
       console.log('formValue: ', formValue);
 
-      this.editConfig = this.copyConfig();
+      this.saveEdit();
       }
       else{
         console.log('Form is invalid, please correct the errors.')
