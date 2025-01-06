@@ -57,7 +57,7 @@ export class ArcAdminComponent implements OnInit {
 
   constructor(private arcService: ArcService, private dialog: MatDialog, private fb: FormBuilder) {
     this.config = defaultArcGISPluginConfig;
-    this.editConfig = defaultArcGISPluginConfig;
+    this.editConfig = this.copyConfig();
     this.editFieldMappings = false;
     this.attributesForm = this.fb.group({
       observationIdField: [''], 
@@ -79,6 +79,7 @@ export class ArcAdminComponent implements OnInit {
       if (!this.config.baseUrl) {
         this.config.baseUrl = window.location.origin
       }
+      this.editConfig = this.copyConfig();
       arcService.fetchPopulatedEvents().subscribe(x => this.handleEventResults(x));
     })
   }
@@ -141,7 +142,7 @@ export class ArcAdminComponent implements OnInit {
       console.log('Form Submitted:', this.editConfig);
       console.log('formValue: ', formValue);
 
-      this.editConfig = this.copyConfig();
+      this.saveEdit();
       }
       else{
         console.log('Form is invalid, please correct the errors.')
@@ -190,11 +191,6 @@ export class ArcAdminComponent implements OnInit {
       this.config.featureServices.splice(index, 1);
     }
     this.saveConfig();
-  }
-
-  onEditProcessing() {
-    this.editConfig = this.copyConfig()
-    this.dialog.open<unknown, unknown, string>(this.editProcessingTemplate)
   }
 
   setField(field: string, value: any) {
@@ -303,6 +299,7 @@ export class ArcAdminComponent implements OnInit {
 
   cancelEdit() {
     console.log('Canceled configuration edit')
+    this.editConfig = this.copyConfig();
   }
 
   keys(value: any): string[] {
