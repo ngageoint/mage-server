@@ -72,7 +72,7 @@ requires Node > 18.x.  Developers should use the latest LTS, 20.x at the time of
 ### Install MongoDB
 
 Before running a MAGE server, you'll need to install and start [MongoDB](https://www.mongodb.com/try/download/community).
-At the time of this writing, MAGE supports MongoDB version 4.x (4.4).
+At the time of this writing, MAGE supports MongoDB version 5.x (5.0.1).
 
 ### Install MAGE server packages
 
