@@ -13,7 +13,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - Support for Mongoose 6.x
 - Support for Webpack 5.x
 - Support for Angular 14.x
-- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 4.x.
+- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x.
 - The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
 - [GARS](https://github.com/ngageoint/gars-js) grid overlay
 - [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
