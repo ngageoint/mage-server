@@ -206,7 +206,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   url: updateService.url,
                   layers: layers,
                   // Map exisiting identityManager, client does not send this
-                  identityManager: existingService?.identityManager,
+                  identityManager: existingService?.identityManager || '',
                 };
               });
 
