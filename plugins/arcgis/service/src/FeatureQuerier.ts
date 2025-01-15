@@ -56,7 +56,7 @@ export class FeatureQuerier {
         if (this._config.eventIdField == null) {
             queryUrl.searchParams.set('where', `${this._config.observationIdField} LIKE '${observationId}${this._config.idSeparator}%'`);
         } else {
-            queryUrl.searchParams.set('where', `${this._config.observationIdField} = ${observationId}`);
+            queryUrl.searchParams.set('where', `${this._config.observationIdField} = '${observationId}'`);
         }
         queryUrl.searchParams.set('outFields', this.outFields(fields))
         queryUrl.searchParams.set('returnGeometry', geometry === false ? 'false' : 'true')

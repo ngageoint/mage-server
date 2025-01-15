@@ -34,6 +34,10 @@ export class EventDeletionHandler {
         this._config = config;
     }
 
+    public updateConfig(newConfig: ArcGISPluginConfig): void {
+        this._config = newConfig;
+    }
+
     /**
      * 
      * @param activeEvents The current set of active events.
@@ -83,7 +87,7 @@ export class EventDeletionHandler {
     }
 
     /**
-     * Called when the query is finished.  It goes through the results and gathers all even Ids currently stored
+     * Called when the query is finished.  It goes through the results and gathers all event Ids currently stored
      * in the arc layer.  It then will remove any events from the arc layer that do not exist.
      * @param layerProcessor The feature layer processor.
      * @param result The returned results.

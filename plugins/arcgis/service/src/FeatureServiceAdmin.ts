@@ -1,6 +1,6 @@
 import { ArcGISPluginConfig } from "./ArcGISPluginConfig"
 import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig"
-import { MageEvent, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events'
+import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { Layer, Field } from "./AddLayersRequest"
 import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 import { ObservationsTransformer } from "./ObservationsTransformer"
@@ -120,21 +120,21 @@ export class FeatureServiceAdmin {
 	}
 
 	/**
-	 * Get the layer events
+	 * Get the Mage layer events
 	 * @param layer feature layer
 	 * @param eventRepo event repository
-	 * @returns layer events
+	 * @returns Mage layer events
 	 */
 	private async layerEvents(layer: FeatureLayerConfig, eventRepo: MageEventRepository): Promise<MageEvent[]> {
-		const layerEvents: Set<number|string> = new Set()
-		if (layer.events != null) {
-			for (const layerEvent of layer.events) {
-				layerEvents.add(layerEvent)
+		const layerEventIds: Set<MageEventId> = new Set()
+		 if (layer.eventIds != null) {
+			for (const layerEventId of layer.eventIds) {
+				layerEventIds.add(layerEventId)
 			}
 		}
 
 		let mageEvents
-		if (layerEvents.size > 0) {
+		if (layerEventIds.size > 0) {
 			mageEvents = await eventRepo.findAll()
 		} else {
 			mageEvents = await eventRepo.findActiveEvents()
@@ -142,7 +142,7 @@ export class FeatureServiceAdmin {
 
 		const events: MageEvent[] = []
 		for (const mageEvent of mageEvents) {
-			if (layerEvents.size == 0 || layerEvents.has(mageEvent.name) || layerEvents.has(mageEvent.id)) {
+			if (layerEventIds.size == 0 || layerEventIds.has(mageEvent.id)) {
 				const event = await eventRepo.findById(mageEvent.id)
 				if (event != null) {
 					events.push(event)
