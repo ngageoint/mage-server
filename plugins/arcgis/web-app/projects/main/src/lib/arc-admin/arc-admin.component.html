@@ -3,80 +3,88 @@
   <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title>
-        Processing <button class="edit-button" mat-icon-button (click)="onEditProcessing()"><mat-icon>edit</mat-icon></button>
+        Processing
       </mat-card-title>
       <mat-card-subtitle>MAGE ArcGIS plugin processing settings.</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div class="processing">
-        <table class="processing-table">
-          <tr>
-            <th>Enabled
-              <button class="info-button" mat-icon-button
-                (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.enabled}}</td>
-          </tr>
-          <tr>
-            <th>Base URL
-              <button class="info-button" mat-icon-button (click)="showInfo('Base URL', 'MAGE server base URL')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.baseUrl}}</td>
-          </tr>
-          <tr>
-            <th>Interval (s)
-              <button class="info-button" mat-icon-button
-                (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.intervalSeconds}}</td>
-          </tr>
-          <tr>
-            <th>Startup Interval (s)
-              <button class="info-button" mat-icon-button
-                (click)="showInfo('Startup Interval', 'Startup interval in seconds to wait for feature layer processors to be ready')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.startupIntervalSeconds}}</td>
-          </tr>
-          <tr>
-            <th>Update Interval (s)
-              <button class="info-button" mat-icon-button
-                (click)="showInfo('Update Interval', 'Processing wait time interval in seconds when pending observation updates exist')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.updateIntervalSeconds}}</td>
-          </tr>
-          <tr>
-            <th>Batch Size
-              <button class="info-button" mat-icon-button
-                (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.batchSize}}</td>
-          </tr>
-          <tr>
-            <th>Attachment Tolerance (ms)
-              <button class="info-button" mat-icon-button
-                (click)="showInfo('Attachment Tolerance', 'Time tolerance in milliseconds to consider an attachment as modified compared to the observation')">
-                <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-              </button>
-            </th>
-            <td>{{config.attachmentModifiedTolerance}}</td>
-          </tr>
-        </table>
+      <div style="width: 100%;">
+        <div class="edit-processing-form">
+          <div class="edit-enabled-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Enabled</mat-label>
+              <mat-select placeholder="Enabled" [(value)]="editConfig.enabled"
+                (selectionChange)="setField('enabled', $event.value)">
+                <mat-option [value]="true">true</mat-option>
+                <mat-option [value]="false">false</mat-option>
+              </mat-select>
+              <mat-hint>Process observations and send to configured ArcGIS feature layers</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="edit-enabled-field">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Base URL</mat-label>
+              <input type="text" matInput value="{{editConfig.baseUrl}}"
+                placeholder="https://mock.mage.com"
+                (keyup)="setField('baseUrl', baseUrlField.value)"
+                (input)="setField('baseUrl', baseUrlField.value)" #baseUrlField />
+                <mat-hint>Mage server base URL</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="edit-interval-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Interval</mat-label>
+              <input type="number" min="0" matInput value="{{editConfig.intervalSeconds}}"
+                (keyup)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)"
+                (input)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)" #intervalSecondsField />
+                <mat-hint>Observation query and processing frequency time interval in seconds</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="edit-startup-interval-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Startup Interval</mat-label>
+              <input type="number" min="0" matInput value="{{editConfig.startupIntervalSeconds}}"
+                (keyup)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
+                (input)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
+                #startupIntervalSecondsField />
+                <mat-hint>Startup interval in seconds to wait for feature layer processors to be ready</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="edit-update-interval-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Update Interval</mat-label>
+              <input type="number" min="0" matInput value="{{editConfig.updateIntervalSeconds}}"
+                (keyup)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
+                (input)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
+                #updateIntervalSecondsField />
+                <mat-hint>Processing wait time interval in seconds when pending observation updates exist</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="batch-size-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Batch Size</mat-label>
+              <input type="number" min="1" matInput value="{{editConfig.batchSize}}"
+                (keyup)="setNumberField('batchSize', batchSizeField.value, 1)"
+                (input)="setNumberField('batchSize', batchSizeField.value, 1)" #batchSizeField />
+                <mat-hint>Maximum number of observations to process during a single time interval</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="attachment-modified-tolerance-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Attachment Tolerance</mat-label>
+              <input type="number" min="0" matInput value="{{editConfig.attachmentModifiedTolerance}}"
+                (keyup)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
+                (input)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
+                #attachmentModifiedToleranceField />
+                <mat-hint>Time tolerance in milliseconds to consider an attachment as modified compared to the observation</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
       </div>
     </mat-card-content>
     <mat-card-actions>
-      <button (click)="onEditProcessing()" mat-button>Edit</button>
+      <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+      <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
     </mat-card-actions>
   </mat-card>
     <arc-layer [config]="config" (configChanged)="configChanged($event)"></arc-layer>
@@ -651,104 +659,6 @@
     </div>
   </mat-dialog-content>
 </ng-template>
-<ng-template #editProcessingDialog let-data>
-  <h2 matDialogTitle>Processing Configuration</h2>
-  <mat-dialog-content>
-    <div class="edit-processing-form">
-      <div class="edit-enabled-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-select placeholder="Enabled" [(value)]="editConfig.enabled"
-            (selectionChange)="setField('enabled', $event.value)">
-            <mat-option [value]="true">true</mat-option>
-            <mat-option [value]="false">false</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-      <div class="edit-enabled-field">
-        <mat-form-field [style.width.%]="90">
-          <input type="text" matInput value="{{editConfig.baseUrl}}"
-            (keyup)="setField('baseUrl', baseUrlField.value)"
-            (input)="setField('baseUrl', baseUrlField.value)" #baseUrlField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Base URL', 'Mage server base URL')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-      <div class="edit-interval-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Interval</mat-label>
-          <input type="number" min="0" matInput value="{{editConfig.intervalSeconds}}"
-            (keyup)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)"
-            (input)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)" #intervalSecondsField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-      <div class="edit-startup-interval-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Startup Interval</mat-label>
-          <input type="number" min="0" matInput value="{{editConfig.startupIntervalSeconds}}"
-            (keyup)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
-            (input)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
-            #startupIntervalSecondsField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Startup Interval', 'Startup interval in seconds to wait for feature layer processors to be ready')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-      <div class="edit-update-interval-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Update Interval</mat-label>
-          <input type="number" min="0" matInput value="{{editConfig.updateIntervalSeconds}}"
-            (keyup)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
-            (input)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
-            #updateIntervalSecondsField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Update Interval', 'Processing wait time interval in seconds when pending observation updates exist')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-      <div class="batch-size-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Batch Size</mat-label>
-          <input type="number" min="1" matInput value="{{editConfig.batchSize}}"
-            (keyup)="setNumberField('batchSize', batchSizeField.value, 1)"
-            (input)="setNumberField('batchSize', batchSizeField.value, 1)" #batchSizeField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-      <div class="attachment-modified-tolerance-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Attachment Tolerance</mat-label>
-          <input type="number" min="0" matInput value="{{editConfig.attachmentModifiedTolerance}}"
-            (keyup)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
-            (input)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
-            #attachmentModifiedToleranceField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Attachment Tolerance', 'Time tolerance in milliseconds to consider an attachment as modified compared to the observation')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
-  </mat-dialog-actions>
-</ng-template>
 <ng-template #editAttributesDialog let-data>
   <h2 matDialogTitle>Attributes Configuration</h2>
   <mat-dialog-content>
@@ -888,8 +798,8 @@
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
-    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
     <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #deleteFieldDialog let-data>
