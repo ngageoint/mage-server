@@ -4,9 +4,10 @@ import { ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
+import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationProcessor } from './ObservationProcessor'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
-import { FeatureServiceConfig } from './ArcGISConfig'
+import { FeatureServiceConfig, FeatureLayerConfig } from './ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
@@ -35,12 +36,12 @@ const InjectedServices = {
 
 const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service"
 
-const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>>  => {
+const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>> => {
   let authenticated = false
   try {
     await identityService.signin(config)
     authenticated = true
-  } catch(ignore) {}
+  } catch (ignore) { }
 
   const { identityManager, ...sanitized } = config;
   return { ...sanitized, authenticated }
@@ -132,7 +133,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   </head>
                 </html>
               `);
-              }).catch((error) => res.status(400).json(error))
+            }).catch((error) => res.status(400).json(error))
           })
 
           return routes
@@ -166,18 +167,51 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               const config = await stateRepo.get()
               const { featureServices: updatedServices, ...updateConfig } = req.body
 
-              // Map exisiting identityManager, client does not send this
-              const featureServices: FeatureServiceConfig[] = updatedServices.map((updateService: FeatureServiceConfig) => {
-                const existingService = config.featureServices.find((featureService: FeatureServiceConfig) => featureService.url === updateService.url)
+
+              // Convert event names to event IDs
+              // Fetch all events and create a mapping of event names to event IDs
+              const allEvents = await eventRepo.findAll();
+              const eventNameToIdMap = new Map<string, MageEventId>();
+              allEvents.forEach(event => {
+                eventNameToIdMap.set(event.name, event.id);
+              });
+
+              // Process the incoming feature services with eventIds instead of event names
+              const featureServices: FeatureServiceConfig[] = updatedServices.map((updateService: any) => {
+                const existingService = config.featureServices.find(
+                  (featureService: FeatureServiceConfig) => featureService.url === updateService.url
+                );
+
+                // Process layers
+                const layers: FeatureLayerConfig[] = updateService.layers.map((layer: any) => {
+                  // Extract event names from the incoming layer data
+                  const eventNames: string[] = layer.events || [];
+
+                  // Convert event names to event IDs using the mapping
+                  const eventIds = eventNames
+                    .map(eventName => eventNameToIdMap.get(eventName))
+                    .filter((id): id is MageEventId => id !== undefined);
+
+                  // Construct the FeatureLayerConfig with eventIds
+                  const featureLayerConfig: FeatureLayerConfig = {
+                    layer: layer.layer,
+                    geometryType: layer.geometryType,
+                    eventIds: eventIds,
+                  };
+
+                  return featureLayerConfig;
+                });
+
                 return {
                   url: updateService.url,
-                  layers: updateService.layers,
-                  identityManager: existingService?.identityManager || ''
-                }
-              })
+                  layers: layers,
+                  // Map exisiting identityManager, client does not send this
+                  identityManager: existingService?.identityManager,
+                };
+              });
 
               await stateRepo.patch({ ...updateConfig, featureServices })
-              
+
               // Sync configuration with feature servers by restarting observation processor
               processor.stop()
               processor.start()
@@ -195,7 +229,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             let service: FeatureServiceConfig
             let identityManager: ArcGISIdentityManager
             if (token) {
-              identityManager = await ArcGISIdentityManager.fromToken({ token }) 
+              identityManager = await ArcGISIdentityManager.fromToken({ token })
               service = { url, layers: [], identityManager: identityManager.serialize() }
             } else if (username && password) {
               identityManager = await ArcGISIdentityManager.signIn({
@@ -221,7 +255,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
           })
-            
+
           routes.get('/featureService/layers', async (req, res, next) => {
             const url = req.query.featureServiceUrl as string
             const config = await processor.safeGetConfig()

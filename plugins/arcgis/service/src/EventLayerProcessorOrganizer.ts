@@ -19,7 +19,7 @@ export class EventLayerProcessorOrganizer {
         for (const event of events) {
             let syncProcessors = new Array<FeatureLayerProcessor>();
             for (const layerProcessor of layerProcessors) {
-                if (layerProcessor.layerInfo.hasEvent(event.name)) {
+                if (layerProcessor.layerInfo.hasEvent(event.id)) {
                     syncProcessors.push(layerProcessor);
                 }
             }
