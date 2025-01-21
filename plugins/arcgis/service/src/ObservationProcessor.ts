@@ -164,12 +164,12 @@ export class ObservationProcessor {
 	 */
 	private async updateConfig(): Promise<ArcGISPluginConfig> {
 		const config = await this.safeGetConfig()
-		
+
 		// Include configured eventform definitions while detecting changes in config
 		const eventIds = config.featureServices
-    .flatMap(service => service.layers)
-    .flatMap(layer => layer.eventIds)
-    .filter((eventId): eventId is MageEventId => typeof eventId === 'number');
+			.flatMap(service => service.layers)
+			.flatMap(layer => layer.eventIds)
+			.filter((eventId): eventId is MageEventId => typeof eventId === 'number');
 
 		const eventForms = await this._eventRepo.findAllByIds(eventIds);
 		const fullConfig = { ...config, eventForms };
@@ -178,7 +178,7 @@ export class ObservationProcessor {
 		if (this._previousConfig == null || this._previousConfig != configJson) {
 			this._transformer = new ObservationsTransformer(config, console);
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
-			this._eventDeletionHandler.updateConfig(config);			
+			this._eventDeletionHandler.updateConfig(config);
 			this._layerProcessors = [];
 			await this.getFeatureServiceLayers(config);
 			this._previousConfig = configJson
@@ -380,8 +380,7 @@ export class ObservationProcessor {
 			const eventTransform = new EventTransform(config, mageEvent)
 			const arcObjects = new ArcObjects()
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
-			for (let i = 0; i < observations.length; i++) {
-				const observation = observations[i]
+			for (const observation of observations) {
 				let deletion = false
 				if (observation.states.length > 0) {
 					deletion = observation.states[0].name.startsWith('archive')

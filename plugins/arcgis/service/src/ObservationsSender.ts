@@ -8,7 +8,7 @@ import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'
 import { ArcGISIdentityManager, IFeature, request } from "@esri/arcgis-rest-request"
-import { addFeatures, updateFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
+import { addFeatures, updateFeatures, deleteFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
 
 /**
  * Class that transforms observations into a json string that can then be sent to an arcgis server.
@@ -63,7 +63,8 @@ export class ObservationsSender {
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
-        }).then(this.responseHandler(observations)).catch((error) => this._console.error(error));
+        }).then(this.responseHandler(observations))
+            .catch((error) => this._console.error('Error in ObservationSender.sendAdds :: ' + error));
     }
 
     /**
@@ -79,7 +80,8 @@ export class ObservationsSender {
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
-        }).then(this.responseHandler(observations, true)).catch((error) => this._console.error(error));
+        }).then(this.responseHandler(observations, true))
+            .catch((error) => this._console.error('Error in ObservationSender.sendUpdates :: ' + error));
     }
 
     /**
@@ -89,12 +91,11 @@ export class ObservationsSender {
     sendDelete(id: string) {
         this._console.info('ArcGIS deleteFeatures id: ' + id)
 
-        request(`${this._url}/deleteFeatures`, {
-            httpMethod: 'POST',
+        deleteFeatures({
+            url: this._url,
             authentication: this._identityManager,
-            params: {
-                where: `${this._config.observationIdField} LIKE \'%${id}\'`
-            }
+            where: `${this._config.observationIdField} LIKE \'%${id}%\'`,
+            objectIds: []
         }).catch((error) => this._console.error('Error in ObservationSender.sendDelete :: ' + error));
     }
 
@@ -105,14 +106,13 @@ export class ObservationsSender {
     sendDeleteEvent(id: number) {
         this._console.info('ArcGIS deleteFeatures by event ' + this._config.observationIdField + ': ' + id);
 
-        request(`${this._url}/deleteFeatures`, {
-            httpMethod: 'POST',
+        deleteFeatures({
+            url: this._url,
             authentication: this._identityManager,
-            params: {
-                where: !!this._config.eventIdField 
-                    ? this._config.eventIdField + '=' + id 
-                    : this._config.observationIdField + ' LIKE\'%' + this._config.idSeparator + id + '\''
-            }
+            where: !!this._config.eventIdField
+                ? `${this._config.eventIdField} = ${id}`
+                : this._config.observationIdField + ' LIKE\'%' + this._config.idSeparator + id + '\'',
+            objectIds: []
         }).catch((error) => this._console.error('Error in ObservationSender.sendDeleteEvent :: ' + error));
     }
 
@@ -237,10 +237,10 @@ export class ObservationsSender {
 
             const fileName = this.attachmentFileName(attachment)
             this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-    
+
             const readStream = await fs.openAsBlob(file)
             const attachmentFile = new File([readStream], fileName)
-    
+
             addAttachment({
                 url: this._url,
                 authentication: this._identityManager,
@@ -262,10 +262,10 @@ export class ObservationsSender {
 
             const fileName = this.attachmentFileName(attachment)
             this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-    
+
             const readStream = await fs.openAsBlob(file)
             const attachmentFile = new File([readStream], fileName)
-    
+
             updateAttachment({
                 url: this._url,
                 authentication: this._identityManager,
