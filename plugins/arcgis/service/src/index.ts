@@ -35,12 +35,12 @@ const InjectedServices = {
 
 const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service"
 
-const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>>  => {
+const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>> => {
   let authenticated = false
   try {
     await identityService.signin(config)
     authenticated = true
-  } catch(ignore) {}
+  } catch (ignore) { }
 
   const { identityManager, ...sanitized } = config;
   return { ...sanitized, authenticated }
@@ -64,7 +64,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
     const identityService = createArcGISIdentityService(stateRepo)
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, identityService, console)
-    processor.start()
+    await processor.start()
     return {
       webRoutes: {
         public: (requestContext: GetAppRequestContext) => {
@@ -132,7 +132,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   </head>
                 </html>
               `);
-              }).catch((error) => res.status(400).json(error))
+            }).catch((error) => res.status(400).json(error))
           })
 
           return routes
@@ -177,10 +177,10 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               })
 
               await stateRepo.patch({ ...updateConfig, featureServices })
-              
+
               // Sync configuration with feature servers by restarting observation processor
               processor.stop()
-              processor.start()
+              await processor.start()
 
               res.sendStatus(200)
             })
@@ -195,7 +195,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             let service: FeatureServiceConfig
             let identityManager: ArcGISIdentityManager
             if (token) {
-              identityManager = await ArcGISIdentityManager.fromToken({ token }) 
+              identityManager = await ArcGISIdentityManager.fromToken({ token })
               service = { url, layers: [], identityManager: identityManager.serialize() }
             } else if (username && password) {
               identityManager = await ArcGISIdentityManager.signIn({
@@ -209,7 +209,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
             }
 
             try {
-              let existingService = config.featureServices.find(service => service.url === url)
+              const existingService = config.featureServices.find(service => service.url === url)
               if (!existingService) {
                 config.featureServices.push(service)
               }
@@ -221,7 +221,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
               return res.send('Invalid credentials provided to communicate with feature service').status(400)
             }
           })
-            
+
           routes.get('/featureService/layers', async (req, res, next) => {
             const url = req.query.featureServiceUrl as string
             const config = await processor.safeGetConfig()

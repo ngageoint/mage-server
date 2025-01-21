@@ -163,7 +163,7 @@ export class ObservationProcessor {
 	 */
 	private async updateConfig(): Promise<ArcGISPluginConfig> {
 		const config = await this.safeGetConfig()
-		
+
 		// Include form definitions while detecting changes in config
 		const eventForms = await this._eventRepo.findAll();
 		const fullConfig = { ...config, eventForms };
@@ -187,7 +187,7 @@ export class ObservationProcessor {
 	async start() {
 		this._isRunning = true;
 		this._firstRun = true;
-		this.processAndScheduleNext();
+		await this.processAndScheduleNext();
 	}
 
 	/**
@@ -379,7 +379,7 @@ export class ObservationProcessor {
 			}
 		}
 
-		let latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
+		const latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
 		if (latestObs != null && latestObs.totalCount != null && latestObs.totalCount > 0) {
 			if (pagingSettings.pageIndex == 0) {
 				this._console.info('ArcGIS newest observation count ' + latestObs.totalCount);

@@ -50,9 +50,10 @@ export class ObservationsSender {
 
     /**
      * Constructor.
-     * @param layerInfo The layer info.
-     * @param config The plugins configuration.
-     * @param console Used to log to the console.
+     * @param {LayerInfo} layerInfo The layer info.
+     * @param {ArcGISPluginConfig} config The plugins configuration.
+     * @param {ArcGISIdentityManager} identityManager The ArcGIS identity manager for authentication.
+     * @param {Console} console Used to log to the console.
      */
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this._url = layerInfo.url;
@@ -67,12 +68,12 @@ export class ObservationsSender {
     /**
      * Converts the specified observations into a json string that can be sent to an arcgis server and
      * sends them to an arc server for adding.
-     * @param observations The observations to convert.
+     * @param {ArcObjects} observations The observations to convert.
      */
     sendAdds(observations: ArcObjects) {
         this._console.info('ArcGIS addFeatures url ' + this._urlAdd);
 
-        let responseHandler = this.addResponseHandler(observations);
+        const responseHandler = this.addResponseHandler(observations);
         addFeatures({
             url: this._url,
             authentication: this._identityManager,
@@ -83,13 +84,12 @@ export class ObservationsSender {
     /**
      * Converts the specified observations into a json string that can be sent to an arcgis server and
      * sends them to an arc server for updating.
-     * @param observations The observations to convert.
-     * @returns The json string of the observations.
+     * @param {ArcObjects} observations The observations to convert.
      */
     sendUpdates(observations: ArcObjects) {
         this._console.info('ArcGIS updateFeatures url ' + this._urlUpdate);
 
-        let responseHandler = this.updateResponseHandler(observations);
+        const responseHandler = this.updateResponseHandler(observations);
         updateFeatures({
             url: this._url,
             authentication: this._identityManager,
@@ -99,7 +99,7 @@ export class ObservationsSender {
 
     /**
      * Delete an observation.
-     * @param id The observation id.
+     * @param {number} id The observation id.
      */
     sendDelete(id: number) {
         const url = this._url + '/deleteFeatures'
@@ -114,7 +114,7 @@ export class ObservationsSender {
 
     /**
      * Deletes all observations that are apart of a specified event.
-     * @param id The event id.
+     * @param {number} id The event id.
      */
     sendDeleteEvent(id: number) {
 
@@ -135,8 +135,8 @@ export class ObservationsSender {
 
     /**
      * Creates an add observation response handler.
-     * @param observations The observations sent.
-     * @returns The response handler.
+     * @param {ArcObjects} observations The observations sent.
+     * @returns {(chunk: any) => void} The response handler.
      */
     private addResponseHandler(observations: ArcObjects): (chunk: any) => void {
         return this.responseHandler(observations, false)
@@ -144,8 +144,8 @@ export class ObservationsSender {
 
     /**
      * Creates an update observation response handler.
-     * @param observations The observations sent.
-     * @returns The response handler.
+     * @param {ArcObjects} observations The observations sent.
+     * @returns {(chunk: any) => void} The response handler.
      */
     private updateResponseHandler(observations: ArcObjects): (chunk: any) => void {
         return this.responseHandler(observations, true)
@@ -153,13 +153,13 @@ export class ObservationsSender {
 
     /**
      * Creates an observation response handler.
-     * @param observations The observations sent.
-     * @param update The update or add flag value.
-     * @returns The response handler.
+     * @param {ArcObjects} observations The observations sent.
+     * @param {boolean} update The update or add flag value.
+     * @returns {(chunk: any) => void} The response handler.
      */
-    private responseHandler(observations: ArcObjects, update: boolean): (chunk: any) => void {
+    private responseHandler(observations: ArcObjects, update: boolean): (chunk: { addResults?: EditResult[], updateResults?: EditResult[] }) => void {
         const console = this._console
-        return (chunk: any) => {
+        return (chunk: { addResults?: EditResult[], updateResults?: EditResult[] }) => {
             console.log('ArcGIS ' + (update ? 'Update' : 'Add') + ' Response: ' + JSON.stringify(chunk))
             const response = chunk
             const results = response[update ? 'updateResults' : 'addResults'] as EditResult[]
@@ -189,8 +189,8 @@ export class ObservationsSender {
 
     /**
      * Send observation attachments.
-     * @param observation The observation.
-     * @param objectId The arc object id of the observation.
+     * @param {ArcObservation} observation The observation.
+     * @param {number} objectId The arc object id of the observation.
      */
     private sendAttachments(observation: ArcObservation, objectId: number) {
         if (observation.attachments != null) {
@@ -202,8 +202,8 @@ export class ObservationsSender {
 
     /**
      * Query for and update observation attachments.
-     * @param observation The observation.
-     * @param objectId The arc object id of the observation.
+     * @param {ArcObservation} observation The observation.
+     * @param {number} objectId The arc object id of the observation.
      */
     private queryAndUpdateAttachments(observation: ArcObservation, objectId: number) {
         // Query for existing attachments
@@ -220,14 +220,14 @@ export class ObservationsSender {
 
     /**
      * Update observation attachments.
-     * @param observation The observation.
-     * @param objectId The arc object id of the observation.
-     * @param attachmentInfos The arc attachment infos.
+     * @param {ArcObservation} observation The observation.
+     * @param {number} objectId The arc object id of the observation.
+     * @param {AttachmentInfo[]} attachmentInfos The arc attachment infos.
      */
     private updateAttachments(observation: ArcObservation, objectId: number, attachmentInfos: AttachmentInfo[]) {
 
         // Build a mapping between existing arc attachment names and the attachment infos
-        let nameAttachments = new Map<string, AttachmentInfo>()
+        const nameAttachments = new Map<string, AttachmentInfo>()
         if (attachmentInfos != null) {
             for (const attachmentInfo of attachmentInfos) {
                 nameAttachments.set(attachmentInfo.name, attachmentInfo)
@@ -265,8 +265,8 @@ export class ObservationsSender {
 
     /**
      * Send an observation attachment.
-     * @param attachment The observation attachment.
-     * @param objectId The arc object id of the observation.
+     * @param {ArcAttachment} attachment The observation attachment.
+     * @param {number} objectId The arc object id of the observation.
      */
     private async sendAttachment(attachment: ArcAttachment, objectId: number) {
         if (attachment.contentLocator) {
@@ -274,10 +274,10 @@ export class ObservationsSender {
 
             const fileName = this.attachmentFileName(attachment)
             this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-    
+
             const readStream = await fs.openAsBlob(file)
             const attachmentFile = new File([readStream], fileName)
-    
+
             addAttachment({
                 url: this._url,
                 authentication: this._identityManager,
@@ -289,9 +289,9 @@ export class ObservationsSender {
 
     /**
      * Update an observation attachment.
-     * @param attachment The observation attachment.
-     * @param objectId The arc object id of the observation.
-     * @param attachmentId The observation arc attachment id.
+     * @param {ArcAttachment} attachment The observation attachment.
+     * @param {number} objectId The arc object id of the observation.
+     * @param {number} attachmentId The observation arc attachment id.
      */
     private async updateAttachment(attachment: ArcAttachment, objectId: number, attachmentId: number) {
         if (attachment.contentLocator) {
@@ -299,10 +299,10 @@ export class ObservationsSender {
 
             const fileName = this.attachmentFileName(attachment)
             this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-    
+
             const readStream = await fs.openAsBlob(file)
             const attachmentFile = new File([readStream], fileName)
-    
+
             updateAttachment({
                 url: this._url,
                 authentication: this._identityManager,
@@ -315,8 +315,8 @@ export class ObservationsSender {
 
     /**
      * Delete observation attachments.
-     * @param objectId The arc object id of the observation.
-     * @param attachmentInfos The arc attachment infos.
+     * @param {number} objectId The arc object id of the observation.
+     * @param {AttachmentInfo[]} attachmentInfos The arc attachment infos.
      */
     private deleteAttachments(objectId: number, attachmentInfos: AttachmentInfo[]) {
 
@@ -331,8 +331,8 @@ export class ObservationsSender {
 
     /**
      * Delete observation attachments by ids.
-     * @param objectId The arc object id of the observation.
-     * @param attachmentIds The arc attachment ids.
+     * @param {number} objectId The arc object id of the observation.
+     * @param {number[]} attachmentIds The arc attachment ids.
      */
     private deleteAttachmentIds(objectId: number, attachmentIds: number[]) {
         this._console.info('ArcGIS deleteAttachments ' + attachmentIds)
@@ -347,8 +347,8 @@ export class ObservationsSender {
 
     /**
      * Determine the attachment file name.
-     * @param attachment The observation attachment.
-     * @return attachment file name.
+     * @param {ArcAttachment} attachment The observation attachment.
+     * @returns {string} attachment file name.
      */
     private attachmentFileName(attachment: ArcAttachment): string {
         let fileName = attachment.field + "_" + attachment.name
