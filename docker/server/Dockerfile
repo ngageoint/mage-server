@@ -22,11 +22,9 @@ WORKDIR ${MAGE_HOME}
 RUN ls -l \
     && npm i --omit dev @ngageoint/mage.service@${service_version} \
     && npm i --omit dev @ngageoint/mage.web-app@${web_version} \
-    && npm i --omit dev @ngageoint/mage.image.service@${image_version} \
-    && npm i --omit dev @ngageoint/mage.nga-msi@${msi_version} \
     && ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage
 EXPOSE 4242
 
-ENTRYPOINT [ "./mage.service", "--plugin", "@ngageoint/mage.image.service", "--plugin", "@ngageoint/mage.nga-msi" ]
+ENTRYPOINT [ "./mage.service" ]
