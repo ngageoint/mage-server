@@ -38,11 +38,11 @@ COPY --from=build-webapp /web-app /web-app
 # COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
 
 WORKDIR /instance
-COPY /instance/package.json /instance/package.json
-RUN npm install
+# COPY /instance/package.json /instance/package.json
+# RUN npm install
 # RUN npm install ../service/ngageoint-mage.service*.tgz \
 #     npm install ../web-app/ngageoint-mage.web-app*.tgz
 
-# RUN npm install ../service ../web-app/dist
-
+RUN npm install ../service ../web-app/dist
+ENV NODE_PATH=./node_modules
 ENTRYPOINT [ "./node_modules/.bin/mage.service" ]
