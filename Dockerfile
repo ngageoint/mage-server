@@ -25,14 +25,16 @@ RUN npm run build
 # Build instance
 FROM node:20.11.1 AS build-instance
 
-# COPY --from=build-service /service/lib /service/lib
-# COPY --from=build-service /service/package*.json /service/
-# COPY --from=build-service /service/bin /service/bin
-# COPY --from=build-webapp /web-app/dist /web-app/dist
-# COPY --from=build-webapp /web-app/package*.json /web-app/
+COPY --from=build-service /service/lib /service/lib
+COPY --from=build-service /service/package*.json /service/
+COPY --from=build-service /service/bin /service/bin
+COPY --from=build-service /service/node_modules /service/node_modules
+COPY --from=build-webapp /web-app/dist /web-app/dist
+COPY --from=build-webapp /web-app/node_modules /web-app/node_modules
+COPY --from=build-webapp /web-app/package*.json /web-app/
 
-COPY --from=build-service /service /service
-COPY --from=build-webapp /web-app /web-app
+# COPY --from=build-service /service /service
+# COPY --from=build-webapp /web-app /web-app
 
 # COPY --from=build-service /service/ngageoint*.tgz /service/
 # COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
