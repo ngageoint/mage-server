@@ -32,10 +32,11 @@ export class FeatureQuerier {
     private _identityManager: ArcGISIdentityManager;
 
     /**
-     * Constructor.
-     * @param layerInfo The layer info.
-     * @param config The plugins configuration.
-     * @param console Used to log to the console.
+     * Creates a new instance of FeatureQuerier.
+     * @param {LayerInfo} layerInfo - Information about the ArcGIS feature layer.
+     * @param {ArcGISPluginConfig} config - Configuration settings for the ArcGIS plugin.
+     * @param {ArcGISIdentityManager} identityManager - ArcGIS identity manager for authentication.
+     * @param {Console} console - Console instance for logging.
      */
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this._identityManager = identityManager;
@@ -47,13 +48,13 @@ export class FeatureQuerier {
 
     /**
      * Queries for an observation by id.
-     * @param observationId The id of the observation to query for on the arc feature layer.
-     * @param response The function called once the response is received.
-     * @param fields fields to query, all fields if not provided
-     * @param geometry query the geometry, default is true
+     * @param {string} observationId - The id of the observation to query for on the arc feature layer.
+     * @param {function(QueryObjectResult): void} response - Callback function called with the query result.
+     * @param {string[]} [fields] - Optional array of field names to query. If not provided, all fields are queried.
+     * @param {boolean} [geometry] - Optional flag to include geometry in the query. Defaults to true.
      */
     async queryObservation(observationId: string, response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
-        const where = !this._config.eventIdField 
+        const where = !this._config.eventIdField
             ? `${this._config.observationIdField} LIKE '${observationId}${this._config.idSeparator}%'`
             : `${this._config.observationIdField} = '${observationId}'`;
         this._console.info('ArcGIS query observation: ' + this._url.toString() + where);
@@ -68,9 +69,9 @@ export class FeatureQuerier {
 
     /**
      * Queries all observations.
-     * @param response Function called once query is complete.
-     * @param fields fields to query, all fields if not provided
-     * @param geometry query the geometry, default is true
+     * @param {function(QueryObjectResult): void} response - Callback function called with the query result.
+     * @param {string[]} [fields] - Optional array of field names to query. If not provided, all fields are queried.
+     * @param {boolean} [geometry] - Optional flag to include geometry in the query. Defaults to true.
      */
     async queryObservations(response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
         this._console.info('ArcGIS query observation: ' + this._url.toString());
@@ -84,9 +85,9 @@ export class FeatureQuerier {
     }
 
     /**
-     * Queries for distinct non null observation field values
-     * @param response Function called once query is complete.
-     * @param field field to query
+     * Queries for distinct non-null values in a specified field.
+     * @param {function(QueryObjectResult): void} response - Callback function called with the query result.
+     * @param {string} field - The field name to query for distinct values.
      */
     async queryDistinct(response: (result: QueryObjectResult) => void, field: string) {
         this._console.info('ArcGIS query observation: ' + this._url.toString());

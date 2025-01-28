@@ -39,9 +39,9 @@ export class ObservationBinner {
 
     /**
      * Constructor.
-     * @param layerInfo Information about the arc feature layer this class sends observations to.
-     * @param featureQuerier Used to query for observation on the arc feature layer.
-     * @param config The plugins configuration.
+     * @param {LayerInfo} layerInfo Information about the arc feature layer this class sends observations to.
+     * @param {FeatureQuerier} featureQuerier Used to query for observation on the arc feature layer.
+     * @param {ArcGISPluginConfig} config The plugins configuration.
      */
     constructor(layerInfo: LayerInfo, featureQuerier: FeatureQuerier, config: ArcGISPluginConfig) {
         this.layerInfo = layerInfo;
@@ -54,7 +54,7 @@ export class ObservationBinner {
 
     /**
      * Indicates if this binner has pending updates still waiting to be processed.
-     * @returns True if it is still waiting for updates to be processed, false otherwise.
+     * @returns {boolean} True if it is still waiting for updates to be processed, false otherwise.
      */
     hasPendingUpdates(): boolean {
         return this._existenceQueryCounts > 0;
@@ -62,7 +62,7 @@ export class ObservationBinner {
 
     /**
      * Gets any pending updates or adds that still need to occur.
-     * @returns The updates or adds that still need to occur.
+     * @returns {ObservationBins} The updates or adds that still need to occur.
      */
     pendingUpdates(): ObservationBins {
         const newAndUpdates = new ObservationBins();
@@ -82,8 +82,8 @@ export class ObservationBinner {
 
     /**
      * Sorts the observations into new observations or update observations.
-     * @param observations The observations to sort out.
-     * @returns The sorted out observations.
+     * @param {ArcObjects} observations The observations to sort out.
+     * @returns {ObservationBins} The sorted out observations.
      */
     sortEmOut(observations: ArcObjects): ObservationBins {
         const bins = new ObservationBins();
@@ -108,8 +108,7 @@ export class ObservationBinner {
 
     /**
      * Checks to see if the observation truly does exist on the server.
-     * @param arcObservation The observation to check.
-     * @returns True if it exists, false if it does not.
+     * @param {ArcObservation} arcObservation The observation to check.
      */
     checkForExistence(arcObservation: ArcObservation) {
         this._existenceQueryCounts++;
@@ -117,32 +116,32 @@ export class ObservationBinner {
             this._existenceQueryCounts--;
             if (result.features != null && result.features.length > 0) {
 
-                const arcAttributes = result.features[0].attributes
+                const arcAttributes = result.features[0].attributes;
 
-                let lastEdited = null
+                let lastEdited = null;
                 if (this._config.lastEditedDateField != null) {
-                    lastEdited = arcAttributes[this._config.lastEditedDateField]
+                    lastEdited = Number(arcAttributes[this._config.lastEditedDateField]);
                 }
                 if (lastEdited == null || lastEdited < arcObservation.lastModified) {
 
-                    const objectIdField = result.objectIdFieldName
-                    const updateAttributes = arcObservation.object.attributes
+                    const objectIdField = result.objectIdFieldName;
+                    const updateAttributes = arcObservation.object.attributes;
 
-                    updateAttributes[objectIdField] = arcAttributes[objectIdField]
+                    updateAttributes[objectIdField] = arcAttributes[objectIdField];
 
                     // Determine if any editable attribute values should be deleted
                     const lowerCaseUpdateAttributes = Object.fromEntries(
                         Object.entries(updateAttributes).map(([k, v]) => [k.toLowerCase(), v])
-                    )
+                    );
                     for (const arcAttribute of Object.keys(arcAttributes)) {
                         if (this.layerInfo.isEditable(arcAttribute)
                             && arcAttributes[arcAttribute] != null
                             && lowerCaseUpdateAttributes[arcAttribute.toLowerCase()] == null) {
-                            updateAttributes[arcAttribute] = null
+                            updateAttributes[arcAttribute] = null;
                         }
                     }
 
-                    this._pendingNewAndUpdates.updates.add(arcObservation)
+                    this._pendingNewAndUpdates.updates.add(arcObservation);
 
                 }
 

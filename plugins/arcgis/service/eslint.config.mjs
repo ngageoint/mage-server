@@ -9,7 +9,19 @@ export default [
     files: ["**/*.{js,mjs,cjs,ts}"],
     languageOptions: { globals: globals.browser },
     plugins: { jsdoc },
-    rules: { "jsdoc/require-description": "warn" },
+    rules: {
+      "jsdoc/require-description": "warn",
+      "semi": ["error", "always"]
+    },
+    "overrides": [
+      {
+        // enable the rule specifically for TypeScript files
+        "files": ["*.ts", "*.tsx"],
+        "rules": {
+          "@typescript-eslint/no-explicit-any": "off"
+        }
+      }
+    ]
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
