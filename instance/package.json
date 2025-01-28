@@ -5,6 +5,7 @@
   "scripts": {
     "start": "npm run start:dev-env",
     "start:dev": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service -C config.js",
+    "postinstall": "node ./init.js",
     "start:dev-env": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service"
 
   },
@@ -25,6 +26,11 @@
   },
   "homepage": "https://github.com/ngageoint/mage-server",
   "dependencies": {
+    "@ngageoint/mage.arcgis.service": "../plugins/arcgis/service",
+    "@ngageoint/mage.arcgis.web-app": "../plugins/arcgis/web-app/dist/main",
+    "@ngageoint/mage.image.service": "../plugins/image/service",
+    "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
+    "@ngageoint/mage.random": "../plugins/random",
     "@ngageoint/mage.service": "../service",
     "@ngageoint/mage.web-app": "../web-app/dist"
   }
