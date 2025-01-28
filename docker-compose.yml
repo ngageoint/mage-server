@@ -15,6 +15,7 @@ services:
       context: ./
       # dockerfile: Dockerfile-debug
     image: mage:local
+    # entrypoint: ["./node_modules/.bin/mage.service", "--plugin", "@ngageoint/mage.image.service"]  Uncomment to specify new entrypoint commands
     platform: linux/amd64
     volumes:
       - ./server/resources:/var/lib/mage

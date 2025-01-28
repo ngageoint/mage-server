@@ -319,6 +319,117 @@ That [NPM script](./instance/package.json) will run the `mage.service` script fr
 [configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
 your needs.
 
+## Docker Setup
+The docker directory includes documentation and dockerfiles for building using the release npm packages. The root Dockerfile and docker-compose.yml are used for building and running a dockerfile from the source/local code. Simply run `docker compose up` to spin up a local mongo db database along with the web server. After it starts up, navitage to localhost:4242 to view the web server.
+
+By default, the Dockerfile includes additional plugins. Should you want to add/remove any plugins, you will need to modify the Entrypoint command. Simply uncomment the `entrypoint` section of the docker compose to specify what plugins you would like to include, or exlude
+
+### HTTPS/TLS reverse proxy
+
+Then `mage-web-proxy` service is optional when developing and running on
+localhost, but highly recommended when running MAGE Server on publicly
+accessible servers.  The service in `docker-compose.yml` uses the official
+nginx docker image with an appropriate [configuration](web/nginx.conf).  This
+is an example of setting up a reverse proxy in front of the Node server to
+enforce HTTPS/TLS connections to the server.  Of course, you could use any
+reverse proxy you see fit, such as [Apache HTTP Server](https://httpd.apache.org/)
+or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  To run your MAGE server behind the TLS
+reverse proxy, peform the following modifications to `docker-compose.yml`.
+1. Comment the `ports` block for the `mage-server` service to disallow
+  connections directly to the Node.js server.
+1. Uncomment the block with the `mage-web-proxy` service key.
+
+For testing in a development environment, you can create a self-signed server
+certificate for nginx to use.  The following OpenSSL command, run from the
+directory of this README, will create a self-signed server certificate and
+private key in the `web` directory that should allow the MAGE mobile app to
+connect to nginx.  Replace the values of the `SUBJ_*` variables at the
+beginning of the command with your own values.
+```
+SUBJ_C="XX" \
+SUBJ_ST="State" \
+SUBJ_L="Locality" \
+SUBJ_O="Organization" \
+SUBJ_OU="Organizational_Unit" \
+SUBJ_CN="HOST_NAME_OR_IP"; \
+openssl req -new -nodes -x509 -newkey rsa:4096 -sha256 -days 1095 \
+-out web/mage-web.crt -keyout web/mage-web.key \
+-config <(cat /etc/ssl/openssl.cnf <(printf "[mage]\n  \
+subjectAltName=DNS:$SUBJ_CN\n  \
+basicConstraints=CA:true")) \
+-subj "/C=$SUBJ_C/ST=$SUBJ_ST/L=$SUBJ_L/O=$SUBJ_O/OU=$SUBJ_OU/CN=$SUBJ_CN" \
+-extensions mage; \
+unset SUBJ_C SUBJ_ST SUBJ_L SUBJ_O SUBJ_OU SUBJ_CN
+```
+The preceding command creates `web/mage-web.crt` and `web/mage-web.key`, which
+the nginx configuration file references.  The `<(...)` operator is Unix process
+substitution and allows treating the enclosed command output as a file.  The
+`subjectAltName` and `basicConstraints` arguments are necessary to install the
+public certificate, `mage-web.crt`, as a trusted authority on a mobile device.
+
+**IMPORTANT** If you intend to connect to your reverse proxy from a mobile
+device or simulator/emulator running the MAGE mobile app, make sure that the
+value of the `SUBJ_CN` variable matches the IP address of your MAGE Server
+host on your network, or the resolvable host name of the host.  TLS connections
+will not succeed if Common Name and Subject Alternative Name fields in the
+public certificate do not match the host name.
+
+When running with the reverse proxy and default port settings in the Compose
+file, your server will be available at https://localhost:5443.  If you are
+connecting from a mobile device on the same network.
+
+### Bind mounts
+
+The Compose file uses [bind mounts](https://docs.docker.com/storage/bind-mounts/)
+for the MongoDB database directory, database log path, and MAGE server
+[resources](../README.md#mage-local-media-directory).  By default, the source
+paths of those bind mounts are `database/data`, `database/log`, and
+`server/resources`, respectively.  You can change the source paths according to
+your environment and needs.
+
+With these bind mounts, the MAGE server will retain its data on your host file
+system in directories you can explore and manage yourself.  For example, this
+setup allows you to mount a directory into the MAGE server container from a
+[FUSE-based](https://github.com/libfuse/libfuse) file system, which might
+provide extra functionality like [encryption](https://www.veracrypt.fr) or
+[remote mounting](https://github.com/libfuse/sshfs) transparently to the
+Docker container and MAGE application.  If you don't have any requirements of
+that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
+
+### Ports
+The only port the Compose file exposes to the host by default is 4242 on the
+`mage-server` service to allow HTTP connections from your host web browser to
+the MAGE server running in the Docker container.  In a production environment,
+you could add another service in the Compose file to run an
+[nginx](https://hub.docker.com/_/nginx/) or [httpd](https://hub.docker.com/_/httpd/)
+reverse proxy with TLS or other security measures in front of the MAGE Server
+Node application.  In that case you would remove the
+```yaml
+ports:
+  - 4242:4242
+```
+lines from the Compose file under the `mage-server` service entry.  You would
+then most likely add the mapping
+```yaml
+ports:
+  - 443:443
+```
+to the reverse proxy's service definition.
+
+You can also allow connections from your host to the MongoDB database container
+by uncommenting the `ports` block of the `mage-db` service.  You would then be
+able to connect directly to the MongoDB database using the `mongo` client on
+your host machine to examine or modify the database contents.
+
+### Environment settings
+
+You can configure the MAGE server Docker app using [environment variables](../README.md#mage-environment-settings).
+The Compose file does this by necessity to configure the MongoDB URL for the MAGE server.
+```yaml
+environment:
+    MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
+```
+
 ### Local runtime issues
 
 You may run into some problems running the Mage instance from your working tree due to NPM's dependency installation
