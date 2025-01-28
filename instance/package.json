@@ -5,8 +5,9 @@
   "scripts": {
     "start": "npm run start:dev-env",
     "start:dev": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service -C config.js",
-    "start:dev-env": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service",
-    "postinstall": "node ./init.js"
+    "postinstall": "node ./init.js",
+    "start:dev-env": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service"
+
   },
   "repository": {
     "type": "git",
