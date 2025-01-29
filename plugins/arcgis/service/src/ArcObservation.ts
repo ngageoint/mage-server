@@ -1,5 +1,5 @@
-import { ArcObject } from './ArcObject'
-import { ObservationId } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { ArcObject } from './ArcObject';
+import { ObservationId } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 
 /**
  * The ArcGIS Observation wraps the raw ArcObject and combines Arc & MAGE metadata.

@@ -1,4 +1,4 @@
-import { ArcObject } from "./ArcObject"
+import { ArcObject } from "./ArcObject";
 
 /**
  * ArcGIS feature layer query result.

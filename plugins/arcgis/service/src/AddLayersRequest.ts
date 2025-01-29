@@ -24,5 +24,5 @@ export interface Field {
     nullable: boolean
     editable: boolean
     domain?: string
-    defaultValue?: any
+    defaultValue?: unknown
 }

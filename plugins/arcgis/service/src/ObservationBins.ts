@@ -27,8 +27,8 @@ export class ObservationBins {
      * Clear the observations.
      */
     clear() {
-        this.adds.clear()
-        this.updates.clear()
+        this.adds.clear();
+        this.updates.clear();
     }
 
 }

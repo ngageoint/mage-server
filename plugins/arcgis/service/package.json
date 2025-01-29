@@ -48,14 +48,19 @@
     "express": "^4.17.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
     "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.7",
     "@types/jest": "^26.0.3",
     "cpy-cli": "^3.1.1",
+    "eslint": "^9.17.0",
+    "eslint-plugin-jsdoc": "^50.6.1",
+    "globals": "^15.14.0",
     "jest": "^26.1.0",
     "nock": "^12.0.3",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^26.1.1",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.3",
+    "typescript-eslint": "^8.19.1"
   }
 }

@@ -37,22 +37,23 @@ export class FeatureLayerProcessor {
     lastTimeStamp: number;
 
     /**
-     * Constructor.
-     * @param layerInfo Information about the arc feature layer this class sends observations to.
-     * @param config Contains certain parameters that can be configured.
-     * @param console Used to log messages to the console.
+     * Creates a new instance of FeatureLayerProcessor.
+     * @param {LayerInfo} layerInfo - Information about the arc feature layer this class sends observations to.
+     * @param {ArcGISPluginConfig} config - Contains certain parameters that can be configured.
+     * @param {ArcGISIdentityManager} identityManager - ArcGIS identity manager for authentication.
+     * @param {Console} console - Used to log messages to the console.
      */
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this.layerInfo = layerInfo;
         this.lastTimeStamp = 0;
-        this.featureQuerier = new FeatureQuerier(layerInfo, config, identityManager,console);
+        this.featureQuerier = new FeatureQuerier(layerInfo, config, identityManager, console);
         this._binner = new ObservationBinner(layerInfo, this.featureQuerier, config);
         this.sender = new ObservationsSender(layerInfo, config, identityManager, console);
     }
 
     /**
      * Indicates if this processor has pending updates still waiting to be processed.
-     * @returns True if it is still waiting for updates to be processed, false otherwise.
+     * @returns {boolean} True if it is still waiting for updates to be processed, false otherwise.
      */
     hasPendingUpdates(): boolean {
         return this._binner.hasPendingUpdates();
@@ -69,7 +70,7 @@ export class FeatureLayerProcessor {
     /**
      * Goes through each observation and figures out if the geometry type matches the arc feature layer.
      * If so it then separates the adds from the updates and sends them to the arc feature layer.
-     * @param observations 
+     * @param {ArcObjects} observations - The observations to process.
      */
     processArcObjects(observations: ArcObjects) {
         const arcObjectsForLayer = new ArcObjects();
@@ -85,14 +86,14 @@ export class FeatureLayerProcessor {
 
         for (const arcObservation of observations.deletions) {
             if (this.layerInfo.geometryType == arcObservation.esriGeometryType) {
-                this.sender.sendDelete(Number(arcObservation.id));
+                this.sender.sendDelete(arcObservation.id);
             }
         }
     }
 
     /**
      * Sends all the observations to the arc server.
-     * @param bins The observations to send.
+     * @param {ObservationBins} bins - The observations to send.
      */
     private send(bins: ObservationBins) {
         if (!bins.adds.isEmpty()) {

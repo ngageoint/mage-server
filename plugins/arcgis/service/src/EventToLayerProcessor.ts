@@ -13,12 +13,12 @@ export class EventToLayerProcessor {
     /**
      * The FeatureLayerProcessors the even is synching to.
      */
-    featureLayerProcessors: FeatureLayerProcessor[]
+    featureLayerProcessors: FeatureLayerProcessor[];
 
     /**
      * Constructor.
-     * @param event The MAGE event.
-     * @param featureLayerProcessors The FeatureLayerProcessors the even is synching to.
+     * @param {MageEventAttrs} event The MAGE event.
+     * @param {FeatureLayerProcessor[]} featureLayerProcessors The FeatureLayerProcessors the even is synching to.
      */
     constructor(event: MageEventAttrs, featureLayerProcessors: FeatureLayerProcessor[]) {
         this.event = event;

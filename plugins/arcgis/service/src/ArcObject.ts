@@ -5,7 +5,7 @@
 export interface ArcObject {
     geometry: ArcGeometry,
     attributes: {
-        [key: string]: any
+        [key: string]: unknown
     }
 }
 

@@ -9,17 +9,17 @@ export class EventLayerProcessorOrganizer {
 
     /**
      * Organizes the events with the layer processors they are configured to sync.
-     * @param events The events to organize.
-     * @param layerProcessors The layer processors.
-     * @returns An array of events mapped to their processors.
+     * @param {MageEventAttrs[]} events The events to organize.
+     * @param {FeatureLayerProcessor[]} layerProcessors The layer processors.
+     * @returns {EventToLayerProcessor} An array of events mapped to their processors.
      */
     organize(events: MageEventAttrs[], layerProcessors: FeatureLayerProcessor[]): EventToLayerProcessor[] {
-        let eventsAndProcessors = new Array<EventToLayerProcessor>;
+        const eventsAndProcessors = new Array<EventToLayerProcessor>;
 
         for (const event of events) {
-            let syncProcessors = new Array<FeatureLayerProcessor>();
+            const syncProcessors = new Array<FeatureLayerProcessor>();
             for (const layerProcessor of layerProcessors) {
-                if (layerProcessor.layerInfo.hasEvent(event.name)) {
+                if (layerProcessor.layerInfo.hasEvent(event.id)) {
                     syncProcessors.push(layerProcessor);
                 }
             }
