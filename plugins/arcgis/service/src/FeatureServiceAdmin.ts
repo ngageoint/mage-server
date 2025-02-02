@@ -1,310 +1,310 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig"
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig"
-import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events'
-import { Layer, Field } from "./AddLayersRequest"
-import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
-import { ObservationsTransformer } from "./ObservationsTransformer"
-import { LayerInfoResult, LayerField } from "./LayerInfoResult"
-import FormData from 'form-data'
-import { request } from '@esri/arcgis-rest-request'
-import { ArcGISIdentityService } from "./ArcGISService"
+import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig";
+import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
+import { Layer, Field } from "./AddLayersRequest";
+import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
+import { ObservationsTransformer } from "./ObservationsTransformer";
+import { LayerInfoResult, LayerField } from "./LayerInfoResult";
+import FormData from 'form-data';
+import { request } from '@esri/arcgis-rest-request';
+import { ArcGISIdentityService } from "./ArcGISService";
 
 /**
  * Administers hosted feature services such as layer creation and updates.
  */
 export class FeatureServiceAdmin {
-	private _config: ArcGISPluginConfig
-	private _identityService: ArcGISIdentityService
-	private _console: Console
+	private _config: ArcGISPluginConfig;
+	private _identityService: ArcGISIdentityService;
+	private _console: Console;
 
+	/**
+	 * Constructor.
+	 * @param {ArcGISPluginConfig} config The plugins configuration.
+	 * @param {ArcGISIdentityService} identityService The identity service.
+	 * @param {Console} console Used to log to the console.
+	 */
 	constructor(config: ArcGISPluginConfig, identityService: ArcGISIdentityService, console: Console) {
-		this._config = config
-		this._identityService = identityService
-		this._console = console
+		this._config = config;
+		this._identityService = identityService;
+		this._console = console;
 	}
 
 	/**
 	 * Create the layer
-	 * @param service feature service
-	 * @param featureLayer feature layer
-	 * @param nextId next service layer id
-	 * @param eventRepo event repository
-	 * @returns layer id
+	 * @param {FeatureServiceConfig} service feature service
+	 * @param {FeatureLayerConfig} featureLayer feature layer
+	 * @param {number} nextId next service layer id
+	 * @param {MageEventRepository} eventRepo event repository
+	 * @returns {Promise<number>} layer id
 	 */
 	async createLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, nextId: number, eventRepo: MageEventRepository): Promise<number> {
-		const layer = { type: 'Feature Layer' } as Layer
+		const layer = { type: 'Feature Layer' } as Layer;
 
-		const layerIdentifier = featureLayer.layer
-		const layerIdentifierNumber = Number(layerIdentifier)
+		const layerIdentifier = featureLayer.layer;
+		const layerIdentifierNumber = Number(layerIdentifier);
 		if (isNaN(layerIdentifierNumber)) {
-				layer.name = String(layerIdentifier)
-				layer.id = nextId
+			layer.name = String(layerIdentifier);
+			layer.id = nextId;
 		} else {
-				layer.id = layerIdentifierNumber
+			layer.id = layerIdentifierNumber;
 		}
 
-		const events = await this.layerEvents(featureLayer, eventRepo)
+		const events = await this.layerEvents(featureLayer, eventRepo);
 
 		if (layer.name == null) {
-				layer.name = this.layerName(events)
+			layer.name = this.layerName(events);
 		}
 
 		if (featureLayer.geometryType != null) {
-				layer.geometryType = featureLayer.geometryType
+			layer.geometryType = featureLayer.geometryType;
 		} else {
-				layer.geometryType = 'esriGeometryPoint'
+			layer.geometryType = 'esriGeometryPoint';
 		}
 
-		layer.fields = this.fields(events)
+		layer.fields = this.fields(events);
 
 		// TODO What other layer properties are needed or required?
 		// https://developers.arcgis.com/rest/services-reference/online/add-to-definition-feature-service-.htm#GUID-63F2BD08-DCF4-485D-A3E6-C7116E17DDD8
 
-		this.create(service, layer)
+		this.create(service, layer);
 
-		return layer.id
+		return layer.id;
 	}
 
 	/**
 	 * Update the layer fields
-	 * @param service feature service
-	 * @param featureLayer feature layer
-	 * @param layerInfo layer info
-	 * @param eventRepo event repository
+	 * @param {FeatureServiceConfig} service feature service
+	 * @param {FeatureLayerConfig} featureLayer feature layer
+	 * @param {LayerInfoResult} layerInfo layer info
+	 * @param {MageEventRepository} eventRepo event repository
 	 */
 	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository) {
-		const events = await this.layerEvents(featureLayer, eventRepo)
+		const events = await this.layerEvents(featureLayer, eventRepo);
 
-		const eventFields = this.fields(events)
-		const layerFields = layerInfo.fields
+		const eventFields = this.fields(events);
+		const layerFields = layerInfo.fields;
 
-		const layerFieldSet = new Set()
+		const layerFieldSet = new Set();
 		for (const field of layerFields) {
-			layerFieldSet.add(field.name)
+			layerFieldSet.add(field.name);
 		}
 
-		const addFields = []
+		const addFields = [];
 		for (const field of eventFields) {
 			if (!layerFieldSet.has(field.name)) {
-				addFields.push(field)
-				const layerField = {} as LayerField
-				layerField.name = field.name
-				layerField.editable = true
-				layerFields.push(layerField)
+				addFields.push(field);
+				const layerField = {} as LayerField;
+				layerField.name = field.name;
+				layerField.editable = true;
+				layerFields.push(layerField);
 			}
 		}
 
 		if (addFields.length > 0) {
-			await this.addFields(service, featureLayer, addFields)
+			await this.addFields(service, featureLayer, addFields);
 		}
 
-		const eventFieldSet = new Set()
+		const eventFieldSet = new Set();
 		for (const field of eventFields) {
-			eventFieldSet.add(field.name)
+			eventFieldSet.add(field.name);
 		}
 
-		const deleteFields = []
-		const remainingFields = []
+		const deleteFields = [];
+		const remainingFields = [];
 		for (const field of layerFields) {
 			if (field.editable && !eventFieldSet.has(field.name)) {
-				deleteFields.push(field)
+				deleteFields.push(field);
 			} else {
-				remainingFields.push(field)
+				remainingFields.push(field);
 			}
 		}
 
 		if (deleteFields.length > 0) {
-			layerInfo.fields = remainingFields
-			await this.deleteFields(service, featureLayer, deleteFields)
+			layerInfo.fields = remainingFields;
+			await this.deleteFields(service, featureLayer, deleteFields);
 		}
 	}
 
 	/**
 	 * Get the Mage layer events
-	 * @param layer feature layer
-	 * @param eventRepo event repository
-	 * @returns Mage layer events
+	 * @param {FeatureLayerConfig} layer feature layer
+	 * @param {MageEventRepository} eventRepo event repository
+	 * @returns {Promise<MageEvent[]>} Mage layer events
 	 */
 	private async layerEvents(layer: FeatureLayerConfig, eventRepo: MageEventRepository): Promise<MageEvent[]> {
-		const layerEventIds: Set<MageEventId> = new Set()
-		 if (layer.eventIds != null) {
+		const layerEventIds: Set<MageEventId> = new Set();
+		if (layer.eventIds != null) {
 			for (const layerEventId of layer.eventIds) {
-				layerEventIds.add(layerEventId)
+				layerEventIds.add(layerEventId);
 			}
 		}
 
-		let mageEvents
+		let mageEvents;
 		if (layerEventIds.size > 0) {
-			mageEvents = await eventRepo.findAll()
+			mageEvents = await eventRepo.findAll();
 		} else {
-			mageEvents = await eventRepo.findActiveEvents()
+			mageEvents = await eventRepo.findActiveEvents();
 		}
 
-		const events: MageEvent[] = []
+		const events: MageEvent[] = [];
 		for (const mageEvent of mageEvents) {
 			if (layerEventIds.size == 0 || layerEventIds.has(mageEvent.id)) {
-				const event = await eventRepo.findById(mageEvent.id)
+				const event = await eventRepo.findById(mageEvent.id);
 				if (event != null) {
-					events.push(event)
+					events.push(event);
 				}
 			}
 		}
 
-		return events
+		return events;
 	}
 
 	/**
 	 * Create a layer name
-	 * @param events layer events
-	 * @returns layer name
+	 * @param {MageEvent[]} events layer events
+	 * @returns {string} layer name
 	 */
 	private layerName(events: MageEvent[]): string {
-		let layerName = ''
+		let layerName = '';
 		for (let i = 0; i < events.length; i++) {
 			if (i > 0) {
-					layerName += ', '
+				layerName += ', ';
 			}
-			layerName += events[i].name
+			layerName += events[i].name;
 		}
-		return layerName
+		return layerName;
 	}
 
 	/**
 	 * Builder the layer fields
-	 * @param events layer events
-	 * @returns fields
+	 * @param {MageEvent[]} events layer events
+	 * @returns {Field[]} fields
 	 */
 	private fields(events: MageEvent[]): Field[] {
-		const fields: Field[] = []
+		const fields: Field[] = [];
 
-		fields.push(this.createTextField(this._config.observationIdField, false))
+		fields.push(this.createTextField(this._config.observationIdField));
 		if (this._config.eventIdField != null) {
-			fields.push(this.createIntegerField(this._config.eventIdField, false))
+			fields.push(this.createIntegerField(this._config.eventIdField));
 		}
 		if (this._config.eventNameField != null) {
-			fields.push(this.createTextField(this._config.eventNameField, true))
+			fields.push(this.createTextField(this._config.eventNameField));
 		}
 		if (this._config.userIdField != null) {
-			fields.push(this.createTextField(this._config.userIdField, true))
+			fields.push(this.createTextField(this._config.userIdField));
 		}
 		if (this._config.usernameField != null) {
-			fields.push(this.createTextField(this._config.usernameField, true))
+			fields.push(this.createTextField(this._config.usernameField));
 		}
 		if (this._config.userDisplayNameField != null) {
-			fields.push(this.createTextField(this._config.userDisplayNameField, true))
+			fields.push(this.createTextField(this._config.userDisplayNameField));
 		}
 		if (this._config.deviceIdField != null) {
-			fields.push(this.createTextField(this._config.deviceIdField, true))
+			fields.push(this.createTextField(this._config.deviceIdField));
 		}
 		if (this._config.createdAtField != null) {
-			fields.push(this.createDateTimeField(this._config.createdAtField, true))
+			fields.push(this.createDateTimeField(this._config.createdAtField));
 		}
 		if (this._config.lastModifiedField != null) {
-			fields.push(this.createDateTimeField(this._config.lastModifiedField, true))
+			fields.push(this.createDateTimeField(this._config.lastModifiedField));
 		}
 		if (this._config.geometryType != null) {
-			fields.push(this.createTextField(this._config.geometryType, true))
+			fields.push(this.createTextField(this._config.geometryType));
 		}
 
-		const fieldNames = new Set<string>()
+		const fieldNames = new Set<string>();
 		for (const field of fields) {
-			fieldNames.add(field.name)
+			fieldNames.add(field.name);
 		}
 
-		this.eventsFields(events, fields, fieldNames)
+		this.eventsFields(events, fields, fieldNames);
 
-		return fields
+		return fields;
 	}
 
 	/**
 	 * Create a field
-	 * @param name field name
-	 * @param type form field type
-	 * @param nullable nullable flag
-	 * @param integer integer flag when numeric
-	 * @returns field
+	 * @param {string} name field name
+	 * @param {FormFieldType} type form field type
+	 * @param {boolean} [integer] integer flag when numeric
+	 * @returns {Field} field
 	 */
-	private createField(name: string, type: FormFieldType, nullable: boolean, integer?: boolean): Field {
-		let field = this.initField(type, integer) as Field
+	private createField(name: string, type: FormFieldType, integer?: boolean): Field {
+		const field = this.initField(type, integer) as Field;
 		if (field != null) {
-			field.name = ObservationsTransformer.replaceSpaces(name)
-			field.alias = field.name
-			field.nullable = nullable
-			field.editable = true
+			field.name = ObservationsTransformer.replaceSpaces(name);
+			field.alias = field.name;
+			field.editable = true;
 		}
-		return field
+		return field;
 	}
 
 	/**
 	 * Create a text field
-	 * @param name field name
-	 * @param nullable nullable flag
-	 * @returns field
+	 * @param {string} name field name
+	 * @returns {Field} field
 	 */
-	private createTextField(name: string, nullable: boolean): Field {
-		return this.createField(name, FormFieldType.Text, nullable)
+	private createTextField(name: string): Field {
+		return this.createField(name, FormFieldType.Text);
 	}
 
 	/**
 	 * Create a numeric field
-	 * @param name field name
-	 * @param nullable nullable flag
-	 * @param integer integer flag
-	 * @returns field
+	 * @param {string} name field name
+	 * @param {boolean} [integer] integer flag
+	 * @returns {Field} field
 	 */
-	private createNumericField(name: string, nullable: boolean, integer?: boolean): Field {
-		return this.createField(name, FormFieldType.Numeric, nullable, integer)
+	private createNumericField(name: string, integer?: boolean): Field {
+		return this.createField(name, FormFieldType.Numeric, integer);
 	}
 
 	/**
 	 * Create an integer field
-	 * @param name field name
-	 * @param nullable nullable flag
-	 * @returns field
+	 * @param {string} name field name
+	 * @returns {Field} field
 	 */
-	private createIntegerField(name: string, nullable: boolean): Field {
-		return this.createNumericField(name, nullable, true)
+	private createIntegerField(name: string): Field {
+		return this.createNumericField(name, true);
 	}
 
 	/**
 	 * Create a date time field
-	 * @param name field name
-	 * @param nullable nullable flag
-	 * @returns field
+	 * @param {string} name field name
+	 * @returns {Field} field
 	 */
-	private createDateTimeField(name: string, nullable: boolean): Field {
-		return this.createField(name, FormFieldType.DateTime, nullable)
+	private createDateTimeField(name: string): Field {
+		return this.createField(name, FormFieldType.DateTime);
 	}
 
 	/**
 	 * Build fields from the layer events
-	 * @param events layer events
-	 * @param fields created fields
-	 * @param fieldNames set of all field names
+	 * @param {MageEvent[]} events layer events
+	 * @param {Field[]} fields created fields
+	 * @param {Set<string>} fieldNames set of all field names
 	 */
 	private eventsFields(events: MageEvent[], fields: Field[], fieldNames: Set<string>) {
-		const forms = new Set<FormId>()
+		const forms = new Set<FormId>();
 
 		for (const event of events) {
-			this.eventFields(event, forms, fields, fieldNames)
+			this.eventFields(event, forms, fields, fieldNames);
 		}
 	}
 
-    /**
-     * Build fields from the layer event
-     * @param event layer event
-     * @param forms set of processed forms
-     * @param fields created fields
-     * @param fieldNames set of all field names
-     */
+	/**
+	 * Build fields from the layer event
+	 * @param {MageEvent} event layer event
+	 * @param {Set<FormId>} forms set of processed forms
+	 * @param {Field[]} fields created fields
+	 * @param {Set<string>} fieldNames set of all field names
+	 */
 	private eventFields(event: MageEvent, forms: Set<FormId>, fields: Field[], fieldNames: Set<string>) {
 		for (const form of event.activeForms) {
 			if (!forms.has(form.id)) {
-				forms.add(form.id)
+				forms.add(form.id);
 
 				for (const formField of form.fields) {
 					if (formField.archived == null || !formField.archived) {
-							this.createFormField(form, formField, fields, fieldNames)
+						this.createFormField(form, formField, fields, fieldNames);
 					}
 				}
 			}
@@ -313,39 +313,38 @@ export class FeatureServiceAdmin {
 
 	/**
 	 * Build a field from the form field
-	 * @param form form
-	 * @param formField form field
-	 * @param fields created fields
-	 * @param fieldNames set of all field names
+	 * @param {Form} form form
+	 * @param {FormField} formField form field
+	 * @param {Field[]} fields created fields
+	 * @param {Set<string>} fieldNames set of all field names
 	 */
 	private createFormField(form: Form, formField: FormField, fields: Field[], fieldNames: Set<string>) {
-		const field = this.initField(formField.type)
+		const field = this.initField(formField.type);
 
 		if (field != null) {
-			const sanitizedName = ObservationsTransformer.replaceSpaces(formField.title)
-			const sanitizedFormName = ObservationsTransformer.replaceSpaces(form.name)
-			const name = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
-			
-			fieldNames.add(name)
+			const sanitizedName = ObservationsTransformer.replaceSpaces(formField.title);
+			const sanitizedFormName = ObservationsTransformer.replaceSpaces(form.name);
+			const name = `${sanitizedFormName}_${sanitizedName}`.toLowerCase();
 
-			field.name = name
-			field.alias = field.name
-			field.nullable = !formField.required
-			field.editable = true
-			field.defaultValue = formField.value
+			fieldNames.add(name);
 
-			fields.push(field)
+			field.name = name;
+			field.alias = field.name;
+			field.editable = true;
+			field.defaultValue = formField.value;
+
+			fields.push(field);
 		}
 	}
 
 	/**
 	 * Initialize a field by type
-	 * @param type form field type
-	 * @param integer numeric integer field type
-	 * @return field or null
+	 * @param {FormFieldType} type form field type
+	 * @param {boolean} [integer] numeric integer field type
+	 * @returns {Field | null} field or null
 	 */
 	private initField(type: FormFieldType, integer?: boolean): Field | null {
-		let field = {} as Field
+		const field = {} as Field;
 
 		switch (type) {
 			case FormFieldType.CheckBox:
@@ -355,57 +354,57 @@ export class FeatureServiceAdmin {
 			case FormFieldType.Password:
 			case FormFieldType.Radio:
 			case FormFieldType.Text:
-				field.type = 'esriFieldTypeString'
-				field.actualType = 'nvarchar'
-				field.sqlType = 'sqlTypeNVarchar'
-				field.length = this._config.textFieldLength
+				field.type = 'esriFieldTypeString';
+				field.actualType = 'nvarchar';
+				field.sqlType = 'sqlTypeNVarchar';
+				field.length = this._config.textFieldLength;
 				break;
 			case FormFieldType.TextArea:
-				field.type = 'esriFieldTypeString'
-				field.actualType = 'nvarchar'
-				field.sqlType = 'sqlTypeNVarchar'
-				field.length = this._config.textAreaFieldLength
+				field.type = 'esriFieldTypeString';
+				field.actualType = 'nvarchar';
+				field.sqlType = 'sqlTypeNVarchar';
+				field.length = this._config.textAreaFieldLength;
 				break;
 			case FormFieldType.DateTime:
-				field.type = 'esriFieldTypeDate'
-				field.sqlType = 'sqlTypeOther'
-				field.length = 10
+				field.type = 'esriFieldTypeDate';
+				field.sqlType = 'sqlTypeOther';
+				field.length = 10;
 				break;
 			case FormFieldType.Numeric:
 				if (integer) {
-					field.type = 'esriFieldTypeInteger'
-					field.actualType = 'int'
-					field.sqlType = 'sqlTypeInteger'
+					field.type = 'esriFieldTypeInteger';
+					field.actualType = 'int';
+					field.sqlType = 'sqlTypeInteger';
 				} else {
-					field.type = 'esriFieldTypeDouble'
-					field.actualType = 'float'
-					field.sqlType = 'sqlTypeFloat'
+					field.type = 'esriFieldTypeDouble';
+					field.actualType = 'float';
+					field.sqlType = 'sqlTypeFloat';
 				}
 				break;
 			case FormFieldType.Geometry:
 			case FormFieldType.Attachment:
 			case FormFieldType.Hidden:
 			default:
-				break
+				break;
 		}
 
-		return field.type != null ? field : null
+		return field.type != null ? field : null;
 	}
 
 	/**
 	 * Create the layer
-	 * @param service feature service
-	 * @param layer layer
+	 * @param {FeatureServiceConfig} service feature service
+	 * @param {Layer} layer layer
 	 */
 	private async create(service: FeatureServiceConfig, layer: Layer) {
-		const url = this.adminUrl(service) + 'addToDefinition'
-	
-		this._console.info('ArcGIS feature service addToDefinition (create layer) url ' + url)
+		const url = this.adminUrl(service) + 'addToDefinition';
 
-		const form = new FormData()
-		form.append('addToDefinition', JSON.stringify(layer))
+		this._console.info('ArcGIS feature service addToDefinition (create layer) url ' + url);
 
-		const identityManager = await this._identityService.signin(service)
+		const form = new FormData();
+		form.append('addToDefinition', JSON.stringify(layer));
+
+		const identityManager = await this._identityService.signin(service);
 		await request(url, {
 			authentication: identityManager,
 			httpMethod: 'POST',
@@ -415,18 +414,18 @@ export class FeatureServiceAdmin {
 
 	/**
 	 * Add fields to the layer
-	 * @param service feature service
-	 * @param featureLayer feature layer
-	 * @param fields fields to add
+	 * @param {FeatureLayerConfig} service feature service
+	 * @param {FeatureLayerConfig} featureLayer feature layer
+	 * @param {Field[]} fields fields to add
 	 */
 	private async addFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: Field[]) {
-		const layer = { fields: fields} as Layer
+		const layer = { fields: fields } as Layer;
 
-		const url = this.adminUrl(service) + featureLayer.layer.toString() + '/addToDefinition'
+		const url = this.adminUrl(service) + featureLayer.layer.toString() + '/addToDefinition';
 
-		this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url)
+		this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url);
 
-		const identityManager = await this._identityService.signin(service)
+		const identityManager = await this._identityService.signin(service);
 		await request(url, {
 			authentication: identityManager,
 			params: {
@@ -434,52 +433,52 @@ export class FeatureServiceAdmin {
 				f: "json"
 			}
 		}).catch((error) => {
-			console.log('Error: ' + error)
+			console.log('Error: ' + error);
 		});
 	}
 
 	/**
 	 * Delete fields from the layer
-	 * @param service feature service
-	 * @param featureLayer feature layer
-	 * @param fields fields to delete
+	 * @param {FeatureServiceConfig} service feature service
+	 * @param {FeatureLayerConfig} featureLayer feature layer
+	 * @param {LayerField[]} fields fields to delete
 	 */
 	private async deleteFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: LayerField[]) {
-		const deleteFields = []
+		const deleteFields = [];
 		for (const layerField of fields) {
-			const field = {} as Field
-			field.name = layerField.name
-			deleteFields.push(field)
+			const field = {} as Field;
+			field.name = layerField.name;
+			deleteFields.push(field);
 		}
 
-		const layer = {} as Layer
-		layer.fields = deleteFields
+		const layer = {} as Layer;
+		layer.fields = deleteFields;
 
-		const url = this.adminUrl(service) + featureLayer.layer.toString() + '/deleteFromDefinition'
+		const url = this.adminUrl(service) + featureLayer.layer.toString() + '/deleteFromDefinition';
 
-		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url)
+		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url);
 
-		const identityManager = await this._identityService.signin(service)
+		const identityManager = await this._identityService.signin(service);
 		request(url, {
 			authentication: identityManager,
 			httpMethod: 'POST',
 			params: {
-				deleteFromDefinition:  layer
+				deleteFromDefinition: layer
 			}
 		}).catch((error) => this._console.error('FeatureServiceAdmin deleteFields() error ' + error));
 	}
 
 	/**
 	 * Get the administration url
-	 * @param service feature service
-	 * @returns url
+	 * @param {FeatureServiceConfig} service feature service
+	 * @returns {string} url
 	 */
-	private adminUrl(service: FeatureServiceConfig): String {
-		let url = service.url.replace('/services/', '/admin/services/')
+	private adminUrl(service: FeatureServiceConfig): string {
+		let url = service.url.replace('/services/', '/admin/services/');
 		if (!url.endsWith('/')) {
-			url += '/'
+			url += '/';
 		}
 
-		return url
+		return url;
 	}
 }
