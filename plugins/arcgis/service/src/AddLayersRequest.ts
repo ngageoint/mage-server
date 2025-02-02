@@ -21,7 +21,6 @@ export interface Field {
     alias: string
     sqlType: string
     length: number
-    nullable: boolean
     editable: boolean
     domain?: string
     defaultValue?: any
