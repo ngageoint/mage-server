@@ -25,8 +25,11 @@ export class ObservationService {
 
   getObservationsForEvent(event: MageEvent, options: any): Observable<any> {
     const parameters: any = { eventId: event.id, states: 'active', populate: 'true' };
-    if (options.interval) {
+    if (options.interval.start) {
       parameters.observationStartDate = options.interval.start;
+    }
+
+    if (options.interval.end) {
       parameters.observationEndDate = options.interval.end;
     }
 
