@@ -36,7 +36,6 @@ FROM node:20.11.1 AS build-arcserviceplugin
 WORKDIR /arcgisserviceplugin
 COPY plugins/arcgis/service/package*.json ./
 RUN npm install
-# RUN npm prune --omit=peer
 COPY --from=build-service /service /arcgisserviceplugin/node_modules/@ngageoint/mage.service
 COPY plugins/arcgis/service/ ./
 RUN npm run build
@@ -59,14 +58,10 @@ COPY --from=build-arcwebplugin /arcgiswebplugin/ngageoint*.tgz /arcgiswebplugin/
 COPY --from=build-arcserviceplugin /arcgisserviceplugin/ngageoint*.tgz /arcgisserviceplugin/
 
 WORKDIR /instance
-# COPY /instance/package.json /instance/package.json
-# RUN npm install
 RUN npm install ../service/ngageoint-mage.service*.tgz \
     npm install ../web-app/ngageoint-mage.web-app*.tgz \
     npm install ../arcgiswebplugin/ngageoint*.tgz \
     npm install ../arcgisserviceplugin/ngageoint*.tgz
-
-# RUN npm install ../service ../web-app/dist
 
 
 ENV NODE_PATH=./node_modules
