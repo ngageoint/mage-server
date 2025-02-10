@@ -7,7 +7,6 @@ RUN npm install
 COPY service/ ./
 RUN npm run build
 
-# RUN rm -rf node_modules
 RUN npm pack
 
 # Build web-app
@@ -19,7 +18,6 @@ RUN npm install
 COPY web-app/ ./
 RUN npm run build
 
-# RUN rm -rf node_modules
 RUN npm pack ./dist
 
 FROM node:20.11.1 AS build-arcwebplugin
@@ -46,7 +44,7 @@ WORKDIR /imageserviceplugin
 COPY plugins/image/service/package*.json ./
 RUN npm install
 COPY --from=build-service /service /imageserviceplugin/node_modules/@ngageoint/mage.service
-COPY plugins/arcgis/service/ ./
+COPY plugins/image/service/ ./
 RUN npm run build
 RUN npm pack
 
@@ -56,12 +54,14 @@ COPY --from=build-service /service/ngageoint*.tgz /service/
 COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
 COPY --from=build-arcwebplugin /arcgiswebplugin/ngageoint*.tgz /arcgiswebplugin/
 COPY --from=build-arcserviceplugin /arcgisserviceplugin/ngageoint*.tgz /arcgisserviceplugin/
+COPY --from=build-imageserviceplugin /imageserviceplugin/ngageoint*.tgz /imageserviceplugin/
 
 WORKDIR /instance
 RUN npm install ../service/ngageoint-mage.service*.tgz \
     npm install ../web-app/ngageoint-mage.web-app*.tgz \
     npm install ../arcgiswebplugin/ngageoint*.tgz \
-    npm install ../arcgisserviceplugin/ngageoint*.tgz
+    npm install ../arcgisserviceplugin/ngageoint*.tgz \ 
+    npm install ../imageserviceplugin/ngageoint*.tgz
 
 
 ENV NODE_PATH=./node_modules
