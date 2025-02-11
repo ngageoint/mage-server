@@ -183,33 +183,33 @@ export class FeatureServiceAdmin {
 	private fields(events: MageEvent[]): Field[] {
 		const fields: Field[] = [];
 
-		fields.push(this.createTextField(this._config.observationIdField, false));
+		fields.push(this.createTextField(this._config.observationIdField));
 		if (this._config.eventIdField != null) {
-			fields.push(this.createIntegerField(this._config.eventIdField, false));
+			fields.push(this.createIntegerField(this._config.eventIdField));
 		}
 		if (this._config.eventNameField != null) {
-			fields.push(this.createTextField(this._config.eventNameField, true));
+			fields.push(this.createTextField(this._config.eventNameField));
 		}
 		if (this._config.userIdField != null) {
-			fields.push(this.createTextField(this._config.userIdField, true));
+			fields.push(this.createTextField(this._config.userIdField));
 		}
 		if (this._config.usernameField != null) {
-			fields.push(this.createTextField(this._config.usernameField, true));
+			fields.push(this.createTextField(this._config.usernameField));
 		}
 		if (this._config.userDisplayNameField != null) {
-			fields.push(this.createTextField(this._config.userDisplayNameField, true));
+			fields.push(this.createTextField(this._config.userDisplayNameField));
 		}
 		if (this._config.deviceIdField != null) {
-			fields.push(this.createTextField(this._config.deviceIdField, true));
+			fields.push(this.createTextField(this._config.deviceIdField));
 		}
 		if (this._config.createdAtField != null) {
-			fields.push(this.createDateTimeField(this._config.createdAtField, true));
+			fields.push(this.createDateTimeField(this._config.createdAtField));
 		}
 		if (this._config.lastModifiedField != null) {
-			fields.push(this.createDateTimeField(this._config.lastModifiedField, true));
+			fields.push(this.createDateTimeField(this._config.lastModifiedField));
 		}
 		if (this._config.geometryType != null) {
-			fields.push(this.createTextField(this._config.geometryType, true));
+			fields.push(this.createTextField(this._config.geometryType));
 		}
 
 		const fieldNames = new Set<string>();
@@ -226,16 +226,14 @@ export class FeatureServiceAdmin {
 	 * Create a field
 	 * @param {string} name field name
 	 * @param {FormFieldType} type form field type
-	 * @param {boolean} nullable nullable flag
 	 * @param {boolean} [integer] integer flag when numeric
 	 * @returns {Field} field
 	 */
-	private createField(name: string, type: FormFieldType, nullable: boolean, integer?: boolean): Field {
+	private createField(name: string, type: FormFieldType, integer?: boolean): Field {
 		const field = this.initField(type, integer) as Field;
 		if (field != null) {
 			field.name = ObservationsTransformer.replaceSpaces(name);
 			field.alias = field.name;
-			field.nullable = nullable;
 			field.editable = true;
 		}
 		return field;
@@ -244,42 +242,38 @@ export class FeatureServiceAdmin {
 	/**
 	 * Create a text field
 	 * @param {string} name field name
-	 * @param {boolean} nullable nullable flag
 	 * @returns {Field} field
 	 */
-	private createTextField(name: string, nullable: boolean): Field {
-		return this.createField(name, FormFieldType.Text, nullable);
+	private createTextField(name: string): Field {
+		return this.createField(name, FormFieldType.Text);
 	}
 
 	/**
 	 * Create a numeric field
 	 * @param {string} name field name
-	 * @param {boolean} nullable nullable flag
 	 * @param {boolean} [integer] integer flag
 	 * @returns {Field} field
 	 */
-	private createNumericField(name: string, nullable: boolean, integer?: boolean): Field {
-		return this.createField(name, FormFieldType.Numeric, nullable, integer);
+	private createNumericField(name: string, integer?: boolean): Field {
+		return this.createField(name, FormFieldType.Numeric, integer);
 	}
 
 	/**
 	 * Create an integer field
 	 * @param {string} name field name
-	 * @param {boolean} nullable nullable flag
 	 * @returns {Field} field
 	 */
-	private createIntegerField(name: string, nullable: boolean): Field {
-		return this.createNumericField(name, nullable, true);
+	private createIntegerField(name: string): Field {
+		return this.createNumericField(name, true);
 	}
 
 	/**
 	 * Create a date time field
 	 * @param {string} name field name
-	 * @param {boolean} nullable nullable flag
 	 * @returns {Field} field
 	 */
-	private createDateTimeField(name: string, nullable: boolean): Field {
-		return this.createField(name, FormFieldType.DateTime, nullable);
+	private createDateTimeField(name: string): Field {
+		return this.createField(name, FormFieldType.DateTime);
 	}
 
 	/**
@@ -336,7 +330,6 @@ export class FeatureServiceAdmin {
 
 			field.name = name;
 			field.alias = field.name;
-			field.nullable = !formField.required;
 			field.editable = true;
 			field.defaultValue = formField.value;
 
