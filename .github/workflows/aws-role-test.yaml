@@ -1,0 +1,28 @@
+name: AWS Role Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test-aws-role-access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: AWS config
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.AWS_DEV_ROLE }}
+          role-session-name: GithubNGAGeointSession
+          aws-region: ${{ secrets.AWS_DEV_REGION }}
+      
+      - name: TEST ECR Access
+        run: aws ecr descripe-repositories
+      
+      - name: TEST ECS Access
+        run: aws ecs list-clusters
