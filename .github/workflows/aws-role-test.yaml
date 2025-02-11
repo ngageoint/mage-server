@@ -1,7 +1,9 @@
 name: AWS Role Test
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - dev-actions
 
 permissions:
   id-token: write
