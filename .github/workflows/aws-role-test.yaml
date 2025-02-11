@@ -24,7 +24,7 @@ jobs:
           aws-region: ${{ secrets.AWS_DEV_REGION }}
       
       - name: TEST ECR Access
-        run: aws ecr descripe-repositories
+        run: aws ecr describe-repositories
       
       - name: TEST ECS Access
         run: aws ecs list-clusters
