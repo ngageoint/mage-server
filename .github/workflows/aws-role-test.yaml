@@ -38,11 +38,10 @@ jobs:
       - name: Build Docker image and push
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          REPOSITORY: "mage/server"
+          REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: 
-          echo "REGISTRY IS $REGISTRY"
-          echo "TAG IS $IMAGE_TAG"
+          echo "TAG IS $REGISTRY$REPOSITORY:$IMAGE_TAG"
 
 
       - name: TEST ECR Access
