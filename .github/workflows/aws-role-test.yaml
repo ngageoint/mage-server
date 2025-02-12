@@ -41,12 +41,9 @@ jobs:
           REPOSITORY: "mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: 
-          echo "REGISTRY IS"
-          echo $REGISTRY
-          echo "TAG IS"
-          echo $IMAGE_TAG
-          echo "using env "
-          echo $env.IMAGE_TAG
+          echo "REGISTRY IS $REGISTRY"
+          echo "TAG IS $IMAGE_TAG"
+
 
       - name: TEST ECR Access
         run: aws ecr describe-repositories
