@@ -42,6 +42,8 @@ jobs:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: 
           echo "TAG IS $REGISTRY$REPOSITORY:$IMAGE_TAG"
+          docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
 
 
       - name: TEST ECR Access
