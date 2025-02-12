@@ -35,6 +35,9 @@ jobs:
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
           fi
 
+      - name: Check Context
+        run: ls -la
+
       - name: Build Docker image and push
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
