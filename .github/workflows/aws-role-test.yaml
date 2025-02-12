@@ -44,8 +44,6 @@ jobs:
           REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: 
-          echo "TAG IS $REGISTRY$REPOSITORY:$IMAGE_TAG"
-          ls
           docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
 
