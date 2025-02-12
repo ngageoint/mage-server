@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test-aws-role-access:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -23,6 +23,30 @@ jobs:
           role-session-name: GithubNGAGeointSession
           aws-region: ${{ secrets.AWS_DEV_REGION }}
       
+      - name: AWS ECR Login
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set IMAGE_TAG
+        run: |
+          if [[ "${{ github.ref_name }}" == "test" ]]; then
+            echo "IMAGE_TAG=test" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+
+      - name: Build Docker image and push
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: "mage/server"
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: 
+          echo "REGISTRY IS"
+          echo $REGISTRY
+          echo "TAG IS"
+          echo $IMAGE_TAG
+          echo "using env "
+          echo $env.IMAGE_TAG
+
       - name: TEST ECR Access
         run: aws ecr describe-repositories
       
