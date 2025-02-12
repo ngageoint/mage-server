@@ -43,7 +43,7 @@ jobs:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
-        run: 
+        run: |
           docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
 
