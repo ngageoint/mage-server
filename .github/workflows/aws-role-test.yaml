@@ -33,6 +33,7 @@ jobs:
             echo "IMAGE_TAG=test" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+          fi
 
       - name: Build Docker image and push
         env:
