@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Docker image and push
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: "mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: 
