@@ -35,9 +35,6 @@ jobs:
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
           fi
 
-      - name: Check Context
-        run: ls -la
-
       - name: Build Docker image and push
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
@@ -47,5 +44,8 @@ jobs:
           docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
 
-      - name: TEST ECS Access
-        run: aws ecs list-clusters
+      - name: ReDeploy ECS Service
+        env:
+          SERVICE: "mage${{ env.IMAGE_TAG }}"
+        run: |
+          aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment
