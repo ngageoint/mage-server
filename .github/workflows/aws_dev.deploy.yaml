@@ -1,9 +1,10 @@
-name: AWS Role Test
+name: AWS Dev Deployment
 
 on:
   push:
     branches:
-      - dev-actions
+      - develop
+      - test
 
 permissions:
   id-token: write
@@ -16,6 +17,14 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
       
+      - name: Set IMAGE_TAG
+        run: |
+          if [[ "${{ github.ref_name }}" == "test" ]]; then
+            echo "IMAGE_TAG=test" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+          fi
+
       - name: AWS config
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -26,14 +35,6 @@ jobs:
       - name: AWS ECR Login
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set IMAGE_TAG
-        run: |
-          if [[ "${{ github.ref_name }}" == "test" ]]; then
-            echo "IMAGE_TAG=test" >> $GITHUB_ENV
-          else
-            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
-          fi
 
       - name: Build Docker image and push
         env:
