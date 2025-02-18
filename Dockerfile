@@ -44,6 +44,7 @@ WORKDIR /imageserviceplugin
 COPY plugins/image/service/package*.json ./
 RUN npm install
 COPY --from=build-service /service /imageserviceplugin/node_modules/@ngageoint/mage.service
+RUN rm -rf /imageserviceplugin/node_modules/@ngageoint/mage.service/node_modules/mongoose
 COPY plugins/image/service/ ./
 RUN npm run build
 RUN npm pack
