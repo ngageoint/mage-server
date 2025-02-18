@@ -14,7 +14,7 @@ export class LayerService {
   ) { }
 
   getLayersForEvent(event, includeUnavailable?: any): Observable<any> {
-    return this.httpClient.get(`/api/events/${event.id}/layers`, { params: { includeUnavailable } } )
+    return this.httpClient.get(`/api/events/${event.id}/layers`, includeUnavailable && { params: { includeUnavailable } })
   }
 
   getClosestFeaturesForLayers(layerIds, latlng, tile): Observable<any> {

@@ -24,11 +24,13 @@ export class ObservationService {
   }
 
   getObservationsForEvent(event: MageEvent, options: any): Observable<any> {
-    const parameters: any = { eventId: event.id, states: 'active', populate: 'true' };
-    if (options.interval) {
-      parameters.observationStartDate = options.interval.start;
-      parameters.observationEndDate = options.interval.end;
-    }
+    const parameters: any = {
+      eventId: event.id,
+      states: 'active',
+      populate: 'true',
+      ...options.interval?.start && { observationStartDate: options.interval.start },
+      ...options.interval?.end && { observationEndDate: options.interval.end }
+    };
 
     return this.client.get<any>(`/api/events/${event.id}/observations`, { params: parameters }).pipe(
       map((observations: any) => {
@@ -41,7 +43,7 @@ export class ObservationService {
     return this.saveObservation(event, observation).pipe(
       map((observation) => {
         return this.transformObservations(observation, event)[0]
-     })
+      })
     )
   }
 
@@ -65,11 +67,11 @@ export class ObservationService {
     return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/favorite`, { body: observation })
   }
 
-  markObservationAsImportantForEvent(event, observation, important): Observable<any>  {
+  markObservationAsImportantForEvent(event, observation, important): Observable<any> {
     return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}/important`, important)
   }
 
-  clearObservationAsImportantForEvent(event, observation): Observable<any>  {
+  clearObservationAsImportantForEvent(event, observation): Observable<any> {
     return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/important`, { body: observation })
   }
 
@@ -200,7 +202,7 @@ export class ObservationService {
 
     var params = new HttpParams();
     params = params.append('access_token', this.localStorageService.getToken())
-    
+
 
     return url + '?' + params.toString()
   }
