@@ -10,13 +10,12 @@ on:
       - plugins/arcgis/service/**
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   test:
     name: test plugin arcgis.service
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -39,7 +38,7 @@ jobs:
 
   package:
     name: package plugin arcgis.service
-    needs: [ config, test ]
+    needs: [config, test]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -59,7 +58,7 @@ jobs:
       - name: pack
         run: npm pack ./plugins/arcgis/service
       - name: upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: arcgis.service-artifacts
           path: |

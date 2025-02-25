@@ -36,7 +36,7 @@ jobs:
       - name: package
         run: npm pack ./service
       - name: upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mage.service-artifacts
           path: |
@@ -44,7 +44,7 @@ jobs:
 
   test:
     name: test mage service
-    needs: [ config, build ]
+    needs: [config, build]
     runs-on: ubuntu-latest
     strategy:
       matrix:
