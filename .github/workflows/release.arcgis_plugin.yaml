@@ -17,11 +17,12 @@ on:
   # release:
 
 jobs:
+
   config:
     uses: ./.github/workflows/config.yaml
 
   check_release_version:
-    needs: [config]
+    needs: [ config ]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -40,16 +41,16 @@ jobs:
           [[ $(json version < ./plugins/arcgis/web-app/package.json) = ${{ inputs.version }} ]] || exit 1
 
   build_and_test-service:
-    needs: [check_release_version]
+    needs: [ check_release_version ]
     uses: ./.github/workflows/build_test.arcgis.service.yaml
 
   build_and_test-web-app:
-    needs: [check_release_version]
+    needs: [ check_release_version ]
     uses: ./.github/workflows/build_test.arcgis.web-app.yaml
 
   publish_packages:
-    name: publish packages
-    needs: [config, build_and_test-service]
+    name:  publish packages
+    needs: [ config, build_and_test-service ]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
@@ -59,11 +60,11 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: arcgis.service-artifacts
       - name: download web-app packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: arcgis.web-app-artifacts
       - name: publish to package registry

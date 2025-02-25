@@ -47,9 +47,6 @@
     "@ngageoint/mage.service": "^6.2.9 || ^6.3.0-beta",
     "express": "^4.17.0"
   },
-  "optionalDependencies": {
-    "fsevents": "^2.3.3"
-  },
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.7",
