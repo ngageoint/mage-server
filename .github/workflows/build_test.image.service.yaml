@@ -10,12 +10,13 @@ on:
       - plugins/image/service/**
 
 jobs:
+
   config:
     uses: ./.github/workflows/config.yaml
 
   test:
     name: test plugin image.service
-    needs: [config]
+    needs: [ config ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,7 +39,7 @@ jobs:
 
   package:
     name: package plugin image.service
-    needs: [config, test]
+    needs: [ config, test ]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -58,7 +59,7 @@ jobs:
       - name: pack
         run: npm pack ./plugins/image/service
       - name: upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: image.service-artifacts
           path: |

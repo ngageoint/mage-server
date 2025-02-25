@@ -10,6 +10,7 @@ on:
       - plugins/arcgis/web-app/**
 
 jobs:
+
   config:
     uses: ./.github/workflows/config.yaml
 
@@ -41,8 +42,9 @@ jobs:
         run: |
           npm pack ./plugins/arcgis/web-app/dist/main
       - name: upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: arcgis.web-app-artifacts
           path: |
             ngageoint-mage.arcgis.web-app-*.tgz
+
