@@ -33,11 +33,7 @@ jobs:
       - name: test with node 20
         run: |
           cd plugins/arcgis/service
-          npm ci
-          cd ../../../service
-          ls -al
-          cd ../plugins/arcgis/service
-          npm link ../../../service
+          npm i
           npm test
 
   package:
