@@ -76,5 +76,6 @@ jobs:
       - name: test service with node ${{ matrix.node }}
         run: |
           cd service
-          npm run ci:test
+          npm ci
+          npm test
       # TODO: restore coveralls test coverage report - see buildAndTest.yml
