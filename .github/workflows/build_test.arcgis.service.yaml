@@ -26,11 +26,11 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 20
           cache: npm
           cache-dependency-path: |
             plugins/arcgis/service/package-lock.json
-      - name: test with node ${{ matrix.node }}
+      - name: test with node 20
         run: |
           cd plugins/arcgis/service
           npm ci
