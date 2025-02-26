@@ -32,6 +32,7 @@ jobs:
         run: |
           cd service
           npm ci
+          ls
           npm run build
       - name: package
         run: npm pack ./service
