@@ -34,6 +34,7 @@ jobs:
         run: |
           cd plugins/arcgis/service
           npm ci
+          npm link ../../../service
           npm test
 
   package:
