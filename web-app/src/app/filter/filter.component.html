@@ -6,7 +6,8 @@
         <mat-form-field appearance="fill">
           <mat-label>Event</mat-label>
           <input type="text" matInput [formControl]="eventControl" [matAutocomplete]="autoEvent">
-          <mat-autocomplete #autoEvent="matAutocomplete" [displayWith]="onDisplayEvent" (optionSelected)="onSelectEvent()">
+          <mat-autocomplete #autoEvent="matAutocomplete" [displayWith]="onDisplayEvent"
+            (optionSelected)="onSelectEvent()">
             <mat-option *ngFor="let event of filteredEvents | async" [value]="event">
               <div class="option-text">{{event.name}}</div>
               <div class="option-description">{{event.description}}</div>
@@ -14,7 +15,7 @@
           </mat-autocomplete>
         </mat-form-field>
       </div>
-    
+
       <div>
         <mat-form-field appearance="fill">
           <mat-label>Teams</mat-label>
@@ -34,7 +35,7 @@
           </mat-autocomplete>
         </mat-form-field>
       </div>
-    
+
       <div>
         <mat-form-field appearance="fill">
           <mat-label>Time</mat-label>
@@ -47,8 +48,10 @@
 
         <div class="datetime" *ngIf="intervalChoice.filter === 'custom'">
           <div>
-            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone" (dateTimeChange)="onStartDate($event)"></datetime-picker>
-            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone" (dateTimeChange)="onStartDate($event)"></datetime-picker>
+            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone"
+              (dateTimeChange)="onStartDate($event)"></datetime-picker>
+            <datetime-picker title="End" [datetime]="defaultEndDate" [timezone]="timeZone"
+              (dateTimeChange)="onEndDate($event)"></datetime-picker>
           </div>
           <div class="timezone">
             <button mat-stroked-button class="timezone__button" (click)="onTimezone()">

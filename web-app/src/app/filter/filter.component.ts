@@ -131,6 +131,10 @@ export class FilterComponent implements OnInit {
     this.startDate = date;
   }
 
+  onEndDate(date: Date): void {
+    this.endDate = date;
+  }
+
   onTimezone(): void {
     this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt';
   }
