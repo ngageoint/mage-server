@@ -82,38 +82,37 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
     controller.start();
 
     return {
-      webRoutes(requestContext: GetAppRequestContext): express.Router {
-        const router: express.Router = express.Router()
-          .use(express.json())
-          .use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            const context = requestContext(req)
-            const user = context.requestingPrincipal()
-            if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
-              return res.sendStatus(403)
-            }
-            next()
-          })
+      webRoutes: { 
+        protected: (requestContext: GetAppRequestContext) => {
+          const routes = express.Router()
+            .use(express.json())
+            .use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+              const context = requestContext(req)
+              const user = context.requestingPrincipal()
+              if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
+                return res.sendStatus(403)
+              }
+              next()
+            })
+            
+          routes.route('/configuration')
+            .get(async (_req, res, _next) => {
+              const config = await controller.getConfiguration();
+              res.json(config);
+            })
+            .post(async (req, res, _next) => {
+              await controller.stop()
 
-        router.route('/configuration')
-          .get(async (_req, res, _next) => {
-            console.debug('fetching plugin configuration')
-            const config = await controller.getConfiguration();
-            res.json(config)
-          })
-          .post(async (req, res, _next) => {
-            console.debug('applying plugin configuration')
+              const configuration = req.body as SFTPPluginConfig
+              await controller.updateConfiguration(configuration)
 
-            await controller.stop()
+              await controller.start()
 
-            const configuration = req.body as SFTPPluginConfig
-            await controller.updateConfiguration(configuration)
+              res.status(200).json(configuration)
+            })
 
-            await controller.start()
-
-            res.status(200).json(configuration)
-          })
-
-        return router
+          return routes
+        }
       }
     }
   }

@@ -29,7 +29,7 @@ export type SftpMongooseModel = mongoose.Model<SftpDocument>
 const SftpObservationModelName: string = 'SftpObservation'
 
 export function SftpObservationModel(connection: mongoose.Connection, collectionName: string): SftpMongooseModel {
-  return connection.model(SftpObservationModelName, SftpObservationsSchema, collectionName)
+  return connection.model<SftpDocument>(SftpObservationModelName, SftpObservationsSchema, collectionName)
 }
 
 export interface SftpObservationRepository {
@@ -59,7 +59,7 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
 
   async findLatest(eventId: MageEventId): Promise<SftpAttrs | null> {
     const document =  await this.model.findOne({ eventId: eventId }, { updatedAt: true }, { sort: { updatedAt: -1 }, limit: 1 })
-    return document ? document.toJSON() : null
+    return document ? (document.toJSON() as SftpAttrs) : null
   }
 
   async isProcessed(eventId: number, observationId: string): Promise<Boolean> {
@@ -69,7 +69,7 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
 
   async postStatus(eventId: number, observationId: string, status: SftpStatus): Promise<SftpAttrs | null> {
     const document = await this.model.findOneAndUpdate({ eventId: eventId, observationId: observationId }, { eventId: eventId, observationId: observationId, status: status }, { upsert: true })
-    return document ? document.toJSON() : null
+    return document ? (document.toJSON() as SftpAttrs) : null
   }
 
 }

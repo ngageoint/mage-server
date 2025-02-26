@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
@@ -41,7 +41,6 @@ import { ConfigurationComponent } from './configuration/configuration.component'
     MatTableModule,
     MatRadioModule,
     MatSlideToggleModule,
-    ReactiveFormsModule,
     MatProgressSpinnerModule,
   ],
   exports: [

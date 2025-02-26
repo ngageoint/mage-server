@@ -10,7 +10,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@ngageoint/mage.web-core-lib:amd",
           "options": {
             "tsConfig": "projects/admin/tsconfig.lib.json",
             "project": "projects/admin/ng-package.json"
