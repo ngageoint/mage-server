@@ -16,7 +16,7 @@ jobs:
   test:
     name: test plugin arcgis.service
     needs: [config]
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
@@ -35,12 +35,13 @@ jobs:
           cd plugins/arcgis/service
           npm ci
           npm link ../../../service
+          npm ls @ngageoint/mage.service
           npm test
 
   package:
     name: package plugin arcgis.service
     needs: [config, test]
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
