@@ -30,11 +30,15 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/nga-msi/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/nga-msi
           npm ci
-          ls
           npm test
 
   package:
@@ -51,6 +55,11 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/nga-msi/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: build
         run: |
           cd plugins/nga-msi
