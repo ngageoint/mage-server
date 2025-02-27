@@ -30,39 +30,44 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/arcgis/service/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: test with node 20
         run: |
           cd plugins/arcgis/service
-          npm i
+          npm ci
           npm link ../../../service
           npm test
 
-  package:
-    name: package plugin arcgis.service
-    needs: [config, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ needs.config.outputs.node_versions-lts }}
-          cache: npm
-          cache-dependency-path: |
-            plugins/arcgis/service/package-lock.json
-      - name: build
-        run: |
-          cd plugins/arcgis/service
-          npm ci
-          ls
-          npm link ../../../service
-          npm run build
-      - name: pack
-        run: npm pack ./plugins/arcgis/service
-      - name: upload package
-        uses: actions/upload-artifact@v4
-        with:
-          name: arcgis.service-artifacts
-          path: |
-            ngageoint-mage.*.tgz
+  # package:
+  #   name: package plugin arcgis.service
+  #   needs: [config, test]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #     - name: setup node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ needs.config.outputs.node_versions-lts }}
+  #         cache: npm
+  #         cache-dependency-path: |
+  #           plugins/arcgis/service/package-lock.json
+  #     - name: build
+  #       run: |
+  #         cd plugins/arcgis/service
+  #         npm ci
+  #         ls
+  #         npm link ../../../service
+  #         npm run build
+  #     - name: pack
+  #       run: npm pack ./plugins/arcgis/service
+  #     - name: upload package
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: arcgis.service-artifacts
+  #         path: |
+  #           ngageoint-mage.*.tgz
