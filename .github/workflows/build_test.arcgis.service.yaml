@@ -8,6 +8,11 @@ on:
       - .github/workflows/build_test.arcgis.service.yaml
       - .github/workflows/config.yaml
       - plugins/arcgis/service/**
+  pull_request:
+    paths:
+      - .github/workflows/build_test.arcgis.service.yaml
+      - .github/workflows/config.yaml
+      - plugins/arcgis/service/**
 
 jobs:
   config:
@@ -26,7 +31,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
           cache: npm
           cache-dependency-path: |
             plugins/arcgis/service/package-lock.json
@@ -35,7 +40,7 @@ jobs:
           cd service
           npm ci
           npm run build
-      - name: test with node 20
+      - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/arcgis/service
           npm ci
@@ -56,13 +61,18 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/arcgis/service/package-lock.json
-      - name: build
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
+      - name: build service for plugin
         run: |
           cd plugins/arcgis/service
           npm ci
           npm link ../../../service
           npm run build
-      - name: pack
+      - name: package for plugin
         run: npm pack ./plugins/arcgis/service
       - name: upload package
         uses: actions/upload-artifact@v4
