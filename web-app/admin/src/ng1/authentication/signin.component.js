@@ -20,7 +20,7 @@ class SigninController {
   }
 
   localStrategyFilter(_strategy, name) {
-    return name === 'local';
+    return name === 'local1';
   }
 
   signin($event) {
