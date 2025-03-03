@@ -18,6 +18,7 @@ module.exports = function (app, security) {
 
   async function isAllowed(affectedConfig, deleted = false) {
     const configs = await AuthenticationConfiguration.getAllConfigurations();
+    console.log('Hit authenticationConfigurations.js line 21 @')
     let atLeastOneConfigEnabled = false;
     configs.forEach(config => {
       if (affectedConfig._id.toString() === config._id.toString()) {
@@ -37,6 +38,7 @@ module.exports = function (app, security) {
     passport.authenticate('bearer'),
     access.authorize('READ_AUTH_CONFIG'),
     function (req, res, next) {
+      console.log('In authentication/configuration/')
       const includeDisabled = req.query.includeDisabled === 'true' ? true :
         req.query.includeDisabled === 'false' ? false :
           req.query.includeDisabled;
