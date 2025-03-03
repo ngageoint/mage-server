@@ -71,14 +71,17 @@ exports.getById = function (id) {
 };
 
 exports.getConfiguration = function (type, name) {
+  console.log('74@@@@!!!!', type, name);
   return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
 };
 
 exports.getConfigurationsByType = function (type) {
+  console.log('Finding Auth Config', type);
   return AuthenticationConfiguration.find({ type: type }).exec();
 };
 
 exports.getAllConfigurations = function () {
+  console.log('84 get all!!!');
   return AuthenticationConfiguration.find({}).exec();
 };
 

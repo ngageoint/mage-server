@@ -117,6 +117,7 @@ class AuthenticationInitializer {
       configs.forEach(config => {
         config.type = null;
         const strategy = require('../authentication/' + config.type);
+        console.log('@@@!!!! ', strategy)
         SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
           strategy.initialize(appendedConfig);
         }).catch(err => {
