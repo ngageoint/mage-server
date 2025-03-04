@@ -33,7 +33,7 @@ jobs:
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/image/service
-          npm ci --omit=optional
+          npm ci --omit=optional --no-fund --no-audit --ignore-scripts
           npm test
 
   package:
@@ -53,7 +53,7 @@ jobs:
       - name: build
         run: |
           cd plugins/image/service
-          npm ci --omit=optional
+          npm ci --omit=optional --no-fund --no-audit --ignore-scripts
           npm run build
       - name: pack
         run: npm pack ./plugins/image/service
