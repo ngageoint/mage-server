@@ -54,6 +54,7 @@ jobs:
         run: |
           cd plugins/image/service
           npm ci
+          ls
           npm run build
       - name: pack
         run: npm pack ./plugins/image/service
