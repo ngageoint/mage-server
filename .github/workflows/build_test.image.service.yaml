@@ -3,7 +3,7 @@ name: test and package image service plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.image.service.yaml
       - .github/workflows/config.yaml

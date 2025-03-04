@@ -3,7 +3,7 @@ name: build and test service
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.service.yaml
       - .github/workflows/config.yaml

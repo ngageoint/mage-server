@@ -3,7 +3,7 @@ name: test and package arcgis web plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.arcgis.web-app.yaml
       - .github/workflows/config.yaml

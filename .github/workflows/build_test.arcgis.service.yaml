@@ -3,7 +3,7 @@ name: test and package arcgis service plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.arcgis.service.yaml
       - .github/workflows/config.yaml

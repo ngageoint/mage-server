@@ -3,7 +3,7 @@ name: test and package nga-msi plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.nga-msi.yaml
       - .github/workflows/config.yaml

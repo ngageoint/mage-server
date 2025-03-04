@@ -3,7 +3,7 @@ name: build and test web-app
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.web-app.yaml
       - .github/workflows/config.yaml
