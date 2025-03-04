@@ -30,6 +30,11 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/image/service/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/image/service
@@ -50,6 +55,11 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/image/service/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: build
         run: |
           cd plugins/image/service
