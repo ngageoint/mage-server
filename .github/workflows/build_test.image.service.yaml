@@ -39,6 +39,7 @@ jobs:
         run: |
           cd plugins/image/service
           npm install --force
+          npm link ../../../service
           npm test
 
   package:
@@ -64,6 +65,7 @@ jobs:
         run: |
           cd plugins/image/service
           npm install --force
+          npm link ../../../service
           npm run build
       - name: pack
         run: npm pack ./plugins/image/service
