@@ -43,6 +43,14 @@
   "optionalDependencies": {
     "fsevents": "^2.3.3"
   },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
   "devDependencies": {
     "@types/bson": "^4.0.2",
     "@types/express": "~4.17.17",

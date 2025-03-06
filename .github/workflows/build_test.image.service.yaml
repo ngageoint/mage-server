@@ -38,8 +38,7 @@ jobs:
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/image/service
-          npm install --force
-          npm install --os=linux --cpu=x64 sharp
+          npm ci
           npm link ../../../service
           npm test
 
@@ -65,8 +64,7 @@ jobs:
       - name: build
         run: |
           cd plugins/image/service
-          npm install --force
-          npm install --os=linux --cpu=x64 sharp
+          npm ci
           npm link ../../../service
           npm run build
       - name: pack

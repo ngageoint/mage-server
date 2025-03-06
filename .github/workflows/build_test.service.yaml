@@ -65,7 +65,7 @@ jobs:
       - name: install service dependencies
         run: |
           cd service
-          npm ci service
+          npm ci
       - name: download service package
         uses: actions/download-artifact@v4
         with:
