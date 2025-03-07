@@ -33,7 +33,7 @@ jobs:
       - name: build mage service
         run: |
           cd service
-          npm ci
+          npm ci --force
           npm run build
       - name: test with node ${{ matrix.node }}
         run: |
@@ -64,7 +64,7 @@ jobs:
       - name: build image service
         run: |
           cd plugins/image/service
-          npm ci --no-optional
+          npm ci --force
           npm link ../../../service
           npm run build
       - name: pack
