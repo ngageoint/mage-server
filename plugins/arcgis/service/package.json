@@ -50,14 +50,6 @@
   "optionalDependencies": {
     "fsevents": "^2.3.3"
   },
-  "os": [
-    "darwin",
-    "linux"
-  ],
-  "cpu": [
-    "x64",
-    "arm64"
-  ],
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.7",
