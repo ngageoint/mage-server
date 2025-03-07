@@ -38,7 +38,7 @@ jobs:
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/image/service
-          npm ci --no-optional
+          npm ci --force
           npm link ../../../service
           npm test
 
