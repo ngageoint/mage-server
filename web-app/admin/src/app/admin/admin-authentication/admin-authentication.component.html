@@ -36,7 +36,7 @@
                     <mat-label>Enable Authentication</mat-label>
                 </div>
                 <admin-authentication-settings [strategy]="strategy" [teams]="teams" [events]="events"
-                    (strategyDirty)="onStrategyDirty($event)">
+                    (strategyDirty)="isDirty = $event">
                 </admin-authentication-settings>
                 <div class="auth__action--delete">
                     <button mat-button color="warn" id="delete-strategy-button"
@@ -48,4 +48,11 @@
             </mat-expansion-panel>
         </div>
     </mat-accordion>
+</section>
+<section>
+    <div class="settings__action--save">
+        <button mat-flat-button color="primary" (click)="save()" [disabled]="!isDirty">
+            <mat-icon>check</mat-icon>Save
+        </button>
+    </div>
 </section>
