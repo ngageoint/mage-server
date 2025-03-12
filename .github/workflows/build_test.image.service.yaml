@@ -41,6 +41,7 @@ jobs:
           npm ci --force
           npm install --os=linux --cpu=x64 sharp
           npm link ../../../service
+          rm -rf node_modules/mongoose
           npm test
 
   package:
@@ -68,6 +69,7 @@ jobs:
           npm ci --force
           npm install --os=linux --cpu=x64 sharp
           npm link ../../../service
+          rm -rf node_modules/mongoose
           npm run build
       - name: pack
         run: npm pack ./plugins/image/service
