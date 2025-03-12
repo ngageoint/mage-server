@@ -74,7 +74,7 @@ const FormSchema = new Schema({
 
 const EventSchema = new Schema({
   _id: { type: Number, required: true },
-  name: { type: String, required: true, unique: 'Event with name "{VALUE}" already exists.' },
+  name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
   complete: { type: Boolean },
   collectionName: { type: String, required: true },

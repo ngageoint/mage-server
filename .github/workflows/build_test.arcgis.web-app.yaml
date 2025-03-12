@@ -3,14 +3,13 @@ name: test and package arcgis web plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.arcgis.web-app.yaml
       - .github/workflows/config.yaml
       - plugins/arcgis/web-app/**
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
@@ -42,9 +41,8 @@ jobs:
         run: |
           npm pack ./plugins/arcgis/web-app/dist/main
       - name: upload packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: arcgis.web-app-artifacts
           path: |
             ngageoint-mage.arcgis.web-app-*.tgz
-

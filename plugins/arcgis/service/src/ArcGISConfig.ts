@@ -11,8 +11,8 @@ export interface FeatureServiceConfig {
     url: string
 
     /**
-     * Serialized ArcGISIdentityManager
-     */
+    * Serialized ArcGISIdentityManager
+    */
     identityManager: string
 
     /**
