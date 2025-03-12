@@ -27,12 +27,11 @@ on:
   # release:
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   check_release_version:
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -57,16 +56,16 @@ jobs:
           [[ $(json version < ./web-app/projects/core-lib/package.json) = ${{ inputs.version }} ]] || exit 1
 
   build_and_test-service:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.service.yaml
 
   build_and_test-web-app:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.web-app.yaml
 
   create_release:
     name: create release
-    needs: [ config, build_and_test-service, build_and_test-web-app ]
+    needs: [config, build_and_test-service, build_and_test-web-app]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
@@ -76,11 +75,11 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mage.service-artifacts
       - name: download web-app artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mage.web-app-artifacts
       - name: generate instance package.json
@@ -108,8 +107,8 @@ jobs:
             ngageoint-mage.*.tgz
 
   publish_packages:
-    name:  publish packages
-    needs: [ config, create_release ]
+    name: publish packages
+    needs: [config, create_release]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
@@ -119,11 +118,11 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mage.service-artifacts
       - name: download web-app packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mage.web-app-artifacts
       - name: publish to package registry

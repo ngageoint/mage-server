@@ -25,7 +25,7 @@ export class LocationService {
 
   constructor(
     private httpClient: HttpClient
-  ) { }
+  ) {}
 
   create(eventId: number, location: any): Observable<any> {
     return this.httpClient.post<any>(`/api/events/${eventId}/locations/`, location)
@@ -35,11 +35,11 @@ export class LocationService {
     const parameters = {
       groupBy: 'users',
       populate: true,
-      ...(options.interval?.start) && { startDate: options.interval.start },
-      ...(options.interval?.end) && { endDate: options.interval.end }
+      ...(options?.interval?.start) && { startDate: options.interval.start },
+      ...(options?.interval?.end) && { endDate: options.interval.end }
     }
 
-    return this.httpClient.get<any>(`/api/events/${event.id}/locations/users`, { params: parameters })
+    return this.httpClient.get<any>(`/api/events/${event.id}/locations/users`, { params: parameters } )
   }
 
 }
