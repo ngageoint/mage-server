@@ -1,3 +1,4 @@
+import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 import { LayerInfoResult, LayerField } from "./LayerInfoResult";
 
 /**
@@ -28,7 +29,7 @@ export class LayerInfo {
     /**
      * The events that are synching to this layer.
      */
-    events: Set<string> = new Set<string>()
+    events: Set<MageEventId> = new Set<MageEventId>()
 
     /**
      * Constructor.
@@ -37,12 +38,10 @@ export class LayerInfo {
      * @param layerInfo The layer info.
      * @param token The access token.
      */
-    constructor(url: string, events: string[], layerInfo: LayerInfoResult) {
+    constructor(url: string, events: MageEventId[], layerInfo: LayerInfoResult) {
         this.url = url
-        if (events != undefined && events != null && events.length == 0) {
-            this.events.add('nothing to sync')
-        }
-        if (events != undefined || events != null) {
+    
+        if (events && events.length > 0) {
             for (const event of events) {
                 this.events.add(event);
             }
@@ -69,11 +68,11 @@ export class LayerInfo {
 
     /**
      * Determine if the layer is enabled for the event.
-     * @param event The event.
+     * @param eventId The event.
      * @return true if enabled
      */
-    hasEvent(event: string) {
-        return this.events.size == 0 || this.events.has(event)
+    hasEvent(eventId: MageEventId) {
+        return this.events.size == 0 || this.events.has(eventId)
     }
 
 }
