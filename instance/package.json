@@ -31,6 +31,8 @@
     "@ngageoint/mage.image.service": "../plugins/image/service",
     "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
     "@ngageoint/mage.random": "../plugins/random",
+    "@ngageoint/mage.sftp.web": "../plugins/sftp/web/dist/admin",
+    "@ngageoint/mage.sftp.service": "../plugins/sftp/service",
     "@ngageoint/mage.service": "../service",
     "@ngageoint/mage.web-app": "../web-app/dist"
   }
