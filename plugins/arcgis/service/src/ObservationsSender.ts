@@ -7,7 +7,6 @@ import { AttachmentInfosResult, AttachmentInfo } from './AttachmentInfosResult';
 import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'
-import FormData from 'form-data';
 import { ArcGISIdentityManager, IFeature, request } from "@esri/arcgis-rest-request"
 import { addFeatures, updateFeatures, deleteFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
 
@@ -20,16 +19,6 @@ export class ObservationsSender {
      * The base url to the feature layer.
      */
     private _url: string;
-
-    /**
-     * The full url to the feature layer receiving observations.
-     */
-    private _urlAdd: string;
-
-    /**
-     * The full url to the feature layer receiving updates.
-     */
-    private _urlUpdate: string;
 
     /**
      * Used to log to the console.
@@ -56,8 +45,6 @@ export class ObservationsSender {
      */
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this._url = layerInfo.url;
-        this._urlAdd = this._url + '/addFeatures';
-        this._urlUpdate = this._url + '/updateFeatures';
         this._console = console;
         this._attachmentDirectory = environment.attachmentBaseDirectory;
         this._config = config;
@@ -70,14 +57,14 @@ export class ObservationsSender {
      * @param observations The observations to convert.
      */
     sendAdds(observations: ArcObjects) {
-        this._console.info('ArcGIS addFeatures url ' + this._urlAdd);
+        this._console.info('ArcGIS addFeatures');
 
-        let responseHandler = this.addResponseHandler(observations);
         addFeatures({
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
-        }).then(responseHandler).catch((error) => this._console.error(error));
+        }).then(this.responseHandler(observations))
+            .catch((error) => this._console.error('Error in ObservationSender.sendAdds :: ' + error));
     }
 
     /**
@@ -87,29 +74,29 @@ export class ObservationsSender {
      * @returns The json string of the observations.
      */
     sendUpdates(observations: ArcObjects) {
-        this._console.info('ArcGIS updateFeatures url ' + this._urlUpdate);
+        this._console.info('ArcGIS updateFeatures');
 
-        let responseHandler = this.updateResponseHandler(observations);
         updateFeatures({
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
-        }).then(responseHandler).catch((error) => this._console.error(error));
+        }).then(this.responseHandler(observations, true))
+            .catch((error) => this._console.error('Error in ObservationSender.sendUpdates :: ' + error));
     }
 
     /**
      * Delete an observation.
      * @param id The observation id.
      */
-    sendDelete(id: number) {
-        const url = this._url + '/deleteFeatures'
-        this._console.info('ArcGIS deleteFeatures url ' + url + ', ' + this._config.observationIdField + ': ' + id)
+    sendDelete(id: string) {
+        this._console.info('ArcGIS deleteFeatures id: ' + id)
 
         deleteFeatures({
-            url,
+            url: this._url,
             authentication: this._identityManager,
-            objectIds: [id]
-        }).catch((error) => this._console.error(error));
+            where: `${this._config.observationIdField} LIKE \'%${id}%\'`,
+            objectIds: []
+        }).catch((error) => this._console.error('Error in ObservationSender.sendDelete :: ' + error));
     }
 
     /**
@@ -117,38 +104,16 @@ export class ObservationsSender {
      * @param id The event id.
      */
     sendDeleteEvent(id: number) {
+        this._console.info('ArcGIS deleteFeatures by event ' + this._config.observationIdField + ': ' + id);
 
-        const url = this._url + '/deleteFeatures'
-
-        this._console.info('ArcGIS deleteFeatures by event url ' + url + ', ' + this._config.observationIdField + ': ' + id)
-
-        const form = new FormData()
-
-        if (this._config.eventIdField == null) {
-            form.append('where', this._config.observationIdField + ' LIKE\'%' + this._config.idSeparator + id + '\'')
-        } else {
-            form.append('where', this._config.eventIdField + '=' + id)
-        }
-
-        this.sendDelete(id);
-    }
-
-    /**
-     * Creates an add observation response handler.
-     * @param observations The observations sent.
-     * @returns The response handler.
-     */
-    private addResponseHandler(observations: ArcObjects): (chunk: any) => void {
-        return this.responseHandler(observations, false)
-    }
-
-    /**
-     * Creates an update observation response handler.
-     * @param observations The observations sent.
-     * @returns The response handler.
-     */
-    private updateResponseHandler(observations: ArcObjects): (chunk: any) => void {
-        return this.responseHandler(observations, true)
+        deleteFeatures({
+            url: this._url,
+            authentication: this._identityManager,
+            where: !!this._config.eventIdField
+                ? `${this._config.eventIdField} = ${id}`
+                : this._config.observationIdField + ' LIKE\'%' + this._config.idSeparator + id + '\'',
+            objectIds: []
+        }).catch((error) => this._console.error('Error in ObservationSender.sendDeleteEvent :: ' + error));
     }
 
     /**
@@ -157,7 +122,7 @@ export class ObservationsSender {
      * @param update The update or add flag value.
      * @returns The response handler.
      */
-    private responseHandler(observations: ArcObjects, update: boolean): (chunk: any) => void {
+    private responseHandler(observations: ArcObjects, update?: boolean): (chunk: any) => void {
         const console = this._console
         return (chunk: any) => {
             console.log('ArcGIS ' + (update ? 'Update' : 'Add') + ' Response: ' + JSON.stringify(chunk))
@@ -207,7 +172,6 @@ export class ObservationsSender {
      */
     private queryAndUpdateAttachments(observation: ArcObservation, objectId: number) {
         // Query for existing attachments
-        const queryUrl = this._url + '/' + objectId + '/attachments'
         getAttachments({
             url: this._url,
             authentication: this._identityManager,
@@ -225,7 +189,6 @@ export class ObservationsSender {
      * @param attachmentInfos The arc attachment infos.
      */
     private updateAttachments(observation: ArcObservation, objectId: number, attachmentInfos: AttachmentInfo[]) {
-
         // Build a mapping between existing arc attachment names and the attachment infos
         let nameAttachments = new Map<string, AttachmentInfo>()
         if (attachmentInfos != null) {
@@ -274,10 +237,10 @@ export class ObservationsSender {
 
             const fileName = this.attachmentFileName(attachment)
             this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-    
+
             const readStream = await fs.openAsBlob(file)
             const attachmentFile = new File([readStream], fileName)
-    
+
             addAttachment({
                 url: this._url,
                 authentication: this._identityManager,
@@ -299,10 +262,10 @@ export class ObservationsSender {
 
             const fileName = this.attachmentFileName(attachment)
             this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file)
-    
+
             const readStream = await fs.openAsBlob(file)
             const attachmentFile = new File([readStream], fileName)
-    
+
             updateAttachment({
                 url: this._url,
                 authentication: this._identityManager,
@@ -319,7 +282,6 @@ export class ObservationsSender {
      * @param attachmentInfos The arc attachment infos.
      */
     private deleteAttachments(objectId: number, attachmentInfos: AttachmentInfo[]) {
-
         const attachmentIds: number[] = []
 
         for (const attachmentInfo of attachmentInfos) {

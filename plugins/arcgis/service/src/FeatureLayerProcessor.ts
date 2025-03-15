@@ -45,7 +45,7 @@ export class FeatureLayerProcessor {
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this.layerInfo = layerInfo;
         this.lastTimeStamp = 0;
-        this.featureQuerier = new FeatureQuerier(layerInfo, config, identityManager,console);
+        this.featureQuerier = new FeatureQuerier(layerInfo, config, identityManager, console);
         this._binner = new ObservationBinner(layerInfo, this.featureQuerier, config);
         this.sender = new ObservationsSender(layerInfo, config, identityManager, console);
     }
@@ -85,7 +85,7 @@ export class FeatureLayerProcessor {
 
         for (const arcObservation of observations.deletions) {
             if (this.layerInfo.geometryType == arcObservation.esriGeometryType) {
-                this.sender.sendDelete(Number(arcObservation.id));
+                this.sender.sendDelete(arcObservation.id);
             }
         }
     }
