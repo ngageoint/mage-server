@@ -33,7 +33,7 @@
     "start-web": "npm run web-app:debug"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "4.1.5"
   },
   "dependencies": {}
 }

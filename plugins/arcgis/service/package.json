@@ -47,12 +47,12 @@
     "express": "4.21.2"
   },
   "optionalDependencies": {
-    "fsevents": "^2.3.3"
+    "fsevents": "2.3.3"
   },
   "devDependencies": {
-    "@types/express": "5.0.0",
+    "@types/express": "4.17.21",
     "@types/geojson": "7946.0.16",
-    "@types/jest": "29.5.14",
+    "@types/jest": "26.0.3",
     "jest": "29.7.0",
     "ts-jest": "29.2.6",
     "typescript": "5.8.2"
