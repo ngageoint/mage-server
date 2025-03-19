@@ -13,9 +13,9 @@
   },
   "scripts": {
     "build:tsc": "tsc -b src",
-    "build": "npm-run-all build:tsc",
+    "build": "tsc -b src",
     "test:run": "jest lib",
-    "test": "npm-run-all build test:run",
+    "test": "tsc -b src && jest lib",
     "clean": "rm -rf lib"
   },
   "repository": {
