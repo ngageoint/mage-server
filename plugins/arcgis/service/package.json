@@ -44,7 +44,7 @@
   },
   "peerDependencies": {
     "@ngageoint/mage.service": "6.2.13 || 6.3.0-beta",
-    "express": "4.21.2"
+    "express": "4.17.0"
   },
   "optionalDependencies": {
     "fsevents": "2.3.3"
