@@ -1,0 +1,50 @@
+name: test and package sftp web plugin
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - .github/workflows/build_test.sftp.web.yaml
+      - .github/workflows/config.yaml
+      - plugins/sftp/web/**
+
+jobs:
+
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  build:
+    name: build plugin mage.sftp.web
+    needs: config
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+          cache: npm
+          cache-dependency-path: plugins/sftp/web/package-lock.json
+      - name: build
+        run: |
+          cd plugins/sftp/web
+          npm ci
+          npm run build
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+      - name: test
+        run: |
+          cd plugins/sftp/web
+          npm run test-headless
+      - name: pack
+        run: |
+          npm pack ./plugins/sftp/web/dist/main
+      - name: upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: sftp.web-artifacts
+          path: |
+            ngageoint-mage.sftp.web-*.tgz
+
