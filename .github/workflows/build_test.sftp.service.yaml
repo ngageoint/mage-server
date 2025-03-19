@@ -1,0 +1,66 @@
+name: test and package sftp service plugin
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - .github/workflows/build_test.sftp.service.yaml
+      - .github/workflows/config.yaml
+      - plugins/sftp/service/**
+
+jobs:
+
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  test:
+    name: test plugin sftp.service
+    needs: [ config ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            plugins/sftp/service/package-lock.json
+      - name: test with node ${{ matrix.node }}
+        run: |
+          cd plugins/sftp/service
+          npm ci
+          npm test
+
+  package:
+    name: package plugin sftp.service
+    needs: [ config, test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+          cache: npm
+          cache-dependency-path: |
+            plugins/sftp/service/package-lock.json
+      - name: build
+        run: |
+          cd plugins/sftp/service
+          npm ci
+          npm run build
+      - name: pack
+        run: npm pack ./plugins/sftp/service
+      - name: upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: sftp.service-artifacts
+          path: |
+            ngageoint-mage.*.tgz
