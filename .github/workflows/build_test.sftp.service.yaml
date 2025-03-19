@@ -35,6 +35,7 @@ jobs:
         run: |
           cd plugins/sftp/service
           npm ci
+          rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
           npm test
 
   package:
@@ -55,7 +56,7 @@ jobs:
         run: |
           cd plugins/sftp/service
           npm ci
-          rmi node_modules/@ngageoint/mage.service/node_modules/mongoose
+          rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
           npm run build
       - name: pack
         run: npm pack ./plugins/sftp/service
