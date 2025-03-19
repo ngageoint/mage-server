@@ -44,7 +44,6 @@
     "@types/geojson": "7946.0.16",
     "@types/jest": "26.0.3",
     "@types/json-schema": "7.0.15",
-    "@types/express": "4.17.21",
     "jest": "29.7.0",
     "ts-jest": "29.2.6",
     "typescript": "5.8.2"
