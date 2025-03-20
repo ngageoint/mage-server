@@ -44,7 +44,7 @@
     "form-data": "4.0.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "6.2.13 || 6.3.0-beta",
+    "@ngageoint/mage.service": "^6.2.9 || ^6.3.0-beta",
     "express": "4.21.2"
   },
   "optionalDependencies": {
