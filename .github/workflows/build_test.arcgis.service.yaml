@@ -38,7 +38,7 @@ jobs:
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/arcgis/service
-          npm ci
+          npm ci --force
           npm link ../../../service
           npm test
 
@@ -64,7 +64,7 @@ jobs:
       - name: build service for plugin
         run: |
           cd plugins/arcgis/service
-          npm ci
+          npm ci --force
           npm link ../../../service
           npm run build
       - name: package for plugin
