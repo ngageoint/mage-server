@@ -40,6 +40,9 @@
   "dependencies": {
     "axios": "0.29.0"
   },
+  "optionalDependencies": {
+    "fsevents": "2.3.3"
+  },
   "devDependencies": {
     "@types/geojson": "7946.0.16",
     "@types/jest": "29.5.14",
