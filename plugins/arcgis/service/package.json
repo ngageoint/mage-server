@@ -38,10 +38,10 @@
   },
   "homepage": "https://github.com/ngageoint/mage-server#readme",
   "dependencies": {
-    "@esri/arcgis-rest-feature-service": "4.0.6",
-    "@esri/arcgis-rest-request": "4.2.3",
+    "@esri/arcgis-rest-feature-service": "4.1.0",
+    "@esri/arcgis-rest-request": "4.3.0",
     "@terraformer/arcgis": "2.1.2",
-    "form-data": "4.0.1"
+    "form-data": "4.0.2"
   },
   "peerDependencies": {
     "@ngageoint/mage.service": "6.2.13 || 6.3.0-beta",
