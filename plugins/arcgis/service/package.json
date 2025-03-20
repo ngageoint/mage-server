@@ -13,9 +13,9 @@
   },
   "scripts": {
     "build:tsc": "tsc -b src",
-    "build": "npm-run-all build:tsc",
+    "build": "tsc -b src",
     "test:run": "jest lib",
-    "test": "npm-run-all build test:run",
+    "test": "tsc -b src && jest lib",
     "clean": "rm -rf lib"
   },
   "repository": {
@@ -51,10 +51,8 @@
     "@types/express": "4.17.21",
     "@types/geojson": "7946.0.16",
     "@types/jest": "29.5.14",
-    "cpy-cli": "3.1.1",
     "jest": "29.7.0",
     "nock": "12.0.3",
-    "npm-run-all": "4.1.5",
     "ts-jest": "29.2.6",
     "typescript": "5.8.2"
   }
