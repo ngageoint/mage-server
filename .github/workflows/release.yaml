@@ -126,9 +126,10 @@ jobs:
         with:
           name: mage.web-app-artifacts
       - name: publish to package registry
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm config get '//registry.npmjs.org/:_authToken'
+          npm whoami
           npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz)
           npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
           npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz)
