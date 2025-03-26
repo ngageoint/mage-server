@@ -38,7 +38,7 @@ jobs:
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/nga-msi
-          npm ci --no-optional
+          npm ci --force
           npm test
 
   package:
@@ -63,7 +63,7 @@ jobs:
       - name: build
         run: |
           cd plugins/nga-msi
-          npm ci --no-optional
+          npm ci --force
           npm run build
       - name: pack
         run: npm pack ./plugins/nga-msi
