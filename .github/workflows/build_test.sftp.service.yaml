@@ -55,7 +55,7 @@ jobs:
       - name: build
         run: |
           cd plugins/sftp/service
-          npm ci
+          npm ci --force
           rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
           npm run build
       - name: pack
