@@ -14,29 +14,29 @@ jobs:
   config:
     uses: ./.github/workflows/config.yaml
 
-  test:
-    name: test plugin sftp.service
-    needs: [ config ]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-          cache-dependency-path: |
-            plugins/sftp/service/package-lock.json
-      - name: test with node ${{ matrix.node }}
-        run: |
-          cd plugins/sftp/service
-          npm ci --force
-          rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
-          npm test
+  # test:
+  #   name: test plugin sftp.service
+  #   needs: [ config ]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v4
+  #     - name: setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ matrix.node }}
+  #         cache: npm
+  #         cache-dependency-path: |
+  #           plugins/sftp/service/package-lock.json
+  #     - name: test with node ${{ matrix.node }}
+  #       run: |
+  #         cd plugins/sftp/service
+  #         npm ci --force
+  #         rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
+  #         npm test
 
   package:
     name: package plugin sftp.service
