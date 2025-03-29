@@ -97,7 +97,6 @@ describe('automated processing', () => {
     event1 = new MageEvent(newEvent(1))
     event2 = new MageEvent(newEvent(2))
     allEvents = new Map().set(event1.id, event1).set(event2.id, event2)
-
     eventObservationRepositories = new Map<MageEventId, jasmine.SpyObj<EventScopedObservationRepository>>([
       [event1.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepository-${event1.id}`, ['findById', 'findLastModifiedAfter'])],
       [event2.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepository-${event2.id}`, ['findById', 'findLastModifiedAfter'])]
@@ -426,7 +425,7 @@ describe('automated processing', () => {
     expect(archiverSpy.createArchive).toHaveBeenCalled()
   })
   
-  fit('processes updated observations w/ create/update trigger', async () => {
+  it('processes updated observations w/ create/update trigger', async () => {
     stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
     const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
@@ -444,13 +443,7 @@ describe('automated processing', () => {
     })
 
     const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
-    sftpRepository.findAllByStatus.and.resolveTo([{
-      eventId: event1.id,
-      observationId: observation.id,
-      status: SftpStatus.SUCCESS,
-      createdAt: 1,
-      updatedAt: 1
-    }])
+    sftpRepository.findAllByStatus.and.resolveTo([])
     sftpRepository.postStatus.and.resolveTo({
       eventId: event1.id,
       observationId: observation.id,
