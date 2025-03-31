@@ -89,7 +89,8 @@ export class ObservationBinner {
         const bins = new ObservationBins();
 
         for (const arcObservation of observations.observations) {
-            if (arcObservation.lastModified != arcObservation.createdAt) {
+            // TODO: Would probably want a better way to determine which observations need to be updated in arcgis
+            if (observations.firstRun || arcObservation.lastModified != arcObservation.createdAt) {
                 bins.updates.add(arcObservation);
             } else if (!this._addedObs.has(arcObservation.id)) {
                 bins.adds.add(arcObservation);

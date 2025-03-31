@@ -17,12 +17,11 @@ on:
   # release:
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   check_release_version:
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -41,7 +40,7 @@ jobs:
       #     [[ $(json version < ./web-app/package.json) = ${{ inputs.version }} ]] || exit 1
 
   build_and_test-service:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.image.service.yaml
 
   # build_and_test-web-app:
@@ -49,8 +48,8 @@ jobs:
   #   uses: ./.github/workflows/build_test.image.web-app.yaml
 
   publish_packages:
-    name:  publish packages
-    needs: [ config, build_and_test-service ]
+    name: publish packages
+    needs: [config, build_and_test-service]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
@@ -60,7 +59,7 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: image.service-artifacts
       - name: publish to package registry

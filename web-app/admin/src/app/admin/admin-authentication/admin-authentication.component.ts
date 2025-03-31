@@ -1,11 +1,15 @@
 import _ from 'underscore'
 import { Component, OnInit, Inject, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { StateService } from '@uirouter/angular';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
+import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
+import { TransitionService } from '@uirouter/core';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'admin-authentication',
@@ -26,6 +30,8 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
   teams: any[] = [];
   events: any[] = [];
 
+  isDirty: boolean = false;
+
   strategies: Strategy[] = [];
 
   readonly hasAuthConfigEditPermission: boolean;
@@ -33,6 +39,8 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
   constructor(
     private dialog: MatDialog,
     private stateService: StateService,
+    private readonly snackBar: MatSnackBar,
+    private readonly transitionService: TransitionService,
     @Inject(Team)
     public team: any,
     @Inject(Event)
@@ -50,6 +58,7 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     const configsPromise = this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
     const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
     const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
+    this.transitionService.onExit({}, this.onUnsavedChanges, { bind: this });
 
     Promise.all([configsPromise, teamsPromise, eventsPromise]).then(result => {
       // Remove event teams
@@ -92,7 +101,34 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     }
   }
 
-  private save(): void {
+  onAuthenticationSaved(status: boolean): void {
+    if (status) {
+      this.snackBar.open('Authentication successfully saved', null, {
+        duration: 2000,
+      });
+    } else {
+      this.snackBar.open('1 or more authentications failed to save correctly', null, {
+        duration: 2000,
+      });
+    };
+    this.isDirty = false;
+  }
+
+  onAuthenticationDeleted(status: boolean): void {
+    if (status) {
+      this.snackBar.open('Authentication successfully deleted', null, {
+        duration: 2000,
+      });
+    } else {
+      this.snackBar.open('Failed to delete authentication', null, {
+        duration: 2000,
+      });
+    };
+    this.isDirty = false;
+  }
+
+  save(): void {
+    console.log('Saving authentication configurations');
     const promises = [];
     this.strategies.forEach(strategy => {
       if (strategy.isDirty) {
@@ -100,24 +136,22 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
       }
     });
 
-    if (promises.length > 0) {
-      Promise.all(promises).then(() => {
-        return this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
-      }).then(strategies => {
-        this.processUnsortedStrategies(strategies.data);
-        this.saveComplete.emit(true);
-      }).catch(err => {
-        console.log(err);
-        this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then((newStrategies: { data: Strategy[]; }) => {
-          this.processUnsortedStrategies(newStrategies.data);
-          this.saveComplete.emit(false);
-        }).catch((err2: any) => {
-          console.log(err2);
-          this.saveComplete.emit(false);
-        });
+    Promise.all(promises).then(() => {
+      return this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
+    }).then(strategies => {
+      this.processUnsortedStrategies(strategies.data);
+      this.onAuthenticationSaved(true);
+    }).catch(err => {
+      console.log(err);
+      this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then((newStrategies: { data: Strategy[]; }) => {
+        this.processUnsortedStrategies(newStrategies.data);
+        this.onAuthenticationSaved(false);
+      }).catch((err2: any) => {
+        console.log(err2);
+        this.onAuthenticationSaved(false);
       });
-    }
-    this.onStrategyDirty(false);
+    });
+    this.isDirty = false;
   }
 
   deleteStrategy(strategy: Strategy): void {
@@ -129,13 +163,13 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
       if (result === 'delete') {
         this.authenticationConfigurationService.getAllConfigurations().then(configs => {
           this.processUnsortedStrategies(configs.data);
-          this.deleteComplete.emit(true);
+          this.onAuthenticationDeleted(true);
         }).catch((err: any) => {
           console.error(err);
-          this.deleteComplete.emit(false);
-        })
+          this.onAuthenticationDeleted(false);
+        });
       } else if (result === 'error') {
-        this.deleteComplete.emit(false);
+        this.onAuthenticationDeleted(false);
       }
     });
   }
@@ -144,12 +178,26 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     this.stateService.go('admin.authenticationCreate')
   }
 
-  onStrategyDirty(isDirty: boolean): void {
-    this.onDirty.emit(isDirty);
-  }
-
   onAuthenticationToggled(strategy: Strategy): void {
     strategy.isDirty = true;
-    this.onStrategyDirty(true)
+    this.isDirty = true;
+  }
+
+  async onUnsavedChanges(): Promise<boolean> {
+    if (this.isDirty) {
+      const ref = this.dialog.open(AdminSettingsUnsavedComponent);
+
+      const result_2 = await lastValueFrom(ref.afterClosed());
+      let discard = true;
+      if (result_2) {
+        discard = result_2.discard;
+      }
+      if (discard) {
+        this.isDirty = false;
+      }
+      return await Promise.resolve(discard);
+    }
+
+    return Promise.resolve(true);
   }
 }
