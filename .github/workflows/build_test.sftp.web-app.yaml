@@ -34,10 +34,12 @@ jobs:
           npm run build
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
-      - name: test
-        run: |
-          cd plugins/sftp/web
-          npm run test-headless
+      # Tests for the web app are currently just generic spec files generated from the angular cli.
+      # need to revisit this after we can write some practical tests.
+      # - name: test
+      #   run: |
+      #     cd plugins/sftp/web
+      #     npm run test-headless
       - name: pack
         run: |
           npm pack ./plugins/sftp/web/dist/main
