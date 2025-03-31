@@ -4,10 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm-run-all build:admin",
-    "build:admin": "ng build --project=admin",
-    "test": "ng test --project=admin",
-    "test-headless": "ng test --watch=false --browsers=ChromeHeadless --project=admin",
+    "build": "npm-run-all build:main",
+    "build:main": "ng build --project=main",
+    "test": "ng test --project=main",
+    "test-headless": "ng test --watch=false --browsers=ChromeHeadless --project=main",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "clean": "rm -rf dist"
