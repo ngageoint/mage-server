@@ -503,32 +503,6 @@ Software source code previously released under an open source license and then m
 (see 17 USC § 101); it is partially copyrighted, partially public domain, and as a whole is protected by the copyrights of the
 non-government authors and must be released according to the terms of the original open source license.
 
-## ArcGIS Plugin/Webapp
-
-### Setting up OAuth for Feature Layers
-
-#### [ArcGIS](`https://arcgis.geointnext.com/arcgis/home/content.html`)
-- *Content* -> *New Item (button)* -> *Developer Credentials*
-  + *Redirect URLs*
-    - `https://{mage-server-url}@ngageoint/mage.arcgis.service/oauth/authenticate`
-      + Mage Server URL example: `magedevd.geointnext.com/plugins/`
-  + *Application Environment*: can be left as *Multiple*
-  + *URL*: optional
-- After creating the new OAuth *app*/credentials
-  + Write down ***Client ID***
-- *Content* -> any *Feature Layer*
-  + Write down ***URL*** (bottom-right)
-
-#### Mage ***Admin*** (shield icon)
-- ArcGIS *tab* -> *Feature Layers* -> *Add Feature Service*
-  + *URL*: copied from *Feature Layer* above
-  + *Authentication*: *OAuth*
-    - *Client Id*: copied from *OAuth Client Id* above
-  + Click *Create Feature*
-- You will know it works if it redirects:
-  + *Request for Permission* pop-up with the new OAuth you just created.
-  + click *Allow* -> it will redirect *back* to the Mage server
-
 ## License
 
 Copyright 2015 BIT Systems
