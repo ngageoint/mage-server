@@ -130,23 +130,17 @@ export class ObservationsTransformer {
      * @returns The esri geometry type.
      */
     mageTypeToEsriType(mageGeometryType: string): string {
-        let esriGeometryType = ''
-
         switch (mageGeometryType) {
             case 'Point':
-                esriGeometryType = 'esriGeometryPoint'
-                break;
+                return 'esriGeometryPoint'
             case 'LineString':
-                esriGeometryType = 'esriGeometryPolyline'
-                break;
+                return 'esriGeometryPolyline'
             case 'Polygon':
-                esriGeometryType = 'esriGeometryPolygon'
-                break;
+                return 'esriGeometryPolygon'
             default:
-                break;
+                return ''
         }
 
-        return esriGeometryType;
     }
 
     /**
@@ -155,7 +149,6 @@ export class ObservationsTransformer {
      * @returns The Esri geometry type.
      */
     private esriGeometryType(observation: ObservationAttrs): string {
-
         let esriGeometryType = ''
 
         if (observation.geometry != null) {
