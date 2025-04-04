@@ -66,8 +66,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: arcgis.web-app-artifacts
-      - name: publish to package registry
+      - name: publish arcgis service
         run: |
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm publish --access public $(ls -1 ngageoint-mage.arcgis.service-*.tgz)
-          npm publish --access public $(ls -1 ngageoint-mage.arcgis.web-app-*.tgz)
+          npm publish --access public $(ls -1 ngageoint-mage.arcgis.service-*.tgz) || echo "skipping arcgis service plugin publish..."
+      - name: publish arcgis web
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.arcgis.web-app-*.tgz) || echo "skipping arcgis web plugin publish..."
