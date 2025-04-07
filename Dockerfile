@@ -51,8 +51,6 @@ RUN npm pack
 FROM node:20.11.1 AS build-sftpserviceplugin
 WORKDIR /sftpserviceplugin
 COPY plugins/sftp/service/package*.json ./
-RUN ls -la /sftpserviceplugin
-RUN cat package.json
 RUN npm install
 COPY --from=build-service /service /sftpserviceplugin/node_modules/@ngageoint/mage.service
 COPY plugins/sftp/service/ ./
