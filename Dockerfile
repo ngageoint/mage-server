@@ -53,7 +53,6 @@ WORKDIR /sftpserviceplugin
 COPY plugins/sftp/service/package*.json ./
 RUN ls -la /sftpserviceplugin
 RUN cat package.json
-RUN npm cache clean --force
 RUN npm install
 COPY --from=build-service /service /sftpserviceplugin/node_modules/@ngageoint/mage.service
 COPY plugins/sftp/service/ ./
@@ -67,7 +66,7 @@ COPY plugins/sftp/web/package*.json ./
 RUN npm install
 COPY plugins/sftp/web/ ./
 RUN npm run build
-RUN npm pack ./dist/admin
+RUN npm pack ./dist/main
 
 # Build instance
 FROM node:20.11.1 AS build-instance
@@ -75,16 +74,16 @@ COPY --from=build-service /service/ngageoint*.tgz /service/
 COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
 COPY --from=build-arcwebplugin /arcgiswebplugin/ngageoint*.tgz /arcgiswebplugin/
 COPY --from=build-arcserviceplugin /arcgisserviceplugin/ngageoint*.tgz /arcgisserviceplugin/
-COPY --from=build-sftpwebplugin /sftpwebplugin/ngageoint*.tgz /sftpwebplugin/
 COPY --from=build-sftpserviceplugin /sftpserviceplugin/ngageoint*.tgz /sftpserviceplugin/
+COPY --from=build-sftpwebplugin /sftpwebplugin/ngageoint*.tgz /sftpwebplugin/
 # COPY --from=build-imageserviceplugin /imageserviceplugin/ngageoint*.tgz /imageserviceplugin/
 
 WORKDIR /instance
 RUN ls -la ../sftpwebplugin
-RUN npm install ../sftpwebplugin/ngageoint*.tgz 
-RUN npm install ../sftpserviceplugin/ngageoint*.tgz
 RUN npm install ../service/ngageoint-mage.service*.tgz 
-RUN npm install ../web-app/ngageoint-mage.web-app*.tgz 
+RUN npm install ../web-app/ngageoint-mage.web-app*.tgz
+RUN npm install ../sftpwebplugin/ngageoint-mage.sftp.web*.tgz 
+RUN npm install ../sftpserviceplugin/ngageoint-mage.sftp.service*.tgz 
 RUN npm install ../arcgiswebplugin/ngageoint*.tgz 
 RUN npm install ../arcgisserviceplugin/ngageoint*.tgz 
 
