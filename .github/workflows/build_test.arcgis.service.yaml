@@ -39,7 +39,6 @@ jobs:
         run: |
           cd plugins/arcgis/service
           npm ci --force
-          npm link ../../../service
           npm test
 
   package:
@@ -65,7 +64,6 @@ jobs:
         run: |
           cd plugins/arcgis/service
           npm ci --force
-          npm link ../../../service
           npm run build
       - name: package for plugin
         run: npm pack ./plugins/arcgis/service

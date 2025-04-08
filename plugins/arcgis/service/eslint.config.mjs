@@ -7,7 +7,6 @@ import jsdoc from 'eslint-plugin-jsdoc';
 export default [
   {
     files: ["**/*.{js,mjs,cjs,ts}"],
-    languageOptions: { globals: globals.browser },
     plugins: { jsdoc },
     rules: {
       "jsdoc/require-description": "warn",

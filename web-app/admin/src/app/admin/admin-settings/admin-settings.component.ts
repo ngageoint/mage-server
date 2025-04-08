@@ -87,36 +87,6 @@ export class AdminSettingsComponent implements OnInit {
     this.isContactInfoDirty = false;
   }
 
-  onAuthenticationDirty(isDirty: boolean): void {
-    this.isAuthenticationDirty = isDirty;
-  }
-
-  onAuthenticationSaved(status: boolean): void {
-    if (status) {
-      this.snackBar.open('Authentication successfully saved', null, {
-        duration: 2000,
-      });
-    } else {
-      this.snackBar.open('1 or more authentications failed to save correctly', null, {
-        duration: 2000,
-      });
-    };
-    this.isAuthenticationDirty = false;
-  }
-
-  onAuthenticationDeleted(status: boolean): void {
-    if (status) {
-      this.snackBar.open('Authentication successfully deleted', null, {
-        duration: 2000,
-      });
-    } else {
-      this.snackBar.open('Failed to delete authentication', null, {
-        duration: 2000,
-      });
-    };
-    this.isAuthenticationDirty = false;
-  }
-
   isDirty(): boolean {
     return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty || this.isContactInfoDirty;
   }

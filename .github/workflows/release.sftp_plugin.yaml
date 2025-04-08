@@ -1,0 +1,76 @@
+name: release sftp plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version you want to assign to the release
+        type: string
+        required: true
+
+  # TODO: possibly use release branches to perform the release process
+  # push:
+  #   branches:
+  #     - release/*
+  #     - prerelease/*
+  # TODO: possibly use release event to perform the release process
+  # release:
+
+jobs:
+
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  check_release_version:
+    needs: [ config ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+      - name: install json util
+        run: npm i -g json
+      - name: check service
+        run: |
+          [[ $(json version < ./plugins/sftp/service/package.json) = ${{ inputs.version }} ]] || exit 1
+      - name: check web
+        run: |
+          [[ $(json version < ./plugins/sftp/web/package.json) = ${{ inputs.version }} ]] || exit 1
+  build_and_test-service:
+    needs: [ check_release_version ]
+    uses: ./.github/workflows/build_test.sftp.service.yaml
+
+  build_and_test-web:
+    needs: [ check_release_version ]
+    uses: ./.github/workflows/build_test.sftp.web.yaml
+
+  publish_packages:
+    name:  publish packages
+    needs: [ config, build_and_test-service ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+      - name: install json util
+        run: npm i -g json
+      - name: download service packages
+        uses: actions/download-artifact@v4
+        with:
+          name: sftp.service-artifacts
+      - name: download web packages
+        uses: actions/download-artifact@v4
+        with:
+          name: sftp.web-artifacts
+      - name: publish sftp service
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.sftp.service-*.tgz) || echo "skipping sftp service plugin publish..."
+      - name: publish sftp web
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.sftp.web-*.tgz) || echo "skipping sftp web plugin publish"
