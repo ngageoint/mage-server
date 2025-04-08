@@ -1,4 +1,4 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { ArcObjects } from "./ArcObjects";
 import { FeatureQuerier } from "./FeatureQuerier";
 import { LayerInfo } from "./LayerInfo";

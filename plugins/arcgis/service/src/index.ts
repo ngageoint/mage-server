@@ -7,7 +7,7 @@ import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authoriz
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationProcessor } from './ObservationProcessor'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
-import { FeatureServiceConfig, FeatureLayerConfig } from './ArcGISConfig'
+import { FeatureServiceConfig, FeatureLayerConfig } from './types/ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'

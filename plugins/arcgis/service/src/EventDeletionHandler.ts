@@ -1,7 +1,7 @@
 import { MageEventAttrs } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 import { FeatureLayerProcessor } from "./FeatureLayerProcessor";
-import { QueryObjectResult } from "./QueryObjectResult";
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { QueryObjectResult } from "./types/QueryObjectResult";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 
 /**
  * Class that handles deleting observations from an arc server for any deleted events.

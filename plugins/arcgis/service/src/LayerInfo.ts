@@ -1,5 +1,5 @@
 import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
-import { LayerInfoResult, LayerField } from "./LayerInfoResult";
+import { LayerInfoResult, LayerField } from "./types/LayerInfoResult";
 
 /**
  * Contains information about a specific arc feature layer.
@@ -40,7 +40,7 @@ export class LayerInfo {
      */
     constructor(url: string, events: MageEventId[], layerInfo: LayerInfoResult) {
         this.url = url
-    
+
         if (events && events.length > 0) {
             for (const event of events) {
                 this.events.add(event);

@@ -1,6 +1,6 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { ArcObjects } from "./ArcObjects";
-import { ArcObservation } from "./ArcObservation";
+import { ArcObservation } from "./types/ArcObservation";
 import { FeatureQuerier } from "./FeatureQuerier";
 import { ObservationBins } from "./ObservationBins";
 import { LayerInfo } from "./LayerInfo";

@@ -1,12 +1,13 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig";
 import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { Layer, Field } from "./AddLayersRequest";
+import { Layer, Field } from "./types/AddLayersRequest";
 import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
 import { ObservationsTransformer } from "./ObservationsTransformer";
-import { LayerInfoResult, LayerField } from "./LayerInfoResult";
+import { LayerInfoResult, LayerField } from "./types/LayerInfoResult";
 import FormData from 'form-data';
 import { request } from '@esri/arcgis-rest-request';
+import { addToServiceDefinition } from "@esri/arcgis-rest-feature-service";
 import { ArcGISIdentityService } from "./ArcGISService";
 
 /**
@@ -82,6 +83,7 @@ export class FeatureServiceAdmin {
 		const events = await this.layerEvents(featureLayer, eventRepo);
 
 		const eventFields = this.fields(events);
+
 		const layerFields = layerInfo.fields;
 
 		const layerFieldSet = new Set();

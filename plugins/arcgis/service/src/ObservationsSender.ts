@@ -1,9 +1,9 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { ArcObjects } from './ArcObjects';
-import { ArcObservation, ArcAttachment } from './ArcObservation';
+import { ArcObservation, ArcAttachment } from './types/ArcObservation';
 import { LayerInfo } from "./LayerInfo";
-import { EditResult } from './EditResult';
-import { AttachmentInfosResult, AttachmentInfo } from './AttachmentInfosResult';
+import { EditResult } from './types/EditResult';
+import { AttachmentInfosResult, AttachmentInfo } from './types/AttachmentInfosResult';
 import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'

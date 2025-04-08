@@ -3,19 +3,19 @@ import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entitie
 import { MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { EventScopedObservationRepository, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
-import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './ArcGISPluginConfig';
+import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { ObservationsTransformer } from './ObservationsTransformer'
 import { ArcObjects } from './ArcObjects'
 import { FeatureService } from './FeatureService';
-import { FeatureServiceResult, FeatureLayer } from './FeatureServiceResult';
+import { FeatureServiceResult, FeatureLayer } from './types/FeatureServiceResult';
 import { LayerInfo } from './LayerInfo';
-import { LayerInfoResult } from "./LayerInfoResult";
+import { LayerInfoResult } from "./types/LayerInfoResult";
 import { FeatureLayerProcessor } from './FeatureLayerProcessor';
 import { EventTransform } from './EventTransform';
 import { GeometryChangedHandler } from './GeometryChangedHandler';
 import { EventDeletionHandler } from './EventDeletionHandler';
 import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig"
+import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 import { request } from '@esri/arcgis-rest-request';
@@ -279,8 +279,6 @@ export class ObservationProcessor {
 			const identityManager = await this._identityService.signin(featureServiceConfig)
 			const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
 			this._layerProcessors.push(layerProcessor);
-			// clearTimeout(this._nextTimeout); // TODO why is this needed?
-			// this.scheduleNext(config); // TODO why is this needed when processAndScheduleNext is called upstream and ends with scheduleNext() This causes a query before updateLayer.
 		}
 	}
 

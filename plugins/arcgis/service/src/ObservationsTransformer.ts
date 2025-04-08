@@ -1,11 +1,11 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { AttributeDefaultConfig } from "./ArcGISConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { AttributeDefaultConfig } from "./types/ArcGISConfig";
 import { ObservationAttrs, Attachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { User } from '@ngageoint/mage.service/lib/entities/users/entities.users'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 import { Geometry, Point, LineString, Polygon } from 'geojson'
-import { ArcObservation, ArcAttachment } from './ArcObservation'
-import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './ArcObject'
+import { ArcObservation, ArcAttachment } from './types/ArcObservation'
+import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
 import { EventTransform } from './EventTransform'
 
 /**
