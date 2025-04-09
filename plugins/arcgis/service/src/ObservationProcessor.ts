@@ -284,21 +284,26 @@ export class ObservationProcessor {
 				this._eventDeletionHandler.checkForEventDeletion(enabledEvents, this._layerProcessors, this._firstRun);
 				const eventsToProcessors = this._organizer.organize(enabledEvents, this._layerProcessors);
 				const nextQueryTime = Date.now();
+				const promises = [];
 				for (const pair of eventsToProcessors) {
-					this._console.info('ArcGIS getting newest observations for event ' + pair.event.name);
-					const obsRepo = await this._obsRepos(pair.event.id);
-					const pagingSettings = {
-						pageSize: config.batchSize,
-						pageIndex: 0,
-						includeTotalCount: true
-					}
-					let morePages = true;
-					let numberLeft = 0;
-					while (morePages) {
-						numberLeft = await this.queryAndSend(config, pair.featureLayerProcessors, obsRepo, pagingSettings, numberLeft);
-						morePages = numberLeft > 0;
-					}
+					promises.push(new Promise<void>(async (resolve, reject) => {
+						this._console.info('ArcGIS getting newest observations for event ' + pair.event.name);
+						const obsRepo = await this._obsRepos(pair.event.id);
+						const pagingSettings = {
+							pageSize: config.batchSize,
+							pageIndex: 0,
+							includeTotalCount: true
+						}
+						let morePages = true;
+						let numberLeft = 0;
+						while (morePages) {
+							numberLeft = await this.queryAndSend(config, pair.featureLayerProcessors, obsRepo, pagingSettings, numberLeft);
+							morePages = numberLeft > 0;
+						}
+						resolve();
+					}));
 				}
+				await Promise.all(promises);
 
 				for (const layerProcessor of this._layerProcessors) {
 					layerProcessor.lastTimeStamp = nextQueryTime;
