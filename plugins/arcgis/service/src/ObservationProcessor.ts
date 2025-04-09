@@ -18,8 +18,8 @@ import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
 import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
-import { request } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from './ArcGISService';
+import { getService } from '@esri/arcgis-rest-feature-service';
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -180,8 +180,8 @@ export class ObservationProcessor {
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
 			this._eventDeletionHandler.updateConfig(config);
 			this._layerProcessors = [];
-			await this.getFeatureServiceLayers(config);
 			this._previousConfig = configJson
+			await this.getFeatureServiceLayers(config);
 		}
 		return config
 	}
@@ -207,15 +207,15 @@ export class ObservationProcessor {
 	 * @param config The plugins configuration.
 	 */
 	private async getFeatureServiceLayers(config: ArcGISPluginConfig) {
+		const promises = [];
 		for (const service of config.featureServices) {
 			try {
-				const identityManager = await this._identityService.signin(service)
-				const response = await request(service.url, { authentication: identityManager })
-				await this.handleFeatureService(response, service, config)
+				promises.push(this.handleFeatureService(service, config))
 			} catch (err) {
 				console.error(err)
 			}
 		}
+		await Promise.all(promises);
 	}
 
 	/**
@@ -224,41 +224,23 @@ export class ObservationProcessor {
 	 * @param featureServiceConfig The feature service config.
 	 * @param config The plugin configuration.
 	 */
-	private async handleFeatureService(featureService: FeatureServiceResult, featureServiceConfig: FeatureServiceConfig, config: ArcGISPluginConfig) {
+	private async handleFeatureService(featureServiceConfig: FeatureServiceConfig, config: ArcGISPluginConfig) {
+		const identityManager = await this._identityService.signin(featureServiceConfig)
+		const featureService = new FeatureService(console, featureServiceConfig, identityManager)
+		const arcService = await featureService.getService();
 
-		if (featureService.layers != null) {
-
-			const serviceLayers = new Map<any, FeatureLayer>()
-			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-
-			let maxId = -1
-			for (const layer of featureService.layers) {
-				serviceLayers.set(layer.id, layer)
-				serviceLayers.set(layer.name, layer)
-				maxId = Math.max(maxId, layer.id)
-			}
-
-			for (const featureLayer of featureServiceConfig.layers) {
-				// TODO - this used to convert event ids to names and set back on featureLayer.events. What is impact of not doing? 			
-				const layer = serviceLayers.get(featureLayer.layer)
-
-				let layerId = undefined
-				if (layer != null) {
-					layerId = layer.id
-				} else {
-					layerId = await admin.createLayer(featureServiceConfig, featureLayer, maxId + 1, this._eventRepo)
-					maxId = Math.max(maxId, layerId)
-				}
-
-				if (layerId != null) {
+		if (arcService.layers != null) {
+			const promises = [];
+			for (const featureLayer of arcService.layers) {
+				const layerId = featureLayer.id;
+				if (layerId !== undefined && layerId !== null) {
 					featureLayer.layer = layerId
-					const identityManager = await this._identityService.signin(featureServiceConfig)
-					const featureService = new FeatureService(console, featureServiceConfig, identityManager)
-					const layerInfo = await featureService.queryLayerInfo(layerId);
+					const layerInfo = await featureService.getLayer(layerId);
 					const url = `${featureServiceConfig.url}/${layerId}`;
-					await this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config);
+					promises.push(this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config));
 				}
 			}
+			await Promise.all(promises);
 		}
 	}
 

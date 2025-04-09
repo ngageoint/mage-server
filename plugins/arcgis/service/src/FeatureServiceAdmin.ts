@@ -7,7 +7,6 @@ import { ObservationsTransformer } from "./ObservationsTransformer";
 import { LayerInfoResult, LayerField } from "./types/LayerInfoResult";
 import FormData from 'form-data';
 import { request } from '@esri/arcgis-rest-request';
-import { addToServiceDefinition } from "@esri/arcgis-rest-feature-service";
 import { ArcGISIdentityService } from "./ArcGISService";
 
 /**
@@ -39,6 +38,8 @@ export class FeatureServiceAdmin {
 	 * @returns {Promise<number>} layer id
 	 */
 	async createLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, nextId: number, eventRepo: MageEventRepository): Promise<number> {
+		// TODO: Is this function needed? This allows the server to create a feature layer on the arcgis server.
+		this._console.info('FeatureServiceAdmin createLayer()');
 		const layer = { type: 'Feature Layer' } as Layer;
 
 		const layerIdentifier = featureLayer.layer;
@@ -80,7 +81,9 @@ export class FeatureServiceAdmin {
 	 * @param {MageEventRepository} eventRepo event repository
 	 */
 	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository) {
+		this._console.info('FeatureServiceAdmin updateLayer()');
 		const events = await this.layerEvents(featureLayer, eventRepo);
+		const promises = [];
 
 		const eventFields = this.fields(events);
 
@@ -103,7 +106,7 @@ export class FeatureServiceAdmin {
 		}
 
 		if (addFields.length > 0) {
-			await this.addFields(service, featureLayer, addFields);
+			promises.push(this.addFields(service, featureLayer, addFields));
 		}
 
 		const eventFieldSet = new Set();
@@ -123,8 +126,9 @@ export class FeatureServiceAdmin {
 
 		if (deleteFields.length > 0) {
 			layerInfo.fields = remainingFields;
-			await this.deleteFields(service, featureLayer, deleteFields);
+			promises.push(this.deleteFields(service, featureLayer, deleteFields));
 		}
+		await Promise.all(promises);
 	}
 
 	/**
@@ -394,14 +398,14 @@ export class FeatureServiceAdmin {
 	}
 
 	/**
-	 * Create the layer
+	 * Create the feature layer
 	 * @param {FeatureServiceConfig} service feature service
 	 * @param {Layer} layer layer
 	 */
 	private async create(service: FeatureServiceConfig, layer: Layer) {
 		const url = this.adminUrl(service) + 'addToDefinition';
 
-		this._console.info('ArcGIS feature service addToDefinition (create layer) url ' + url);
+		this._console.info('ArcGIS feature service addToDefinition (create feature layer) url ' + url);
 
 		const form = new FormData();
 		form.append('addToDefinition', JSON.stringify(layer));
@@ -427,16 +431,20 @@ export class FeatureServiceAdmin {
 
 		this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url);
 
-		const identityManager = await this._identityService.signin(service);
-		await request(url, {
-			authentication: identityManager,
-			params: {
-				addToDefinition: layer,
-				f: "json"
-			}
-		}).catch((error) => {
-			console.log('Error: ' + error);
-		});
+		try {
+			const identityManager = await this._identityService.signin(service);
+			await request(url, {
+				authentication: identityManager,
+				params: {
+					addToDefinition: layer,
+					f: "json"
+				}
+			}).catch((error) => {
+				console.log('Error in addFields: ' + error);
+			});
+		} catch (error) {
+			this._console.error('FeatureServiceAdmin addFields() error ' + error);
+		}
 	}
 
 	/**
@@ -460,14 +468,19 @@ export class FeatureServiceAdmin {
 
 		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url);
 
-		const identityManager = await this._identityService.signin(service);
-		request(url, {
-			authentication: identityManager,
-			httpMethod: 'POST',
-			params: {
-				deleteFromDefinition: layer
-			}
-		}).catch((error) => this._console.error('FeatureServiceAdmin deleteFields() error ' + error));
+		try {
+			const identityManager = await this._identityService.signin(service);
+			await request(url, {
+				authentication: identityManager,
+				httpMethod: 'POST',
+				params: {
+					deleteFromDefinition: layer,
+					f: 'json'
+				}
+			}).catch((error) => this._console.error('FeatureServiceAdmin deleteFields() error ' + error));
+		} catch (error) {
+			this._console.error('FeatureServiceAdmin deleteFields() error ' + error);
+		}
 	}
 
 	/**
