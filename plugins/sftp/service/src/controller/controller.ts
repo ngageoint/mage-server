@@ -4,7 +4,7 @@ import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@n
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
-import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
+import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
 
@@ -96,7 +96,7 @@ export class SftpController {
    */
   public async getConfiguration(): Promise<SFTPPluginConfig> {
     if (this.configuration === null) {
-      return await this.stateRepository.get().then(x => !!x ? x : this.stateRepository.put(defaultSFTPPluginConfig))
+      return await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? encryptDecrypt(x, false) : this.stateRepository.put(defaultSFTPPluginConfig))
     } else {
       return this.configuration
     }
@@ -107,7 +107,11 @@ export class SftpController {
    * @param configuration The new config to put into the state repo.
    */
   public async updateConfiguration(configuration: SFTPPluginConfig) {
-    await this.stateRepository.put(configuration)
+    try {
+      await this.stateRepository.put(await encryptDecrypt(configuration, true))
+    } catch (err) {
+      this.console.log(`ERROR: updateConfiguration: ${err}`)
+    }
   }
 
   /**
