@@ -7,6 +7,7 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
+import { enc } from 'crypto-js';
 
 /**
  * Class used to process observations for SFTP
