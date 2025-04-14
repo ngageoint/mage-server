@@ -1,7 +1,6 @@
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { ArchiveFormat, CompletionAction, TriggerRule } from '../format/entities.format';
 import * as CryptoJS from 'crypto-js';
-import { error } from 'console';
 
 /**
  * Contains various configuration values used by the plugin.
