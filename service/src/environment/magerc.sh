@@ -60,3 +60,4 @@ export MAGE_MONGO_CONN_RETRY_DELAY=5
 export MAGE_MONGO_TLS_INSECURE=false
 # Name of the db that contains the credentials
 export MAGE_MONGO_CRED_DB_NAME=
+export SFTP_PLUGIN_CONFIG_SALT="A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"
