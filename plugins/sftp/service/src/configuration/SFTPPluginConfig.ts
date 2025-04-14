@@ -1,6 +1,7 @@
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { ArchiveFormat, CompletionAction, TriggerRule } from '../format/entities.format';
 import * as CryptoJS from 'crypto-js';
+import { error } from 'console';
 
 /**
  * Contains various configuration values used by the plugin.
@@ -75,18 +76,19 @@ export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
   }
 })
 
-const salt = 'A0E6D3B4-25BD-4DD6-BBC9-B367931966AB';
+// NOTE: default INSECURE salt value, recommend generate new UUID before deployment, **NOT** after deployment
+const salt = process.env.SFTP_PLUGIN_CONFIG_SALT;
 
 export async function encryptDecrypt(config: SFTPPluginConfig, isEncrypt: boolean): Promise<SFTPPluginConfig> {
   try {
     let tempConfig = config;
+    if(salt === undefined) { throw new Error("No salt value found, update docker-compose value...") }
     const encryptedPass = isEncrypt ?
       CryptoJS.AES.encrypt(config.sftpClient.password, salt).toString() :
       CryptoJS.AES.decrypt(config.sftpClient.password, salt).toString();
     tempConfig.sftpClient.password = encryptedPass;
     return tempConfig;
-  } catch (e) {
-    console.log(e);
-    return config;
+  } catch (err) {
+    throw err;
   }
 }

@@ -7,7 +7,6 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
-import { enc } from 'crypto-js';
 
 /**
  * Class used to process observations for SFTP
@@ -109,7 +108,8 @@ export class SftpController {
    */
   public async updateConfiguration(configuration: SFTPPluginConfig) {
     try {
-      await this.stateRepository.put(await encryptDecrypt(configuration, true))
+      let config = await encryptDecrypt(configuration, true);
+      await this.stateRepository.put(config)
     } catch (err) {
       this.console.log(`ERROR: updateConfiguration: ${err}`)
     }
