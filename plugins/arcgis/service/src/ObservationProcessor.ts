@@ -14,7 +14,7 @@ import { EventTransform } from './EventTransform';
 import { GeometryChangedHandler } from './GeometryChangedHandler';
 import { EventDeletionHandler } from './EventDeletionHandler';
 import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
-import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig"
+import { FeatureServiceConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 import { ArcGISIdentityService } from './ArcGISService';
@@ -235,7 +235,7 @@ export class ObservationProcessor {
 				if (featureLayer.geometryType != null) {
 					featureLayerConfig.layer = featureLayer.id; // TODO have layer be id always
 					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-					const eventIds = featureLayer.eventIds || []
+					const eventIds = featureLayerConfig.eventIds || []
 					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
 					const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
 					const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);

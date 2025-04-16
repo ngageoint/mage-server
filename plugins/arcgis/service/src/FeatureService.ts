@@ -77,6 +77,20 @@ export class FeatureService {
     }
   }
 
+  // Add feature using applyEdits
+  async addFeature(feature: any): Promise<any> {
+    try {
+      const response = await applyEdits({
+        url: this._config.url,
+        adds: [feature],
+        authentication: this._identityManager,
+      });
+      return response;
+    } catch (error) {
+      throw new Error(`Error adding feature: ${error}`);
+    }
+  }
+
   // Update feature using applyEdits
   async updateFeature(feature: any): Promise<any> {
     try {

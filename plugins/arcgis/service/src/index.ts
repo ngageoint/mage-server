@@ -194,9 +194,8 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
                   // Construct the FeatureLayerConfig with eventIds
                   const featureLayerConfig: FeatureLayerConfig = {
-                    layer: layer.layer,
-                    geometryType: layer.geometryType,
-                    eventIds: eventIds,
+                    ...layer,
+                    eventIds: eventIds
                   };
 
                   return featureLayerConfig;
@@ -205,7 +204,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 return {
                   url: updateService.url,
                   layers: layers,
-                  // Map exisiting identityManager, client does not send this
+                  // Map existing identityManager, client does not send this
                   identityManager: existingService?.identityManager || '',
                 };
               });

@@ -104,7 +104,7 @@ export class FeatureServiceAdmin {
 				layerFields.push(layerField);
 			}
 		}
-		this._console.log('FeatureServiceAdmin updateLayer() addFields', addFields, featureLayer.layer);
+
 		if (addFields.length > 0) {
 			promises.push(this.addFields(service, featureLayer, addFields));
 		}
@@ -441,7 +441,7 @@ export class FeatureServiceAdmin {
 					f: "json"
 				}
 			}).catch((error) => {
-				console.log('Error in addFields: ' + error);
+				this._console.error('Error in addFields: ' + error);
 			});
 		} catch (error) {
 			this._console.error('FeatureServiceAdmin addFields() error ' + error);
