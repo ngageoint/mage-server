@@ -102,7 +102,7 @@ export class EventDeletionHandler {
                 if (this._config.eventIdField == null) {
                     const value = feature.attributes[this._config.observationIdField]
                     const splitIds = value.split(this._config.idSeparator)
-                    if (splitIds.length == 2) {
+                    if (splitIds.length === 2) {
                         const eventId = parseInt(splitIds[1])
                         if (!isNaN(eventId)) {
                             arcEventIds.add(eventId)

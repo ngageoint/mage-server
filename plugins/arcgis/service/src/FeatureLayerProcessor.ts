@@ -61,9 +61,9 @@ export class FeatureLayerProcessor {
     /**
      * Checks to see if there are any updates that need to be sent to the feature layer.
      */
-    processPendingUpdates() {
+    async processPendingUpdates() {
         const bins = this._binner.pendingUpdates();
-        this.send(bins);
+        await this.send(bins);
     }
 
     /**
@@ -71,21 +71,21 @@ export class FeatureLayerProcessor {
      * If so it then separates the adds from the updates and sends them to the arc feature layer.
      * @param observations 
      */
-    processArcObjects(observations: ArcObjects) {
+    async processArcObjects(observations: ArcObjects) {
         const arcObjectsForLayer = new ArcObjects();
         arcObjectsForLayer.firstRun = observations.firstRun;
         for (const arcObservation of observations.observations) {
-            if (this.layerInfo.geometryType == arcObservation.esriGeometryType) {
+            if (this.layerInfo.geometryType === arcObservation.esriGeometryType) {
                 arcObjectsForLayer.add(arcObservation);
             }
         }
 
         const bins = this._binner.sortEmOut(arcObjectsForLayer);
-        this.send(bins);
+        await this.send(bins);
 
         for (const arcObservation of observations.deletions) {
-            if (this.layerInfo.geometryType == arcObservation.esriGeometryType) {
-                this.sender.sendDelete(arcObservation.id);
+            if (this.layerInfo.geometryType === arcObservation.esriGeometryType) {
+                await this.sender.sendDelete(arcObservation.id);
             }
         }
     }
@@ -94,12 +94,14 @@ export class FeatureLayerProcessor {
      * Sends all the observations to the arc server.
      * @param bins The observations to send.
      */
-    private send(bins: ObservationBins) {
+    private async send(bins: ObservationBins) {
+        const promises = [];
         if (!bins.adds.isEmpty()) {
-            this.sender.sendAdds(bins.adds);
+            promises.push(this.sender.sendAdds(bins.adds));
         }
         if (!bins.updates.isEmpty()) {
-            this.sender.sendUpdates(bins.updates);
+            promises.push(this.sender.sendUpdates(bins.updates));
         }
+        await Promise.all(promises);
     }
 }

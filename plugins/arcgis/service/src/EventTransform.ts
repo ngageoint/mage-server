@@ -141,7 +141,7 @@ export class EventTransform {
         let value = null
         if (config != null) {
             value = config[name]
-            if (value == null) {
+            if (!value) {
                 value = config[id]
             }
         }

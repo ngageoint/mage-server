@@ -72,7 +72,7 @@ export class LayerInfo {
      * @return true if enabled
      */
     hasEvent(eventId: MageEventId) {
-        return this.events.size == 0 || this.events.has(eventId)
+        return this.events.size === 0 || this.events.has(eventId)
     }
 
 }

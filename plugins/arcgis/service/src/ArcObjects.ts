@@ -60,7 +60,7 @@ export class ArcObjects {
      * @return true if empty.
      */
     isEmpty(): boolean {
-        return this.count() == 0
+        return this.count() === 0
     }
 
     /**

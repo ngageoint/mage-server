@@ -7,7 +7,6 @@ import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './types/ArcGISPlu
 import { ObservationsTransformer } from './ObservationsTransformer'
 import { ArcObjects } from './ArcObjects'
 import { FeatureService } from './FeatureService';
-import { FeatureServiceResult, FeatureLayer } from './types/FeatureServiceResult';
 import { LayerInfo } from './LayerInfo';
 import { LayerInfoResult } from "./types/LayerInfoResult";
 import { FeatureLayerProcessor } from './FeatureLayerProcessor';
@@ -19,7 +18,6 @@ import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 import { ArcGISIdentityService } from './ArcGISService';
-import { getService } from '@esri/arcgis-rest-feature-service';
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -175,7 +173,7 @@ export class ObservationProcessor {
 		const fullConfig = { ...config, eventForms };
 
 		const configJson = JSON.stringify(fullConfig)
-		if (this._previousConfig == null || this._previousConfig != configJson) {
+		if (this._previousConfig == null || this._previousConfig !== configJson) {
 			this._transformer = new ObservationsTransformer(config, console);
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
 			this._eventDeletionHandler.updateConfig(config);
@@ -229,38 +227,21 @@ export class ObservationProcessor {
 		const featureService = new FeatureService(console, featureServiceConfig, identityManager)
 		const arcService = await featureService.getService();
 
-		if (arcService.layers != null) {
-			const promises = [];
-			for (const featureLayer of arcService.layers) {
-				const layerId = featureLayer.id;
-				if (layerId !== undefined && layerId !== null) {
-					featureLayer.layer = layerId
-					const layerInfo = await featureService.getLayer(layerId);
-					const url = `${featureServiceConfig.url}/${layerId}`;
-					promises.push(this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config));
+		for (const featureLayer of arcService.layers) {
+			const featureLayerConfig = featureServiceConfig.layers.find(layer => layer.layer.toString() === featureLayer.name.toString());
+			if (featureLayerConfig) {
+				const url = `${featureServiceConfig.url}/${featureLayer.id}`;
+				const layerInfo = await featureService.getLayer(featureLayer.id);
+				if (featureLayer.geometryType != null) {
+					featureLayerConfig.layer = featureLayer.id; // TODO have layer be id always
+					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
+					const eventIds = featureLayer.eventIds || []
+					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
+					const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+					const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
+					this._layerProcessors.push(layerProcessor);
 				}
 			}
-			await Promise.all(promises);
-		}
-	}
-
-	/**
-	 * Called when information on a feature layer is returned from an arc server.
-	 * @param url The layer url.
-	 * @param featureServiceConfig The feature service config.
-	 * @param featureLayer The feature layer configuration.
-	 * @param layerInfo The information on a layer.
-	 * @param config The plugins configuration.
-	 */
-	private async handleLayerInfo(url: string, featureServiceConfig: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, config: ArcGISPluginConfig) {
-		if (layerInfo.geometryType != null) {
-			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-			const eventIds = featureLayer.eventIds || []
-			await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
-			const info = new LayerInfo(url, eventIds, layerInfo)
-			const identityManager = await this._identityService.signin(featureServiceConfig)
-			const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
-			this._layerProcessors.push(layerProcessor);
 		}
 	}
 
@@ -272,9 +253,11 @@ export class ObservationProcessor {
 		if (this._isRunning) {
 			if (config.enabled && this._layerProcessors.length > 0) {
 				this._console.info('ArcGIS plugin checking for any pending updates or adds');
+				const pendingPromises = [];
 				for (const layerProcessor of this._layerProcessors) {
-					layerProcessor.processPendingUpdates();
+					pendingPromises.push(layerProcessor.processPendingUpdates());
 				}
+				await Promise.all(pendingPromises);
 				this._console.info('ArcGIS plugin processing new observations...');
 				const enabledEvents = (await this._eventRepo.findActiveEvents()).filter(event =>
 					this._layerProcessors.some(layerProcessor =>
@@ -349,14 +332,14 @@ export class ObservationProcessor {
 
 		let queryTime = -1;
 		for (const layerProcessor of layerProcessors) {
-			if (queryTime == -1 || layerProcessor.lastTimeStamp < queryTime) {
+			if (queryTime === -1 || layerProcessor.lastTimeStamp < queryTime) {
 				queryTime = layerProcessor.lastTimeStamp;
 			}
 		}
 
 		let latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
 		if (latestObs != null && latestObs.totalCount != null && latestObs.totalCount > 0) {
-			if (pagingSettings.pageIndex == 0) {
+			if (pagingSettings.pageIndex === 0) {
 				this._console.info('ArcGIS newest observation count ' + latestObs.totalCount);
 				newNumberLeft = latestObs.totalCount;
 			}

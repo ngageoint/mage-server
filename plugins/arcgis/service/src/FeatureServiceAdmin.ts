@@ -80,7 +80,7 @@ export class FeatureServiceAdmin {
 	 * @param {LayerInfoResult} layerInfo layer info
 	 * @param {MageEventRepository} eventRepo event repository
 	 */
-	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository) {
+	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository): Promise<Field[]> {
 		this._console.info('FeatureServiceAdmin updateLayer()');
 		const events = await this.layerEvents(featureLayer, eventRepo);
 		const promises = [];
@@ -104,7 +104,7 @@ export class FeatureServiceAdmin {
 				layerFields.push(layerField);
 			}
 		}
-
+		this._console.log('FeatureServiceAdmin updateLayer() addFields', addFields, featureLayer.layer);
 		if (addFields.length > 0) {
 			promises.push(this.addFields(service, featureLayer, addFields));
 		}
@@ -129,6 +129,7 @@ export class FeatureServiceAdmin {
 			promises.push(this.deleteFields(service, featureLayer, deleteFields));
 		}
 		await Promise.all(promises);
+		return eventFields;
 	}
 
 	/**
@@ -154,7 +155,7 @@ export class FeatureServiceAdmin {
 
 		const events: MageEvent[] = [];
 		for (const mageEvent of mageEvents) {
-			if (layerEventIds.size == 0 || layerEventIds.has(mageEvent.id)) {
+			if (layerEventIds.size === 0 || layerEventIds.has(mageEvent.id)) {
 				const event = await eventRepo.findById(mageEvent.id);
 				if (event != null) {
 					events.push(event);
@@ -309,7 +310,7 @@ export class FeatureServiceAdmin {
 				forms.add(form.id);
 
 				for (const formField of form.fields) {
-					if (formField.archived == null || !formField.archived) {
+					if (!formField.archived) {
 						this.createFormField(form, formField, fields, fieldNames);
 					}
 				}
