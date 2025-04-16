@@ -233,7 +233,8 @@ export class ObservationProcessor {
 				const url = `${featureServiceConfig.url}/${featureLayer.id}`;
 				const layerInfo = await featureService.getLayer(featureLayer.id);
 				if (featureLayer.geometryType != null) {
-					featureLayerConfig.layer = featureLayer.id; // TODO have layer be id always
+					// TODO The featureLayerConfig should contain the layer id
+					featureLayerConfig.layer = featureLayer.id;
 					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
 					const eventIds = featureLayerConfig.eventIds || []
 					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
