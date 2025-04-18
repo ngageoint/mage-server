@@ -108,7 +108,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
               await controller.start()
 
-              res.status(200).json(configuration)
+              res.status(200) //.json(configuration)
             })
 
           return routes
