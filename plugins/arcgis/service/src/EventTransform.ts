@@ -1,4 +1,4 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig"
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig"
 import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { Form, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 
@@ -117,16 +117,16 @@ export class EventTransform {
      */
     private initializeArchivedFields(allFields: Set<string>, formAttributes: any) {
 
-            for (const fields of this.formFields.values()) {
+        for (const fields of this.formFields.values()) {
 
-                const fieldAttributes = this.configValue(formAttributes, fields.name, fields.id)
+            const fieldAttributes = this.configValue(formAttributes, fields.name, fields.id)
 
-                for (const field of fields.archivedFields) {
-                    const attribute = this.initializeField(field, fields.name, allFields, fieldAttributes)
-                    fields.set(field, attribute)
-                }
-
+            for (const field of fields.archivedFields) {
+                const attribute = this.initializeField(field, fields.name, allFields, fieldAttributes)
+                fields.set(field, attribute)
             }
+
+        }
 
     }
 
@@ -141,7 +141,7 @@ export class EventTransform {
         let value = null
         if (config != null) {
             value = config[name]
-            if (value == null) {
+            if (!value) {
                 value = config[id]
             }
         }

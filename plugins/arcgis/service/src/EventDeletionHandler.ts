@@ -1,7 +1,7 @@
 import { MageEventAttrs } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 import { FeatureLayerProcessor } from "./FeatureLayerProcessor";
-import { QueryObjectResult } from "./QueryObjectResult";
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { QueryObjectResult } from "./types/QueryObjectResult";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 
 /**
  * Class that handles deleting observations from an arc server for any deleted events.
@@ -102,7 +102,7 @@ export class EventDeletionHandler {
                 if (this._config.eventIdField == null) {
                     const value = feature.attributes[this._config.observationIdField]
                     const splitIds = value.split(this._config.idSeparator)
-                    if (splitIds.length == 2) {
+                    if (splitIds.length === 2) {
                         const eventId = parseInt(splitIds[1])
                         if (!isNaN(eventId)) {
                             arcEventIds.add(eventId)

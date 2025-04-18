@@ -1,5 +1,5 @@
 import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
-import { FeatureServiceConfig } from './ArcGISConfig'
+import { FeatureServiceConfig } from './types/ArcGISConfig'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 
 export interface ArcGISIdentityService {
@@ -42,12 +42,12 @@ export function createArcGISIdentityService(
 }
 
 export function getPortalUrl(featureService: FeatureServiceConfig | string): string {
-	const url = getFeatureServiceUrl(featureService)
+  const url = getFeatureServiceUrl(featureService)
   return `https://${url.hostname}/arcgis/sharing/rest`
 }
 
 export function getServerUrl(featureService: FeatureServiceConfig | string): string {
-	const url = getFeatureServiceUrl(featureService)
+  const url = getFeatureServiceUrl(featureService)
   return `https://${url.hostname}/arcgis`
 }
 

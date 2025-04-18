@@ -1,11 +1,11 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { AttributeDefaultConfig } from "./ArcGISConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { AttributeDefaultConfig } from "./types/ArcGISConfig";
 import { ObservationAttrs, Attachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { User } from '@ngageoint/mage.service/lib/entities/users/entities.users'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 import { Geometry, Point, LineString, Polygon } from 'geojson'
-import { ArcObservation, ArcAttachment } from './ArcObservation'
-import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './ArcObject'
+import { ArcObservation, ArcAttachment } from './types/ArcObservation'
+import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
 import { EventTransform } from './EventTransform'
 
 /**
@@ -130,23 +130,17 @@ export class ObservationsTransformer {
      * @returns The esri geometry type.
      */
     mageTypeToEsriType(mageGeometryType: string): string {
-        let esriGeometryType = ''
-
         switch (mageGeometryType) {
             case 'Point':
-                esriGeometryType = 'esriGeometryPoint'
-                break;
+                return 'esriGeometryPoint'
             case 'LineString':
-                esriGeometryType = 'esriGeometryPolyline'
-                break;
+                return 'esriGeometryPolyline'
             case 'Polygon':
-                esriGeometryType = 'esriGeometryPolygon'
-                break;
+                return 'esriGeometryPolygon'
             default:
-                break;
+                return ''
         }
 
-        return esriGeometryType;
     }
 
     /**
@@ -155,7 +149,6 @@ export class ObservationsTransformer {
      * @returns The Esri geometry type.
      */
     private esriGeometryType(observation: ObservationAttrs): string {
-
         let esriGeometryType = ''
 
         if (observation.geometry != null) {
@@ -279,7 +272,7 @@ export class ObservationsTransformer {
         let formIds: { [name: string]: number } = {}
         for (const property in properties) {
             const value = properties[property]
-            if (property == 'forms') {
+            if (property === 'forms') {
                 formIds = this.formsToAttributes(value, transform, arcObject)
             } else {
                 this.addAttribute(property, value, arcObject)
@@ -325,15 +318,15 @@ export class ObservationsTransformer {
                         const field = mageEvent.formFieldFor(formProperty, formId)
                         if (field != null && field.type !== FormFieldType.Attachment) {
                             let title = field.title
-                            if (fields != undefined) {
+                            if (fields != null) {
                                 const fieldTitle = fields.get(title)
-                                if (fieldTitle != undefined) {
+                                if (fieldTitle != null) {
                                     const sanitizedName = ObservationsTransformer.replaceSpaces(fieldTitle)
                                     const sanitizedFormName = ObservationsTransformer.replaceSpaces(fields.name)
                                     title = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
                                 }
                             }
-                            if (field.type == FormFieldType.Geometry) {
+                            if (field.type === FormFieldType.Geometry) {
                                 value = this.geometryToArcGeometry(value)
                             }
                             this.addFormAttribute(title, formCount, value, arcObject)
@@ -417,7 +410,7 @@ export class ObservationsTransformer {
                     let baseKey = attribute
                     let count = 1
                     const countIndex = attribute.lastIndexOf('_')
-                    if (countIndex != -1) {
+                    if (countIndex !== -1) {
                         const countString = attribute.substring(countIndex + 1)
                         if (countString != null && countString !== '') {
                             const countNumber = Number(countString)
@@ -458,7 +451,7 @@ export class ObservationsTransformer {
                         for (const valueConfig of condition) {
                             const value = arcObject.attributes[valueConfig.attribute]
                             const values = valueConfig.values
-                            if (values.length == 0) {
+                            if (values.length === 0) {
                                 setDefault = value == null
                             } else {
                                 setDefault = values.includes(value)
@@ -516,7 +509,7 @@ export class ObservationsTransformer {
                 }
                 if (attachment.name != null) {
                     const extensionIndex = attachment.name.lastIndexOf('.')
-                    if (extensionIndex != -1) {
+                    if (extensionIndex !== -1) {
                         arcAttachment.name = attachment.name.substring(0, extensionIndex)
                     } else {
                         arcAttachment.name = attachment.name

@@ -1,6 +1,6 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { LayerInfo } from "./LayerInfo";
-import { QueryObjectResult } from "./QueryObjectResult";
+import { QueryObjectResult } from "./types/QueryObjectResult";
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
 import { queryFeatures } from '@esri/arcgis-rest-feature-service';
 
@@ -53,7 +53,7 @@ export class FeatureQuerier {
      * @param geometry query the geometry, default is true
      */
     async queryObservation(observationId: string, response: (result: QueryObjectResult) => void, fields?: string[], geometry?: boolean) {
-        const where = !this._config.eventIdField 
+        const where = !this._config.eventIdField
             ? `${this._config.observationIdField} LIKE '${observationId}${this._config.idSeparator}%'`
             : `${this._config.observationIdField} = '${observationId}'`;
         this._console.info('ArcGIS query observation: ' + this._url.toString() + where);

@@ -162,13 +162,13 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
         {
           value: 3,
           condition: [
-            { attribute:'geometry_type', values: ['esriGeometryPolyline'] }
+            { attribute: 'geometry_type', values: ['esriGeometryPolyline'] }
           ]
         },
         {
           value: 1,
           condition: [
-            { attribute:'geometry_type', values: ['esriGeometryPolygon'] }
+            { attribute: 'geometry_type', values: ['esriGeometryPolygon'] }
           ]
         }
       ]

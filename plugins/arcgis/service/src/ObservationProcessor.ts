@@ -3,22 +3,20 @@ import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entitie
 import { MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { EventScopedObservationRepository, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
-import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './ArcGISPluginConfig';
+import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { ObservationsTransformer } from './ObservationsTransformer'
 import { ArcObjects } from './ArcObjects'
 import { FeatureService } from './FeatureService';
-import { FeatureServiceResult, FeatureLayer } from './FeatureServiceResult';
 import { LayerInfo } from './LayerInfo';
-import { LayerInfoResult } from "./LayerInfoResult";
+import { LayerInfoResult } from "./types/LayerInfoResult";
 import { FeatureLayerProcessor } from './FeatureLayerProcessor';
 import { EventTransform } from './EventTransform';
 import { GeometryChangedHandler } from './GeometryChangedHandler';
 import { EventDeletionHandler } from './EventDeletionHandler';
 import { EventLayerProcessorOrganizer } from './EventLayerProcessorOrganizer';
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig"
+import { FeatureServiceConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
-import { request } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from './ArcGISService';
 
 /**
@@ -175,13 +173,13 @@ export class ObservationProcessor {
 		const fullConfig = { ...config, eventForms };
 
 		const configJson = JSON.stringify(fullConfig)
-		if (this._previousConfig == null || this._previousConfig != configJson) {
+		if (this._previousConfig == null || this._previousConfig !== configJson) {
 			this._transformer = new ObservationsTransformer(config, console);
 			this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
 			this._eventDeletionHandler.updateConfig(config);
 			this._layerProcessors = [];
-			await this.getFeatureServiceLayers(config);
 			this._previousConfig = configJson
+			await this.getFeatureServiceLayers(config);
 		}
 		return config
 	}
@@ -207,15 +205,15 @@ export class ObservationProcessor {
 	 * @param config The plugins configuration.
 	 */
 	private async getFeatureServiceLayers(config: ArcGISPluginConfig) {
+		const promises = [];
 		for (const service of config.featureServices) {
 			try {
-				const identityManager = await this._identityService.signin(service)
-				const response = await request(service.url, { authentication: identityManager })
-				await this.handleFeatureService(response, service, config)
+				promises.push(this.handleFeatureService(service, config))
 			} catch (err) {
 				console.error(err)
 			}
 		}
+		await Promise.all(promises);
 	}
 
 	/**
@@ -224,63 +222,27 @@ export class ObservationProcessor {
 	 * @param featureServiceConfig The feature service config.
 	 * @param config The plugin configuration.
 	 */
-	private async handleFeatureService(featureService: FeatureServiceResult, featureServiceConfig: FeatureServiceConfig, config: ArcGISPluginConfig) {
+	private async handleFeatureService(featureServiceConfig: FeatureServiceConfig, config: ArcGISPluginConfig) {
+		const identityManager = await this._identityService.signin(featureServiceConfig)
+		const featureService = new FeatureService(console, featureServiceConfig, identityManager)
+		const arcService = await featureService.getService();
 
-		if (featureService.layers != null) {
-
-			const serviceLayers = new Map<any, FeatureLayer>()
-			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-
-			let maxId = -1
-			for (const layer of featureService.layers) {
-				serviceLayers.set(layer.id, layer)
-				serviceLayers.set(layer.name, layer)
-				maxId = Math.max(maxId, layer.id)
-			}
-
-			for (const featureLayer of featureServiceConfig.layers) {
-				// TODO - this used to convert event ids to names and set back on featureLayer.events. What is impact of not doing? 			
-				const layer = serviceLayers.get(featureLayer.layer)
-
-				let layerId = undefined
-				if (layer != null) {
-					layerId = layer.id
-				} else {
-					layerId = await admin.createLayer(featureServiceConfig, featureLayer, maxId + 1, this._eventRepo)
-					maxId = Math.max(maxId, layerId)
-				}
-
-				if (layerId != null) {
-					featureLayer.layer = layerId
-					const identityManager = await this._identityService.signin(featureServiceConfig)
-					const featureService = new FeatureService(console, featureServiceConfig, identityManager)
-					const layerInfo = await featureService.queryLayerInfo(layerId);
-					const url = `${featureServiceConfig.url}/${layerId}`;
-					await this.handleLayerInfo(url, featureServiceConfig, featureLayer, layerInfo, config);
+		for (const featureLayer of arcService.layers) {
+			const featureLayerConfig = featureServiceConfig.layers.find(layer => layer.layer.toString() === featureLayer.name.toString());
+			if (featureLayerConfig) {
+				const url = `${featureServiceConfig.url}/${featureLayer.id}`;
+				const layerInfo = await featureService.getLayer(featureLayer.id);
+				if (featureLayer.geometryType != null) {
+					// TODO The featureLayerConfig should contain the layer id
+					featureLayerConfig.layer = featureLayer.id;
+					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
+					const eventIds = featureLayerConfig.eventIds || []
+					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
+					const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+					const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
+					this._layerProcessors.push(layerProcessor);
 				}
 			}
-		}
-	}
-
-	/**
-	 * Called when information on a feature layer is returned from an arc server.
-	 * @param url The layer url.
-	 * @param featureServiceConfig The feature service config.
-	 * @param featureLayer The feature layer configuration.
-	 * @param layerInfo The information on a layer.
-	 * @param config The plugins configuration.
-	 */
-	private async handleLayerInfo(url: string, featureServiceConfig: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, config: ArcGISPluginConfig) {
-		if (layerInfo.geometryType != null) {
-			const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-			const eventIds = featureLayer.eventIds || []
-			await admin.updateLayer(featureServiceConfig, featureLayer, layerInfo, this._eventRepo)
-			const info = new LayerInfo(url, eventIds, layerInfo)
-			const identityManager = await this._identityService.signin(featureServiceConfig)
-			const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
-			this._layerProcessors.push(layerProcessor);
-			// clearTimeout(this._nextTimeout); // TODO why is this needed?
-			// this.scheduleNext(config); // TODO why is this needed when processAndScheduleNext is called upstream and ends with scheduleNext() This causes a query before updateLayer.
 		}
 	}
 
@@ -292,9 +254,11 @@ export class ObservationProcessor {
 		if (this._isRunning) {
 			if (config.enabled && this._layerProcessors.length > 0) {
 				this._console.info('ArcGIS plugin checking for any pending updates or adds');
+				const pendingPromises = [];
 				for (const layerProcessor of this._layerProcessors) {
-					layerProcessor.processPendingUpdates();
+					pendingPromises.push(layerProcessor.processPendingUpdates());
 				}
+				await Promise.all(pendingPromises);
 				this._console.info('ArcGIS plugin processing new observations...');
 				const enabledEvents = (await this._eventRepo.findActiveEvents()).filter(event =>
 					this._layerProcessors.some(layerProcessor =>
@@ -304,21 +268,26 @@ export class ObservationProcessor {
 				this._eventDeletionHandler.checkForEventDeletion(enabledEvents, this._layerProcessors, this._firstRun);
 				const eventsToProcessors = this._organizer.organize(enabledEvents, this._layerProcessors);
 				const nextQueryTime = Date.now();
+				const promises = [];
 				for (const pair of eventsToProcessors) {
-					this._console.info('ArcGIS getting newest observations for event ' + pair.event.name);
-					const obsRepo = await this._obsRepos(pair.event.id);
-					const pagingSettings = {
-						pageSize: config.batchSize,
-						pageIndex: 0,
-						includeTotalCount: true
-					}
-					let morePages = true;
-					let numberLeft = 0;
-					while (morePages) {
-						numberLeft = await this.queryAndSend(config, pair.featureLayerProcessors, obsRepo, pagingSettings, numberLeft);
-						morePages = numberLeft > 0;
-					}
+					promises.push(new Promise<void>(async (resolve, reject) => {
+						this._console.info('ArcGIS getting newest observations for event ' + pair.event.name);
+						const obsRepo = await this._obsRepos(pair.event.id);
+						const pagingSettings = {
+							pageSize: config.batchSize,
+							pageIndex: 0,
+							includeTotalCount: true
+						}
+						let morePages = true;
+						let numberLeft = 0;
+						while (morePages) {
+							numberLeft = await this.queryAndSend(config, pair.featureLayerProcessors, obsRepo, pagingSettings, numberLeft);
+							morePages = numberLeft > 0;
+						}
+						resolve();
+					}));
 				}
+				await Promise.all(promises);
 
 				for (const layerProcessor of this._layerProcessors) {
 					layerProcessor.lastTimeStamp = nextQueryTime;
@@ -364,14 +333,14 @@ export class ObservationProcessor {
 
 		let queryTime = -1;
 		for (const layerProcessor of layerProcessors) {
-			if (queryTime == -1 || layerProcessor.lastTimeStamp < queryTime) {
+			if (queryTime === -1 || layerProcessor.lastTimeStamp < queryTime) {
 				queryTime = layerProcessor.lastTimeStamp;
 			}
 		}
 
 		let latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
 		if (latestObs != null && latestObs.totalCount != null && latestObs.totalCount > 0) {
-			if (pagingSettings.pageIndex == 0) {
+			if (pagingSettings.pageIndex === 0) {
 				this._console.info('ArcGIS newest observation count ' + latestObs.totalCount);
 				newNumberLeft = latestObs.totalCount;
 			}
