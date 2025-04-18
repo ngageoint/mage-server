@@ -75,10 +75,9 @@ export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
   }
 })
 
-// NOTE: default INSECURE salt value, recommend generate new UUID before deployment, **NOT** after deployment
-const salt = process.env.SFTP_PLUGIN_CONFIG_SALT;
-
 export async function encryptDecrypt(config: SFTPPluginConfig, isEncrypt: boolean): Promise<SFTPPluginConfig> {
+  // NOTE: default INSECURE salt value, recommend generate new UUID before deployment, **NOT** after deployment
+  const salt = process.env.SFTP_PLUGIN_CONFIG_SALT;
   try {
     let tempConfig = config;
     if(salt === undefined) { throw new Error("No salt value found, update docker-compose value...") }
