@@ -48,12 +48,16 @@
     "express": "4.21.2"
   },
   "devDependencies": {
+    "@eslint/js": "9.24.0",
     "@types/express": "4.17.21",
     "@types/geojson": "7946.0.16",
     "@types/jest": "29.5.14",
+    "eslint": "9.24.0",
+    "eslint-plugin-jsdoc": "50.6.9",
     "jest": "29.7.0",
     "nock": "12.0.3",
     "ts-jest": "29.2.6",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "typescript-eslint": "8.29.1"
   }
 }

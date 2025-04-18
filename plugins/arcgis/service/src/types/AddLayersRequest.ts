@@ -23,5 +23,5 @@ export interface Field {
     length: number
     editable: boolean
     domain?: string
-    defaultValue?: any
+    defaultValue?: unknown
 }

@@ -1,4 +1,4 @@
-import { FeatureServiceConfig, AttributeConfig } from "./ArcGISConfig"
+import { FeatureServiceConfig, AttributeConfig } from "./ArcGISConfig";
 
 /**
  * Contains various configuration values used by the plugin.
@@ -71,13 +71,13 @@ export interface ArcGISPluginConfig {
   idSeparator: string
 
   /**
-  * The event id field attribute name.
-  */
+   * The event id field attribute name.
+   */
   eventIdField?: string
 
   /**
-  * The last edited date field attribute name on the ArcGIS server.
-  */
+   * The last edited date field attribute name on the ArcGIS server.
+   */
   lastEditedDateField?: string
 
   /**
@@ -123,7 +123,7 @@ export interface ArcGISPluginConfig {
   /**
    * Override mappings between event form fields and ArcGIS attributes as: { event: { form: { field: attribute } } }
    */
-  fieldAttributes?: any
+  fieldAttributes?: unknown
 
   /**
    * The attribute configurations.
@@ -174,4 +174,4 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
       ]
     }
   }
-})
+});

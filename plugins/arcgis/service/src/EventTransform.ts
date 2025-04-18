@@ -10,75 +10,75 @@ export class EventTransform {
     /**
      * The MAGE event.
      */
-    mageEvent: MageEvent | null
+    mageEvent: MageEvent | null;
 
     /**
      * Form field mappings between form ids and form fields.
      */
-    formFields: Map<number, FormFields> = new Map()
+    formFields: Map<number, FormFields> = new Map();
 
     /**
-     * Constructor.
-     * @param config The plugins configuration.
-     * @param mageEvent The MAGE Event.
+     * Creates a new instance of EventTransform.
+     * @param {ArcGISPluginConfig} config The plugins configuration.
+     * @param {MageEvent | null} mageEvent The MAGE Event.
      */
     constructor(config: ArcGISPluginConfig, mageEvent: MageEvent | null) {
-        this.mageEvent = mageEvent
-        this.initialize(config)
+        this.mageEvent = mageEvent;
+        this.initialize(config);
     }
 
     /**
      * Initialize the event fields.
-     * @param config The plugins configuration.
+     * @param {ArcGISPluginConfig} config The plugins configuration.
      */
     private initialize(config: ArcGISPluginConfig) {
 
-        const allFields = new Set<string>()
+        const allFields = new Set<string>();
 
-        allFields.add(config.observationIdField)
+        allFields.add(config.observationIdField);
         if (config.eventIdField != null) {
-            allFields.add(config.eventIdField)
+            allFields.add(config.eventIdField);
         }
         if (config.eventNameField != null) {
-            allFields.add(config.eventNameField)
+            allFields.add(config.eventNameField);
         }
         if (config.userIdField != null) {
-            allFields.add(config.userIdField)
+            allFields.add(config.userIdField);
         }
         if (config.usernameField != null) {
-            allFields.add(config.usernameField)
+            allFields.add(config.usernameField);
         }
         if (config.userDisplayNameField != null) {
-            allFields.add(config.userDisplayNameField)
+            allFields.add(config.userDisplayNameField);
         }
         if (config.deviceIdField != null) {
-            allFields.add(config.deviceIdField)
+            allFields.add(config.deviceIdField);
         }
         if (config.createdAtField != null) {
-            allFields.add(config.createdAtField)
+            allFields.add(config.createdAtField);
         }
         if (config.lastModifiedField != null) {
-            allFields.add(config.lastModifiedField)
+            allFields.add(config.lastModifiedField);
         }
         if (config.geometryType != null) {
-            allFields.add(config.geometryType)
+            allFields.add(config.geometryType);
         }
 
         if (this.mageEvent != null) {
 
-            const formAttributes = this.configValue(config.fieldAttributes, this.mageEvent.name, this.mageEvent.id)
+            const formAttributes = this.configValue(config.fieldAttributes, this.mageEvent.name, this.mageEvent.id);
 
             // Initialize active form active fields
             for (const form of this.mageEvent.activeForms) {
-                this.initializeFields(form, allFields, formAttributes)
+                this.initializeFields(form, allFields, formAttributes);
             }
 
             // Initialize active form archived fields
-            this.initializeArchivedFields(allFields, formAttributes)
+            this.initializeArchivedFields(allFields, formAttributes);
 
             // Initialize archived form fields
             for (const form of this.mageEvent.archivedForms) {
-                this.initializeFields(form, allFields, formAttributes)
+                this.initializeFields(form, allFields, formAttributes);
             }
 
         }
@@ -87,33 +87,33 @@ export class EventTransform {
 
     /**
      * Initialize the form fields.
-     * @param form The form.
-     * @param allFields Used to build and track all event fields.
-     * @param formAttributes Form attributes override mappings
+     * @param {Form} form The form.
+     * @param {Set<string>} allFields Used to build and track all event fields.
+     * @param {any} formAttributes Form attributes override mappings
      */
     private initializeFields(form: Form, allFields: Set<string>, formAttributes: any) {
 
-        const fields = new FormFields(form)
+        const fields = new FormFields(form);
 
-        const fieldAttributes = this.configValue(formAttributes, fields.name, fields.id)
+        const fieldAttributes = this.configValue(formAttributes, fields.name, fields.id);
 
         for (const field of form.fields) {
 
-            let attribute = field.title
+            let attribute = field.title;
             if (form.archived || !field.archived) {
-                attribute = this.initializeField(attribute, fields.name, allFields, fieldAttributes)
+                attribute = this.initializeField(attribute, fields.name, allFields, fieldAttributes);
             }
 
-            fields.set(field.title, attribute, field.archived)
+            fields.set(field.title, attribute, field.archived);
         }
 
-        this.formFields.set(form.id, fields)
+        this.formFields.set(form.id, fields);
     }
 
     /**
      * Initialize the archived form fields.
-     * @param allFields Used to build and track all event fields.
-     * @param formAttributes Form attributes override mappings
+     * @param {Set<string>} allFields Used to build and track all event fields.
+     * @param {any} formAttributes Form attributes override mappings
      */
     private initializeArchivedFields(allFields: Set<string>, formAttributes: any) {
 
@@ -132,60 +132,60 @@ export class EventTransform {
 
     /**
      * Retrieve a config value by name or id.
-     * @param config The configuration.
-     * @param name Configuration name.
-     * @param id Configuration id.
-     * @return configuration value
+     * @param {any} config The configuration.
+     * @param {string} name Configuration name.
+     * @param {number} id Configuration id.
+     * @returns {any} configuration value
      */
     private configValue(config: any, name: string, id: number): any {
-        let value = null
+        let value = null;
         if (config != null) {
             value = config[name]
             if (!value) {
                 value = config[id]
             }
         }
-        return value
+        return value;
     }
 
     /**
      * Initialize the form field.
-     * @param field The field.
-     * @param formName The form name.
-     * @param allFields Used to build and track all event fields.
-     * @param fieldAttributes Field attributes override mappings
-     * @return attribute name
+     * @param {string} field The field.
+     * @param {string} formName The form name.
+     * @param {Set<string>} allFields Used to build and track all event fields.
+     * @param {any} fieldAttributes Field attributes override mappings
+     * @returns {string} attribute name
      */
     private initializeField(field: string, formName: string, allFields: Set<string>, fieldAttributes: any): string {
 
-        let attribute = null
+        let attribute = null;
 
         if (fieldAttributes != null) {
-            attribute = fieldAttributes[field]
+            attribute = fieldAttributes[field];
         }
 
         if (attribute == null) {
 
-            attribute = field
+            attribute = field;
 
             if (allFields.has(attribute)) {
-                attribute = formName + '_' + attribute
+                attribute = formName + '_' + attribute;
             }
 
         }
 
-        allFields.add(attribute)
+        allFields.add(attribute);
 
-        return attribute
+        return attribute;
     }
 
     /**
      * Get the form fields for the form id.
-     * @param id The form id.
-     * @return The form fields.
+     * @param {number} id The form id.
+     * @returns {FormFields | undefined} The form fields.
      */
     get(id: number): FormFields | undefined {
-        return this.formFields.get(id)
+        return this.formFields.get(id);
     }
 
 }
@@ -198,67 +198,67 @@ export class FormFields {
     /**
      * Form name
      */
-    name: string
+    name: string;
 
     /**
      * Form id
      */
-    id: FormId
+    id: FormId;
 
     /**
      * Form archived flag
      */
-    archived: boolean
+    archived: boolean;
 
     /**
      * Form field mapping between titles and arc atrribute fields.
      */
-    fields: Map<string, string> = new Map()
+    fields: Map<string, string> = new Map();
 
     /**
      * Archived form fields
      */
-    archivedFields: Set<string> = new Set()
+    archivedFields: Set<string> = new Set();
 
     /**
-     * Constructor
-     * @param form The form.
+     * Creates a new instance of FormFields
+     * @param {Form} form - The form.
      */
     constructor(form: Form) {
-        this.name = form.name
-        this.id = form.id
-        this.archived = form.archived
+        this.name = form.name;
+        this.id = form.id;
+        this.archived = form.archived;
     }
 
     /**
      * Set the form field title to an arc attribute.
-     * @param title The form field title.
-     * @param attribute The arc attribute.
-     * @param archived Archived field flag.
+     * @param {string} title The form field title.
+     * @param {string} attribute The arc attribute.
+     * @param {boolean} [archived] Archived field flag.
      */
     set(title: string, attribute: string, archived?: boolean) {
-        this.fields.set(title, attribute)
+        this.fields.set(title, attribute);
         if (archived) {
-            this.archivedFields.add(title)
+            this.archivedFields.add(title);
         }
     }
 
     /**
      * Get the arc attribute for the form field title.
-     * @param title The form field title.
-     * @return The arc attribute.
+     * @param {string} title The form field title.
+     * @returns {string | undefined} The arc attribute.
      */
     get(title: string): string | undefined {
-        return this.fields.get(title)
+        return this.fields.get(title);
     }
 
     /**
      * Is the form field archived.
-     * @param title The form field title.
-     * @return True if archived.
+     * @param {string} title The form field title.
+     * @returns {boolean} True if archived.
      */
     isArchived(title: string): boolean {
-        return this.fields.has(title)
+        return this.fields.has(title);
     }
 
 }
