@@ -53,7 +53,7 @@ export class ObservationProcessor {
 	/**
 	 * Used to manager ArcGIS user identities
 	 */
-	private _identityService: ArcGISIdentityService
+	private _identityService: ArcGISIdentityService;
 
 	/**
 	 * Used to log to the console.
@@ -103,11 +103,12 @@ export class ObservationProcessor {
 
 	/**
 	 * Constructor.
-	 * @param stateRepo The plugins configuration.
-	 * @param eventRepo Used to get all the active events.
-	 * @param obsRepo Used to get new observations.
-	 * @param userRepo Used to get user information.
-	 * @param console Used to log to the console.
+	 * @param {PluginStateRepository<ArcGISPluginConfig>} stateRepo The plugins configuration.
+	 * @param {MageEventRepository} eventRepo Used to get all the active events.
+	 * @param {ObservationRepositoryForEvent} obsRepos Used to get new observations.
+	 * @param {UserRepository} userRepo Used to get user information.
+	 * @param {ArcGISIdentityService} identityService Used to manager ArcGIS user identities.
+	 * @param {Console} console Used to log to the console.
 	 */
 	constructor(
 		stateRepo: PluginStateRepository<ArcGISPluginConfig>,
@@ -121,7 +122,7 @@ export class ObservationProcessor {
 		this._eventRepo = eventRepo;
 		this._obsRepos = obsRepos;
 		this._userRepo = userRepo;
-		this._identityService = identityService
+		this._identityService = identityService;
 		this._console = console;
 		this._firstRun = true;
 		this._organizer = new EventLayerProcessorOrganizer();
@@ -132,36 +133,38 @@ export class ObservationProcessor {
 
 	/**
 	 * Gets the current configuration from the database.
-	 * @returns The current configuration from the database.
+	 * @returns {Promise<ArcGISPluginConfig>} The current configuration from the database.
 	 */
 	public async safeGetConfig(): Promise<ArcGISPluginConfig> {
 		const state = await this._stateRepo.get();
-		if (!state) return await this._stateRepo.put(defaultArcGISPluginConfig);
-		return await this._stateRepo.get().then((state) => state ? state : this._stateRepo.put(defaultArcGISPluginConfig));
+		if (!state) return await this._stateRepo.put(defaultArcGISPluginConfig as never);
+		return await this._stateRepo.get().then((state) => state ? state : this._stateRepo.put(defaultArcGISPluginConfig as never));
 	}
 
 	/**
 	 * Puts a new confguration in the state repo.
-	 * @param newConfig The new config to put into the state repo.
+	 * @param {ArcGISPluginConfig} newConfig The new config to put into the state repo.
+	 * @returns {Promise<ArcGISPluginConfig>} The updated configuration.
 	 */
 	public async putConfig(newConfig: ArcGISPluginConfig): Promise<ArcGISPluginConfig> {
-		return await this._stateRepo.put(newConfig);
+		return await this._stateRepo.put(newConfig as never);
 	}
 
 	/**
 	 * Updates the confguration in the state repo.
-	 * @param newConfig The new config to put into the state repo.
+	 * @param {ArcGISPluginConfig} newConfig The new config to put into the state repo.
+	 * @returns {Promise<ArcGISPluginConfig>} The updated configuration.
 	 */
 	public async patchConfig(newConfig: ArcGISPluginConfig): Promise<ArcGISPluginConfig> {
-		return await this._stateRepo.patch(newConfig);
+		return await this._stateRepo.patch(newConfig as never);
 	}
 
 	/**
 	 * Gets the current configuration and updates the processor if needed
-	 * @returns The current configuration from the database.
+	 * @returns {Promise<ArcGISPluginConfig>} The current configuration from the database.
 	 */
 	private async updateConfig(): Promise<ArcGISPluginConfig> {
-		const config = await this.safeGetConfig()
+		const config = await this.safeGetConfig();
 
 		// Include configured eventform definitions while detecting changes in config
 		const eventIds = config.featureServices
@@ -181,7 +184,7 @@ export class ObservationProcessor {
 			this._previousConfig = configJson
 			await this.getFeatureServiceLayers(config);
 		}
-		return config
+		return config;
 	}
 
 	/**
@@ -189,7 +192,8 @@ export class ObservationProcessor {
 	 */
 	async start() {
 		this._isRunning = true;
-		this.processAndScheduleNext();
+		this._firstRun = true;
+		await this.processAndScheduleNext();
 	}
 
 	/**
@@ -202,7 +206,8 @@ export class ObservationProcessor {
 
 	/**
 	 * Gets information on all the configured features service layers.
-	 * @param config The plugins configuration.
+	 * @param {ArcGISPluginConfig} config The plugins configuration.
+	 * @returns {Promise<void>}
 	 */
 	private async getFeatureServiceLayers(config: ArcGISPluginConfig) {
 		const promises = [];
@@ -210,7 +215,7 @@ export class ObservationProcessor {
 			try {
 				promises.push(this.handleFeatureService(service, config))
 			} catch (err) {
-				console.error(err)
+				console.error(err);
 			}
 		}
 		await Promise.all(promises);
@@ -218,9 +223,9 @@ export class ObservationProcessor {
 
 	/**
 	 * Called when information on a feature service is returned from an arc server.
-	 * @param featureService The feature service.
-	 * @param featureServiceConfig The feature service config.
-	 * @param config The plugin configuration.
+	 * @param {FeatureServiceResult} featureService The feature service.
+	 * @param {FeatureServiceConfig} featureServiceConfig The feature service config.
+	 * @param {ArcGISPluginConfig} config The plugin configuration.
 	 */
 	private async handleFeatureService(featureServiceConfig: FeatureServiceConfig, config: ArcGISPluginConfig) {
 		const identityManager = await this._identityService.signin(featureServiceConfig)
@@ -296,7 +301,7 @@ export class ObservationProcessor {
 				this._firstRun = false;
 
 				// ArcGISIndentityManager access tokens may have been updated check and save
-				this._identityService.updateIndentityManagers()
+				this._identityService.updateIndentityManagers();
 			}
 			this.scheduleNext(config);
 		}
@@ -315,18 +320,18 @@ export class ObservationProcessor {
 					}
 				}
 			}
-			this._nextTimeout = setTimeout(() => { this.processAndScheduleNext() }, interval * 1000);
+			this._nextTimeout = setTimeout(() => { this.processAndScheduleNext(); }, interval * 1000);
 		}
 	}
 
 	/**
 	 * Queries for new observations and sends them to any configured arc servers.
-	 * @param config The plugin configuration.
-	 * @param layerProcessors The layer processors to use when processing arc objects.
-	 * @param obsRepo The observation repo for an event.
-	 * @param pagingSettings Current paging settings.
-	 * @param numberLeft The number of observations left to query and send to arc.
-	 * @returns The number of observations still needing to be queried and sent to arc.
+	 * @param {ArcGISPluginConfig} config The plugin configuration.
+	 * @param {FeatureLayerProcessor[]} layerProcessors The layer processors to use when processing arc objects.
+	 * @param {EventScopedObservationRepository} obsRepo The observation repo for an event.
+	 * @param {PagingParameters} pagingSettings Current paging settings.
+	 * @param {number} numberLeft The number of observations left to query and send to arc.
+	 * @returns {Promise<number>} The number of observations still needing to be queried and sent to arc.
 	 */
 	private async queryAndSend(config: ArcGISPluginConfig, layerProcessors: FeatureLayerProcessor[], obsRepo: EventScopedObservationRepository, pagingSettings: PagingParameters, numberLeft: number): Promise<number> {
 		let newNumberLeft = numberLeft;
@@ -338,32 +343,32 @@ export class ObservationProcessor {
 			}
 		}
 
-		let latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
+		const latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
 		if (latestObs != null && latestObs.totalCount != null && latestObs.totalCount > 0) {
 			if (pagingSettings.pageIndex === 0) {
 				this._console.info('ArcGIS newest observation count ' + latestObs.totalCount);
 				newNumberLeft = latestObs.totalCount;
 			}
-			const observations = latestObs.items
-			const mageEvent = await this._eventRepo.findById(obsRepo.eventScope)
-			const eventTransform = new EventTransform(config, mageEvent)
-			const arcObjects = new ArcObjects()
+			const observations = latestObs.items;
+			const mageEvent = await this._eventRepo.findById(obsRepo.eventScope);
+			const eventTransform = new EventTransform(config, mageEvent);
+			const arcObjects = new ArcObjects();
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
 			for (const observation of observations) {
-				let deletion = false
+				let deletion = false;
 				if (observation.states.length > 0) {
-					deletion = observation.states[0].name.startsWith('archive')
+					deletion = observation.states[0].name.startsWith('archive');
 				}
 				if (deletion) {
-					const arcObservation = this._transformer.createObservation(observation)
-					arcObjects.deletions.push(arcObservation)
+					const arcObservation = this._transformer.createObservation(observation);
+					arcObjects.deletions.push(arcObservation);
 				} else {
-					let user = null
+					let user = null;
 					if (observation.userId != null) {
-						user = await this._userRepo.findById(observation.userId)
+						user = await this._userRepo.findById(observation.userId);
 					}
-					const arcObservation = this._transformer.transform(observation, eventTransform, user)
-					arcObjects.add(arcObservation)
+					const arcObservation = this._transformer.transform(observation, eventTransform, user);
+					arcObjects.add(arcObservation);
 				}
 			}
 			arcObjects.firstRun = this._firstRun;
@@ -373,7 +378,7 @@ export class ObservationProcessor {
 			newNumberLeft -= latestObs.items.length;
 			pagingSettings.pageIndex++;
 		} else {
-			this._console.info('ArcGIS no new observations')
+			this._console.info('ArcGIS no new observations');
 		}
 
 		return newNumberLeft;
