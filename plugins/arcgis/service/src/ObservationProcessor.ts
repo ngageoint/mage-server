@@ -28,7 +28,7 @@ export class ObservationProcessor {
 	/**
 	 * True if the processor is currently active, false otherwise.
 	 */
-	private _isRunning = false;
+	private _isRunning: boolean = false;
 
 	/**
 	 * The next timeout, use this to cancel the next one if the processor is stopped.
@@ -84,7 +84,7 @@ export class ObservationProcessor {
 	 * True if this is a first run at updating arc feature layers.  If so we need to make sure the layers are
 	 * all up to date.
 	 */
-	private _firstRun: boolean;
+	private _firstRun: boolean = true;
 
 	/**
 	 * Handles removing observation from previous layers when an observation geometry changes.
@@ -123,7 +123,6 @@ export class ObservationProcessor {
 		this._userRepo = userRepo;
 		this._identityService = identityService
 		this._console = console;
-		this._firstRun = true;
 		this._organizer = new EventLayerProcessorOrganizer();
 		this._transformer = new ObservationsTransformer(defaultArcGISPluginConfig, console);
 		this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
@@ -227,6 +226,7 @@ export class ObservationProcessor {
 		const featureService = new FeatureService(console, featureServiceConfig, identityManager)
 		const arcService = await featureService.getService();
 
+		const promises = [];
 		for (const featureLayer of arcService.layers) {
 			const featureLayerConfig = featureServiceConfig.layers.find(layer => layer.layer.toString() === featureLayer.name.toString());
 			if (featureLayerConfig) {
@@ -237,13 +237,16 @@ export class ObservationProcessor {
 					featureLayerConfig.layer = featureLayer.id;
 					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
 					const eventIds = featureLayerConfig.eventIds || []
-					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
-					const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
-					const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
-					this._layerProcessors.push(layerProcessor);
+					promises.push(admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo).then((layerFields) => {
+						const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+						const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
+						this._layerProcessors.push(layerProcessor);
+						this._console.info('ArcGIS layer processor created for ' + featureLayer.name);
+					}));
 				}
 			}
 		}
+		await Promise.all(promises);
 	}
 
 	/**
