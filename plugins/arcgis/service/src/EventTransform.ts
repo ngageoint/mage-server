@@ -1,6 +1,6 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { Form, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig"
+import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events'
+import { Form, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 
 /**
  * Contains information used to transform observations from a single event.
@@ -119,11 +119,11 @@ export class EventTransform {
 
         for (const fields of this.formFields.values()) {
 
-            const fieldAttributes = this.configValue(formAttributes, fields.name, fields.id);
+            const fieldAttributes = this.configValue(formAttributes, fields.name, fields.id)
 
             for (const field of fields.archivedFields) {
-                const attribute = this.initializeField(field, fields.name, allFields, fieldAttributes);
-                fields.set(field, attribute);
+                const attribute = this.initializeField(field, fields.name, allFields, fieldAttributes)
+                fields.set(field, attribute)
             }
 
         }
@@ -140,9 +140,9 @@ export class EventTransform {
     private configValue(config: any, name: string, id: number): any {
         let value = null;
         if (config != null) {
-            value = config[name];
-            if (value == null) {
-                value = config[id];
+            value = config[name]
+            if (!value) {
+                value = config[id]
             }
         }
         return value;

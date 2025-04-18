@@ -1,5 +1,5 @@
-import { ArcObject } from './ArcObject';
-import { ArcObservation } from './ArcObservation';
+import { ArcObject } from './types/ArcObject'
+import { ArcObservation } from './types/ArcObservation'
 
 /**
  * Observation Features Objects to send, update, or delete in ArcGIS.
@@ -60,7 +60,7 @@ export class ArcObjects {
      * @returns {boolean} true if empty.
      */
     isEmpty(): boolean {
-        return this.count() == 0;
+        return this.count() === 0
     }
 
     /**

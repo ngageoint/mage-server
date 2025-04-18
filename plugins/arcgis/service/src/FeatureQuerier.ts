@@ -1,6 +1,6 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { LayerInfo } from "./LayerInfo";
-import { QueryObjectResult } from "./QueryObjectResult";
+import { QueryObjectResult } from "./types/QueryObjectResult";
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
 import { queryFeatures } from '@esri/arcgis-rest-feature-service';
 

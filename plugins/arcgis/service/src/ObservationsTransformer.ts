@@ -1,12 +1,12 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { AttributeDefaultConfig } from "./ArcGISConfig";
-import { ObservationAttrs, Attachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
-import { User } from '@ngageoint/mage.service/lib/entities/users/entities.users';
-import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
-import { Geometry, Point, LineString, Polygon } from 'geojson';
-import { ArcObservation, ArcAttachment } from './ArcObservation';
-import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './ArcObject';
-import { EventTransform } from './EventTransform';
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { AttributeDefaultConfig } from "./types/ArcGISConfig";
+import { ObservationAttrs, Attachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { User } from '@ngageoint/mage.service/lib/entities/users/entities.users'
+import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
+import { Geometry, Point, LineString, Polygon } from 'geojson'
+import { ArcObservation, ArcAttachment } from './types/ArcObservation'
+import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
+import { EventTransform } from './EventTransform'
 
 /**
  * Class that transforms observations into a json string that can then be sent to an arcgis server.
@@ -130,23 +130,17 @@ export class ObservationsTransformer {
      * @returns {string} The esri geometry type.
      */
     mageTypeToEsriType(mageGeometryType: string): string {
-        let esriGeometryType = '';
-
         switch (mageGeometryType) {
             case 'Point':
-                esriGeometryType = 'esriGeometryPoint';
-                break;
+                return 'esriGeometryPoint'
             case 'LineString':
-                esriGeometryType = 'esriGeometryPolyline';
-                break;
+                return 'esriGeometryPolyline'
             case 'Polygon':
-                esriGeometryType = 'esriGeometryPolygon';
-                break;
+                return 'esriGeometryPolygon'
             default:
-                break;
+                return ''
         }
 
-        return esriGeometryType;
     }
 
     /**
@@ -155,8 +149,7 @@ export class ObservationsTransformer {
      * @returns {string} The Esri geometry type.
      */
     private esriGeometryType(observation: ObservationAttrs): string {
-
-        let esriGeometryType = '';
+        let esriGeometryType = ''
 
         if (observation.geometry != null) {
             esriGeometryType = this.mageTypeToEsriType(observation.geometry.type);
@@ -278,9 +271,9 @@ export class ObservationsTransformer {
     private propertiesToAttributes(properties: { [name: string]: any }, transform: EventTransform, arcObject: ArcObject): { [name: string]: number } {
         let formIds: { [name: string]: number } = {};
         for (const property in properties) {
-            const value = properties[property];
-            if (property == 'forms') {
-                formIds = this.formsToAttributes(value, transform, arcObject);
+            const value = properties[property]
+            if (property === 'forms') {
+                formIds = this.formsToAttributes(value, transform, arcObject)
             } else {
                 this.addAttribute(property, value, arcObject);
             }
@@ -324,17 +317,17 @@ export class ObservationsTransformer {
                     if (mageEvent != null && formId != null) {
                         const field = mageEvent.formFieldFor(formProperty, formId);
                         if (field != null && field.type !== FormFieldType.Attachment) {
-                            let title = field.title;
-                            if (fields != undefined) {
-                                const fieldTitle = fields.get(title);
-                                if (fieldTitle != undefined) {
-                                    const sanitizedName = ObservationsTransformer.replaceSpaces(fieldTitle);
-                                    const sanitizedFormName = ObservationsTransformer.replaceSpaces(fields.name);
-                                    title = `${sanitizedFormName}_${sanitizedName}`.toLowerCase();
+                            let title = field.title
+                            if (fields != null) {
+                                const fieldTitle = fields.get(title)
+                                if (fieldTitle != null) {
+                                    const sanitizedName = ObservationsTransformer.replaceSpaces(fieldTitle)
+                                    const sanitizedFormName = ObservationsTransformer.replaceSpaces(fields.name)
+                                    title = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
                                 }
                             }
-                            if (field.type == FormFieldType.Geometry) {
-                                value = this.geometryToArcGeometry(value);
+                            if (field.type === FormFieldType.Geometry) {
+                                value = this.geometryToArcGeometry(value)
                             }
                             this.addFormAttribute(title, formCount, value, arcObject);
                         }
@@ -413,11 +406,11 @@ export class ObservationsTransformer {
 
                 } else {
 
-                    let baseKey = attribute;
-                    let count = 1;
-                    const countIndex = attribute.lastIndexOf('_');
-                    if (countIndex != -1) {
-                        const countString = attribute.substring(countIndex + 1);
+                    let baseKey = attribute
+                    let count = 1
+                    const countIndex = attribute.lastIndexOf('_')
+                    if (countIndex !== -1) {
+                        const countString = attribute.substring(countIndex + 1)
                         if (countString != null && countString !== '') {
                             const countNumber = Number(countString);
                             if (!isNaN(countNumber)) {
@@ -455,10 +448,10 @@ export class ObservationsTransformer {
                     const condition = attributeDefault.condition;
                     if (condition != null && condition.length > 0) {
                         for (const valueConfig of condition) {
-                            const value = arcObject.attributes[valueConfig.attribute];
-                            const values = valueConfig.values;
-                            if (values.length == 0) {
-                                setDefault = value == null;
+                            const value = arcObject.attributes[valueConfig.attribute]
+                            const values = valueConfig.values
+                            if (values.length === 0) {
+                                setDefault = value == null
                             } else {
                                 setDefault = values.includes(value);
                             }
@@ -514,9 +507,9 @@ export class ObservationsTransformer {
                     arcAttachment.size = attachment.size;
                 }
                 if (attachment.name != null) {
-                    const extensionIndex = attachment.name.lastIndexOf('.');
-                    if (extensionIndex != -1) {
-                        arcAttachment.name = attachment.name.substring(0, extensionIndex);
+                    const extensionIndex = attachment.name.lastIndexOf('.')
+                    if (extensionIndex !== -1) {
+                        arcAttachment.name = attachment.name.substring(0, extensionIndex)
                     } else {
                         arcAttachment.name = attachment.name;
                     }

@@ -1,16 +1,16 @@
-import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api';
-import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web';
-import { ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.observations';
-import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events';
-import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users';
-import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions';
-import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { ObservationProcessor } from './ObservationProcessor';
-import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request";
-import { FeatureServiceConfig, FeatureLayerConfig } from './ArcGISConfig';
-import { URL } from "node:url";
-import express from 'express';
-import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService';
+import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api'
+import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web'
+import { ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.observations'
+import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
+import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
+import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
+import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
+import { ObservationProcessor } from './ObservationProcessor'
+import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
+import { FeatureServiceConfig, FeatureLayerConfig } from './types/ArcGISConfig'
+import { URL } from "node:url"
+import express from 'express'
+import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
 
 const logPrefix = '[mage.arcgis]';
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const;
@@ -194,9 +194,8 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
 
                   // Construct the FeatureLayerConfig with eventIds
                   const featureLayerConfig: FeatureLayerConfig = {
-                    layer: layer.layer,
-                    geometryType: layer.geometryType,
-                    eventIds: eventIds,
+                    ...layer,
+                    eventIds: eventIds
                   };
 
                   return featureLayerConfig;
@@ -205,7 +204,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
                 return {
                   url: updateService.url,
                   layers: layers,
-                  // Map exisiting identityManager, client does not send this
+                  // Map existing identityManager, client does not send this
                   identityManager: existingService?.identityManager || '',
                 };
               });

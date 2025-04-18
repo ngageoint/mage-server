@@ -1,7 +1,7 @@
-import { ArcGISIdentityManager } from '@esri/arcgis-rest-request';
-import { FeatureServiceConfig } from './ArcGISConfig';
-import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
-import { ArcGISPluginConfig } from './ArcGISPluginConfig';
+import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
+import { FeatureServiceConfig } from './types/ArcGISConfig'
+import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
+import { ArcGISPluginConfig } from './types/ArcGISPluginConfig'
 
 /**
  * Interface for managing ArcGIS identity and authentication.
@@ -67,8 +67,8 @@ export function createArcGISIdentityService(
  * @returns {string} The portal URL.
  */
 export function getPortalUrl(featureService: FeatureServiceConfig | string): string {
-  const url = getFeatureServiceUrl(featureService);
-  return `https://${url.hostname}/arcgis/sharing/rest`;
+  const url = getFeatureServiceUrl(featureService)
+  return `https://${url.hostname}/arcgis/sharing/rest`
 }
 
 /**
@@ -77,8 +77,8 @@ export function getPortalUrl(featureService: FeatureServiceConfig | string): str
  * @returns {string} The server URL.
  */
 export function getServerUrl(featureService: FeatureServiceConfig | string): string {
-  const url = getFeatureServiceUrl(featureService);
-  return `https://${url.hostname}/arcgis`;
+  const url = getFeatureServiceUrl(featureService)
+  return `https://${url.hostname}/arcgis`
 }
 
 /**

@@ -1,13 +1,13 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { ArcObjects } from './ArcObjects';
-import { ArcObservation, ArcAttachment } from './ArcObservation';
+import { ArcObservation, ArcAttachment } from './types/ArcObservation';
 import { LayerInfo } from "./LayerInfo";
-import { EditResult } from './EditResult';
-import { AttachmentInfosResult, AttachmentInfo } from './AttachmentInfosResult';
-import environment from '@ngageoint/mage.service/lib/environment/env';
-import fs from 'fs';
-import path from 'path';
-import { ArcGISIdentityManager, IFeature, request } from "@esri/arcgis-rest-request";
+import { EditResult } from './types/EditResult';
+import { AttachmentInfosResult, AttachmentInfo } from './types/AttachmentInfosResult';
+import environment from '@ngageoint/mage.service/lib/environment/env'
+import fs from 'fs'
+import path from 'path'
+import { ArcGISIdentityManager, IFeature, request } from "@esri/arcgis-rest-request"
 import { addFeatures, updateFeatures, deleteFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
 
 /**
@@ -57,10 +57,10 @@ export class ObservationsSender {
      * sends them to an arc server for adding.
      * @param {ArcObjects} observations The observations to convert.
      */
-    sendAdds(observations: ArcObjects) {
+    async sendAdds(observations: ArcObjects) {
         this._console.info('ArcGIS addFeatures');
 
-        addFeatures({
+        await addFeatures({
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
@@ -73,10 +73,10 @@ export class ObservationsSender {
      * sends them to an arc server for updating.
      * @param {ArcObjects} observations The observations to convert.
      */
-    sendUpdates(observations: ArcObjects) {
+    async sendUpdates(observations: ArcObjects) {
         this._console.info('ArcGIS updateFeatures');
 
-        updateFeatures({
+        await updateFeatures({
             url: this._url,
             authentication: this._identityManager,
             features: observations.objects as IFeature[]
@@ -88,10 +88,10 @@ export class ObservationsSender {
      * Delete an observation.
      * @param {number} id The observation id.
      */
-    sendDelete(id: string) {
-        this._console.info('ArcGIS deleteFeatures id: ' + id);
+    async sendDelete(id: string) {
+        this._console.info('ArcGIS deleteFeatures id: ' + id)
 
-        deleteFeatures({
+        await deleteFeatures({
             url: this._url,
             authentication: this._identityManager,
             where: `${this._config.observationIdField} LIKE '%${id}%'`,
@@ -103,10 +103,10 @@ export class ObservationsSender {
      * Deletes all observations that are apart of a specified event.
      * @param {number} id The event id.
      */
-    sendDeleteEvent(id: number) {
+    async sendDeleteEvent(id: number) {
         this._console.info('ArcGIS deleteFeatures by event ' + this._config.observationIdField + ': ' + id);
 
-        deleteFeatures({
+        await deleteFeatures({
             url: this._url,
             authentication: this._identityManager,
             where: this._config.eventIdField

@@ -40,7 +40,7 @@ export class GeometryChangedHandler {
             if (observation.states.length <= 0 || !observation.states[0].name.startsWith('archive')) {
                 if (this._previousGeoms.has(observation.id)) {
                     const previousGeomType = this._previousGeoms.get(observation.id);
-                    if (previousGeomType !== undefined && previousGeomType != observation.geometry.type) {
+                    if (previousGeomType !== undefined && previousGeomType !== observation.geometry.type) {
                         const arcObservation = this._transformer.createObservation(observation);
                         arcObservation.esriGeometryType = this._transformer.mageTypeToEsriType(previousGeomType);
                         arcObjects.deletions.push(arcObservation);
@@ -50,7 +50,7 @@ export class GeometryChangedHandler {
                 if (firstRun) {
                     const observationGeomType = this._transformer.mageTypeToEsriType(observation.geometry.type);
                     for (const layerProcessor of layerProcessors) {
-                        if (layerProcessor.layerInfo.geometryType != observationGeomType) {
+                        if (layerProcessor.layerInfo.geometryType !== observationGeomType) {
                             const arcObservation = this._transformer.createObservation(observation);
                             arcObservation.esriGeometryType = layerProcessor.layerInfo.geometryType;
                             arcObjects.deletions.push(arcObservation);

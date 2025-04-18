@@ -1,6 +1,7 @@
-import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request";
+import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
+import { getLayer, getService } from "@esri/arcgis-rest-feature-service";
 import { queryFeatures, applyEdits, IQueryFeaturesOptions } from "@esri/arcgis-rest-feature-service";
-import { FeatureServiceConfig } from "./ArcGISConfig";
+import { FeatureServiceConfig } from "./types/ArcGISConfig";
 
 /**
  * Queries arc feature services and layers.
@@ -53,16 +54,26 @@ export class FeatureService {
   }
 
   // Generic method to query layer info
-  async queryLayerInfo(layerId: string | number): Promise<any> {
+  async getLayer(layerId: string | number): Promise<any> {
     const url = `${this._config.url}/${layerId}`;
     try {
-      const response = await request(url, {
-        authentication: this._identityManager,
-        params: { f: 'json' },
-      });
-      return response;
+      return await getLayer({
+        url,
+        authentication: this._identityManager
+      })
     } catch (error) {
       throw new Error(`Error querying layer info: ${error}`);
+    }
+  }
+
+  async getService(): Promise<any> {
+    try {
+      return await getService({
+        url: this._config.url,
+        authentication: this._identityManager,
+      });
+    } catch (error) {
+      throw new Error(`Error getting service: ${error}`);
     }
   }
 
