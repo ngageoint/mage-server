@@ -14,6 +14,10 @@ export interface LayerInfoResult {
      */
     fields: LayerField[]
 
+    /**
+     * The feature layer id.
+     */
+    id: number
 }
 
 /**

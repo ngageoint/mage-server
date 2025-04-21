@@ -231,7 +231,6 @@ export class ObservationProcessor {
 		const featureService = new FeatureService(console, featureServiceConfig, identityManager)
 		const arcService = await featureService.getService();
 
-		const promises = [];
 		for (const featureLayer of arcService.layers) {
 			const featureLayerConfig = featureServiceConfig.layers.find(layer => layer.layer.toString() === featureLayer.name.toString());
 			if (featureLayerConfig) {
@@ -242,16 +241,13 @@ export class ObservationProcessor {
 					featureLayerConfig.layer = featureLayer.id;
 					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
 					const eventIds = featureLayerConfig.eventIds || []
-					promises.push(admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo).then((layerFields) => {
-						const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
-						const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
-						this._layerProcessors.push(layerProcessor);
-						this._console.info('ArcGIS layer processor created for ' + featureLayer.name);
-					}));
+					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
+					const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+					const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
+					this._layerProcessors.push(layerProcessor);
 				}
 			}
 		}
-		await Promise.all(promises);
 	}
 
 	/**
@@ -347,7 +343,7 @@ export class ObservationProcessor {
 		}
 
 		const latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
-		if (latestObs != null && latestObs.totalCount != null && latestObs.totalCount > 0) {
+		if (latestObs?.totalCount != null && latestObs.totalCount > 0) {
 			if (pagingSettings.pageIndex === 0) {
 				this._console.info('ArcGIS newest observation count ' + latestObs.totalCount);
 				newNumberLeft = latestObs.totalCount;
@@ -358,20 +354,19 @@ export class ObservationProcessor {
 			const arcObjects = new ArcObjects();
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
 			for (const observation of observations) {
-				let deletion = false;
 				if (observation.states.length > 0) {
-					deletion = observation.states[0].name.startsWith('archive');
-				}
-				if (deletion) {
-					const arcObservation = this._transformer.createObservation(observation);
-					arcObjects.deletions.push(arcObservation);
-				} else {
-					let user = null;
-					if (observation.userId != null) {
-						user = await this._userRepo.findById(observation.userId);
+					// Should archived observations be deleted after a period of time?
+					if (observation.states[0].name === 'archived') {
+						const arcObservation = this._transformer.createObservation(observation);
+						arcObjects.deletions.push(arcObservation);
+					} else {
+						let user = null;
+						if (observation.userId != null) {
+							user = await this._userRepo.findById(observation.userId);
+						}
+						const arcObservation = this._transformer.transform(observation, eventTransform, user);
+						arcObjects.add(arcObservation);
 					}
-					const arcObservation = this._transformer.transform(observation, eventTransform, user);
-					arcObjects.add(arcObservation);
 				}
 			}
 			arcObjects.firstRun = this._firstRun;
