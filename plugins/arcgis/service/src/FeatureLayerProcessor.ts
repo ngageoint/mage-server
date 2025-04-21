@@ -108,9 +108,9 @@ export class FeatureLayerProcessor {
 
         const bins = new ObservationBins();
 
-        for (const arcObservation of observations.observations) {
+        for (const arcObservation of arcObjectsForLayer.observations) {
             // TODO: Would probably want a better way to determine which observations need to be updated in arcgis
-            if (observations.firstRun || arcObservation.lastModified !== arcObservation.createdAt) {
+            if (arcObjectsForLayer.firstRun || arcObservation.lastModified !== arcObservation.createdAt) {
                 bins.updates.add(arcObservation);
             } else if (!this._addedObs.has(arcObservation.id)) {
                 bins.adds.add(arcObservation);

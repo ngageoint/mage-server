@@ -354,19 +354,17 @@ export class ObservationProcessor {
 			const arcObjects = new ArcObjects();
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
 			for (const observation of observations) {
-				if (observation.states.length > 0) {
-					// Should archived observations be deleted after a period of time?
-					if (observation.states[0].name === 'archived') {
-						const arcObservation = this._transformer.createObservation(observation);
-						arcObjects.deletions.push(arcObservation);
-					} else {
-						let user = null;
-						if (observation.userId != null) {
-							user = await this._userRepo.findById(observation.userId);
-						}
-						const arcObservation = this._transformer.transform(observation, eventTransform, user);
-						arcObjects.add(arcObservation);
+				// TODO: Should archived observations be removed after a certain time? Also this uses 'startsWith' because not all deleted observations use 'archived' which is a bug
+				if (observation.states.length > 0 && observation.states[0].name.startsWith('archive')) {
+					const arcObservation = this._transformer.createObservation(observation);
+					arcObjects.deletions.push(arcObservation);
+				} else {
+					let user = null;
+					if (observation.userId != null) {
+						user = await this._userRepo.findById(observation.userId);
 					}
+					const arcObservation = this._transformer.transform(observation, eventTransform, user);
+					arcObjects.add(arcObservation);
 				}
 			}
 			arcObjects.firstRun = this._firstRun;
