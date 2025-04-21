@@ -165,6 +165,12 @@ export class ObservationProcessor {
 	private async updateConfig(): Promise<ArcGISPluginConfig> {
 		const config = await this.safeGetConfig();
 
+		if (!config.enabled) {
+			this._console.info('ArcGIS plugin is disabled, stopping processor');
+			this.stop();
+			return config;
+		}
+
 		// Include configured eventform definitions while detecting changes in config
 		const eventIds = config.featureServices
 			.flatMap(service => service.layers)
