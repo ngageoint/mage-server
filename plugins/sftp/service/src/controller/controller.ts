@@ -7,6 +7,7 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
+import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 
 /**
  * Class used to process observations for SFTP
@@ -78,7 +79,8 @@ export class SftpController {
     sftpObservationRepository: SftpObservationRepository,
     sftpClient: SFTPClient,
     archiverFactory: ArchiverFactory,
-    console: Console
+    console: Console,
+    private teamRepository: MongooseTeamsRepository 
   ) {
     this.stateRepository = stateRepository;
     this.eventRepository = eventRepository;
@@ -241,13 +243,25 @@ export class SftpController {
   ) {
     const archiver = this.archiveFactory.createArchiver(format)
     const result = await archiver.createArchive(observation, event)
+    console.log("-----------------------------------------FIRSTONE-----------------------------------------")
 
     if (result instanceof ArchiveResult) {
+      console.log("-----------------------------------------SecondONE-----------------------------------------")
       if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
         this.console.log(`posting status of success`)
         const stream = new PassThrough()
         result.archive.pipe(stream)
         await result.archive.finalize()
+        // eventName_teamName(s)_observation.userId_observation.id
+        if(observation.userId !== undefined){
+          const teams = await this.teamRepository.findTeamsByUserId(observation.userId)
+          this.teamRepository.narf();
+          console.log("=============================================b:NARF=============================================");
+          this.console.log(`TEAMS: ${JSON.stringify(teams)}`)
+          console.debug(`User ${observation.userId} is in ${teams.length} team(s): ${teams.map(t => t.name).join(', ')}`)
+          console.log("=============================================a:NARF=============================================");
+        }
+
         await this.sftpClient.put(stream, `${sftpPath}/${observation.id}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
       } else {
