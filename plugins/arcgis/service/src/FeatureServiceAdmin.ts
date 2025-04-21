@@ -106,7 +106,7 @@ export class FeatureServiceAdmin {
 		}
 
 		if (addFields.length > 0) {
-			promises.push(this.addFields(service, featureLayer, addFields));
+			promises.push(this.addFields(service, layerInfo.id, addFields));
 		}
 
 		const eventFieldSet = new Set();
@@ -126,7 +126,7 @@ export class FeatureServiceAdmin {
 
 		if (deleteFields.length > 0) {
 			layerInfo.fields = remainingFields;
-			promises.push(this.deleteFields(service, featureLayer, deleteFields));
+			promises.push(this.deleteFields(service, layerInfo.id, deleteFields));
 		}
 		await Promise.all(promises);
 		return eventFields;
@@ -425,10 +425,10 @@ export class FeatureServiceAdmin {
 	 * @param {FeatureLayerConfig} featureLayer feature layer
 	 * @param {Field[]} fields fields to add
 	 */
-	private async addFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: Field[]) {
+	private async addFields(service: FeatureServiceConfig, featureLayer: number, fields: Field[]) {
 		const layer = { fields: fields } as Layer;
 
-		const url = this.adminUrl(service) + featureLayer.layer.toString() + '/addToDefinition';
+		const url = this.adminUrl(service) + featureLayer.toString() + '/addToDefinition';
 
 		this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url);
 
@@ -454,7 +454,7 @@ export class FeatureServiceAdmin {
 	 * @param {FeatureLayerConfig} featureLayer feature layer
 	 * @param {LayerField[]} fields fields to delete
 	 */
-	private async deleteFields(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, fields: LayerField[]) {
+	private async deleteFields(service: FeatureServiceConfig, featureLayer: number, fields: LayerField[]) {
 		const deleteFields = [];
 		for (const layerField of fields) {
 			const field = {} as Field;
@@ -465,7 +465,7 @@ export class FeatureServiceAdmin {
 		const layer = {} as Layer;
 		layer.fields = deleteFields;
 
-		const url = this.adminUrl(service) + featureLayer.layer.toString() + '/deleteFromDefinition';
+		const url = this.adminUrl(service) + featureLayer.toString() + '/deleteFromDefinition';
 
 		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url);
 

@@ -28,7 +28,7 @@ export class ObservationProcessor {
 	/**
 	 * True if the processor is currently active, false otherwise.
 	 */
-	private _isRunning = false;
+	private _isRunning: boolean = false;
 
 	/**
 	 * The next timeout, use this to cancel the next one if the processor is stopped.
@@ -84,7 +84,7 @@ export class ObservationProcessor {
 	 * True if this is a first run at updating arc feature layers.  If so we need to make sure the layers are
 	 * all up to date.
 	 */
-	private _firstRun: boolean;
+	private _firstRun: boolean = true;
 
 	/**
 	 * Handles removing observation from previous layers when an observation geometry changes.
@@ -124,7 +124,6 @@ export class ObservationProcessor {
 		this._userRepo = userRepo;
 		this._identityService = identityService;
 		this._console = console;
-		this._firstRun = true;
 		this._organizer = new EventLayerProcessorOrganizer();
 		this._transformer = new ObservationsTransformer(defaultArcGISPluginConfig, console);
 		this._geometryChangeHandler = new GeometryChangedHandler(this._transformer);
@@ -344,7 +343,7 @@ export class ObservationProcessor {
 		}
 
 		const latestObs = await obsRepo.findLastModifiedAfter(queryTime, pagingSettings);
-		if (latestObs != null && latestObs.totalCount != null && latestObs.totalCount > 0) {
+		if (latestObs?.totalCount != null && latestObs.totalCount > 0) {
 			if (pagingSettings.pageIndex === 0) {
 				this._console.info('ArcGIS newest observation count ' + latestObs.totalCount);
 				newNumberLeft = latestObs.totalCount;
@@ -355,11 +354,8 @@ export class ObservationProcessor {
 			const arcObjects = new ArcObjects();
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
 			for (const observation of observations) {
-				let deletion = false;
-				if (observation.states.length > 0) {
-					deletion = observation.states[0].name.startsWith('archive');
-				}
-				if (deletion) {
+				// TODO: Should archived observations be removed after a certain time? Also this uses 'startsWith' because not all deleted observations use 'archived' which is a bug
+				if (observation.states.length > 0 && observation.states[0].name.startsWith('archive')) {
 					const arcObservation = this._transformer.createObservation(observation);
 					arcObjects.deletions.push(arcObservation);
 				} else {

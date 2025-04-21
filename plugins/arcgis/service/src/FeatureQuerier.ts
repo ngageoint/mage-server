@@ -41,7 +41,6 @@ export class FeatureQuerier {
     constructor(layerInfo: LayerInfo, config: ArcGISPluginConfig, identityManager: ArcGISIdentityManager, console: Console) {
         this._identityManager = identityManager;
         this._url = new URL(layerInfo.url);
-        this._url.pathname += '/query';
         this._console = console;
         this._config = config;
     }
