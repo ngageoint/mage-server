@@ -1,10 +1,10 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig";
 import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { Layer, Field } from "./AddLayersRequest";
+import { Layer, Field } from "./types/AddLayersRequest";
 import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
 import { ObservationsTransformer } from "./ObservationsTransformer";
-import { LayerInfoResult, LayerField } from "./LayerInfoResult";
+import { LayerInfoResult, LayerField } from "./types/LayerInfoResult";
 import FormData from 'form-data';
 import { request } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from "./ArcGISService";
@@ -38,6 +38,8 @@ export class FeatureServiceAdmin {
 	 * @returns {Promise<number>} layer id
 	 */
 	async createLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, nextId: number, eventRepo: MageEventRepository): Promise<number> {
+		// TODO: Is this function needed? This allows the server to create a feature layer on the arcgis server.
+		this._console.info('FeatureServiceAdmin createLayer()');
 		const layer = { type: 'Feature Layer' } as Layer;
 
 		const layerIdentifier = featureLayer.layer;
@@ -78,10 +80,13 @@ export class FeatureServiceAdmin {
 	 * @param {LayerInfoResult} layerInfo layer info
 	 * @param {MageEventRepository} eventRepo event repository
 	 */
-	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository) {
+	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository): Promise<Field[]> {
+		this._console.info('FeatureServiceAdmin updateLayer()');
 		const events = await this.layerEvents(featureLayer, eventRepo);
+		const promises = [];
 
 		const eventFields = this.fields(events);
+
 		const layerFields = layerInfo.fields;
 
 		const layerFieldSet = new Set();
@@ -101,7 +106,7 @@ export class FeatureServiceAdmin {
 		}
 
 		if (addFields.length > 0) {
-			await this.addFields(service, featureLayer, addFields);
+			promises.push(this.addFields(service, featureLayer, addFields));
 		}
 
 		const eventFieldSet = new Set();
@@ -121,8 +126,10 @@ export class FeatureServiceAdmin {
 
 		if (deleteFields.length > 0) {
 			layerInfo.fields = remainingFields;
-			await this.deleteFields(service, featureLayer, deleteFields);
+			promises.push(this.deleteFields(service, featureLayer, deleteFields));
 		}
+		await Promise.all(promises);
+		return eventFields;
 	}
 
 	/**
@@ -148,7 +155,7 @@ export class FeatureServiceAdmin {
 
 		const events: MageEvent[] = [];
 		for (const mageEvent of mageEvents) {
-			if (layerEventIds.size == 0 || layerEventIds.has(mageEvent.id)) {
+			if (layerEventIds.size === 0 || layerEventIds.has(mageEvent.id)) {
 				const event = await eventRepo.findById(mageEvent.id);
 				if (event != null) {
 					events.push(event);
@@ -303,7 +310,7 @@ export class FeatureServiceAdmin {
 				forms.add(form.id);
 
 				for (const formField of form.fields) {
-					if (formField.archived == null || !formField.archived) {
+					if (!formField.archived) {
 						this.createFormField(form, formField, fields, fieldNames);
 					}
 				}
@@ -392,14 +399,14 @@ export class FeatureServiceAdmin {
 	}
 
 	/**
-	 * Create the layer
+	 * Create the feature layer
 	 * @param {FeatureServiceConfig} service feature service
 	 * @param {Layer} layer layer
 	 */
 	private async create(service: FeatureServiceConfig, layer: Layer) {
 		const url = this.adminUrl(service) + 'addToDefinition';
 
-		this._console.info('ArcGIS feature service addToDefinition (create layer) url ' + url);
+		this._console.info('ArcGIS feature service addToDefinition (create feature layer) url ' + url);
 
 		const form = new FormData();
 		form.append('addToDefinition', JSON.stringify(layer));
@@ -425,16 +432,20 @@ export class FeatureServiceAdmin {
 
 		this._console.info('ArcGIS feature layer addToDefinition (add fields) url ' + url);
 
-		const identityManager = await this._identityService.signin(service);
-		await request(url, {
-			authentication: identityManager,
-			params: {
-				addToDefinition: layer,
-				f: "json"
-			}
-		}).catch((error) => {
-			console.log('Error: ' + error);
-		});
+		try {
+			const identityManager = await this._identityService.signin(service);
+			await request(url, {
+				authentication: identityManager,
+				params: {
+					addToDefinition: layer,
+					f: "json"
+				}
+			}).catch((error) => {
+				this._console.error('Error in addFields: ' + error);
+			});
+		} catch (error) {
+			this._console.error('FeatureServiceAdmin addFields() error ' + error);
+		}
 	}
 
 	/**
@@ -458,14 +469,19 @@ export class FeatureServiceAdmin {
 
 		this._console.info('ArcGIS feature layer deleteFromDefinition (delete fields) url ' + url);
 
-		const identityManager = await this._identityService.signin(service);
-		request(url, {
-			authentication: identityManager,
-			httpMethod: 'POST',
-			params: {
-				deleteFromDefinition: layer
-			}
-		}).catch((error) => this._console.error('FeatureServiceAdmin deleteFields() error ' + error));
+		try {
+			const identityManager = await this._identityService.signin(service);
+			await request(url, {
+				authentication: identityManager,
+				httpMethod: 'POST',
+				params: {
+					deleteFromDefinition: layer,
+					f: 'json'
+				}
+			}).catch((error) => this._console.error('FeatureServiceAdmin deleteFields() error ' + error));
+		} catch (error) {
+			this._console.error('FeatureServiceAdmin deleteFields() error ' + error);
+		}
 	}
 
 	/**

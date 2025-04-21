@@ -7,52 +7,52 @@ import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authoriz
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationProcessor } from './ObservationProcessor'
 import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
-import { FeatureServiceConfig, FeatureLayerConfig } from './ArcGISConfig'
+import { FeatureServiceConfig, FeatureLayerConfig } from './types/ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
 
-const logPrefix = '[mage.arcgis]'
-const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
+const logPrefix = '[mage.arcgis]';
+const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const;
 const consoleOverrides = logMethods.reduce((overrides, fn) => {
   return {
     ...overrides,
     [fn]: {
       writable: false,
-      value: (...args: any[]) => {
-        globalThis.console[fn](new Date().toISOString(), '-', logPrefix, ...args)
+      value: (...args: unknown[]) => {
+        globalThis.console[fn](new Date().toISOString(), '-', logPrefix, ...args);
       }
     }
-  } as PropertyDescriptorMap
-}, {} as PropertyDescriptorMap)
-const console = Object.create(globalThis.console, consoleOverrides) as Console
+  } as PropertyDescriptorMap;
+}, {} as PropertyDescriptorMap);
+const console = Object.create(globalThis.console, consoleOverrides) as Console;
 
-const InjectedServices = {
-  stateRepo: PluginStateRepositoryToken,
-  eventRepo: MageEventRepositoryToken,
-  obsRepoForEvent: ObservationRepositoryToken,
-  userRepo: UserRepositoryToken
-}
+type InjectedServices = {
+  stateRepo: typeof PluginStateRepositoryToken,
+  eventRepo: typeof MageEventRepositoryToken,
+  obsRepoForEvent: typeof ObservationRepositoryToken,
+  userRepo: typeof UserRepositoryToken
+};
 
-const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service"
+const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service";
 
 const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>> => {
-  let authenticated = false
+  let authenticated = false;
   try {
-    await identityService.signin(config)
-    authenticated = true
-  } catch (ignore) { }
+    await identityService.signin(config);
+    authenticated = true;
+  } catch (error) { console.error('Error in sanitizeFeatureService :: ', error); }
 
   const { identityManager, ...sanitized } = config;
-  return { ...sanitized, authenticated }
-}
+  return { ...sanitized, authenticated };
+};
 
 /**
  * The MAGE ArcGIS Plugin finds new MAGE observations and if configured to send the observations
  * to an ArcGIS server, it will then transform the observation to an ArcGIS feature and
  * send them to the configured ArcGIS feature layer.
  */
-const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
+const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
   inject: {
     stateRepo: PluginStateRepositoryToken,
     eventRepo: MageEventRepositoryToken,
@@ -60,70 +60,70 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
     userRepo: UserRepositoryToken
   },
   init: async (services): Promise<WebRoutesHooks> => {
-    console.info('Intializing ArcGIS plugin...')
-    const { stateRepo, eventRepo, obsRepoForEvent, userRepo } = services
+    console.info('Intializing ArcGIS plugin...');
+    const { stateRepo, eventRepo, obsRepoForEvent, userRepo } = services;
 
-    const identityService = createArcGISIdentityService(stateRepo)
-    const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, identityService, console)
-    processor.start()
+    const identityService = createArcGISIdentityService(stateRepo);
+    const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, identityService, console);
+    await processor.start();
     return {
       webRoutes: {
-        public: (requestContext: GetAppRequestContext) => {
-          const routes = express.Router().use(express.json())
+        public: () => {
+          const routes = express.Router().use(express.json());
 
           routes.get('/oauth/signin', async (req, res) => {
-            const url = req.query.featureServiceUrl as string
+            const url = req.query.featureServiceUrl as string;
             if (!URL.canParse(url)) {
-              return res.status(404).send('invalid feature service url')
+              return res.status(404).send('invalid feature service url');
             }
 
-            const clientId = req.query.clientId as string
+            const clientId = req.query.clientId as string;
             if (!clientId) {
-              return res.status(404).send('clientId is required')
+              return res.status(404).send('clientId is required');
             }
 
-            const config = await processor.safeGetConfig()
+            const config = await processor.safeGetConfig();
             ArcGISIdentityManager.authorize({
               clientId,
               portal: getPortalUrl(url),
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
               state: JSON.stringify({ url: url, clientId: clientId })
-            }, res)
-          })
+            }, res);
+          });
 
           routes.get('/oauth/authenticate', async (req, res) => {
-            const code = req.query.code as string
-            let state: { url: string, clientId: string }
+            const code = req.query.code as string;
+            let state: { url: string, clientId: string };
             try {
-              const { url, clientId } = JSON.parse(req.query.state as string)
-              state = { url, clientId }
+              const { url, clientId } = JSON.parse(req.query.state as string);
+              state = { url, clientId };
             } catch (err) {
-              console.error('error parsing relay state', err)
-              return res.sendStatus(500)
+              console.error('error parsing relay state', err);
+              return res.sendStatus(500);
             }
 
-            const config = await processor.safeGetConfig()
+            const config = await processor.safeGetConfig();
             const creds = {
               clientId: state.clientId,
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
               portal: getPortalUrl(state.url)
-            }
+            };
             ArcGISIdentityManager.exchangeAuthorizationCode(creds, code).then(async (idManager: ArcGISIdentityManager) => {
-              let service = config.featureServices.find(service => service.url === state.url)
+              let service = config.featureServices.find(service => service.url === state.url);
               if (!service) {
                 service = {
                   url: state.url,
                   identityManager: idManager.serialize(),
                   layers: []
-                }
+                };
               } else {
-                service.identityManager = idManager.serialize()
+                service.identityManager = idManager.serialize();
               }
 
-              config.featureServices.push(service)
+              config.featureServices.push(service);
 
-              await processor.putConfig(config)
-              const sanitizedService = await sanitizeFeatureService(service, identityService)
+              await processor.putConfig(config);
+              const sanitizedService = await sanitizeFeatureService(service, identityService);
               res.send(`
                 <html>
                   <head>
@@ -133,39 +133,39 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   </head>
                 </html>
               `);
-            }).catch((error) => res.status(400).json(error))
-          })
+            }).catch((error) => res.status(400).json(error));
+          });
 
-          return routes
+          return routes;
         },
         protected: (requestContext: GetAppRequestContext) => {
           const routes = express.Router()
             .use(express.json())
             .use(async (req, res, next) => {
-              const context = requestContext(req)
-              const user = context.requestingPrincipal()
+              const context = requestContext(req);
+              const user = context.requestingPrincipal();
               if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
-                return res.status(403).json({ message: 'unauthorized' })
+                return res.status(403).json({ message: 'unauthorized' });
               }
-              next()
-            })
+              next();
+            });
 
           routes.route('/config')
-            .get(async (req, res, next) => {
-              console.info('Getting ArcGIS plugin config...')
-              const config = await processor.safeGetConfig()
-              const { featureServices, ...remaining } = config
+            .get(async (req, res) => {
+              console.info('Getting ArcGIS plugin config...');
+              const config = await processor.safeGetConfig();
+              const { featureServices, ...remaining } = config;
 
               const sanitizeFeatureServices = await Promise.all(
                 featureServices.map(async (service) => await sanitizeFeatureService(service, identityService))
-              )
+              );
 
-              res.json({ ...remaining, featureServices: sanitizeFeatureServices })
+              res.json({ ...remaining, featureServices: sanitizeFeatureServices });
             })
-            .put(async (req, res, next) => {
-              console.info('Applying ArcGIS plugin config...')
-              const config = await stateRepo.get()
-              const { featureServices: updatedServices, ...updateConfig } = req.body
+            .put(async (req, res) => {
+              console.info('Applying ArcGIS plugin config...');
+              const config = await stateRepo.get();
+              const { featureServices: updatedServices, ...updateConfig } = req.body;
 
 
               // Convert event names to event IDs
@@ -194,9 +194,8 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
                   // Construct the FeatureLayerConfig with eventIds
                   const featureLayerConfig: FeatureLayerConfig = {
-                    layer: layer.layer,
-                    geometryType: layer.geometryType,
-                    eventIds: eventIds,
+                    ...layer,
+                    eventIds: eventIds
                   };
 
                   return featureLayerConfig;
@@ -205,82 +204,82 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 return {
                   url: updateService.url,
                   layers: layers,
-                  // Map exisiting identityManager, client does not send this
+                  // Map existing identityManager, client does not send this
                   identityManager: existingService?.identityManager || '',
                 };
               });
 
-              await stateRepo.patch({ ...updateConfig, featureServices })
+              await stateRepo.patch({ ...updateConfig, featureServices });
 
               // Sync configuration with feature servers by restarting observation processor
-              processor.stop()
-              processor.start()
+              processor.stop();
+              await processor.start();
 
               res.status(200).json({success: true});
-            })
+            });
 
           routes.post('/featureService/validate', async (req, res) => {
-            const config = await processor.safeGetConfig()
-            const { url, token, username, password } = req.body
+            const config = await processor.safeGetConfig();
+            const { url, token, username, password } = req.body;
             if (!URL.canParse(url)) {
-              return res.send('Invalid feature service url').status(400)
+              return res.send('Invalid feature service url').status(400);
             }
 
-            let service: FeatureServiceConfig
-            let identityManager: ArcGISIdentityManager
+            let service: FeatureServiceConfig;
+            let identityManager: ArcGISIdentityManager;
             if (token) {
-              identityManager = await ArcGISIdentityManager.fromToken({ token })
-              service = { url, layers: [], identityManager: identityManager.serialize() }
+              identityManager = await ArcGISIdentityManager.fromToken({ token });
+              service = { url, layers: [], identityManager: identityManager.serialize() };
             } else if (username && password) {
               identityManager = await ArcGISIdentityManager.signIn({
                 username,
                 password,
                 portal: getPortalUrl(url)
-              })
-              service = { url, layers: [], identityManager: identityManager.serialize() }
+              });
+              service = { url, layers: [], identityManager: identityManager.serialize() };
             } else {
-              return res.sendStatus(400)
+              return res.sendStatus(400);
             }
 
             try {
-              let existingService = config.featureServices.find(service => service.url === url)
+              const existingService = config.featureServices.find(service => service.url === url);
               if (!existingService) {
-                config.featureServices.push(service)
+                config.featureServices.push(service);
               }
 
-              await processor.patchConfig(config)
-              const sanitized = await sanitizeFeatureService(service, identityService)
-              return res.send(sanitized)
+              await processor.patchConfig(config);
+              const sanitized = await sanitizeFeatureService(service, identityService);
+              return res.send(sanitized);
             } catch (err) {
-              return res.send('Invalid credentials provided to communicate with feature service').status(400)
+              return res.send('Invalid credentials provided to communicate with feature service' + err).status(400);
             }
-          })
+          });
 
-          routes.get('/featureService/layers', async (req, res, next) => {
-            const url = req.query.featureServiceUrl as string
-            const config = await processor.safeGetConfig()
-            const featureService = config.featureServices.find(featureService => featureService.url === url)
+          routes.get('/featureService/layers', async (req, res) => {
+            const url = req.query.featureServiceUrl as string;
+            const config = await processor.safeGetConfig();
+            const featureService = config.featureServices.find(featureService => featureService.url === url);
             if (!featureService) {
-              return res.status(400)
+              return res.status(400);
             }
 
             try {
-              const identityManager = await identityService.signin(featureService)
+              const identityManager = await identityService.signin(featureService);
               const response = await request(url, {
                 authentication: identityManager
-              })
-              res.send(response.layers)
+              });
+              res.send(response.layers);
             } catch (err) {
-              console.error(err)
-              res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err })
+              console.error(err);
+              res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err });
             }
-          })
+          });
 
-          return routes
+          return routes;
         }
       }
-    }
+    };
   }
-}
+};
 
 export = arcgisPluginHooks
