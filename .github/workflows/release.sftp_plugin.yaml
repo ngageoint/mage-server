@@ -45,7 +45,7 @@ jobs:
 
   build_and_test-web:
     needs: [ check_release_version ]
-    uses: ./.github/workflows/build_test.sftp.web.yaml
+    uses: ./.github/workflows/build_test.sftp.web-app.yaml
 
   publish_packages:
     name:  publish packages
