@@ -63,7 +63,7 @@ export class ArcLayerComponent {
     }).afterClosed().subscribe(result => {
       if (result === true) {
         this.config.featureServices = this.config.featureServices.filter(service => {
-          service.url !== featureService.url
+          return service.url !== featureService.url
         })
 
         this.configChanged.emit(this.config)

@@ -215,7 +215,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               processor.stop();
               await processor.start();
 
-              res.sendStatus(200);
+              res.status(200).json({success: true});
             });
 
           routes.post('/featureService/validate', async (req, res) => {
