@@ -7,6 +7,7 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
+import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 
 /**
  * Class used to process observations for SFTP
@@ -63,6 +64,8 @@ export class SftpController {
    */
   private console: Console;
 
+  private mongooseTeamsRepository: MongooseTeamsRepository;
+
   /**
    * Constructor.
    * @param stateRepository The plugins configuration.
@@ -78,7 +81,8 @@ export class SftpController {
     sftpObservationRepository: SftpObservationRepository,
     sftpClient: SFTPClient,
     archiverFactory: ArchiverFactory,
-    console: Console
+    console: Console,
+    mongooseTeamsRepository: MongooseTeamsRepository
   ) {
     this.stateRepository = stateRepository;
     this.eventRepository = eventRepository;
@@ -88,6 +92,7 @@ export class SftpController {
     this.archiveFactory = archiverFactory
     this.configuration = null
     this.console = console;
+    this.mongooseTeamsRepository = mongooseTeamsRepository;
   }
 
   /**
@@ -248,6 +253,10 @@ export class SftpController {
         result.archive.pipe(stream)
         await result.archive.finalize()
         // TODO: update to include team name: `event_team_user_observation.id`
+        const teams = await this.mongooseTeamsRepository.findTeamsByUserId(observation.userId ?? "")
+        this.console.log("------------------------------------------------------------------------")
+        this.console.log(`------------------------TEAMS: ${teams} ------------------------`)
+        this.console.log("------------------------------------------------------------------------")
         const filename = (`${event.name}_${observation.userId}_${observation.id}`)
         await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)

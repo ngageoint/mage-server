@@ -2,13 +2,11 @@ import mongoose from 'mongoose';
 
 const TeamSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    teamEventId: { type: Number, required: true, unique: true },
     userIds: [{ type: mongoose.Schema.Types.ObjectId }]
 });
 
 export interface TeamDoc extends mongoose.Document {
     name: string;
-    teamEventId: number;
     userIds: mongoose.Types.ObjectId[];
 }
 
