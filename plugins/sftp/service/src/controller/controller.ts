@@ -243,30 +243,18 @@ export class SftpController {
   ) {
     const archiver = this.archiveFactory.createArchiver(format)
     const result = await archiver.createArchive(observation, event)
-    console.log("-----------------------------------------FIRSTONE-----------------------------------------")
 
     if (result instanceof ArchiveResult) {
-      console.log("-----------------------------------------SecondONE-----------------------------------------")
       if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
-        this.console.log(`posting status of success`)
         const stream = new PassThrough()
         result.archive.pipe(stream)
         await result.archive.finalize()
-        // eventName_teamName(s)_observation.userId_observation.id
-        if(observation.userId !== undefined){
-          const teams = await this.teamRepository.findTeamsByUserId(observation.userId)
-          this.teamRepository.narf();
-          console.log("=============================================b:NARF=============================================");
-          this.console.log(`TEAMS: ${JSON.stringify(teams)}`)
-          console.debug(`User ${observation.userId} is in ${teams.length} team(s): ${teams.map(t => t.name).join(', ')}`)
-          console.log("=============================================a:NARF=============================================");
-        }
-
-        await this.sftpClient.put(stream, `${sftpPath}/${observation.id}.zip`)
+        // TODO: update to include team name: `event_team_user_observation.id`
+        // const teams = await this.teamRepository.findTeamsByUserId(observation.userId ?? "")
+        const filename = (`${event.name}_${observation.userId}_${observation.id}`)
+        await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
       } else {
-        this.console.log(`posting status of pending`)
-
         this.console.info(`pending observation ${observation.id}`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING)
       }

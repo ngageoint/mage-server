@@ -1,24 +1,19 @@
 import mongoose from 'mongoose';
-import { Team } from '@ngageoint/mage.service/lib/entities/teams/entities.teams';
 
-// Define the Mongoose schema for Team
 const TeamSchema = new mongoose.Schema({
     name: { type: String, required: true },
     teamEventId: { type: Number, required: true, unique: true },
-    userIds: [ String ]
+    userIds: [{ type: mongoose.Schema.Types.ObjectId }]
 });
 
 export interface TeamDoc extends mongoose.Document {
     name: string;
     teamEventId: number;
-    userIds: String[];
+    userIds: mongoose.Types.ObjectId[];
 }
 
-const TEAM_MODEL_NAME = 'teams';
-
-// mongoose.Model -> toolbox that knows how to do CRUD operations on Mongo
 export function TeamModel(connection: mongoose.Connection, collectionName: string): mongoose.Model<TeamDoc> {
-    return connection.model<TeamDoc>(TEAM_MODEL_NAME, TeamSchema, collectionName);
+    return connection.model<TeamDoc>('Team', TeamSchema, collectionName);
 }
 
 export class MongooseTeamsRepository {
@@ -29,21 +24,8 @@ export class MongooseTeamsRepository {
     }
 
     async findTeamsByUserId(userId: string): Promise<TeamDoc[]> {
-        const teams = await this.model.find({ userIds: userId });
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const teams = await this.model.find({ userIds: userObjectId });
         return teams.map(team => team.toJSON() as TeamDoc);
-    }
-
-    narf() {
-        console.log(`NARF: First: ${mongoose.connection.readyState}`)
-        const db = mongoose.connection;
-
-        db.on('error', console.error.bind(console, 'connection error:'));
-        db.once('open', function() {
-        console.log('Connected to MongoDB');
-        });
-
-        db.on('disconnected', function() {
-        console.log('Disconnected from MongoDB');
-        });
     }
 }
