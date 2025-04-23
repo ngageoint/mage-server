@@ -7,7 +7,6 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
-import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 
 /**
  * Class used to process observations for SFTP
@@ -79,8 +78,7 @@ export class SftpController {
     sftpObservationRepository: SftpObservationRepository,
     sftpClient: SFTPClient,
     archiverFactory: ArchiverFactory,
-    console: Console,
-    private teamRepository: MongooseTeamsRepository 
+    console: Console
   ) {
     this.stateRepository = stateRepository;
     this.eventRepository = eventRepository;
@@ -250,7 +248,6 @@ export class SftpController {
         result.archive.pipe(stream)
         await result.archive.finalize()
         // TODO: update to include team name: `event_team_user_observation.id`
-        // const teams = await this.teamRepository.findTeamsByUserId(observation.userId ?? "")
         const filename = (`${event.name}_${observation.userId}_${observation.id}`)
         await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
