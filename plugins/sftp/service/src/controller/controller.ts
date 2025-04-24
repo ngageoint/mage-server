@@ -252,12 +252,12 @@ export class SftpController {
         const stream = new PassThrough()
         result.archive.pipe(stream)
         await result.archive.finalize()
-        // TODO: update to include team name: `event_team_user_observation.id`
-        const teams = await this.mongooseTeamsRepository.findTeamsByUserId(observation.userId ?? "")
-        this.console.log("------------------------------------------------------------------------")
-        this.console.log(`------------------------TEAMS: ${teams} ------------------------`)
-        this.console.log("------------------------------------------------------------------------")
-        const filename = (`${event.name}_${observation.userId}_${observation.id}`)
+        const teams = await this.mongooseTeamsRepository.findTeamsByUserId(observation.userId);
+        // Filter out events from the teams response (bug) and teams that are not in the event
+        const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
+        const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
+        const filename = (`${event.name}_${teamNames}${observation.userId}_${observation.id}`)
+        this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
         await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
       } else {
