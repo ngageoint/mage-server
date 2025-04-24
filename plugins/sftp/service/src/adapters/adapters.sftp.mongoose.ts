@@ -1,6 +1,5 @@
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationId } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
-// import { Team } from '@ngageoint/mage.service/lib/entities/teams/entities.teams';
 import mongoose from 'mongoose';
 
 export enum SftpStatus {
