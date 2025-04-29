@@ -1,6 +1,6 @@
 # MAGE Web Service & Web App
 
-The **M**obile **A**wareness **G**EOINT **E**nvironment, or [MAGE](https://ngageoint.github.io/MAGE) platform, provides
+The [MAGE](https://ngageoint.github.io/MAGE) platform, provides
 mobile situational awareness and data collection capabilities.  This project comprises the ReST API web service the MAGE
 client apps use to submit and fetch MAGE data, as well as the browser-based web app.  The MAGE web app provides user
 interfaces to view and edit MAGE observations similar to the MAGE mobile apps, and additionally provides the
