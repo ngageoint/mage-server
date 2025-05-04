@@ -20,9 +20,9 @@ env:
   # additional versions in ascending order, latest version last
   # e.g. 20 18 22
   MAGE_NODE_VERSIONS: 20 18 22
+  NODE_ENV: production
 
 jobs:
-
   main:
     runs-on: ubuntu-latest
     outputs:

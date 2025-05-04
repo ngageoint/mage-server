@@ -28,13 +28,11 @@ jobs:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
           cache-dependency-path: service/npm-shrinkwrap.json
-      - name: build
+      - name: build and run tests
         run: |
           cd service
           npm ci
-      - name: run tests
-        run: |
-          cd service
+          npm list sinon --depth=0
           npm test
       - name: package
         run: npm pack ./service
