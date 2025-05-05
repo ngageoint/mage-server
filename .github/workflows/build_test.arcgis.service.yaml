@@ -58,7 +58,6 @@ jobs:
           npm ci --production --force
       - name: package for plugin
         run: npm pack ./plugins/arcgis/service
-
       - name: upload package
         uses: actions/upload-artifact@v4
         with:
