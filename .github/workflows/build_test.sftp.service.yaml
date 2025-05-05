@@ -55,11 +55,9 @@ jobs:
           cd plugins/sftp/service
           npm ci --force
           npm run build
-      - name: pack
-        run: |
-          cd plugins/sftp/service
           npm ci --production --force
-          npm pack .
+      - name: pack
+        run: npm pack ./plugins/sftp/service
       - name: upload package
         uses: actions/upload-artifact@v4
         with:

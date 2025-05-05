@@ -28,17 +28,14 @@ jobs:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
           cache-dependency-path: service/npm-shrinkwrap.json
-      - name: build and test (with dev dependencies)
+      - name: build and test
         run: |
           cd service
           npm ci
           npm test
-      - name: create production package
-        run: |
-          cd service
           npm ci --production
-          cd ..
-          npm pack ./service
+      - name: package
+        run: npm pack ./service
       - name: upload package
         uses: actions/upload-artifact@v4
         with:
