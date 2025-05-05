@@ -7,3 +7,6 @@ export interface SettingsDocument extends mongoose.Document {
 }
 
 export declare const Model: mongoose.Model<SettingsDocument>
+
+export function getSetting(type: string): Promise<SettingsDocument | null>
+export function getSettings(): Promise<SettingsDocument[]>

@@ -1,25 +1,23 @@
+
+'use strict';
+
 const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , expect = require('chai').expect
   , mongoose = require('mongoose')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  // TODO: require for side-effects smells
+  , EventModel = require('../../lib/models/event')
+  , TeamModel = require('../../lib/models/team')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
 
-// TODO: require for side-effects smells
-require('../../lib/models/event');
-var EventModel = mongoose.model('Event');
-
-require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
-
-var Observation = require('../../lib/models/observation');
-var observationModel = Observation.observationModel;
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const Observation = require('../../lib/models/observation');
+const observationModel = Observation.observationModel;
 
 describe("marking favorite observations", function () {
 
@@ -28,7 +26,7 @@ describe("marking favorite observations", function () {
   const userId = mongoose.Types.ObjectId();
 
   beforeEach(function () {
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -57,11 +55,11 @@ describe("marking favorite observations", function () {
         userFields: []
       },
       acl: {}
-    });
+    };
     mockEvent.acl[userId] = 'GUEST';
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const configs = [];
@@ -88,18 +86,16 @@ describe("marking favorite observations", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it("favorites an observation", function (done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     const ObservationModel = observationModel({
@@ -149,17 +145,17 @@ describe("marking favorite observations", function () {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    var ObservationModel = observationModel({
+    const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
 
-    var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
+    const observationId = mongoose.Types.ObjectId();
+    const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -185,9 +181,9 @@ describe("marking favorite observations", function () {
       .expect('Content-Type', /json/)
       .expect(function (res) {
         observationMock.verify();
-        var observation = res.body;
+        const observation = res.body;
         should.exist(observation);
-        var favoriteUserIds = observation.favoriteUserIds;
+        const favoriteUserIds = observation.favoriteUserIds;
         should.exist(favoriteUserIds);
         favoriteUserIds.should.be.empty;
       })

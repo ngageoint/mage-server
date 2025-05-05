@@ -2,8 +2,6 @@ const { expect } = require('chai');
 const { exportFactory } = require('../../lib/export');
 const EventModel = require('../../lib/models/event')
 
-require('chai').should();
-
 const eventAttrs = {
     id: 303,
     name: 'Export Tests',

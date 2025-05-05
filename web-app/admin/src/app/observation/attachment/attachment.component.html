@@ -1,0 +1,73 @@
+<div *ngIf="attachment.url">
+  <div [ngSwitch]="contentType()">
+    <div [ngClass]="{'media-delete__mask': attachment.action === actions.DELETE}">
+      <div *ngSwitchCase="'image'">
+        <ng-container *ngTemplateOutlet="image"></ng-container>
+      </div>
+      <div *ngSwitchCase="'video'">
+        <ng-container *ngTemplateOutlet="media"></ng-container>
+      </div>
+      <div *ngSwitchCase="'audio'">
+        <ng-container *ngTemplateOutlet="media"></ng-container>
+      </div>
+      <div *ngSwitchDefault>
+        <ng-container *ngTemplateOutlet="fallback"></ng-container>
+      </div>
+    </div>
+
+    <div *ngIf="label" class="media-chip">
+      <mat-chip-list>
+        <mat-chip>{{label}}</mat-chip>
+      </mat-chip-list>
+    </div>
+
+    <div *ngIf="canEdit" class="attachment__delete">
+      <button mat-mini-fab color="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!attachment.url">
+  <ng-container *ngTemplateOutlet="pending"></ng-container>
+</div>
+
+<ng-template #image>
+  <div class="media">
+    <img class="media__crop" src="{{attachment.url}}?access_token={{token}}&synced={{attachment.synced}}&oriented={{attachment.oriented}}&size=394" />
+    <a *ngIf="clickable" class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+  </div>
+</ng-template>
+
+<ng-template #media>
+  <div class="media">
+    <video width="100%" height="100%" [controls]="!canEdit" class="attachment__video">
+      <source src="{{attachment.url}}?access_token={{token}}&synced={{attachment.synced}}" type="video/mp4">
+      <div><ng-container *ngTemplateOutlet="fallback"></ng-container></div>
+    </video>
+  </div>
+</ng-template>
+
+<ng-template #pending>
+  <div class="media media-unknown">
+    <mat-icon class="media__icon">cloud_upload</mat-icon>
+    <div>{{attachment.name | filename:12}}</div>
+    <div>Upload pending...</div>
+  </div>
+
+  <div *ngIf="canEdit" class="attachment__delete">
+    <button mat-mini-fab color="warn" (click)="deleteAttachment()" [disabled]="attachment?.actions === actions.DELETE">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #fallback>
+  <div class="media media-unknown">
+    <mat-icon class="media__icon">attach_file</mat-icon>
+    <div>{{attachment.name | filename:12}}</div>
+    <a *ngIf="clickable" class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+
+  </div>
+</ng-template>

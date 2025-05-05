@@ -1,27 +1,22 @@
-const request = require('supertest')
-  , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , mockfs = require('mock-fs')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token')
-  , path = require('path');
+'use strict';
 
-require('chai').should();
+const path = require('path');
+const sinon = require('sinon');
+const request = require('supertest');
+const mongoose = require('mongoose');
+const mockfs = require('mock-fs');
 require('sinon-mongoose');
 
-require('../../lib/models/user');
-const UserModel = mongoose.model('User');
+const createToken = require('../mockToken');
+const TokenModel = require('../../lib/models/token');
+const UserModel = require('../../lib/models/user');
+const DeviceModel = require('../../lib/models/device');
+const IconModel = require('../../lib/models/icon');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-require('../../lib/models/icon');
-const IconModel = mongoose.model('Icon');
-
-require('../../lib/models/device');
-const DeviceModel = mongoose.model('Device');
 const Observation = require('../../lib/models/observation');
-const { expect } = require('chai')
 const observationModel = Observation.observationModel;
 
 require('../../lib/models/export');
@@ -37,7 +32,7 @@ describe("export tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -63,11 +58,9 @@ describe("export tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: '12345' })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission, 'READ_EXPORT']));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission, 'READ_EXPORT']));
   }
 
   const userId = mongoose.Types.ObjectId();
@@ -92,8 +85,7 @@ describe("export tests", function () {
       .yields(null, mockEvent);
 
     sinon.mock(UserModel)
-      .expects('find')
-      .chain('exec')
+      .expects('getUsers')
       .yields(null, [{
         username: 'user3'
       }, {
@@ -101,8 +93,7 @@ describe("export tests", function () {
       }]);
 
     sinon.mock(DeviceModel)
-      .expects('find')
-      .chain('exec')
+      .expects('getDevices')
       .resolves([{
         uid: '3'
       }, {
@@ -145,8 +136,8 @@ describe("export tests", function () {
       exportType: 'kml',
       status: 'Starting',
       options: {
-          eventId: eventId,
-          filter: null
+        eventId: eventId,
+        filter: null
       }
     });
 
@@ -164,7 +155,7 @@ describe("export tests", function () {
       .resolves(exportMeta)
 
     sinon.mock(IconModel)
-      .expects('find')
+      .expects('getAll')
       .yields(null, [{
         relativePath: 'mock/path'
       }]);
@@ -201,6 +192,6 @@ describe("export tests", function () {
         res.headers.should.have.property('content-type').that.contains('application/json');
         res.headers.should.have.property('location').that.equals('/api/exports/' + exportMeta._id);
       })
-      .end(() => {});
+      .end(() => { });
   });
 });

@@ -1,11 +1,13 @@
-import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
+import { Component, Directive, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
 import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/geometry/geometry-dms'
 import * as DMS from 'src/app/geometry/geometry-dms'
-import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { createMask } from '@ngneat/input-mask'
+import { LocalStorageService } from '../../../http/local-storage.service'
+import { MapService } from '../../../map/map.service'
+import { GeometryService } from '../../../geometry/geometry.service'
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -53,6 +55,7 @@ export class DMSValidatorDirective implements Validator {
 }
 
 type CoordinateSystemKey = 'wgs84' | 'mgrs' | 'dms'
+type DMSFormValue = Partial<{ [DimensionKey.Latitude]: string, [DimensionKey.Longitude]: string }>
 
 @Component({
   selector: 'observation-edit-geometry-form',
@@ -93,9 +96,9 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   })
 
   constructor(
-    @Inject(MapService) private mapService: any,
-    @Inject(GeometryService) private geometryService: any,
-    @Inject(LocalStorageService) private localStorageService: any,
+    private mapService: MapService,
+    private geometryService: GeometryService,
+    private localStorageService: LocalStorageService,
     private snackBar: MatSnackBar)
   {
     this.coordinateSystem = this.localStorageService.getCoordinateSystemEdit()
@@ -104,7 +107,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   ngOnInit(): void {
     this.dmsForm.valueChanges.subscribe(dms => {
       if (this.feature?.geometry?.coordinates) {
-        this.onDmsChange(dms)
+        this.onDmsChange({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '', ...dms })
       }
     })
   }
@@ -205,7 +208,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     }
     event.preventDefault()
     event.stopImmediatePropagation()
-    const formValue = { ...this.dmsForm.value }
+    const formValue = { [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '', ...this.dmsForm.value }
     if (coords.length === 1) {
       const coord = typeof coords[0] === 'number' ? DMSCoordinate.fromDecimalDegrees(coords[0], dimension) : coords[0]
       formValue[dimension] = coord.format()
@@ -228,15 +231,15 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       DMSCoordinate.fromDecimalDegrees(second, firstDim === DimensionKey.Latitude ? DimensionKey.Longitude : DimensionKey.Latitude) :
       second
     const secondDim = Dimension.keyForHemisphere(secondResolved.hemisphere)
-    this.dmsForm.setValue({ [firstDim]: first.format(), [secondDim]: secondResolved.format() }, { emitEvent: true })
+    this.dmsForm.setValue({ [firstDim]: first.format(), [secondDim]: secondResolved.format() } as Required<DMSFormValue>, { emitEvent: true })
   }
 
-  onDmsChange({ lat: formLat, lon: formLon }): void {
+  onDmsChange({ lat: formLat, lon: formLon }: Required<DMSFormValue>): void {
     if (this.dmsForm.invalid) {
       return
     }
-    const lat = formLat ? DMS.parseOne(formLat, DimensionKey.Latitude) : this.dmsForm.value[DimensionKey.Latitude]
-    const lon = formLon ? DMS.parseOne(formLon, DimensionKey.Longitude) : this.dmsForm.value[DimensionKey.Longitude]
+    const lat = DMS.parseOne(formLat, DimensionKey.Latitude)
+    const lon = DMS.parseOne(formLon, DimensionKey.Longitude)
     this.editCurrentCoordinates('dms', lat, lon)
   }
 

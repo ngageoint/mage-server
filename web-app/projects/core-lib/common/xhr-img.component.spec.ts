@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
 import { Component, DebugElement } from '@angular/core'
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { By } from '@angular/platform-browser'
 import { XhrImgComponent, ObjectUrlService, OBJECT_URL_SERVICE } from './xhr-img.component'
 
@@ -26,7 +26,7 @@ describe('ImgXhrBlobSrcDirective', () => {
   let blob1: Blob
   let blob2: Blob
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     objectUrlService = jasmine.createSpyObj<ObjectUrlService>('ObjectUrlService', [ 'createObjectURL', 'revokeObjectURL' ])
     objectUrlService.createObjectURL.and.callFake(URL.createObjectURL)
     objectUrlService.revokeObjectURL.and.callFake(URL.revokeObjectURL)
@@ -145,12 +145,12 @@ describe('ImgXhrBlobSrcDirective', () => {
 
     xhr2.flush(blob1)
 
-    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url)
+    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url as any)
     expect(objectUrlService.createObjectURL).toHaveBeenCalledTimes(1)
     expect(objectUrlService.createObjectURL).toHaveBeenCalledWith(blob1)
   })
 
-  it('revokes the blob url when the source url changes before the image loads', async(() => {
+  it('revokes the blob url when the source url changes before the image loads', waitForAsync(() => {
 
     host.sourceUrl = '/test/foresaken'
     fixture.detectChanges()
@@ -164,7 +164,7 @@ describe('ImgXhrBlobSrcDirective', () => {
     const xhr2 = httpTest.expectOne('/test/usurper')
     xhr2.flush(blob2)
 
-    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url)
+    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url as any)
     expect(objectUrlService.createObjectURL).toHaveBeenCalledTimes(2)
     expect(objectUrlService.createObjectURL.calls.argsFor(0)).toEqual([ blob1 ])
     expect(objectUrlService.createObjectURL.calls.argsFor(1)).toEqual([ blob2 ])

@@ -1,0 +1,83 @@
+<div class="admin-actions">
+  <div class="admin-actions-content">
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.dashboard'}" ng-click="$ctrl.tabChanged('admin.dashboard')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.dashboard'}"></div>
+      <div class="admin-badge">
+        <i class="fa fa-dashboard"></i>
+        <span ng-if="$ctrl.inactiveUsers.length || $ctrl.unregisteredDevices.length" class="badge badge-notif badge-accent">{{$ctrl.inactiveUsers.length + $ctrl.unregisteredDevices.length}}</span>
+      </div>
+      <div>Dashboard</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.users'}" ng-click="$ctrl.tabChanged('admin.users')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.users'}"></div>
+      <div class="admin-badge">
+        <i class="fa fa-user"></i>
+        <span ng-if="$ctrl.inactiveUsers.length" class="badge badge-notif badge-accent">{{$ctrl.inactiveUsers.length}}</span>
+      </div>
+      <div>Users</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.teams'}" ng-click="$ctrl.tabChanged('admin.teams')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.teams'}"></div>
+      <i class="fa fa-users"></i>
+      <div>Teams</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.events'}" ng-click="$ctrl.tabChanged('admin.events')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.events'}"></div>
+      <i class="fa fa-calendar"></i>
+      <div>Events</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'maindevices'}" ng-click="$ctrl.tabChanged('admin.devices')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.devices'}"></div>
+      <div class="admin-badge">
+        <i class="fa fa-mobile-phone"></i>
+        <span ng-if="$ctrl.unregisteredDevices.length" class="badge badge-notif badge-accent">{{$ctrl.unregisteredDevices.length}}</span>
+      </div>
+      <div>Devices</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.layers'}" ng-click="$ctrl.tabChanged('admin.layers')">
+      <div ng-class="{'admin-action-arrow-left':$ctrl.stateName === 'admin.layers'}"></div>
+      <i class="fa fa-map"></i>
+      <div>Layers</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.feeds'}" ng-click="$ctrl.tabChanged('admin.feeds')">
+      <div ng-class="{'admin-action-arrow-left':$ctrl.stateName === 'admin.feeds'}"></div>
+      <i class="fa fa-rss"></i>
+      <div>Feeds</div>
+    </div>
+
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.map'}" ng-click="$ctrl.tabChanged('admin.map')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.map'}"></div>
+      <i class="fa fa-globe"></i>
+      <div>Map</div>
+    </div>
+
+    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.security'}" ng-click="$ctrl.tabChanged('admin.security')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.security'}"></div>
+      <i class="fa fa-shield"></i>
+      <div>Security</div>
+    </div>
+
+    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.settings'}" ng-click="$ctrl.tabChanged('admin.settings')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.settings'}"></div>
+      <i class="fa fa-wrench"></i>
+      <div>Settings</div>
+    </div>
+
+    <div class="admin-action" ng-repeat="pluginTab in $ctrl.pluginTabs" ng-class="{'admin-action-selected': $ctrl.stateName === pluginTab.state}" ng-click="$ctrl.tabChanged(pluginTab.state)">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === pluginTab.state}"></div>
+      <div ng-if="pluginTab.icon.path">
+        <img class="admin-plugin-icon" ng-src="/ui_plugins/{{pluginTab.id}}/{{pluginTab.icon.path}}?access_token={{$ctrl.token}}">
+      </div>
+      <i ng-if="pluginTab.icon.className" class="{{pluginTab.icon.className}}"></i>
+      <i ng-if="!pluginTab.icon.path && !pluginTab.icon.className" class="fa fa-plug"></i>
+      <div>{{pluginTab.title}}</div>
+    </div>
+  </div>
+</div>

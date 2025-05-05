@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LayerHeaderComponent } from './layer-header.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { Component, ViewChild } from '@angular/core';
-import { LayerService } from './layer.service';
+import { MapLayerService } from './layer.service';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 
@@ -30,10 +30,10 @@ describe('LayerHeaderComponent', () => {
   let hostComponent: TestHostComponent;
   let fixture: ComponentFixture<TestHostComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ NoopAnimationsModule, MatFormFieldModule, MatCheckboxModule, MatRadioModule, MatIconModule ],
-      providers: [ LayerService ],
+      providers: [MapLayerService ],
       declarations: [ LayerHeaderComponent, TestHostComponent ]
     })
     .compileComponents();

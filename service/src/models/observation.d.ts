@@ -27,7 +27,7 @@ export type ObservationDocumentJson = Omit<ObservationAttrs, 'id' | 'eventId' | 
  * This interface defines the options that one can supply to the `toJSON()`
  * method of the Mongoose Document instances of the Observation model.
  */
-export interface ObservationJsonOptions extends mongoose.DocumentToObjectOptions {
+export interface ObservationJsonOptions extends mongoose.ToObjectOptions {
   /**
    * The database schema does not include the event ID for observation
    * documents.  Use this option to add the `eventId` property to the

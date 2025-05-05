@@ -2,10 +2,9 @@ import { animate, style, transition, trigger } from '@angular/animations'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DOCUMENT } from '@angular/common'
 import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
-import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component'
 import * as moment from 'moment';
 import { ObservationEditDiscardComponent } from './observation-edit-discard/observation-edit-discard.component'
@@ -16,8 +15,14 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { AttachmentService, AttachmentUploadEvent, AttachmentUploadStatus } from '../attachment/attachment.service'
 import { FileUpload } from '../attachment/attachment-upload/attachment-upload.component'
 import { AttachmentAction } from './observation-edit-attachment/observation-edit-attachment-action'
+import { LocalStorageService } from '../../http/local-storage.service'
+import { MapService } from 'src/app/map/map.service'
+import { UserService } from 'src/app/user/user.service'
+import { EventService } from 'src/app/event/event.service'
+import { FilterService } from 'src/app/filter/filter.service'
+import { ObservationService } from '../observation.service'
 
-export type ObservationFormControl = FormControl & { definition: any }
+export type ObservationFormControl = UntypedFormControl & { definition: any }
 
 @Component({
   selector: 'observation-edit',
@@ -56,7 +61,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   @ViewChildren('form') formElements: QueryList<ElementRef>
 
   event: any
-  formGroup: FormGroup
+  formGroup: UntypedFormGroup
   formDefinitions: any
   timestampDefinition = {
     title: '',
@@ -97,17 +102,17 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     sanitizer: DomSanitizer,
     matIconRegistry: MatIconRegistry,
     public dialog: MatDialog,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private bottomSheet: MatBottomSheet,
     private snackBar: MatSnackBar,
     private attachmentService: AttachmentService,
     @Inject(DOCUMENT) private document: Document,
-    @Inject(MapService) private mapService: any,
-    @Inject(UserService) private userService: any,
-    @Inject(FilterService) private filterService: any,
-    @Inject(EventService) private eventService: any,
-    @Inject(ObservationService) private observationService: any,
-    @Inject(LocalStorageService) private localStorageService: any) {
+    private mapService: MapService,
+    private userService: UserService,
+    private filterService: FilterService,
+    private eventService: EventService,
+    private observationService: ObservationService,
+    private localStorageService: LocalStorageService) {
 
     matIconRegistry.addSvgIcon('handle', sanitizer.bypassSecurityTrustResourceUrl('assets/images/handle-24px.svg'));
   }
@@ -167,16 +172,16 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   // TODO multi-form build out validators here as well for each form control
   toFormGroup(observation: any): void {
-    const timestampControl = new FormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
-    const geometryControl = new FormControl(observation.geometry, Validators.required);
+    const timestampControl = new UntypedFormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
+    const geometryControl = new UntypedFormControl(observation.geometry, Validators.required);
 
-    const formArray = new FormArray([])
+    const formArray = new UntypedFormArray([])
     const observationForms = observation.properties.forms || []
     observationForms.forEach(observationForm => {
       const formDefinition = this.formDefinitions[observationForm.formId]
-      const fieldGroup = new FormGroup({
-        id: new FormControl(observationForm.id),
-        formId: new FormControl(formDefinition.id)
+      const fieldGroup = new UntypedFormGroup({
+        id: new UntypedFormControl(observationForm.id),
+        formId: new UntypedFormControl(formDefinition.id)
       })
 
       formDefinition.fields
@@ -184,7 +189,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         .sort((a, b) => a.id - b.id)
         .forEach(field => {
           const value = this.isNewObservation ? field.value : observationForm[field.name]
-          const fieldControl = new FormControl(value, field.required ? Validators.required : null)
+          const fieldControl = new UntypedFormControl(value, field.required ? Validators.required : null)
           fieldGroup.addControl(field.name, fieldControl)
         })
 
@@ -193,10 +198,10 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
     this.formGroup = this.formBuilder.group({
       id: observation.id,
-      eventId: new FormControl(observation.eventId),
-      type: new FormControl(observation.type),
+      eventId: new UntypedFormControl(observation.eventId),
+      type: new UntypedFormControl(observation.type),
       geometry: geometryControl,
-      properties: new FormGroup({
+      properties: new UntypedFormGroup({
         timestamp: timestampControl,
         forms: formArray
       })
@@ -208,9 +213,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   }
 
   updatePrimarySecondary(): void {
-    const forms = this.formGroup.get('properties').get('forms') as FormArray
+    const forms = this.formGroup.get('properties').get('forms') as UntypedFormArray
     if (forms.length) {
-      const primaryFormGroup = forms.at(0) as FormGroup
+      const primaryFormGroup = forms.at(0) as UntypedFormGroup
       const definition = this.formDefinitions[primaryFormGroup.get('formId').value]
 
       let primaryFieldValue
@@ -236,7 +241,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         observation.style = style
         this.geometryStyle = style
 
-        this.mapService.updateFeatureForLayer(observation, 'Observations')
+        this.mapService.updateFeatureForLayer(observation, 'observations')
       }
     }
   }
@@ -256,55 +261,58 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       delete form.id
     }
 
-    this.eventService.saveObservation(form).then(observation => {
-      // If this feature was added to the map as a new observation, remove it
-      // as the event service will add it back to the map based on it new id
-      // if it passes the current filter.
-      if (id === 'new') {
-        this.mapService.removeFeatureFromLayer({ id: id }, 'observations')
-      }
+    this.eventService.saveObservation(form).subscribe({
+      next: (observation: any) => {
+        // If this feature was added to the map as a new observation, remove it
+        // as the event service will add it back to the map based on it new id
+        // if it passes the current filter.
+        if (id === 'new') {
+          this.mapService.removeFeatureFromLayer({ id: id }, 'observations')
+        }
 
-      this.error = null
-      this.observation = observation
-      this.formGroup.get('id').setValue(observation.id)
+        this.error = null
+        this.observation = observation
+        this.formGroup.get('id').setValue(observation.id)
 
-      form.properties.forms.forEach(form => {
-        const formDefinition = this.formDefinitions[form.formId];
-        Object.keys(form).forEach(fieldName => {
-          const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
-          const value = form[fieldName];
-          if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
-            value.forEach(fieldAttachment => {
-              const attachment = observation.attachments.find(attachment => {
-                return !attachment.url &&
-                  attachment.name === fieldAttachment.name &&
-                  attachment.contentType == fieldAttachment.contentType
-              });
+        form.properties.forms.forEach(form => {
+          const formDefinition = this.formDefinitions[form.formId];
+          Object.keys(form).forEach(fieldName => {
+            const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+            const value = form[fieldName];
+            if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
+              value.forEach(fieldAttachment => {
+                const attachment = observation.attachments.find(attachment => {
+                  return !attachment.url &&
+                    attachment.name === fieldAttachment.name &&
+                    attachment.contentType == fieldAttachment.contentType
+                });
 
-              if (fieldAttachment.file && fieldAttachment.action === AttachmentAction.ADD && attachment) {
-                fieldAttachment.attachmentId = attachment.id
-                this.uploads.push(attachment)
-              }
-            })
-          }
+                if (fieldAttachment.file && fieldAttachment.action === AttachmentAction.ADD && attachment) {
+                  fieldAttachment.attachmentId = attachment.id
+                  this.uploads.push(attachment)
+                }
+              })
+            }
+          })
         })
-      })
 
-      if (this.uploads.length) {
-        this.attachmentUrl = observation.url
-      } else {
-        this.close.emit(this.observation)
-      }
-    }, err => {
-      this.formGroup.markAllAsTouched()
+        if (this.uploads.length) {
+          this.attachmentUrl = observation.url
+        } else {
+          this.close.emit(this.observation)
+        }
+      },
+      error: (err) => {
+        this.formGroup.markAllAsTouched()
 
-      if (id === 'new') {
-        this.observation.id = 'new'
-      }
+        if (id === 'new') {
+          this.observation.id = 'new'
+        }
 
-      this.saving = false;
-      this.error = {
-        message: err.data.message
+        this.saving = false;
+        this.error = {
+          message: err.data.message
+        }
       }
     })
   }
@@ -356,19 +364,19 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     }).afterDismissed().subscribe(form => {
       if (!form) return
 
-      const fieldsGroup = new FormGroup({
-        formId: new FormControl(form.id)
+      const fieldsGroup = new UntypedFormGroup({
+        formId: new UntypedFormControl(form.id)
       });
 
       form.fields
         .filter(field => !field.archived)
         .sort((a, b) => a.id - b.id)
         .forEach(field => {
-          const fieldControl = new FormControl(field.value, field.required ? Validators.required : null)
+          const fieldControl = new UntypedFormControl(field.value, field.required ? Validators.required : null)
           fieldsGroup.addControl(field.name, fieldControl)
         });
 
-      (this.formGroup.get('properties').get('forms') as FormArray).push(fieldsGroup);
+      (this.formGroup.get('properties').get('forms') as UntypedFormArray).push(fieldsGroup);
 
       this.formElements.changes.pipe(first()).subscribe((queryList: QueryList<ElementRef>) => {
         queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
@@ -376,8 +384,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     })
   }
 
-  removeForm(formGroup: FormGroup): void {
-    const formArray = this.formGroup.get('properties').get('forms') as FormArray
+  removeForm(formGroup: UntypedFormGroup): void {
+    const formArray = this.formGroup.get('properties').get('forms') as UntypedFormArray
     const index = formArray.controls.indexOf(formGroup)
     formArray.removeAt(index)
 
@@ -394,7 +402,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   reorderForm(event: CdkDragDrop<any, any>): void {
     if (event.currentIndex === event.previousIndex) return
 
-    const forms = (this.formGroup.get('properties').get('forms') as FormArray).controls
+    const forms = (this.formGroup.get('properties').get('forms') as UntypedFormArray).controls
     moveItemInArray(forms, event.previousIndex, event.currentIndex)
 
     // re-calculate primary/secondary based new first form
@@ -427,8 +435,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       case AttachmentUploadStatus.ERROR: {
         this.snackBar.open(event.response?.error, null, { duration: 4000 })
 
-        const formArray = this.formGroup.get('properties').get('forms') as FormArray
-        formArray.controls.forEach((formGroup: FormGroup) => {
+        const formArray = this.formGroup.get('properties').get('forms') as UntypedFormArray
+        formArray.controls.forEach((formGroup: UntypedFormGroup) => {
           const formId = formGroup.get('formId').value
           const formDefinition = this.formDefinitions[formId];
           Object.keys(formGroup.controls).forEach(fieldName => {

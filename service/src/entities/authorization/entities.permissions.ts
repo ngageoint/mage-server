@@ -77,6 +77,11 @@ export enum SettingPermission {
   MAP_SETTINGS_UPDATE = 'MAP_SETTINGS_UPDATE',
 }
 
+
+export enum SystemInfoPermission {
+  READ_SYSTEM_INFO = 'READ_SYSTEM_INFO',
+}
+
 export enum FeedsPermission {
   FEEDS_LIST_SERVICE_TYPES = 'FEEDS_LIST_SERVICE_TYPES',
   FEEDS_CREATE_SERVICE = 'FEEDS_CREATE_SERVICE',
@@ -108,6 +113,7 @@ export const allPermissions = Object.freeze({
   ...SettingPermission,
   ...FeedsPermission,
   ...StaticIconPermission,
+  ...SystemInfoPermission,
   ...ExportPermission,
 })
 
@@ -123,6 +129,7 @@ export type AnyPermission =
   | SettingPermission
   | FeedsPermission
   | StaticIconPermission
+  | SystemInfoPermission
   | ExportPermission
 
 const allPermissionsList = Object.freeze(Object.values(allPermissions))

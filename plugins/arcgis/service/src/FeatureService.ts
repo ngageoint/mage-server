@@ -1,83 +1,127 @@
-import { LayerInfoResult} from "./LayerInfoResult";
-import { FeatureServiceResult} from "./FeatureServiceResult";
-import { HttpClient } from "./HttpClient";
-import { FeatureServiceConfig, FeatureLayerConfig } from "./ArcGISConfig";
+import { ArcGISIdentityManager } from "@esri/arcgis-rest-request"
+import { getLayer, getService, queryFeatures, applyEdits } from "@esri/arcgis-rest-feature-service";
+import { FeatureServiceConfig } from "./types/ArcGISConfig";
+
+// TODO: Migrate FeatureQuerier to use this class
 
 /**
  * Queries arc feature services and layers.
  */
 export class FeatureService {
 
-    /**
-     * Used to make the get request about the feature layer.
-     */
-    private _httpClient: HttpClient;
+  private _console: Console;
+  private _config: FeatureServiceConfig;
+  private _identityManager: ArcGISIdentityManager;
 
-    /**
-     * Used to log messages.
-     */
-    private _console: Console;
+  constructor(console: Console, config: FeatureServiceConfig, identityManager: ArcGISIdentityManager) {
+    this._config = config;
+    this._identityManager = identityManager;
+    this._console = console;
+  }
 
-    /**
-     * Constructor.
-     * @param console Used to log messages. 
-     * @param token The access token.
-     */
-    constructor(console: Console, token?: string) {
-        this._httpClient = new HttpClient(console, token);
-        this._console = console;
+  /**
+   * Gets features from the feature service using the given where clause.
+   * @param {string} whereClause - The where clause to filter the features.
+   * @returns {Promise<any>} - A promise that resolves to the query result.
+   */
+  async getFeatures(whereClause: string): Promise<any> {
+    const queryParams = {
+      url: this._config.url,
+      where: whereClause,
+      authentication: this._identityManager
+    };
+
+    this._console.info('Querying feature service with params: ', queryParams);
+
+    return await queryFeatures(queryParams).catch((error) => {
+      this._console.error('Error querying feature service:', error);
+      throw new Error(`Error querying feature service: ${error}`);
+    });
+  }
+
+  /**
+   * Gets a specific layer from the feature service.
+   * @param {string | number} layerId - The ID of the layer to query.
+   * @returns {Promise<any>} - A promise that resolves to the layer info.
+   */
+  async getLayer(layerId: string | number): Promise<any> {
+    const url = `${this._config.url}/${layerId}`;
+    try {
+      return await getLayer({
+        url,
+        authentication: this._identityManager
+      });
+    } catch (error) {
+      throw new Error(`Error querying layer info: ${error}`);
     }
+  }
 
-    /**
-     * Queries an arc feature service.
-     * @param url The url to the arc feature layer.
-     * @param callback Function to call once response has been received and parsed.
-     */
-    queryFeatureService(url: string, callback: (featureService: FeatureServiceResult) => void) {
-        this._httpClient.sendGetHandleResponse(url, this.parseFeatureService(url, callback))
+  async getService(): Promise<any> {
+    try {
+      return await getService({
+        url: this._config.url,
+        authentication: this._identityManager,
+      });
+    } catch (error) {
+      throw new Error(`Error getting service: ${error}`);
     }
+  }
 
-    /**
-     * Parses the response from the feature service request and sends to the callback.
-     * @param url The url to the arc feature layer.
-     * @param callback The callback to call and send the feature service to.
-     */
-    private parseFeatureService(url: string, callback: (featureService: FeatureServiceResult) => void) {
-        return (chunk: any) => {
-            this._console.log('Feature Service. url: ' + url + ', response: ' + chunk)
-            try {
-                const service = JSON.parse(chunk) as FeatureServiceResult
-                callback(service)
-            } catch(e) {
-                this._console.error(e)
-            }
-        }
+  // Add feature using applyEdits
+  async addFeature(feature: any): Promise<any> {
+    try {
+      const response = await applyEdits({
+        url: this._config.url,
+        adds: [feature],
+        authentication: this._identityManager,
+      });
+      return response;
+    } catch (error) {
+      throw new Error(`Error adding feature: ${error}`);
     }
+  }
 
-    /**
-     * Queries an arc feature layer to get info on the layer.
-     * @param url The url to the arc feature layer.
-     * @param infoCallback Function to call once response has been received and parsed.
-     */
-    queryLayerInfo(url: string, infoCallback: (layerInfo: LayerInfoResult) => void) {
-        this._httpClient.sendGetHandleResponse(url, this.parseLayerInfo(url, infoCallback));
+  // Update feature using applyEdits
+  async updateFeature(feature: any): Promise<any> {
+    try {
+      const response = await applyEdits({
+        url: this._config.url,
+        updates: [feature],
+        authentication: this._identityManager,
+      });
+      return response;
+    } catch (error) {
+      throw new Error(`Error updating feature: ${error}`);
     }
+  }
 
-    /**
-     * Parses the response from the request and sends the layer info to the callback.
-     * @param url The url to the feature layer.
-     * @param infoCallback The callback to call and send the layer info to.
-     */
-    private parseLayerInfo(url: string, infoCallback: (layerInfo: LayerInfoResult) => void) {
-        return (chunk: any) => {
-            this._console.log('Query Layer. url: ' + url + ', response: ' + chunk)
-            try {
-                const layerInfo = JSON.parse(chunk) as LayerInfoResult
-                infoCallback(layerInfo)
-            } catch(e) {
-                this._console.error(e)
-            }
-        }
+  // Delete feature using applyEdits
+  async deleteFeature(objectId: string | number): Promise<any> {
+    try {
+      const response = await applyEdits({
+        url: this._config.url,
+        deletes: [typeof objectId === 'number' ? objectId : parseInt(objectId as string, 10)],
+        authentication: this._identityManager,
+      });
+      return response;
+    } catch (error) {
+      throw new Error(`Error deleting feature: ${error}`);
     }
+  }
 
+  // Batch operation using applyEdits
+  async applyEditsBatch(edits: { add?: any[], update?: any[], delete?: any[] }): Promise<any> {
+    try {
+      const response = await applyEdits({
+        url: this._config.url,
+        adds: edits.add || [],
+        updates: edits.update || [],
+        deletes: edits.delete || [],
+        authentication: this._identityManager,
+      });
+      return response;
+    } catch (error) {
+      throw new Error(`Error applying edits: ${error}`);
+    }
+  }
 }

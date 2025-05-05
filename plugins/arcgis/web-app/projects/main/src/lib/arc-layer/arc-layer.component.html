@@ -1,0 +1,49 @@
+<div class="arc-layer">
+  <mat-card appearance="outlined">
+    <mat-card-title>Feature Layers</mat-card-title>
+    <mat-card-subtitle>ArcGIS feature service URLs and layers to sychronize MAGE data.</mat-card-subtitle>
+
+    <mat-card-content>
+      <div *ngIf="!config.featureServices.length" class="no-mappings">
+        <div class="no-mappings__icons">
+          <mat-icon class="no-mappings__icon" fontSet="material-icons-outlined">place</mat-icon>
+          <mat-icon class="no-mappings__icon" fontSet="material-icons-outlined">arrow_right_alt</mat-icon>
+          <mat-icon class="no-mappings__icon no-mappings__icon--margin material-icons-outlined" fontSet="material-icons-outlined">map</mat-icon>
+        </div>
+
+        <div class="no-mappings__title">Create ArcGIS feature services used to synchronize MAGE data. Feature services you create will show up here.</div>
+      </div>
+
+      <mat-list>
+        <mat-list-item *ngFor="let service of config.featureServices let lastService = last;">
+          <mat-icon mat-list-icon class="material-icons-outlined">map</mat-icon>
+          <p mat-line>{{service.url}}</p>
+          <p mat-line class="subtitle">
+            <ng-container *ngFor="let layer of service.layers let lastLayer = last;">
+              {{layer.layer}}<span *ngIf="!lastLayer">,&nbsp;</span>
+            </ng-container>
+          </p>
+          <p mat-line *ngIf="!service.authenticated" class="invalid-credentials">
+            Credentials invalid or expired
+          </p>
+
+          <a mat-icon-button color="primary" href="{{service.url}}" target="_blank">
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+          <button mat-icon-button color="primary" (click)="onEditService(service)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="onDeleteService(service)">
+            <mat-icon>delete</mat-icon>
+          </button>
+
+          <mat-divider *ngIf="!lastService"></mat-divider>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+    
+    <mat-card-actions>
+      <button mat-button mat-button color="primary" (click)="onAddService()">ADD FEATURE SERVICE</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

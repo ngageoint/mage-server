@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { Observable, of, Subject } from 'rxjs';
 import { ExportDialogComponent } from './export-dialog.component';
 import { MatCardModule } from '@angular/material/card';
@@ -18,12 +18,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarDismiss, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportService, Export, ExportRequest, ExportResponse } from './export.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { LocalStorageService } from '../http/local-storage.service';
+import { FilterService } from '../filter/filter.service';
 
 class MockExportService {
   getExports(): Observable<any> {
@@ -117,7 +118,7 @@ describe('ExportDialogComponent', () => {
   let component: ExportDialogComponent;
   let fixture: ComponentFixture<ExportDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockLocalStorageService = { getToken: (): string => '1' };
     const mockFilterService = { getEvent: (): any => { return { id: 1 } } };
     const mockDialogRef = { close: (): void => { } };

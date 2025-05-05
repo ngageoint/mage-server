@@ -45,9 +45,8 @@ describe("environment", function() {
     expect(mongo).to.have.property('connectRetryDelay', 5000);
     expect(mongo).to.have.property('connectTimeout', 300000);
     const options = mongo.options;
-    expect(options).to.have.property('useMongoClient', true);
-    expect(options).to.have.property('poolSize', 5);
-    expect(options).to.have.property('ssl', false);
+    expect(options).to.have.property('minPoolSize', 5);
+    expect(options).to.have.property('maxPoolSize', 5)
     expect(options).to.not.have.property('auth');
   });
 
@@ -66,7 +65,8 @@ describe("environment", function() {
         MAGE_MONGO_SSL: 'true',
         MAGE_MONGO_USER: 'mage_test',
         MAGE_MONGO_PASSWORD: 'test_mage',
-        MAGE_MONGO_POOL_SIZE: '87',
+        MAGE_MONGO_MIN_POOL_SIZE: '87',
+        MAGE_MONGO_MAX_POOL_SIZE: '87',
         MAGE_MONGO_CONN_TIMEOUT: '12345',
         MAGE_MONGO_CONN_RETRY_DELAY: '15'
       });
@@ -83,10 +83,9 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectRetryDelay', 15000);
       expect(mongo).to.have.property('connectTimeout', 12345000);
       const options = mongo.options;
-      expect(options).to.have.property('useMongoClient', true);
-      expect(options).to.have.property('poolSize', 87);
-      expect(options).to.have.property('ssl', true);
-      expect(options).to.have.deep.property('auth', { "user": "mage_test", "password": "test_mage" });
+      expect(options).to.have.property('minPoolSize', 87);
+      expect(options).to.have.property('maxPoolSize', 87);
+      expect(options).to.have.deep.property('auth', { "username": "mage_test", "password": "test_mage" });
     });
 
     it("prefers x509 authentication when present", function() {
@@ -110,17 +109,15 @@ describe("environment", function() {
       const options = mongo.options;
 
       expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
-      expect(options).to.have.property('ssl', true);
-      expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
-      expect(options.sslCA.toString()).to.equal('TEST CA CERTIFICATE');
-      expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
-      expect(options.sslKey.toString()).to.equal('TEST PRIVATE KEY');
-      expect(options).to.have.property('sslCert').that.is.instanceOf(Buffer);
-      expect(options.sslCert.toString()).to.equal('TEST PUBLIC CERTIFICATE');
-      expect(options).to.have.property('sslPass', 'test_key_pass');
-      expect(options).to.have.property('checkServerIdentity', false);
+      expect(options).to.have.property('ca').that.is.instanceOf(Buffer);
+      expect(options.ca.toString()).to.equal('TEST CA CERTIFICATE');
+      expect(options).to.have.property('key').that.is.instanceOf(Buffer);
+      expect(options.key.toString()).to.equal('TEST PRIVATE KEY');
+      expect(options).to.have.property('cert').that.is.instanceOf(Buffer);
+      expect(options.cert.toString()).to.equal('TEST PUBLIC CERTIFICATE');
+      expect(options).to.have.property('passphrase', 'test_key_pass');
       expect(options).to.have.property('authSource', '$external');
-      expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
+      expect(options).to.have.deep.property('authMechanism', 'MONGODB-X509');
       expect(options).to.not.have.property('user');
     });
 
@@ -148,17 +145,15 @@ describe("environment", function() {
       const options = mongo.options;
 
       expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
-      expect(options).to.have.property('ssl', true);
-      expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
-      expect(options.sslCA.toString()).to.equal('ENV CA CERT');
-      expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
-      expect(options.sslKey.toString()).to.equal('ENV KEY');
-      expect(options).to.have.property('sslCert').that.is.instanceOf(Buffer);
-      expect(options.sslCert.toString()).to.equal('ENV CERT');
-      expect(options).to.have.property('sslPass', 'test_key_pass');
-      expect(options).to.have.property('checkServerIdentity', false);
+      expect(options).to.have.property('ca').that.is.instanceOf(Buffer);
+      expect(options.ca.toString()).to.equal('ENV CA CERT');
+      expect(options).to.have.property('key').that.is.instanceOf(Buffer);
+      expect(options.key.toString()).to.equal('ENV KEY');
+      expect(options).to.have.property('cert').that.is.instanceOf(Buffer);
+      expect(options.cert.toString()).to.equal('ENV CERT');
+      expect(options).to.have.property('passphrase', 'test_key_pass');
       expect(options).to.have.property('authSource', '$external');
-      expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
+      expect(options).to.have.deep.property('authMechanism', 'MONGODB-X509');
       expect(options).to.not.have.property('user');
     });
   });
@@ -176,9 +171,10 @@ describe("environment", function() {
             name: 'MongoInstance',
             credentials: {
               url: 'mongodb-cf://db.test.mage:27999/magedb_cf',
-              username: 'cloudfoundry',
-              password: 'foundrycloud',
-              poolSize: 99
+              user: 'cloudfoundry',
+              pass: 'foundrycloud',
+              minPoolSize: 99,
+              maxPoolSize: 99
             }
           }
         ]
@@ -197,10 +193,10 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectRetryDelay', 5000);
       expect(mongo).to.have.property('connectTimeout', 300000);
       const options = mongo.options;
-      expect(options).to.have.property('useMongoClient', true);
-      expect(options).to.have.property('ssl', false);
-      expect(options).to.have.property('poolSize', 99);
-      expect(options).to.have.deep.property('auth', { "user": "cloudfoundry", "password": "foundrycloud" });
+      expect(options).to.not.have.property('tls');
+      expect(options).to.have.property('minPoolSize', 99);
+      expect(options).to.have.property('maxPoolSize', 99);
+      expect(options).to.have.deep.property('auth', { "username": "cloudfoundry", "password": "foundrycloud" });
     });
   });
 });

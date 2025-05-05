@@ -4,9 +4,9 @@ import { MatSort } from '@angular/material/sort';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, Export, ExportResponse } from './export.service';
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Observable, Subscription, timer } from 'rxjs';
+import { LocalStorageService } from '../http/local-storage.service';
 
 @Component({
 	selector: 'export-dialog',
@@ -58,9 +58,8 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	constructor(public dialogRef: MatDialogRef<ExportDialogComponent>,
 		public snackBar: MatSnackBar,
 		@Inject(ExportService) public exportService: ExportService,
-		@Inject(LocalStorageService) public storageService: any) {
-
-		this.token = this.storageService.getToken();
+		localStorageService: LocalStorageService) {
+		this.token = localStorageService.getToken();
 	}
 
 	ngOnInit(): void {
@@ -128,7 +127,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		})
 
 		ref.afterDismissed().subscribe(event => {
-			console.log('CODE = snackbar dismissed', event)
 			if (event.dismissedByAction) {
 				exports.splice(index, 0, exp);
 				this.dataSource.data = exports

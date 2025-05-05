@@ -1,8 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { EventService, FilterService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component';
+import { FilterService } from 'src/app/filter/filter.service';
+import { EventService } from 'src/app/event/event.service';
 
 class MockFilterService {
   getEvent(): any {
@@ -20,7 +21,7 @@ describe('ObservationEditFormPickerComponent', () => {
   let component: ObservationEditFormPickerComponent;
   let fixture: ComponentFixture<ObservationEditFormPickerComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ObservationEditFormPickerComponent ],
       providers: [{

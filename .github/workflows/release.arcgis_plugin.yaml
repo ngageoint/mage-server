@@ -1,0 +1,76 @@
+name: release arcgis plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version you want to assign to the release
+        type: string
+        required: true
+
+  # TODO: possibly use release branches to perform the release process
+  # push:
+  #   branches:
+  #     - release/*
+  #     - prerelease/*
+  # TODO: possibly use release event to perform the release process
+  # release:
+
+jobs:
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  check_release_version:
+    needs: [config]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+      - name: install json util
+        run: npm i -g json
+      - name: check service
+        run: |
+          [[ $(json version < ./plugins/arcgis/service/package.json) = ${{ inputs.version }} ]] || exit 1
+      - name: check web-app
+        run: |
+          [[ $(json version < ./plugins/arcgis/web-app/package.json) = ${{ inputs.version }} ]] || exit 1
+
+  build_and_test-service:
+    needs: [check_release_version]
+    uses: ./.github/workflows/build_test.arcgis.service.yaml
+
+  build_and_test-web-app:
+    needs: [check_release_version]
+    uses: ./.github/workflows/build_test.arcgis.web-app.yaml
+
+  publish_packages:
+    name: publish packages
+    needs: [config, build_and_test-service]
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+      - name: install json util
+        run: npm i -g json
+      - name: download service packages
+        uses: actions/download-artifact@v4
+        with:
+          name: arcgis.service-artifacts
+      - name: download web-app packages
+        uses: actions/download-artifact@v4
+        with:
+          name: arcgis.web-app-artifacts
+      - name: publish arcgis service
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.arcgis.service-*.tgz) || echo "skipping arcgis service plugin publish..."
+      - name: publish arcgis web
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.arcgis.web-app-*.tgz) || echo "skipping arcgis web plugin publish..."

@@ -1,0 +1,13 @@
+<mat-list-item class="item" (click)="onItemSelect()">
+  <mat-icon *ngIf="!iconUrl" matListIcon color="primary">place</mat-icon>
+  <mage-static-icon-img *ngIf="feed?.icon" [iconRef]="feed.icon" matListIcon></mage-static-icon-img>
+  <span *ngIf="hasContent" matLine class="overline">{{timestamp | moment}}</span>
+  <span *ngIf="hasContent" matLine class="mat-body-2">{{primary || "&nbsp;"}}</span>
+  <span *ngIf="hasContent" matLine class="mat-body-1">{{secondary || "&nbsp;"}}</span>
+
+  <div class="no-content">
+    <span *ngIf="!hasContent" matLine>No Content</span>
+    <span *ngIf="!hasContent" matLine></span>
+    <span *ngIf="!hasContent" matLine></span>
+  </div>
+</mat-list-item>

@@ -12,17 +12,17 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "module": "esnext",
+    "module": "ES2020",
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2015",
+    "target": "ES2020",
     "lib": [
-      "es2018",
-      "dom"
+      "ES2020",
+      "DOM"
     ],
     "paths": {
-      "mage-arc-web": [
-        "dist/mage-arc-web"
+      "@@main": [
+        "./dist/main"
       ],
       "@ngageoint/mage.web-core-lib/*": [
         "./node_modules/@ngageoint/mage.web-core-lib/*"

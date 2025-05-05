@@ -2,7 +2,7 @@
   "name": "@ngageoint/mage.project",
   "description": "This is the root package definition for the mage-server monorepo.",
   "private": true,
-  "version": "6.2.13",
+  "version": "6.3.0-beta.8",
   "files": [],
   "scripts": {
     "postinstall": "npm-run-all service:ci web-app:ci image.service:ci nga-msi:ci",
@@ -33,7 +33,7 @@
     "start-web": "npm run web-app:debug"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "4.1.5"
   },
   "dependencies": {}
 }

@@ -7,10 +7,11 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2020",
+    "skipLibCheck": true,
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -20,7 +21,7 @@
     ],
     "paths": {
       "@ngageoint/mage.web-core-lib": [
-        "dist/core-lib",
+        "dist/core-lib"
       ],
       "@ngageoint/mage.web-core-lib/*": [
         "dist/core-lib/*"
@@ -32,6 +33,8 @@
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
-    "strictInjectionParameters": true
+    "strictInjectionParameters": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   }
 }

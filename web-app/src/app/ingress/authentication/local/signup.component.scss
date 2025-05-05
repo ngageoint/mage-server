@@ -1,0 +1,102 @@
+@import "variables.scss";
+
+:host {
+  width: 100%;
+  height: 100%;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.signup-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  padding-top: 32px;
+}
+
+.signup {
+  padding-bottom: 16px;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  color: $primary;
+}
+
+.welcome__title {
+  margin-bottom: 16px;
+  font: 400 45px / 48px Roboto, "Helvetica Neue", sans-serif;
+}
+
+.welcome__message {
+  font: 500 20px / 32px Roboto, "Helvetica Neue", sans-serif
+}
+
+.auth-captcha-container {
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, .4);
+  border-radius: 4px;
+  padding: 4px;
+  width: 100%;
+  height: 80px;
+  margin: 16px 0;
+}
+
+.auth-captcha {
+  position: absolute;
+  right: 56px;
+  left: 56px;
+  top: 4px;
+  bottom: 4px;
+}
+
+.auth-captcha-progress {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.auth-captcha-progress__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 64px;
+  width: 100%;
+}
+
+.auth-captcha-progress-text {
+  color: rgba(0, 0, 0, .6);
+  font-size: 24px;
+}
+
+.auth-captcha-progressbar{
+  margin-top: 8px;
+}
+
+.auth-captcha-refresh {
+  position: absolute;
+  right: 8px;
+  top: 24px;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.actions__button {
+  flex: 1
+}

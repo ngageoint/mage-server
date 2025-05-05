@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoExportsComponent } from './no-exports.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
@@ -7,7 +7,7 @@ describe('NoExportsComponent', () => {
     let component: NoExportsComponent;
     let fixture: ComponentFixture<NoExportsComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [MatDialogModule],
             declarations: [NoExportsComponent]

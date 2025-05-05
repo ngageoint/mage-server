@@ -1,0 +1,24 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
+.contact-info-summary {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+mat-icon {
+    color: mat.get-color-from-palette($app-primary);
+}
+
+mat-label {
+    margin-left: 8px;
+}
+  
+mat-form-field {
+    width: 100%;
+}
+  
+section {
+    margin-left: 16px;
+    margin-right: 16px;
+}

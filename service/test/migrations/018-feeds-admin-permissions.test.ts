@@ -20,14 +20,14 @@ describe('feeds admin permissions migration', function() {
 
   let db: Db
   before(function() {
-    db = this.mongo?.conn.db!
+    db = this.mongo?.conn.getClient().db() as Db;
   })
 
   after(mongoTest.mongoTestAfterAllHook())
 
   afterEach(async function() {
     const roles = db.collection('roles')
-    await roles.remove({})
+    await roles.deleteMany({})
   })
 
   it('has a migration id', function() {
@@ -39,7 +39,7 @@ describe('feeds admin permissions migration', function() {
     it('adds feeds permissions to the existing admin role', async function() {
 
       const roles = db.collection('roles')
-      const count = await roles.count()
+      const count = await roles.countDocuments()
 
       expect(count).to.equal(0)
 
@@ -53,7 +53,7 @@ describe('feeds admin permissions migration', function() {
         ]
       })
 
-      expect(insert.insertedCount).to.equal(1)
+      expect(insert.acknowledged).to.be.true
 
       await new Promise<void>((resolve, reject) => {
         const done = function(err?: any) {
@@ -97,7 +97,7 @@ describe('feeds admin permissions migration', function() {
         ]
       })
 
-      expect(insert.insertedCount).to.equal(1)
+      expect(insert.acknowledged).to.be.true
 
       await new Promise<void>((resolve, reject) => {
         const done = function(err?: any) {

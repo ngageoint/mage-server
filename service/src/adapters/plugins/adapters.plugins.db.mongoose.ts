@@ -14,7 +14,8 @@ const SCHEMA_SPEC = {
 
 export class MongoosePluginStateRepository<State extends object> implements PluginStateRepository<State> {
 
-  readonly model: mongoose.Model<PluginStateDocument<State>>
+  //TODO remove cast to any, was mongoose.Model<PluginStateDocument<State>>
+  readonly model: mongoose.Model<any>
 
   constructor(public readonly pluginId: string, public readonly mongoose: mongoose.Mongoose) {
     const collectionName = `plugin_state_${pluginId}`
@@ -23,7 +24,7 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
   }
 
   async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
-    const updated = await this.model.findByIdAndUpdate(this.pluginId, { state }, { new: true, upsert: true })
+    const updated = await this.model.findByIdAndUpdate(this.pluginId, { state }, { new: true, upsert: true, setDefaultsOnInsert: false })
     return updated.toJSON().state
   }
 
@@ -38,7 +39,7 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
       }
       return update
     }, {} as any)
-    const patched = await this.model.findByIdAndUpdate(this.pluginId, update, { new: true, upsert: true })
+    const patched = await this.model.findByIdAndUpdate(this.pluginId, update, { new: true, upsert: true, setDefaultsOnInsert: false })
     return patched.toJSON().state
   }
 

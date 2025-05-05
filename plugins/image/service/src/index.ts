@@ -54,39 +54,41 @@ const imagePluginHooks: InitPluginHook<typeof InjectedServices> = {
     const control = await createImagePluginControl(stateRepo, eventRepo, obsRepoForEvent, attachmentStore, queryAttachments, imageService, console)
     control.start()
     return {
-      webRoutes(requestContext: GetAppRequestContext): express.Router {
-        // TODO: add api routes to save image processing settings
-        const routes = express.Router()
-          .use(express.json())
-          .use(async (req, res, next) => {
-            const context = requestContext(req)
-            const user = context.requestingPrincipal()
-            if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
-              return res.status(403).json({ message: 'unauthorized' })
-            }
-            next()
-          })
-        routes.route('/config')
-          .get(async (req, res, next) => {
-            const config = await control.getConfig()
-            res.json(config)
-          })
-          .put(async (req, res, next) => {
-            const bodyConfig = req.body as any
-            const configPatch: Partial<ImagePluginConfig> = {
-              enabled: typeof bodyConfig.enabled === 'boolean' ? bodyConfig.enabled : undefined,
-              intervalBatchSize: typeof bodyConfig.intervalBatchSize === 'number' ? bodyConfig.intervalBatchSize : undefined,
-              intervalSeconds: typeof bodyConfig.intervalSeconds === 'number' ? bodyConfig.intervalSeconds : undefined,
-              thumbnailSizes: Array.isArray(bodyConfig.thumbnailSizes) ?
-                bodyConfig.thumbnailSizes.reduce((sizes: number[], size: any) => {
-                  return typeof size === 'number' ? [ ...sizes, size ] : sizes
-                }, [] as number[])
-                : []
-            }
-            const config = await control.applyConfig(configPatch)
-            res.json(config)
-          })
-        return routes
+      webRoutes: {
+        protected(requestContext: GetAppRequestContext): express.Router {
+          // TODO: add api routes to save image processing settings
+          const routes = express.Router()
+            .use(express.json())
+            .use(async (req, res, next) => {
+              const context = requestContext(req)
+              const user = context.requestingPrincipal()
+              if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
+                return res.status(403).json({ message: 'unauthorized' })
+              }
+              next()
+            })
+          routes.route('/config')
+            .get(async (req, res, next) => {
+              const config = await control.getConfig()
+              res.json(config)
+            })
+            .put(async (req, res, next) => {
+              const bodyConfig = req.body as any
+              const configPatch: Partial<ImagePluginConfig> = {
+                enabled: typeof bodyConfig.enabled === 'boolean' ? bodyConfig.enabled : undefined,
+                intervalBatchSize: typeof bodyConfig.intervalBatchSize === 'number' ? bodyConfig.intervalBatchSize : undefined,
+                intervalSeconds: typeof bodyConfig.intervalSeconds === 'number' ? bodyConfig.intervalSeconds : undefined,
+                thumbnailSizes: Array.isArray(bodyConfig.thumbnailSizes) ?
+                  bodyConfig.thumbnailSizes.reduce((sizes: number[], size: any) => {
+                    return typeof size === 'number' ? [...sizes, size] : sizes
+                  }, [] as number[])
+                  : []
+              }
+              const config = await control.applyConfig(configPatch)
+              res.json(config)
+            })
+          return routes
+        }
       }
     }
   }

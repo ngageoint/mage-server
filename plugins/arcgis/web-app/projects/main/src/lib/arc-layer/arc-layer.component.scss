@@ -1,0 +1,50 @@
+mat-card {
+	margin-bottom: 16px;
+}
+
+.mat-list-icon {
+	color: rgba(0, 0, 0, 0.54);
+}
+
+.no-mappings {
+	height: 300px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.no-mappings__icons {
+	display: flex;
+	direction: row;
+	margin-top: 16px;
+	margin-bottom: 48px;
+}
+
+.no-mappings__icon {
+	font-size: 80px;
+	width: 80px;
+	height: 80px;
+	opacity: .6;
+}
+
+.no-mappings__icon--margin {
+	margin: 0 8px;
+}
+
+.no-mappings__title {
+	font: 400 28px/36px Roboto, "Helvetica Neue", sans-serif;
+	width: 600px;
+	opacity: .6;
+	text-align: center;
+	margin: 0 16px 16px 16px;
+}
+
+.subtitle {
+	color: rgba(0, 0, 0, 0.54);
+}
+
+.invalid-credentials {
+	color: #F44336;
+}

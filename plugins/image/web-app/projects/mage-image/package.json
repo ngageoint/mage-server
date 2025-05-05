@@ -1,9 +1,12 @@
 {
   "name": "@ngageoint/mage.image.web-app.admin",
   "version": "0.0.1",
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "peerDependencies": {
-    "@angular/common": "^8.2.14",
-    "@angular/core": "^8.2.14",
-    "@uirouter/angular-hybrid": "^10.0.1"
+    "@angular/common": "^14.2.12",
+    "@angular/core": "^14.2.12",
+    "@uirouter/angular-hybrid": "^14.0.0"
   }
 }

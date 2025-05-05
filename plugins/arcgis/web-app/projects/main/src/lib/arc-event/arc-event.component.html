@@ -1,0 +1,63 @@
+<div>
+    <mat-card appearance="outlined">
+      <mat-card-title>Events</mat-card-title>
+      <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
+    <mat-card-content>
+      <section class="arc-event-sync">
+        <div *ngIf="!model.events.length">
+          There are no events synchronizing to ArcGIS layers.
+          <mat-divider></mat-divider>
+        </div>
+
+        <mat-list>
+          <ng-container *ngFor="let event of model.events; let last = last">
+            <mat-list-item class="arcEvent">
+              <div class="arcEvent__info">
+                <div>
+                  {{ event.name }}
+                </div>
+                <div *ngIf="event.layers.length; else noLayers">
+                  <div>
+                    <ng-container *ngFor="let featureLayer of event.layers; let i = index">
+                      {{ layerDisplay(featureLayer) }}<span *ngIf="i < event.layers.length - 1">, </span>
+                    </ng-container>
+                  </div>
+                </div>
+                
+                <ng-template #noLayers>
+                  <div>This event is not synchronizing to any ArcGIS layers.</div>
+                </ng-template>
+              </div>
+              <div class="arcEvent__icons">
+                <a mat-icon-button color="primary" href="/#/admin/events/{{event.id}}" target="_blank">
+                  <mat-icon>open_in_new</mat-icon>
+                </a>
+                <button mat-icon-button color="primary" (click)="onEditEvent(event)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </div>
+            </mat-list-item>
+            <mat-divider *ngIf="!last"></mat-divider>
+          </ng-container>
+        </mat-list>        
+      </section>
+    </mat-card-content>
+  </mat-card>
+
+  <ng-template #editEventDialog let-data>
+  <h2 matDialogTitle>ArcGIS layers that MAGE event named {{currentEditingEvent.name}} is synchronizing</h2>
+  <mat-dialog-content>
+    <div class="arc-layers" *ngFor="let arcLayer of layers">
+      <div class="featureLayer__value">
+        <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
+        {{layerDisplay(arcLayer)}}
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose
+      (click)="saveChanges()">SAVE</button>
+  </mat-dialog-actions>
+</ng-template>
+</div>

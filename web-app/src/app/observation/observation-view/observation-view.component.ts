@@ -1,13 +1,16 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
+import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment'
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { LocalStorageService } from '../../http/local-storage.service';
+import { MapService } from '../../map/map.service';
+import { EventService } from '../../event/event.service';
+import { UserService } from '../../user/user.service';
 
 @Component({
   selector: 'observation-view',
@@ -44,7 +47,6 @@ export class ObservationViewComponent implements OnChanges {
     description?: string
   } = { open: false }
 
-  // TODO: define types for these
   observationForm: any
   primaryFeedField: any = {}
   secondaryFeedField: any = {}
@@ -52,11 +54,11 @@ export class ObservationViewComponent implements OnChanges {
   constructor(
     private dialog: MatDialog,
     private bottomSheet: MatBottomSheet,
-    @Inject(MapService) private mapService: any,
-    @Inject(EventService) private eventService: any,
-    @Inject(UserService) private userService: any,
+    private mapService: MapService,
+    private eventService: EventService,
+    private userService: UserService,
     private feedPanelService: FeedPanelService,
-    @Inject(LocalStorageService) private localStorageService: any
+   private localStorageService: LocalStorageService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -77,12 +79,12 @@ export class ObservationViewComponent implements OnChanges {
 
   toggleFavorite(): void {
     if (this.isUserFavorite) {
-      this.eventService.removeObservationFavorite(this.observation).then(observation => {
+      this.eventService.removeObservationFavorite(this.observation).subscribe(observation => {
         this.observation.favoriteUserIds = observation.favoriteUserIds
         this.isUserFavorite = false
       });
     } else {
-      this.eventService.addObservationFavorite(this.observation).then(observation => {
+      this.eventService.addObservationFavorite(this.observation).subscribe(observation => {
         this.observation.favoriteUserIds = observation.favoriteUserIds
         this.isUserFavorite = true
       })
@@ -106,13 +108,13 @@ export class ObservationViewComponent implements OnChanges {
   }
 
   markAsImportant(): void {
-    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).then(() => {
+    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).subscribe(() => {
       this.importantEditor.open = false
     })
   }
 
   clearImportant(): void {
-    this.eventService.clearObservationAsImportant(this.observation).then(() => {
+    this.eventService.clearObservationAsImportant(this.observation).subscribe(() => {
       this.importantEditor.open = false
       delete this.importantEditor.description
     })
@@ -170,7 +172,7 @@ export class ObservationViewComponent implements OnChanges {
     const aclPermissions = myAccess.permissions || []
     this.canEditImportant = this.userService.myself.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
 
-    const formMap = this.eventService.getFormsForEvent(this.event).reduce((map, form) => {
+    const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce((map, form) => {
       map[form.id] = form
       return map
     }, {})

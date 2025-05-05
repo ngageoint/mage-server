@@ -1,6 +1,6 @@
 {
-  "name": "@ngageoint/mage.arcgis",
-  "version": "1.0.0",
+  "name": "@ngageoint/mage.arcgis.service",
+  "version": "1.0.0-beta.1",
   "description": "A mage service plugin that synchronizes mage observations to a configured ArcGIS feature layer.",
   "main": "lib/index.js",
   "files": [
@@ -13,9 +13,9 @@
   },
   "scripts": {
     "build:tsc": "tsc -b src",
-    "build": "npm-run-all build:tsc",
+    "build": "tsc -b src",
     "test:run": "jest lib",
-    "test": "npm-run-all build test:run",
+    "test": "tsc -b src && jest lib",
     "clean": "rm -rf lib"
   },
   "repository": {
@@ -38,22 +38,26 @@
   },
   "homepage": "https://github.com/ngageoint/mage-server#readme",
   "dependencies": {
+    "@esri/arcgis-rest-feature-service": "4.1.0",
+    "@esri/arcgis-rest-request": "4.3.0",
     "@terraformer/arcgis": "2.1.2",
-    "@types/geojson": "^7946.0.7",
-    "form-data": "^4.0.0"
+    "form-data": "4.0.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.2.0-beta",
-    "express": "^4.17.0"
+    "@ngageoint/mage.service": ">=6.3.0-beta.8",
+    "express": "4.21.2"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/jest": "^26.0.3",
-    "cpy-cli": "^3.1.1",
-    "jest": "^26.1.0",
-    "nock": "^12.0.3",
-    "npm-run-all": "^4.1.5",
-    "ts-jest": "^26.1.1",
-    "typescript": "^4.6.3"
+    "@eslint/js": "9.24.0",
+    "@types/express": "4.17.21",
+    "@types/geojson": "7946.0.16",
+    "@types/jest": "29.5.14",
+    "eslint": "9.24.0",
+    "eslint-plugin-jsdoc": "50.6.9",
+    "jest": "29.7.0",
+    "nock": "12.0.3",
+    "ts-jest": "29.2.6",
+    "typescript": "5.8.2",
+    "typescript-eslint": "8.29.1"
   }
 }

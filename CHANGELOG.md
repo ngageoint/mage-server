@@ -8,6 +8,20 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+- The _About_ page displays system information, including Node and MongoDB versions.
+  - The new `READ_SYSTEM_INFO` role restricts access to system information.
+- Support for Mongoose 6.x
+- Support for Webpack 5.x
+- Support for Angular 14.x
+- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x.
+- The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
+- [GARS](https://github.com/ngageoint/gars-js) grid overlay
+- [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
+
+##### Bug fixes
+- Single observation download bug
+- Protect against disabling all authentications.
+- Problem with OAuth web login
 
 ## [6.2.13](https://github.com/ngageoint/mage-server/releases/tag/6.2.13)
 ### Service

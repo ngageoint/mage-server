@@ -17,7 +17,7 @@ export class PagingDataSource<T> extends DataSource<T> {
     super()
   }
 
-  connect(collectionViewer: CollectionViewer): Observable<T[]> {
+  connect(collectionViewer: CollectionViewer): Observable<readonly T[]> {
     this.subscription.add(collectionViewer.viewChange.subscribe(range => {
       const startPage = this.pageForItemIndex(range.start)
       const endPage = this.pageForItemIndex(range.end - 1)

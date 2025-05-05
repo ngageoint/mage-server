@@ -10,6 +10,7 @@ node_modules
 coverage/
 docker/database/
 docker/server/resources/
+server/resources
 npm-debug.log
 pnpm-debug.log
 scratch/
@@ -19,3 +20,4 @@ scratch/
 /docker/auth-idp/ldap/db/*
 # this line must be last
 !.gitkeep
+.angular

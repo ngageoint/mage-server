@@ -1,11 +1,11 @@
-import mongoose, { DocumentToObjectOptions } from 'mongoose'
+import mongoose, { ToObjectOptions } from 'mongoose'
 import { UserDocument } from './user'
 import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventAccessType, EventRole } from '../entities/events/entities.events'
 import { Team, TeamMemberRole } from '../entities/teams/entities.teams'
 import { Form, FormField, FormFieldChoice } from '../entities/events/entities.events.forms'
 import { PageInfo } from '../utilities/paging';
 
-export interface MageEventDocumentToObjectOptions extends DocumentToObjectOptions {
+export interface MageEventDocumentToObjectOptions extends ToObjectOptions {
   access: { user: UserDocument, permission: EventAccessType }
   projection: any
 }
@@ -34,7 +34,7 @@ export type MageEventDocument = Omit<mongoose.Document, '_id' | 'id'> & Omit<Mag
   layerIds: mongoose.Types.ObjectId[]
   acl: MageEventDocumentAcl
   toObject(options?: MageEventDocumentToObjectOptions): any
-  toJSON(options: DocumentToObjectOptions): MageEventAttrs
+  toJSON(options: ToObjectOptions): MageEventAttrs
 }
 
 export interface MageEventDocumentAcl {

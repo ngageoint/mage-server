@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, getTestBed, tick, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, getTestBed, tick, fakeAsync, waitForAsync } from '@angular/core/testing';
 
 import { SearchComponent, SearchState } from './search.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,7 +21,7 @@ describe('SearchComponent', () => {
   let injector: TestBed;
   let service: PlacenameSearchService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, HttpClientTestingModule, MatCardModule, MatButtonModule, MatIconModule, MatInputModule, MatListModule, MatProgressSpinnerModule, MatSnackBarModule ],
       declarations: [ SearchComponent ],
@@ -36,7 +36,7 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
 
     injector = getTestBed();
-    service = injector.get(PlacenameSearchService);
+    service = injector.inject(PlacenameSearchService);
   });
 
   it('should create', () => {
@@ -85,7 +85,7 @@ describe('SearchComponent', () => {
 
     const input = fixture.debugElement.query(By.css('input')).nativeElement
     input.value = "test"
-    
+
     const event = new KeyboardEvent("keydown", {
       "key": "Enter"
     });

@@ -1,15 +1,16 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card'
 import { MatDividerModule } from '@angular/material/divider'
 import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { GeometryModule } from 'src/app/geometry/geometry.module';
 import { MapClipComponent } from 'src/app/map/clip/clip.component';
-import { LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { FeedItemComponent } from './feed-item.component';
 import { Component, ViewChild } from '@angular/core';
 import { MomentPipe } from 'src/app/moment/moment.pipe';
 import { Feed } from 'core-lib-src/feed';
+import { MapService } from 'src/app/map/map.service';
+import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 class MockLocalStorageService {
   getTimeFormat(): string {
@@ -79,7 +80,7 @@ describe('FeedItemComponent', () => {
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       providers: [{
         provide: MapService,

@@ -7,28 +7,23 @@ const stream = require('stream')
 const util = require('util')
 const JSZip = require('jszip')
 const { Csv: CsvExporter } = require('../../lib/export/csv')
-const MockToken = require('../mockToken')
-const TokenModel = mongoose.model('Token')
+const createToken = require('../mockToken')
 
-require('chai').should();
 require('sinon-mongoose');
 
-require('../../lib/models/team');
-const TeamModel = mongoose.model('Team');
+const TokenModel = require('../../lib/models/token');
+const UserModel = require('../../lib/models/user');
+const DeviceModel = require('../../lib/models/device');
+const Observation = require('../../lib/models/observation');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-const Observation = require('../../lib/models/observation');
+require('../../lib/models/team');
+const TeamModel = mongoose.model('Team');
 
 require('../../lib/models/location');
 const LocationModel = mongoose.model('Location');
-
-const User = require('../../lib/models/user');
-const UserModel = mongoose.model('User');
-
-const Device = require('../../lib/models/device');
-const DeviceModel = mongoose.model('Device');
 
 stream.Writable.prototype.type = function () { };
 stream.Writable.prototype.attachment = function () { };
@@ -63,15 +58,13 @@ describe("csv export tests", function () {
       .expects('findById')
       .yields(null, event);
 
-    const mockUser = new UserModel(user);
-    sinon.mock(User)
+    sinon.mock(UserModel)
       .expects('getUserById')
-      .resolves(mockUser);
+      .resolves(user);
 
-    const mockDevice = new DeviceModel(device);
-    sinon.mock(Device)
+    sinon.mock(DeviceModel)
       .expects('getDeviceById')
-      .resolves(mockDevice);
+      .resolves(device);
   });
 
   afterEach(function () {
@@ -80,11 +73,9 @@ describe("csv export tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+    .expects('getToken')
+    .withArgs('12345')
+    .yields(null, createToken(userId, [permission]));;
   }
 
   function parseCSV(buffer) {

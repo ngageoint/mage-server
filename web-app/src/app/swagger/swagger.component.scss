@@ -1,19 +1,10 @@
-:host ::ng-deep pre {
-  background-color: unset;
-  border: unset;
-  border-radius: unset;
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
-:host ::ng-deep .loading::after {
-  width: unset;
-  height: unset;
-  animation: unset;
-}
-
-:host ::ng-deep .scheme-container {
-  display: none;
-}
-
-:host ::ng-deep .info {
-  margin: 50px 0 16px;
+.title  {
+  margin-left: 16px;
 }

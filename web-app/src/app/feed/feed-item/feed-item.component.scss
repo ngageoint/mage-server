@@ -1,7 +1,29 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
 mat-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  background-color: white;
+}
+
+.title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: mat.get-color-from-palette($app-primary);
+}
+
+.feed-item {
+  position: absolute;
+  top: 64px;
+  bottom: 0;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.feed-item__card {
+  margin: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
 .mat-list-base {

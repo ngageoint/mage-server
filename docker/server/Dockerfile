@@ -1,9 +1,4 @@
-FROM node:18-slim
-
-ARG service_version=latest
-ARG web_version=${service_version}
-ARG image_version=latest
-ARG msi_version=latest
+FROM registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
 
 LABEL author="NGA"
 
@@ -17,16 +12,26 @@ RUN groupadd -r mage \
     && chown mage:mage /var/lib/mage
 
 USER mage
-ENV MAGE_HOME /home/mage/instance
+ENV MAGE_HOME=/home/mage/instance
 WORKDIR ${MAGE_HOME}
 RUN ls -l \
-    && npm i --omit dev @ngageoint/mage.service@${service_version} \
-    && npm i --omit dev @ngageoint/mage.web-app@${web_version} \
-    && npm i --omit dev @ngageoint/mage.image.service@${image_version} \
-    && npm i --omit dev @ngageoint/mage.nga-msi@${msi_version} \
+    && npm i --omit dev @ngageoint/mage.service@6.3.0-beta.8 \
+    && npm i --omit dev @ngageoint/mage.web-app@6.3.0-beta.8 \
+    && npm i --omit dev @ngageoint/mage.arcgis.service@1.0.0-beta.1 \
+    && npm i --omit dev @ngageoint/mage.arcgis.web-app@1.0.0 \
+    && npm i --omit dev @ngageoint/mage.sftp.service@1.0.0-beta.1 \
+    && npm i --omit dev @ngageoint/mage.sftp.web@1.0.0-beta.1 \
+    && npm i --omit dev @ngageoint/mage.nga-msi@1.0.5 \
+    && npm i --omit dev @ngageoint/mage.image.service@1.1.0-beta.2 \
     && ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage
 EXPOSE 4242
 
-ENTRYPOINT [ "./mage.service", "--plugin", "@ngageoint/mage.image.service", "--plugin", "@ngageoint/mage.nga-msi" ]
+ENTRYPOINT [ "./mage.service", \
+            "--plugin", "@ngageoint/mage.arcgis.service", \
+            "--plugin", "@ngageoint/mage.sftp.service", \
+            "--plugin", "@ngageoint/mage.nga-msi", \
+            "--plugin", "@ngageoint/mage.image.service", \
+            "--web-plugin", "@ngageoint/mage.arcgis.web-app", \
+            "--web-plugin", "@ngageoint/mage.sftp.web"]

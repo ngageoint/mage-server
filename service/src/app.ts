@@ -6,6 +6,7 @@ import fs from 'fs-extra'
 import mongoose from 'mongoose'
 import express from 'express'
 import util from 'util'
+import apiConfig from './config';
 import { MongooseFeedServiceTypeRepository, FeedServiceTypeIdentityModel, MongooseFeedServiceRepository, FeedServiceModel, MongooseFeedRepository, FeedModel } from './adapters/feeds/adapters.feeds.db.mongoose'
 import { waitForDefaultMongooseConnection } from './adapters/adapters.db.mongoose'
 import { FeedServiceTypeRepository, FeedServiceRepository, FeedRepository } from './entities/feeds/entities.feeds'
@@ -40,6 +41,7 @@ import { UserRepositoryToken } from './plugins.api/plugins.api.users'
 import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
 import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
 import { UserRepository, UserExpanded } from './entities/users/entities.users'
+import { EnvironmentService } from './entities/systemInfo/entities.systemInfo'
 import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
 import { UsersAppLayer, UsersRoutes } from './adapters/users/adapters.users.controllers.web'
 import { SearchUsers } from './app.impl/users/app.impl.users'
@@ -56,6 +58,14 @@ import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 import { EventEmitter } from 'events'
+import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
+import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
+import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
+import Settings from "./models/setting";
+import AuthenticationConfiguration from "./models/authenticationconfiguration";
+import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
+import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
+import { RoleBasedSystemInfoPermissionService } from './permissions/permissions.systemInfo'
 import { SettingsAppLayer, SettingsRoutes } from './adapters/settings/adapters.settings.controllers.web'
 import { MongooseSettingsRepository, SettingsModel } from './adapters/settings/adapters.settings.db.mongoose'
 import { FetchMapSettings, UpdateMapSettings } from './app.impl/settings/app.impl.settings'
@@ -129,10 +139,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase()
   const repos = await initRepositories(dbLayer, config)
   const appLayer = await initAppLayer(repos)
-
-  const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
-  const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
-  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
+  const { webController, addPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
+  const routesForPluginId: {[pluginId: string]: WebRoutesHooks } = {}
+  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
     routesForPluginId[pluginId] = initPluginRoutes
   }
   const globalScopeServices = new Map<InjectionToken<any>, any>([
@@ -182,7 +191,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   }
   const pluginRoutePathsDescending = Object.keys(routesForPluginId).sort().reverse()
   for (const pluginId of pluginRoutePathsDescending) {
-    addAuthenticatedPluginRoutes(pluginId, routesForPluginId[pluginId])
+    addPluginRoutes(pluginId, routesForPluginId[pluginId])
   }
 
   try {
@@ -262,7 +271,8 @@ type AppLayer = {
   },
   icons: StaticIconsAppLayer,
   users: UsersAppLayer,
-  settings: SettingsAppLayer
+  systemInfo: SystemInfoAppLayer,
+  settings: SettingsAppLayer,
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -272,12 +282,12 @@ async function initDatabase(): Promise<DatabaseLayer> {
     const pluginMongoose = new mongoose.Mongoose()
     // TODO: add event listeners to plugin connections to log how plugins are using the connection
     // TODO: bufferCommands probably exists on mongoose 5+ types. 4 supports the option, but the typedefs don't
-    const pluginOptions: mongoose.ConnectionOptions & { bufferCommands: boolean } = {
+    const pluginOptions: mongoose.ConnectOptions & { bufferCommands: boolean } = {
       ...options,
-      // TODO: mongoose 5+ minPoolSize, maxPoolSize
-      poolSize: 5,
+      minPoolSize: 5,
+      maxPoolSize: 5,
       bufferCommands: false,
-      config: { autoIndex: false },
+      autoIndex: false
     }
     return () => {
       console.info(`get db connection for plugin ${pluginId}`)
@@ -332,9 +342,10 @@ type Repositories = {
   users: {
     userRepo: UserRepository
   },
+  enviromentInfo: EnvironmentService,
   settings: {
     settingRepo: SettingRepository
-  }
+  },
 }
 
   // TODO: the real thing
@@ -364,6 +375,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
   const userRepo = new MongooseUserRepository(models.users.user)
   const settingRepo = new MongooseSettingsRepository(models.settings.setting)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
+  const systemInfoService = new EnvironmentServiceImpl(models.conn)
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore
   }
@@ -384,9 +396,10 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     users: {
       userRepo
     },
+    enviromentInfo: systemInfoService,
     settings: {
       settingRepo
-    }
+    },
   }
 }
 
@@ -396,6 +409,7 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
+  const systemInfo = initSystemInfoAppLayer(repos)
   const settings = await initSettingsAppLayer(repos)
   return {
     events,
@@ -403,7 +417,8 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
     feeds,
     icons,
     users,
-    settings
+    systemInfo,
+    settings,
   }
 }
 
@@ -485,6 +500,22 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
   }
 }
 
+function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
+  const permissionsService = new RoleBasedSystemInfoPermissionService()
+  const versionInfo = apiConfig.api.version
+  return {
+    readSystemInfo: CreateReadSystemInfo(
+      repos.enviromentInfo,
+      versionInfo,
+      Settings,
+      AuthenticationConfiguration,
+      AuthenticationConfigurationTransformer,
+      permissionsService
+    ),
+    permissionsService
+  }
+}
+
 async function initSettingsAppLayer(repos: Repositories): Promise<AppLayer['settings']> {
   const mapPermissions = new RoleBasedMapPermissionService()
   const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions)
@@ -501,8 +532,11 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
 
 const observationEventScopeKey = 'observationEventScope' as const
 
-async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
-  Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
+async function initWebLayer(
+  repos: Repositories,
+  app: AppLayer,
+  webUIPlugins: string[]
+): Promise<{ webController: express.Application, addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void }> {
   // load routes the old way
   const webLayer = await import('./express')
   const webController = webLayer.app
@@ -543,6 +577,10 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   webController.use('/api/icons', [
     bearerAuth,
     iconsRoutes
+  ])
+  const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
+  webController.use('/api', [
+    systemInfoRoutes
   ])
   const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
     const context: observationsApi.ObservationRequestContext = {
@@ -604,21 +642,29 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   }
   try {
     const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json')
-    const webappDir = path.dirname(webappPackagePath)
-    webController.use(express.static(webappDir))
+    const webAppPath = path.dirname(webappPackagePath)
+    webController.use(express.static(path.join(webAppPath, 'app')))
+    webController.use('/admin', express.static(path.join(webAppPath, 'admin')))
   }
   catch (err) {
     console.warn('failed to load mage web app package', err)
   }
   return {
     webController,
-    addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
-      const routes = initPluginRoutes(pluginAppRequestContext)
-      webController.use(`/plugins/${pluginId}`, [ bearerAuth, routes ])
+    addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
+      if (initPluginRoutes.webRoutes.public) {
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [routes])
+      }
+
+      if (initPluginRoutes.webRoutes.protected) {
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [bearerAuth, routes])
+      }
     }
   }
 }
-
+ 
 function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),

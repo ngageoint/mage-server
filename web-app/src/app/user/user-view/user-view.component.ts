@@ -1,8 +1,11 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { LatLng } from 'leaflet';
-import { PointAccuracy } from 'src/app/map/clip/clip.component';
-import { EventService, FilterService, LocationService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { PointAccuracy } from '../../map/clip/clip.component';
 import * as moment from 'moment'
+import { MapService } from '../../map/map.service';
+import { LocationService } from '../location/location.service';
+import { EventService } from '../../event/event.service';
+import { FilterService } from '../../filter/filter.service';
 
 @Component({
   selector: 'user-view',
@@ -20,10 +23,10 @@ export class UserViewComponent implements OnInit, OnChanges {
   userObservations = []
 
   constructor(
-    @Inject(MapService) private mapService: any,
-    @Inject(EventService) private eventService: any,
-    @Inject(FilterService) private filterService: any,
-    @Inject(LocationService) private locationService: any) {}
+    private mapService: MapService,
+    private eventService: EventService,
+    private filterService: FilterService,
+    private locationService: LocationService) {}
 
   ngOnInit(): void {
     this.event = this.filterService.getEvent();

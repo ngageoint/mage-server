@@ -1,22 +1,23 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
+const TeamModel = mongoose.model('Team');
 
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
-describe("team update tests", function() {
+describe("team update tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -35,33 +36,31 @@ describe("team update tests", function() {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
-  it("should update team", function(done) {
+  it("should update team", function (done) {
     mockTokenWithPermission('UPDATE_TEAM');
 
-    var teamId = mongoose.Types.ObjectId();
-    var eventId = 1;
-    var mockTeam = new TeamModel({
+    const teamId = mongoose.Types.ObjectId();
+    const eventId = 1;
+    const mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
       teamEventId: eventId
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({_id: teamId.toString()})
+      .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
@@ -81,14 +80,14 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should update team with acl access", function(done) {
+  it("should update team with acl access", function (done) {
     mockTokenWithPermission('');
 
-    var teamId = mongoose.Types.ObjectId();
-    var eventId = 1;
-    var acl = {};
+    const teamId = mongoose.Types.ObjectId();
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
       teamEventId: eventId,
@@ -96,7 +95,7 @@ describe("team update tests", function() {
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({_id: teamId.toString()})
+      .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
@@ -116,14 +115,14 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should reject update team without acl access", function(done) {
+  it("should reject update team without acl access", function (done) {
     mockTokenWithPermission('');
 
-    var teamId = mongoose.Types.ObjectId();
-    var eventId = 1;
-    var acl = {};
+    const teamId = mongoose.Types.ObjectId();
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'GUEST';
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
       teamEventId: eventId,
@@ -131,7 +130,7 @@ describe("team update tests", function() {
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({_id: teamId.toString()})
+      .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
@@ -147,14 +146,14 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should update user in acl for team", function(done) {
+  it("should update user in acl for team", function (done) {
     mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = mongoose.Types.ObjectId();
-    var acl = {};
+    const teamId = mongoose.Types.ObjectId();
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
       acl: acl
@@ -165,11 +164,11 @@ describe("team update tests", function() {
       .chain('exec')
       .yields(null, mockTeam);
 
-    var update = {};
+    const update = {};
     update['acl.' + aclUserId.toString()] = 'OWNER';
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
-      .withArgs({_id: teamId}, update)
+      .withArgs({ _id: teamId }, update)
       .yields(null, mockTeam);
 
     request(app)
@@ -183,14 +182,14 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should delete user in acl for team", function(done) {
+  it("should delete user in acl for team", function (done) {
     mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = mongoose.Types.ObjectId();
-    var acl = {};
+    const teamId = mongoose.Types.ObjectId();
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
       acl: acl
@@ -201,11 +200,11 @@ describe("team update tests", function() {
       .chain('exec')
       .yields(null, mockTeam);
 
-    var args = { $unset: {} };
+    const args = { $unset: {} };
     args.$unset['acl.' + aclUserId.toString()] = true;
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
-      .withArgs({_id: teamId}, args)
+      .withArgs({ _id: teamId }, args)
       .yields(null, mockTeam);
 
     request(app)
@@ -217,14 +216,14 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should reject update user in acl with invalid userId", function(done) {
+  it("should reject update user in acl with invalid userId", function (done) {
     mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = mongoose.Types.ObjectId();
-    var acl = {};
+    const teamId = mongoose.Types.ObjectId();
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
       acl: acl
@@ -235,11 +234,11 @@ describe("team update tests", function() {
       .chain('exec')
       .yields(null, mockTeam);
 
-    var update = {};
+    const update = {};
     update['acl.' + aclUserId.toString()] = 'MANAGER';
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
-      .withArgs({_id: teamId}, update)
+      .withArgs({ _id: teamId }, update)
       .yields(null, mockTeam);
 
     request(app)
@@ -253,14 +252,14 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should reject update user in acl with invalid role", function(done) {
+  it("should reject update user in acl with invalid role", function (done) {
     mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = mongoose.Types.ObjectId();
-    var acl = {};
+    const teamId = mongoose.Types.ObjectId();
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
       acl: acl
@@ -271,11 +270,11 @@ describe("team update tests", function() {
       .chain('exec')
       .yields(null, mockTeam);
 
-    var update = {};
+    const update = {};
     update['acl.' + aclUserId.toString()] = 'MANAGER';
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
-      .withArgs({_id: teamId}, update)
+      .withArgs({ _id: teamId }, update)
       .yields(null, mockTeam);
 
     request(app)

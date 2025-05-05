@@ -1,5 +1,5 @@
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 import { FormsModule } from "@angular/forms";
 import { MatCardModule } from "@angular/material/card";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -20,10 +20,10 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatTableModule } from "@angular/material/table";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { Observable, of, Subject } from "rxjs";
-import { FilterService } from "src/app/upgrade/ajs-upgraded-providers";
 import { ExportDialogComponent } from "../export-dialog.component";
 import { ExportRequest, ExportResponse, Export, ExportService } from "../export.service";
 import { ExportDataComponent } from "./export-data.component";
+import { FilterService } from "src/app/filter/filter.service";
 
 class MockExportService {
     getExports(): Observable<any> {
@@ -84,29 +84,29 @@ class MockExportService {
 
 class MockSnackbarRef {
     private readonly _afterDismissed = new Subject<MatSnackBarDismiss>()
-  
+
     afterDismissed(): Observable<MatSnackBarDismiss> {
       return this._afterDismissed
     }
-  
+
     dismiss(): void {
       this._afterDismissed.next({ dismissedByAction: false })
       this._afterDismissed.complete()
     }
-  
+
     dismissWithAction(): void {
       this._afterDismissed.next({ dismissedByAction: true })
       this._afterDismissed.complete()
     }
   }
-  
+
 class MockSnackbar {
     private snackbarRef = new MockSnackbarRef()
-  
+
     get _openedSnackBarRef(): any {
       return this.snackbarRef
     }
-  
+
     open(): any {
       return this.snackbarRef
     }
@@ -116,7 +116,7 @@ describe('ExportDataComponent', () => {
     let component: ExportDataComponent;
     let fixture: ComponentFixture<ExportDataComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         const mockFilterService = { getEvent: (): any => { return { id: 1 } } };
 
         TestBed.configureTestingModule({

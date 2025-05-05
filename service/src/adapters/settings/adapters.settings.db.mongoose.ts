@@ -10,17 +10,6 @@ export const SettingsSchema = legacy.Model.schema
 
 export class MongooseSettingsRepository extends BaseMongooseRepository<SettingsDocument, SettingsModel, MapSettings> implements SettingRepository {
 
-  constructor(model: mongoose.Model<SettingsDocument>) {
-    super(model, {
-      docToEntity: doc => {
-        const json = doc.toJSON()
-        return {
-          ...json
-        }
-      }
-    })
-  }
-
   async getMapSettings(): Promise<MapSettings | null> {
     const document = await this.model.findOne({ type: 'map' })
     return document?.settings

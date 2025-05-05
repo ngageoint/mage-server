@@ -34,31 +34,29 @@ const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryption
 const secureMask = '*****';
 
 function DbAuthenticationConfigurationToObject(config, ret, options) {
-  if ('function' !== typeof config.ownerDocument) {
-    delete ret.__v;
+  delete ret.__v;
 
-    if (options.whitelist) {
-      if (config.type === 'local') {
-        return;
+  if (options.whitelist) {
+    if (config.type === 'local') {
+      return;
+    }
+
+    Object.keys(ret).forEach(key => {
+      if (!whitelist.includes(key)) {
+        delete ret[key];
       }
-
-      Object.keys(ret).forEach(key => {
-        if (!whitelist.includes(key)) {
-          delete ret[key];
-        }
-      });
-    }
-
-    if (options.blacklist) {
-      Object.keys(ret.settings).forEach(key => {
-        if (blacklist.includes(key.toLowerCase())) {
-          ret.settings[key] = secureMask;
-        }
-      });
-    }
-
-    ret.icon = ret.icon ? ret.icon.toString('base64') : null;
+    });
   }
+
+  if (options.blacklist) {
+    Object.keys(ret.settings).forEach(key => {
+      if (blacklist.includes(key.toLowerCase())) {
+        ret.settings[key] = secureMask;
+      }
+    });
+  }
+
+  ret.icon = ret.icon ? ret.icon.toString('base64') : null;
 }
 
 exports.transform = DbAuthenticationConfigurationToObject;

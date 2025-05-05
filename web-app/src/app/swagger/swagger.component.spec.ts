@@ -8,9 +8,9 @@ describe('SwaggerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SwaggerComponent ]
+      declarations: [SwaggerComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

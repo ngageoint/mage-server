@@ -1,27 +1,27 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , should = require('chai').should()
   , sinon = require('sinon')
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , TokenModel = mongoose.model('Token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('chai').should();
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
+const TeamModel = mongoose.model('Team');
 
 require('../../lib/models/event');
-var EventModel = mongoose.model('Event');
+const EventModel = mongoose.model('Event');
 
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
-describe("event update tests", function() {
+describe("event update tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -40,25 +40,25 @@ describe("event update tests", function() {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should update event", function(done) {
+  it("should update event", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -83,11 +83,11 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should remove event description", function(done) {
+  it("should remove event description", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -112,10 +112,10 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should reject event with no fields", function(done) {
+  it("should reject event with no fields", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
+    const eventId = 1;
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, new EventModel({
@@ -123,15 +123,15 @@ describe("event update tests", function() {
         name: 'testEvent'
       }));
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
     }];
 
     sinon.mock(TeamModel)
       .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
       .yields(null, mockTeams);
@@ -151,7 +151,7 @@ describe("event update tests", function() {
         }]
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         var error = res.text;
         should.exist(error);
         error.should.be.a('string');
@@ -164,10 +164,10 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should reject event with invalid field in form", function(done) {
+  it("should reject event with invalid field in form", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
+    const eventId = 1;
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, new EventModel({
@@ -190,22 +190,22 @@ describe("event update tests", function() {
             name: 'timestamp',
             required: true,
             type: 'date'
-          },{
+          }, {
             name: 'geometry',
             required: true,
             type: 'geometry'
-          },{
+          }, {
             name: 'type',
             required: true,
             type: 'dropdown'
-          },{
+          }, {
             name: 'invalid',
             type: 'invalid'
           }]
         }]
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         var error = res.text;
         should.exist(error);
         error.should.be.a('string');
@@ -219,11 +219,11 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should add team to event", function(done) {
+  it("should add team to event", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -231,7 +231,7 @@ describe("event update tests", function() {
       .expects('findById')
       .yields(null, mockEvent);
 
-    var teamId = mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockEvent);
@@ -247,10 +247,10 @@ describe("event update tests", function() {
           fields: [{
             name: 'timestamp',
             required: true
-          },{
+          }, {
             name: 'geometry',
             required: true
-          },{
+          }, {
             name: 'type',
             required: true
           }]
@@ -260,11 +260,11 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should not add team that belongs to another event", function(done) {
+  it("should not add team that belongs to another event", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -272,8 +272,8 @@ describe("event update tests", function() {
       .expects('findById')
       .yields(null, mockEvent);
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeams = [{
       id: mongoose.Types.ObjectId(),
       name: 'Mock Team',
       teamEventId: 2
@@ -290,20 +290,20 @@ describe("event update tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        team: {id: teamId.toString()}
+        team: { id: teamId.toString() }
       })
       .expect(405)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Cannot add a team that belongs specifically to another event");
       })
       .end(done);
   });
 
-  it("should mark event as complete", function(done) {
+  it("should mark event as complete", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -327,10 +327,10 @@ describe("event update tests", function() {
           fields: [{
             name: 'timestamp',
             required: true
-          },{
+          }, {
             name: 'geometry',
             required: true
-          },{
+          }, {
             name: 'type',
             required: true
           }]
@@ -340,11 +340,11 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should mark event as active", function(done) {
+  it("should mark event as active", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -368,10 +368,10 @@ describe("event update tests", function() {
           fields: [{
             name: 'timestamp',
             required: true
-          },{
+          }, {
             name: 'geometry',
             required: true
-          },{
+          }, {
             name: 'type',
             required: true
           }]
@@ -381,13 +381,13 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should update event if update access in acl", function(done) {
+  it("should update event if update access in acl", function (done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
-    var acl = {};
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: acl
@@ -413,11 +413,11 @@ describe("event update tests", function() {
   });
 
 
-  it("should reject update to event if not in acl", function(done) {
+  it("should reject update to event if not in acl", function (done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: {}
@@ -437,13 +437,13 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should reject update to event if no update access in acl", function(done) {
+  it("should reject update to event if no update access in acl", function (done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
-    var acl = {};
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'GUEST';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: acl
@@ -464,27 +464,27 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should update user in acl for event", function(done) {
+  it("should update user in acl for event", function (done) {
     mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
     }];
 
     sinon.mock(TeamModel)
       .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
       .yields(null, mockTeams);
 
-    var eventId = 1;
-    var acl = {};
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: acl
@@ -494,26 +494,27 @@ describe("event update tests", function() {
       .expects('findById')
       .yields(null, mockEvent);
 
-    var eventUpdate = {};
+    const mockTeam = {
+      name: 'Mock Team'
+    };
+
+    const eventUpdate = {};
     eventUpdate['acl.' + aclUserId.toString()] = 'OWNER';
     sinon.mock(EventModel)
       .expects('findOneAndUpdate')
-      .withArgs({_id: eventId}, eventUpdate)
+      .withArgs({ _id: eventId }, eventUpdate)
       .yields(null, mockTeam);
 
-    var mockTeam = new TeamModel({
-      name: 'Mock Team'
-    });
     sinon.mock(TeamModel)
       .expects('findOne')
-      .withArgs({teamEventId: eventId})
+      .withArgs({ teamEventId: eventId })
       .yields(null, mockTeam);
 
-    var teamUpdate = {};
+    const teamUpdate = {};
     teamUpdate['acl.' + aclUserId.toString()] = 'OWNER';
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
-      .withArgs({teamEventId: eventId}, teamUpdate)
+      .withArgs({ teamEventId: eventId }, teamUpdate)
       .yields(null, mockTeam);
 
     request(app)
@@ -527,27 +528,27 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should delete user in acl for event", function(done) {
+  it("should delete user in acl for event", function (done) {
     mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
     }];
 
     sinon.mock(TeamModel)
       .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
       .yields(null, mockTeams);
 
-    var eventId = 1;
-    var acl = {};
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: acl
@@ -557,26 +558,27 @@ describe("event update tests", function() {
       .expects('findById')
       .yields(null, mockEvent);
 
-    var eventUpdate = { $unset: {} };
+      const mockTeam = {
+        name: 'Mock Team'
+      };
+
+    const eventUpdate = { $unset: {} };
     eventUpdate.$unset['acl.' + aclUserId.toString()] = true;
     sinon.mock(EventModel)
       .expects('findOneAndUpdate')
-      .withArgs({_id: eventId}, eventUpdate)
+      .withArgs({ _id: eventId }, eventUpdate)
       .yields(null, mockTeam);
 
-    var mockTeam = new TeamModel({
-      name: 'Mock Team'
-    });
     sinon.mock(TeamModel)
       .expects('findOne')
-      .withArgs({teamEventId: eventId})
+      .withArgs({ teamEventId: eventId })
       .yields(null, mockTeam);
 
-    var teamUpdate = { $unset: {} };
+    const teamUpdate = { $unset: {} };
     teamUpdate.$unset['acl.' + aclUserId.toString()] = true;
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
-      .withArgs({teamEventId: eventId}, teamUpdate)
+      .withArgs({ teamEventId: eventId }, teamUpdate)
       .yields(null, mockTeam);
 
     request(app)
@@ -588,26 +590,26 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should reject update user in acl for event with invalid userId", function(done) {
+  it("should reject update user in acl for event with invalid userId", function (done) {
     mockTokenWithPermission('');
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
     }];
 
     sinon.mock(TeamModel)
       .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
       .yields(null, mockTeams);
 
-    var eventId = 1;
-    var acl = {};
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: acl
@@ -628,26 +630,26 @@ describe("event update tests", function() {
       .end(done);
   });
 
-  it("should reject update user in acl for event with invalid role", function(done) {
+  it("should reject update user in acl for event with invalid role", function (done) {
     mockTokenWithPermission('');
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
     }];
 
     sinon.mock(TeamModel)
       .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
       .yields(null, mockTeams);
 
-    var eventId = 1;
-    var acl = {};
+    const eventId = 1;
+    const acl = {};
     acl[userId.toString()] = 'MANAGER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       acl: acl
@@ -671,8 +673,8 @@ describe("event update tests", function() {
   it("should update event with valid form restrictions", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -697,7 +699,7 @@ describe("event update tests", function() {
           id: 1,
           min: 1,
           max: 2
-        },{
+        }, {
           id: 2,
           min: 1,
           max: 2
@@ -710,8 +712,8 @@ describe("event update tests", function() {
   it("should fail to update event when minObservationForms greater than maxObservationForms", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -741,8 +743,8 @@ describe("event update tests", function() {
   it("should fail to update event when maxObservationForms is less then sum of the minimum of all individual forms", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -778,8 +780,8 @@ describe("event update tests", function() {
   it("should fail to update event when minObservationForms is greater then sum of the maximum of all individual forms", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -815,8 +817,8 @@ describe("event update tests", function() {
   it("should fail to update event when individual form min is greater than max", function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });

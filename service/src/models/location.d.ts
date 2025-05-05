@@ -37,4 +37,4 @@ export type UserLocationReadStreamOptions = Omit<UserLocationReadOptions, 'strea
 }
 
 export function getLocations(options: UserLocationReadOptions, callback: (err: any | null, results?: UserLocationDocument[]) => any): void
-export function getLocations(options: UserLocationReadStreamOptions): mongoose.QueryCursor<UserLocationDocument>
+export function getLocations(options: UserLocationReadStreamOptions): mongoose.Cursor<UserLocationDocument>

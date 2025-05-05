@@ -26,22 +26,18 @@ const request = require('supertest');
 const sinon = require('sinon');
 const should = require('chai').should();
 const expect = require('chai').expect;
-const MockToken = require('../mockToken');
 const mockfs = require('mock-fs');
 const mongoose = require('mongoose');
-const util = require('util');
-
-require('../../lib/models/token');
-const TokenModel = mongoose.model('Token');
+const createToken = require('../mockToken');
+const TokenModel = require('../../lib/models/token');
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const Authentication = require('../../lib/models/authentication');
 
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-const Authentication = require('../../lib/models/authentication');
 
 describe("user read tests", function() {
 
@@ -72,12 +68,12 @@ describe("user read tests", function() {
 
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
+    const token = createToken(userId, [ permission ]);
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, token);
+    return token;
   }
 
   it('should count users', function(done) {
@@ -376,7 +372,8 @@ describe("user read tests", function() {
   });
 
   it('should get myself', async function() {
-    mockTokenWithPermission('READ_USER');
+
+    const token = mockTokenWithPermission('READ_USER');
 
     const res = await request(app)
       .get('/api/users/myself')
@@ -387,6 +384,8 @@ describe("user read tests", function() {
     expect(res.type).to.match(/json/);
     expect(res.body).be.an('object');
     expect(res.body.id).to.equal(userId.toString());
+    expect(res.body.role.id).to.equal(token.user.roleId._id.toHexString())
+    expect(res.body.role.permissions).to.deep.equal(token.user.roleId.permissions)
   });
 
   it('should get user avatar', function(done) {

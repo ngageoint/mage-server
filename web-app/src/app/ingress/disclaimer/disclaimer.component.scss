@@ -1,0 +1,45 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  height: 30vh;
+}
+
+.header__title {
+  font: 400 34px / 40px Roboto, "Helvetica Neue", sans-serif;
+  color: $primary;
+  margin-bottom: 16px;
+}
+
+.disclaimer {
+  overflow-y: scroll;
+}
+
+.disclaimer__text {
+  font: 400 16px / 20px Roboto, "Helvetica Neue", sans-serif;
+  margin-bottom: 32px;
+  opacity: 60%;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  width: 100%;
+  gap: 16px;
+}
+
+.actions__button {
+  flex: 1;
+}

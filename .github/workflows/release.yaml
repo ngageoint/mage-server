@@ -27,12 +27,11 @@ on:
   # release:
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   check_release_version:
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -40,7 +39,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: check project
@@ -57,32 +56,32 @@ jobs:
           [[ $(json version < ./web-app/projects/core-lib/package.json) = ${{ inputs.version }} ]] || exit 1
 
   build_and_test-service:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.service.yaml
 
   build_and_test-web-app:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.web-app.yaml
 
   create_release:
     name: create release
-    needs: [ config, build_and_test-service, build_and_test-web-app ]
+    needs: [config, build_and_test-service, build_and_test-web-app]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
-      - name: download service packages
-        uses: actions/download-artifact@v3
+      - name: download service artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: mage_service_packages
-      - name: download web-app packages
-        uses: actions/download-artifact@v3
+          name: mage.service-artifacts
+      - name: download web-app artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
       - name: generate instance package.json
         run: |
           (
@@ -108,35 +107,33 @@ jobs:
             ngageoint-mage.*.tgz
 
   publish_packages:
-    name:  publish packages
-    needs: [ config, create_release ]
+    name: publish packages
+    needs: [config, create_release]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: mage_service_packages
+          name: mage.service-artifacts
       - name: download web-app packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: mage_web-app_packages
-      - name: publish to package registry
-        env:
-          NPM_CONFIG_USERCONFIG: "${{ runner.temp }}/gitlab.npmrc"
+          name: mage.web-app-artifacts
+      - name: publish mage service
         run: |
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz)
-          npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
-          npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz)
-          check_version=$(tar xzOf ngageoint-mage.image.service-*.tgz package/package.json | json version)
-          echo "checking @ngageoint/mage.image.service@${check_version}"
-          [[ -n $(npm view @ngageoint/mage.image.service@${check_version} version) ]] || npm publish --access public $(ls -1 ngageoint-mage.image.service-*.tgz)
-          check_version=$(tar xzOf ngageoint-mage.nga-msi-*.tgz package/package.json | json version)
-          echo "checking @ngageoint/mage.nga-msi@${check_version}"
-          [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish --access public $(ls -1 ngageoint-mage.nga-msi-*.tgz)
+          npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz) || echo "skipping mage service publish..."
+      - name: publish mage web
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz) || echo "skipping mage web app publish..."
+      - name: publish mage core
+        run: |
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
+          npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz) || echo "skipping mage core publish..."

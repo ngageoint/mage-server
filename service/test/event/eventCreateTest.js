@@ -1,34 +1,28 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , mockfs = require('mock-fs')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  , CounterModel = require('../../lib/models/counter')
+  , IconModel = require('../../lib/models/icon')
+  , TeamModel =  require('../../lib/models/team')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('chai').should();
 require('sinon-mongoose');
-
-require('../../lib/models/counter');
-var CounterModel = mongoose.model('Counter');
-
-require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-require('../../lib/models/icon');
-const IconModel = mongoose.model('Icon');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
-describe("event create tests", function() {
+describe("event create tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -49,25 +43,22 @@ describe("event create tests", function() {
 
   this.timeout(300000);
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
   const userId = mongoose.Types.ObjectId();
 
-  it("should create event", function(done) {
+  it("should create event", function (done) {
     sinon.mock(TokenModel)
-      .expects('findOne').atLeast(1)
-      .withArgs({token: "12345"})
-      .chain('populate').atLeast(1)
-      .chain('exec').atLeast(1)
-      .yields(null, MockToken(userId, ['CREATE_EVENT']));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, ['CREATE_EVENT']));
 
     const eventId = 1;
     sinon.mock(CounterModel)
-      .expects('findOneAndUpdate')
-      .chain('exec')
-      .resolves({sequence: eventId });
+      .expects('getNext')
+      .resolves(eventId);
 
     const mockEvent = new EventModel({
       _id: eventId,
@@ -83,7 +74,7 @@ describe("event create tests", function() {
 
     sinon.mock(mongoose.connection.db)
       .expects('createCollection')
-      .yields(null);
+      .resolves(null);
 
     const teamId = mongoose.Types.ObjectId();
     const mockTeam = {
@@ -95,15 +86,11 @@ describe("event create tests", function() {
     const teamAcl = {};
     teamAcl[userId.toString()] = 'OWNER';
     sinon.mock(TeamModel)
-      .expects('create')
-      .withArgs(sinon.match.has('acl', teamAcl).and(sinon.match.has('teamEventId', eventId)))
+      .expects('createTeam')
       .yields(null, mockTeam);
 
     sinon.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId] } })
-      .chain('populate')
-      .chain('exec')
+      .expects('getTeamById')
       .yields(null, [mockTeam]);
 
     mockEvent.teamIds = [teamId];
@@ -119,7 +106,7 @@ describe("event create tests", function() {
     mockfs(fs);
 
     sinon.mock(IconModel)
-      .expects('findOneAndUpdate')
+      .expects('create')
       .yields(null);
 
     request(app)
@@ -132,35 +119,32 @@ describe("event create tests", function() {
           fields: [{
             name: 'timestamp',
             required: true
-          },{
+          }, {
             name: 'geometry',
             required: true
-          },{
+          }, {
             name: 'type',
             required: true
           }]
         }
       })
       .expect(201)
-      .end(function(err) {
+      .end(function (err) {
         mockfs.restore();
         done(err);
       });
   });
 
-  it("should reject event with no name", function(done) {
+  it("should reject event with no name", function (done) {
     sinon.mock(TokenModel)
-      .expects('findOne').atLeast(1)
-      .withArgs({token: "12345"})
-      .chain('populate').atLeast(1)
-      .chain('exec').atLeast(1)
-      .yields(null, MockToken(userId, ['CREATE_EVENT']));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, ['CREATE_EVENT']));
 
     const eventId = 1;
     sinon.mock(CounterModel)
-      .expects('findOneAndUpdate')
-      .chain('exec')
-      .resolves({ sequence: eventId });
+      .expects('getNext')
+      .resolves(eventId);
 
     const mockEvent = new EventModel({
       _id: eventId
@@ -178,17 +162,17 @@ describe("event create tests", function() {
           fields: [{
             name: 'timestamp',
             required: true
-          },{
+          }, {
             name: 'geometry',
             required: true
-          },{
+          }, {
             name: 'type',
             required: true
           }]
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         let error = res.text;
         should.exist(error);
         error.should.be.a('string');
@@ -203,19 +187,16 @@ describe("event create tests", function() {
       .end(done);
   });
 
-  it("should reject event with duplicate name", function(done) {
+  it("should reject event with duplicate name", async function() {
     sinon.mock(TokenModel)
-      .expects('findOne').atLeast(1)
-      .withArgs({token: "12345"})
-      .chain('populate').atLeast(1)
-      .chain('exec').atLeast(1)
-      .yields(null, MockToken(userId, ['CREATE_EVENT']));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, ['CREATE_EVENT']));
 
     const eventId = 1;
     sinon.mock(CounterModel)
-      .expects('findOneAndUpdate')
-      .chain('exec')
-      .resolves({ sequence: eventId });
+      .expects('getNext')
+      .resolves(eventId);
 
     const uniqueError = new Error('E11000 duplicate key error collection: magedb.events index: name_1 dup key: { : "Foo" }');
     uniqueError.name = 'MongoError';
@@ -224,14 +205,14 @@ describe("event create tests", function() {
     sinon.mock(EventModel.collection)
       .expects('indexInformation')
       .yields(null, {
-        name_1: [['name', 1 ]]
+        name_1: [['name', 1]]
       });
 
     sinon.mock(EventModel.collection)
-      .expects('insert')
+      .expects('insertOne')
       .yields(uniqueError, null);
 
-    request(app)
+    const res = await request(app)
       .post('/api/events')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
@@ -241,23 +222,21 @@ describe("event create tests", function() {
           fields: [{
             name: 'timestamp',
             required: true
-          },{
+          }, {
             name: 'geometry',
             required: true
-          },{
+          }, {
             name: 'type',
             required: true
           }]
         }
       })
-      .expect(400)
-      .expect(function(res) {
-        should.exist(res.body);
-        res.body.should.have.property('message').that.equals('Validation failed');
-        res.body.should.have.property('errors').that.is.an('object');
-        res.body.errors.should.have.property('name').that.is.an('object');
-        res.body.errors.name.should.have.property('message').that.equals('Event with name "Test" already exists.');
-      })
-      .end(done);
+
+    res.status.should.equal(400)
+    res.body.should.exist
+    res.body.message.should.equals('Validation failed');
+    res.body.should.have.property('errors').that.is.an('object');
+    res.body.errors.should.have.property('name').that.is.an('object');
+    res.body.errors.name.should.have.property('message').that.equals('Duplicate event name');
   });
 });

@@ -39,7 +39,7 @@ export class Exporter {
     this._filter = options.filter;
   }
 
-  requestObservations(filter: ExportFilter): mongoose.QueryCursor<ObservationModelModule.ObservationDocument> {
+  requestObservations(filter: ExportFilter): mongoose.Cursor<ObservationModelModule.ObservationDocument> {
     const options: ObservationModelModule.ObservationReadStreamOptions = {
       filter: {
         states: [ 'active' ] as [ 'active' ],
@@ -59,7 +59,7 @@ export class Exporter {
    * Return a cursor for the given location query with results ordered by user
    * ID and ascending timestamp.
    */
-  requestLocations(options: LocationFetchOptions): mongoose.QueryCursor<UserLocationModelModule.UserLocationDocument> {
+  requestLocations(options: LocationFetchOptions): mongoose.Cursor<UserLocationModelModule.UserLocationDocument> {
     const filter = {
       eventId: this._event.id
     } as { eventId: number, startDate?: Date, endDate?: Date }

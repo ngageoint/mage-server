@@ -3,11 +3,11 @@ name: build and test web-app
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
-      - web-app/**
       - .github/workflows/build_test.web-app.yaml
       - .github/workflows/config.yaml
+      - web-app/**
 
 jobs:
   config:
@@ -22,26 +22,27 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          # TODO: angular 9 build does not run on node > 14
-          node-version: 14
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
           cache-dependency-path: web-app/package-lock.json
       - name: build
         run: |
           cd web-app
           npm ci
-          npm run build
+          npm run build:prod
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: test
-        run: npm run --prefix web-app ci:test
+        run: |
+          cd web-app
+          npm run ci:test
       - name: pack
         run: |
           npm pack ./web-app/dist/core-lib
-          npm pack ./web-app/dist/app
+          npm pack ./web-app/dist
       - name: upload packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
           path: |
             ngageoint-mage.*.tgz

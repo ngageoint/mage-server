@@ -29,7 +29,8 @@ export MAGE_MONGO_URL=mongodb://127.0.0.1:27017/magedb
 # whether to use secure, TLS sockets to connect to mongo
 export MAGE_MONGO_SSL=false
 # the size of MAGE's mongodb connection pool
-export MAGE_MONGO_POOL_SIZE=5
+export MAGE_MONGO_MIN_POOL_SIZE=5
+export MAGE_MONGO_MAX_POOL_SIZE=5
 # the user name MAGE uses to authenticate to mongodb
 export MAGE_MONGO_USER=
 # the password MAGE uses to authenticate to mongodb
@@ -54,4 +55,9 @@ export MAGE_MONGO_X509_CA_CERT_FILE=
 export MAGE_MONGO_CONN_TIMEOUT=300
 # seconds between attempts to connect to mongodb
 export MAGE_MONGO_CONN_RETRY_DELAY=5
-
+# Using self-signed certs can cause issues.  If it does, set this to true. 
+# (https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation).
+export MAGE_MONGO_TLS_INSECURE=false
+# Name of the db that contains the credentials
+export MAGE_MONGO_CRED_DB_NAME=
+export SFTP_PLUGIN_CONFIG_SALT="A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"
