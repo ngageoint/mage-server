@@ -30,11 +30,6 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/arcgis/service/package-lock.json
-      - name: build mage service
-        run: |
-          cd service
-          npm ci
-          npm run build
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/arcgis/service
@@ -68,7 +63,7 @@ jobs:
       - name: package for plugin
         run: |
           cd plugins/arcgis/service
-          npm ci --production
+          npm ci --production --force
           cd ..
           npm pack ./plugins/arcgis/service
       - name: upload package
