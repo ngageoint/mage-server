@@ -61,8 +61,7 @@ jobs:
           npm ci --force
           npm run build
           npm ci --production --force
-          cd ..
-          npm pack ./plugins/arcgis/service
+          npm pack .
       # - name: package for plugin
       #   run: |
       #     cd plugins/arcgis/service
