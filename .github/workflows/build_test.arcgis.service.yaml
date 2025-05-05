@@ -60,12 +60,13 @@ jobs:
           cd plugins/arcgis/service
           npm ci --force
           npm run build
-      - name: package for plugin
-        run: |
-          cd plugins/arcgis/service
           npm ci --production --force
           cd ..
           npm pack ./plugins/arcgis/service
+      # - name: package for plugin
+      #   run: |
+      #     cd plugins/arcgis/service
+
       - name: upload package
         uses: actions/upload-artifact@v4
         with:
