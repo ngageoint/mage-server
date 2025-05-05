@@ -3,7 +3,7 @@ name: test and package sftp service plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.sftp.service.yaml
       - .github/workflows/config.yaml
@@ -59,8 +59,7 @@ jobs:
         run: |
           cd plugins/sftp/service
           npm ci --production --force
-          cd ..
-          npm pack ./plugins/sftp/service
+          npm pack .
       - name: upload package
         uses: actions/upload-artifact@v4
         with:
