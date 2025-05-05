@@ -36,7 +36,7 @@ jobs:
       - name: create production package
         run: |
           cd service
-          npm ci --omit=dev
+          npm ci --production
           cd ..
           npm pack ./service
       - name: upload package

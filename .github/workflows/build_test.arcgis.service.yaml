@@ -68,7 +68,7 @@ jobs:
       - name: package for plugin
         run: |
           cd plugins/arcgis/service
-          npm ci --omit=dev
+          npm ci --production
           cd ..
           npm pack ./plugins/arcgis/service
       - name: upload package

@@ -60,7 +60,7 @@ jobs:
       - name: pack
         run: |
           cd plugins/sftp/service
-          npm ci --omit=dev
+          npm ci --production
           cd ..
           npm pack ./plugins/sftp/service
       - name: upload package
