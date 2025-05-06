@@ -4,7 +4,7 @@
       <button mat-icon-button class="navigation-options">
         <mat-icon>more_vert</mat-icon>
       </button>
-      
+
       <button mat-icon-button *ngIf="state === 'map'" (click)="toggleFeed()">
         <mat-icon>menu</mat-icon>
       </button>
@@ -17,7 +17,7 @@
       <span *ngIf="filteredTeams" class="filter-teams"><span>> {{filteredTeams}}</span></span>
       <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
     </div>
-    
+
     <div>
       <button mat-button (click)="togglePreferences()">
         <mat-icon>tune</mat-icon>
@@ -31,7 +31,7 @@
         <mat-icon>info</mat-icon>
       </a>
 
-      <a mat-button href="admin/#/admin/">
+      <a *ngIf="isAdmin" mat-button href="admin/#/admin/">
         <mat-icon>admin_panel_settings</mat-icon>
       </a>
 
