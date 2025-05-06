@@ -6,9 +6,9 @@ module.exports = {
   controller: NavbarController
 };
 
-NavbarController.$inject = ['$state', '$transitions', 'UserService'];
+NavbarController.$inject = ['$state', '$transitions', '$window', 'UserService'];
 
-function NavbarController($state, $transitions, UserService) {
+function NavbarController($state, $transitions, window, UserService) {
   this.hasAdminPermission = false;
 
   this.feed = {
@@ -23,13 +23,14 @@ function NavbarController($state, $transitions, UserService) {
     });
   };
 
-  this.$onChanges = function(changes) {
+  this.$onChanges = function (changes) {
     if (changes.myself) {
       this.hasAdminPermission = UserService.amAdmin;
     }
   }
 
-  this.logout = function() {
+  this.logout = function () {
     UserService.logout();
+    window.location.reload();
   };
 }
