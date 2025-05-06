@@ -53,7 +53,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.mapService.init()
     this.eventService.init()
     this.userService.getMyself().subscribe(user => {
-      this.isAdmin = ['ADMIN_ROLE', 'EVENT_ADMIN_ROLE'].includes(user.role.name);
+      this.isAdmin = ['ADMIN_ROLE', 'EVENT_MANAGER_ROLE'].includes(user.role.name);
     });
   }
 
