@@ -9,6 +9,12 @@
 
   &user-detail {
     flex: 1;
+    min-width: 0;
+    .trunc {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   &table {
