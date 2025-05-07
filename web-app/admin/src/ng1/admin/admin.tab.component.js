@@ -5,6 +5,7 @@ class AdminTabController {
     this.$state = $state;
     this.UserService = UserService;
     this.token = LocalStorageService.getToken()
+    this.isAdmin = this.UserService.myself.role.name === 'ADMIN_ROLE';
   }
 
   hasPermission(permission) {
