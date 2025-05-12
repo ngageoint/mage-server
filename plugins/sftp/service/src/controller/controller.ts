@@ -129,12 +129,11 @@ export class SftpController {
         ...this.configuration.sftpClient,
         privateKey: sftpKeyFile
       });
+      this.isRunning = true;
+      await this.processAndScheduleNext()
     } catch (e) {
       this.console.error("error connecting to sftp endpoint", e)
     }
-
-    this.isRunning = true;
-    await this.processAndScheduleNext()
   }
 
   /**
