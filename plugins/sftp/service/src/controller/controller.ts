@@ -4,9 +4,10 @@ import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@n
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
-import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
+import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
+import fs from 'fs';
 
 /**
  * Class used to process observations for SFTP
@@ -96,7 +97,7 @@ export class SftpController {
    */
   public async getConfiguration(): Promise<SFTPPluginConfig> {
     if (this.configuration === null) {
-      return await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? encryptDecrypt(x, false) : this.stateRepository.put(defaultSFTPPluginConfig))
+      return await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? x : this.stateRepository.put(defaultSFTPPluginConfig))
     } else {
       return this.configuration
     }
@@ -108,8 +109,7 @@ export class SftpController {
    */
   public async updateConfiguration(configuration: SFTPPluginConfig) {
     try {
-      let config = await encryptDecrypt(configuration, true);
-      await this.stateRepository.put(config)
+      await this.stateRepository.put(configuration)
     } catch (err) {
       this.console.log(`ERROR: updateConfiguration: ${err}`)
     }
@@ -123,7 +123,12 @@ export class SftpController {
     if (!this.configuration.enabled) { return }
 
     try {
-      await this.sftpClient.connect(this.configuration.sftpClient)
+      const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string;
+      const sftpKeyFile = fs.readFileSync(sftpKeyFilename);
+      await this.sftpClient.connect({
+        ...this.configuration.sftpClient,
+        privateKey: sftpKeyFile
+      });
     } catch (e) {
       this.console.error("error connecting to sftp endpoint", e)
     }
@@ -245,11 +250,16 @@ export class SftpController {
     if (result instanceof ArchiveResult) {
       if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
         this.console.log(`posting status of success`)
-        const stream = new PassThrough()
-        result.archive.pipe(stream)
-        await result.archive.finalize()
-        await this.sftpClient.put(stream, `${sftpPath}/${observation.id}.zip`)
-        await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
+        try {
+          const stream = new PassThrough()
+          result.archive.pipe(stream)
+          // TODO: This will fail if the observation has a .mov file
+          await result.archive.finalize()
+          await this.sftpClient.put(stream, `${sftpPath}/${observation.id}.zip`)
+          await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
+        } catch (error) {
+          this.console.error(`error uploading observation ${observation.id}`, error)
+        }
       } else {
         this.console.log(`posting status of pending`)
 
