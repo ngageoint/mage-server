@@ -86,7 +86,7 @@
       <div>Settings</div>
     </div>
 
-    <div class="admin-action" ng-if="$ctrl.isAdmin" ng-repeat="pluginTab in $ctrl.pluginTabs"
+    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-repeat="pluginTab in $ctrl.pluginTabs"
       ng-class="{'admin-action-selected': $ctrl.stateName === pluginTab.state}"
       ng-click="$ctrl.tabChanged(pluginTab.state)">
       <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === pluginTab.state}"></div>
