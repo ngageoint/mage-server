@@ -18,12 +18,15 @@ import { MageUserModule } from '@ngageoint/mage.web-core-lib/user'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ArcLayerComponent } from './arc-layer/arc-layer.component';
 import { ArcEventComponent } from './arc-event/arc-event.component';
-
+import { ArcLayerDialogComponent } from './arc-layer/arc-layer-dialog.component';
+import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dialog.component';
 
 @NgModule({
   declarations: [
     ArcEventComponent,
     ArcLayerComponent,
+    ArcLayerDialogComponent,
+    ArcLayerDeleteDialogComponent,
     ArcAdminComponent
   ],
   imports: [

@@ -13,9 +13,14 @@ export interface InjectableServices {
   <Service>(token: InjectionToken<Service>): Service
 }
 
-export type AddPluginWebRoutes = (pluginId: string, initRoutes: WebRoutesHooks['webRoutes']) => void
+export type AddPluginWebRoutes = (pluginId: string, webRoutes: WebRoutesHooks) => void
 
-export async function integratePluginHooks(pluginId: string, plugin: InitPluginHook<any>, injectService: InjectableServices, addWebRoutesFromPlugin: AddPluginWebRoutes): Promise<void> {
+export async function integratePluginHooks(
+  pluginId: string,
+  plugin: InitPluginHook<any>,
+  injectService: InjectableServices,
+  addWebRoutesFromPlugin: AddPluginWebRoutes,
+): Promise<void> {
   let injection: Injection<any> | null = null
   let hooks: PluginHooks
   if (plugin.inject) {
@@ -32,6 +37,6 @@ export async function integratePluginHooks(pluginId: string, plugin: InitPluginH
   await loadIconsHooks(pluginId, hooks, injectService(StaticIconRepositoryToken))
   await loadFeedsHooks(pluginId, hooks, injectService(FeedServiceTypeRepositoryToken))
   if (hooks.webRoutes) {
-    await addWebRoutesFromPlugin(pluginId, hooks.webRoutes)
+    await addWebRoutesFromPlugin(pluginId, hooks)
   }
 }

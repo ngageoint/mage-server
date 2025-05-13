@@ -1,0 +1,35 @@
+:host {
+  height: 100%;
+}
+
+.home {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-content {
+  flex: 1;
+}
+
+mat-sidenav-container {
+  height: 100%;
+}
+
+.preferences-toolbar {
+  display: flex;
+  align-items: end;
+}
+
+.feed {
+  background: #e1e2e1;
+  order: 1;
+  width: 500px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  transition: margin-left .3s linear;
+  z-index: 1;
+}

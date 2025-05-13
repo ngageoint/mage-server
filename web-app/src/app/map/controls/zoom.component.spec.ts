@@ -30,7 +30,7 @@ describe('ZoomComponent', () => {
   it('should emit zoom in', () => {
     spyOn(component.onZoom, 'emit');
 
-    const button = fixture.debugElement.queryAll(By.css('button'))[0];
+    const button = fixture.debugElement.queryAll(By.css('button'))[1];
     button.nativeElement.click();
 
     expect(component.onZoom.emit).toHaveBeenCalledWith({
@@ -41,7 +41,7 @@ describe('ZoomComponent', () => {
   it('should emit zoom out', () => {
     spyOn(component.onZoom, 'emit');
 
-    const button = fixture.debugElement.queryAll(By.css('button'))[1];
+    const button = fixture.debugElement.queryAll(By.css('button'))[0];
     button.nativeElement.click();
 
     expect(component.onZoom.emit).toHaveBeenCalledWith({

@@ -1,10 +1,10 @@
 import { Component, OnInit, Inject, QueryList, ViewChildren, ElementRef, EventEmitter, Output } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, ExportResponse, ExportRequest } from '../export.service';
-import { FilterService } from '../../upgrade/ajs-upgraded-providers';
 import * as moment from 'moment'
 import { first } from 'rxjs/operators';
 import { trigger, transition, style, animate, state } from '@angular/animations';
+import { FilterService } from 'src/app/filter/filter.service';
 
 export interface ExportTimeOption {
 	all?: boolean,
@@ -86,7 +86,7 @@ export class ExportDataComponent implements OnInit {
 	constructor(
 		public snackBar: MatSnackBar,
 		@Inject(ExportService) public exportService: ExportService,
-		@Inject(FilterService) private filterService: any) {
+		private filterService: FilterService) {
 
 		this.defaultStartDate = moment().startOf('day').toDate()
 		this.defaultEndDate = moment().endOf('day').toDate()

@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>MAGE Admin</title>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+</head>
+
+<body class="mdc-typography">
+  <bootstrap>
+    <div class="application" ng-controller="NavController as $ctrl">
+      <banner ng-if="myself" class="banner" type="header"></banner>
+      <navbar myself="myself" ng-show="myself"></navbar>
+      <ui-view class="route-content"></ui-view>
+      <banner ng-if="myself" class="banner" type="footer"></banner>
+    </div>
+  </bootstrap>
+</body>
+
+</html>

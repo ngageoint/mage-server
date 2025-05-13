@@ -1,0 +1,83 @@
+<mat-toolbar color="primary">
+  <div class="container">
+    <button mat-icon-button (click)="onBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="title">About MAGE</span>
+  </div>
+</mat-toolbar>
+
+<div class="content">
+  <div>
+    <p>
+      Mage is a dynamic, secure, mobile situational awareness and field data collection platform that supports
+      low-bandwidth and disconnected users. Mage can integrate with existing command centers and common operating
+      pictures or stand alone as a complete, mission-ready solution. The Mage mobile app on iOS and Android
+      allows agents in the field to create and share geo-tagged observations with attached photos, videos,
+      audio, and form data. Mage's data collection forms are easily tailored to suit any team and mission with
+      custom form fields and map symbologies. In addition to data collection, the Mage mobile app can optionally
+      report field agents' locations at regular intervals to the Mage server. The Mage server's web app provides
+      a common operating picture of field agents' observations and latest reported locations.
+    </p>
+
+    <div class="app-store">
+      <a
+        class="center-content"
+        href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8"
+      >
+        <img class="app-store-icon" src="/assets/images/ios_app_store_black.svg">
+      </a>
+      <a
+        class="center-content"
+        href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en"
+      >
+        <img class="app-store-icon" src="/assets/images/google-play-badge.png">
+      </a>
+    </div> 
+  </div>
+
+  <div>
+    <h3>
+      <span>API</span>
+    </h3>
+    <div>
+      Browse and try the Mage API live with <a href="#/swagger">Swagger UI.</a> Swagger interactive documentation will modify Mage data via API calls; please be careful with <strong>POST/PUT/DELETE</strong> operations.
+    </div>
+  </div>
+
+  <div>
+    <h3>
+      <span>System</span>
+    </h3>
+    <div>Server Version {{mageVersion?.major}}.{{mageVersion?.minor}}.{{mageVersion?.micro}}</div>
+    <div>Node Version {{nodeVersion}}</div>
+    <div>MongoDB Version {{mongoVersion}}</div>
+  </div>
+
+  <div>
+    <h3>
+      <span>Acknowledgements</span>
+    </h3>
+      <div>Mage is built with the MEAN stack
+        <a href="https://www.mongodb.org/" target="_blank">MongoDB</a>, 
+        <a href="https://expressjs.com/" target="_blank">Express</a>, 
+        <a href="https://angular.dev/" target="_blank">Angular</a> and
+        <a href="https://nodejs.org/" target="_blank">NodeJS</a>.
+      </div>
+
+      <div>Authentication is locked down by
+        <a href="https://passportjs.org/" target="_blank">Passport</a>
+      </div>
+
+      <div>Maps are powered by
+        <a href="https://leafletjs.com/" target="_blank">Leaflet</a>
+      </div>
+  </div>
+  <div>
+    <h3>
+      <span>Contact Us</span>
+    </h3>
+    <p><i class="fa fa-phone"></i> +1-571-557-1121</p>
+    <p><i class="fa fa-envelope"></i><a href="mailto:magesuitesupport@nga.mil"> magesuitesupport@nga.mil</a></p>
+  </div>
+</div>

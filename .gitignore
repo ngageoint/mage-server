@@ -8,8 +8,10 @@ node_modules
 .test_run
 .vscode/
 coverage/
+database/
 docker/database/
 docker/server/resources/
+server/resources
 npm-debug.log
 pnpm-debug.log
 scratch/
@@ -19,3 +21,4 @@ scratch/
 /docker/auth-idp/ldap/db/*
 # this line must be last
 !.gitkeep
+.angular

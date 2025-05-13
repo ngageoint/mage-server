@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Inject, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatRipple } from '@angular/material/core';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
-import { LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { MapService } from '../../map/map.service';
+import { LocalStorageService } from '../../http/local-storage.service';
+import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 
 @Component({
   selector: 'user-list-item',
@@ -17,13 +18,13 @@ export class UserListItemComponent {
 
   @ViewChild(MatRipple) ripple: MatRipple
 
-  token: string
+  token: string | undefined
   followingUser: any
 
   constructor(
     private feedPanelService: FeedPanelService,
-    @Inject(MapService) private mapService: any,
-    @Inject(LocalStorageService) localStorageService: any) {
+    private mapService: MapService,
+    localStorageService: LocalStorageService) {
     this.followingUser = mapService.followedFeature
     this.token = localStorageService.getToken()
   }

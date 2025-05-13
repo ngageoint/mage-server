@@ -9,30 +9,14 @@ export interface FeatureServiceConfig {
     url: string
 
     /**
-     * Access token
+     * Flag indicating valid authentication
      */
-    token?: string
-
-    /**
-     * Create layers that don't exist
-     */
-    createLayers?: boolean
-
-    /**
-     * The administration url to the arc feature service.
-     */
-    adminUrl?: string
-
-    /**
-     * Administration access token
-     */
-    adminToken?: string
+    authenticated: boolean
 
     /**
      * The feature layers.
      */
     layers: FeatureLayerConfig[]
-
 }
 
 /**
@@ -51,25 +35,9 @@ export interface FeatureLayerConfig {
     geometryType?: string
 
     /**
-     * Access token
-     */
-    token?: string
-
-    /**
      * The event ids or names that sync to this arc feature layer.
      */
     events?: (number|string)[]
-
-    /**
-     * Add layer fields from form fields
-     */
-    addFields?: boolean
-
-    /**
-     * Delete editable layer fields missing from form fields
-     */
-    deleteFields?: boolean
-
 }
 
 /**

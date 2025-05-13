@@ -1,14 +1,12 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { FeatureServiceConfig } from "../ArcGISConfig"
-import { ArcService } from '../arc.service'
+import { ArcService, MageEvent } from '../arc.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ArcEventsModel } from './ArcEventsModel';
 import { ArcEvent } from './ArcEvent';
 import { ArcEventLayer } from './ArcEventLayer';
 import { Observable, Subscription } from 'rxjs';
-import { EventResult } from '../EventsResult';
-
 
 @Component({
   selector: 'arc-event',
@@ -19,7 +17,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
 
   private eventsSubscription: Subscription;
 
-  @Input('config') config: ArcGISPluginConfig;
+  @Input('config') config: ArcGISPluginConfig = defaultArcGISPluginConfig;
   private configSet = false;
 
   @Input() configChangedNotifier: Observable<void>;
@@ -53,10 +51,10 @@ export class ArcEventComponent implements OnInit, OnChanges {
   }
 
   handleConfigChanged() {
-    let eventResults = new Array<EventResult>();
+    let eventResults = new Array<MageEvent>();
     if (this.model.events.length > 0) {
       for (const arcEvent of this.model.events) {
-        const result = new EventResult();
+        const result = new MageEvent();
         result.name = arcEvent.name;
         result.id = arcEvent.id;
         eventResults.push(result);
@@ -67,7 +65,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
     }
   }
 
-  handleEventResults(x: EventResult[]) {
+  handleEventResults(x: MageEvent[]) {
     let activeEventMessage = 'Active events: ';
     this.updateLayersCount();
     for (const event of x) {

@@ -19,7 +19,7 @@ export class FeedService {
 
   // TODO: there is probably a better solution than maintaining this map here
   private _feeds = new BehaviorSubject<Array<Feed>>([]);
-  readonly feeds = this._feeds.asObservable();
+  readonly feeds$ = this._feeds.asObservable();
 
   private _feedItems = new Map<string, BehaviorSubject<Array<Feature>>>();
   feedItems(feedId: string): Observable<Array<Feature>> {

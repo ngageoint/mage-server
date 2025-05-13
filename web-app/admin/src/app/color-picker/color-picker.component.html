@@ -1,0 +1,40 @@
+<div class="swatch" (click)="open()">
+  <mat-form-field dense appearance="outline">
+    <mat-label>{{label}}</mat-label>
+    <input matInput class="swatch-input" type="text" value=" " readonly="true">
+  </mat-form-field>
+
+  <div class="checkboard">
+    <color-checkboard></color-checkboard>
+    <div class="swatch-color" [style.background]="background"></div>
+  </div>
+</div>
+
+<mat-card *ngIf="showColorPicker">
+  <div class="color">
+    <div class="saturation">
+      <color-saturation [hsl]="hsl" [hsv]="hsv" (onChange)="handleValueChange($event)"></color-saturation>
+    </div>
+    <div class="color-controls">
+      <div class="sliders">
+        <div class="hue">
+          <color-hue direction="horizontal" [radius]="2" [hsl]="hsl" (onChange)="handleValueChange($event)"></color-hue>
+        </div>
+        <div class="alpha">
+          <color-alpha [radius]="2" [rgb]="rgb" [hsl]="hsl" (onChange)="handleValueChange($event)"></color-alpha>
+        </div>
+      </div>
+      <div class="active-color">
+        <color-checkboard></color-checkboard>
+        <div class="sketch-active" [style.background]="activeBackground"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <button mat-button (click)="cancel()">CANCEL</button>
+    <button mat-button (click)="ok()">OK</button>
+  </div>
+</mat-card>
+

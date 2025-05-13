@@ -1,86 +1,50 @@
-.arc-layer-form {
-    display: flex;
-    flex-direction: column;
-    min-width: 950px;
+mat-card {
+	margin-bottom: 16px;
 }
 
-section {
-    >* {
-        margin-inline-start: 1em;
-    }
-
-    header {
-        margin-inline-start: 0;
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            margin-block-end: 0;
-        }
-
-        .subheading {
-            margin-block-start: 0;
-            opacity: 0.5;
-        }
-
-        margin-block-end: 2em;
-    }
-
-    margin-block-start: 2em;
-    margin-block-end: 2em;
+.mat-list-icon {
+	color: rgba(0, 0, 0, 0.54);
 }
 
-.arcLayer {
-    margin-block-start: 1em;
-    display: grid;
-    grid-template-columns: 8fr 1fr 1fr;
-    max-width: 600px;
-    margin-bottom: 20px;
+.no-mappings {
+	height: 300px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
 }
 
-.arcLayer__value {
-    grid-column-start: 1;
+.no-mappings__icons {
+	display: flex;
+	direction: row;
+	margin-top: 16px;
+	margin-bottom: 48px;
 }
 
-.arcLayer__edit {
-    grid-column-start: 2;
-    text-align: end;
+.no-mappings__icon {
+	font-size: 80px;
+	width: 80px;
+	height: 80px;
+	opacity: .6;
 }
 
-.arcLayer__action {
-    grid-column-start: 3;
-    text-align: end;
+.no-mappings__icon--margin {
+	margin: 0 8px;
 }
 
-.featureLayers {
-    display: grid;
-    opacity: 0.5;
-    font-size: 0.9em;
+.no-mappings__title {
+	font: 400 28px/36px Roboto, "Helvetica Neue", sans-serif;
+	width: 600px;
+	opacity: .6;
+	text-align: center;
+	margin: 0 16px 16px 16px;
 }
 
-.edit-icon {
-    vertical-align: middle;
+.subtitle {
+	color: rgba(0, 0, 0, 0.54);
 }
 
-.edit-button {
-    opacity: 0.5;
-    font-size: inherit;
-    height: inherit;
-    line-height: inherit;
-    width: inherit;
-}
-
-.delete-icon {
-    vertical-align: middle;
-}
-
-.delete-button {
-    opacity: 0.5;
-    font-size: inherit;
-    height: inherit;
-    line-height: inherit;
-    width: inherit;
+.invalid-credentials {
+	color: #F44336;
 }

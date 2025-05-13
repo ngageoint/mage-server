@@ -1,10 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTabGroup } from '@angular/material/tabs';
 import * as moment from 'moment';
-import { EventService, FilterService, MapService, UserService } from '../upgrade/ajs-upgraded-providers';
 import { FeedAction, FeedPanelService } from './feed-panel.service';
+import { MapService } from '../map/map.service';
+import { UserService } from '../user/user.service';
+import { FilterService } from '../filter/filter.service';
+import { EventService } from '../event/event.service';
+import { ContactDialogComponent } from '../contact/contact-dialog.component';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
 
 @Component({
@@ -69,16 +73,16 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     public dialog: MatDialog,
     private feedService: FeedService,
     private feedPanelService: FeedPanelService,
-    @Inject(MapService) private mapService: any,
-    @Inject(UserService) private userService: any,
-    @Inject(FilterService) private filterService: any,
-    @Inject(EventService) private eventService: any) { }
+    private mapService: MapService,
+    private userService: UserService,
+    private filterService: FilterService,
+    private eventService: EventService) { }
 
   ngOnInit(): void {
     this.currentTab = this.tabs[0]
 
     this.eventService.addObservationsChangedListener(this)
-    this.feedService.feeds.subscribe(feeds => this.onFeedsChanged(feeds));
+    this.feedService.feeds$.subscribe(feeds => this.onFeedsChanged(feeds));
     this.feedPanelService.item$.subscribe(event => this.onFeedItemEvent(event));
 
     this.feedPanelService.viewUser$.subscribe(event => {
@@ -186,13 +190,17 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   createNewObservation(location: any): void {
     const event = this.filterService.getEvent()
     if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
-      this.info = {
-        statusTitle: this.statusTitle,
-        statusMessage: this.statusMessage,
-        id: this.userService.myself.username
-      };
-      this.contactOpen = { opened: true };
-
+      this.dialog.open(ContactDialogComponent, {
+        width: '500px',
+        data: {
+          info: {
+            statusTitle: this.statusTitle,
+            statusMessage: this.statusMessage,
+            id: this.userService.myself.username
+          }
+        }
+      })
+      
       return
     }
 

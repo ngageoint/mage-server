@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: MAGE (Mobile Awareness GEOINT Environment) API
+  title: MAGE API
   description: MAGE API
   contact:
     name: MAGE Support

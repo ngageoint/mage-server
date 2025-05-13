@@ -1,0 +1,24 @@
+<div class="geometry-wrapper" #geometry>
+  <div class="geometry-field" [ngClass]="{'geometry-field--active': edit}">
+    <div class="geometry-field__label" [ngClass]="{'geometry-field__label--active': edit}">{{definition?.title}} {{definition?.required ? '*' : ''}}</div>
+  
+    <div class="geometry-panel">
+      <div class="geometry-panel__contents" [ngClass]="{'geometry-panel__flip': edit}">
+        <div class="geometry-panel__view">
+          <observation-edit-geometry-map [feature]="mapFeature" (onEdit)="startGeometryEdit()"></observation-edit-geometry-map>
+        </div>
+        <div class="geometry-panel__edit">
+          <observation-edit-geometry-form [feature]="editFeature" (save)="saveGeometryEdit($event)" (cancel)="cancelGeometryEdit()"></observation-edit-geometry-form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="geometry__underline"></div>
+  
+  <div class="geometry-help">
+    <span class="geometry-help__text" *ngIf="mapFeature && mapFeature.geometry">{{mapFeature.geometry | geometry:5}}</span>
+  </div>
+
+</div>

@@ -1,7 +1,7 @@
-import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { Feature, Geometry } from 'geojson'
-import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
+import { LocalStorageService } from '../../../http/local-storage.service'
 
 @Component({
   selector: 'observation-edit-geometry',
@@ -23,7 +23,9 @@ export class ObservationEditGeometryComponent implements OnChanges {
   mapFeature: any
   editFeature: any
 
-  constructor(private element: ElementRef, @Inject(LocalStorageService) private localStorageService: any) { }
+  constructor(
+    private localStorageService: LocalStorageService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.formGroup && changes.formGroup.currentValue) {

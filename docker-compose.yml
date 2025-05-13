@@ -1,0 +1,56 @@
+services:
+
+  mage-db:
+    image: bitnami/mongodb:6.0.13
+    volumes:
+      - ./database/data:/bitnami/mongodb
+      - ./database/log:/opt/bitnami/mongodb/logs
+    # Uncomment the following ports block to allow the mongo client on your
+    # host machine to connect to MongoDB in the Docker container.
+    # ports:
+    #   - 27017:27017
+    networks:
+      - mage.net
+
+  mage-server:
+    depends_on: [ mage-db ]
+    build:
+      context: ./
+      # dockerfile: Dockerfile-debug
+    image: mage:local
+    # entrypoint: ["./node_modules/.bin/mage.service", "--plugin", "@ngageoint/mage.image.service"]  Uncomment to specify new entrypoint commands
+    platform: linux/amd64
+    volumes:
+      - ./server/resources:/var/lib/mage
+    # Comment the ports block to disallow connections directly to the node
+    # server when running the mage-web-proxy below.
+    ports:
+      - 4242:4242
+      # Uncomment to allow debuggers to attach the Node process inside the
+      # container on port 14242
+      # - 14242:14242
+    networks:
+      - mage.net
+    environment:
+      MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
+      MAGE_TOKEN_EXPIRATION: "28800"
+      # NOTE: default INSECURE salt value, recommend generate new UUID before deployment, **NOT** after deployment
+      SFTP_PLUGIN_CONFIG_SALT: "A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"
+
+  # Uncomment the following block to enable the TLS reverse proxy.  You will
+  # also need to generate the key and certificate as the README describes.
+  # mage-web-proxy:
+  #   image: nginx
+  #   volumes:
+  #     - ./web/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./web/mage-web.crt:/etc/nginx/ssl/web.crt
+  #     - ./web/mage-web.key:/etc/nginx/ssl/web.key
+  #   ports:
+  #     - 4280:80
+  #     - 4243:4243
+  #   networks:
+  #     - mage.net
+
+networks:
+  mage.net:
+    driver: bridge

@@ -1,0 +1,56 @@
+name: AWS Dev Deployment
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Set IMAGE_TAG
+        run: |
+          if [[ "${{ github.ref_name }}" == "test" ]]; then
+            echo "IMAGE_TAG=test" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+          fi
+
+      - name: AWS config
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.AWS_DEV_ROLE }}
+          role-session-name: GithubNGAGeointSession
+          aws-region: ${{ secrets.AWS_DEV_REGION }}
+      
+      - name: AWS ECR Login
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: "/mage/server"
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
+
+      - name: Push Image and ReDeploy ECS Service
+        if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
+        env:
+          SERVICE: "mage${{ env.IMAGE_TAG }}"
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: "/mage/server"
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
+          aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment

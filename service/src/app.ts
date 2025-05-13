@@ -95,7 +95,7 @@ export type BootConfig = {
 
 let service: MageService | null = null
 
-export const boot = async function(config: BootConfig): Promise<MageService> {
+export const boot = async function (config: BootConfig): Promise<MageService> {
   if (service) {
     return service as MageService
   }
@@ -136,23 +136,23 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase()
   const repos = await initRepositories(dbLayer, config)
   const appLayer = await initAppLayer(repos)
-  const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
-  const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
-  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']): void => {
+  const { webController, addPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
+  const routesForPluginId: { [pluginId: string]: WebRoutesHooks } = {}
+  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
     routesForPluginId[pluginId] = initPluginRoutes
   }
   const globalScopeServices = new Map<InjectionToken<any>, any>([
-    [ FeedServiceTypeRepositoryToken, repos.feeds.serviceTypeRepo ],
-    [ FeedServiceRepositoryToken, repos.feeds.serviceRepo ],
-    [ FeedRepositoryToken, repos.feeds.feedRepo ],
-    [ MageEventRepositoryToken, repos.events.eventRepo ],
-    [ ObservationRepositoryToken, repos.observations.obsRepoFactory ],
-    [ AttachmentStoreToken, repos.observations.attachmentStore ],
-    [ StaticIconRepositoryToken, repos.icons.staticIconRepo ],
-    [ UserRepositoryToken, repos.users.userRepo ],
-    [ FeedsAppServiceTokens.CreateFeed, appLayer.feeds.createFeed ],
-    [ FeedsAppServiceTokens.UpdateFeed, appLayer.feeds.updateFeed ],
-    [ FeedsAppServiceTokens.DeleteFeed, appLayer.feeds.deleteFeed ],
+    [FeedServiceTypeRepositoryToken, repos.feeds.serviceTypeRepo],
+    [FeedServiceRepositoryToken, repos.feeds.serviceRepo],
+    [FeedRepositoryToken, repos.feeds.feedRepo],
+    [MageEventRepositoryToken, repos.events.eventRepo],
+    [ObservationRepositoryToken, repos.observations.obsRepoFactory],
+    [AttachmentStoreToken, repos.observations.attachmentStore],
+    [StaticIconRepositoryToken, repos.icons.staticIconRepo],
+    [UserRepositoryToken, repos.users.userRepo],
+    [FeedsAppServiceTokens.CreateFeed, appLayer.feeds.createFeed],
+    [FeedsAppServiceTokens.UpdateFeed, appLayer.feeds.updateFeed],
+    [FeedsAppServiceTokens.DeleteFeed, appLayer.feeds.deleteFeed],
   ])
   for (const pluginId of config.plugins?.servicePlugins || []) {
     console.info(`loading plugin ${pluginId}...`)
@@ -188,7 +188,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   }
   const pluginRoutePathsDescending = Object.keys(routesForPluginId).sort().reverse()
   for (const pluginId of pluginRoutePathsDescending) {
-    addAuthenticatedPluginRoutes(pluginId, routesForPluginId[pluginId])
+    addPluginRoutes(pluginId, routesForPluginId[pluginId])
   }
 
   try {
@@ -353,7 +353,7 @@ type Repositories = {
   },
 }
 
-  // TODO: the real thing
+// TODO: the real thing
 const jsonSchemaService: JsonSchemaService = {
   async validateSchema(schema: JSONSchema4): Promise<JsonValidator> {
     return {
@@ -376,7 +376,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     models.icons.staticIcon,
     new SimpleIdFactory(),
     new FileSystemIconContentStore(),
-    [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
+    [new PluginUrlScheme(config.plugins?.servicePlugins || [])])
   const userRepo = new MongooseUserRepository(models.users.user)
   const settingRepo = new MongooseSettingsRepository(models.settings.setting)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
@@ -548,8 +548,11 @@ interface MageEventRequestContext extends AppRequestContext<UserExpanded> {
 
 const observationEventScopeKey = 'observationEventScope' as const
 
-async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
-  Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
+async function initWebLayer(
+  repos: Repositories,
+  app: AppLayer,
+  webUIPlugins: string[]
+): Promise<{ webController: express.Application, addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void }> {
   // load routes the old way
   const webLayer = await import('./express')
   const webController = webLayer.app
@@ -651,17 +654,25 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   }
   try {
     const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json')
-    const webappDir = path.dirname(webappPackagePath)
-    webController.use(express.static(webappDir))
+    const webAppPath = path.dirname(webappPackagePath)
+    webController.use(express.static(path.join(webAppPath, 'app')))
+    webController.use('/admin', express.static(path.join(webAppPath, 'admin')))
   }
   catch (err) {
     console.warn('failed to load mage web app package', err)
   }
   return {
     webController,
-    addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']): void => {
-      const routes = initPluginRoutes(pluginAppRequestContext)
-      webController.use(`/plugins/${pluginId}`, [ bearerAuth, routes ])
+    addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
+      if (initPluginRoutes.webRoutes.public) {
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [routes])
+      }
+
+      if (initPluginRoutes.webRoutes.protected) {
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [bearerAuth, routes])
+      }
     }
   }
 }

@@ -1,0 +1,35 @@
+<form [formGroup]="authenticationForm" (ngSubmit)="onSignin()">
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Username</mat-label>
+      <input matInput placeholder="Username" formControlName="username" required>
+      <mat-error >Username is required</mat-error>
+    </mat-form-field>
+  </div>
+
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput placeholder="Password" type="password" formControlName="password" required>
+      <mat-error>Password is required</mat-error>
+    </mat-form-field>
+  </div>
+
+  <div>
+    <button class="auth-button" mat-flat-button color="primary">Sign In</button>
+  </div>
+
+  <div #errorElement *ngIf="error" class="error-container" [@slide] (@slide.done)="scrollToError()">
+    <div class="error" >
+      <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
+      <div class="error__message">
+        <div [innerHTML]="error.message"></div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="landing" class="signup">
+    <span class="signup-text">New to Mage?</span>
+    <a class="signup-button" (click)="onSignup()">Sign Up Now</a>
+  </div>
+</form>

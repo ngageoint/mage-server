@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
-import { LocalStorageService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
+import { LocalStorageService } from '../../http/local-storage.service';
+import { UserService } from '../../user/user.service';
 
 @Component({
   selector: 'observation-attachment',
@@ -29,8 +30,9 @@ export class AttachmentComponent implements OnInit {
   actions: typeof AttachmentAction = AttachmentAction
 
   constructor(
-    @Inject(UserService) private userService: any,
-    @Inject(LocalStorageService) localStorageService: any) {
+    private userService: UserService,
+    localStorageService: LocalStorageService
+  ) {
     this.token = localStorageService.getToken()
   }
 

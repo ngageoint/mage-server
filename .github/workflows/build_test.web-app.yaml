@@ -3,7 +3,7 @@ name: build and test web-app
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.web-app.yaml
       - .github/workflows/config.yaml
@@ -39,9 +39,9 @@ jobs:
       - name: pack
         run: |
           npm pack ./web-app/dist/core-lib
-          npm pack ./web-app/dist/app
+          npm pack ./web-app/dist
       - name: upload packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mage.web-app-artifacts
           path: |

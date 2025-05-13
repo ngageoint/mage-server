@@ -1,6 +1,7 @@
+import { LocalStorageService } from '../http/local-storage.service';
 import { GeometryPipe } from './geometry.pipe';
 
-class MockLocalStorageService {
+class MockLocalStorageService extends LocalStorageService {
   getCoordinateSystemView(): string {
     return 'mgrs';
   }

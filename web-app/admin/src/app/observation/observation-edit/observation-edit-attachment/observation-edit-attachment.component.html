@@ -1,0 +1,28 @@
+<div class="attachment-field">
+  <div class="attachment-field__label">{{definition.title}} {{definition.min > 0 ? '*' : ''}}</div>
+
+  <ng-container *ngIf="allAttachments().length; else empty">
+    <mat-grid-list class="edit-attachments__grid" cols="2" rowHeight="210px" gutterSize="4px">
+      <mat-grid-tile *ngFor="let attachment of allAttachments(); trackBy: trackByAttachment; first as isFirst" [rowspan]="1" [colspan]="isFirst && (allAttachments().length % 2 === 1) ? 2 : 1">
+        <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" edit="true" (delete)="deleteAttachment(attachment)"></observation-attachment>
+        <attachment-upload *ngIf="attachment.file" [url]="url" [attachment]="attachment" (remove)="removeAttachment($event)"></attachment-upload>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </ng-container>
+
+  <div class="attachment-actions">
+    <button mat-button class="add__button" type="button" color="primary" (click)="file.click()">
+      Add Attachment
+    </button>
+    <input [hidden]="true" type="file" #file multiple (change)="onAttachmentFile($event)">
+  </div>
+
+  <div class="attachment-field__underline"></div>
+</div>
+
+<ng-template #empty>
+  <div class="no-attachments">
+    <mat-icon class="no-attachments__icon">insert_drive_file</mat-icon>
+    <div class="no-attachments__text">No Attachments</div>
+  </div>
+</ng-template>

@@ -1,0 +1,43 @@
+<mat-toolbar color="primary">
+  <div class="container">
+    <div class="menu">
+      <button mat-icon-button class="navigation-options">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <button mat-icon-button *ngIf="state === 'map'" (click)="toggleFeed()">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="title">Mage</span>
+    </div>
+
+    <div>
+      <span class="filter-event">{{filteredEvent.name}}</span>
+      <span *ngIf="filteredTeams" class="filter-teams"><span>> {{filteredTeams}}</span></span>
+      <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
+    </div>
+
+    <div>
+      <button mat-button (click)="togglePreferences()">
+        <mat-icon>tune</mat-icon>
+      </button>
+
+      <a [routerLink]="['/profile']" mat-button>
+        <mat-icon>account_circle</mat-icon>
+      </a>
+
+      <a [routerLink]="['/about']" mat-button>
+        <mat-icon>info</mat-icon>
+      </a>
+
+      <a *ngIf="isAdmin" mat-button href="admin/#/admin/">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </a>
+
+      <a mat-button (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+      </a>
+    </div>
+  </div>
+</mat-toolbar>

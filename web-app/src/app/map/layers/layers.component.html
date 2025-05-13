@@ -1,5 +1,5 @@
 <div class="map-layers">
-  <h4 class="header">MAGE</h4>
+  <h4 class="header">Mage</h4>
   <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', mageLayers)" >
     <ng-container *ngFor="let layer of mageLayers">
       <mat-expansion-panel hideToggle #expansionPanel cdkDrag>

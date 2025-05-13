@@ -1,0 +1,19 @@
+.geometry-map {
+  position: absolute;
+  top: 0;
+  bottom:0;
+  right: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.edit {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1;
+}
+
+mat-icon {
+  color: white;
+}

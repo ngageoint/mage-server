@@ -1,6 +1,7 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { EventService, FilterService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { EventService } from '../../event/event.service';
+import { FilterService } from '../../filter/filter.service';
 
 @Component({
   selector: 'app-observation-edit-form-picker',
@@ -11,8 +12,8 @@ export class ObservationEditFormPickerComponent {
   forms: any[]
 
   constructor(
-    @Inject(FilterService) filterService: any,
-    @Inject(EventService) eventService: any,
+    filterService: FilterService,
+    eventService: EventService,
     private bottomSheetRef: MatBottomSheetRef<ObservationEditFormPickerComponent>) {
 
     const event = filterService.getEvent();

@@ -1,6 +1,6 @@
 {
   "api": {
-    "name": "MAGE (Mobile Awareness GEOINT Environment)",
+    "name": "MAGE",
     "version": {
       "major": 6,
       "minor": 1,

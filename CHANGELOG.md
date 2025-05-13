@@ -13,7 +13,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - Support for Mongoose 6.x
 - Support for Webpack 5.x
 - Support for Angular 14.x
-- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 4.x.
+- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x.
 - The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
 - [GARS](https://github.com/ngageoint/gars-js) grid overlay
 - [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
@@ -33,6 +33,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - `/api/devices`
   - Remove support for `sort` query parameter
   - Remove support for `expand` query parameter
+## [6.2.13](https://github.com/ngageoint/mage-server/releases/tag/6.2.13)
+### Service
+#### Features
+* Support absolute callback URL configuration for SAML authentication module.
+* Remove long deprecated `/authorize` device authorization endpoint from SAML authentication module.
+### Web App
+#### Features
+* Add _Redirect Host_ field to SAML configuration form to align with Service SAML change.
 
 ## [6.2.12](https://github.com/ngageoint/mage-server/releases/tag/6.2.12)
 ### Service

@@ -2,9 +2,9 @@ import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog'
 import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, AttributeValueConfig } from '../ArcGISConfig';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
-import { ArcService } from '../arc.service'
-import { Subject } from 'rxjs';
-import { EventResult, FormResult } from '../EventsResult';
+import { ArcService, Form, MageEvent } from '../arc.service'
+import { Subject, first } from 'rxjs';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'arc-admin',
@@ -26,7 +26,7 @@ export class ArcAdminComponent implements OnInit {
   editName: string;
   editValue: any;
   editOptions: any[];
-  events: EventResult[] = [];
+  events: MageEvent[] = [];
 
   @ViewChild('infoDialog', { static: true })
   private infoTemplate: TemplateRef<unknown>
@@ -53,12 +53,33 @@ export class ArcAdminComponent implements OnInit {
   @ViewChild('editAttributeConfigDialog', { static: true })
   private editAttributeConfigTemplate: TemplateRef<unknown>
 
-  constructor(private arcService: ArcService, private dialog: MatDialog) {
+  attributesForm: FormGroup;
+
+  constructor(private arcService: ArcService, private dialog: MatDialog, private fb: FormBuilder) {
     this.config = defaultArcGISPluginConfig;
-    this.editConfig = defaultArcGISPluginConfig;
+    this.editConfig = this.copyConfig();
     this.editFieldMappings = false;
+    this.attributesForm = this.fb.group({
+      observationIdField: [''], 
+      idSeparator: [''],
+      eventIdField: [''],
+      lastEditedDateField: [''],
+      eventNameField: [''],
+      userIdField: [''],
+      usernameField: [''],
+      userDisplayNameField: [''],
+      deviceIdField: [''],
+      createdAtField: [''],
+      lastModifiedField: [''],
+      geometryType: ['']
+    });
+
     arcService.fetchArcConfig().subscribe(x => {
       this.config = x;
+      if (!this.config.baseUrl) {
+        this.config.baseUrl = window.location.origin
+      }
+      this.editConfig = this.copyConfig();
       arcService.fetchPopulatedEvents().subscribe(x => this.handleEventResults(x));
     })
   }
@@ -69,12 +90,95 @@ export class ArcAdminComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.arcService.fetchArcConfig().pipe(first()).subscribe({
+      next: config => {
+        if (config) {
+          // Populate form with values from config 
+          this.attributesForm.patchValue({
+            observationIdField: config.observationIdField || '',
+            idSeparator: config.idSeparator || '',
+            eventIdField: config.eventIdField || '',
+            lastEditedDateField: config.lastEditedDateField || '',
+            eventNameField: config.eventNameField || '',
+            userIdField: config.userIdField || '',
+            usernameField: config.usernameField || '',
+            userDisplayNameField: config.userDisplayNameField || '',
+            deviceIdField: config.deviceIdField || '',
+            createdAtField: config.createdAtField || '',
+            lastModifiedField: config.lastModifiedField || '',
+            geometryType: config.geometryType || ''
+          });
+          console.log('Form initialized with server config:', config);
+        }
+      },
+      error: error => {
+        console.error('Failed to fetch config:', error);
+      }
+    });
   }
+  
+  //Save attributes form. If left blank, assign default value
+  onSubmit(): void {
+    console.log('submitting form...');
 
-  handleEventResults(x: EventResult[]) {
+    if (this.attributesForm.valid) {
+      const formValue = this.attributesForm.value;
+      this.editConfig = {
+        ...this.editConfig,
+        observationIdField: formValue.observationIdField || this.editConfig.observationIdField,
+        idSeparator: formValue.idSeparator || this.editConfig.idSeparator,
+        eventIdField: formValue.eventIdField || this.editConfig.eventIdField,
+        lastEditedDateField: formValue.lastEditedDateField || this.editConfig.lastEditedDateField,
+        eventNameField: formValue.eventNameField || this.editConfig.eventNameField,
+        userIdField: formValue.userIdField || this.editConfig.userIdField,
+        usernameField: formValue.usernameField || this.editConfig.usernameField,
+        userDisplayNameField: formValue.userDisplayNameField || this.editConfig.userDisplayNameField,
+        deviceIdField: formValue.deviceIdField || this.editConfig.deviceIdField,
+        createdAtField: formValue.createdAtField || this.editConfig.createdAtField,
+        lastModifiedField: formValue.lastModifiedField || this.editConfig.lastModifiedField,
+        geometryType: formValue.geometryType || this.editConfig.geometryType
+    };
+  
+      console.log('Form Submitted:', this.editConfig);
+      console.log('formValue: ', formValue);
+
+      this.saveEdit();
+      }
+      else{
+        console.log('Form is invalid, please correct the errors.')
+      }
+    }
+  
+  onCancel(): void {
+    console.log('Cancel selected');
+    this.arcService.fetchArcConfig().pipe(first()).subscribe({
+      next: config => {
+        if (config) {
+          this.attributesForm.patchValue({
+            observationIdField: config.observationIdField || '',
+            idSeparator: config.idSeparator || '',
+            eventIdField: config.eventIdField || '',
+            lastEditedDateField: config.lastEditedDateField || '',
+            eventNameField: config.eventNameField || '',
+            userIdField: config.userIdField || '',
+            usernameField: config.usernameField || '',
+            userDisplayNameField: config.userDisplayNameField || '',
+            deviceIdField: config.deviceIdField || '',
+            createdAtField: config.createdAtField || '',
+            lastModifiedField: config.lastModifiedField || '',
+            geometryType: config.geometryType || ''
+          });
+          console.log('Form reloaded with server config:', config);
+        }
+      },
+      error: error => {
+        console.error('Failed to reload config from server:', error);
+      }
+    });
+  }
+  handleEventResults(x: MageEvent[]) {
     this.events = x
   }
-
   onDeleteLayer(layerUrl: string) {
     let index = 0;
     for (const featureServiceConfig of this.config.featureServices) {
@@ -87,16 +191,6 @@ export class ArcAdminComponent implements OnInit {
       this.config.featureServices.splice(index, 1);
     }
     this.saveConfig();
-  }
-
-  onEditProcessing() {
-    this.editConfig = this.copyConfig()
-    this.dialog.open<unknown, unknown, string>(this.editProcessingTemplate)
-  }
-
-  onEditAttributes() {
-    this.editConfig = this.copyConfig()
-    this.dialog.open<unknown, unknown, string>(this.editAttributesTemplate)
   }
 
   setField(field: string, value: any) {
@@ -205,6 +299,7 @@ export class ArcAdminComponent implements OnInit {
 
   cancelEdit() {
     console.log('Canceled configuration edit')
+    this.editConfig = this.copyConfig();
   }
 
   keys(value: any): string[] {
@@ -311,7 +406,7 @@ export class ArcAdminComponent implements OnInit {
     return omit
   }
 
-  findEvent(event: string): EventResult | undefined {
+  findEvent(event: string): MageEvent | undefined {
     let eventResult = undefined
     if (this.events != undefined) {
       const index = this.events.findIndex((element) => {
@@ -324,7 +419,7 @@ export class ArcAdminComponent implements OnInit {
     return eventResult
   }
 
-  findForm(event: string, form: string): FormResult | undefined {
+  findForm(event: string, form: string): Form | undefined {
     let formResult = undefined
     let eventResult = this.findEvent(event)
     if (eventResult != undefined && eventResult.forms != undefined) {

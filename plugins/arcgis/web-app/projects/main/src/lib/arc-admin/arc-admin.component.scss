@@ -7,9 +7,13 @@
   padding: 1rem;
 }
 
+.edit-processing-form .mat-form-field {
+  margin-bottom: 1.5rem !important;
+}
+
 section {
   >* {
-    margin-inline-start: 1em;
+    margin-inline-start: 0em;
   }
 
   header {
@@ -37,20 +41,6 @@ section {
 }
 
 .processing-table {
-  tr {
-    th {
-      font-weight: normal;
-    }
-
-    td {
-      padding-left: 20px;
-      opacity: 0.5;
-      font-size: 0.9em;
-    }
-  }
-}
-
-.attributes-table {
   tr {
     th {
       font-weight: normal;
@@ -192,4 +182,19 @@ section {
   height: inherit;
   line-height: inherit;
   width: inherit;
+}
+
+
+.mat-form-field {
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+mat-card {
+  margin-bottom: 8px;  
+}
+
+.hint {
+  font-size: 75%;
+  padding: 0 1em;
 }
