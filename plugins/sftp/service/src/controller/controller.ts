@@ -126,7 +126,8 @@ export class SftpController {
       const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string;
       const sftpKeyFile = fs.readFileSync(sftpKeyFilename);
       await this.sftpClient.connect({
-        ...this.configuration.sftpClient,
+        host: this.configuration.sftpClient.host,
+        username: this.configuration.sftpClient.username,
         privateKey: sftpKeyFile
       });
       this.isRunning = true;
