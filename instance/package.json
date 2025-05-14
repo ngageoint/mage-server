@@ -26,9 +26,6 @@
   "dependencies": {
     "@ngageoint/mage.arcgis.service": "../plugins/arcgis/service",
     "@ngageoint/mage.arcgis.web-app": "../plugins/arcgis/web-app/dist/main",
-    "@ngageoint/mage.image.service": "../plugins/image/service",
-    "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
-    "@ngageoint/mage.random": "../plugins/random",
     "@ngageoint/mage.sftp.web": "../plugins/sftp/web/dist/main",
     "@ngageoint/mage.sftp.service": "../plugins/sftp/service",
     "@ngageoint/mage.service": "../service",
