@@ -273,47 +273,45 @@ and [`@ngageoint/mage.web-app`](./web-app/).  There are more optional packages i
 directory.  The [`instance`](./instance/) package is an example of assembling all the packages into a running MAGE
 server instance.
 
-First, build the `service` package.
-```bash
-cd service
-npm ci
-npm run build
-```
-Then build the `web-app` package.
-```bash
-cd web-app
-npm ci
-npm run build
-```
-Build optional plugin packages similarly.:
-```bash
-cd plugins/nga-msi
-npm ci
-npm link ../../service # **IMPORTANT** see below
-npm run build
-```
-After building the core packages, install them as dependencies in the `instance` package.
-```bash
-cd instance
-npm i 
-```
+The project's root [`package.json`](./package.json) provides convenience script entries to install, build, and run
+the MAGE server components.
 
-In the case that the dev dependencies need to be over ridden (eg nga-msi plugin)
-```bash
-cd instance
-npm i --omit dev ../service ../web-app/dist ../plugins/nga-msi
-```
+Download and install the dependencies:
 
-The project's root [`package.json`](./package.json) provides some convenience script entries to install, build, and run
-the MAGE server components, however, those are deprecated and will likely go away after migrating to NPM 7+'s
-[workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) feature.
+    git clone git@github.com:ngageoint/mage-server.git
+    cd mage-server
+    npm install
+
+Build the app without plugins
+
+    npm run build
+
+Optional: Build the app with plugins (arcgis and sftp)
+
+    npm run build-all
+
+Run an instance of mongodb via Docker Desktop:
+
+    docker run -d -p 27017:27017 mongo:6.0.4
+
+Run the app with the `instance/config.ts` settings
+
+    npm start
+
+If the monogo database is up and running and everything is built, you should see a message like:
+
+    2025-05-13T20:12:36.120Z - info: MAGE Server listening at address 127.0.0.1 on port 4242
+
+Open a browser to: <http://127.0.0.1:4242>. If the ArcGIS and SFTP plug-ins were built, you'll see those tabs on the sidebar in Settings.
+
+As you make changes, you can either build the entire app `npm run build` in the root directory, or only the parts that you are working on (web-app, service, plugin, etc.).
 
 ## Running from source
 
 To run the Mage server directly from your _built_ source tree, build the `service`, `web-app`, and any plugin packages 
 you want to run as described in the above section.  Then, from the `instance` directory, run
 ```shell
-npm run start:dev
+npm run start
 ```
 That [NPM script](./instance/package.json) will run the `mage.service` script from your working tree using the 
 [configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
