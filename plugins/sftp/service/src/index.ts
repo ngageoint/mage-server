@@ -9,6 +9,7 @@ import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.ap
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
 import { MongooseSftpObservationRepository, SftpObservationModel } from './adapters/adapters.sftp.mongoose'
 import { MongooseTeamsRepository } from './adapters/adapters.sftp.teams';
+import { MongooseUsersRepository } from './adapters/adapters.sftp.users'
 import express from 'express'
 import mongoose from 'mongoose'
 import SFTPClient from 'ssh2-sftp-client';
@@ -69,6 +70,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
     const sftpObservationModel = SftpObservationModel(dbConnection, `${packageName}/observations`)
     const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
     const teamRepo = new MongooseTeamsRepository(dbConnection)
+    const userRepo = new MongooseUsersRepository(dbConnection)
     const archiverFactory = new ArchiverFactory(userRepository, attachmentStore)
 
     const controller = new SftpController(
@@ -79,7 +81,8 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
       new SFTPClient(),
       archiverFactory,
       console,
-      teamRepo
+      teamRepo,
+      userRepo
     );
 
     controller.start();

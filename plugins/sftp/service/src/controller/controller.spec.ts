@@ -11,566 +11,597 @@ import { PageOf } from '@ngageoint/mage.service/lib/entities/entities.global'
 import { ArchiveResult, ArchiveStatus, ArchiverFactory, ObservationArchiver, TriggerRule } from '../format/entities.format'
 import archiver from 'archiver'
 import { MongooseTeamsRepository } from 'src/adapters/adapters.sftp.teams'
+import { MongooseUsersRepository } from 'src/adapters/adapters.sftp.users'
 
 function newEvent(id: MageEventId): MageEventAttrs {
-    return {
-        id,
-        acl: {},
-        feedIds: [],
-        forms: [{
-            id: 1,
-            archived: false,
-            color: 'blue',
-            fields: [
-                {
-                    id: 1,
-                    name: 'field1',
-                    required: false,
-                    title: 'Attachments',
-                    type: FormFieldType.Attachment,
-                }
-            ],
-            name: 'Image Plugin Test',
-            userFields: []
-        }],
-        layerIds: [],
-        name: `Event ${id}`,
-        style: {},
-    }
+  return {
+    id,
+    acl: {},
+    feedIds: [],
+    forms: [{
+      id: 1,
+      archived: false,
+      color: 'blue',
+      fields: [
+        {
+          id: 1,
+          name: 'field1',
+          required: false,
+          title: 'Attachments',
+          type: FormFieldType.Attachment,
+        }
+      ],
+      name: 'Image Plugin Test',
+      userFields: []
+    }],
+    layerIds: [],
+    name: `Event ${id}`,
+    style: {},
+  }
 }
 
 function newObservation(event: MageEvent, lastModified: Date): ObservationAttrs {
-    return {
-        id: "1",
-        eventId: event.id,
-        userId: "test",
-        createdAt: new Date(1),
-        lastModified: lastModified,
-        attachments: [],
-        favoriteUserIds: [],
-        states: [],
-        type: 'Feature',
-        geometry: {
-            type: 'Point',
-            coordinates: [0, 0]
-        },
-        properties: {
-            timestamp: new Date(1),
-            forms: []
-        }
+  return {
+    id: "1",
+    eventId: event.id,
+    userId: "test",
+    createdAt: new Date(1),
+    lastModified: lastModified,
+    attachments: [],
+    favoriteUserIds: [],
+    states: [],
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [0, 0]
+    },
+    properties: {
+      timestamp: new Date(1),
+      forms: []
     }
+  }
 }
 
 function newArchiver(status: ArchiveStatus): ObservationArchiver {
-    return {
-        createArchive: async () => {
-            return new ArchiveResult(archiver('zip'), status)
-        }
-    } as ObservationArchiver;
+  return {
+    createArchive: async () => {
+      return new ArchiveResult(archiver('zip'), status)
+    }
+  } as ObservationArchiver;
 }
 
 describe('automated processing', () => {
-    class TestPluginStateRepository implements PluginStateRepository<SFTPPluginConfig> {
-        state: SFTPPluginConfig | null = null
-        async get(): Promise<SFTPPluginConfig | null> {
-            return this.state
-        }
-        async put(x: SFTPPluginConfig): Promise<SFTPPluginConfig> {
-            this.state = { ...x }
-            return this.state
-        }
-        async patch(state: Partial<SFTPPluginConfig>): Promise<SFTPPluginConfig> {
-            throw new Error('unimplemented')
-        }
+  class TestPluginStateRepository implements PluginStateRepository<SFTPPluginConfig> {
+    state: SFTPPluginConfig | null = null
+    async get(): Promise<SFTPPluginConfig | null> {
+      return this.state
+    }
+    async put(x: SFTPPluginConfig): Promise<SFTPPluginConfig> {
+      this.state = { ...x }
+      return this.state
+    }
+    async patch(state: Partial<SFTPPluginConfig>): Promise<SFTPPluginConfig> {
+      throw new Error('unimplemented')
+    }
+  }
+
+  let event1: MageEvent
+  let event2: MageEvent
+  let allEvents: Map<MageEventId, MageEvent>
+  let stateRepository: TestPluginStateRepository
+  let eventObservationRepositories: Map<MageEventId, jasmine.SpyObj<EventScopedObservationRepository>>
+  let observationRepository: (event: MageEventId) => Promise<jasmine.SpyObj<EventScopedObservationRepository>>
+  let archiveFactory: jasmine.SpyObj<ArchiverFactory>
+  let sftpClient: jasmine.SpyObj<SFTPClient>
+  let clock: jasmine.Clock
+
+  beforeEach(() => {
+    event1 = new MageEvent(newEvent(1))
+    event2 = new MageEvent(newEvent(2))
+    allEvents = new Map().set(event1.id, event1).set(event2.id, event2)
+    eventObservationRepositories = new Map<MageEventId, jasmine.SpyObj<EventScopedObservationRepository>>([
+      [event1.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepository-${event1.id}`, ['findById', 'findLastModifiedAfter'])],
+      [event2.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepository-${event2.id}`, ['findById', 'findLastModifiedAfter'])]
+    ])
+
+    observationRepository = async event => {
+      const repository = eventObservationRepositories.get(event)
+      if (repository) {
+        return repository
+      }
+      throw new Error(`no observation repository for event ${event}`)
     }
 
-    let event1: MageEvent
-    let event2: MageEvent
-    let allEvents: Map<MageEventId, MageEvent>
-    let stateRepository: TestPluginStateRepository
-    let eventObservationRepositories: Map<MageEventId, jasmine.SpyObj<EventScopedObservationRepository>>
-    let observationRepository: (event: MageEventId) => Promise<jasmine.SpyObj<EventScopedObservationRepository>>
-    let archiveFactory: jasmine.SpyObj<ArchiverFactory>
-    let sftpClient: jasmine.SpyObj<SFTPClient>
-    let clock: jasmine.Clock
+    stateRepository = new TestPluginStateRepository()
+    clock = jasmine.clock().install()
+    archiveFactory = jasmine.createSpyObj<ArchiverFactory>('archiverFactory', ['createArchiver'])
+    sftpClient = jasmine.createSpyObj<SFTPClient>('sftpClient', ['connect', 'put', 'end'])
+    sftpClient.connect.and.resolveTo()
+    sftpClient.end.and.resolveTo()
+  })
 
-    beforeEach(() => {
-        event1 = new MageEvent(newEvent(1))
-        event2 = new MageEvent(newEvent(2))
-        allEvents = new Map().set(event1.id, event1).set(event2.id, event2)
-        eventObservationRepositories = new Map<MageEventId, jasmine.SpyObj<EventScopedObservationRepository>>([
-            [event1.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepository-${event1.id}`, ['findById', 'findLastModifiedAfter'])],
-            [event2.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepository-${event2.id}`, ['findById', 'findLastModifiedAfter'])]
-        ])
+  afterEach(() => {
+    clock.uninstall()
+  })
 
-        observationRepository = async event => {
-            const repository = eventObservationRepositories.get(event)
-            if (repository) {
-                return repository
-            }
-            throw new Error(`no observation repository for event ${event}`)
-        }
+  it('waits for the current processing interval to finish then stops', async () => {
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([])
 
-        stateRepository = new TestPluginStateRepository()
-        clock = jasmine.clock().install()
-        archiveFactory = jasmine.createSpyObj<ArchiverFactory>('archiverFactory', ['createArchiver'])
-        sftpClient = jasmine.createSpyObj<SFTPClient>('sftpClient', ['connect', 'put', 'end'])
-        sftpClient.connect.and.resolveTo()
-        sftpClient.end.and.resolveTo()
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpRespository', ['findAll'])
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
+
+    archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
+
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
+
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
+    clock.tick(clockTickMillis)
+    clock.tick(clockTickMillis)
+    await new Promise(resolve => {
+      setTimeout(resolve)
+      clock.tick(clockTickMillis)
     })
 
-    afterEach(() => {
-        clock.uninstall()
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+  })
+
+  it('finds no observations to process', async () => {
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo(Array.from(allEvents.values()).map(copyMageEventAttrs))
+
+    const page: PageOf<ObservationAttrs> = {
+      totalCount: 0,
+      pageSize: 0,
+      pageIndex: 0,
+      items: []
+    }
+
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo(page)
+    eventObservationRepositories.get(event2.id)?.findLastModifiedAfter.and.resolveTo(page)
+
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest'])
+    sftpRepository.findAllByStatus.and.resolveTo([])
+    sftpRepository.findLatest.and.resolveTo(null)
+
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
+
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
+
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
+
+    archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
+
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
+
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
+
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(2)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event2.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+  })
+
+  it('processes pending observations with success', async () => {
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+
+    const observation = newObservation(event1, new Date(1))
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 0,
+      pageSize: 0,
+      pageIndex: 0,
+      items: []
     })
 
-    it('waits for the current processing interval to finish then stops', async () => {
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([])
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus'])
+    sftpRepository.findAllByStatus.and.resolveTo([{
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.PENDING,
+      createdAt: 1,
+      updatedAt: 1
+    }])
+    sftpRepository.postStatus.and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
+    })
+    sftpRepository.findLatest.and.resolveTo(null)
 
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpRespository', ['findAll'])
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
 
-        archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
 
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
+    archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
 
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
-        clock.tick(clockTickMillis)
-        clock.tick(clockTickMillis)
-        await new Promise(resolve => {
-            setTimeout(resolve)
-            clock.tick(clockTickMillis)
-        })
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
 
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
+
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+  })
+
+  it('processes pending observations with success before attachment timeout', async () => {
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+
+    const observation = newObservation(event1, new Date())
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 0,
+      pageSize: 0,
+      pageIndex: 0,
+      items: []
     })
 
-    it('finds no observations to process', async () => {
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo(Array.from(allEvents.values()).map(copyMageEventAttrs))
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus'])
+    sftpRepository.findAllByStatus.and.resolveTo([{
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.PENDING,
+      createdAt: 1,
+      updatedAt: 1
+    }])
+    sftpRepository.postStatus.and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
+    })
+    sftpRepository.findLatest.and.resolveTo(null)
 
-        const page: PageOf<ObservationAttrs> = {
-            totalCount: 0,
-            pageSize: 0,
-            pageIndex: 0,
-            items: []
-        }
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo(page)
-        eventObservationRepositories.get(event2.id)?.findLastModifiedAfter.and.resolveTo(page)
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
 
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest'])
-        sftpRepository.findAllByStatus.and.resolveTo([])
-        sftpRepository.findLatest.and.resolveTo(null)
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
 
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
+    archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
 
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
 
-        archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
 
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+  })
 
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
+  it('processes pending observations after attachment timeout', async () => {
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(2)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event2.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+
+    const observation = newObservation(event1, new Date(Date.now() + stateRepository.state.initiation.timeout + 1))
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 0,
+      pageSize: 0,
+      pageIndex: 0,
+      items: []
     })
 
-    it('processes pending observations with success', async () => {
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus'])
+    sftpRepository.findAllByStatus.and.resolveTo([{
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.PENDING,
+      createdAt: 1,
+      updatedAt: 1
+    }])
+    sftpRepository.postStatus.and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
+    })
+    sftpRepository.findLatest.and.resolveTo(null)
 
-        const observation = newObservation(event1, new Date(1))
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
 
-        eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
-            totalCount: 0,
-            pageSize: 0,
-            pageIndex: 0,
-            items: []
-        })
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
 
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus'])
-        sftpRepository.findAllByStatus.and.resolveTo([{
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.PENDING,
-            createdAt: 1,
-            updatedAt: 1
-        }])
-        sftpRepository.postStatus.and.resolveTo({
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.SUCCESS,
-            createdAt: 1,
-            updatedAt: 1
-        })
-        sftpRepository.findLatest.and.resolveTo(null)
+    archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Incomplete))
 
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
 
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
 
-        archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+  })
 
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
+  it('processes new observations w/ create trigger', async () => {
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
 
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    const observation = newObservation(event1, new Date())
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 1,
+      pageSize: 10,
+      pageIndex: 0,
+      items: [observation]
     })
 
-    it('processes pending observations with success before attachment timeout', async () => {
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
+    sftpRepository.findAllByStatus.and.resolveTo([])
+    sftpRepository.postStatus.and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
+    })
+    sftpRepository.findLatest.and.resolveTo(null)
+    sftpRepository.isProcessed.and.resolveTo(false)
 
-        const observation = newObservation(event1, new Date())
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
 
-        eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
-            totalCount: 0,
-            pageSize: 0,
-            pageIndex: 0,
-            items: []
-        })
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
 
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus'])
-        sftpRepository.findAllByStatus.and.resolveTo([{
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.PENDING,
-            createdAt: 1,
-            updatedAt: 1
-        }])
-        sftpRepository.postStatus.and.resolveTo({
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.SUCCESS,
-            createdAt: 1,
-            updatedAt: 1
-        })
-        sftpRepository.findLatest.and.resolveTo(null)
+    const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
+    archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
+    archiveFactory.createArchiver.and.returnValue(archiverSpy)
 
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
 
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
 
-        archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Complete))
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(archiverSpy.createArchive).toHaveBeenCalled()
+  })
 
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
+  it('processes updated observations w/ create/update trigger', async () => {
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
 
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    const observation = newObservation(event1, new Date())
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 1,
+      pageSize: 10,
+      pageIndex: 0,
+      items: [observation]
     })
 
-    it('processes pending observations after attachment timeout', async () => {
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
+    sftpRepository.findAllByStatus.and.resolveTo([])
+    sftpRepository.postStatus.and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
+    })
+    sftpRepository.findLatest.and.resolveTo(null)
+    sftpRepository.isProcessed.and.resolveTo(false)
 
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
 
-        const observation = newObservation(event1, new Date(Date.now() + stateRepository.state.initiation.timeout + 1))
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
 
-        eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
-            totalCount: 0,
-            pageSize: 0,
-            pageIndex: 0,
-            items: []
-        })
+    const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
+    archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
+    archiveFactory.createArchiver.and.returnValue(archiverSpy)
 
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus'])
-        sftpRepository.findAllByStatus.and.resolveTo([{
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.PENDING,
-            createdAt: 1,
-            updatedAt: 1
-        }])
-        sftpRepository.postStatus.and.resolveTo({
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.SUCCESS,
-            createdAt: 1,
-            updatedAt: 1
-        })
-        sftpRepository.findLatest.and.resolveTo(null)
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
 
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
 
-        archiveFactory.createArchiver.and.returnValue(newArchiver(ArchiveStatus.Incomplete))
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(archiverSpy.createArchive).toHaveBeenCalled()
+  })
 
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
+  it('skips processing of updated observations w/ create trigger', async () => {
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true, initiation: { rule: TriggerRule.Create, timeout: 60 } }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
 
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    const observation = newObservation(event1, new Date())
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 1,
+      pageSize: 10,
+      pageIndex: 0,
+      items: [observation]
     })
 
-    it('processes new observations w/ create trigger', async () => {
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
-
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
-
-        const observation = newObservation(event1, new Date())
-
-        eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
-            totalCount: 1,
-            pageSize: 10,
-            pageIndex: 0,
-            items: [observation]
-        })
-
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
-        sftpRepository.findAllByStatus.and.resolveTo([])
-        sftpRepository.postStatus.and.resolveTo({
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.SUCCESS,
-            createdAt: 1,
-            updatedAt: 1
-        })
-        sftpRepository.findLatest.and.resolveTo(null)
-        sftpRepository.isProcessed.and.resolveTo(false)
-
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
-
-        const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
-        archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
-        archiveFactory.createArchiver.and.returnValue(archiverSpy)
-
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
-
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
-
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
-        expect(archiverSpy.createArchive).toHaveBeenCalled()
+    const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
+    sftpRepository.findAllByStatus.and.resolveTo([])
+    sftpRepository.postStatus.and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
     })
+    sftpRepository.findLatest.and.resolveTo(null)
+    sftpRepository.isProcessed.and.resolveTo(true)
 
-    it('processes updated observations w/ create/update trigger', async () => {
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
+    const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
+    teamRepo.findTeamsByUserId.and.resolveTo([])
 
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+    const userRepo = jasmine.createSpyObj<MongooseUsersRepository>('userRepo', ['findUserById'])
+    userRepo.findUserById.and.resolveTo(null)
 
-        const observation = newObservation(event1, new Date())
+    const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
+    archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
+    archiveFactory.createArchiver.and.returnValue(archiverSpy)
 
-        eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
-            totalCount: 1,
-            pageSize: 10,
-            pageIndex: 0,
-            items: [observation]
-        })
+    const controller = new SftpController(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      sftpRepository,
+      sftpClient,
+      archiveFactory,
+      console,
+      teamRepo,
+      userRepo
+    )
 
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
-        sftpRepository.findAllByStatus.and.resolveTo([])
-        sftpRepository.postStatus.and.resolveTo({
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.SUCCESS,
-            createdAt: 1,
-            updatedAt: 1
-        })
-        sftpRepository.findLatest.and.resolveTo(null)
-        sftpRepository.isProcessed.and.resolveTo(false)
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
 
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(sftpRepository.postStatus).toHaveBeenCalledTimes(0)
+    expect(archiverSpy.createArchive).toHaveBeenCalledTimes(0)
+  })
 
-        const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
-        archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
-        archiveFactory.createArchiver.and.returnValue(archiverSpy)
+  // it('skips processed observations w/ create trigger', async () => {
+  // })
 
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
+  // it('waits for observations to contain all attachments', async () => {
+  // })
 
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
-
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
-        expect(archiverSpy.createArchive).toHaveBeenCalled()
-    })
-
-    it('skips processing of updated observations w/ create trigger', async () => {
-        stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true, initiation: { rule: TriggerRule.Create, timeout: 60 } }
-        const clockTickMillis = stateRepository.state.interval * 1000 + 1
-
-        const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
-        eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
-
-        const observation = newObservation(event1, new Date())
-
-        eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
-        eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
-            totalCount: 1,
-            pageSize: 10,
-            pageIndex: 0,
-            items: [observation]
-        })
-
-        const sftpRepository = jasmine.createSpyObj<SftpObservationRepository>('sftpObservationRepository', ['findAllByStatus', 'findLatest', 'postStatus', 'isProcessed'])
-        sftpRepository.findAllByStatus.and.resolveTo([])
-        sftpRepository.postStatus.and.resolveTo({
-            eventId: event1.id,
-            observationId: observation.id,
-            status: SftpStatus.SUCCESS,
-            createdAt: 1,
-            updatedAt: 1
-        })
-        sftpRepository.findLatest.and.resolveTo(null)
-        sftpRepository.isProcessed.and.resolveTo(true)
-
-        const teamRepo = jasmine.createSpyObj<MongooseTeamsRepository>('teamRepo', ['findTeamsByUserId'])
-        teamRepo.findTeamsByUserId.and.resolveTo([])
-
-        const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
-        archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
-        archiveFactory.createArchiver.and.returnValue(archiverSpy)
-
-        const controller = new SftpController(
-            stateRepository,
-            eventRepository,
-            observationRepository,
-            sftpRepository,
-            sftpClient,
-            archiveFactory,
-            console,
-            teamRepo
-        )
-
-        await controller.start()
-        clock.tick(clockTickMillis)
-        await controller.stop()
-
-        expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.findAllByStatus).toHaveBeenCalledTimes(1)
-        expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-        expect(sftpRepository.postStatus).toHaveBeenCalledTimes(0)
-        expect(archiverSpy.createArchive).toHaveBeenCalledTimes(0)
-    })
-
-    // it('skips processed observations w/ create trigger', async () => {
-    // })
-
-    // it('waits for observations to contain all attachments', async () => {
-    // })
-
-    // it('processes incomplete observation after timeout', async () => {
-    // })
+  // it('processes incomplete observation after timeout', async () => {
+  // })
 })

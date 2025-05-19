@@ -8,6 +8,7 @@ import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../co
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
+import { MongooseUsersRepository } from 'src/adapters/adapters.sftp.users';
 
 /**
  * Class used to process observations for SFTP
@@ -66,6 +67,8 @@ export class SftpController {
 
   private mongooseTeamsRepository: MongooseTeamsRepository;
 
+  private userRepository: MongooseUsersRepository
+
   /**
    * Constructor.
    * @param stateRepository The plugins configuration.
@@ -82,7 +85,8 @@ export class SftpController {
     sftpClient: SFTPClient,
     archiverFactory: ArchiverFactory,
     console: Console,
-    mongooseTeamsRepository: MongooseTeamsRepository
+    mongooseTeamsRepository: MongooseTeamsRepository,
+    userRepository: MongooseUsersRepository
   ) {
     this.stateRepository = stateRepository;
     this.eventRepository = eventRepository;
@@ -93,6 +97,7 @@ export class SftpController {
     this.configuration = null
     this.console = console;
     this.mongooseTeamsRepository = mongooseTeamsRepository;
+    this.userRepository = userRepository;
   }
 
   /**
@@ -256,7 +261,8 @@ export class SftpController {
         // Filter out events from the teams response (bug) and teams that are not in the event
         const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
         const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
-        const filename = (`${event.name}_${teamNames}${observation.userId}_${observation.id}`)
+        const user = await this.userRepository.findUserById(observation.userId);
+        const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
         this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
         await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
