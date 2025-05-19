@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch WebApp",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/web-app/src",
+      "sourceMaps": true
+    },
+    {
+      "name": "Launch AdminApp",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4201",
+      "webRoot": "${workspaceFolder}/web-app/admin/src",
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to MAGE Service",
+      "port": 9229, // For Node.js inspect
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "cwd": "${workspaceFolder}/service"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Backend + WebApp",
+      "configurations": [
+        "Attach to MAGE Service",
+        "Launch WebApp"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug Backend + AdminApp",
+      "configurations": [
+        "Attach to MAGE Service",
+        "Launch AdminApp"
+      ],
+      "stopAll": true
+    }
+  ]
+}
