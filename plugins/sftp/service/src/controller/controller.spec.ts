@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import fs from 'fs'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { MageEvent, MageEventAttrs, MageEventId, MageEventRepository, copyMageEventAttrs } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
@@ -39,7 +40,7 @@ function newEvent(id: MageEventId): MageEventAttrs {
 }
 
 function newObservation(event: MageEvent, lastModified: Date): ObservationAttrs {
-  return  {
+  return {
     id: "1",
     eventId: event.id,
     userId: "test",
@@ -88,7 +89,7 @@ describe('automated processing', () => {
   let allEvents: Map<MageEventId, MageEvent>
   let stateRepository: TestPluginStateRepository
   let eventObservationRepositories: Map<MageEventId, jasmine.SpyObj<EventScopedObservationRepository>>
-  let observationRepository: (event: MageEventId) => Promise<jasmine.SpyObj<EventScopedObservationRepository>> 
+  let observationRepository: (event: MageEventId) => Promise<jasmine.SpyObj<EventScopedObservationRepository>>
   let archiveFactory: jasmine.SpyObj<ArchiverFactory>
   let sftpClient: jasmine.SpyObj<SFTPClient>
   let clock: jasmine.Clock
@@ -113,6 +114,7 @@ describe('automated processing', () => {
     stateRepository = new TestPluginStateRepository()
     clock = jasmine.clock().install()
     archiveFactory = jasmine.createSpyObj<ArchiverFactory>('archiverFactory', ['createArchiver'])
+    spyOn(fs, 'readFileSync').and.returnValue(Buffer.from('mock ssh key content'))
     sftpClient = jasmine.createSpyObj<SFTPClient>('sftpClient', ['connect', 'put', 'end'])
     sftpClient.connect.and.resolveTo()
     sftpClient.end.and.resolveTo()
@@ -424,7 +426,7 @@ describe('automated processing', () => {
     expect(sftpRepository.postStatus).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
     expect(archiverSpy.createArchive).toHaveBeenCalled()
   })
-  
+
   it('processes updated observations w/ create/update trigger', async () => {
     stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
     const clockTickMillis = stateRepository.state.interval * 1000 + 1
@@ -481,7 +483,7 @@ describe('automated processing', () => {
   })
 
   it('skips processing of updated observations w/ create trigger', async () => {
-    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true, initiation: {rule: TriggerRule.Create,timeout: 60 } }
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true, initiation: { rule: TriggerRule.Create, timeout: 60 } }
     const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
     const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
