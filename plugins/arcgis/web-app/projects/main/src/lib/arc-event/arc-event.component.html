@@ -1,11 +1,30 @@
 <div>
-    <mat-card appearance="outlined">
-      <mat-card-title>Events</mat-card-title>
-      <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
+    <mat-card appearance="outlined" class="d-flow-root">
+      <mat-card-title-group class="w-100">
+        <div class="arcEvent__info">
+          <mat-card-title>Events</mat-card-title>
+          <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
+        </div>
+        <mat-form-field class="select-event">
+          <mat-label>Select Events</mat-label>
+          <mat-select #matRef multiple [(value)]="selectedValues" placeholder="Select Events" (closed)="clearFilterValue()">
+            <input
+              type="text"
+              placeholder="Filter Events..."
+              [(ngModel)]="filterValue"
+              (click)="$event.stopPropagation()"
+              class="select-text-box"
+            />
+            <mat-option *ngFor="let item of model.allEvents" [style.display]="getVisibility(item)? '' : 'none'" [value]="item.id" (onSelectionChange)="onSelectionChange(item, $event)">
+              {{item.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </mat-card-title-group>
     <mat-card-content>
-      <section class="arc-event-sync">
+      <section class="arc-event-sync event-card">
         <div *ngIf="!model.events.length">
-          There are no events synchronizing to ArcGIS layers.
+          There are currently no events synchronizing to ArcGIS layers.
           <mat-divider></mat-divider>
         </div>
 
@@ -16,10 +35,10 @@
                 <div>
                   {{ event.name }}
                 </div>
-                <div *ngIf="event.layers.length; else noLayers">
+                <div *ngIf="getSelectedLayers(event).length; else noLayers">
                   <div>
-                    <ng-container *ngFor="let featureLayer of event.layers; let i = index">
-                      {{ layerDisplay(featureLayer) }}<span *ngIf="i < event.layers.length - 1">, </span>
+                    <ng-container *ngFor="let featureLayer of getSelectedLayers(event); let i = index">
+                      {{ layerDisplay(featureLayer) }}<span *ngIf="i < getSelectedLayers(event).length - 1">, </span>
                     </ng-container>
                   </div>
                 </div>
@@ -35,11 +54,18 @@
                 <button mat-icon-button color="primary" (click)="onEditEvent(event)">
                   <mat-icon>edit</mat-icon>
                 </button>
+                <button mat-icon-button color="primary" (click)="onRemoveEvent(event)">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
               </div>
             </mat-list-item>
             <mat-divider *ngIf="!last"></mat-divider>
           </ng-container>
-        </mat-list>        
+        </mat-list>
+      </section>
+      <section>
+        <button mat-flat-button color="primary" matDialogClose
+          (click)="saveChanges()" class="save-button">SAVE</button>
       </section>
     </mat-card-content>
   </mat-card>
@@ -55,9 +81,7 @@
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose
-      (click)="saveChanges()">SAVE</button>
+    <button mat-button matDialogClose>CLOSE</button>
   </mat-dialog-actions>
 </ng-template>
 </div>
