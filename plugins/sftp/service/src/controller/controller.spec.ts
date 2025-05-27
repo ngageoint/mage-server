@@ -117,6 +117,7 @@ describe('automated processing', () => {
 
     stateRepository = new TestPluginStateRepository()
     clock = jasmine.clock().install()
+    spyOn(fs, 'readFileSync').and.returnValue(Buffer.from('mock ssh key content'))
 
     // Create a spy on the SFTPClient constructor
     spyOn(SFTPClient.prototype, 'connect').and.resolveTo();
