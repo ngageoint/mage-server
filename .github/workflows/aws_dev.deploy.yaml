@@ -48,6 +48,9 @@ jobs:
         if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
         env:
           SERVICE: "mage${{ env.IMAGE_TAG }}"
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: "/mage/server"
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
           aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment

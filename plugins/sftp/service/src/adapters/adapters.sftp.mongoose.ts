@@ -12,8 +12,8 @@ const SftpObservationsSchema = new mongoose.Schema({
   eventId: { type: Number, required: true, unique: true },
   observationId: { type: String, required: true },
   status: { type: String, enum: Object.values(SftpStatus), required: true }
-},{
-  timestamps: { createdAt: 'createdAt',updatedAt: 'updatedAt' }
+}, {
+  timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
 
 export interface SftpAttrs {
@@ -48,17 +48,17 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
   }
 
   async findAll(eventId: MageEventId): Promise<SftpAttrs[]> {
-    const documents = await this.model.find({eventId: eventId})
+    const documents = await this.model.find({ eventId: eventId })
     return documents.map(document => document.toJSON())
   }
 
   async findAllByStatus(eventId: MageEventId, status: SftpStatus[]): Promise<SftpAttrs[]> {
-    const documents = await this.model.find({eventId: eventId, status: { $in: status}})
+    const documents = await this.model.find({ eventId: eventId, status: { $in: status } })
     return documents.map(document => document.toJSON())
   }
 
   async findLatest(eventId: MageEventId): Promise<SftpAttrs | null> {
-    const document =  await this.model.findOne({ eventId: eventId }, { updatedAt: true }, { sort: { updatedAt: -1 }, limit: 1 })
+    const document = await this.model.findOne({ eventId: eventId }, { updatedAt: true }, { sort: { updatedAt: -1 }, limit: 1 })
     return document ? (document.toJSON() as SftpAttrs) : null
   }
 

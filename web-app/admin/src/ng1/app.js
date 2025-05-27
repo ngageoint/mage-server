@@ -71,19 +71,19 @@ app
   .component('fileBrowser', fileBrowser)
   .controller('NavController', require('./mage/mage-nav.controller'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
-  .animation('.slide-down', function() {
+  .animation('.slide-down', function () {
     return {
-      enter: function(element) {
+      enter: function (element) {
         element.hide().slideDown();
       },
-      leave: function(element) {
+      leave: function (element) {
         element.slideUp();
       }
     };
   })
   .config(config)
   .run(run);
-    
+
 require('./mage');
 require('./authentication') // for modal in admin pages if token expires
 require('./factories');
@@ -96,17 +96,17 @@ config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$ani
 
 function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvider) {
   $httpProvider.defaults.withCredentials = true;
-  $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
+  $httpProvider.defaults.headers.post = { 'Content-Type': 'application/x-www-form-urlencoded' };
 
   $animateProvider.classNameFilter(/ng-animatable/);
 
   function resolveAdmin() {
     return {
-      user: ['$q', 'UserService', function($q, UserService) {
+      user: ['$q', 'UserService', function ($q, UserService) {
         const deferred = $q.defer();
 
-        UserService.getMyself().then(function(myself) {
-          if(myself == null){
+        UserService.getMyself().then(function (myself) {
+          if (myself == null) {
             deferred.reject();
             return;
           }
@@ -369,8 +369,8 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
   });
 }
 
-run.$inject = ['$rootScope', '$uibModal', '$state', 'Api'];
-function run($rootScope, $uibModal, $state, Api) {
+run.$inject = ['$rootScope', '$uibModal', '$state', 'Api', 'UserService'];
+function run($rootScope, $uibModal, $state, Api, UserService) {
 
   $rootScope.$on('event:auth-loginRequired', function (e, response) {
     const stateExceptions = ['landing'];
@@ -405,10 +405,13 @@ function run($rootScope, $uibModal, $state, Api) {
           if (!successful) {
             modalInstance = $uibModal.open(options);
             modalInstance.closed.then(modalClosed);
+          } else if (!UserService.amAdmin) {
+            // Get the hostname and redirect to the home page if user is not admin
+            const hostname = window.location.origin;
+            window.location.href = `${hostname}/#/home`;
           }
         };
         modalInstance.closed.then(modalClosed);
-
       });
     }
   });

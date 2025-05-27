@@ -1,13 +1,18 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEvent, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { AttachmentStore, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { UserRepository } from "@ngageoint/mage.service/lib/entities/users/entities.users";
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
-import { SftpAttrs, SftpObservationRepository, SftpStatus } from '../adapters/adapters.sftp.mongoose';
 import fs from 'fs';
+import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
+import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
+import { Connection } from 'mongoose';
+
+const { name: packageName } = require('../../package.json')
 
 /**
  * Class used to process observations for SFTP
@@ -30,6 +35,16 @@ export class SftpController {
   private eventRepository: MageEventRepository;
 
   /**
+   * Used to get team information for observations.
+   */
+  private teamRepository: MongooseTeamsRepository;
+
+  /**
+   * Used to get user information for observations.
+   */
+  private userRepository: UserRepository;
+
+  /**
    * Used to get new observations.
    */
   private observationRepository: ObservationRepositoryForEvent;
@@ -47,12 +62,12 @@ export class SftpController {
   /**
    * SFTP client configuration
    */
-  private sftpClient: SFTPClient
+  private sftpClient: SFTPClient = new SFTPClient();
 
   /**
    * SFTP plugin configuration
    */
-  private configuration: SFTPPluginConfig | null
+  private configuration: SFTPPluginConfig | null = null;
 
   /**
    * Factory to retrieve archiver based on plugin configuration
@@ -73,22 +88,35 @@ export class SftpController {
    * @param console Used to log to the console.
    */
   constructor(
-    stateRepository: PluginStateRepository<SFTPPluginConfig>,
-    eventRepository: MageEventRepository,
-    observationRepository: ObservationRepositoryForEvent,
-    sftpObservationRepository: SftpObservationRepository,
-    sftpClient: SFTPClient,
-    archiverFactory: ArchiverFactory,
-    console: Console
+    console: Console,
+    {
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      userRepository,
+      attachmentStore
+    }: {
+      stateRepository: PluginStateRepository<SFTPPluginConfig>;
+      eventRepository: MageEventRepository;
+      observationRepository: ObservationRepositoryForEvent;
+      userRepository: UserRepository;
+      attachmentStore: AttachmentStore;
+    },
+    dbConnection: Connection
   ) {
+    const sftpObservationModel = SftpObservationModel(dbConnection, `${packageName}/observations`)
+    const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
+    const teamRepo = new MongooseTeamsRepository(dbConnection)
+    const archiverFactory = new ArchiverFactory(userRepository, attachmentStore)
+
     this.stateRepository = stateRepository;
     this.eventRepository = eventRepository;
     this.sftpObservationRepository = sftpObservationRepository;
     this.observationRepository = observationRepository;
-    this.sftpClient = sftpClient
     this.archiveFactory = archiverFactory
-    this.configuration = null
     this.console = console;
+    this.teamRepository = teamRepo;
+    this.userRepository = userRepository;
   }
 
   /**
@@ -255,14 +283,19 @@ export class SftpController {
           result.archive.pipe(stream)
           // TODO: This will fail if the observation has a .mov file
           await result.archive.finalize()
-          await this.sftpClient.put(stream, `${sftpPath}/${observation.id}.zip`)
+          const teams = await this.teamRepository.findTeamsByUserId(observation.userId);
+          // Filter out events from the teams response (bug) and teams that are not in the event
+          const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
+          const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
+          const user = await this.userRepository.findById(observation.userId || '')
+          const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
+          this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
+          await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
           await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
         } catch (error) {
           this.console.error(`error uploading observation ${observation.id}`, error)
         }
       } else {
-        this.console.log(`posting status of pending`)
-
         this.console.info(`pending observation ${observation.id}`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING)
       }
