@@ -27,6 +27,30 @@
         "<node_internals>/**"
       ],
       "cwd": "${workspaceFolder}/service"
+    },
+    {
+      "name": "mage server instance",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start:dev"
+      ],
+      "trace": true,
+      "env": {
+        "NODE_PATH": "${workspaceFolder}/instance/node_modules",
+        "MAGE_MONGO_URL": "mongodb://127.0.0.1/magedb"
+      },
+      "cwd": "${workspaceFolder}/instance",
+      "console": "integratedTerminal",
+      "preLaunchTask": "service:build",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/service/lib/**/*.js",
+        "${workspaceFolder}/plugins/sftp/service/lib/**/*.js",
+        "${workspaceFolder}/plugins/arcgis/service/lib/**/*.js"
+      ]
     }
   ],
   "compounds": [
