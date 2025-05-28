@@ -23,6 +23,24 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - Protect against disabling all authentications.
 - Problem with OAuth web login
 
+## [6.3.0](https://github.com/ngageoint/mage-server/releases/tag/6.3.0)
+### Service
+#### Features
+* ArcGIS Plugin support
+* SFTP Plugin Support
+* Support for MongoDB 6.0
+* Dependency updates
+### Web App
+#### Features
+* ArcGIS Plugin support
+* SFTP Plugin Support
+* Moved authentication settings to own admin tab
+* Redirect host added for saml config
+* Fix for issue with arabic characters in filenames
+* Fix for observation filter options
+* Dependency updates
+* Map UI updates
+
 ## [6.2.13](https://github.com/ngageoint/mage-server/releases/tag/6.2.13)
 ### Service
 #### Features
