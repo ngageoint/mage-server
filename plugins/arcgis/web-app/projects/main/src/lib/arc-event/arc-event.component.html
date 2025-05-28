@@ -1,26 +1,23 @@
 <div>
-    <mat-card appearance="outlined" class="d-flow-root">
-      <mat-card-title-group class="w-100">
-        <div class="arcEvent__info">
-          <mat-card-title>Events</mat-card-title>
-          <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
-        </div>
-        <mat-form-field class="select-event">
-          <mat-label>Select Events</mat-label>
-          <mat-select #matRef multiple [(value)]="selectedValues" placeholder="Select Events" (closed)="clearFilterValue()">
-            <input
-              type="text"
-              placeholder="Filter Events..."
-              [(ngModel)]="filterValue"
-              (click)="$event.stopPropagation()"
-              class="select-text-box"
-            />
-            <mat-option *ngFor="let item of model.allEvents" [style.display]="getVisibility(item)? '' : 'none'" [value]="item.id" (onSelectionChange)="onSelectionChange(item, $event)">
-              {{item.name}}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </mat-card-title-group>
+  <mat-card appearance="outlined" class="d-flow-root">
+    <mat-card-title-group class="w-100">
+      <div class="arcEvent__info">
+        <mat-card-title>Events</mat-card-title>
+        <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
+      </div>
+      <mat-form-field class="select-event">
+        <mat-label>Select Events</mat-label>
+        <mat-select #matRef multiple [(value)]="selectedValues" placeholder="Select Events"
+          (closed)="clearFilterValue()">
+          <input type="text" placeholder="Filter Events..." [(ngModel)]="filterValue" (click)="$event.stopPropagation()"
+            class="select-text-box" />
+          <mat-option *ngFor="let item of model.allEvents" [style.display]="getVisibility(item)? '' : 'none'"
+            [value]="item.id" (onSelectionChange)="onSelectionChange(item, $event)">
+            {{item.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-card-title-group>
     <mat-card-content>
       <section class="arc-event-sync event-card">
         <div *ngIf="!model.events.length">
@@ -42,7 +39,7 @@
                     </ng-container>
                   </div>
                 </div>
-                
+
                 <ng-template #noLayers>
                   <div>This event is not synchronizing to any ArcGIS layers.</div>
                 </ng-template>
@@ -64,24 +61,23 @@
         </mat-list>
       </section>
       <section>
-        <button mat-flat-button color="primary" matDialogClose
-          (click)="saveChanges()" class="save-button">SAVE</button>
+        <button mat-flat-button color="primary" matDialogClose (click)="saveChanges()" class="save-button">SAVE</button>
       </section>
     </mat-card-content>
   </mat-card>
 
   <ng-template #editEventDialog let-data>
-  <h2 matDialogTitle>ArcGIS layers that MAGE event named {{currentEditingEvent.name}} is synchronizing</h2>
-  <mat-dialog-content>
-    <div class="arc-layers" *ngFor="let arcLayer of layers">
-      <div class="featureLayer__value">
-        <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
-        {{layerDisplay(arcLayer)}}
+    <h2 matDialogTitle>ArcGIS layers that MAGE event named {{currentEditingEvent.name}} is synchronizing</h2>
+    <mat-dialog-content>
+      <div class="arc-layers" *ngFor="let arcLayer of layers">
+        <div class="featureLayer__value">
+          <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
+          {{layerDisplay(arcLayer)}}
+        </div>
       </div>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CLOSE</button>
-  </mat-dialog-actions>
-</ng-template>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button matDialogClose>CLOSE</button>
+    </mat-dialog-actions>
+  </ng-template>
 </div>

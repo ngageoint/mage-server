@@ -3,7 +3,7 @@
     max-width: 93%
 }
 
-.arcEvent__button{
+.arcEvent__button {
     width: 7%;
 }
 
@@ -12,15 +12,15 @@
     margin-bottom: 12px;
 }
 
-.select-event-overlay{
+.select-event-overlay {
     width: 50vw;
 }
 
-.w-100{
+.w-100 {
     width: 100% !important;
 }
 
-.save-button{
+.save-button {
     float: inline-end;
     margin-top: 15px;
     margin-right: 19px;
@@ -32,7 +32,7 @@
     margin-top: 5px;
 }
 
-.select-text-box{
+.select-text-box {
     height: 45px;
     width: 100%;
 }
@@ -53,13 +53,15 @@
             background-color: #1E88E5 !important;
             color: #fff !important;
         }
+
         .mat-option {
             border-bottom: 1px solid black;
             border-left: 1px solid black;
             border-right: 1px solid black;
+
             .mat-pseudo-checkbox {
                 display: none !important;
             }
         }
     }
-  }
+}

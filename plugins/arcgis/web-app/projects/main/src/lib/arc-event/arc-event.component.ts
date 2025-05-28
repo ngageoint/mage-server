@@ -55,7 +55,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
   }
 
   selectedValues: number[] = [];
-  
+
   isLoading: boolean;
   currentEditingEvent: ArcEvent;
   layers: ArcEventLayer[];
@@ -73,17 +73,17 @@ export class ArcEventComponent implements OnInit, OnChanges {
     this._model = new ArcEventsModel();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   /// Activates On Every View Change, Is Configured to Set Initial State
   /// As Soon As Data is Available, Then locks Changes to Not Activate Unless
   /// A State Change is made that requires an update.
   ngOnChanges(changes: SimpleChanges): void {
-    if(
+    if (
       !this.configSet &&
       this.config.featureServices.length > 0 &&
       this.model.allEvents.length === 0
-    ){
+    ) {
       this.configSet = true;
       this.arcService.fetchEvents().subscribe(x => this.setAllEvents(x));
     }
@@ -94,9 +94,9 @@ export class ArcEventComponent implements OnInit, OnChanges {
   }
 
   /// Returns a list of values that differ between two lists of ArcEvents
-  getDifferences(left: ArcEvent[], right: ArcEvent[]): ArcEvent[]{
+  getDifferences(left: ArcEvent[], right: ArcEvent[]): ArcEvent[] {
     return left.filter(l =>
-      !right.some(r => 
+      !right.some(r =>
         l.id === r.id));
   }
 
@@ -116,7 +116,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
   }
 
   /// On Initial Load this will store all available events into model.allEvents
-  setAllEvents(x: MageEvent[]){
+  setAllEvents(x: MageEvent[]) {
     if (this.model.allEvents.map((aE) => aE.name).filter((eN) =>
       x.map((mE) => mE.name).includes(eN)).length) return;
     console.log("Loading All Available Events")
@@ -133,11 +133,11 @@ export class ArcEventComponent implements OnInit, OnChanges {
   /// On Initial Load, this checks the database loaded value for selected events
   /// And Adds them to the list of select box selected values, which in turn adds them
   /// to model.events
-  LoadSelectedEvents(){
+  LoadSelectedEvents() {
     console.log("Loading Previously Selected Events")
     let events: (string | number)[] = [];
-    for (const fs of this.config.featureServices){
-      for (const l of fs.layers){
+    for (const fs of this.config.featureServices) {
+      for (const l of fs.layers) {
         events.push(...<[]>l.events?.map(x => x))
       }
     }
@@ -147,10 +147,10 @@ export class ArcEventComponent implements OnInit, OnChanges {
     }
     else events = [...new Set(events)]; /// needs to be distinct.
     let e = null;
-    for (const event of events) { 
-      if (typeof(event) == "string") {
+    for (const event of events) {
+      if (typeof (event) == "string") {
         e = this.model.allEvents.find((x) => x.name === event);
-      } else if (typeof(event) == "number") { 
+      } else if (typeof (event) == "number") {
         e = this.model.allEvents.find((x) => x.id === event);
       }
       if (!e) {
@@ -193,23 +193,23 @@ export class ArcEventComponent implements OnInit, OnChanges {
     this.dialog.open<unknown, unknown, string>(this.selectEventTemplate);
   }
 
-  onSelectionChange(arcEventModified: ArcEvent, e: MatOptionSelectionChange){
+  onSelectionChange(arcEventModified: ArcEvent, e: MatOptionSelectionChange) {
     let option: MatOption = e.source;
     if (!option) return
     if (option.selected) this.onAddEvent(arcEventModified);
     else this.onRemoveEvent(arcEventModified)
   }
 
-  onAddEvent(event: ArcEvent){
+  onAddEvent(event: ArcEvent) {
     console.log('Adding Event to List of Selected Events');
-    let temp: ArcEventsModel = {...this.model}
+    let temp: ArcEventsModel = { ...this.model }
     temp.events.push(event);
     this.model = Object.assign({}, temp);
   }
 
-  onRemoveEvent(event: ArcEvent){
+  onRemoveEvent(event: ArcEvent) {
     console.log('Removing Event to List of Selected Events');
-    let temp: ArcEventsModel = {...this.model}
+    let temp: ArcEventsModel = { ...this.model }
     temp.events = temp.events.filter((e) => e != event);
     this.model = Object.assign({}, temp);
   }
@@ -230,16 +230,16 @@ export class ArcEventComponent implements OnInit, OnChanges {
 
   /// This translates model.events to database format, which allows them to ber easily saved
   /// Directly from the stated value
-  getEventsInFeatureFormat(featureService: FeatureServiceConfig): FeatureLayerConfig[]{
-    let values :FeatureLayerConfig[] = [];
+  getEventsInFeatureFormat(featureService: FeatureServiceConfig): FeatureLayerConfig[] {
+    let values: FeatureLayerConfig[] = [];
     for (let l of featureService.layers) {
       values.push({
         layer: l.layer,
         geometryType: l.geometryType,
-        events: [...this.model.events.filter((x) => x.layers.map((y) => { 
+        events: [...this.model.events.filter((x) => x.layers.map((y) => {
           if (y.name === l.layer && y.isSelected) {
             return y.name
-          } else return "" 
+          } else return ""
         }).indexOf(l.layer as string) >= 0)
           .map((z) => z.name)]
       })
