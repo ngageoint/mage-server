@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.arcgis.web-app",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0",
   "peerDependencies": {
     "@ngageoint/mage.web-app": "6.3.0"
   },

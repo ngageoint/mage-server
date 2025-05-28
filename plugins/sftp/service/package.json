@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.sftp.service",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.1",
   "description": "The SFTP service package is a MAGE server plugin that sends observations to and SFTP location on create and update.",
   "main": "lib/index.js",
   "scripts": {

@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.arcgis.service",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.1",
   "description": "A mage service plugin that synchronizes mage observations to a configured ArcGIS feature layer.",
   "main": "lib/index.js",
   "files": [
