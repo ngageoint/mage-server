@@ -5,8 +5,9 @@ import { UserRepository } from "@ngageoint/mage.service/lib/entities/users/entit
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
-import { SFTPPluginConfig, defaultSFTPPluginConfig, encryptDecrypt } from '../configuration/SFTPPluginConfig';
+import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
+import fs from 'fs';
 import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
@@ -124,7 +125,7 @@ export class SftpController {
    */
   public async getConfiguration(): Promise<SFTPPluginConfig> {
     if (this.configuration === null) {
-      return await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? encryptDecrypt(x, false) : this.stateRepository.put(defaultSFTPPluginConfig))
+      return await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? x : this.stateRepository.put(defaultSFTPPluginConfig))
     } else {
       return this.configuration
     }
@@ -136,8 +137,7 @@ export class SftpController {
    */
   public async updateConfiguration(configuration: SFTPPluginConfig) {
     try {
-      let config = await encryptDecrypt(configuration, true);
-      await this.stateRepository.put(config)
+      await this.stateRepository.put(configuration)
     } catch (err) {
       this.console.log(`ERROR: updateConfiguration: ${err}`)
     }
@@ -151,13 +151,18 @@ export class SftpController {
     if (!this.configuration.enabled) { return }
 
     try {
-      await this.sftpClient.connect(this.configuration.sftpClient)
+      const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string;
+      const sftpKeyFile = fs.readFileSync(sftpKeyFilename);
+      await this.sftpClient.connect({
+        host: this.configuration.sftpClient.host,
+        username: this.configuration.sftpClient.username,
+        privateKey: sftpKeyFile
+      });
+      this.isRunning = true;
+      await this.processAndScheduleNext()
     } catch (e) {
       this.console.error("error connecting to sftp endpoint", e)
     }
-
-    this.isRunning = true;
-    await this.processAndScheduleNext()
   }
 
   /**
@@ -272,18 +277,24 @@ export class SftpController {
 
     if (result instanceof ArchiveResult) {
       if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
-        const stream = new PassThrough()
-        result.archive.pipe(stream)
-        await result.archive.finalize()
-        const teams = await this.teamRepository.findTeamsByUserId(observation.userId);
-        // Filter out events from the teams response (bug) and teams that are not in the event
-        const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
-        const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
-        const user = await this.userRepository.findById(observation.userId || '')
-        const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
-        this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
-        await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
-        await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
+        this.console.log(`posting status of success`)
+        try {
+          const stream = new PassThrough()
+          result.archive.pipe(stream)
+          // TODO: This will fail if the observation has a .mov file
+          await result.archive.finalize()
+          const teams = await this.teamRepository.findTeamsByUserId(observation.userId);
+          // Filter out events from the teams response (bug) and teams that are not in the event
+          const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
+          const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
+          const user = await this.userRepository.findById(observation.userId || '')
+          const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
+          this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
+          await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
+          await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
+        } catch (error) {
+          this.console.error(`error uploading observation ${observation.id}`, error)
+        }
       } else {
         this.console.info(`pending observation ${observation.id}`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING)

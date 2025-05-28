@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import fs from 'fs'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { MageEvent, MageEventAttrs, MageEventId, MageEventRepository, copyMageEventAttrs } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
@@ -116,6 +117,7 @@ describe('automated processing', () => {
 
     stateRepository = new TestPluginStateRepository()
     clock = jasmine.clock().install()
+    spyOn(fs, 'readFileSync').and.returnValue(Buffer.from('mock ssh key content'))
 
     // Create a spy on the SFTPClient constructor
     spyOn(SFTPClient.prototype, 'connect').and.resolveTo();
