@@ -17,10 +17,10 @@ WORKDIR ${MAGE_HOME}
 RUN ls -l \
     && npm i --omit dev @ngageoint/mage.service@6.3.0 \
     && npm i --omit dev @ngageoint/mage.web-app@6.3.0 \
-    && npm i --omit dev @ngageoint/mage.arcgis.service@1.0.0-beta.1 \
-    && npm i --omit dev @ngageoint/mage.arcgis.web-app@1.0.0 \
-    && npm i --omit dev @ngageoint/mage.sftp.service@1.0.0-beta.1 \
-    && npm i --omit dev @ngageoint/mage.sftp.web@1.0.0-beta.1 \
+    && npm i --omit dev @ngageoint/mage.arcgis.service@1.0.0-beta.2 \
+    && npm i --omit dev @ngageoint/mage.arcgis.web-app@1.0.0-beta.2 \
+    && npm i --omit dev @ngageoint/mage.sftp.service@1.0.0-beta.2 \
+    && npm i --omit dev @ngageoint/mage.sftp.web@1.0.0-beta.2 \
     && ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage

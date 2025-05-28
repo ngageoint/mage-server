@@ -1,8 +1,8 @@
 {
   "name": "@ngageoint/mage.sftp.web",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "peerDependencies": {
-    "@ngageoint/mage.web-app": "^6.2.9 || ^6.3.0-beta"
+    "@ngageoint/mage.web-app": "6.3.0"
   },
   "dependencies": {
     "tslib": "^1.10.0"
