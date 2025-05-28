@@ -1,0 +1,19 @@
+dn: ou=users,dc=shire,dc=com
+objectClass: organizationalUnit
+ou: users
+
+dn: uid=frodob,ou=users,dc=shire,dc=com
+objectClass: inetOrgPerson
+uid: frodob
+sn: Baggins
+cn: Frodo Baggins
+userPassword: P@$$Word1234!@#$
+mail: frodo.baggins@shire.com
+
+dn: uid=sammyg,ou=users,dc=shire,dc=com
+objectClass: inetOrgPerson
+uid: sammyg
+sn: Gamgee
+cn: Samwise Gamgee
+userPassword: P@$$Word!@#$1234
+mail: damwise.gamgee@shire.com
