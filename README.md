@@ -1,6 +1,6 @@
 # MAGE Web Service & Web App
 
-The **M**obile **A**wareness **G**EOINT **E**nvironment, or [MAGE](https://ngageoint.github.io/MAGE) platform, provides
+The [MAGE](https://ngageoint.github.io/MAGE) platform, provides
 mobile situational awareness and data collection capabilities.  This project comprises the ReST API web service the MAGE
 client apps use to submit and fetch MAGE data, as well as the browser-based web app.  The MAGE web app provides user
 interfaces to view and edit MAGE observations similar to the MAGE mobile apps, and additionally provides the
@@ -273,40 +273,205 @@ and [`@ngageoint/mage.web-app`](./web-app/).  There are more optional packages i
 directory.  The [`instance`](./instance/) package is an example of assembling all the packages into a running MAGE
 server instance.
 
-First, build the `service` package.
-```bash
-cd service
-npm ci
-npm run build
+The project's root [`package.json`](./package.json) provides convenience script entries to install, build, and run
+the MAGE server components.
+
+Download and install the dependencies:
+
+    git clone git@github.com:ngageoint/mage-server.git
+    cd mage-server
+    npm install
+
+Build the app without plugins
+
+    npm run build
+
+Optional: Build the app with plugins (arcgis and sftp)
+
+    npm run build-all
+
+Run an instance of mongodb via Docker Desktop:
+
+    docker run -d -p 27017:27017 mongo:6.0.4
+
+Run the app with the `instance/config.ts` settings
+
+    npm start
+
+If the monogo database is up and running and everything is built, you should see a message like:
+
+    2025-05-13T20:12:36.120Z - info: MAGE Server listening at address 127.0.0.1 on port 4242
+
+Open a browser to: <http://127.0.0.1:4242>. If the ArcGIS and SFTP plug-ins were built, you'll see those tabs on the sidebar in Settings.
+
+As you make changes, you can either build the entire app `npm run build` in the root directory, or only the parts that you are working on (web-app, service, plugin, etc.).
+
+## Running from source
+
+To run the Mage server directly from your _built_ source tree, build the `service`, `web-app`, and any plugin packages 
+you want to run as described in the above section.  Then, from the `instance` directory, run
+```shell
+npm run start
 ```
-Then build the `web-app` package.
-```bash
-cd web-app
-npm ci
-npm run build
+That [NPM script](./instance/package.json) will run the `mage.service` script from your working tree using the 
+[configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
+your needs.
+
+### Local runtime issues
+
+You may run into some problems running the Mage instance from your working tree due to NPM's dependency installation
+behavior and/or Node's module resolution algorithm.  For example, if you are working on a plugin within this core
+Mage repository, you may see errors as plugins initialize.  This is usually a null reference error that looks something 
+like
 ```
-Build optional plugin packages similarly.:
-```bash
-cd plugins/nga-msi
-npm ci
-npm link ../../service # **IMPORTANT** see below
-npm run build
+2024-08-23T02:42:52.783Z - [mage.image] intializing image plugin ...
+...
+/<...>/mage-server/plugins/image/service/lib/processor.js:53
+            return yield stateRepo.get().then(x => !!x ? x : stateRepo.put(exports.defaultImagePluginConfig));
+                                   ^
+
+TypeError: Cannot read properties of undefined (reading 'get')
+    at /<...>/mage-server/plugins/image/service/lib/processor.js:53:36
 ```
-After building the core packages, install them as dependencies in the `instance` package.
-```bash
-cd instance
-npm i 
+This is usually because the plugin package has a peer depedency on `@ngageoint/mage.service`, which NPM pulls from the
+public [registry](https://www.npmjs.com/package/@ngageoint/mage.service) and installs into the plugin's `node_modules` 
+directory.  However, your local Mage instance references `@ngageoint/mage.service` package from the local relative
+path.  This results in your instance having two copies of `@ngageoint/mage.service` - one from your local build linked
+in the top-level `instance/node_modules` directory, and one from the registry in the plugin's `node_modules` directory.
+In the case of the error above, this results in a discrepancy during dependency injection because the Mage service
+defines unique `Symbol` constants for plugins to indicate which elements they need from their host Mage service.  In 
+the plugin's modules, Node resolves these symbol constants and any other core `@ngageoint/mage.service` modules from
+the plugin's copy of the package, as opposed to the relative package installed at the instance level.  This is why you
+must ensure that you link the working tree core Mage service package in your plugin working tree, as the above 
+instructions state.
+```shell
+~/my_plugin % npm ci
+~/my_plugin % npm link <relative path to mage server repo>/service
+```
+Be aware that NPM's dependency resolution will delete this symbolic link every time you run `npm install`, 
+`npm install <dependency>`, or `npm ci` for the plugin, so always `npm link` your relative Mage service
+dependency again after those commands.
+
+If you encounter other unexpected issues running locally with plugins, especially reference errors, or other
+discrepancies in values the core modules define, check that the core service package is still linked properly
+in your plugin working tree.  You can check using the `npm ls` command as follows.
+```shell
+% npm ls @ngageoint/mage.service
+@ngageoint/mage.image.service@1.1.0-beta.1 /<...>/mage-server/plugins/image/service
+└── @ngageoint/mage.service@6.3.0-beta.6 -> ./../../../service
 ```
 
-In the case that the dev dependencies need to be over ridden (eg nga-msi plugin)
-```bash
-cd instance
-npm i --omit dev ../service ../web-app/dist ../plugins/nga-msi
+## Docker Setup
+The docker directory includes documentation and dockerfiles for building using the release npm packages. The root Dockerfile and docker-compose.yml are used for building and running a dockerfile from the source/local code. Simply run `docker compose up` to spin up a local mongo db database along with the web server. After it starts up, navitage to localhost:4242 to view the web server.
+
+By default, the Dockerfile includes additional plugins. Should you want to add/remove any plugins, you will need to modify the Entrypoint command. Simply uncomment the `entrypoint` section of the docker compose to specify what plugins you would like to include, or exlude
+
+### HTTPS/TLS reverse proxy
+
+Then `mage-web-proxy` service is optional when developing and running on
+localhost, but highly recommended when running MAGE Server on publicly
+accessible servers.  The service in `docker-compose.yml` uses the official
+nginx docker image with an appropriate [configuration](web/nginx.conf).  This
+is an example of setting up a reverse proxy in front of the Node server to
+enforce HTTPS/TLS connections to the server.  Of course, you could use any
+reverse proxy you see fit, such as [Apache HTTP Server](https://httpd.apache.org/)
+or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  To run your MAGE server behind the TLS
+reverse proxy, peform the following modifications to `docker-compose.yml`.
+1. Comment the `ports` block for the `mage-server` service to disallow
+  connections directly to the Node.js server.
+1. Uncomment the block with the `mage-web-proxy` service key.
+
+For testing in a development environment, you can create a self-signed server
+certificate for nginx to use.  The following OpenSSL command, run from the
+directory of this README, will create a self-signed server certificate and
+private key in the `web` directory that should allow the MAGE mobile app to
+connect to nginx.  Replace the values of the `SUBJ_*` variables at the
+beginning of the command with your own values.
+```
+SUBJ_C="XX" \
+SUBJ_ST="State" \
+SUBJ_L="Locality" \
+SUBJ_O="Organization" \
+SUBJ_OU="Organizational_Unit" \
+SUBJ_CN="HOST_NAME_OR_IP"; \
+openssl req -new -nodes -x509 -newkey rsa:4096 -sha256 -days 1095 \
+-out web/mage-web.crt -keyout web/mage-web.key \
+-config <(cat /etc/ssl/openssl.cnf <(printf "[mage]\n  \
+subjectAltName=DNS:$SUBJ_CN\n  \
+basicConstraints=CA:true")) \
+-subj "/C=$SUBJ_C/ST=$SUBJ_ST/L=$SUBJ_L/O=$SUBJ_O/OU=$SUBJ_OU/CN=$SUBJ_CN" \
+-extensions mage; \
+unset SUBJ_C SUBJ_ST SUBJ_L SUBJ_O SUBJ_OU SUBJ_CN
+```
+The preceding command creates `web/mage-web.crt` and `web/mage-web.key`, which
+the nginx configuration file references.  The `<(...)` operator is Unix process
+substitution and allows treating the enclosed command output as a file.  The
+`subjectAltName` and `basicConstraints` arguments are necessary to install the
+public certificate, `mage-web.crt`, as a trusted authority on a mobile device.
+
+**IMPORTANT** If you intend to connect to your reverse proxy from a mobile
+device or simulator/emulator running the MAGE mobile app, make sure that the
+value of the `SUBJ_CN` variable matches the IP address of your MAGE Server
+host on your network, or the resolvable host name of the host.  TLS connections
+will not succeed if Common Name and Subject Alternative Name fields in the
+public certificate do not match the host name.
+
+When running with the reverse proxy and default port settings in the Compose
+file, your server will be available at https://localhost:5443.  If you are
+connecting from a mobile device on the same network.
+
+### Bind mounts
+
+The Compose file uses [bind mounts](https://docs.docker.com/storage/bind-mounts/)
+for the MongoDB database directory, database log path, and MAGE server
+[resources](../README.md#mage-local-media-directory).  By default, the source
+paths of those bind mounts are `database/data`, `database/log`, and
+`server/resources`, respectively.  You can change the source paths according to
+your environment and needs.
+
+With these bind mounts, the MAGE server will retain its data on your host file
+system in directories you can explore and manage yourself.  For example, this
+setup allows you to mount a directory into the MAGE server container from a
+[FUSE-based](https://github.com/libfuse/libfuse) file system, which might
+provide extra functionality like [encryption](https://www.veracrypt.fr) or
+[remote mounting](https://github.com/libfuse/sshfs) transparently to the
+Docker container and MAGE application.  If you don't have any requirements of
+that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
+
+### Ports
+The only port the Compose file exposes to the host by default is 4242 on the
+`mage-server` service to allow HTTP connections from your host web browser to
+the MAGE server running in the Docker container.  In a production environment,
+you could add another service in the Compose file to run an
+[nginx](https://hub.docker.com/_/nginx/) or [httpd](https://hub.docker.com/_/httpd/)
+reverse proxy with TLS or other security measures in front of the MAGE Server
+Node application.  In that case you would remove the
+```yaml
+ports:
+  - 4242:4242
+```
+lines from the Compose file under the `mage-server` service entry.  You would
+then most likely add the mapping
+```yaml
+ports:
+  - 443:443
+```
+to the reverse proxy's service definition.
+
+You can also allow connections from your host to the MongoDB database container
+by uncommenting the `ports` block of the `mage-db` service.  You would then be
+able to connect directly to the MongoDB database using the `mongo` client on
+your host machine to examine or modify the database contents.
+
+### Environment settings
+
+You can configure the MAGE server Docker app using [environment variables](../README.md#mage-environment-settings).
+The Compose file does this by necessity to configure the MongoDB URL for the MAGE server.
+```yaml
+environment:
+    MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
 ```
 
-The project's root [`package.json`](./package.json) provides some convenience script entries to install, build, and run
-the MAGE server components, however, those are deprecated and will likely go away after migrating to NPM 7+'s
-[workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) feature.
 
 ## Running from source
 

@@ -7,13 +7,8 @@ import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/li
 import { AttachmentStoreToken, ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.observations'
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
-import { MongooseSftpObservationRepository, SftpObservationModel } from './adapters/adapters.sftp.mongoose'
 import express from 'express'
-import mongoose from 'mongoose'
-import SFTPClient from 'ssh2-sftp-client';
-import { ArchiverFactory } from './format/entities.format'
-
-const { name: packageName } = require('../package.json')
+import mongoose from 'mongoose';
 
 const logPrefix = '[mage.sftp]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -55,34 +50,19 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
   init: async (services): Promise<WebRoutesHooks> => {
     console.info('intializing sftp plugin')
 
-    const {
-      stateRepository,
-      eventRepository,
-      observationRepository,
-      userRepository,
-      attachmentStore,
-      getDbConnection
-    } = services
-
-    const dbConnection: mongoose.Connection = await getDbConnection()
-    const sftpObservationModel = SftpObservationModel(dbConnection, `${packageName}/observations`)
-    const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
-    const archiverFactory = new ArchiverFactory(userRepository, attachmentStore)
+    const { getDbConnection } = services
+    const dbConnection: mongoose.Connection = await getDbConnection();
 
     const controller = new SftpController(
-      stateRepository,
-      eventRepository,
-      observationRepository,
-      sftpObservationRepository,
-      new SFTPClient(),
-      archiverFactory,
-      console
+      console,
+      services,
+      dbConnection
     );
 
     controller.start();
 
     return {
-      webRoutes: { 
+      webRoutes: {
         protected: (requestContext: GetAppRequestContext) => {
           const routes = express.Router()
             .use(express.json())
@@ -94,7 +74,6 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
               next()
             })
-            
           routes.route('/configuration')
             .get(async (_req, res, _next) => {
               const config = await controller.getConfiguration();
@@ -108,7 +87,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
               await controller.start()
 
-              res.status(200) //.json(configuration)
+              res.status(200)
             })
 
           return routes

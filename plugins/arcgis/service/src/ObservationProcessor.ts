@@ -212,48 +212,40 @@ export class ObservationProcessor {
 	/**
 	 * Gets information on all the configured features service layers.
 	 * @param {ArcGISPluginConfig} config The plugins configuration.
-	 * @returns {Promise<void>}
 	 */
 	private async getFeatureServiceLayers(config: ArcGISPluginConfig) {
 		const promises = [];
 		for (const service of config.featureServices) {
-			try {
-				promises.push(this.handleFeatureService(service, config))
-			} catch (err) {
-				console.error(err);
-			}
+			promises.push((async () => {
+				try {
+					this._console.info(`Getting feature service layers for ${service.url}`);
+					const identityManager = await this._identityService.signin(service);
+					const featureService = new FeatureService(console, service, identityManager)
+					const arcService = await featureService.getService();
+
+					for (const featureLayer of arcService.layers) {
+						const featureLayerConfig = service.layers.find(layer => layer.layer.toString() === featureLayer.name.toString());
+						if (featureLayerConfig) {
+							const url = `${service.url}/${featureLayer.id}`;
+							const layerInfo = await featureService.getLayer(featureLayer.id);
+							if (featureLayer.geometryType != null) {
+								// TODO The featureLayerConfig should contain the layer id
+								featureLayerConfig.layer = featureLayer.id;
+								const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
+								const eventIds = featureLayerConfig.eventIds || []
+								const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
+								const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+								const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
+								this._layerProcessors.push(layerProcessor);
+							}
+						}
+					}
+				} catch (err) {
+					this._console.error(`Error getting feature service layers for ${service.url}:`, err);
+				}
+			})());
 		}
 		await Promise.all(promises);
-	}
-
-	/**
-	 * Called when information on a feature service is returned from an arc server.
-	 * @param {FeatureServiceResult} featureService The feature service.
-	 * @param {FeatureServiceConfig} featureServiceConfig The feature service config.
-	 * @param {ArcGISPluginConfig} config The plugin configuration.
-	 */
-	private async handleFeatureService(featureServiceConfig: FeatureServiceConfig, config: ArcGISPluginConfig) {
-		const identityManager = await this._identityService.signin(featureServiceConfig)
-		const featureService = new FeatureService(console, featureServiceConfig, identityManager)
-		const arcService = await featureService.getService();
-
-		for (const featureLayer of arcService.layers) {
-			const featureLayerConfig = featureServiceConfig.layers.find(layer => layer.layer.toString() === featureLayer.name.toString());
-			if (featureLayerConfig) {
-				const url = `${featureServiceConfig.url}/${featureLayer.id}`;
-				const layerInfo = await featureService.getLayer(featureLayer.id);
-				if (featureLayer.geometryType != null) {
-					// TODO The featureLayerConfig should contain the layer id
-					featureLayerConfig.layer = featureLayer.id;
-					const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
-					const eventIds = featureLayerConfig.eventIds || []
-					const layerFields = await admin.updateLayer(featureServiceConfig, featureLayerConfig, layerInfo, this._eventRepo)
-					const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
-					const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
-					this._layerProcessors.push(layerProcessor);
-				}
-			}
-		}
 	}
 
 	/**

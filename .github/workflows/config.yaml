@@ -22,7 +22,6 @@ env:
   MAGE_NODE_VERSIONS: 20 18 22
 
 jobs:
-
   main:
     runs-on: ubuntu-latest
     outputs:

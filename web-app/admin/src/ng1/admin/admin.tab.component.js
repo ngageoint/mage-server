@@ -4,7 +4,7 @@ class AdminTabController {
   constructor($state, UserService, LocalStorageService) {
     this.$state = $state;
     this.UserService = UserService;
-    this.token = LocalStorageService.getToken()
+    this.token = LocalStorageService.getToken();
   }
 
   hasPermission(permission) {

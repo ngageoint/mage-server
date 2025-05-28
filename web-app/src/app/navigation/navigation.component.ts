@@ -21,6 +21,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   filteredTeams: any
   filteredInterval: any
   feedChangedUsers = {}
+  isAdmin: boolean = false
 
   constructor(
     private router: Router,
@@ -51,6 +52,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
     this.mapService.init()
     this.eventService.init()
+    this.isAdmin = this.userService.amAdmin;
   }
 
   ngOnDestroy(): void {

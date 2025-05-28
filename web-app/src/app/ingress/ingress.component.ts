@@ -128,7 +128,8 @@ export class IngressComponent implements OnChanges {
   }
 
   onAuthenticated($event: { user: User, token: string }) {
-    this.userService.authorize($event.token, null).subscribe({
+    // NOTE: using null causes a 500, instead using any non-empty string forces the code to be re-entered
+    this.userService.authorize($event.token, 'refresh').subscribe({
       next: (response) => {
         this.authorized(response.token)
       },

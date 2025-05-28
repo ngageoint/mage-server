@@ -3,20 +3,19 @@ name: test and package sftp service plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.sftp.service.yaml
       - .github/workflows/config.yaml
       - plugins/sftp/service/**
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   test:
     name: test plugin sftp.service
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,12 +34,11 @@ jobs:
         run: |
           cd plugins/sftp/service
           npm ci --force
-          rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
           npm test
 
   package:
     name: package plugin sftp.service
-    needs: [ config, test ]
+    needs: [config, test]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -56,8 +54,8 @@ jobs:
         run: |
           cd plugins/sftp/service
           npm ci --force
-          rm -rf node_modules/@ngageoint/mage.service/node_modules/mongoose
           npm run build
+          npm ci --production --force
       - name: pack
         run: npm pack ./plugins/sftp/service
       - name: upload package

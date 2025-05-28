@@ -1,8 +1,67 @@
 .arcEvent__info {
     flex-grow: 1;
+    max-width: 93%
+}
+
+.arcEvent__button {
+    width: 7%;
 }
 
 .mat-divider {
     margin-top: 12px;
     margin-bottom: 12px;
+}
+
+.select-event-overlay {
+    width: 50vw;
+}
+
+.w-100 {
+    width: 100% !important;
+}
+
+.save-button {
+    float: inline-end;
+    margin-top: 15px;
+    margin-right: 19px;
+}
+
+.select-event {
+    margin-right: 10px;
+    width: 34%;
+    margin-top: 5px;
+}
+
+.select-text-box {
+    height: 45px;
+    width: 100%;
+}
+
+.d-flow-root {
+    display: flow-root !important;
+}
+
+.event-card {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+::ng-deep {
+    .mat-select-panel {
+        .mat-selected {
+            background-color: #1E88E5 !important;
+            color: #fff !important;
+        }
+
+        .mat-option {
+            border-bottom: 1px solid black;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+
+            .mat-pseudo-checkbox {
+                display: none !important;
+            }
+        }
+    }
 }

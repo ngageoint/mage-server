@@ -17,7 +17,7 @@ export class UserAvatarComponent implements OnChanges {
   constructor(
     private httpClient: HttpClient,
     private sanitizer: DomSanitizer) { }
-    
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.user && this.user) {
       this.fetchAvatar()
@@ -25,9 +25,19 @@ export class UserAvatarComponent implements OnChanges {
   }
 
   fetchAvatar(): void {
-    const url = `/api/users/${this.user.id}/avatar`
-    this.httpClient.get(url, { responseType: 'blob' }).subscribe(blob => {
-      this.url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+    const url = `/api/users/${this.user.id}/avatar`;
+    this.httpClient.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        this.url = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          console.warn('Avatar not found (404). Using fallback.');
+        } else {
+          console.error('Error fetching avatar:', err);
+        }
+        this.url = '/assets/images/baseline-account_circle-24px.svg'; // fallback image
+      }
     });
   }
 }

@@ -22,9 +22,9 @@ export class ConfigurationComponent implements OnInit {
     title: string,
     value: TriggerRule
   }[] = [
-    { title: 'Create', value: TriggerRule.Create },
-    { title: 'Create And Update', value: TriggerRule.CreateAndUpdate },
-  ]
+      { title: 'Create', value: TriggerRule.Create },
+      { title: 'Create And Update', value: TriggerRule.CreateAndUpdate },
+    ]
 
   configuration: SFTPPluginConfig = {
     enabled: false,
@@ -40,8 +40,7 @@ export class ConfigurationComponent implements OnInit {
     sftpClient: {
       host: '',
       path: '',
-      username: '',
-      password: ''
+      username: ''
     }
   }
 
@@ -51,7 +50,7 @@ export class ConfigurationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.service.getConfiguration().subscribe( configuration => {
+    this.service.getConfiguration().subscribe(configuration => {
       this.configuration = configuration
     })
   }
