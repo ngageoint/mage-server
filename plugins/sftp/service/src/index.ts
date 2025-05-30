@@ -74,7 +74,6 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
               next()
             })
-
           routes.route('/configuration')
             .get(async (_req, res, _next) => {
               const config = await controller.getConfiguration();

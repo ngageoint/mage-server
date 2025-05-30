@@ -83,7 +83,6 @@ app
   })
   .config(config)
   .run(run);
-
 require('./mage');
 require('./authentication') // for modal in admin pages if token expires
 require('./factories');
