@@ -1,2 +1,0 @@
-FROM osixia/openldap:1.5.0
-COPY localseed.ldif /container/service/slapd/assets/config/bootstrap/ldif/50-seed.ldif
