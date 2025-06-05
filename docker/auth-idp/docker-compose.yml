@@ -26,12 +26,8 @@ services:
       - 389:389
       - 636:636
     volumes:
-      - type: bind
-        source: ./ldap/db
-        target: /var/lib/ldap
-      - type: bind
-        source: ./ldap/config
-        target: /etc/ldap/slapd.d
+      - ./ldapseed.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif
+    command: --copy-service
     networks:
       - ldap.mage.net
 

@@ -1,0 +1,19 @@
+dn: ou=Field Agents,dc=wgd,dc=com
+objectClass: organizationalUnit
+ou: Field Agents
+
+dn: uid=batman,ou=Field Agents,dc=wgd,dc=com
+objectClass: inetOrgPerson
+uid: batman
+sn: Batman
+cn: Bruce Wayne
+userPassword: i heart alfred
+mail: Bruce.wayne@wgd.com
+
+dn: uid=robin,ou=Field Agents,dc=wgd,dc=com
+objectClass: inetOrgPerson
+uid: robin
+sn: Robin
+cn: Dick Grayson
+userPassword: i heart batman
+mail: dick.grayson@wgd.com
