@@ -12,7 +12,7 @@ class SigninController {
     if (this.localAuthenticationStrategy) {
       this.localAuthenticationStrategy.name = 'local';
     }
-    
+    console.log('Sign in log hit!@!@!@')
     this.thirdPartyStrategies = _.map(_.omit(this.api.authenticationStrategies, this.localStrategyFilter), function(strategy, name) {
       strategy.name = name;
       return strategy;
@@ -20,7 +20,7 @@ class SigninController {
   }
 
   localStrategyFilter(_strategy, name) {
-    return name === 'local';
+    return name === 'local1';
   }
 
   signin($event) {

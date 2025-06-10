@@ -25,6 +25,7 @@ WORKDIR /arcgiswebplugin
 COPY plugins/arcgis/web-app/package*.json ./
 RUN npm install
 COPY --from=build-service /service /arcgiswebplugin/node_modules/@ngageoint/mage.service
+COPY --from=build-service /service /arcgiswebplugin/node_modules/@ngageoint/mage.service
 COPY plugins/arcgis/web-app/ ./
 RUN npm run build
 RUN npm pack ./dist/main
@@ -52,6 +53,8 @@ FROM node:20.11.1 AS build-sftpserviceplugin
 WORKDIR /sftpserviceplugin
 COPY plugins/sftp/service/package*.json ./
 RUN npm install
+COPY --from=build-service /service /sftpserviceplugin/node_modules/@ngageoint/mage.service
+COPY plugins/sftp/service/ ./
 COPY --from=build-service /service /sftpserviceplugin/node_modules/@ngageoint/mage.service
 COPY plugins/sftp/service/ ./
 RUN npm run build
@@ -90,6 +93,8 @@ ENTRYPOINT [ \
     "./node_modules/.bin/mage.service", \
     "--plugin", "@ngageoint/mage.image.service", \
     "--plugin", "@ngageoint/mage.arcgis.service", \
+    "--plugin", "@ngageoint/mage.sftp.service", \
+    "--web-plugin", "@ngageoint/mage.sftp.web", \
     "--plugin", "@ngageoint/mage.sftp.service", \
     "--web-plugin", "@ngageoint/mage.sftp.web", \
     "--web-plugin", "@ngageoint/mage.arcgis.web-app" \
