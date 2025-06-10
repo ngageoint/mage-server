@@ -20,11 +20,15 @@ module.exports = function(app, security) {
     fs.readFile(req.file.path, 'utf8', function (err, data) {
       if (err) return next(err);
 
-      const kml = new DOMParser({
-        errorHandler: (level, message) => {
-          console.log('kml parsing', level, req.file.filename, message)
-        }
-      }).parseFromString(data);
+      const parser = new DOMParser();
+      const kml = parser.parseFromString(data, "application/xml");
+      const parseError = kml.getElementsByTagName("parsererror");
+
+      if (parseError.length > 0) {
+        console.error("KML Parsing Error:", parseError[0].textContent);
+      } else {
+        console.log("Parsed KML successfully");
+      }
 
       if (!kml || kml.documentElement.nodeName !== 'kml') {
         return res.status(400).send('Invalid file, please upload a KML file.');
@@ -47,7 +51,7 @@ module.exports = function(app, security) {
         .then(newFeatures => {
           const response = {
             files: [{
-              name: req.file.originalname,
+              name: Buffer.from(req.file.originalname, 'latin1').toString('utf-8'),
               size: req.file.size,
               features: newFeatures ? newFeatures.length : 0
             }]

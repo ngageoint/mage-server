@@ -1,11 +1,10 @@
 services:
 
   mage-db:
-    image: mongo:4.4-focal
+    image: bitnami/mongodb:6.0.13
     volumes:
-      - ./database/data:/data/db
-      - ./database/log:/var/log/mongodb
-    command: [ --logpath, /var/log/mongodb/mongodb.log ]
+      - ./database/data:/bitnami/mongodb
+      - ./database/log:/opt/bitnami/mongodb/logs
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     # ports:
@@ -15,13 +14,11 @@ services:
 
   mage-server:
     depends_on: [ mage-db ]
-    image: "mage-server:${MAGE_VERSION:-6.2.0}"
+    image: "mage:prod"
     # image: "mage-server:debug"
     build:
       context: ./server
       # dockerfile: Dockerfile-debug
-      args:
-        MAGE_VERSION: "${MAGE_VERSION:-6.2.0}"
     platform: linux/amd64
     volumes:
       - ./server/resources:/var/lib/mage

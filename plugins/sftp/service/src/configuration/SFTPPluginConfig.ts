@@ -50,8 +50,7 @@ export interface SFTPPluginConfig {
   sftpClient: {
     host: string,
     path: string,
-    username: string,
-    password: string
+    username: string
   }
 }
 
@@ -69,7 +68,6 @@ export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
   sftpClient: {
     host: '',
     path: '',
-    username: '',
-    password: ''
+    username: ''
   }
 })

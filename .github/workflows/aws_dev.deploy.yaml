@@ -3,8 +3,8 @@ name: AWS Dev Deployment
 on:
   push:
     branches:
-      - develop
-      - test
+      - "**"
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-      
+
       - name: Set IMAGE_TAG
         run: |
           if [[ "${{ github.ref_name }}" == "test" ]]; then
@@ -31,22 +31,26 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEV_ROLE }}
           role-session-name: GithubNGAGeointSession
           aws-region: ${{ secrets.AWS_DEV_REGION }}
-      
+
       - name: AWS ECR Login
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image and push
+      - name: Build Docker image
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
 
-      - name: ReDeploy ECS Service
+      - name: Push Image and ReDeploy ECS Service
+        if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
         env:
           SERVICE: "mage${{ env.IMAGE_TAG }}"
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: "/mage/server"
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
+          docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
           aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment

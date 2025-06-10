@@ -3,7 +3,7 @@ name: build and test service
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.service.yaml
       - .github/workflows/config.yaml
@@ -15,7 +15,7 @@ jobs:
   build:
     name: build mage service
     needs: config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: install system libs
         run: |
@@ -28,15 +28,16 @@ jobs:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
           cache-dependency-path: service/npm-shrinkwrap.json
-      - name: build
+      - name: build and test
         run: |
           cd service
           npm ci
-          npm run build
+          npm test
+          npm ci --production
       - name: package
         run: npm pack ./service
       - name: upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mage.service-artifacts
           path: |
@@ -44,8 +45,8 @@ jobs:
 
   test:
     name: test mage service
-    needs: [ config, build ]
-    runs-on: ubuntu-latest
+    needs: [config, build]
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
@@ -62,9 +63,9 @@ jobs:
       - name: install service dependencies
         run: |
           cd service
-          npm ci service
+          npm ci
       - name: download service package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mage.service-artifacts
       - name: extract service lib

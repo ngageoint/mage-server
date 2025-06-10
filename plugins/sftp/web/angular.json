@@ -3,38 +3,38 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "admin": {
+    "main": {
       "projectType": "library",
-      "root": "projects/admin",
-      "sourceRoot": "projects/admin/src",
+      "root": "projects/main",
+      "sourceRoot": "projects/main/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@ngageoint/mage.web-core-lib:amd",
           "options": {
-            "tsConfig": "projects/admin/tsconfig.lib.json",
-            "project": "projects/admin/ng-package.json"
+            "tsConfig": "projects/main/tsconfig.lib.json",
+            "project": "projects/main/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/admin/tsconfig.lib.prod.json"
+              "tsConfig": "projects/main/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/admin/src/test.ts",
-            "tsConfig": "projects/admin/tsconfig.spec.json",
-            "karmaConfig": "projects/admin/karma.conf.js"
+            "main": "projects/main/src/test.ts",
+            "tsConfig": "projects/main/tsconfig.spec.json",
+            "karmaConfig": "projects/main/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/admin/tsconfig.lib.json",
-              "projects/admin/tsconfig.spec.json"
+              "projects/main/tsconfig.lib.json",
+              "projects/main/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -163,6 +163,5 @@
           }
         }
       }
-    }},
-  "defaultProject": "admin"
+    }}
 }

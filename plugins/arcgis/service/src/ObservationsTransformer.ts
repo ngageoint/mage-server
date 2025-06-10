@@ -1,11 +1,11 @@
-import { ArcGISPluginConfig } from "./ArcGISPluginConfig";
-import { AttributeDefaultConfig } from "./ArcGISConfig";
+import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { AttributeDefaultConfig } from "./types/ArcGISConfig";
 import { ObservationAttrs, Attachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { User } from '@ngageoint/mage.service/lib/entities/users/entities.users'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 import { Geometry, Point, LineString, Polygon } from 'geojson'
-import { ArcObservation, ArcAttachment } from './ArcObservation'
-import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './ArcObject'
+import { ArcObservation, ArcAttachment } from './types/ArcObservation'
+import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
 import { EventTransform } from './EventTransform'
 
 /**
@@ -16,36 +16,36 @@ export class ObservationsTransformer {
     /**
      * ArcGIS configuration.
      */
-    private _config: ArcGISPluginConfig
+    private _config: ArcGISPluginConfig;
 
     /**
      * Used to log to the console.
      */
-    private _console: Console
+    private _console: Console;
 
     /**
      * Initialized flag
      */
-    private _initialized: boolean = false
+    private _initialized: boolean = false;
 
     /**
      * Default values
      */
-    private _defaults: { [attribute: string]: AttributeDefaultConfig[] } = {}
+    private _defaults: { [attribute: string]: AttributeDefaultConfig[] } = {};
 
     /**
      * Omit attributes
      */
-    private _omit: string[] = []
+    private _omit: string[] = [];
 
     /**
      * Constructor.
-     * @param config The plugins configuration.
-     * @param console Used to log to the console.
+     * @param {ArcGISPluginConfig} config The plugins configuration.
+     * @param {Console} console Used to log to the console.
      */
     constructor(config: ArcGISPluginConfig, console: Console) {
-        this._config = config
-        this._console = console
+        this._config = config;
+        this._console = console;
     }
 
     /**
@@ -53,17 +53,17 @@ export class ObservationsTransformer {
      */
     private init() {
         if (!this._initialized) {
-            this._initialized = true
+            this._initialized = true;
             if (this._config.attributes != null) {
                 for (const attributes of Object.entries(this._config.attributes)) {
-                    const attribute = attributes[0]
-                    const attributeConfig = attributes[1]
-                    const defaults = attributeConfig.defaults
+                    const attribute = attributes[0];
+                    const attributeConfig = attributes[1];
+                    const defaults = attributeConfig.defaults;
                     if (defaults != null && defaults.length > 0) {
-                        this._defaults[attribute] = defaults
+                        this._defaults[attribute] = defaults;
                     }
                     if (attributeConfig.omit) {
-                        this._omit.push(attribute)
+                        this._omit.push(attribute);
                     }
                 }
             }
@@ -72,405 +72,397 @@ export class ObservationsTransformer {
 
     /**
      * Converts the specified observation into an ArcObservation that can be sent to an arcgis server.
-     * @param observation The observation to convert.
-     * @param transform The Event transform.
-     * @param user The MAGE user.
-     * @returns The ArcObservation of the observation.
+     * @param {ObservationAttrs} observation The observation to convert.
+     * @param {EventTransform} transform The Event transform.
+     * @param {User | null} user The MAGE user.
+     * @returns {ArcObservation} The ArcObservation of the observation.
      */
     transform(observation: ObservationAttrs, transform: EventTransform, user: User | null): ArcObservation {
-        this.init()
+        this.init();
 
-        const arcObject = {} as ArcObject
+        const arcObject = {} as ArcObject;
 
-        this.observationToAttributes(observation, transform, user, arcObject)
+        this.observationToAttributes(observation, transform, user, arcObject);
 
         if (observation.geometry != null) {
-            const geometry = observation.geometry
-            const arcGeometry = this.geometryToArcGeometry(geometry)
-            this._console.info('ArcGIS new ' + geometry.type + ' at ' + JSON.stringify(arcGeometry) + ' with id ' + observation.id)
-            arcObject.geometry = arcGeometry
+            const geometry = observation.geometry;
+            const arcGeometry = this.geometryToArcGeometry(geometry);
+            this._console.info('ArcGIS new ' + geometry.type + ' at ' + JSON.stringify(arcGeometry) + ' with id ' + observation.id);
+            arcObject.geometry = arcGeometry;
         }
 
-        let formIds: { [name: string]: number } = {}
+        let formIds: { [name: string]: number } = {};
         if (observation.properties != null) {
-            formIds = this.propertiesToAttributes(observation.properties, transform, arcObject)
+            formIds = this.propertiesToAttributes(observation.properties, transform, arcObject);
         }
 
-        const arcObservation = this.createObservation(observation)
+        const arcObservation = this.createObservation(observation);
         if (this._config.geometryType != null) {
-            this.addAttribute(this._config.geometryType, arcObservation.esriGeometryType, arcObject)
+            this.addAttribute(this._config.geometryType, arcObservation.esriGeometryType, arcObject);
         }
-        this.addDefaults(arcObject)
+        this.addDefaults(arcObject);
 
-        arcObservation.createdAt = new Date(observation.createdAt).getTime()
-        arcObservation.lastModified = new Date(observation.lastModified).getTime()
-        arcObservation.object = arcObject
-        arcObservation.attachments = this.attachments(observation.attachments, formIds, transform)
+        arcObservation.createdAt = new Date(observation.createdAt).getTime();
+        arcObservation.lastModified = new Date(observation.lastModified).getTime();
+        arcObservation.object = arcObject;
+        arcObservation.attachments = this.attachments(observation.attachments, formIds, transform);
 
-        this.removeOmissions(arcObject)
+        this.removeOmissions(arcObject);
 
-        return arcObservation
+        return arcObservation;
     }
 
     /**
      * Creates a base ArcObservation with id and geometry type.
-     * @param observation The observation to convert.
-     * @returns The ArcObservation of the observation.
+     * @param {ObservationAttrs} observation The observation to convert.
+     * @returns {ArcObservation} The ArcObservation of the observation.
      */
     createObservation(observation: ObservationAttrs): ArcObservation {
-        const arcObservation = {} as ArcObservation
-        arcObservation.id = observation.id
-        arcObservation.esriGeometryType = this.esriGeometryType(observation)
-        return arcObservation
+        const arcObservation = {} as ArcObservation;
+        arcObservation.id = observation.id;
+        arcObservation.esriGeometryType = this.esriGeometryType(observation);
+        return arcObservation;
     }
 
     /**
      * Converts a mage geometry type to an esri geometry type.
-     * @param mageGeometryType The mage geometry type.
-     * @returns The esri geometry type.
+     * @param {string} mageGeometryType The mage geometry type.
+     * @returns {string} The esri geometry type.
      */
     mageTypeToEsriType(mageGeometryType: string): string {
-        let esriGeometryType = ''
-
         switch (mageGeometryType) {
             case 'Point':
-                esriGeometryType = 'esriGeometryPoint'
-                break;
+                return 'esriGeometryPoint'
             case 'LineString':
-                esriGeometryType = 'esriGeometryPolyline'
-                break;
+                return 'esriGeometryPolyline'
             case 'Polygon':
-                esriGeometryType = 'esriGeometryPolygon'
-                break;
+                return 'esriGeometryPolygon'
             default:
-                break;
+                return ''
         }
 
-        return esriGeometryType;
     }
 
     /**
      * Determine the observation Esri geometry type.
-     * @param observation The observation.
-     * @returns The Esri geometry type.
+     * @param {ObservationAttrs} observation The observation.
+     * @returns {string} The Esri geometry type.
      */
     private esriGeometryType(observation: ObservationAttrs): string {
-
         let esriGeometryType = ''
 
         if (observation.geometry != null) {
             esriGeometryType = this.mageTypeToEsriType(observation.geometry.type);
         }
 
-        return esriGeometryType
+        return esriGeometryType;
     }
 
     /**
      * Converts and adds observation values to ArcObject attributes.
-     * @param observation The observation to convert.
-     * @param transform The Event transform.
-     * @param user The MAGE user.
-     * @param arcObject The converted ArcObject.
+     * @param {ObservationAttrs} observation The observation to convert.
+     * @param {EventTransform} transform The Event transform.
+     * @param {User | null} user The MAGE user.
+     * @param {ArcObject} arcObject The converted ArcObject.
      */
     private observationToAttributes(observation: ObservationAttrs, transform: EventTransform, user: User | null, arcObject: ArcObject) {
-        let observationIdValue = observation.id
+        let observationIdValue = observation.id;
         if (this._config.eventIdField == null) {
-            observationIdValue += this._config.idSeparator + observation.eventId
+            observationIdValue += this._config.idSeparator + observation.eventId;
         } else {
-            this.addAttribute(this._config.eventIdField, observation.eventId, arcObject)
+            this.addAttribute(this._config.eventIdField, observation.eventId, arcObject);
         }
-        this.addAttribute(this._config.observationIdField, observationIdValue, arcObject)
-        const mageEvent = transform.mageEvent
+        this.addAttribute(this._config.observationIdField, observationIdValue, arcObject);
+        const mageEvent = transform.mageEvent;
         if (this._config.eventNameField != null && mageEvent != null) {
-            this.addAttribute(this._config.eventNameField, mageEvent.name, arcObject)
+            this.addAttribute(this._config.eventNameField, mageEvent.name, arcObject);
         }
         if (this._config.userIdField != null && observation.userId != null) {
-            this.addAttribute(this._config.userIdField, observation.userId, arcObject)
+            this.addAttribute(this._config.userIdField, observation.userId, arcObject);
         }
         if (user != null) {
             if (this._config.usernameField != null) {
-                this.addAttribute(this._config.usernameField, user.username, arcObject)
+                this.addAttribute(this._config.usernameField, user.username, arcObject);
             }
             if (this._config.userDisplayNameField != null) {
-                this.addAttribute(this._config.userDisplayNameField, user.displayName, arcObject)
+                this.addAttribute(this._config.userDisplayNameField, user.displayName, arcObject);
             }
         }
         if (this._config.deviceIdField != null && observation.deviceId != null) {
-            this.addAttribute(this._config.deviceIdField, observation.deviceId, arcObject)
+            this.addAttribute(this._config.deviceIdField, observation.deviceId, arcObject);
         }
         if (this._config.createdAtField != null) {
-            this.addAttribute(this._config.createdAtField, observation.createdAt, arcObject)
+            this.addAttribute(this._config.createdAtField, observation.createdAt, arcObject);
         }
         if (this._config.lastModifiedField != null) {
-            this.addAttribute(this._config.lastModifiedField, observation.lastModified, arcObject)
+            this.addAttribute(this._config.lastModifiedField, observation.lastModified, arcObject);
         }
     }
 
     /**
      * Converts an observation geometry to an ArcGeometry.
-     * @param geometry The observation geometry to convert.
-     * @returns The converted ArcGeometry.
+     * @param {Geometry} geometry The observation geometry to convert.
+     * @returns {ArcGeometry} The converted ArcGeometry.
      */
     private geometryToArcGeometry(geometry: Geometry): ArcGeometry {
 
-        var arcGeometry = {} as ArcGeometry
+        let arcGeometry = {} as ArcGeometry;
 
         switch (geometry.type) {
             case 'Point':
-                arcGeometry = this.pointToArcPoint(geometry as Point)
+                arcGeometry = this.pointToArcPoint(geometry as Point);
                 break;
             case 'LineString':
-                arcGeometry = this.lineStringToArcPolyline(geometry as LineString)
+                arcGeometry = this.lineStringToArcPolyline(geometry as LineString);
                 break;
             case 'Polygon':
-                arcGeometry = this.polygonToArcPolygon(geometry as Polygon)
+                arcGeometry = this.polygonToArcPolygon(geometry as Polygon);
                 break;
             default:
                 break;
         }
 
-        arcGeometry.spatialReference = { wkid: 4326 }
+        arcGeometry.spatialReference = { wkid: 4326 };
 
-        return arcGeometry
+        return arcGeometry;
     }
 
     /**
      * Converts an observation Point to an ArcPoint.
-     * @param point The observation Point to convert.
-     * @returns The converted ArcPoint.
+     * @param {Point} point The observation Point to convert.
+     * @returns {ArcPoint} The converted ArcPoint.
      */
     private pointToArcPoint(point: Point): ArcPoint {
-        const arcPoint = {} as ArcPoint
-        arcPoint.x = point.coordinates[0]
-        arcPoint.y = point.coordinates[1]
-        return arcPoint
+        const arcPoint = {} as ArcPoint;
+        arcPoint.x = point.coordinates[0];
+        arcPoint.y = point.coordinates[1];
+        return arcPoint;
     }
 
     /**
      * Converts an observation LineString to an ArcPolyline.
-     * @param lineString The observation LineString to convert.
-     * @returns The converted ArcPolyline.
+     * @param {LineString} lineString The observation LineString to convert.
+     * @returns {ArcPolyline} The converted ArcPolyline.
      */
     private lineStringToArcPolyline(lineString: LineString): ArcPolyline {
-        const arcPolyline = {} as ArcPolyline
-        arcPolyline.paths = [lineString.coordinates]
-        return arcPolyline
+        const arcPolyline = {} as ArcPolyline;
+        arcPolyline.paths = [lineString.coordinates];
+        return arcPolyline;
     }
 
     /**
      * Converts an observation Polygon to an ArcPolygon.
-     * @param polygon The observation Polygon to convert.
-     * @returns The converted ArcPolygon.
+     * @param {Polygon} polygon The observation Polygon to convert.
+     * @returns {ArcPolygon} The converted ArcPolygon.
      */
     private polygonToArcPolygon(polygon: Polygon): ArcPolygon {
-        const arcPolygon = {} as ArcPolygon
-        arcPolygon.rings = polygon.coordinates
-        return arcPolygon
+        const arcPolygon = {} as ArcPolygon;
+        arcPolygon.rings = polygon.coordinates;
+        return arcPolygon;
     }
 
     /**
      * Converts and adds observation properties to ArcObject attributes.
-     * @param properties The observation properties to convert.
-     * @param transform The Event transform.
-     * @param arcObject The converted ArcObject.
-     * @return form ids map
+     * @param {{ [name: string]: unknown }} properties The observation properties to convert.
+     * @param {EventTransform} transform The Event transform.
+     * @param {ArcObject} arcObject The converted ArcObject.
+     * @returns {{ [name: string]: number }} form ids map
      */
     private propertiesToAttributes(properties: { [name: string]: any }, transform: EventTransform, arcObject: ArcObject): { [name: string]: number } {
-        let formIds: { [name: string]: number } = {}
+        let formIds: { [name: string]: number } = {};
         for (const property in properties) {
             const value = properties[property]
-            if (property == 'forms') {
+            if (property === 'forms') {
                 formIds = this.formsToAttributes(value, transform, arcObject)
             } else {
-                this.addAttribute(property, value, arcObject)
+                this.addAttribute(property, value, arcObject);
             }
         }
-        return formIds
+        return formIds;
     }
 
     /**
      * Converts and adds observation property forms data to ArcObject attributes.
-     * @param forms The observation property forms to convert.
-     * @param transform The Event transform.
-     * @param arcObject The converted ArcObject.
-     * @return form ids map
+     * @param {[{ [name: string]: unknown }]} forms The observation property forms to convert.
+     * @param {EventTransform} transform The Event transform.
+     * @param {ArcObject} arcObject The converted ArcObject.
+     * @returns {{ [name: string]: number }} form ids map
      */
     private formsToAttributes(forms: [{ [name: string]: any }], transform: EventTransform, arcObject: ArcObject): { [name: string]: number } {
 
-        const formIds: { [id: string]: number } = {}
-        const formIdCount: { [id: number]: number } = {}
+        const formIds: { [id: string]: number } = {};
+        const formIdCount: { [id: number]: number } = {};
 
-        const mageEvent = transform.mageEvent
+        const mageEvent = transform.mageEvent;
 
         for (let i = 0; i < forms.length; i++) {
-            const form = forms[i]
-            const formId = form['formId']
-            const id = form['id']
-            let fields = null
-            let formCount = 1
+            const form = forms[i];
+            const formId = form['formId'];
+            const id = form['id'];
+            let fields = null;
+            let formCount = 1;
             if (formId != null && id != null) {
-                formIds[id] = formId
-                let count = formIdCount[formId]
+                formIds[id] = formId;
+                let count = formIdCount[formId];
                 if (count == null) {
-                    count = 0
+                    count = 0;
                 }
-                formCount = count + 1
-                formIdCount[formId] = formCount
-                fields = transform.get(formId)
+                formCount = count + 1;
+                formIdCount[formId] = formCount;
+                fields = transform.get(formId);
             }
             for (const formProperty in form) {
-                let value = form[formProperty]
+                let value = form[formProperty];
                 if (value != null) {
                     if (mageEvent != null && formId != null) {
-                        const field = mageEvent.formFieldFor(formProperty, formId)
+                        const field = mageEvent.formFieldFor(formProperty, formId);
                         if (field != null && field.type !== FormFieldType.Attachment) {
                             let title = field.title
-                            if (fields != undefined) {
+                            if (fields != null) {
                                 const fieldTitle = fields.get(title)
-                                if (fieldTitle != undefined) {
+                                if (fieldTitle != null) {
                                     const sanitizedName = ObservationsTransformer.replaceSpaces(fieldTitle)
                                     const sanitizedFormName = ObservationsTransformer.replaceSpaces(fields.name)
                                     title = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
                                 }
                             }
-                            if (field.type == FormFieldType.Geometry) {
+                            if (field.type === FormFieldType.Geometry) {
                                 value = this.geometryToArcGeometry(value)
                             }
-                            this.addFormAttribute(title, formCount, value, arcObject)
+                            this.addFormAttribute(title, formCount, value, arcObject);
                         }
                     } else {
-                        this.addFormAttribute(formProperty, formCount, value, arcObject)
+                        this.addFormAttribute(formProperty, formCount, value, arcObject);
                     }
                 }
             }
         }
 
-        return formIds
+        return formIds;
     }
 
     /**
      * Add an ArcObject attribute for a form field.
-     * @param name The attribute name.
-     * @param count The form count.
-     * @param value The attribute value.
-     * @param arcObject The converted ArcObject.
+     * @param {string} name The attribute name.
+     * @param {number} count The form count.
+     * @param {unknown} value The attribute value.
+     * @param {ArcObject} arcObject The converted ArcObject.
      */
-    private addFormAttribute(name: string, count: number, value: any, arcObject: ArcObject) {
+    private addFormAttribute(name: string, count: number, value: unknown, arcObject: ArcObject) {
 
         if (count > 1 && this._config.attributes != null) {
-            const concat = this._config.attributes[name]?.concatenation
+            const concat = this._config.attributes[name]?.concatenation;
             if (concat != null && (concat.sameForms == null || concat.sameForms)) {
-                count = 1
+                count = 1;
             }
         }
 
-        const attribute = this.appendCount(name, count)
-        this.addAttribute(attribute, value, arcObject)
+        const attribute = this.appendCount(name, count);
+        this.addAttribute(attribute, value, arcObject);
     }
 
     /**
      * Add an ArcObject attribute.
-     * @param name The attribute name.
-     * @param value The attribute value.
-     * @param arcObject The converted ArcObject.
+     * @param {string} name The attribute name.
+     * @param {unknown} value The attribute value.
+     * @param {ArcObject} arcObject The converted ArcObject.
      */
-    private addAttribute(name: string, value: any, arcObject: ArcObject) {
+    private addAttribute(name: string, value: unknown, arcObject: ArcObject) {
 
         if (value != null) {
-
             if (arcObject.attributes == null) {
-                arcObject.attributes = {}
+                arcObject.attributes = {};
             }
 
-            let attribute = ObservationsTransformer.replaceSpaces(name)
+            let attribute = ObservationsTransformer.replaceSpaces(name);
 
             if (Object.prototype.toString.call(value) === '[object Date]') {
-                value = new Date(value).getTime()
+                value = new Date(value as string).getTime();
             }
 
-            let config = null
+            let config = null;
             if (this._config.attributes != null) {
-                config = this._config.attributes[name]
+                config = this._config.attributes[name];
             }
 
             if (config?.mappings != null) {
-                const fieldValue = config.mappings[value]
+                const fieldValue = config.mappings[value as string];
                 if (fieldValue != null) {
-                    value = fieldValue
+                    value = fieldValue;
                 }
             }
 
-            let existingValue = arcObject.attributes[attribute]
+            const existingValue = arcObject.attributes[attribute];
             if (existingValue !== undefined) {
 
-                const concat = config?.concatenation
+                const concat = config?.concatenation;
                 if (concat != null && (concat.differentForms == null || concat.differentForms)) {
 
-                    let delimiter = concat.delimiter
+                    let delimiter = concat.delimiter;
                     if (delimiter == null) {
-                        delimiter = ', '
+                        delimiter = ', ';
                     }
-                    value = existingValue + delimiter + value
+                    value = existingValue + delimiter + value;
 
                 } else {
 
                     let baseKey = attribute
                     let count = 1
                     const countIndex = attribute.lastIndexOf('_')
-                    if (countIndex != -1) {
+                    if (countIndex !== -1) {
                         const countString = attribute.substring(countIndex + 1)
                         if (countString != null && countString !== '') {
-                            const countNumber = Number(countString)
+                            const countNumber = Number(countString);
                             if (!isNaN(countNumber)) {
-                                baseKey = attribute.substring(0, countIndex)
-                                count = countNumber
+                                baseKey = attribute.substring(0, countIndex);
+                                count = countNumber;
                             }
                         }
                     }
                     do {
-                        count += 1
-                        attribute = this.appendCount(baseKey, count)
-                    } while (arcObject.attributes[attribute] !== undefined)
+                        count += 1;
+                        attribute = this.appendCount(baseKey, count);
+                    } while (arcObject.attributes[attribute] !== undefined);
 
                 }
 
             }
 
-            arcObject.attributes[attribute] = value
+            arcObject.attributes[attribute] = value;
         }
 
     }
 
     /**
      * Add ArcObject attribute defaults.
-     * @param arcObject The converted ArcObject.
+     * @param {ArcObject} arcObject The converted ArcObject.
      */
     private addDefaults(arcObject: ArcObject) {
 
         for (const attributeDefaults of Object.entries(this._defaults)) {
-            const attribute = attributeDefaults[0]
+            const attribute = attributeDefaults[0];
             if (arcObject.attributes[attribute] == null) {
-                const defaults = attributeDefaults[1]
+                const defaults = attributeDefaults[1];
                 for (const attributeDefault of defaults) {
-                    let setDefault = true
-                    const condition = attributeDefault.condition
+                    let setDefault = true;
+                    const condition = attributeDefault.condition;
                     if (condition != null && condition.length > 0) {
                         for (const valueConfig of condition) {
                             const value = arcObject.attributes[valueConfig.attribute]
                             const values = valueConfig.values
-                            if (values.length == 0) {
+                            if (values.length === 0) {
                                 setDefault = value == null
                             } else {
-                                setDefault = values.includes(value)
+                                setDefault = values.includes(value);
                             }
                             if (!setDefault) {
-                                break
+                                break;
                             }
                         }
                     }
                     if (setDefault) {
-                        arcObject.attributes[attribute] = attributeDefault.value
-                        break
+                        arcObject.attributes[attribute] = attributeDefault.value;
+                        break;
                     }
                 }
             }
@@ -480,96 +472,96 @@ export class ObservationsTransformer {
 
     /**
      * Transform observation attachments.
-     * @param attachments The observation attachments.
-     * @param formIds Form ids map.
-     * @param transform The Event transform.
-     * @return  The converted ArcAttachments.
+     * @param {readonly Attachment[]} attachments The observation attachments.
+     * @param {{ [name: string]: number }} formIds Form ids map.
+     * @param {EventTransform} transform The Event transform.
+     * @returns {ArcAttachment[]} The converted ArcAttachments.
      */
     private attachments(attachments: readonly Attachment[], formIds: { [name: string]: number }, transform: EventTransform): ArcAttachment[] {
 
-        const arcAttachments: ArcAttachment[] = []
+        const arcAttachments: ArcAttachment[] = [];
 
-        const mageEvent = transform.mageEvent
+        const mageEvent = transform.mageEvent;
 
         for (const attachment of attachments) {
 
             if (attachment.contentLocator != null) {
 
-                let fieldName = attachment.fieldName
+                let fieldName = attachment.fieldName;
                 if (mageEvent != null) {
-                    const formId = formIds[attachment.observationFormId]
+                    const formId = formIds[attachment.observationFormId];
                     if (formId != null) {
-                        const field = mageEvent.formFieldFor(fieldName, formId)
+                        const field = mageEvent.formFieldFor(fieldName, formId);
                         if (field != null) {
-                            fieldName = field.title
+                            fieldName = field.title;
                         }
                     }
                 }
 
-                const arcAttachment = {} as ArcAttachment
-                arcAttachment.field = ObservationsTransformer.replaceSpaces(fieldName)
+                const arcAttachment = {} as ArcAttachment;
+                arcAttachment.field = ObservationsTransformer.replaceSpaces(fieldName);
                 if (attachment.lastModified != null) {
-                    arcAttachment.lastModified = new Date(attachment.lastModified).getTime()
+                    arcAttachment.lastModified = new Date(attachment.lastModified).getTime();
                 }
                 if (attachment.size != null) {
-                    arcAttachment.size = attachment.size
+                    arcAttachment.size = attachment.size;
                 }
                 if (attachment.name != null) {
                     const extensionIndex = attachment.name.lastIndexOf('.')
-                    if (extensionIndex != -1) {
+                    if (extensionIndex !== -1) {
                         arcAttachment.name = attachment.name.substring(0, extensionIndex)
                     } else {
-                        arcAttachment.name = attachment.name
+                        arcAttachment.name = attachment.name;
                     }
                 } else {
-                    arcAttachment.name = attachment.id
+                    arcAttachment.name = attachment.id;
                 }
-                arcAttachment.contentLocator = attachment.contentLocator
+                arcAttachment.contentLocator = attachment.contentLocator;
 
-                arcAttachments.push(arcAttachment)
+                arcAttachments.push(arcAttachment);
             }
         }
 
-        return arcAttachments
+        return arcAttachments;
     }
 
     /**
      * Replace spaces in the name with underscores.
-     * @param name The name.
-     * @return name with replaced spaces.
+     * @param {string} name The name.
+     * @returns {string} name with replaced spaces.
      */
     static replaceSpaces(name: string): string {
-        return name.replace(/ /g, '_')
+        return name.replace(/ /g, '_');
     }
 
     /**
      * Append a count to a name for additional duplicate field names.
-     * @param name The name.
-     * @param count The count.
-     * @return name with count.
+     * @param {string} name The name.
+     * @param {number} count The count.
+     * @returns {string} name with count.
      */
     private appendCount(name: string, count: number): string {
-        let value = name
+        let value = name;
         if (count > 1) {
-            value += '_' + count
+            value += '_' + count;
         }
-        return value
+        return value;
     }
 
     /**
      * Remove ArcObject attribute omissions.
-     * @param arcObject The converted ArcObject.
+     * @param {ArcObject} arcObject The converted ArcObject.
      */
     private removeOmissions(arcObject: ArcObject) {
 
-        const attributes = arcObject.attributes
-        const attributeKeys = Object.keys(attributes)
+        const attributes = arcObject.attributes;
+        const attributeKeys = Object.keys(attributes);
 
         for (const omit of this._omit) {
-            const regex = new RegExp('^' + omit + '(_\\d+)?$')
-            var regexAttributes = attributeKeys.filter((name) => regex.test(name))
+            const regex = new RegExp('^' + omit + '(_\\d+)?$');
+            const regexAttributes = attributeKeys.filter((name) => regex.test(name));
             for (const attribute of regexAttributes) {
-                delete attributes[attribute]
+                delete attributes[attribute];
             }
         }
 

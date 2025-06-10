@@ -20,7 +20,7 @@ export class GeometryChangedHandler {
 
     /**
      * Constructor.
-     * @param transformer Used to create any delete observations to remove the old geometry observation.
+     * @param {ObservationsTransformer} transformer Used to create any delete observations to remove the old geometry observation.
      */
     constructor(transformer: ObservationsTransformer) {
         this._transformer = transformer;
@@ -30,18 +30,17 @@ export class GeometryChangedHandler {
     /**
      * Checks for any geometry changes within an observation, if there is a change create a delete object to delete it
      * from its previous geometry layers.
-     * @param observations The observations to check for geometry changes.
-     * @param arcObjects The collection to add any previous geometry deletions.
-     * @param layerProcessors All the layer processors.
-     * @param firstRun True if this is our first run and we need to make sure any changed geometries that occurred right before
-     * shutting down, are removed from their previous geometry layer.
+     * @param {ObservationAttrs[]} observations The observations to check for geometry changes.
+     * @param {ArcObjects} arcObjects The collection to add any previous geometry deletions.
+     * @param {FeatureLayerProcessor[]} layerProcessors All the layer processors.
+     * @param {boolean} firstRun True if this is our first run and we need to make sure any changed geometries that occurred right before shutting down, are removed from their previous geometry layer.
      */
     checkForGeometryChange(observations: ObservationAttrs[], arcObjects: ArcObjects, layerProcessors: FeatureLayerProcessor[], firstRun: boolean) {
         for (const observation of observations) {
             if (observation.states.length <= 0 || !observation.states[0].name.startsWith('archive')) {
                 if (this._previousGeoms.has(observation.id)) {
                     const previousGeomType = this._previousGeoms.get(observation.id);
-                    if (previousGeomType !== undefined && previousGeomType != observation.geometry.type) {
+                    if (previousGeomType !== undefined && previousGeomType !== observation.geometry.type) {
                         const arcObservation = this._transformer.createObservation(observation);
                         arcObservation.esriGeometryType = this._transformer.mageTypeToEsriType(previousGeomType);
                         arcObjects.deletions.push(arcObservation);
@@ -51,7 +50,7 @@ export class GeometryChangedHandler {
                 if (firstRun) {
                     const observationGeomType = this._transformer.mageTypeToEsriType(observation.geometry.type);
                     for (const layerProcessor of layerProcessors) {
-                        if (layerProcessor.layerInfo.geometryType != observationGeomType) {
+                        if (layerProcessor.layerInfo.geometryType !== observationGeomType) {
                             const arcObservation = this._transformer.createObservation(observation);
                             arcObservation.esriGeometryType = layerProcessor.layerInfo.geometryType;
                             arcObjects.deletions.push(arcObservation);

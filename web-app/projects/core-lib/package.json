@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.web-core-lib",
-  "version": "6.3.0-beta.6",
+  "version": "6.3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/ngageoint/mage-server.git"
@@ -14,26 +14,26 @@
     "./angular-cli/*": "./angular-cli/*"
   },
   "peerDependencies": {
-    "@angular/animations": "^14.2.12",
-    "@angular/cdk": "^14.2.7",
-    "@angular/common": "^14.2.12",
-    "@angular/core": "^14.2.12",
-    "@angular/forms": "^14.2.12",
-    "@angular/material": "^14.2.7",
-    "@angular/platform-browser": "^14.2.12",
+    "@angular/animations": "14.3.0",
+    "@angular/cdk": "14.2.7",
+    "@angular/common": "14.3.0",
+    "@angular/core": "14.3.0",
+    "@angular/forms": "14.3.0",
+    "@angular/material": "14.2.7",
+    "@angular/platform-browser": "14.3.0",
     "@ng-select/ng-select": "9.1.0",
-    "@angular-devkit/architect": ">= 0.1400.0, < 0.1500.0",
-    "@angular-devkit/build-angular": "^14.2.0",
-    "@angular-devkit/core": "^14.2.0",
-    "@angular-devkit/schematics": "^14.2.0",
-    "@schematics/angular": "^14.2.0",
-    "ng-packagr": "^14.2.0",
-    "rollup": "^2.78.0"
+    "@angular-devkit/architect": "0.1400.0",
+    "@angular-devkit/build-angular": "14.2.13",
+    "@angular-devkit/core": "14.2.13",
+    "@angular-devkit/schematics": "14.2.0",
+    "@schematics/angular": "14.2.0",
+    "ng-packagr": "14.2.0",
+    "rollup": "2.78.0"
   },
   "dependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "rxjs": "^7.0.0",
-    "tslib": "^2.0.0"
+    "@rollup/plugin-commonjs": "25.0.8",
+    "@rollup/plugin-node-resolve": "15.3.1",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1"
   }
 }

@@ -3,20 +3,19 @@ name: test and package nga-msi plugin
 on:
   workflow_dispatch:
   workflow_call:
-  push:
+  pull_request:
     paths:
       - .github/workflows/build_test.nga-msi.yaml
       - .github/workflows/config.yaml
       - plugins/nga-msi/**
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   test:
     name: test plugin nga-msi
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,15 +30,20 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/nga-msi/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: test with node ${{ matrix.node }}
         run: |
           cd plugins/nga-msi
-          npm ci
+          npm ci --force
           npm test
 
   package:
     name: package plugin nga-msi
-    needs: [ config, test ]
+    needs: [config, test]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -51,15 +55,20 @@ jobs:
           cache: npm
           cache-dependency-path: |
             plugins/nga-msi/package-lock.json
+      - name: build mage service
+        run: |
+          cd service
+          npm ci
+          npm run build
       - name: build
         run: |
           cd plugins/nga-msi
-          npm ci
+          npm ci --force
           npm run build
       - name: pack
         run: npm pack ./plugins/nga-msi
       - name: upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nga-msi-artifacts
           path: |

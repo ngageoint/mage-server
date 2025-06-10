@@ -16,6 +16,8 @@ module.exports = {
     exportSweepInterval: 28800,
     exportTTL: 259200,
     tokenExpiration: 28800,
+    sftpKeyDir: path.join(baseDir, 'sftp-keys'),
+    sftpKeyFile: path.join(baseDir, 'sftp-keys', 'mage-sftp-key'),
     mongo: {
       url: 'mongodb://127.0.0.1:27017/magedb',
       connTimeout: 300,
@@ -34,10 +36,11 @@ module.exports = {
     plugins: {
       servicePlugins: [
         '@ngageoint/mage.arcgis.service',
-
         '@ngageoint/mage.sftp.service'
       ],
       webUIPlugins: [
+        '@ngageoint/mage.arcgis.web-app',
+        '@ngageoint/mage.sftp.web'
         '@ngageoint/mage.arcgis.web-app',
         '@ngageoint/mage.sftp.web'
       ],

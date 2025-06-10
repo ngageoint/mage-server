@@ -1,3 +1,5 @@
+import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
+
 /**
  * Contains an arc feature service url and layers.
  */
@@ -9,8 +11,8 @@ export interface FeatureServiceConfig {
     url: string
 
     /**
-     * Serialized ArcGISIdentityManager
-     */
+    * Serialized ArcGISIdentityManager
+    */
     identityManager: string
 
     /**
@@ -35,9 +37,9 @@ export interface FeatureLayerConfig {
     geometryType?: string
 
     /**
-     * The event ids or names that sync to this arc feature layer.
+     * The event ids that sync to this arc feature layer.
      */
-    events?: (number|string)[]
+    eventIds?: MageEventId[]
 }
 
 
@@ -54,7 +56,7 @@ export interface AttributeConfig {
     /**
      * Value mappings
      */
-    mappings?: { [value: string]: any }
+    mappings?: { [value: string]: unknown }
 
     /**
      * Default values
@@ -98,7 +100,7 @@ export interface AttributeDefaultConfig {
     /**
      * Default value.
      */
-    value: any
+    value: unknown
 
     /**
      * Conditional attribute equality values when the default applies.
@@ -120,6 +122,6 @@ export interface AttributeValueConfig {
     /**
      * Attribute values.
      */
-    values: any[]
+    values: unknown[]
 
 }

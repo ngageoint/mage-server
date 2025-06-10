@@ -1,5 +1,5 @@
-import { ConfigurationApi } from 'projects/admin/src/lib/configuration/configuration.service'
-import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule } from 'projects/admin/src/lib/entities/entities.format'
+import { ConfigurationApi } from 'projects/main/src/lib/configuration/configuration.service'
+import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule } from 'projects/main/src/lib/entities/entities.format'
 import { Observable, of } from 'rxjs'
 
 export class MockConfigurationService implements ConfigurationApi {
