@@ -39,7 +39,7 @@ jobs:
           REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
+          docker build -t $REGISTRY$REPOSITORY:test .
 
       - name: Push Image and ReDeploy ECS Service
         if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
