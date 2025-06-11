@@ -1,4 +1,4 @@
-FROM node:20.11.1
+FROM node:18
 
 LABEL author="NGA"
 
@@ -14,10 +14,9 @@ RUN groupadd -r mage \
 USER mage
 ENV MAGE_HOME=/home/mage/instance
 WORKDIR ${MAGE_HOME}
-RUN ls -l \
-    && npm i --omit dev @ngageoint/mage.service@6.2.9 \
-    && npm i --omit dev @ngageoint/mage.web-app@6.2.9 \
-    && ln -s ./node_modules/.bin/mage.service
+RUN npm install @ngageoint/mage.service@6.2.9 
+RUN npm install @ngageoint/mage.web-app@6.2.9 
+RUN ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage
 EXPOSE 4242
