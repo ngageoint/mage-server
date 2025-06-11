@@ -19,11 +19,8 @@ jobs:
 
       - name: Set IMAGE_TAG
         run: |
-          if [[ "${{ github.ref_name }}" == "test" ]]; then
-            echo "IMAGE_TAG=test" >> $GITHUB_ENV
-          else
-            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
-          fi
+          echo "IMAGE_TAG=test" >> test
+
 
       - name: AWS config
         uses: aws-actions/configure-aws-credentials@v3
@@ -52,5 +49,6 @@ jobs:
           REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
+          echo $REGISTRY$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
           aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment
