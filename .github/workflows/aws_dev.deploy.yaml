@@ -42,13 +42,12 @@ jobs:
           docker build -t $REGISTRY$REPOSITORY:test .
 
       - name: Push Image and ReDeploy ECS Service
-        if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
         env:
-          SERVICE: "mage${{ env.IMAGE_TAG }}"
+          SERVICE: "magetest"
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: "/mage/server"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           echo $REGISTRY$REPOSITORY:$IMAGE_TAG
-          docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY$REPOSITORY:test
           aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment
