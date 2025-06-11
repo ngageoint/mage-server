@@ -1,4 +1,4 @@
-FROM registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
+FROM node:20.11.1
 
 LABEL author="NGA"
 
