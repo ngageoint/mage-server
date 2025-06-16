@@ -82,6 +82,7 @@
   },
   "devDependencies": {
     "@fluffy-spoon/substitute": "1.208.0",
+    "@types/adm-zip": "0.5.7",
     "@types/archiver": "5.3.4",
     "@types/async": "3.2.24",
     "@types/bson": "1.0.11",
