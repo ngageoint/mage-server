@@ -128,12 +128,12 @@ jobs:
       - name: publish mage service
         run: |
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz) || echo "skipping mage service publish..."
+          npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz) ${{(inputs.is_prerelease && '--tag beta') || ''}} || echo "skipping mage service publish..."
       - name: publish mage web
         run: |
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz) || echo "skipping mage web app publish..."
+          npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz) ${{(inputs.is_prerelease && '--tag beta') || ''}} || echo "skipping mage web app publish..."
       - name: publish mage core
         run: |
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz) || echo "skipping mage core publish..."
+          npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz) ${{(inputs.is_prerelease && '--tag beta') || ''}} || echo "skipping mage core publish..."

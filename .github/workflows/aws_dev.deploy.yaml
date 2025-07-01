@@ -26,7 +26,7 @@ jobs:
           fi
 
       - name: AWS config
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEV_ROLE }}
           role-session-name: GithubNGAGeointSession
@@ -39,18 +39,17 @@ jobs:
       - name: Build Docker image
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          REPOSITORY: "/mage/server"
+          REPOSITORY: "/mage"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           docker build -t $REGISTRY$REPOSITORY:$IMAGE_TAG .
 
-      - name: Push Image and ReDeploy ECS Service
+      - name: Push Image
         if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
         env:
           SERVICE: "mage${{ env.IMAGE_TAG }}"
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          REPOSITORY: "/mage/server"
+          REPOSITORY: "/mage"
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           docker push $REGISTRY$REPOSITORY:$IMAGE_TAG
-          aws ecs update-service --cluster magedev --service $SERVICE --force-new-deployment
