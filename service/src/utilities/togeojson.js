@@ -3,10 +3,10 @@ const xpath = require('xpath')
 
 exports.kml = kml;
 
-function kml(document) {
+function kml(document, images = {}) {
   log.info('Generate KML');
 
-  const styleIndex = getStyles(document);
+  const styleIndex = getStyles(document, images);
 
   // Pull all placemarks regards of depth level
   let placemarks = xpath.select("//*[local-name()='Placemark']", document);
@@ -16,13 +16,13 @@ function kml(document) {
 
   let features = [];
   placemarks.forEach(placemark => {
-    features = features.concat(getPlacemark(placemark, styleIndex));
+    features = features.concat(getPlacemark(placemark, styleIndex, images));
   });
 
   return features;
 }
 
-function getProperties(node, styleIndex) {
+function getProperties(node, styleIndex, images = {}) {
   let properties = {};
 
   let name = nodeVal(get1(node, 'name'));
@@ -53,7 +53,7 @@ function getProperties(node, styleIndex) {
     const styleElement = get1(node, 'Style');
     if (styleElement) {
       properties.style = {
-        iconStyle: getIconStyle(styleElement),
+        iconStyle: getIconStyle(styleElement, images),
         lineStyle: getLineStyle(styleElement),
         labelStyle: getLabelStyle(styleElement),
         polyStyle: getPolygonStyle(styleElement)
@@ -64,11 +64,11 @@ function getProperties(node, styleIndex) {
   return properties;
 }
 
-function getPlacemark(node, styleIndex) {
+function getPlacemark(node, styleIndex, images = {}) {
   const geometries = getGeometry(node);
   if (!geometries.length) return [];
 
-  const properties = getProperties(node, styleIndex);
+  const properties = getProperties(node, styleIndex, images);
 
   return geometries.map(geometry => {
     return {
@@ -80,7 +80,7 @@ function getPlacemark(node, styleIndex) {
 }
 
 function getGeometry(node) {
-  if (get1(node, 'MultiGeometry')){
+  if (get1(node, 'MultiGeometry')) {
     return getGeometry(get1(node, 'MultiGeometry'));
   }
 
@@ -95,19 +95,19 @@ function getGeometry(node) {
       for (let i = 0; i < geometryNodes.length; i++) {
         let geometryNode = geometryNodes[i];
 
-        switch(geometryType) {
-        case 'Point':
-          geometries.push(getPoint(geometryNode));
-          break;
-        case 'LineString':
-          geometries.push(getLineString(geometryNode));
-          break;
-        case 'Track':
-          geometries.push(getTrack(geometryNode));
-          break;
-        case 'Polygon':
-          geometries.push(getPolygon(geometryNode));
-          break;
+        switch (geometryType) {
+          case 'Point':
+            geometries.push(getPoint(geometryNode));
+            break;
+          case 'LineString':
+            geometries.push(getLineString(geometryNode));
+            break;
+          case 'Track':
+            geometries.push(getTrack(geometryNode));
+            break;
+          case 'Polygon':
+            geometries.push(getPolygon(geometryNode));
+            break;
         }
       }
     }
@@ -178,7 +178,7 @@ function gxCoord(v) {
   return numarray(v.split(' '));
 }
 
-function getStyles(node) {
+function getStyles(node, images = {}) {
   let styleIndex = {};
 
   const styles = get(node, 'Style');
@@ -186,7 +186,7 @@ function getStyles(node) {
     const kmlStyle = styles[i];
     const styleId = '#' + attr(kmlStyle, 'id');
     styleIndex[styleId] = {
-      iconStyle: getIconStyle(kmlStyle),
+      iconStyle: getIconStyle(kmlStyle, images),
       lineStyle: getLineStyle(kmlStyle),
       labelStyle: getLabelStyle(kmlStyle),
       polyStyle: getPolygonStyle(kmlStyle)
@@ -216,7 +216,7 @@ function getStyles(node) {
   return styleIndex;
 }
 
-function getIconStyle(node) {
+function getIconStyle(node, images = {}) {
   const iconStyle = get(node, 'IconStyle');
   if (iconStyle[0]) {
     let style = {};
@@ -228,11 +228,17 @@ function getIconStyle(node) {
 
     const icon = get(iconStyle[0], 'Icon');
     if (icon && icon[0]) {
-      style.icon = {};
-
       const href = get(icon[0], 'href');
       if (href[0]) {
-        style.icon.href = nodeVal(href[0]);
+        const hrefValue = nodeVal(href[0]);
+        const isWebUrl = /^(http|https):/.test(hrefValue);
+
+        if (isWebUrl || images[hrefValue]) {
+          style.icon = {
+            href: images[hrefValue] || hrefValue
+          };
+        }
+
       }
     }
 
@@ -332,7 +338,7 @@ function coordinateArray(x) {
     o[i] = parseFloat(x[i]);
   }
 
-  return o.splice(0,2);
+  return o.splice(0, 2);
 }
 
 // get the content of a text node, if any
@@ -366,10 +372,10 @@ function coord(v) {
 }
 
 function parseColor(color) {
-  const r = color.slice(6,8);
-  const g = color.slice(4,6);
-  const b = color.slice(2,4);
-  const a = color.slice(0,2);
+  const r = color.slice(6, 8);
+  const g = color.slice(4, 6);
+  const b = color.slice(2, 4);
+  const a = color.slice(0, 2);
 
   return {
     rgb: '#' + r + g + b,

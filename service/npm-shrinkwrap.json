@@ -58,6 +58,7 @@
         "wms-capabilities": "0.6.0",
         "xmlbuilder2": "3.1.1",
         "xpath": "0.0.34",
+        "xslt-processor": "^3.3.1",
         "yaml": "1.10.2"
       },
       "bin": {
@@ -6373,7 +6374,6 @@
       "version": "1.2.0",
       "resolved": "https://registry.npmjs.org/he/-/he-1.2.0.tgz",
       "integrity": "sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==",
-      "dev": true,
       "bin": {
         "he": "bin/he"
       }
@@ -12639,6 +12639,15 @@
       "license": "MIT",
       "engines": {
         "node": ">=0.6.0"
+      }
+    },
+    "node_modules/xslt-processor": {
+      "version": "3.3.1",
+      "resolved": "https://registry.npmjs.org/xslt-processor/-/xslt-processor-3.3.1.tgz",
+      "integrity": "sha512-yzuV5H8mSZseF06/y4lpm6lbsG7QcBFO/9TI12sjK6/pvpx1BXdS9nFIcDViJkruXn4PFzhYHI3KiQPG2PaC1g==",
+      "license": "LGPL-3.0",
+      "dependencies": {
+        "he": "^1.2.0"
       }
     },
     "node_modules/xtend": {

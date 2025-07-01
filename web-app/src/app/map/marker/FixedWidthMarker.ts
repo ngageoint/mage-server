@@ -17,9 +17,7 @@ export class FixedWidthMarker extends Marker {
       const img = new Image()
       img.src = options.iconUrl
 
-      this.setOpacity(0)
       img.onload = (event: any) => {
-        this.setOpacity(1)
         const scale = this.iconWidth / event.srcElement.width
         this.setIcon(
           icon({
