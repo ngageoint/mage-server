@@ -6,8 +6,7 @@ import fs from 'fs-extra';
 import Zip from 'adm-zip';
 import { defaultHandler as upload } from '../upload';
 import { DOMParser, Document } from '@xmldom/xmldom';
-import kml from '../utilities/transformKML'
-import { Xslt, XmlParser } from 'xslt-processor';
+import kml from '../utilities/transformKML';
 
 interface SecurityConfig {
     authentication: {
@@ -63,10 +62,10 @@ const validate = async (req: Request, res: Response, next: NextFunction): Promis
 
     if (fileExtension === 'kmz') {
         try {
+            // TODO: Update how images are handled in KMZ files to prevent duplication. Move images to a separate directory and store their paths in the KML.
             const zip = new Zip(layRequest.file.path);
             const zipEntries = zip.getEntries();
             const kmlEntry = zipEntries.find(entry => entry.entryName.toLowerCase().endsWith('.kml'));
-            // const xslEntry = zipEntries.find(entry => entry.entryName.toLowerCase().endsWith('.xsl') || entry.entryName.toLowerCase().endsWith('.xslt'));
 
             if (!kmlEntry) {
                 return res.status(400).send('No KML file found inside.');
@@ -75,30 +74,19 @@ const validate = async (req: Request, res: Response, next: NextFunction): Promis
             const images: { [key: string]: string } = {};
             zipEntries.forEach(entry => {
                 const entryName = entry.entryName;
-                if (!entry.isDirectory && /\.(png|jpg|jpeg|gif|bmp)$/i.test(entryName)) {
-                    const buffer = entry.getData();
-                    const base64 = buffer.toString('base64');
-                    const mimeType = getMimeType(entryName);
-                    images[entryName] = `data:${mimeType};base64,${base64}`;
+                try {
+                    if (!entry.isDirectory && /\.(png|jpg|jpeg|gif|bmp)$/i.test(entryName)) {
+                        const buffer = entry.getData();
+                        const base64 = buffer.toString('base64');
+                        const mimeType = getMimeType(entryName);
+                        images[entryName] = `data:${mimeType};base64,${base64}`;
+                    }
+                } catch (error) {
+                    console.error(`Error processing entry ${entryName}:`, error);
                 }
             });
 
             const kmlString = kmlEntry.getData().toString('utf8');
-
-            // if (xslEntry) {
-            //     const xslString = xslEntry.getData().toString('utf8');
-
-            //     const xslt = new Xslt({ cData: true, escape: false });
-            //     const xmlParser = new XmlParser();
-
-            //     const outXmlString = await xslt.xsltProcess(
-            //         xmlParser.xmlParse(kmlString),
-            //         xmlParser.xmlParse(xslString)
-            //     );
-            //     console.log('outXmlString', outXmlString);
-            //     const transformedDocument = parser.parseFromString(outXmlString, 'text/xml');
-            //     geoJson = toGeoJson.kml(transformedDocument);
-            // }
 
             const kmlDocument = parser.parseFromString(kmlString, 'text/xml');
             geoJson = kml(kmlDocument as any, images);
