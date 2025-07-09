@@ -33,13 +33,15 @@
         <observation-edit-date [formGroup]="formGroup.get('properties')"
           [definition]="timestampDefinition"></observation-edit-date>
 
-        <observation-edit-geometry [formGroup]="formGroup" [definition]="geometryDefinition"
-          [featureId]="observation.id" [featureStyle]="geometryStyle" (onFeatureEdit)="onGeometryEdit($event)">
-        </observation-edit-geometry>
-
         <mat-checkbox [formControl]="formGroup?.get('noGeometry')" style="margin-top: 16px;">
           {{ noGeometryLabel }}
         </mat-checkbox>
+
+        <ng-container *ngIf="!formGroup?.get('noGeometry')?.value">
+          <observation-edit-geometry [formGroup]="formGroup" [definition]="geometryDefinition"
+            [featureId]="observation.id" [featureStyle]="geometryStyle" (onFeatureEdit)="onGeometryEdit($event)">
+          </observation-edit-geometry>
+        </ng-container>
       </mat-card>
 
       <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)"
