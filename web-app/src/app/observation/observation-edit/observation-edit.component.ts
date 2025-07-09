@@ -52,7 +52,7 @@ export type ObservationFormControl = UntypedFormControl & { definition: any }
 export class ObservationEditComponent implements OnInit, OnChanges {
   @Input() preview: boolean
   @Input() observation: any
-  attachments =[]
+  attachments = []
 
   @Output() close = new EventEmitter<any>()
 
@@ -98,6 +98,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   formRemoveSnackbar: MatSnackBarRef<SimpleSnackBar>
 
+  noGeometryLabel = 'No Geometry';
+
   constructor(
     sanitizer: DomSanitizer,
     matIconRegistry: MatIconRegistry,
@@ -129,7 +131,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.observation  && changes.observation.currentValue) {
+    if (changes.observation && changes.observation.currentValue) {
       this.event = this.eventService.getEventById(this.observation.eventId)
       this.formDefinitions = this.eventService.getFormsForEvent(this.event).reduce((map, form) => {
         map[form.id] = form
@@ -175,6 +177,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     const timestampControl = new UntypedFormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
     const geometryControl = new UntypedFormControl(observation.geometry, Validators.required);
 
+    const noGeometryControl = new UntypedFormControl(!!observation.noGeometry);
+
     const formArray = new UntypedFormArray([])
     const observationForms = observation.properties.forms || []
     observationForms.forEach(observationForm => {
@@ -201,6 +205,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       eventId: new UntypedFormControl(observation.eventId),
       type: new UntypedFormControl(observation.type),
       geometry: geometryControl,
+      noGeometry: noGeometryControl,
       properties: new UntypedFormGroup({
         timestamp: timestampControl,
         forms: formArray
@@ -231,7 +236,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       }
 
       if ((this.primaryField && primaryFieldValue !== this.primaryFieldValue) ||
-          ((this.secondaryField && secondaryFieldValue !== this.secondaryFieldValue))) {
+        ((this.secondaryField && secondaryFieldValue !== this.secondaryFieldValue))) {
         this.primaryFieldValue = this.primaryField ? primaryFieldValue : null
         this.secondaryFieldValue = this.secondaryField ? secondaryFieldValue : null
 

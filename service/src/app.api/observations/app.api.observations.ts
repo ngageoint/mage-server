@@ -19,12 +19,12 @@ export interface ObservationRequestContext<Principal = unknown> extends AppReque
   deviceId: string
   observationRepository: EventScopedObservationRepository
 }
-export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> {}
+export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> { }
 
 export interface AllocateObservationId {
   (req: AllocateObservationIdRequest): Promise<AppResponse<ObservationId, PermissionDeniedError>>
 }
-export interface AllocateObservationIdRequest extends ObservationRequest {}
+export interface AllocateObservationIdRequest extends ObservationRequest { }
 
 export interface SaveObservation {
   (req: SaveObservationRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
@@ -61,7 +61,8 @@ export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important' 
   user?: ExoObservationUserLite
   important?: ExoObservationImportantFlag
   state?: ObservationState
-  attachments: ExoAttachment[]
+  attachments: ExoAttachment[],
+  noGeometry?: boolean
 }
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'> & {
@@ -124,12 +125,12 @@ export function exoObservationFor(from: ObservationAttrs, users?: { creator?: Us
   return {
     ...attrs,
     attachments,
-    user: from.userId === users.creator?.id ? exoObservationUserLiteFor(users.creator) : void(0),
-    state: states ? states[0] : void(0),
+    user: from.userId === users.creator?.id ? exoObservationUserLiteFor(users.creator) : void (0),
+    state: states ? states[0] : void (0),
     important: from.important ? {
       ...from.important,
-      user: from.important.userId === users.importantFlagger?.id ? exoObservationUserLiteFor(users.importantFlagger) : void(0)
-    } : void(0)
+      user: from.important.userId === users.importantFlagger?.id ? exoObservationUserLiteFor(users.importantFlagger) : void (0)
+    } : void (0)
   }
 }
 
@@ -160,7 +161,7 @@ export function exoAttachmentForThumbnailDimension(targetDimension: number, atta
 }
 
 export function exoObservationUserLiteFor(from: User | null | undefined): ExoObservationUserLite | undefined {
-  return from ? { id: from.id, displayName: from.displayName } : void(0)
+  return from ? { id: from.id, displayName: from.displayName } : void (0)
 }
 
 export function domainObservationFor(from: ExoObservation): ObservationAttrs {

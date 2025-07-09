@@ -41,11 +41,18 @@ export class ObservationService {
     return this.saveObservation(event, observation).pipe(
       map((observation) => {
         return this.transformObservations(observation, event)[0]
-     })
+      })
     )
   }
 
   private saveObservation(event: MageEvent, observation: any): Observable<any> {
+    // If the noGemetry flag is set, override the geometry to a default point.
+    if (!!observation.noGeometry) {
+      observation.geometry = {
+        type: 'Point',
+        coordinates: [0, 0]
+      }
+    }
     if (observation.id) {
       return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}`, observation);
     } else {
@@ -65,11 +72,11 @@ export class ObservationService {
     return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/favorite`, { body: observation })
   }
 
-  markObservationAsImportantForEvent(event, observation, important): Observable<any>  {
+  markObservationAsImportantForEvent(event, observation, important): Observable<any> {
     return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}/important`, important)
   }
 
-  clearObservationAsImportantForEvent(event, observation): Observable<any>  {
+  clearObservationAsImportantForEvent(event, observation): Observable<any> {
     return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/important`, { body: observation })
   }
 
@@ -200,7 +207,7 @@ export class ObservationService {
 
     var params = new HttpParams();
     params = params.append('access_token', this.localStorageService.getToken())
-    
+
 
     return url + '?' + params.toString()
   }
