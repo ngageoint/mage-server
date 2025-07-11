@@ -5,8 +5,7 @@ import { AnyPermission } from '../entities/authorization/entities.permissions'
 import fs from 'fs-extra';
 import Zip from 'adm-zip';
 import { defaultHandler as upload } from '../upload';
-import { DOMParser, Document } from '@xmldom/xmldom';
-import kml from '../utilities/transformKML';
+import { KmlFeature, kml } from '../utilities/transformKML';
 
 interface SecurityConfig {
     authentication: {
@@ -41,78 +40,63 @@ const getMimeType = (filename: string): string => {
     return mimeTypes[ext] || 'application/octet-stream';
 }
 
+const kmlToGeoJSON = (kmlPathname: string, isKMZ: boolean): KmlFeature[] => {
+    let kmlString: string;
+    let images: Record<string, string> = {};
+
+    if (isKMZ) {
+        // TODO: Update how images are handled in KMZ files to prevent duplication. Move images to a separate directory and store their paths in the KML.
+        const zip = new Zip(kmlPathname);
+        const zipEntries = zip.getEntries();
+        const kmlEntry = zipEntries.find(entry => entry.entryName.toLowerCase().endsWith('.kml'));
+
+        if (!kmlEntry) {
+            throw new Error('No KML file found inside KMZ.');
+        }
+
+        zipEntries.forEach(entry => {
+            const entryName = entry.entryName;
+            try {
+                if (!entry.isDirectory && /\.(png|jpg|jpeg|gif|bmp)$/i.test(entryName)) {
+                    const buffer = entry.getData();
+                    const base64 = buffer.toString('base64');
+                    const mimeType = getMimeType(entryName);
+                    images[entryName] = `data:${mimeType};base64,${base64}`;
+                }
+            } catch (error) {
+                console.error(`Error processing entry ${entryName}:`, error);
+            }
+        });
+
+        kmlString = kmlEntry.getData().toString('utf8');
+    } else {
+        kmlString = fs.readFileSync(kmlPathname, 'utf8');
+    }
+
+    try {
+        return kml(kmlString, images);
+    } catch (error) {
+        throw new Error('Failed to transform KML: ' + error);
+    }
+}
+
 const validate = async (req: Request, res: Response, next: NextFunction): Promise<void | Response> => {
     const layRequest = req as LayerRequest;
     if (layRequest.layer.type !== 'Feature') {
         return res.status(400).send('Cannot import data, layer type is not "Static".');
     }
 
-    if (!layRequest.file) {
-        return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
-    }
-
-    const fileExtension: string = layRequest.file.originalname.toLowerCase().split('.').pop() || '';
+    const fileExtension: string = layRequest.file?.originalname?.toLowerCase().split('.').pop() || '';
 
     if (!['kml', 'kmz'].includes(fileExtension)) {
         return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
     }
 
-    const parser = new DOMParser();
-    let geoJson: any;
-
-    if (fileExtension === 'kmz') {
-        try {
-            // TODO: Update how images are handled in KMZ files to prevent duplication. Move images to a separate directory and store their paths in the KML.
-            const zip = new Zip(layRequest.file.path);
-            const zipEntries = zip.getEntries();
-            const kmlEntry = zipEntries.find(entry => entry.entryName.toLowerCase().endsWith('.kml'));
-
-            if (!kmlEntry) {
-                return res.status(400).send('No KML file found inside.');
-            }
-
-            const images: { [key: string]: string } = {};
-            zipEntries.forEach(entry => {
-                const entryName = entry.entryName;
-                try {
-                    if (!entry.isDirectory && /\.(png|jpg|jpeg|gif|bmp)$/i.test(entryName)) {
-                        const buffer = entry.getData();
-                        const base64 = buffer.toString('base64');
-                        const mimeType = getMimeType(entryName);
-                        images[entryName] = `data:${mimeType};base64,${base64}`;
-                    }
-                } catch (error) {
-                    console.error(`Error processing entry ${entryName}:`, error);
-                }
-            });
-
-            const kmlString = kmlEntry.getData().toString('utf8');
-
-            const kmlDocument = parser.parseFromString(kmlString, 'text/xml');
-            geoJson = kml(kmlDocument as any, images);
-
-        } catch (err) {
-            return res.status(400).send('Unable to extract contents from KMZ file.' + err);
-        }
-    } else {
-        const fileData = fs.readFileSync(layRequest.file.path, 'utf8');
-        const kmlDocument: Document = parser.parseFromString(fileData, 'application/xml');
-        const parseError = kmlDocument.getElementsByTagName("parsererror");
-
-        if (parseError.length > 0) {
-            console.error("KML Parsing Error:", parseError[0].textContent);
-        } else {
-            console.log("Parsed KML successfully");
-        }
-
-        if (!kmlDocument || kmlDocument.documentElement?.nodeName !== 'kml') {
-            return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
-        }
-
-        geoJson = kml(kmlDocument as any);
+    try {
+        layRequest.features = kmlToGeoJSON(layRequest.file!.path, fileExtension === 'kmz');
+    } catch (err) {
+        return res.status(400).send('Unable to extract contents from KMZ file.' + err);
     }
-
-    layRequest.features = geoJson;
     return next();
 }
 
