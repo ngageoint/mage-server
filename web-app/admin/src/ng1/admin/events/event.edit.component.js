@@ -12,7 +12,7 @@ class AdminEventEditController {
           id: event.id,
           name: event.name,
           description: event.description,
-          noGeometry: !!event.noGeometry
+          // noGeometry: !!event.noGeometry
         });
       });
     } else {

@@ -76,7 +76,7 @@ const EventSchema = new Schema({
   _id: { type: Number, required: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
-  noGeometry: { type: Boolean, default: false },
+  // noGeometry: { type: Boolean, default: false },
   complete: { type: Boolean },
   collectionName: { type: String, required: true },
   teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
