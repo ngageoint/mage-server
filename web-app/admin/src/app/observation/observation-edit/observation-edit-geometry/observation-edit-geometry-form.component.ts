@@ -17,7 +17,7 @@ export class MGRSValidatorDirective implements Validator {
     let error: ValidationErrors | null
     try {
       mgrs.toPoint(control.value)
-    } catch(e) {
+    } catch (e) {
       error = {
         mgrs: {
           value: control.value
@@ -60,7 +60,7 @@ type DMSFormValue = Partial<{ [DimensionKey.Latitude]: string, [DimensionKey.Lon
   templateUrl: './observation-edit-geometry-form.component.html',
   styleUrls: ['./observation-edit-geometry-form.component.scss'],
   providers: [
-    { provide: NG_VALIDATORS,  useExisting: MGRSValidatorDirective, multi: true },
+    { provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true },
     { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }
   ]
 })
@@ -97,8 +97,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     @Inject(MapService) private mapService: any,
     @Inject(GeometryService) private geometryService: any,
     @Inject(LocalStorageService) private localStorageService: any,
-    private snackBar: MatSnackBar)
-  {
+    private snackBar: MatSnackBar) {
     this.coordinateSystem = this.localStorageService.getCoordinateSystemEdit()
   }
 
@@ -213,7 +212,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       this.dmsForm.setValue(formValue, { emitEvent: true })
       return
     }
-    const [ first, second ] = coords.sort((a, b) => a instanceof DMSCoordinate ? -1 : (typeof b === 'number' ? 0 : 1))
+    const [first, second] = coords.sort((a, b) => a instanceof DMSCoordinate ? -1 : (typeof b === 'number' ? 0 : 1))
     if (typeof first === 'number') {
       // must both be numbers - assume latitude first
       const latDMS = DMSCoordinate.fromDecimalDegrees(first, DimensionKey.Latitude)
@@ -249,7 +248,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     if (this.mgrsModel.control.invalid) {
       return
     }
-    const [ lon, lat ] = mgrs.toPoint(this.mgrs)
+    const [lon, lat] = mgrs.toPoint(this.mgrs)
     this.editCurrentCoordinates('mgrs', lat, lon)
   }
 
@@ -275,14 +274,6 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
         this.feature.geometry.coordinates = []
         this.feature.geometry.type = 'Polygon'
         break;
-      default:
-        this.latitude = null
-        this.longitude = null
-        this.mgrs = null
-        this.dmsForm.setValue({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '' }, { emitEvent: false })
-        delete this.feature.geometry.type
-        this.featureEdit.cancel()
-        break;
     }
     if (shapeType) {
       this.onEditShape()
@@ -295,16 +286,16 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
 
   editCurrentCoordinates(from: CoordinateSystemKey, lat: number, lon: number): void {
     this.coordinateEditSource = from
-    let coordinates = [ ...this.feature.geometry.coordinates ]
+    let coordinates = [...this.feature.geometry.coordinates]
     if (this.feature.geometry.type === 'Point') {
-      coordinates = [ lon, lat ]
+      coordinates = [lon, lat]
     }
     else if (this.feature.geometry.type === 'LineString') {
-      coordinates[this.selectedVertexIndex] = [ lon, lat ]
+      coordinates[this.selectedVertexIndex] = [lon, lat]
     }
     else if (this.feature.geometry.type === 'Polygon') {
       if (coordinates[0]) {
-        coordinates[0][this.selectedVertexIndex] = [ lon, lat ]
+        coordinates[0][this.selectedVertexIndex] = [lon, lat]
       }
     }
     ensurePolygonClosed(this.feature, coordinates)
@@ -332,7 +323,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     this.coordinateEditSource = null
     if (from !== 'mgrs') {
       this.mgrs = this.toMgrs(this.feature)
-      this.mgrsModel.control.setValue(this.mgrs, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+      this.mgrsModel.control.setValue(this.mgrs, { emitEvent: false, emitViewToModelChange: false, emitModelToViewChange: true })
     }
     if (from !== 'dms') {
       this.dmsForm.setValue({
@@ -347,10 +338,10 @@ function ensurePolygonClosed(feature, coordinates) {
   // Ensure first and last points are the same for polygon
   if (feature.geometry.type === 'Polygon') {
     if (feature.editedVertex === 0) {
-      coordinates[0][coordinates[0].length - 1] = [ ...coordinates[0][0] ]
+      coordinates[0][coordinates[0].length - 1] = [...coordinates[0][0]]
     }
     else if (feature.editedVertex === coordinates[0].length - 1) {
-      coordinates[0][0] = [ ...coordinates[0][coordinates[0].length - 1] ]
+      coordinates[0][0] = [...coordinates[0][coordinates[0].length - 1]]
     }
   }
 }
