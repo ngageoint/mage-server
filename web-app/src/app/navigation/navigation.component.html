@@ -6,7 +6,7 @@
       </button>
     </div>
 
-    <div>
+    <div class="title">
       <span class="filter-event">{{filteredEvent.name}}</span>
       <span *ngIf="filteredTeams" class="filter-teams"><span>> {{filteredTeams}}</span></span>
       <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
@@ -19,7 +19,7 @@
       <button mat-icon-button class="navigation-options" [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
       </button>
-      <mat-menu #menu="matMenu">
+      <mat-menu #menu>
         <a mat-menu-item [routerLink]="['/profile']">
           <mat-icon>account_circle</mat-icon>
           <span>Profile</span>
