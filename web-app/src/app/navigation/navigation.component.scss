@@ -17,6 +17,10 @@
   justify-content: center;
 }
 
+.actions {
+  display: none;
+}
+
 .title {
   margin-left: 16px;
 }
@@ -30,9 +34,10 @@
 
 @media(min-width:900px) {
   .navigation-options {
-    visibility: hidden;
     display: none;
-    width: 0;
-    padding: 0;
+  }
+
+  .actions {
+    display: block;
   }
 }
