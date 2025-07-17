@@ -6,13 +6,13 @@
       </button>
     </div>
 
-    <div class="title">
+    <div class="event-title">
       <span class="filter-event">{{filteredEvent.name}}</span>
       <span *ngIf="filteredTeams" class="filter-teams"><span>> {{filteredTeams}}</span></span>
       <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
     </div>
 
-    <div class="menu">
+    <div class="collapsed-menu">
       <button mat-button (click)="togglePreferences()">
         <mat-icon>tune</mat-icon>
       </button>
