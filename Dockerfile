@@ -88,7 +88,6 @@ RUN npm install ../arcgisserviceplugin/ngageoint*.tgz
 ENV NODE_PATH=./node_modules
 ENTRYPOINT [ \ 
     "./node_modules/.bin/mage.service", \
-    "--plugin", "@ngageoint/mage.image.service", \
     "--plugin", "@ngageoint/mage.arcgis.service", \
     "--plugin", "@ngageoint/mage.sftp.service", \
     "--web-plugin", "@ngageoint/mage.sftp.web", \

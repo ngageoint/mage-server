@@ -26,7 +26,7 @@ RUN ls -l \
     && if [ "$ARC_SERVICE_VERSION" != "NONE" ]; then npm i --omit dev @ngageoint/mage.arcgis.service@$ARC_SERVICE_VERSION; fi\
     && if [ "$ARC_WEB_VERSION" != "NONE" ]; then npm i --omit dev @ngageoint/mage.arcgis.web-app@$ARC_WEB_VERSION; fi \
     && if [ "$SFTP_SERVICE_VERSION" != "NONE" ]; then npm i --omit dev @ngageoint/mage.sftp.service@$SFTP_SERVICE_VERSION; fi \
-    && if [ "$SFTP_WEB_VERSOIN" != "NONE" ]; then npm i --omit dev @ngageoint/mage.sftp.web@$SFTP_WEB_VERSION; fi \
+    && if [ "$SFTP_WEB_VERSION" != "NONE" ]; then npm i --omit dev @ngageoint/mage.sftp.web@$SFTP_WEB_VERSION; fi \
     && ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage
