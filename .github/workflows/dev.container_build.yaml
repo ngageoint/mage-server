@@ -37,5 +37,6 @@ jobs:
           docker build -t ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG .
 
       - name: Push Image
+        if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
         run: |
           docker push ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG

@@ -75,19 +75,20 @@ COPY --from=build-arcserviceplugin /arcgisserviceplugin/ngageoint*.tgz /arcgisse
 COPY --from=build-sftpserviceplugin /sftpserviceplugin/ngageoint*.tgz /sftpserviceplugin/
 COPY --from=build-sftpwebplugin /sftpwebplugin/ngageoint*.tgz /sftpwebplugin/
 
-WORKDIR /instance
-RUN ls -la ../sftpwebplugin
-RUN npm install ../service/ngageoint-mage.service*.tgz 
-RUN npm install ../web-app/ngageoint-mage.web-app*.tgz
-RUN npm install ../sftpwebplugin/ngageoint-mage.sftp.web*.tgz 
-RUN npm install ../sftpserviceplugin/ngageoint-mage.sftp.service*.tgz 
-RUN npm install ../arcgiswebplugin/ngageoint*.tgz 
-RUN npm install ../arcgisserviceplugin/ngageoint*.tgz 
+ENV MAGE_HOME=/home/mage/instance
+WORKDIR ${MAGE_HOME}
 
+RUN npm install ../../../service/ngageoint-mage.service*.tgz 
+RUN npm install ../../../web-app/ngageoint-mage.web-app*.tgz
+RUN npm install ../../../sftpwebplugin/ngageoint-mage.sftp.web*.tgz 
+RUN npm install ../../../sftpserviceplugin/ngageoint-mage.sftp.service*.tgz 
+RUN npm install ../../../arcgiswebplugin/ngageoint*.tgz 
+RUN npm install ../../../arcgisserviceplugin/ngageoint*.tgz 
+RUN ln -s ./node_modules/.bin/mage.service
 
 ENV NODE_PATH=./node_modules
 ENTRYPOINT [ \ 
-    "./node_modules/.bin/mage.service", \
+    "./mage.service", \
     "--plugin", "@ngageoint/mage.arcgis.service", \
     "--plugin", "@ngageoint/mage.sftp.service", \
     "--web-plugin", "@ngageoint/mage.sftp.web", \
