@@ -60,6 +60,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
       term: this.teamSearch,
       sort: { name: 1 },
       limit: this.pageSize,
+      omit_event_teams: true,
       start: String(this.pageIndex * this.pageSize)
     }).subscribe((results) => {
       if (results?.length > 0) {
