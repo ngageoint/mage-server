@@ -69,6 +69,7 @@ describe('TeamDashboardComponent', () => {
       term: '',
       sort: { name: 1 },
       limit: 10,
+      omit_event_teams: true,
       start: '0'
     });
     expect(component.teams).toEqual(mockTeams);
@@ -101,6 +102,7 @@ describe('TeamDashboardComponent', () => {
       term: '',
       sort: { name: 1 },
       limit: 25,
+      omit_event_teams: true,
       start: '25'
     });
   });
@@ -116,6 +118,7 @@ describe('TeamDashboardComponent', () => {
     expect(mockTeamsService.getTeams).toHaveBeenCalledWith({
       term: '',
       sort: { name: 1 },
+      omit_event_teams: true,
       limit: 10,
       start: '0'
     });
