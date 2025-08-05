@@ -32,6 +32,12 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+      - name: Pull IB Image
+        run: |
+          echo "{{ secrets.DELETE_TOKEN }}" | docker login registry1.dso.mil -u "${{ secrets.DELETE_USER }}" --password-stdin
+          docker pull registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1 
+          docker tag registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1 ghcr.io/${{ github.repository }}/ironbank/nodejs:20.11
+
       - name: Login to Github Registry ghcr.io
         uses: docker/login-action@v3
         with:
@@ -39,21 +45,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
+      - name: push IB image
         run: |
-          docker build \
-            --build-arg SERVER_VERSION=${{ inputs.server_version }} \
-            --build-arg ARC_VERSION=${{ inputs.arc_version }} \
-            --build-arg SFTP_VERSION=${{ inputs.sftp_version }} \
-            -t ghcr.io/${{ github.repository }}/mage:${{ inputs.tag }} ./docker/server
+          docker push ghcr.io/${{ github.repository }}/ironbank/nodejs:20.11
+      # - name: Build Docker image
+      #   run: |
+      #     docker build \
+      #       --build-arg SERVER_VERSION=${{ inputs.server_version }} \
+      #       --build-arg ARC_VERSION=${{ inputs.arc_version }} \
+      #       --build-arg SFTP_VERSION=${{ inputs.sftp_version }} \
+      #       -t ghcr.io/${{ github.repository }}/mage:${{ inputs.tag }} ./docker/server
 
-      - name: Push Image To PIX
-        run: |
-          docker push ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG
+      # - name: Push Image To PIX
+      #   run: |
+      #     docker push ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG
 
-      - name: PUSH Image To Gitlab
-        run: |  
-          docker tag ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:$IMAGE_TAG
-          echo "${{ secrets.GITLAB_TOKEN }}" | \
-          docker login registry.dso.xc.nga.mil -u "$ {{ secrets.GITLAB_USER }}" --pasword-stdin
-          docker push https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:$IMAGE_TAG
+      # - name: PUSH Image To Gitlab
+      #   run: |  
+      #     docker tag ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:$IMAGE_TAG
+      #     echo "${{ secrets.GITLAB_TOKEN }}" | \
+      #     docker login registry.dso.xc.nga.mil -u "$ {{ secrets.GITLAB_USER }}" --pasword-stdin
+      #     docker push https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:$IMAGE_TAG
