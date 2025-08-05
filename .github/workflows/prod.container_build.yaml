@@ -34,7 +34,7 @@ jobs:
 
       - name: Pull IB Image
         run: |
-          echo "{{ secrets.DELETE_TOKEN }}" | docker login registry1.dso.mil -u "${{ secrets.DELETE_USER }}" --password-stdin
+          echo "${{ secrets.DELETE_TOKEN }}" | docker login registry1.dso.mil -u "${{ secrets.DELETE_USER }}" --password-stdin
           docker pull registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1 
           docker tag registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1 ghcr.io/${{ github.repository }}/ironbank/nodejs:20.11
 
