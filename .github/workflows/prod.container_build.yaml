@@ -47,6 +47,13 @@ jobs:
             --build-arg SFTP_VERSION=${{ inputs.sftp_version }} \
             -t ghcr.io/${{ github.repository }}/mage:${{ inputs.tag }} ./docker/server
 
-      - name: Push Image
+      - name: Push Image To PIX
         run: |
           docker push ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG
+
+      - name: PUSH Image To Gitlab
+        run: |  
+          docker tag ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:$IMAGE_TAG
+          echo "${{ secrets.GITLAB_TOKEN }}" | \
+          docker login registry.dso.xc.nga.mil -u "$ {{ secrets.GITLAB_USER }}" --pasword-stdin
+          docker push https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:$IMAGE_TAG
