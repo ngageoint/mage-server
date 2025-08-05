@@ -53,7 +53,7 @@ jobs:
 
       - name: PUSH Image To Gitlab
         run: |  
-          docker tag ghcr.io/${{ github.repository }}/mage:${{ inputs.tag }} https://registry.dso.xc.nga.mil/Mobile-Awareness-GEOINT-Environment/mage/mage/mage:${{ inputs.tag }}
+          docker tag ghcr.io/${{ github.repository }}/mage:${{ inputs.tag }} https://registry.dso.xc.nga.mil/mobile-awareness-geoint-environment/mage/mage/mage:${{ inputs.tag }}
           echo "${{ secrets.GITLAB_TOKEN }}" | \
           docker login registry.dso.xc.nga.mil -u "$ {{ secrets.GITLAB_USER }}" --pasword-stdin
           docker push https://registry.dso.xc.nga.mil/mobile-awareness-geoint-environment/mage/mage/mage:${{ inputs.tag }}
