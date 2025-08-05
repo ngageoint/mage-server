@@ -26,10 +26,14 @@ mat-sidenav-container {
   background: #e1e2e1;
   order: 1;
   width: 500px;
+  max-width: 100%;
   height: 100%;
   display: flex;
   flex-direction: row;
   position: relative;
   transition: margin-left .3s linear;
-  z-index: 1;
+}
+
+.feeds-nav {
+  max-width: 100%;
 }

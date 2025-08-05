@@ -10,15 +10,20 @@
   justify-content: space-between;
 }
 
-.menu {
+.collapsed-menu {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 }
 
-.title {
-  margin-left: 16px;
+.actions {
+  display: none;
+}
+
+.event-title {
+  margin-top: 0.2rem;
+  font-size: 0.75em;
 }
 
 .profile-avatar {
@@ -30,9 +35,10 @@
 
 @media(min-width:900px) {
   .navigation-options {
-    visibility: hidden;
     display: none;
-    width: 0;
-    padding: 0;
+  }
+
+  .actions {
+    display: block;
   }
 }
