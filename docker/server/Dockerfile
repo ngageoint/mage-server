@@ -1,9 +1,10 @@
 # FROM registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
-FROM ghcr.io/ngageoint/mage-server/ironbank/nodejs:20.11
+ARG BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
 ARG SERVER_VERSION=6.4.0-beta.1
 ARG ARC_VERSION=NONE
 ARG SFTP_VERSION=NONE
 
+FROM $BASE_IMAGE
 LABEL author="NGA"
 
 USER root
