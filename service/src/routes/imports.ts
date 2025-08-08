@@ -5,8 +5,7 @@ import { AnyPermission } from '../entities/authorization/entities.permissions'
 import fs from 'fs-extra';
 import Zip from 'adm-zip';
 import { defaultHandler as upload } from '../upload';
-import { DOMParser, Document } from '@xmldom/xmldom';
-import toGeoJson from '../utilities/togeojson';
+import { KmlFeature, kml } from '../utilities/transformKML';
 
 interface SecurityConfig {
     authentication: {
@@ -17,7 +16,7 @@ interface LayerRequest extends Request {
     layer: {
         type: string;
     };
-    kml?: Document;
+    features?: any[];
     file?: Express.Multer.File;
 }
 
@@ -29,64 +28,80 @@ interface ImportResponse {
     }>;
 }
 
+const getMimeType = (filename: string): string => {
+    const ext = filename.toLowerCase().split('.').pop() || '';
+    const mimeTypes: { [key: string]: string } = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp'
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+}
+
+const kmlToGeoJSON = (kmlPathname: string, isKMZ: boolean): KmlFeature[] => {
+    let kmlString: string;
+    let images: Record<string, string> = {};
+
+    if (isKMZ) {
+        // TODO: Update how images are handled in KMZ files to prevent duplication. Move images to a separate directory and store their paths in the KML.
+        const zip = new Zip(kmlPathname);
+        const zipEntries = zip.getEntries();
+        const kmlEntry = zipEntries.find(entry => entry.entryName.toLowerCase().endsWith('.kml'));
+
+        if (!kmlEntry) {
+            throw new Error('No KML file found inside KMZ.');
+        }
+
+        zipEntries.forEach(entry => {
+            const entryName = entry.entryName;
+            try {
+                if (!entry.isDirectory && /\.(png|jpg|jpeg|gif|bmp)$/i.test(entryName)) {
+                    const buffer = entry.getData();
+                    const base64 = buffer.toString('base64');
+                    const mimeType = getMimeType(entryName);
+                    images[entryName] = `data:${mimeType};base64,${base64}`;
+                }
+            } catch (error) {
+                console.error(`Error processing entry ${entryName}:`, error);
+            }
+        });
+
+        kmlString = kmlEntry.getData().toString('utf8');
+    } else {
+        kmlString = fs.readFileSync(kmlPathname, 'utf8');
+    }
+
+    try {
+        return kml(kmlString, images);
+    } catch (error) {
+        throw new Error('Failed to transform KML: ' + error);
+    }
+}
+
+const validate = async (req: Request, res: Response, next: NextFunction): Promise<void | Response> => {
+    const layRequest = req as LayerRequest;
+    if (layRequest.layer.type !== 'Feature') {
+        return res.status(400).send('Cannot import data, layer type is not "Static".');
+    }
+
+    const fileExtension: string = layRequest.file?.originalname?.toLowerCase().split('.').pop() || '';
+
+    if (!['kml', 'kmz'].includes(fileExtension)) {
+        return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
+    }
+
+    try {
+        layRequest.features = kmlToGeoJSON(layRequest.file!.path, fileExtension === 'kmz');
+    } catch (err) {
+        return res.status(400).send('Unable to extract contents from KMZ file.' + err);
+    }
+    return next();
+}
+
 function importRoutes(app: Express, security: SecurityConfig): void {
     const passport = security.authentication.passport;
-
-    function validate(req: Request, res: Response, next: NextFunction): void | Response {
-        const layRequest = req as LayerRequest;
-        if (layRequest.layer.type !== 'Feature') {
-            return res.status(400).send('Cannot import data, layer type is not "Static".');
-        }
-
-        if (!layRequest.file) {
-            return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
-        }
-
-        const fileExtension: string = layRequest.file.originalname.toLowerCase().split('.').pop() || '';
-
-        if (fileExtension === 'kmz') {
-            try {
-                const zip = new Zip(layRequest.file.path);
-                const zipEntries = zip.getEntries();
-                const kmlEntry = zipEntries.find(entry => entry.entryName.toLowerCase().endsWith('.kml'));
-
-                if (!kmlEntry) {
-                    return res.status(400).send('No KML file found inside.');
-                }
-
-                const kmlData: string = kmlEntry.getData().toString('utf8');
-                processKmlData(kmlData, layRequest, res, next);
-            } catch (err) {
-                return res.status(400).send('Unable to extract contents from KMZ file.');
-            }
-        } else if (fileExtension === 'kml') {
-            fs.readFile(layRequest.file.path, 'utf8', function (err: Error | null, data: string) {
-                if (err) return next(err);
-                processKmlData(data, layRequest, res, next);
-            });
-        } else {
-            return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
-        }
-    }
-
-    function processKmlData(data: string, req: LayerRequest, res: Response, next: NextFunction): void | Response {
-        const parser = new DOMParser();
-        const kml: Document = parser.parseFromString(data, "application/xml");
-        const parseError = kml.getElementsByTagName("parsererror");
-
-        if (parseError.length > 0) {
-            console.error("KML Parsing Error:", parseError[0].textContent);
-        } else {
-            console.log("Parsed KML successfully");
-        }
-
-        if (!kml || kml.documentElement?.nodeName !== 'kml') {
-            return res.status(400).send('Invalid file, please upload a KML or KMZ file.');
-        }
-
-        req.kml = kml;
-        return next();
-    }
 
     app.post(
         '/api/layers/:layerId/kml',
@@ -94,11 +109,9 @@ function importRoutes(app: Express, security: SecurityConfig): void {
         access.authorize('CREATE_LAYER' as AnyPermission),
         upload.single('file'),
         validate,
-        function (req: Request, res: Response, next: NextFunction): void {
+        (req: Request, res: Response, next: NextFunction) => {
             const layerRequest = req as LayerRequest;
-            console.log('Importing KML file:', layerRequest.file?.originalname);
-            const features = toGeoJson.kml(layerRequest.kml!);
-            new api.Feature(layerRequest.layer).createFeatures(features)
+            new api.Feature(layerRequest.layer).createFeatures(layerRequest.features)
                 .then((newFeatures: any[]) => {
                     const response: ImportResponse = {
                         files: [{

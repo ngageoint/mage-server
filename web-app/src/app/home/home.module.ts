@@ -141,6 +141,7 @@ import { IngressModule } from '../ingress/ingress.module';
 import { FilterControlComponent } from '../map/controls/filter.component';
 import { ExportControlComponent } from '../map/controls/export.component';
 import { BannerModule } from '../banner/banner.module';
+import { MatMenuModule } from '@angular/material/menu';
 
 const routes: Routes = [{
   path: '',
@@ -177,6 +178,7 @@ const routes: Routes = [{
     MatGridListModule,
     MatIconModule,
     MatInputModule,
+    MatMenuModule,
     MatMomentDatetimeModule,
     MatPaginatorModule,
     MatProgressBarModule,
@@ -295,7 +297,7 @@ class AngularModule { }
     InputMaskModule.forRoot(),
     RouterModule.forChild(routes)
   ],
-  exports: [ RouterModule ]
+  exports: [RouterModule]
 })
 export class HomeModule {
 }

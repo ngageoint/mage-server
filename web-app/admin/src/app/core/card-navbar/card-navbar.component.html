@@ -1,0 +1,25 @@
+<nav class="navbar navbar-default admin-dashboard-navbar">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <h3 class="navbar-brand">{{ title }}</h3>
+        </div>
+
+        <div class="navbar-form navbar-left search-container" *ngIf="isSearchable">
+            <input type="text" class="form-control search-input" [placeholder]="searchPlaceholder"
+                [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)">
+            <button type="button" class="btn clear-search-btn" (click)="clearSearch()"
+                *ngIf="searchTerm && searchTerm.trim()">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+
+        <form class="navbar-form navbar-right" role="search" *ngIf="actionButtons.length > 0">
+            <ng-container *ngFor="let button of actionButtons">
+                <button type="button" class="btn btn-default action-button {{ button.type }}"
+                    (click)="onActionButtonClick(button)" [disabled]="button.disabled">
+                    {{ button.label }}
+                </button>
+            </ng-container>
+        </form>
+    </div>
+</nav>

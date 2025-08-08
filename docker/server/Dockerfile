@@ -1,4 +1,7 @@
 FROM registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
+ARG SERVER_VERSION=6.4.0-beta.1
+ARG ARC_VERSION=NONE
+ARG SFTP_VERSION=NONE
 
 LABEL author="NGA"
 
@@ -15,12 +18,10 @@ USER mage
 ENV MAGE_HOME=/home/mage/instance
 WORKDIR ${MAGE_HOME}
 RUN ls -l \
-    && npm i --omit dev @ngageoint/mage.service@6.4.0-beta.1 \
-    && npm i --omit dev @ngageoint/mage.web-app@6.4.0-beta.1 \
-    && npm i --omit dev @ngageoint/mage.arcgis.service@1.0.0-beta.2 \
-    && npm i --omit dev @ngageoint/mage.arcgis.web-app@1.0.0-beta.2 \
-    && npm i --omit dev @ngageoint/mage.sftp.service@1.0.0-beta.2 \
-    && npm i --omit dev @ngageoint/mage.sftp.web@1.0.0-beta.2 \
+    && npm i --omit dev @ngageoint/mage.service@${SERVER_VERSION} \
+    && npm i --omit dev @ngageoint/mage.web-app@${SERVER_VERSION} \
+    && if [ "$ARC_VERSION" != "NONE" ]; then npm i --omit dev @ngageoint/mage.arcgis.service@$ARC_VERSION @ngageoint/mage.arcgis.web-app@$ARC_VERSION; fi\
+    && if [ "$SFTP_VERSION" != "NONE" ]; then npm i --omit dev @ngageoint/mage.sftp.service@$SFTP_VERSION @ngageoint/mage.sftp.web@$SFTP_VERSION; fi \
     && ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage

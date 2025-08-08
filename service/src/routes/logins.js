@@ -54,6 +54,10 @@ module.exports = function(app, security) {
       if (req.query.deviceId) {
         filter.deviceId = req.query.deviceId;
       }
+      if (req.query.deviceIds) {
+        const ids = req.query.deviceIds.split(',').map(id => id.trim());
+        filter.deviceId = { $in: ids };
+      }
       if (req.query.startDate) {
         filter.startDate = moment(req.query.startDate).toDate();
       }

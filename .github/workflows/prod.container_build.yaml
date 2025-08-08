@@ -1,0 +1,52 @@
+name: Production Container Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The image tag
+        type: string
+        required: true
+      server_version:
+        description: the version of the web server_version
+        type: string
+        required: true
+      arc_version:
+        description: the version of the arc plugin
+        type: string
+        required: true
+        default: NONE
+      sftp_version:
+        description: the version of the sftp plugin
+        required: true
+        default: NONE
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Login to Github Registry ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg SERVER_VERSION=${{ inputs.server_version }} \
+            --build-arg ARC_VERSION=${{ inputs.arc_version }} \
+            --build-arg SFTP_VERSION=${{ inputs.sftp_version }} \
+            -t ghcr.io/${{ github.repository }}/mage:${{ inputs.tag }} ./docker/server
+
+      - name: Push Image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG

@@ -49,13 +49,14 @@
         </div>
       </div>
 
-      <div class="item-thumbnail">
+      <div *ngIf="!observation?.noGeometry" class="item-thumbnail">
         <img [src]="observation?.style?.iconUrl" />
       </div>
     </div>
 
     <div *ngIf="attachments?.length && attachments[0]?.url" class="item-media" matCardImage>
-      <observation-attachment [attachment]="attachments[0]" [label]="attachments.length > 1 ? '1 of ' + attachments.length : false"></observation-attachment>
+      <observation-attachment [attachment]="attachments[0]"
+        [label]="attachments.length > 1 ? '1 of ' + attachments.length : false"></observation-attachment>
     </div>
   </div>
 
@@ -66,15 +67,15 @@
         <textarea matInput [(ngModel)]="importantEditor.description"></textarea>
       </mat-form-field>
       <div class="important__actions">
-        <button mat-button color="primary"
-          (click)="clearImportant()">{{observation?.important ? 'Remove' : 'Cancel'}}</button>
+        <button mat-button color="primary" (click)="clearImportant()">{{observation?.important ? 'Remove' :
+          'Cancel'}}</button>
         <button mat-flat-button color="primary" (click)="markAsImportant()"
           class="important__actions--confirm">{{observation?.important ? 'Update' : 'Flag As Important'}}</button>
       </div>
     </div>
 
     <div class="actions">
-      <div class="action-buttons">
+      <div *ngIf="!observation?.noGeometry" class="action-buttons">
         <button mat-button color="primary" (click)="onObservationLocationClick()" class="actions__location-button">
           <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
         </button>
@@ -98,7 +99,8 @@
           <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
         </div>
 
-        <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download" matTooltipPosition="above">
+        <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download"
+          matTooltipPosition="above">
           <mat-icon>save_alt</mat-icon>
         </a>
       </div>

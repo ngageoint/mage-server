@@ -76,6 +76,7 @@ const EventSchema = new Schema({
   _id: { type: Number, required: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
+  // noGeometry: { type: Boolean, default: false },
   complete: { type: Boolean },
   collectionName: { type: String, required: true },
   teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
@@ -110,7 +111,7 @@ EventSchema.virtual('id')
 async function uniqueViolationToValidationErrorHook(err, _, next) {
   if (err.code === 11000 || err.code === 11001) {
     err = new mongoose.Error.ValidationError()
-    err.errors = { name: { type: 'unique', message: 'Duplicate event name' }}
+    err.errors = { name: { type: 'unique', message: 'Duplicate event name' } }
   }
   return next(err)
 }
@@ -491,7 +492,7 @@ exports.update = function (id, event, options, callback) {
     options = {};
   }
 
-  const update = ['name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function(o, k) {
+  const update = ['name', 'description', 'noGeometry', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function (o, k) {
     if (Object.prototype.hasOwnProperty.call(event, k)) {
       o[k] = event[k];
     }

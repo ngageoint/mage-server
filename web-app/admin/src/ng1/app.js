@@ -19,11 +19,14 @@ import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settin
 import { AdminAuthenticationComponent } from '../app/admin/admin-authentication/admin-authentication.component';
 import { AdminMapComponent } from '../app/admin/admin-map/admin-map.component';
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
+import { AdminDashboardComponent } from '../app/admin/admin-dashboard/admin-dashboard';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
 import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component'
 import { AdminFeedEditComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed-edit/admin-feed-edit.component';
 import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
 import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
+import { TeamDashboardComponent } from '../app/admin/admin-teams/dashboard/team-dashboard.component';
+
 
 require('angular-minicolors');
 require('select2');
@@ -62,7 +65,9 @@ app
   .directive('upgradedAdminAuthentication', downgradeComponent({ component: AdminAuthenticationComponent }))
   .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
   .directive('contact', downgradeComponent({ component: ContactComponent }))
-  .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
+  .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }))
+  .directive('adminTeams', downgradeComponent({ component: TeamDashboardComponent }))
+  .directive('adminDashboard', downgradeComponent({ component: AdminDashboardComponent }));
 
 app
   .component('navbar', require('./navbar/navbar.component'))

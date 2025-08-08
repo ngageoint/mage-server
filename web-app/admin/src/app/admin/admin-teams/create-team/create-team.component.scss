@@ -1,0 +1,15 @@
+.full-width {
+    width: 100%;
+}
+
+.admin-team-create {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-around;
+}
+
+.mat-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+}
