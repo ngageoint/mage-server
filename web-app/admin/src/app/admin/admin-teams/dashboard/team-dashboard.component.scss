@@ -1,0 +1,42 @@
+.mat-table-even-columns {
+    table-layout: fixed;
+    width: 100%;
+
+    .mat-row {
+        height: 3.75rem;
+    }
+
+    .mat-cell {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .mat-cell,
+    .mat-header-cell {
+        font-size: 1em;
+        padding: 1rem 0.75rem;
+    }
+
+    .mat-header-cell {
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.87);
+    }
+
+    .description-cell {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        line-height: 1.1em;
+        height: calc(3 * 1.1em);
+        align-content: center;
+    }
+}
+
+.table-container {
+    position: relative;
+}

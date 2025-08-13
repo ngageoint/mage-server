@@ -1,0 +1,25 @@
+<div class="admin-team-create">
+    <h1 mat-dialog-title>New Team</h1>
+    <div mat-dialog-content>
+        <div *ngIf="errorMessage" class="error-message" style="color: red; margin-bottom: 16px;">
+            {{ errorMessage }}
+        </div>
+        <form [formGroup]="teamForm">
+            <mat-form-field class="full-width">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" required>
+                <mat-error *ngIf="teamForm.get('name').hasError('required')">
+                    Name is required
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="full-width">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description"></textarea>
+            </mat-form-field>
+        </form>
+    </div>
+    <div mat-dialog-actions>
+        <button mat-button (click)="cancel()">Cancel</button>
+        <button mat-button color="primary" (click)="save()" [disabled]="teamForm.invalid">Save</button>
+    </div>
+</div>

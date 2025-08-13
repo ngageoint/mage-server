@@ -7,16 +7,24 @@
     </div>
 
     <div class="event-title">
-      <span class="filter-event">{{filteredEvent.name}}</span>
-      <span *ngIf="filteredTeams" class="filter-teams"><span>> {{filteredTeams}}</span></span>
-      <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
+      <span class="filter-event">{{ filteredEvent.name }}</span>
+      <span *ngIf="filteredTeams" class="filter-teams"
+        ><span>> {{ filteredTeams }}</span></span
+      >
+      <span *ngIf="filteredInterval" class="filter-interval">
+        {{ filteredInterval }}</span
+      >
     </div>
 
     <div class="collapsed-menu">
-      <button mat-button (click)="togglePreferences()">
+      <button matTooltip="Preferences" mat-button (click)="togglePreferences()">
         <mat-icon>tune</mat-icon>
       </button>
-      <button mat-icon-button class="navigation-options" [matMenuTriggerFor]="menu">
+      <button
+        mat-icon-button
+        class="navigation-options"
+        [matMenuTriggerFor]="menu"
+      >
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu>
@@ -39,19 +47,24 @@
       </mat-menu>
 
       <div class="actions">
-        <a [routerLink]="['/profile']" mat-button>
+        <a matTooltip="Profile" [routerLink]="['/profile']" mat-button>
           <mat-icon>account_circle</mat-icon>
         </a>
 
-        <a [routerLink]="['/about']" mat-button>
+        <a matTooltip="Info" [routerLink]="['/about']" mat-button>
           <mat-icon>info</mat-icon>
         </a>
 
-        <a *ngIf="isAdmin" mat-button href="admin/#/admin/">
+        <a
+          matTooltip="Admin Page"
+          *ngIf="isAdmin"
+          mat-button
+          href="admin/#/admin/"
+        >
           <mat-icon>admin_panel_settings</mat-icon>
         </a>
 
-        <a mat-button (click)="onLogout()">
+        <a matTooltip="Logout" mat-button (click)="onLogout()">
           <mat-icon>logout</mat-icon>
         </a>
       </div>

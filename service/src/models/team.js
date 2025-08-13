@@ -360,7 +360,8 @@ exports.getTeams = async function(options, callback) {
     }
   }
 
-  let baseQuery = Team.find(conditions).sort('_id');
+  const sortoptions = options.sort ? JSON.parse(options.sort) : { _id: 1 };
+  let baseQuery = Team.find(conditions).sort(sortoptions);
   if (options.populate == null || options.populate == 'true') {
     baseQuery = baseQuery.populate('userIds');
   }

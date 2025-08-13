@@ -12,6 +12,10 @@ export const Team = new InjectionToken<any>('Team');
 export const Event = new InjectionToken<any>('Event');
 export const AuthenticationConfigurationService = new InjectionToken<any>('AuthenticationConfigurationService');
 export const UserPagingService = new InjectionToken<any>('UserPagingService');
+export const DeviceService = new InjectionToken<any>('DeviceService');
+export const DevicePagingService = new InjectionToken<any>('DevicePagingService');
+export const LoginService = new InjectionToken<any>('LoginService');
+export const LayerService = new InjectionToken<any>('LayerService');
 
 
 export function mapServiceFactory(i: any): any {
@@ -154,5 +158,41 @@ export function userPagingServiceFactory(i: any): any {
 export const userPagingServiceProvider = {
   provide: UserPagingService,
   useFactory: userPagingServiceFactory,
+  deps: ['$injector']
+};
+
+export function deviceServiceFactory(i: any): any {
+  return i.get('DeviceService');
+}
+export const deviceServiceProvider = {
+  provide: DeviceService,
+  useFactory: deviceServiceFactory,
+  deps: ['$injector']
+};
+
+export function devicePagingServiceFactory(i: any): any {
+  return i.get('DevicePagingService');
+}
+export const devicePagingServiceProvider = {
+  provide: DevicePagingService,
+  useFactory: devicePagingServiceFactory,
+  deps: ['$injector']
+};
+
+export function loginServiceFactory(i: any): any {
+  return i.get('LoginService');
+}
+export const loginServiceProvider = {
+  provide: LoginService,
+  useFactory: loginServiceFactory,
+  deps: ['$injector']
+};
+
+export function layerServiceFactory(i: any): any {
+  return i.get('LayerService');
+}
+export const layerServiceProvider = {
+  provide: LayerService,
+  useFactory: layerServiceFactory,
   deps: ['$injector']
 };

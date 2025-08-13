@@ -1,12 +1,12 @@
-import { NgModule } from '@angular/core'
-import { AdminPluginTabContentComponent } from './plugin-tab/plugin-tab-content.component'
+import { NgModule } from '@angular/core';
+import { AdminPluginTabContentComponent } from './plugin-tab/plugin-tab-content.component';
 
 @NgModule({
   declarations: [
-    AdminPluginTabContentComponent
+    AdminPluginTabContentComponent,
   ],
   exports: [
-    AdminPluginTabContentComponent
+    AdminPluginTabContentComponent,
   ]
 })
 export class AdminModule {
