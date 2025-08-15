@@ -45,8 +45,13 @@ export class CreateTeamDialogComponent {
             next: (newTeam) => {
                 this.dialogRef.close(newTeam);
             },
-            error: () => {
-                this.errorMessage = 'Failed to create team. Please try again.';
+            error: (err) => {
+                if (err.status === 409) {
+                    this.errorMessage = err.error;
+                }
+                else {
+                    this.errorMessage = 'Failed to create team. Please try again.';
+                }
             }
         });
     }
