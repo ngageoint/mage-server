@@ -102,7 +102,7 @@ http://localhost:4242.
    | _Search Filter_ | `(uid={{username}})` |
    | _Search Scope_ | `one` |
    | **_Advanced_** |
-   | _Profile ID Property_ | `uid |
+   | _Profile ID Property_ | `uid` |
    | _Display Name Property_ | `cn` |
 1. Click the _Next_ button.
 1. Adjust the color settings to your preference.

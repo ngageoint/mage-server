@@ -1,4 +1,3 @@
-# FROM registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
 ARG BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:20.11.1
 ARG SERVER_VERSION=6.4.0-beta.1
 ARG ARC_VERSION=NONE
