@@ -49,8 +49,10 @@ describe('event mongoose repository', function () {
           })
         })
     }
+    // Use unique event name to avoid team name conflicts
+    const uniqueId = new mongoose.Types.ObjectId().toHexString()
     eventDoc = await createEvent({
-      name: 'Test Event',
+      name: `Test Event ${uniqueId}`,
       description: 'For testing'
     })
 
@@ -60,6 +62,8 @@ describe('event mongoose repository', function () {
 
   afterEach(async function () {
     await model.remove({})
+    // Also clean up teams that were created for events
+    await TeamModel.remove({})
   })
 
   describe('finding events by id', function () {
@@ -75,6 +79,7 @@ describe('event mongoose repository', function () {
 
     beforeEach('clear all events', async function () {
       await model.remove({})
+      await TeamModel.remove({})
     })
 
     it('finds events whose complete key is false', async function () {

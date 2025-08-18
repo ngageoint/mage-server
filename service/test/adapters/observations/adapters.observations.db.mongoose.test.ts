@@ -85,8 +85,10 @@ describe('mongoose observation repository', function () {
           })
         })
     }
+    // Use unique event name to avoid team name conflicts
+    const uniqueId = new mongoose.Types.ObjectId().toHexString()
     eventDoc = await createEvent({
-      name: 'Test Event',
+      name: `Test Event ${uniqueId}`,
       description: 'For testing',
       maxObservationForms: 2,
     })
@@ -134,13 +136,19 @@ describe('mongoose observation repository', function () {
 
   afterEach(async function () {
     try {
-      await model.ensureIndexes()
+      if (model) {
+        await model.ensureIndexes()
+      }
     } catch (err) {
       //don't care
     }
     // should run all the middleware to drop the observation collection
-    await eventDoc.remove()
-    await repo.idModel.remove({})
+    if (eventDoc) {
+      await eventDoc.remove()
+    }
+    if (repo && repo.idModel) {
+      await repo.idModel.remove({})
+    }
   })
 
   describe('allocating an observation id', function () {
