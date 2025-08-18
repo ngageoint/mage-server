@@ -297,6 +297,7 @@ export class TeamDetailsComponent implements OnInit {
         this.teamService.addUserToTeam(this.team.id, result.selectedItem).subscribe({
           next: () => {
             this.getMembers();
+            this.team.users.push(result.selectedItem);
           }
         });
       }
@@ -313,6 +314,7 @@ export class TeamDetailsComponent implements OnInit {
     this.teamService.removeMember(this.team.id, user.id).subscribe({
       next: () => {
         this.getMembers();
+        this.team.users = this.team.users.filter(u => u.id !== user.id);
       },
       error: (error) => {
         console.error('Error removing member:', error);
