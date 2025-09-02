@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { StateService } from '@uirouter/angular';
 import { UserDetailsComponent } from './user-details.component';
@@ -111,8 +110,7 @@ describe('UserDetailsComponent', () => {
         { provide: TeamsService, useValue: mockTeamsService },
         { provide: EventsService, useValue: mockEventsService },
         { provide: LocalStorageService, useValue: mockLocalStorageService }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
+      ]
     })
       .compileComponents();
 
@@ -206,8 +204,7 @@ describe('UserDetailsComponent', () => {
         { provide: TeamsService, useValue: mockTeamsService },
         { provide: EventsService, useValue: mockEventsService },
         { provide: LocalStorageService, useValue: mockLocalStorageService }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
+      ]
     }).compileComponents();
     const fix = TestBed.createComponent(UserDetailsComponent);
     const comp = fix.componentInstance;

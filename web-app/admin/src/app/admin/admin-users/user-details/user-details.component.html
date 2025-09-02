@@ -28,124 +28,129 @@
     <div class="details-section">
         <div class="details-card">
             <div class="details-form">
-                <div class="form-field map-icon-field">
-                    <label class="field-label">Avatar</label>
-                    <div class="field-content">
-                        <div class="avatar-display" *ngIf="!isEditingUser">
-                            <img *ngIf="user.avatarUrl" [src]="userAvatarImgUrl" width="75" height="75"
-                                class="avatar-image">
-                            <div *ngIf="!user.avatarUrl" class="avatar-placeholder"><i class="fa fa-user"></i></div>
-                        </div>
-
-                        <div class="map-icon-container" *ngIf="isEditingUser">
-                            <div class="map-icon-top">
-                                <div class="map-icon-preview">
-                                    <ng-container *ngIf="avatarPreviewUrl || user.avatarUrl; else noAvatar">
-                                        <img [src]="avatarPreviewUrl || userAvatarImgUrl" width="56" height="56"
-                                            class="map-icon-thumb" />
-                                    </ng-container>
-                                    <ng-template #noAvatar>
-                                        <div class="map-icon-empty">No avatar</div>
-                                    </ng-template>
-                                </div>
-                                <div class="map-icon-type-select">
-                                    <label>Avatar</label>
-                                    <div class="helper-text">Upload a square image; it will be cropped to a circle.
-                                    </div>
-                                </div>
+                <div class="form-row">
+                    <div class="form-field map-icon-field">
+                        <label class="field-label">Avatar</label>
+                        <div class="field-content">
+                            <div class="avatar-display" *ngIf="!isEditingUser">
+                                <img *ngIf="user.avatarUrl" [src]="userAvatarImgUrl" width="75" height="75"
+                                    class="avatar-image">
+                                <div *ngIf="!user.avatarUrl" class="avatar-placeholder"><i class="fa fa-user"></i></div>
                             </div>
 
-                            <div class="map-icon-section">
-                                <div class="map-icon-section-title">Upload Avatar</div>
-                                <div class="upload-actions">
-                                    <input id="avatarUploadInput" type="file" accept="image/*"
-                                        (change)="onAvatarChanged($event)" [disabled]="saving" />
-                                    <label for="avatarUploadInput" class="action-button btn-secondary imageLabel"
-                                        [class.disabled]="saving">
-                                        <i class="fa fa-upload"></i> Choose Image
-                                    </label>
+                            <div class="map-icon-container" *ngIf="isEditingUser">
+                                <div class="map-icon-top">
+                                    <div class="map-icon-preview">
+                                        <ng-container *ngIf="avatarPreviewUrl || user.avatarUrl; else noAvatar">
+                                            <img [src]="avatarPreviewUrl || userAvatarImgUrl" width="75" height="75"
+                                                class="map-icon-thumb" />
+                                        </ng-container>
+                                        <ng-template #noAvatar>
+                                            <div class="map-icon-empty">No avatar</div>
+                                        </ng-template>
+                                    </div>
+                                    <div class="map-icon-type-select">
+                                        <label>Avatar</label>
+                                        <div class="helper-text">Upload a square image; it will be cropped to a circle.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="map-icon-section">
+                                    <div class="map-icon-section-title">Upload Avatar</div>
+                                    <div class="upload-actions">
+                                        <input id="avatarUploadInput" type="file" accept="image/*"
+                                            (change)="onAvatarChanged($event)" [disabled]="saving" />
+                                        <label for="avatarUploadInput" class="action-button btn-secondary imageLabel"
+                                            [class.disabled]="saving">
+                                            <i class="fa fa-upload"></i> Choose Image
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-field map-icon-field">
-                    <label class="field-label">Map Icon</label>
-                    <div class="field-content">
-                        <div class="map-icon-header" *ngIf="!isEditingUser">
-                            <img *ngIf="user.iconUrl" [src]="userIconImgUrl" width="44" height="44"
-                                class="map-icon-thumb">
-                            <span *ngIf="!user.iconUrl" class="field-value text-muted">No icon</span>
-                        </div>
-
-                        <div class="map-icon-container" *ngIf="isEditingUser">
-                            <div class="map-icon-editor">
-                                <div class="map-icon-top">
-                                    <div class="map-icon-preview">
-                                        <ng-container [ngSwitch]="iconMetadata.type">
-                                            <img *ngSwitchCase="'upload'" [src]="iconPreviewUrl || userIconImgUrl"
-                                                width="44" height="44" class="map-icon-thumb" />
-                                            <canvas *ngSwitchCase="'create'" #mapIconCanvas width="44" height="44"
-                                                class="map-icon-thumb"></canvas>
-                                            <div *ngSwitchDefault class="map-icon-empty">No icon</div>
-                                        </ng-container>
-                                    </div>
-
-                                    <div class="map-icon-type-select">
-                                        <label for="iconTypeSelect">Icon Type</label>
-                                        <select id="iconTypeSelect" class="form-input" [(ngModel)]="iconMetadata.type"
-                                            (change)="iconTypeChanged()">
-                                            <option [ngValue]="'none'">None</option>
-                                            <option [ngValue]="'create'">Create</option>
-                                            <option [ngValue]="'upload'">Upload</option>
-                                        </select>
-                                    </div>
+                    <div class="form-field map-icon-field">
+                        <label class="field-label">Map Icon</label>
+                        <div class="field-content">
+                            <div class="map-icon-header" *ngIf="!isEditingUser">
+                                <img *ngIf="user.iconUrl" [src]="userIconImgUrl" width="75" height="75"
+                                    class="map-icon-thumb">
+                                <div *ngIf="!user.iconUrl" class="map-icon-preview">
+                                    <div class="map-icon-empty">No icon</div>
                                 </div>
+                            </div>
 
-                                <div class="map-icon-section" *ngIf="iconMetadata.type === 'create'">
-                                    <div class="map-icon-section-title">Create Icon</div>
-                                    <div class="map-icon-create">
-                                        <div class="create-grid">
-                                            <div class="create-field">
-                                                <label>Initials</label>
-                                                <input class="form-input" type="text" [value]="iconMetadata.text"
-                                                    maxlength="2"
-                                                    (input)="onCreateTextChanged($any($event.target).value)"
-                                                    placeholder="AB" />
-                                            </div>
-                                            <div class="create-field">
-                                                <label>Color</label>
-                                                <input class="form-input color-input" type="color"
-                                                    [value]="iconMetadata.color || '#007bff'"
-                                                    (input)="onCreateColorChanged($any($event.target).value)" />
+                            <div class="map-icon-container" *ngIf="isEditingUser">
+                                <div class="map-icon-editor">
+                                    <div class="map-icon-top">
+                                        <div class="map-icon-preview">
+                                            <ng-container [ngSwitch]="iconMetadata.type">
+                                                <img *ngSwitchCase="'upload'" [src]="iconPreviewUrl || userIconImgUrl"
+                                                    width="75" height="75" class="map-icon-thumb" />
+                                                <canvas *ngSwitchCase="'create'" #mapIconCanvas width="75" height="75"
+                                                    class="map-icon-thumb"></canvas>
+                                                <div *ngSwitchDefault class="map-icon-empty">No icon</div>
+                                            </ng-container>
+                                        </div>
+
+                                        <div class="map-icon-type-select">
+                                            <label for="iconTypeSelect">Icon Type</label>
+                                            <select id="iconTypeSelect" class="form-input"
+                                                [(ngModel)]="iconMetadata.type" (change)="iconTypeChanged()">
+                                                <option [ngValue]="'none'">None</option>
+                                                <option [ngValue]="'create'">Create</option>
+                                                <option [ngValue]="'upload'">Upload</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="map-icon-section" *ngIf="iconMetadata.type === 'create'">
+                                        <div class="map-icon-section-title">Create Icon</div>
+                                        <div class="map-icon-create">
+                                            <div class="create-grid">
+                                                <div class="create-field">
+                                                    <label>Initials</label>
+                                                    <input class="form-input" type="text" [value]="iconMetadata.text"
+                                                        maxlength="2"
+                                                        (input)="onCreateTextChanged($any($event.target).value)"
+                                                        placeholder="AB" />
+                                                </div>
+                                                <div class="create-field">
+                                                    <label>Color</label>
+                                                    <input class="form-input color-input" type="color"
+                                                        [value]="iconMetadata.color || '#007bff'"
+                                                        (input)="onCreateColorChanged($any($event.target).value)" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="map-icon-section" *ngIf="iconMetadata.type === 'upload'">
-                                    <div class="map-icon-section-title">Upload Icon</div>
-                                    <div class="map-icon-upload">
-                                        <div class="upload-actions">
-                                            <input id="iconUploadInput" type="file" accept="image/*"
-                                                (change)="onIconChanged($event)" [disabled]="saving" />
-                                            <label for="iconUploadInput" class="action-button btn-secondary imageLabel"
-                                                [class.disabled]="saving">
-                                                <i class="fa fa-upload"></i> Choose Image
-                                            </label>
-                                            <button class="action-button btn-danger" type="button"
-                                                (click)="removeIcon()" [disabled]="saving">
-                                                <i class="fa fa-trash"></i> Remove
-                                            </button>
+                                    <div class="map-icon-section" *ngIf="iconMetadata.type === 'upload'">
+                                        <div class="map-icon-section-title">Upload Icon</div>
+                                        <div class="map-icon-upload">
+                                            <div class="upload-actions">
+                                                <input id="iconUploadInput" type="file" accept="image/*"
+                                                    (change)="onIconChanged($event)" [disabled]="saving" />
+                                                <label for="iconUploadInput"
+                                                    class="action-button btn-secondary imageLabel"
+                                                    [class.disabled]="saving">
+                                                    <i class="fa fa-upload"></i> Choose Image
+                                                </label>
+                                                <button class="action-button btn-danger" type="button"
+                                                    (click)="removeIcon()" [disabled]="saving">
+                                                    <i class="fa fa-trash"></i> Remove
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="map-icon-section" *ngIf="iconMetadata.type === 'none'">
-                                    <div class="map-icon-section-title">No Icon</div>
-                                    <div class="map-icon-none">
-                                        <span class="field-value text-muted">No icon selected</span>
+                                    <div class="map-icon-section" *ngIf="iconMetadata.type === 'none'">
+                                        <div class="map-icon-section-title">No Icon</div>
+                                        <div class="map-icon-none">
+                                            <span class="field-value text-muted">No icon selected</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -316,7 +321,7 @@
                 </div>
             </div>
 
-            <div class="danger-zone-card warning" *ngIf="user.active && hasUserEditPermission">
+            <div class="danger-zone-card warning" *ngIf="user.active && hasUserEditPermission && !isSelf">
                 <h3 class="danger-zone-title">{{ user.enabled ? 'Disable User Account' : 'User Account Disabled' }}</h3>
                 <p class="danger-zone-description">
                     {{ user.enabled
@@ -395,7 +400,7 @@
                         </div>
                     </div>
                 </div>
-                <mat-paginator [length]="totalUserTeams" [pageSize]="userTeamsPageSize"
+                <mat-paginator [length]="totalUserTeams" [pageSize]="userTeamsPageSize" [pageIndex]="userTeamsPageIndex"
                     [pageSizeOptions]="pageSizeOptions" (page)="onUserTeamsPageChange($event)">
                 </mat-paginator>
 
@@ -415,7 +420,7 @@
                 <div class="integrated-navbar">
                     <mage-card-navbar [title]="'User Events'" [isSearchable]="true"
                         [searchPlaceholder]="'Search events...'" (searchTermChanged)="searchUserEvent($event)"
-                        (searchCleared)="searchUserEvent()" [actionButtons]="eventActionButtons"></mage-card-navbar>
+                        (searchCleared)="searchUserEvent()"></mage-card-navbar>
                 </div>
 
                 <div class="table-scroll">
@@ -431,13 +436,6 @@
                                         <div class="row-primary">{{ event.name }}</div>
                                         <div class="row-secondary" *ngIf="event.description">{{
                                             event.description }}</div>
-                                    </div>
-                                    <div class="row-actions" *ngIf="editEvent && hasUserEditPermission">
-                                        <button class="action-button btn-danger btn-sm"
-                                            (click)="removeUserFromEvent($event, event)" title="Remove from Event">
-                                            <i class="fa fa-trash"></i>
-                                            Remove
-                                        </button>
                                     </div>
                                 </div>
                             </td>

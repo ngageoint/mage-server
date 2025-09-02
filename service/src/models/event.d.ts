@@ -58,7 +58,6 @@ export type Callback<Result = unknown> = (err: Error | null, result?: Result, to
 export declare function count(options: TODO, callback: Callback<number>): void
 export declare function getEvents(options: TODO, callback: Callback<MageEventDocument[]>): void
 export declare function getById(id: MageEventId, options: TODO, callback: Callback<MageEventDocument | null>): void
-export declare function filterEventsByUserId(events: MageEventDocument[], userId: string, callback: Callback<MageEventDocument[]>): void
 export declare function create(event: MageEventCreateAttrs, user: Partial<UserDocument> & Pick<UserDocument, '_id'>, callback: Callback<MageEventDocument>): void
 export declare function addForm(eventId: MageEventId, form: any, callback: Callback<MageEventDocument>): void
 export declare function addLayer(event: MageEventDocument, layer: any, callback: Callback<MageEventDocument>): void

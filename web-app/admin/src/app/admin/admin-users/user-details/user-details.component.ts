@@ -67,6 +67,7 @@ export class UserDetailsComponent implements OnInit {
   userTeams: any[] = [];
   userEvents: any[] = [];
   team: any = {};
+  isSelf: boolean = false;
 
   hasUserEditPermission: boolean = false;
   hasUserDeletePermission: boolean = false;
@@ -146,7 +147,6 @@ export class UserDetailsComponent implements OnInit {
   pageSizeOptions = [5, 10, 25];
 
   teamActionButtons: any[] = [];
-  eventActionButtons: any[] = [];
 
   constructor(
     public stateService: StateService,
@@ -154,7 +154,7 @@ export class UserDetailsComponent implements OnInit {
     @Inject(UserService) private userService: any,
     @Inject(LoginService) private loginService: any,
     @Inject(DevicePagingService) private devicePagingService: any,
-    @Inject(Team) private teamResource: any,
+    @Inject(Team) private teamService: any,
     @Inject(LocalStorageService) private localStorageService: any,
     @Inject(TeamsService) private teamsService: TeamsService,
     @Inject(EventsService) private eventsService: EventsService
@@ -185,6 +185,8 @@ export class UserDetailsComponent implements OnInit {
 
     this.userService.getUser(userId).then((user: User) => {
       this.user = user;
+      // determine if viewing own profile to adjust UI (e.g., hide disable card)
+      this.isSelf = !!this.userService.myself && (this.userService.myself.id === user.id);
 
       const anyUser: any = user as any;
       if (anyUser.icon && (anyUser.icon.type === 'create')) {
@@ -304,19 +306,12 @@ export class UserDetailsComponent implements OnInit {
    */
   setupActionButtons(): void {
     this.teamActionButtons = [];
-    this.eventActionButtons = [];
 
     if (this.hasUserEditPermission) {
       this.teamActionButtons.push({
         label: this.editTeam ? 'Done' : 'Edit Teams',
         action: () => this.toggleEditTeams(),
         type: this.editTeam ? 'btn-primary' : 'btn-secondary'
-      });
-
-      this.eventActionButtons.push({
-        label: this.editEvent ? 'Done' : 'Edit Events',
-        action: () => this.toggleEditEvents(),
-        type: this.editEvent ? 'btn-primary' : 'btn-secondary'
       });
     }
   }
@@ -606,25 +601,36 @@ export class UserDetailsComponent implements OnInit {
   private drawMarker(canvas: HTMLCanvasElement, color: string, text: string): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    canvas.height = 44;
-    canvas.width = 44;
+    // Use the canvas' existing size (set by template) and scale drawing accordingly
+    const size = Math.min(canvas.width || 75, canvas.height || 75);
+    canvas.width = size;
+    canvas.height = size;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.strokeStyle = this.hexToRgb(color, 1);
     ctx.fillStyle = this.hexToRgb(color, 1);
 
+    const centerX = size / 2;
+    const circleY = size * (17 / 44); // proportional to old 44px design
+    const circleR = size * (16 / 44);
+    const innerR = size * (13 / 44);
+    const baseY = size * (43 / 44);
+    const leftX = size * (9 / 44);
+    const rightX = size * (35 / 44);
+    const midY = size * (26 / 44);
+
     ctx.beginPath();
-    ctx.moveTo(22, 43);
-    ctx.lineTo(9, 26);
-    ctx.lineTo(35, 26);
-    ctx.lineTo(22, 43);
+    ctx.moveTo(centerX, baseY);
+    ctx.lineTo(leftX, midY);
+    ctx.lineTo(rightX, midY);
+    ctx.lineTo(centerX, baseY);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(22, 17, 16, 0, 2 * Math.PI);
+    ctx.arc(centerX, circleY, circleR, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
 
@@ -632,15 +638,16 @@ export class UserDetailsComponent implements OnInit {
     ctx.strokeStyle = '#FFFFFF';
 
     ctx.beginPath();
-    ctx.arc(22, 17, 13, 0, 2 * Math.PI);
+    ctx.arc(centerX, circleY, innerR, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '500 14px "RobotoMono"';
+    const fontSize = Math.round(size * (14 / 44));
+    ctx.font = `500 ${fontSize}px "RobotoMono"`;
     ctx.fillStyle = this.hexToRgb(color, 1);
-    ctx.fillText(text || '', 22, 17);
+    ctx.fillText(text || '', centerX, circleY);
   }
 
   /**
@@ -803,7 +810,7 @@ export class UserDetailsComponent implements OnInit {
    * Add the current user to the selected non-member team.
    */
   addUserToTeam(): void {
-    this.teamResource.addUser({ id: this.nonUserTeam.id }, this.user, (team: any) => {
+    this.teamService.addUser({ id: this.nonUserTeam.id }, this.user, (team: any) => {
       this.userTeams.push(team);
       this.nonUserTeam = null;
     });
@@ -816,23 +823,20 @@ export class UserDetailsComponent implements OnInit {
    */
   removeUserFromTeam($event: MouseEvent, team: any): void {
     $event.stopPropagation();
+    const wasLastItemOnPage = (this.userTeams?.length || 0) <= 1;
 
-    this.teamResource.removeUser({ id: team.id, userId: this.user.id }, (team: any) => {
-      this.userTeams = this.userTeams.filter(t => t.id !== team.id);
-      this.teamsDataSource.data = this.userTeams;
+    this.teamService.removeUser({ id: team.id, userId: this.user.id }, (removedTeam: any) => {
+      // Optimistically update total count
+      this.totalUserTeams = Math.max(0, (this.totalUserTeams || 0) - 1);
+
+      // If we removed the last item on a non-first page, go back a page
+      if (wasLastItemOnPage && this.userTeamsPageIndex > 0) {
+        this.userTeamsPageIndex = this.userTeamsPageIndex - 1;
+      }
+
+      // Refresh the current page from the server so rows and totals are accurate
+      this.loadUserTeams();
     });
-  }
-
-  /**
-   * Remove the user from an event (placeholder until API available).
-   * @param $event - Click event to stop propagation
-   * @param userEvent - Event to remove
-   */
-  removeUserFromEvent($event: MouseEvent, userEvent: any): void {
-    $event.stopPropagation();
-
-    this.userEvents = this.userEvents.filter(e => e.id !== userEvent.id);
-    this.eventsDataSource.data = this.userEvents;
   }
 
   /**
