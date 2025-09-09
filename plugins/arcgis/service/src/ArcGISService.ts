@@ -68,7 +68,7 @@ export function createArcGISIdentityService(
  */
 export function getPortalUrl(featureService: FeatureServiceConfig | string): string {
   const url = getFeatureServiceUrl(featureService)
-  return `https://${url.hostname}/arcgis/sharing/rest`
+  return `https://nga.maps.arcgis.com/sharing/rest`
 }
 
 /**
