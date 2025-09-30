@@ -92,49 +92,82 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
           });
 
           routes.get('/oauth/authenticate', async (req, res) => {
-            const code = req.query.code as string;
-            let state: { url: string, clientId: string };
-            try {
-              const { url, clientId } = JSON.parse(req.query.state as string);
-              state = { url, clientId };
-            } catch (err) {
-              console.error('error parsing relay state', err);
-              return res.sendStatus(500);
+            const code = req.query.code as string;;
+            if (!code) {
+              return res.status(400).send('authorization code is required');
             }
 
-            const config = await processor.safeGetConfig();
-            const creds = {
-              clientId: state.clientId,
-              redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
-              portal: getPortalUrl(state.url)
-            };
-            ArcGISIdentityManager.exchangeAuthorizationCode(creds, code).then(async (idManager: ArcGISIdentityManager) => {
-              let service = config.featureServices.find(service => service.url === state.url);
-              if (!service) {
-                service = {
-                  url: state.url,
-                  identityManager: idManager.serialize(),
-                  layers: []
-                };
-              } else {
-                service.identityManager = idManager.serialize();
-              }
+            try {
+              // TODO: Exchange authorization code with third-party provider for access token
+              // This will need to be implemented based on your third-party OAuth provider's API
+              const thirdPartyTokenResponse = await exchangeCodeForToken(code, 'MAGE001042001102002509202579');
+              return res.json(thirdPartyTokenResponse);
+              // Create ArcGIS Identity Manager with the token from third-party provider
+              // const idManager = await ArcGISIdentityManager.fromToken({
+              //   token: thirdPartyTokenResponse.access_token,
+              //   portal: getPortalUrl(state.url)
+              // });
 
-              config.featureServices.push(service);
+              // const config = await processor.safeGetConfig();
+              // let service = config.featureServices.find(service => service.url === state.url);
+              // if (!service) {
+              //   service = {
+              //     url: state.url,
+              //     identityManager: idManager.serialize(),
+              //     layers: []
+              //   };
+              //   config.featureServices.push(service);
+              // } else {
+              //   service.identityManager = idManager.serialize();
+              // }
 
-              await processor.putConfig(config);
-              const sanitizedService = await sanitizeFeatureService(service, identityService);
-              res.send(`
-                <html>
-                  <head>
-                    <script>
-                      window.opener.postMessage(${JSON.stringify(sanitizedService)}, '${req.protocol}://${req.headers.host}');
-                    </script>
-                  </head>
-                </html>
-              `);
-            }).catch((error) => res.status(400).json(error));
+              // await processor.putConfig(config);
+              // const sanitizedService = await sanitizeFeatureService(service, identityService);
+              // res.send(`
+              //   <html>
+              //     <head>
+              //       <script>
+              //         window.opener.postMessage(${JSON.stringify(sanitizedService)}, '${req.protocol}://${req.headers.host}');
+              //       </script>
+              //     </head>
+              //   </html>
+              // `);
+            } catch (error) {
+              console.error('Error handling third-party OAuth:', error);
+              res.status(400).json({ error: 'Failed to authenticate with third-party provider', details: error });
+            }
           });
+
+          // Helper function to exchange code for token with third-party provider
+          async function exchangeCodeForToken(code: string, clientId: string): Promise<{ access_token: string }> {
+            // TODO: Implement the actual token exchange with your third-party provider
+            // This is a placeholder that needs to be replaced with your provider's specific implementation
+
+            const config = await processor.safeGetConfig();
+            const tokenEndpoint = 'https://gxisapi-tst.gs.mil/oauth2/rest/token'; // Replace with actual endpoint
+            const redirectUri = `http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/oauth/authenticate`;
+            const clientSecret = '*asdfld9qer0mv0D';
+            const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+            const response = await fetch(tokenEndpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Basic ${basicAuth}`
+              },
+              body: new URLSearchParams({
+                grant_type: 'AUTHORIZATION_CODE',
+                code: code,
+                redirect_uri: redirectUri
+              }).toString(),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Token exchange failed: ${response.status} ${response.statusText}`);
+            }
+
+            return await response.json();
+          }
 
           return routes;
         },
@@ -215,7 +248,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               processor.stop();
               await processor.start();
 
-              res.status(200).json({success: true});
+              res.status(200).json({ success: true });
             });
 
           routes.post('/featureService/validate', async (req, res) => {

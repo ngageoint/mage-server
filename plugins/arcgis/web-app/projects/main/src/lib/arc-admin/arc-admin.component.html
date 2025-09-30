@@ -24,11 +24,10 @@
           <div class="edit-enabled-field">
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Base URL</mat-label>
-              <input type="text" matInput value="{{editConfig.baseUrl}}"
-                placeholder="https://mock.mage.com"
-                (keyup)="setField('baseUrl', baseUrlField.value)"
-                (input)="setField('baseUrl', baseUrlField.value)" #baseUrlField />
-                <mat-hint>Mage server base URL</mat-hint>
+              <input type="text" matInput value="{{editConfig.baseUrl}}" placeholder="https://mock.mage.com"
+                (keyup)="setField('baseUrl', baseUrlField.value)" (input)="setField('baseUrl', baseUrlField.value)"
+                #baseUrlField />
+              <mat-hint>Mage server base URL</mat-hint>
             </mat-form-field>
           </div>
           <div class="edit-interval-field">
@@ -37,7 +36,7 @@
               <input type="number" min="0" matInput value="{{editConfig.intervalSeconds}}"
                 (keyup)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)"
                 (input)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)" #intervalSecondsField />
-                <mat-hint>Observation query and processing frequency time interval in seconds</mat-hint>
+              <mat-hint>Observation query and processing frequency time interval in seconds</mat-hint>
             </mat-form-field>
           </div>
           <div class="edit-startup-interval-field">
@@ -47,7 +46,7 @@
                 (keyup)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
                 (input)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
                 #startupIntervalSecondsField />
-                <mat-hint>Startup interval in seconds to wait for feature layer processors to be ready</mat-hint>
+              <mat-hint>Startup interval in seconds to wait for feature layer processors to be ready</mat-hint>
             </mat-form-field>
           </div>
           <div class="edit-update-interval-field">
@@ -57,7 +56,7 @@
                 (keyup)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
                 (input)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
                 #updateIntervalSecondsField />
-                <mat-hint>Processing wait time interval in seconds when pending observation updates exist</mat-hint>
+              <mat-hint>Processing wait time interval in seconds when pending observation updates exist</mat-hint>
             </mat-form-field>
           </div>
           <div class="batch-size-field">
@@ -66,7 +65,7 @@
               <input type="number" min="1" matInput value="{{editConfig.batchSize}}"
                 (keyup)="setNumberField('batchSize', batchSizeField.value, 1)"
                 (input)="setNumberField('batchSize', batchSizeField.value, 1)" #batchSizeField />
-                <mat-hint>Maximum number of observations to process during a single time interval</mat-hint>
+              <mat-hint>Maximum number of observations to process during a single time interval</mat-hint>
             </mat-form-field>
           </div>
           <div class="attachment-modified-tolerance-field">
@@ -76,7 +75,8 @@
                 (keyup)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
                 (input)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
                 #attachmentModifiedToleranceField />
-                <mat-hint>Time tolerance in milliseconds to consider an attachment as modified compared to the observation</mat-hint>
+              <mat-hint>Time tolerance in milliseconds to consider an attachment as modified compared to the
+                observation</mat-hint>
             </mat-form-field>
           </div>
         </div>
@@ -87,111 +87,138 @@
       <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
     </mat-card-actions>
   </mat-card>
-    <arc-layer [config]="config" (configChanged)="configChanged($event)"></arc-layer>
-    <arc-event [config]="config" (configChanged)="configChanged($event)" [configChangedNotifier]="configChangedNotifier.asObservable()"></arc-event>
- <section class="arc-fields"></section>
-    <mat-card appearance="outlined">
-      <mat-card-header>
-        <mat-card-title>Attributes</mat-card-title>
-        <mat-card-subtitle>MAGE Field to ArcGIS Attribute mappings.</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <form [formGroup]="attributesForm" (ngSubmit)="onSubmit()">
-          <div class="edit-attributes-form">
-            <div class="observation-id-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Observation Id Field</mat-label>
-                <input type="text" matInput formControlName="observationIdField" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE observation id</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="id-separator-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Id Separator</mat-label>
-                <input type="text" matInput formControlName="idSeparator" />
-                <mat-hint>When event id field is not configured, the separator combining observation ids and event ids in the observation id field</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="event-id-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Event Id Field</mat-label>
-                <input type="text" matInput formControlName="eventIdField" />
-                <mat-hint>The ArcGIS layer integer field attribute name to store the MAGE event id</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="last-edited-date-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Last Edited Date Field</mat-label>
-                <input type="text" matInput formControlName="lastEditedDateField" />
-                <mat-hint>The last edited date field attribute name on the ArcGIS layer</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="event-name-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Event Name Field</mat-label>
-                <input type="text" matInput formControlName="eventNameField" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE event name</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="user-id-field">
-              <mat-form-field appearance="fill">
-                <mat-label>User Id Field</mat-label>
-                <input type="text" matInput formControlName="userIdField" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user id</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="username-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Username Field</mat-label>
-                <input type="text" matInput formControlName="usernameField" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE username</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="user-display-name-field">
-              <mat-form-field appearance="fill">
-                <mat-label>User Display Name Field</mat-label>
-                <input type="text" matInput formControlName="userDisplayNameField" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user display name</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="device-id-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Device Id Field</mat-label>
-                <input type="text" matInput formControlName="deviceIdField" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the MAGE device id</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="created-at-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Created At Field</mat-label>
-                <input type="text" matInput formControlName="createdAtField" />
-                <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE created at date</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="last-modified-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Last Modified Field</mat-label>
-                <input type="text" matInput formControlName="lastModifiedField" />
-                <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the
-                  same as last edited date field if editable)</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="geometry-type-field">
-              <mat-form-field appearance="fill">
-                <mat-label>Geometry Type Field</mat-label>
-                <input type="text" matInput formControlName="geometryType" />
-                <mat-hint>The ArcGIS layer text field attribute name to store the Esri geometry type</mat-hint>
-              </mat-form-field>
-            </div>
-            <div class="button-group">
-              <button mat-raised-button color="primary" type="submit" [disabled]="attributesForm.invalid">Save</button>
-              <button mat-button type="button" (click)="onCancel()">Cancel</button>
-            </div>
+
+  <!-- OAuth Test Section -->
+  <mat-card appearance="outlined" style="margin-top: 20px;">
+    <mat-card-header>
+      <mat-card-title>
+        OAuth Testing
+      </mat-card-title>
+      <mat-card-subtitle>Test ArcGIS OAuth user flow with hardcoded values.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div style="width: 100%;">
+        <p>This will test the OAuth flow using hardcoded values and redirect to your backend endpoint.</p>
+        <p><strong>Redirect URI:</strong> {{config.baseUrl}}/api/oauth/callback</p>
+        <p><strong>Note:</strong> Make sure your backend has an endpoint at <code>/api/oauth/callback</code> to handle
+          the OAuth response.</p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button color="accent" (click)="testOAuthFlow()">
+        <mat-icon>launch</mat-icon>
+        Test OAuth Flow
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <arc-layer [config]="config" (configChanged)="configChanged($event)"></arc-layer>
+  <arc-event [config]="config" (configChanged)="configChanged($event)"
+    [configChangedNotifier]="configChangedNotifier.asObservable()"></arc-event>
+  <section class="arc-fields"></section>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Attributes</mat-card-title>
+      <mat-card-subtitle>MAGE Field to ArcGIS Attribute mappings.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="attributesForm" (ngSubmit)="onSubmit()">
+        <div class="edit-attributes-form">
+          <div class="observation-id-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Observation Id Field</mat-label>
+              <input type="text" matInput formControlName="observationIdField" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the MAGE observation id</mat-hint>
+            </mat-form-field>
           </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-    <mat-card>
+          <div class="id-separator-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Id Separator</mat-label>
+              <input type="text" matInput formControlName="idSeparator" />
+              <mat-hint>When event id field is not configured, the separator combining observation ids and event ids in
+                the observation id field</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="event-id-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Event Id Field</mat-label>
+              <input type="text" matInput formControlName="eventIdField" />
+              <mat-hint>The ArcGIS layer integer field attribute name to store the MAGE event id</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="last-edited-date-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Last Edited Date Field</mat-label>
+              <input type="text" matInput formControlName="lastEditedDateField" />
+              <mat-hint>The last edited date field attribute name on the ArcGIS layer</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="event-name-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Event Name Field</mat-label>
+              <input type="text" matInput formControlName="eventNameField" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the MAGE event name</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="user-id-field">
+            <mat-form-field appearance="fill">
+              <mat-label>User Id Field</mat-label>
+              <input type="text" matInput formControlName="userIdField" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user id</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="username-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Username Field</mat-label>
+              <input type="text" matInput formControlName="usernameField" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the MAGE username</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="user-display-name-field">
+            <mat-form-field appearance="fill">
+              <mat-label>User Display Name Field</mat-label>
+              <input type="text" matInput formControlName="userDisplayNameField" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user display name</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="device-id-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Device Id Field</mat-label>
+              <input type="text" matInput formControlName="deviceIdField" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the MAGE device id</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="created-at-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Created At Field</mat-label>
+              <input type="text" matInput formControlName="createdAtField" />
+              <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE created at date</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="last-modified-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Last Modified Field</mat-label>
+              <input type="text" matInput formControlName="lastModifiedField" />
+              <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the
+                same as last edited date field if editable)</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="geometry-type-field">
+            <mat-form-field appearance="fill">
+              <mat-label>Geometry Type Field</mat-label>
+              <input type="text" matInput formControlName="geometryType" />
+              <mat-hint>The ArcGIS layer text field attribute name to store the Esri geometry type</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="button-group">
+            <button mat-raised-button color="primary" type="submit" [disabled]="attributesForm.invalid">Save</button>
+            <button mat-button type="button" (click)="onCancel()">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
     <div class="fieldOverrides">
       Field Mappings
       <button class="info-button" mat-icon-button
@@ -238,7 +265,8 @@
                   {{form}}
                 </ng-container>
                 <ng-template #formExists>
-                  <a href="/#/admin/events/{{eventId(event)}}/forms/{{formId(event, form)}}" target="_blank">{{form}}</a>
+                  <a href="/#/admin/events/{{eventId(event)}}/forms/{{formId(event, form)}}"
+                    target="_blank">{{form}}</a>
                 </ng-template>
                 <ng-container *ngIf="editFieldMappings">
                   <button class="edit-button" mat-icon-button
@@ -338,8 +366,7 @@
                   (click)="showEditFieldAuto('Attribute', 'attributes', config, attribute, selectableAttributes())">
                   <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
                 </button>
-                <button class="edit-button" mat-icon-button
-                  (click)="showEditAttributeConfig(attribute)">
+                <button class="edit-button" mat-icon-button (click)="showEditAttributeConfig(attribute)">
                   <mat-icon class="edit-icon" [inline]="true">edit_attributes</mat-icon>
                 </button>
                 <button class="delete-button" mat-icon-button
@@ -651,317 +678,321 @@
         </ng-container>
       </table>
     </div>
-<ng-template #infoDialog let-data>
-  <h3 matDialogTitle>{{infoTitle}}</h3>
-  <mat-dialog-content>
-    <div class="info-form">
-      <mat-label>{{infoMessage}}</mat-label>
-    </div>
-  </mat-dialog-content>
-</ng-template>
-<ng-template #editAttributesDialog let-data>
-  <h2 matDialogTitle>Attributes Configuration</h2>
-  <mat-dialog-content>
-    <div class="edit-attributes-form">
-      <div class="observation-id-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Observation Id Field</mat-label>
-          <input type="text" matInput value="{{editConfig.observationIdField}}"
-            (keyup)="setField('observationIdField', observationIdField.value)" #observationIdField />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the MAGE observation id')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
+    <ng-template #infoDialog let-data>
+      <h3 matDialogTitle>{{infoTitle}}</h3>
+      <mat-dialog-content>
+        <div class="info-form">
+          <mat-label>{{infoMessage}}</mat-label>
+        </div>
+      </mat-dialog-content>
+    </ng-template>
+    <ng-template #editAttributesDialog let-data>
+      <h2 matDialogTitle>Attributes Configuration</h2>
+      <mat-dialog-content>
+        <div class="edit-attributes-form">
+          <div class="observation-id-field">
+            <mat-form-field [style.width.%]="90">
+              <mat-label>Observation Id Field</mat-label>
+              <input type="text" matInput value="{{editConfig.observationIdField}}"
+                (keyup)="setField('observationIdField', observationIdField.value)" #observationIdField />
+            </mat-form-field>
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the MAGE observation id')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </div>
+          <div class="id-separator-field">
+            <mat-form-field [style.width.%]="90">
+              <mat-label>Id Separator</mat-label>
+              <input type="text" matInput value="{{editConfig.idSeparator}}"
+                (keyup)="setField('idSeparator', idSeparator.value)" #idSeparator />
+            </mat-form-field>
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Id Separator', 'When event id field is not configured, the separator combining observation ids and event ids in the observation id field')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="event-id-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Event Id Field</mat-label>
+            <input type="text" matInput value="{{editConfig.eventIdField}}"
+              (keyup)="setField('eventIdField', eventIdField.value)" #eventIdField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the MAGE event id')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="last-edited-date-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Last Edited Date Field</mat-label>
+            <input type="text" matInput value="{{editConfig.lastEditedDateField}}"
+              (keyup)="setField('lastEditedDateField', lastEditedDateField.value)" #lastEditedDateField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Last Edited Date Field', 'The last edited date field attribute name on the ArcGIS layer')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="event-name-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Event Name Field</mat-label>
+            <input type="text" matInput value="{{editConfig.eventNameField}}"
+              (keyup)="setField('eventNameField', eventNameField.value)" #eventNameField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the MAGE event name')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="user-id-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>User Id Field</mat-label>
+            <input type="text" matInput value="{{editConfig.userIdField}}"
+              (keyup)="setField('userIdField', userIdField.value)" #userIdField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the MAGE user id')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="username-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Username Field</mat-label>
+            <input type="text" matInput value="{{editConfig.usernameField}}"
+              (keyup)="setField('usernameField', usernameField.value)" #usernameField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the MAGE username')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="user-display-name-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>User Display Name Field</mat-label>
+            <input type="text" matInput value="{{editConfig.userDisplayNameField}}"
+              (keyup)="setField('userDisplayNameField', userDisplayNameField.value)" #userDisplayNameField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the MAGE user display name')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="device-id-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Device Id Field</mat-label>
+            <input type="text" matInput value="{{editConfig.deviceIdField}}"
+              (keyup)="setField('deviceIdField', deviceIdField.value)" #deviceIdField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the MAGE device id')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="created-at-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Created At Field</mat-label>
+            <input type="text" matInput value="{{editConfig.createdAtField}}"
+              (keyup)="setField('createdAtField', createdAtField.value)" #createdAtField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the MAGE created at date')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="last-modified-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Last Modified Field</mat-label>
+            <input type="text" matInput value="{{editConfig.lastModifiedField}}"
+              (keyup)="setField('lastModifiedField', lastModifiedField.value)" #lastModifiedField />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the same as last edited date field if editable)')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+        <div class="geometry-type-field">
+          <mat-form-field [style.width.%]="90">
+            <mat-label>Geometry Type Field</mat-label>
+            <input type="text" matInput value="{{editConfig.geometryType}}"
+              (keyup)="setField('geometryType', geometryType.value)" #geometryType />
+          </mat-form-field>
+          <button class="info-button" mat-icon-button
+            (click)="showInfo('Geometry Type Field', 'The ArcGIS layer text field attribute name to store the Esri geometry type')">
+            <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+          </button>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+        <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #deleteFieldDialog let-data>
+      <h3 matDialogTitle>Delete {{editType}}?</h3>
+      <div>
+        {{editName}}
       </div>
-      <div class="id-separator-field">
-        <mat-form-field [style.width.%]="90">
-          <mat-label>Id Separator</mat-label>
-          <input type="text" matInput value="{{editConfig.idSeparator}}"
-            (keyup)="setField('idSeparator', idSeparator.value)" #idSeparator />
-        </mat-form-field>
-        <button class="info-button" mat-icon-button
-          (click)="showInfo('Id Separator', 'When event id field is not configured, the separator combining observation ids and event ids in the observation id field')">
-          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-        </button>
-      </div>
-    </div>
-    <div class="event-id-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Event Id Field</mat-label>
-        <input type="text" matInput value="{{editConfig.eventIdField}}"
-          (keyup)="setField('eventIdField', eventIdField.value)" #eventIdField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the MAGE event id')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="last-edited-date-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Last Edited Date Field</mat-label>
-        <input type="text" matInput value="{{editConfig.lastEditedDateField}}"
-          (keyup)="setField('lastEditedDateField', lastEditedDateField.value)" #lastEditedDateField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Last Edited Date Field', 'The last edited date field attribute name on the ArcGIS layer')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="event-name-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Event Name Field</mat-label>
-        <input type="text" matInput value="{{editConfig.eventNameField}}"
-          (keyup)="setField('eventNameField', eventNameField.value)" #eventNameField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the MAGE event name')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="user-id-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>User Id Field</mat-label>
-        <input type="text" matInput value="{{editConfig.userIdField}}"
-          (keyup)="setField('userIdField', userIdField.value)" #userIdField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the MAGE user id')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="username-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Username Field</mat-label>
-        <input type="text" matInput value="{{editConfig.usernameField}}"
-          (keyup)="setField('usernameField', usernameField.value)" #usernameField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the MAGE username')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="user-display-name-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>User Display Name Field</mat-label>
-        <input type="text" matInput value="{{editConfig.userDisplayNameField}}"
-          (keyup)="setField('userDisplayNameField', userDisplayNameField.value)" #userDisplayNameField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the MAGE user display name')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="device-id-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Device Id Field</mat-label>
-        <input type="text" matInput value="{{editConfig.deviceIdField}}"
-          (keyup)="setField('deviceIdField', deviceIdField.value)" #deviceIdField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the MAGE device id')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="created-at-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Created At Field</mat-label>
-        <input type="text" matInput value="{{editConfig.createdAtField}}"
-          (keyup)="setField('createdAtField', createdAtField.value)" #createdAtField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the MAGE created at date')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="last-modified-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Last Modified Field</mat-label>
-        <input type="text" matInput value="{{editConfig.lastModifiedField}}"
-          (keyup)="setField('lastModifiedField', lastModifiedField.value)" #lastModifiedField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the same as last edited date field if editable)')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-    <div class="geometry-type-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Geometry Type Field</mat-label>
-        <input type="text" matInput value="{{editConfig.geometryType}}"
-          (keyup)="setField('geometryType', geometryType.value)" #geometryType />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Geometry Type Field', 'The ArcGIS layer text field attribute name to store the Esri geometry type')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
-    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #deleteFieldDialog let-data>
-  <h3 matDialogTitle>Delete {{editType}}?</h3>
-  <div>
-    {{editName}}
-  </div>
-  <br>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="deleteField()">DELETE</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #addFieldDialog let-data>
-  <mat-dialog-content>
-    <div class="add-field-form">
-      <mat-form-field [style.width.%]="100">
-        <mat-label>{{editType}}</mat-label>
-        <input type="text" matInput #addFieldField />
-      </mat-form-field>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #addFieldValueDialog let-data>
-  <mat-dialog-content>
-    <div class="add-field-value-form">
-      <div class="add-field-field">
-        <mat-form-field [style.width.%]="100">
-          <mat-label>{{editType}}</mat-label>
-          <input type="text" matInput #addFieldField />
-        </mat-form-field>
-      </div>
-      <div class="add-field-value">
-        <mat-form-field [style.width.%]="100">
-          <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
-          <input type="text" matInput #addValueField />
-        </mat-form-field>
-      </div>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #addFieldAutoDialog let-data>
-  <mat-dialog-content cdkFocusInitial>
-    <div class="add-field-auto-form">
-      <mat-form-field [style.width.%]="100">
-        <mat-label>{{editType}}</mat-label>
-        <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
-        <mat-autocomplete #auto="matAutocomplete">
-          <mat-option *ngFor="let option of editOptions" [value]="option">
-            {{option}}
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #addFieldAutoValueDialog let-data>
-  <mat-dialog-content cdkFocusInitial>
-    <div class="add-field-auto-value-form">
-      <div class="add-field-auto-field">
-        <mat-form-field [style.width.%]="100">
-          <mat-label>{{editType}}</mat-label>
-          <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
-          <mat-autocomplete #auto="matAutocomplete">
-            <mat-option *ngFor="let option of editOptions" [value]="option">
-              {{option}}
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-      </div>
-      <div class="add-field-auto-value">
-        <mat-form-field [style.width.%]="100">
-          <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
-          <input type="text" matInput #addValueField />
-        </mat-form-field>
-      </div>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #editFieldDialog let-data>
-  <mat-dialog-content>
-    <div class="edit-field-form">
-      <mat-form-field [style.width.%]="100">
-        <mat-label>{{editName}}</mat-label>
-        <input type="text" matInput value="{{editValue}}" #editFieldField />
-      </mat-form-field>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #editFieldAutoDialog let-data>
-  <mat-dialog-content cdkFocusInitial>
-    <div class="edit-field-auto-form">
-      <mat-form-field [style.width.%]="100">
-        <mat-label>{{editName}}</mat-label>
-        <input type="text" matInput value="{{editValue}}" [matAutocomplete]="auto" #editFieldField />
-        <mat-autocomplete #auto="matAutocomplete">
-          <mat-option *ngFor="let option of editOptions" [value]="option">
-            {{option}}
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #editBooleanFieldDialog let-data>
-  <mat-dialog-content>
-    <div class="edit-boolean-field-form">
-      <mat-form-field [style.width.%]="100">
-        <mat-select [placeholder]="editName" [(value)]="editValue" #editBooleanFieldField >
-          <mat-option [value]="true">true</mat-option>
-          <mat-option [value]="false">false</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="editBooleanField(editBooleanFieldField.value)">UPDATE</button>
-  </mat-dialog-actions>
-</ng-template>
-<ng-template #editAttributeConfigDialog let-data>
-  <h2 matDialogTitle>{{editName}} settings</h2>
-  <mat-dialog-content>
-    <div class="concatenation-checkbox">
-      <input type="checkbox" [checked]="hasConcatenation(editName)" #concatenationCheckbox /> Concatenation
-    </div>
-    <div class="mappings-checkbox">
-      <input type="checkbox" [checked]="hasMappings(editName)" #mappingsCheckbox /> Mappings
-    </div>
-    <div class="defaults-checkbox">
-      <input type="checkbox" [checked]="hasDefaults(editName)" #defaultsCheckbox /> Defaults
-    </div>
-    <div class="omit-checkbox">
-      <input type="checkbox" [checked]="hasOmit(editName)" #omitCheckbox /> Omit
-    </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="editAttributeConfig(concatenationCheckbox.checked,mappingsCheckbox.checked,defaultsCheckbox.checked,omitCheckbox.checked)">UPDATE</button>
-  </mat-dialog-actions>
-</ng-template>
+      <br>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose (click)="deleteField()">DELETE</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #addFieldDialog let-data>
+      <mat-dialog-content>
+        <div class="add-field-form">
+          <mat-form-field [style.width.%]="100">
+            <mat-label>{{editType}}</mat-label>
+            <input type="text" matInput #addFieldField />
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #addFieldValueDialog let-data>
+      <mat-dialog-content>
+        <div class="add-field-value-form">
+          <div class="add-field-field">
+            <mat-form-field [style.width.%]="100">
+              <mat-label>{{editType}}</mat-label>
+              <input type="text" matInput #addFieldField />
+            </mat-form-field>
+          </div>
+          <div class="add-field-value">
+            <mat-form-field [style.width.%]="100">
+              <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
+              <input type="text" matInput #addValueField />
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose
+          (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #addFieldAutoDialog let-data>
+      <mat-dialog-content cdkFocusInitial>
+        <div class="add-field-auto-form">
+          <mat-form-field [style.width.%]="100">
+            <mat-label>{{editType}}</mat-label>
+            <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
+            <mat-autocomplete #auto="matAutocomplete">
+              <mat-option *ngFor="let option of editOptions" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #addFieldAutoValueDialog let-data>
+      <mat-dialog-content cdkFocusInitial>
+        <div class="add-field-auto-value-form">
+          <div class="add-field-auto-field">
+            <mat-form-field [style.width.%]="100">
+              <mat-label>{{editType}}</mat-label>
+              <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
+              <mat-autocomplete #auto="matAutocomplete">
+                <mat-option *ngFor="let option of editOptions" [value]="option">
+                  {{option}}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          <div class="add-field-auto-value">
+            <mat-form-field [style.width.%]="100">
+              <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
+              <input type="text" matInput #addValueField />
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose
+          (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #editFieldDialog let-data>
+      <mat-dialog-content>
+        <div class="edit-field-form">
+          <mat-form-field [style.width.%]="100">
+            <mat-label>{{editName}}</mat-label>
+            <input type="text" matInput value="{{editValue}}" #editFieldField />
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #editFieldAutoDialog let-data>
+      <mat-dialog-content cdkFocusInitial>
+        <div class="edit-field-auto-form">
+          <mat-form-field [style.width.%]="100">
+            <mat-label>{{editName}}</mat-label>
+            <input type="text" matInput value="{{editValue}}" [matAutocomplete]="auto" #editFieldField />
+            <mat-autocomplete #auto="matAutocomplete">
+              <mat-option *ngFor="let option of editOptions" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #editBooleanFieldDialog let-data>
+      <mat-dialog-content>
+        <div class="edit-boolean-field-form">
+          <mat-form-field [style.width.%]="100">
+            <mat-select [placeholder]="editName" [(value)]="editValue" #editBooleanFieldField>
+              <mat-option [value]="true">true</mat-option>
+              <mat-option [value]="false">false</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose
+          (click)="editBooleanField(editBooleanFieldField.value)">UPDATE</button>
+      </mat-dialog-actions>
+    </ng-template>
+    <ng-template #editAttributeConfigDialog let-data>
+      <h2 matDialogTitle>{{editName}} settings</h2>
+      <mat-dialog-content>
+        <div class="concatenation-checkbox">
+          <input type="checkbox" [checked]="hasConcatenation(editName)" #concatenationCheckbox /> Concatenation
+        </div>
+        <div class="mappings-checkbox">
+          <input type="checkbox" [checked]="hasMappings(editName)" #mappingsCheckbox /> Mappings
+        </div>
+        <div class="defaults-checkbox">
+          <input type="checkbox" [checked]="hasDefaults(editName)" #defaultsCheckbox /> Defaults
+        </div>
+        <div class="omit-checkbox">
+          <input type="checkbox" [checked]="hasOmit(editName)" #omitCheckbox /> Omit
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button matDialogClose>CANCEL</button>
+        <button mat-flat-button color="primary" matDialogClose
+          (click)="editAttributeConfig(concatenationCheckbox.checked,mappingsCheckbox.checked,defaultsCheckbox.checked,omitCheckbox.checked)">UPDATE</button>
+      </mat-dialog-actions>
+    </ng-template>

@@ -60,7 +60,7 @@ export class ArcAdminComponent implements OnInit {
     this.editConfig = this.copyConfig();
     this.editFieldMappings = false;
     this.attributesForm = this.fb.group({
-      observationIdField: [''], 
+      observationIdField: [''],
       idSeparator: [''],
       eventIdField: [''],
       lastEditedDateField: [''],
@@ -116,7 +116,7 @@ export class ArcAdminComponent implements OnInit {
       }
     });
   }
-  
+
   //Save attributes form. If left blank, assign default value
   onSubmit(): void {
     console.log('submitting form...');
@@ -137,18 +137,18 @@ export class ArcAdminComponent implements OnInit {
         createdAtField: formValue.createdAtField || this.editConfig.createdAtField,
         lastModifiedField: formValue.lastModifiedField || this.editConfig.lastModifiedField,
         geometryType: formValue.geometryType || this.editConfig.geometryType
-    };
-  
+      };
+
       console.log('Form Submitted:', this.editConfig);
       console.log('formValue: ', formValue);
 
       this.saveEdit();
-      }
-      else{
-        console.log('Form is invalid, please correct the errors.')
-      }
     }
-  
+    else {
+      console.log('Form is invalid, please correct the errors.')
+    }
+  }
+
   onCancel(): void {
     console.log('Cancel selected');
     this.arcService.fetchArcConfig().pipe(first()).subscribe({
@@ -300,6 +300,31 @@ export class ArcAdminComponent implements OnInit {
   cancelEdit() {
     console.log('Canceled configuration edit')
     this.editConfig = this.copyConfig();
+  }
+
+  testOAuthFlow() {
+    // Hardcoded OAuth test values
+    const clientId = 'MAGE001042001102002509202579';
+    const redirectUri = `http://localhost:4242/plugins/@ngageoint/mage.arcgis.service/oauth/authenticate`;
+    const responseType = 'code';
+    const scope = 'openid IdentityInfo.me';
+    const state = `clientId=${clientId}`;
+
+    // Create URLSearchParams for clean parameter handling
+    const params = new URLSearchParams({
+      client_id: clientId,
+      response_type: responseType,
+      redirect_uri: redirectUri,
+      scope: scope,
+      state: state,
+      domain: 'DefaultDomain'
+    });
+
+    // Construct OAuth authorization URL
+    const authUrl = `https://gxis-tst.geoaxis.gs.mil/oauth2/rest/authz?${params.toString()}`;
+
+    // Open OAuth URL in new window/tab
+    window.open(authUrl, '_blank');
   }
 
   keys(value: any): string[] {
@@ -476,7 +501,7 @@ export class ArcAdminComponent implements OnInit {
     if (formResult != undefined && formResult.fields != undefined) {
       for (const field of formResult.fields) {
         if (this.fieldMapping(event, form, field.title) == undefined) {
-            fields.push(field.title)
+          fields.push(field.title)
         }
       }
     }
@@ -710,7 +735,7 @@ export class ArcAdminComponent implements OnInit {
           const existingValue: any = valueEntry[1]
           if (existingKey == this.editValue) {
             newValue[value] = existingValue
-          } else if(existingKey != value) {
+          } else if (existingKey != value) {
             newValue[existingKey] = existingValue
           }
         }
@@ -857,11 +882,11 @@ export class ArcAdminComponent implements OnInit {
         if (finalize && attributeConfig.concatenation != undefined) {
           if (attributeConfig.concatenation.sameForms != undefined
             && attributeConfig.concatenation.sameForms) {
-              delete attributeConfig.concatenation.sameForms
+            delete attributeConfig.concatenation.sameForms
           }
           if (attributeConfig.concatenation.differentForms != undefined
             && attributeConfig.concatenation.differentForms) {
-              delete attributeConfig.concatenation.differentForms
+            delete attributeConfig.concatenation.differentForms
           }
         }
 
@@ -897,7 +922,7 @@ export class ArcAdminComponent implements OnInit {
           && attributeConfig.mappings == undefined
           && attributeConfig.defaults == undefined
           && attributeConfig.omit == undefined) {
-            delete this.config.attributes[attribute]
+          delete this.config.attributes[attribute]
         }
 
       }
