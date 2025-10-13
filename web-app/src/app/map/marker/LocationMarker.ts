@@ -11,7 +11,7 @@ export class LocationMarker extends FeatureGroup {
   private locationMarker: CircleMarker
   private accuracyCircle: Circle
 
-  constructor(latLng: LatLngExpression, options?: LocationMarkerOptions ) {
+  constructor(latLng: LatLngExpression, options?: LocationMarkerOptions) {
     const layers = []
 
     if (options?.iconUrl) {
@@ -32,11 +32,12 @@ export class LocationMarker extends FeatureGroup {
       pane: options?.pane
     })
     layers.push(locationMarker)
-    
+
     super(layers, {})
 
     this.locationMarker = locationMarker
-    this.accuracyCircle = circle(latLng, 0, {
+    this.accuracyCircle = circle(latLng, {
+      radius: 0,
       interactive: false,
       color: options?.color,
       fillColor: options?.color,
@@ -58,7 +59,7 @@ export class LocationMarker extends FeatureGroup {
       this.removeLayer(this.accuracyCircle)
     })
   }
-  
+
   getLatLng(): LatLng {
     return this.locationMarker.getLatLng()
   }
@@ -97,6 +98,6 @@ export class LocationMarker extends FeatureGroup {
   }
 }
 
-export function locationMarker(latlng: LatLngExpression, options?: LocationMarkerOptions ): LocationMarker {
+export function locationMarker(latlng: LatLngExpression, options?: LocationMarkerOptions): LocationMarker {
   return new LocationMarker(latlng, options)
 }

@@ -6,7 +6,7 @@ import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service
 import { MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map } from "leaflet"
+import { map, latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map } from "leaflet"
 import { OpacityEvent, ZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
@@ -45,7 +45,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
   public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
   public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  
+
   @Output() addObservation = new EventEmitter<any>()
 
   @ViewChild('map') mapElement: ElementRef<any>
@@ -83,7 +83,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   temporalLayers: any = []
   spiderfyState: any = null
   currentLocation: any = null
-  locationLayer = locationMarker([0, 0], { color: '#136AEC' })
+  locationLayer = locationMarker([0, 0], { color: '#136AEC', radius: 16 })
   locationState = LocationState.Off
   searchMarker: any
   featurePanes = []
@@ -316,7 +316,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   onPoll() {
     this.adjustTemporalLayers()
   }
-  
+
   onAddObservation() {
     this.addObservation.emit({
       latLng: this.map.getCenter()
@@ -363,9 +363,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (
       this.locationState === LocationState.Off ||
       (this.currentLocation &&
-      this.currentLocation.latitude === location.latlng.lat &&
-      this.currentLocation.longitude === location.latlng.lng &&
-      this.currentLocation.accuracy === location.accuracy)
+        this.currentLocation.latitude === location.latlng.lat &&
+        this.currentLocation.longitude === location.latlng.lng &&
+        this.currentLocation.accuracy === location.accuracy)
     ) {
       return
     }
@@ -546,7 +546,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
           } else if (feature.style && feature.style.iconUrl) {
             options.iconUrl = feature.style.iconUrl
           }
-          
+
           if (layerInfo.options.iconWidth) {
             options.iconWidth = 24
           }
@@ -829,7 +829,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  baseToggled(event: ToggleEvent): void {    
+  baseToggled(event: ToggleEvent): void {
     const baseLayers = this.groups['base'].layers
     const previousBaseLayer = baseLayers.find((layer: any) => layer.selected)
     if (previousBaseLayer) {
