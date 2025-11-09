@@ -30,6 +30,7 @@ import { AuthenticationCreateComponent } from '../app/admin/admin-authentication
 import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 import { TeamDashboardComponent } from '../app/admin/admin-teams/dashboard/team-dashboard.component';
 import { TeamDetailsComponent } from '../app/admin/admin-teams/team-details/team-details.component';
+import { EventDetailsComponent } from '../app/admin/admin-event/event-details/event-details.component';
 import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user-details.component';
 import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
 
@@ -104,6 +105,10 @@ app
   .directive(
     'adminTeamDetails',
     downgradeComponent({ component: TeamDetailsComponent })
+  )
+  .directive(
+    'adminEventDetails',
+    downgradeComponent({ component: EventDetailsComponent })
   )
   .directive(
     'adminUsers',
@@ -187,7 +192,7 @@ function config(
             // and only show what each user can see.
             // Possible that each role should have an 'admin' permission to abstract this
             myself.role.name === 'ADMIN_ROLE' ||
-            myself.role.name === 'EVENT_MANAGER_ROLE'
+              myself.role.name === 'EVENT_MANAGER_ROLE'
               ? deferred.resolve(myself)
               : deferred.reject();
           });
@@ -264,7 +269,7 @@ function config(
 
   $stateProvider.state('admin.event', {
     url: '/events/:eventId',
-    component: 'adminEvent',
+    component: 'adminEventDetails',
     resolve: resolveAdmin()
   });
 

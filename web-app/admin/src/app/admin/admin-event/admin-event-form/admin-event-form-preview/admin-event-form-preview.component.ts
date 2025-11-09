@@ -11,7 +11,7 @@ export class AdminEventFormPreviewComponent implements OnChanges {
   @Input() formDefinition: any[];
   @Output() onClose = new EventEmitter<void>();
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.formDefinition) {
@@ -21,11 +21,11 @@ export class AdminEventFormPreviewComponent implements OnChanges {
 
   openDialog(): void {
     const dialog = this.dialog.open(AdminEventFormPreviewDialogComponent, {
-      data:  this.formDefinition,
-      minWidth: 400,
-      autoFocus: false
+      data: this.formDefinition,
+      width: '600px',
+      maxWidth: '90vw'
     })
-    
+
     dialog.afterClosed().subscribe(() => {
       this.onClose.emit();
     });
