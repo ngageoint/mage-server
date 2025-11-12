@@ -13,7 +13,7 @@ export class AdminEventFormPreviewComponent implements OnChanges {
 
   constructor(public dialog: MatDialog) { }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     if (this.formDefinition) {
       this.openDialog()
     }

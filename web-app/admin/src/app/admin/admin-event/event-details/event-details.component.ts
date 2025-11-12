@@ -17,7 +17,6 @@ import { SearchModalComponent, SearchModalData, SearchModalResult, SearchModalCo
 import { DeleteEventComponent } from '../delete-event/delete-event.component';
 import { CreateFormDialogComponent } from '../create-form/create-form.component';
 
-// Extended Event interface with additional properties
 interface ExtendedEvent extends MageEvent {
   complete?: boolean;
   minObservationForms?: number;
@@ -53,6 +52,9 @@ interface PagedResult<T> {
     ])
   ]
 })
+/**
+ * Manages event details including members, teams, layers, and forms.
+ */
 export class EventDetailsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
@@ -61,26 +63,22 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   event: ExtendedEvent | null = null;
   eventTeam: Team | null = null;
 
-  // Breadcrumbs
   breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Events',
     iconClass: 'fa fa-calendar',
     state: { name: "admin.events" }
   }];
 
-  // Permissions
   hasReadPermission = false;
   hasUpdatePermission = false;
   hasDeletePermission = false;
 
-  // Editing state
   editingDetails = false;
   eventEditForm = {
     name: '',
     description: ''
   };
 
-  // Forms
   showArchivedForms = false;
   formCreateOpen = false;
   previewForm: any = null;
@@ -88,7 +86,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   animatingFormId: number | null = null;
   formsAnimationState = 0;
 
-  // Members pagination
   loadingMembers = false;
   membersPageIndex = 0;
   membersPageSize = 5;
@@ -99,14 +96,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   membersDisplayedColumns = ['content'];
   pageSizeOptions = [5, 10, 25];
 
-  // Non-members pagination
   loadingNonMembers = false;
   nonMembersPageIndex = 0;
   nonMembersPageSize = 5;
   nonMembersPage: PagedResult<MageUser> = { items: [], totalCount: 0 };
   nonMemberSearchTerm = '';
 
-  // Teams pagination
   loadingTeams = false;
   teamsPageIndex = 0;
   teamsPageSize = 2;
@@ -116,14 +111,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   teamsDataSource = new MatTableDataSource<Team>();
   teamsDisplayedColumns = ['content'];
 
-  // Non-teams pagination
   loadingNonTeams = false;
   nonTeamsPageIndex = 0;
   nonTeamsPageSize = 5;
   nonTeamsPage: PagedResult<Team> = { items: [], totalCount: 0 };
   nonTeamSearchTerm = '';
 
-  // Layers
   editLayers = false;
   eventLayers: Layer[] = [];
   layersPage = 0;
@@ -133,7 +126,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   layersDataSource = new MatTableDataSource<Layer>();
   layersDisplayedColumns = ['content'];
 
-  // Action buttons for section cards
   memberActionButtons: CardActionButton[] = [];
   teamActionButtons: CardActionButton[] = [];
   layerActionButtons: CardActionButton[] = [];
@@ -209,7 +201,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const eventId = this.$stateParams.eventId;
 
-    // Load event and teams in parallel to find the event team
     forkJoin({
       event: this.eventsService.getEventById(eventId),
       teams: this.eventsService.getTeamsInEvent(String(eventId), {
@@ -222,12 +213,10 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         next: ({ event, teams }) => {
           this.event = event;
 
-          // Find the event team (team with teamEventId matching this event)
           this.eventTeam = teams.items.find(team =>
             team.teamEventId === event.id
           ) || null;
 
-          // Load teams, members, and layers data after event is loaded
           this.getMembersPage();
           this.getNonMembersPage();
           this.getTeamsPage();
@@ -239,12 +228,10 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Set permissions (temporary - should come from user service)
     this.hasReadPermission = true;
     this.hasUpdatePermission = true;
     this.hasDeletePermission = true;
 
-    // Initialize action buttons
     this.updateActionButtons();
   }
 
@@ -253,7 +240,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Member methods
+  /**
+   * Loads paginated members for the current event.
+   */
   getMembersPage(): void {
     if (!this.event?.id) {
       return;
@@ -284,6 +273,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Loads paginated non-members (users not in event).
+   */
   getNonMembersPage(): void {
     if (!this.event?.id) {
       return;
@@ -313,12 +305,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
-  addMember($event: MouseEvent, user: MageUser): void {
-    $event.stopPropagation();
-    // TODO: Implement add member logic
-    console.log('Adding member:', user);
-  }
-
+  /**
+   * Removes a user from the event team.
+   */
   removeMember($event: MouseEvent, user: MageUser): void {
     $event.stopPropagation();
 
@@ -331,7 +320,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload members after removal
           this.getMembersPage();
           this.getNonMembersPage();
         },
@@ -341,14 +329,23 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Checks if more members are available on next page.
+   */
   hasNextMember(): boolean {
     return (this.membersPageIndex + 1) * this.membersPageSize < (this.membersPage.totalCount || 0);
   }
 
+  /**
+   * Checks if previous members page exists.
+   */
   hasPreviousMember(): boolean {
     return this.membersPageIndex > 0 && (this.membersPage.totalCount || 0) > 0;
   }
 
+  /**
+   * Navigates to next members page.
+   */
   nextMemberPage(): void {
     if (this.hasNextMember()) {
       this.membersPageIndex++;
@@ -356,6 +353,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Navigates to previous members page.
+   */
   previousMemberPage(): void {
     if (this.hasPreviousMember()) {
       this.membersPageIndex--;
@@ -363,19 +363,31 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Searches members and resets to first page.
+   */
   searchMembers(): void {
     this.membersPageIndex = 0;
     this.getMembersPage();
   }
 
+  /**
+   * Checks if more non-members are available on next page.
+   */
   hasNextNonMember(): boolean {
     return (this.nonMembersPageIndex + 1) * this.nonMembersPageSize < (this.nonMembersPage.totalCount || 0);
   }
 
+  /**
+   * Checks if previous non-members page exists.
+   */
   hasPreviousNonMember(): boolean {
     return this.nonMembersPageIndex > 0 && (this.nonMembersPage.totalCount || 0) > 0;
   }
 
+  /**
+   * Navigates to next non-members page.
+   */
   nextNonMemberPage(): void {
     if (this.hasNextNonMember()) {
       this.nonMembersPageIndex++;
@@ -383,6 +395,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Navigates to previous non-members page.
+   */
   previousNonMemberPage(): void {
     if (this.hasPreviousNonMember()) {
       this.nonMembersPageIndex--;
@@ -390,12 +405,17 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Searches non-members and resets to first page.
+   */
   searchNonMembers(): void {
     this.nonMembersPageIndex = 0;
     this.getNonMembersPage();
   }
 
-  // Team methods
+  /**
+   * Loads paginated teams for the current event.
+   */
   getTeamsPage(): void {
     if (!this.event?.id) {
       return;
@@ -427,6 +447,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Loads paginated non-teams (teams not in event).
+   */
   getNonTeamsPage(): void {
     if (!this.event?.id) {
       return;
@@ -457,12 +480,18 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Adds a team to the event.
+   */
   addTeam($event: MouseEvent, team: Team): void {
     $event.stopPropagation();
     // TODO: Implement add team logic
     console.log('Adding team:', team);
   }
 
+  /**
+   * Removes a team from the event.
+   */
   removeTeam($event: MouseEvent, team: Team): void {
     $event.stopPropagation();
 
@@ -484,14 +513,23 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Checks if more teams are available on next page.
+   */
   hasNextTeam(): boolean {
     return (this.teamsPageIndex + 1) * this.teamsPageSize < (this.teamsPage.totalCount || 0);
   }
 
+  /**
+   * Checks if previous teams page exists.
+   */
   hasPreviousTeam(): boolean {
     return this.teamsPageIndex > 0 && (this.teamsPage.totalCount || 0) > 0;
   }
 
+  /**
+   * Navigates to next teams page.
+   */
   nextTeamPage(): void {
     if (this.hasNextTeam()) {
       this.teamsPageIndex++;
@@ -499,6 +537,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Navigates to previous teams page.
+   */
   previousTeamPage(): void {
     if (this.hasPreviousTeam()) {
       this.teamsPageIndex--;
@@ -506,19 +547,31 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Searches teams and resets to first page.
+   */
   searchTeams(): void {
     this.teamsPageIndex = 0;
     this.getTeamsPage();
   }
 
+  /**
+   * Checks if more non-teams are available on next page.
+   */
   hasNextNonTeam(): boolean {
     return (this.nonTeamsPageIndex + 1) * this.nonTeamsPageSize < (this.nonTeamsPage.totalCount || 0);
   }
 
+  /**
+   * Checks if previous non-teams page exists.
+   */
   hasPreviousNonTeam(): boolean {
     return this.nonTeamsPageIndex > 0 && (this.nonTeamsPage.totalCount || 0) > 0;
   }
 
+  /**
+   * Navigates to next non-teams page.
+   */
   nextNonTeamPage(): void {
     if (this.hasNextNonTeam()) {
       this.nonTeamsPageIndex++;
@@ -526,6 +579,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Navigates to previous non-teams page.
+   */
   previousNonTeamPage(): void {
     if (this.hasPreviousNonTeam()) {
       this.nonTeamsPageIndex--;
@@ -533,12 +589,17 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Searches non-teams and resets to first page.
+   */
   searchNonTeams(): void {
     this.nonTeamsPageIndex = 0;
     this.getNonTeamsPage();
   }
 
-  // Layer methods
+  /**
+   * Loads all layers and filters event vs non-event layers.
+   */
   loadLayers(): void {
     if (!this.event?.id) {
       return;
@@ -568,6 +629,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Filters event layers by search term.
+   */
   filterLayers(): void {
     if (this.layerSearch) {
       this.filteredLayers = this.eventLayers.filter(layer =>
@@ -579,6 +643,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.layersDataSource.data = this.filteredLayers;
   }
 
+  /**
+   * Filters non-event layers by search term.
+   */
   filterNonLayers(): void {
     if (this.nonLayerSearch) {
       this.filteredNonLayers = this.nonLayers.filter(layer =>
@@ -589,6 +656,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Adds a layer to the event.
+   */
   addLayer($event: MouseEvent, layer: Layer): void {
     $event.stopPropagation();
 
@@ -609,6 +679,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Removes a layer from the event.
+   */
   removeLayer($event: MouseEvent, layer: Layer): void {
     $event.stopPropagation();
 
@@ -629,11 +702,16 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Navigates to layer details page.
+   */
   gotoLayer(layer: Layer): void {
     this.$state.go('admin.layer', { layerId: layer.id });
   }
 
-  // Form methods
+  /**
+   * Returns non-archived forms for display.
+   */
   get nonArchivedForms(): any[] {
     if (!this.event?.forms) {
       return [];
@@ -641,6 +719,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     return this.event.forms.filter(form => !form.archived);
   }
 
+  /**
+   * Saves form restrictions (min/max) to the server.
+   */
   saveFormRestrictions(): void {
     if (!this.event?.id) {
       return;
@@ -666,12 +747,10 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedEvent: any) => {
-          // Update the local event with the response
           if (this.event) {
             this.event.minObservationForms = updatedEvent.minObservationForms;
             this.event.maxObservationForms = updatedEvent.maxObservationForms;
 
-            // Update form restrictions in the local forms
             updatedEvent.forms?.forEach((updatedForm: any) => {
               const localForm = this.event?.forms?.find(f => f.id === updatedForm.id);
               if (localForm) {
@@ -681,7 +760,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
             });
           }
 
-          // Mark the form as pristine to disable the save button until new changes are made
           if (this.restrictionsForm) {
             this.restrictionsForm.form.markAsPristine();
           }
@@ -697,6 +775,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Opens dialog to create a new form for the event.
+   */
   createForm(): void {
     if (!this.event) {
       return;
@@ -712,26 +793,16 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result?.id) {
-        // If the result has an id, it means the form was created with an archive file
         this.$state.go('admin.formEdit', { eventId: this.event?.id, formId: result.id });
       } else if (result) {
-        // If result exists but no id, navigate to create fields for the new form
         this.$state.go('admin.fieldsCreate', { eventId: this.event?.id, form: result });
       }
     });
   }
 
-  onFormCreateClose(form: any): void {
-    // This method is kept for backward compatibility but is no longer used
-    // The dialog handles the close event directly in createForm()
-    this.formCreateOpen = false;
-    if (form?.id) {
-      this.$state.go('admin.formEdit', { eventId: this.event?.id, formId: form.id });
-    } else if (form) {
-      this.$state.go('admin.fieldsCreate', { eventId: this.event?.id, form: form });
-    }
-  }
-
+  /**
+   * Moves form up in display order with animation.
+   */
   moveFormUp($event: MouseEvent, form: any): void {
     $event.stopPropagation();
     if (!this.event?.forms) return;
@@ -752,6 +823,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Moves form down in display order with animation.
+   */
   moveFormDown($event: MouseEvent, form: any): void {
     $event.stopPropagation();
     if (!this.event?.forms) return;
@@ -772,6 +846,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Handles drag-and-drop form reordering.
+   */
   onFormDrop(event: CdkDragDrop<any[]>): void {
     if (!this.event?.forms) return;
 
@@ -780,6 +857,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.updateFormsOrder(forms);
   }
 
+  /**
+   * Updates form order on server and handles errors.
+   */
   private updateFormsOrder(forms: any[]): void {
     if (!this.event?.id) return;
 
@@ -810,19 +890,31 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Opens form preview dialog.
+   */
   preview($event: MouseEvent, form: any): void {
     $event.stopPropagation();
     this.previewForm = form;
   }
 
+  /**
+   * Closes form preview dialog.
+   */
   closePreview(): void {
     this.previewForm = null;
   }
 
+  /**
+   * TrackBy function for form list performance.
+   */
   trackByFormId(index: number, form: any): any {
     return form.id;
   }
 
+  /**
+   * Returns filtered forms based on archived flag.
+   */
   get filteredForms(): any[] {
     if (!this.event?.forms) {
       return [];
@@ -833,7 +925,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     return this.event.forms.filter(form => !form.archived);
   }
 
-  // Member role management
+  /**
+   * Gets user's role in the event team.
+   */
   getUserRole(user: MageUser): string {
     if (!this.eventTeam?.acl) {
       return 'GUEST';
@@ -842,11 +936,17 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     return userAcl?.role || 'GUEST';
   }
 
+  /**
+   * Returns CSS class for user role badge.
+   */
   getRoleClass(user: MageUser): string {
     const role = this.getUserRole(user);
     return `user-role-badge role-${role.toLowerCase()}`;
   }
 
+  /**
+   * Updates a user's role in the event team.
+   */
   updateUserRole(user: MageUser, event: any): void {
     if (!this.eventTeam?.id) {
       console.error('Event team not found');
@@ -869,7 +969,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Event details editing
+  /**
+   * Toggles event details edit mode.
+   */
   toggleEditDetails(): void {
     if (!this.editingDetails) {
       this.eventEditForm.name = this.event?.name || '';
@@ -878,6 +980,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.editingDetails = !this.editingDetails;
   }
 
+  /**
+   * Saves edited event details to server.
+   */
   saveEventDetails(): void {
     if (!this.event?.id) {
       return;
@@ -902,25 +1007,39 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Cancels event details editing and reverts changes.
+   */
   cancelEditDetails(): void {
     this.editingDetails = false;
     this.eventEditForm.name = this.event?.name || '';
     this.eventEditForm.description = this.event?.description || '';
   }
 
-  // Event actions
+  /**
+   * Navigates to event edit page.
+   */
   editEvent(mageEvent: ExtendedEvent): void {
     this.$state.go('admin.eventEdit', { eventId: mageEvent.id });
   }
 
+  /**
+   * Navigates to event access page.
+   */
   editAccess(mageEvent: ExtendedEvent): void {
     this.$state.go('admin.eventAccess', { eventId: mageEvent.id });
   }
 
+  /**
+   * Navigates to form edit page.
+   */
   editForm(mageEvent: ExtendedEvent, form: any): void {
     this.$state.go('admin.formEdit', { eventId: mageEvent.id, formId: form.id });
   }
 
+  /**
+   * Navigates to member or team details page.
+   */
   gotoMember(member: MageUser | Team): void {
     if ('username' in member) {
       this.$state.go('admin.user', { userId: member.id });
@@ -929,6 +1048,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Marks event as complete.
+   */
   completeEvent(mageEvent: ExtendedEvent): void {
     if (!mageEvent?.id) {
       return;
@@ -952,6 +1074,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Reactivates a completed event.
+   */
   activateEvent(mageEvent: ExtendedEvent): void {
     if (!mageEvent?.id) {
       return;
@@ -975,6 +1100,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Opens delete event confirmation dialog.
+   */
   deleteEvent(): void {
     if (!this.event) {
       return;
@@ -991,63 +1119,93 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // New methods for Mat Table and Card Navbar integration
+  /**
+   * Handles member search input changes.
+   */
   onMemberSearchChange(searchTerm?: string): void {
     this.memberSearchTerm = searchTerm || '';
     this.membersPageIndex = 0;
     this.getMembersPage();
   }
 
+  /**
+   * Handles member pagination changes.
+   */
   onMembersPageChange(event: PageEvent): void {
     this.membersPageIndex = event.pageIndex;
     this.membersPageSize = event.pageSize;
     this.getMembersPage();
   }
 
+  /**
+   * Handles team search input changes.
+   */
   onTeamSearchChange(searchTerm?: string): void {
     this.teamSearchTerm = searchTerm || '';
     this.teamsPageIndex = 0;
     this.getTeamsPage();
   }
 
+  /**
+   * Handles team pagination changes.
+   */
   onTeamsPageChange(event: PageEvent): void {
     this.teamsPageIndex = event.pageIndex;
     this.teamsPageSize = event.pageSize;
     this.getTeamsPage();
   }
 
+  /**
+   * Handles layer search input changes.
+   */
   onLayerSearchChange(searchTerm?: string): void {
     this.layerSearch = searchTerm || '';
     this.layersPage = 0;
     this.filterLayers();
   }
 
+  /**
+   * Handles layer pagination changes.
+   */
   onLayersPageChange(event: PageEvent): void {
     this.layersPage = event.pageIndex;
     this.layersPerPage = event.pageSize;
   }
 
+  /**
+   * Navigates to team details page.
+   */
   gotoTeam(team: Team): void {
     this.$state.go('admin.team', { teamId: team.id });
   }
 
-  // Toggle edit modes
+  /**
+   * Toggles member edit mode and updates action buttons.
+   */
   toggleEditMembers(): void {
     this.editMembers = !this.editMembers;
     this.updateActionButtons();
   }
 
+  /**
+   * Toggles team edit mode and updates action buttons.
+   */
   toggleEditTeams(): void {
     this.editTeams = !this.editTeams;
     this.updateActionButtons();
   }
 
+  /**
+   * Toggles layer edit mode and updates action buttons.
+   */
   toggleEditLayers(): void {
     this.editLayers = !this.editLayers;
     this.updateActionButtons();
   }
 
-  // Add methods
+  /**
+   * Opens search dialog to add members to event.
+   */
   addMemberToEvent(): void {
     if (!this.eventTeam?.id) {
       console.error('Event team not found');
@@ -1106,6 +1264,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Opens search dialog to add teams to event.
+   */
   addTeamToEvent(): void {
     if (!this.event?.id) {
       return;
@@ -1158,6 +1319,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Opens search dialog to add layers to event.
+   */
   addLayerToEvent(): void {
     if (!this.event?.id) {
       return;
@@ -1170,8 +1334,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         searchPlaceholder: 'Search for layers to add...',
         type: 'layers',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          // Since there's no paginated non-layers endpoint, we'll fetch all layers
-          // and filter them client-side
           return new Observable(observer => {
             this.eventsService.getAllLayers().subscribe({
               next: (allLayers) => {
@@ -1180,14 +1342,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
                     const eventLayerIds = eventLayers.map(l => l.id);
                     let filteredLayers = allLayers.filter(layer => !eventLayerIds.includes(layer.id));
 
-                    // Apply search filter
                     if (searchTerm) {
                       filteredLayers = filteredLayers.filter(layer =>
                         layer.name.toLowerCase().includes(searchTerm.toLowerCase())
                       );
                     }
 
-                    // Apply pagination
                     const start = page * pageSize;
                     const paginatedLayers = filteredLayers.slice(start, start + pageSize);
 
