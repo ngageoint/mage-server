@@ -222,6 +222,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           this.getTeamsPage();
           this.getNonTeamsPage();
           this.loadLayers();
+          this.breadcrumbs.push({ title: this.event.name })
         },
         error: (error) => {
           console.error('Error loading event:', error);
