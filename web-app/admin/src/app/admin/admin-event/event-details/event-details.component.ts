@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Inject, ViewChild } from '@angular/core';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
+import { MatSelectChange } from '@angular/material/select';
 import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
@@ -86,7 +87,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   animatingFormId: number | null = null;
   formsAnimationState = 0;
 
-  loadingMembers = false;
+  loadingMembers = true;
   membersPageIndex = 0;
   membersPageSize = 5;
   membersPage: PagedResult<MageUser> = { items: [], totalCount: 0 };
@@ -96,33 +97,22 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   membersDisplayedColumns = ['content'];
   pageSizeOptions = [5, 10, 25];
 
-  loadingNonMembers = false;
-  nonMembersPageIndex = 0;
-  nonMembersPageSize = 5;
-  nonMembersPage: PagedResult<MageUser> = { items: [], totalCount: 0 };
-  nonMemberSearchTerm = '';
-
-  loadingTeams = false;
+  loadingTeams = true;
   teamsPageIndex = 0;
-  teamsPageSize = 2;
+  teamsPageSize = 5;
   teamsPage: PagedResult<Team> = { items: [], totalCount: 0 };
   teamSearchTerm = '';
   editTeams = false;
   teamsDataSource = new MatTableDataSource<Team>();
   teamsDisplayedColumns = ['content'];
 
-  loadingNonTeams = false;
-  nonTeamsPageIndex = 0;
-  nonTeamsPageSize = 5;
-  nonTeamsPage: PagedResult<Team> = { items: [], totalCount: 0 };
-  nonTeamSearchTerm = '';
-
+  loadingLayers = true;
+  layersPageIndex = 0;
+  layersPageSize = 5;
+  layersPage: PagedResult<Layer> = { items: [], totalCount: 0 };
+  layerSearchTerm = '';
   editLayers = false;
   eventLayers: Layer[] = [];
-  layersPage = 0;
-  layersPerPage = 5;
-  layerSearch = '';
-  filteredLayers: Layer[] = [];
   layersDataSource = new MatTableDataSource<Layer>();
   layersDisplayedColumns = ['content'];
 
@@ -130,15 +120,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   teamActionButtons: CardActionButton[] = [];
   layerActionButtons: CardActionButton[] = [];
 
-  nonLayers: Layer[] = [];
-  nonLayersPage = 0;
-  nonLayersPerPage = 2;
-  nonLayerSearch = '';
-  filteredNonLayers: Layer[] = [];
-
   layers: Layer[] = [];
-  teamsInEvent: Team[] = [];
-  teamsNotInEvent: Team[] = [];
 
   constructor(
     @Inject('$stateParams') private $stateParams: any,
@@ -157,7 +139,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.layerActionButtons = [];
 
     if (this.hasUpdatePermission) {
-      // Member action buttons
       this.memberActionButtons.push({
         label: this.editMembers ? 'Done' : 'Edit Members',
         action: () => this.toggleEditMembers(),
@@ -170,7 +151,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         type: 'btn-secondary'
       });
 
-      // Team action buttons
       this.teamActionButtons.push({
         label: this.editTeams ? 'Done' : 'Edit Teams',
         action: () => this.toggleEditTeams(),
@@ -183,7 +163,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         type: 'btn-secondary'
       });
 
-      // Layer action buttons
       this.layerActionButtons.push({
         label: this.editLayers ? 'Done' : 'Edit Layers',
         action: () => this.toggleEditLayers(),
@@ -218,9 +197,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           ) || null;
 
           this.getMembersPage();
-          this.getNonMembersPage();
           this.getTeamsPage();
-          this.getNonTeamsPage();
           this.loadLayers();
           this.breadcrumbs.push({ title: this.event.name })
         },
@@ -249,7 +226,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadingMembers = true;
     this.eventsService.getMembers(String(this.event.id), {
       page: this.membersPageIndex,
       page_size: this.membersPageSize,
@@ -275,38 +251,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads paginated non-members (users not in event).
-   */
-  getNonMembersPage(): void {
-    if (!this.event?.id) {
-      return;
-    }
-
-    this.loadingNonMembers = true;
-    this.eventsService.getNonMembers(String(this.event.id), {
-      page: this.nonMembersPageIndex,
-      page_size: this.nonMembersPageSize,
-      term: this.nonMemberSearchTerm,
-      total: true
-    }).pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (page) => {
-          this.loadingNonMembers = false;
-          this.nonMembersPage = {
-            items: page.items,
-            totalCount: page.totalCount || 0,
-            pageSize: page.pageSize,
-            pageIndex: page.pageIndex
-          };
-        },
-        error: (error) => {
-          this.loadingNonMembers = false;
-          console.error('Error loading non-members:', error);
-        }
-      });
-  }
-
-  /**
    * Removes a user from the event team.
    */
   removeMember($event: MouseEvent, user: MageUser): void {
@@ -322,46 +266,11 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.getMembersPage();
-          this.getNonMembersPage();
         },
         error: (error) => {
           console.error('Error removing member:', error);
         }
       });
-  }
-
-  /**
-   * Checks if more members are available on next page.
-   */
-  hasNextMember(): boolean {
-    return (this.membersPageIndex + 1) * this.membersPageSize < (this.membersPage.totalCount || 0);
-  }
-
-  /**
-   * Checks if previous members page exists.
-   */
-  hasPreviousMember(): boolean {
-    return this.membersPageIndex > 0 && (this.membersPage.totalCount || 0) > 0;
-  }
-
-  /**
-   * Navigates to next members page.
-   */
-  nextMemberPage(): void {
-    if (this.hasNextMember()) {
-      this.membersPageIndex++;
-      this.getMembersPage();
-    }
-  }
-
-  /**
-   * Navigates to previous members page.
-   */
-  previousMemberPage(): void {
-    if (this.hasPreviousMember()) {
-      this.membersPageIndex--;
-      this.getMembersPage();
-    }
   }
 
   /**
@@ -373,48 +282,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if more non-members are available on next page.
-   */
-  hasNextNonMember(): boolean {
-    return (this.nonMembersPageIndex + 1) * this.nonMembersPageSize < (this.nonMembersPage.totalCount || 0);
-  }
-
-  /**
-   * Checks if previous non-members page exists.
-   */
-  hasPreviousNonMember(): boolean {
-    return this.nonMembersPageIndex > 0 && (this.nonMembersPage.totalCount || 0) > 0;
-  }
-
-  /**
-   * Navigates to next non-members page.
-   */
-  nextNonMemberPage(): void {
-    if (this.hasNextNonMember()) {
-      this.nonMembersPageIndex++;
-      this.getNonMembersPage();
-    }
-  }
-
-  /**
-   * Navigates to previous non-members page.
-   */
-  previousNonMemberPage(): void {
-    if (this.hasPreviousNonMember()) {
-      this.nonMembersPageIndex--;
-      this.getNonMembersPage();
-    }
-  }
-
-  /**
-   * Searches non-members and resets to first page.
-   */
-  searchNonMembers(): void {
-    this.nonMembersPageIndex = 0;
-    this.getNonMembersPage();
-  }
-
-  /**
    * Loads paginated teams for the current event.
    */
   getTeamsPage(): void {
@@ -422,7 +289,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadingTeams = true;
     this.eventsService.getTeamsInEvent(String(this.event.id), {
       page: this.teamsPageIndex,
       page_size: this.teamsPageSize,
@@ -449,48 +315,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads paginated non-teams (teams not in event).
-   */
-  getNonTeamsPage(): void {
-    if (!this.event?.id) {
-      return;
-    }
-
-    this.loadingNonTeams = true;
-    this.eventsService.getTeamsNotInEvent(String(this.event.id), {
-      page: this.nonTeamsPageIndex,
-      page_size: this.nonTeamsPageSize,
-      term: this.nonTeamSearchTerm,
-      total: true,
-      omit_event_teams: true
-    }).pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (page) => {
-          this.loadingNonTeams = false;
-          this.nonTeamsPage = {
-            items: page.items,
-            totalCount: page.totalCount || 0,
-            pageSize: page.pageSize,
-            pageIndex: page.pageIndex
-          };
-        },
-        error: (error) => {
-          this.loadingNonTeams = false;
-          console.error('Error loading non-teams:', error);
-        }
-      });
-  }
-
-  /**
-   * Adds a team to the event.
-   */
-  addTeam($event: MouseEvent, team: Team): void {
-    $event.stopPropagation();
-    // TODO: Implement add team logic
-    console.log('Adding team:', team);
-  }
-
-  /**
    * Removes a team from the event.
    */
   removeTeam($event: MouseEvent, team: Team): void {
@@ -504,48 +328,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload teams after removal
           this.getTeamsPage();
-          this.getNonTeamsPage();
         },
         error: (error) => {
           console.error('Error removing team:', error);
         }
       });
-  }
-
-  /**
-   * Checks if more teams are available on next page.
-   */
-  hasNextTeam(): boolean {
-    return (this.teamsPageIndex + 1) * this.teamsPageSize < (this.teamsPage.totalCount || 0);
-  }
-
-  /**
-   * Checks if previous teams page exists.
-   */
-  hasPreviousTeam(): boolean {
-    return this.teamsPageIndex > 0 && (this.teamsPage.totalCount || 0) > 0;
-  }
-
-  /**
-   * Navigates to next teams page.
-   */
-  nextTeamPage(): void {
-    if (this.hasNextTeam()) {
-      this.teamsPageIndex++;
-      this.getTeamsPage();
-    }
-  }
-
-  /**
-   * Navigates to previous teams page.
-   */
-  previousTeamPage(): void {
-    if (this.hasPreviousTeam()) {
-      this.teamsPageIndex--;
-      this.getTeamsPage();
-    }
   }
 
   /**
@@ -557,104 +345,58 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if more non-teams are available on next page.
-   */
-  hasNextNonTeam(): boolean {
-    return (this.nonTeamsPageIndex + 1) * this.nonTeamsPageSize < (this.nonTeamsPage.totalCount || 0);
-  }
-
-  /**
-   * Checks if previous non-teams page exists.
-   */
-  hasPreviousNonTeam(): boolean {
-    return this.nonTeamsPageIndex > 0 && (this.nonTeamsPage.totalCount || 0) > 0;
-  }
-
-  /**
-   * Navigates to next non-teams page.
-   */
-  nextNonTeamPage(): void {
-    if (this.hasNextNonTeam()) {
-      this.nonTeamsPageIndex++;
-      this.getNonTeamsPage();
-    }
-  }
-
-  /**
-   * Navigates to previous non-teams page.
-   */
-  previousNonTeamPage(): void {
-    if (this.hasPreviousNonTeam()) {
-      this.nonTeamsPageIndex--;
-      this.getNonTeamsPage();
-    }
-  }
-
-  /**
-   * Searches non-teams and resets to first page.
-   */
-  searchNonTeams(): void {
-    this.nonTeamsPageIndex = 0;
-    this.getNonTeamsPage();
-  }
-
-  /**
-   * Loads all layers and filters event vs non-event layers.
+   * Loads all layers for the current event and applies client-side pagination.
    */
   loadLayers(): void {
     if (!this.event?.id) {
       return;
     }
 
-    // Load all layers and event layers in parallel
-    forkJoin({
-      allLayers: this.eventsService.getAllLayers(),
-      eventLayers: this.eventsService.getLayersForEvent(String(this.event.id))
-    }).pipe(takeUntil(this.destroy$))
+    this.eventsService.getLayersForEvent(String(this.event.id))
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ allLayers, eventLayers }) => {
-          this.layers = allLayers;
-          this.eventLayers = eventLayers;
-
-          // Filter out layers that are already in the event
-          const eventLayerIds = eventLayers.map(l => l.id);
-          this.nonLayers = allLayers.filter(layer => !eventLayerIds.includes(layer.id));
-
-          // Apply any active search filters
-          this.filterLayers();
-          this.filterNonLayers();
+        next: (layers) => {
+          this.loadingLayers = false;
+          this.eventLayers = layers;
+          this.filterAndPaginateLayers();
         },
         error: (error) => {
+          this.loadingLayers = false;
           console.error('Error loading layers:', error);
         }
       });
   }
 
   /**
-   * Filters event layers by search term.
+   * Filters and paginates layers on the client side.
    */
-  filterLayers(): void {
-    if (this.layerSearch) {
-      this.filteredLayers = this.eventLayers.filter(layer =>
-        layer.name.toLowerCase().includes(this.layerSearch.toLowerCase())
+  filterAndPaginateLayers(): void {
+    let filteredLayers = this.eventLayers;
+    if (this.layerSearchTerm) {
+      filteredLayers = this.eventLayers.filter(layer =>
+        layer.name.toLowerCase().includes(this.layerSearchTerm.toLowerCase())
       );
-    } else {
-      this.filteredLayers = [...this.eventLayers];
     }
-    this.layersDataSource.data = this.filteredLayers;
+
+    const startIndex = this.layersPageIndex * this.layersPageSize;
+    const endIndex = startIndex + this.layersPageSize;
+    const paginatedLayers = filteredLayers.slice(startIndex, endIndex);
+
+    this.layersPage = {
+      items: paginatedLayers,
+      totalCount: filteredLayers.length,
+      pageSize: this.layersPageSize,
+      pageIndex: this.layersPageIndex
+    };
+    this.layersDataSource.data = paginatedLayers;
   }
 
   /**
-   * Filters non-event layers by search term.
+   * Searches layers and resets to first page.
    */
-  filterNonLayers(): void {
-    if (this.nonLayerSearch) {
-      this.filteredNonLayers = this.nonLayers.filter(layer =>
-        layer.name.toLowerCase().includes(this.nonLayerSearch.toLowerCase())
-      );
-    } else {
-      this.filteredNonLayers = [...this.nonLayers];
-    }
+  searchLayers(): void {
+    this.layersPageIndex = 0;
+    this.filterAndPaginateLayers();
   }
 
   /**
@@ -671,7 +413,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload layers after adding
           this.loadLayers();
         },
         error: (error) => {
@@ -694,7 +435,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload layers after removing
           this.loadLayers();
         },
         error: (error) => {
@@ -729,16 +469,11 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
 
     this.restrictionsError = null;
-
-    // Prepare the event update payload with form restrictions
-    // We need to send the complete form objects, not just id/min/max,
-    // because Mongoose validation runs on the entire forms array
     const eventUpdate: any = {
       minObservationForms: this.event.minObservationForms,
       maxObservationForms: this.event.maxObservationForms,
       forms: this.event.forms.map(form => ({
         ...form,
-        // Ensure we're sending the updated min/max values
         min: form.min,
         max: form.max
       }))
@@ -802,22 +537,47 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Checks if a form can be moved up in the filtered list.
+   */
+  canMoveFormUp(form: any): boolean {
+    if (!this.event?.forms) return false;
+    const filtered = this.filteredForms;
+    const filteredIndex = filtered.indexOf(form);
+    return filteredIndex > 0;
+  }
+
+  /**
+   * Checks if a form can be moved down in the filtered list.
+   */
+  canMoveFormDown(form: any): boolean {
+    if (!this.event?.forms) return false;
+    const filtered = this.filteredForms;
+    const filteredIndex = filtered.indexOf(form);
+    return filteredIndex >= 0 && filteredIndex < filtered.length - 1;
+  }
+
+  /**
    * Moves form up in display order with animation.
    */
   moveFormUp($event: MouseEvent, form: any): void {
     $event.stopPropagation();
     if (!this.event?.forms) return;
 
-    const currentIndex = this.event.forms.indexOf(form);
-    if (currentIndex > 0) {
-      // Trigger animation highlight
-      this.animatingFormId = form.id;
+    const filtered = this.filteredForms;
+    const filteredIndex = filtered.indexOf(form);
+
+    if (filteredIndex > 0) {
+      const previousForm = filtered[filteredIndex - 1];
 
       const forms = [...this.event.forms];
-      [forms[currentIndex - 1], forms[currentIndex]] = [forms[currentIndex], forms[currentIndex - 1]];
+      const currentIndex = forms.indexOf(form);
+      const targetIndex = forms.indexOf(previousForm);
+
+      this.animatingFormId = form.id;
+
+      [forms[targetIndex], forms[currentIndex]] = [forms[currentIndex], forms[targetIndex]];
       this.updateFormsOrder(forms);
 
-      // Remove highlight after animation completes
       setTimeout(() => {
         this.animatingFormId = null;
       }, 400);
@@ -831,16 +591,21 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     $event.stopPropagation();
     if (!this.event?.forms) return;
 
-    const currentIndex = this.event.forms.indexOf(form);
-    if (currentIndex < this.event.forms.length - 1) {
-      // Trigger animation highlight
-      this.animatingFormId = form.id;
+    const filtered = this.filteredForms;
+    const filteredIndex = filtered.indexOf(form);
+
+    if (filteredIndex >= 0 && filteredIndex < filtered.length - 1) {
+      const nextForm = filtered[filteredIndex + 1];
 
       const forms = [...this.event.forms];
-      [forms[currentIndex], forms[currentIndex + 1]] = [forms[currentIndex + 1], forms[currentIndex]];
+      const currentIndex = forms.indexOf(form);
+      const targetIndex = forms.indexOf(nextForm);
+
+      this.animatingFormId = form.id;
+
+      [forms[currentIndex], forms[targetIndex]] = [forms[targetIndex], forms[currentIndex]];
       this.updateFormsOrder(forms);
 
-      // Remove highlight after animation completes
       setTimeout(() => {
         this.animatingFormId = null;
       }, 400);
@@ -853,8 +618,16 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   onFormDrop(event: CdkDragDrop<any[]>): void {
     if (!this.event?.forms) return;
 
+    const filtered = this.filteredForms;
+
+    const movedForm = filtered[event.previousIndex];
+    const targetForm = filtered[event.currentIndex];
+
     const forms = [...this.event.forms];
-    moveItemInArray(forms, event.previousIndex, event.currentIndex);
+    const currentIndex = forms.indexOf(movedForm);
+    const newIndex = forms.indexOf(targetForm);
+
+    moveItemInArray(forms, currentIndex, newIndex);
     this.updateFormsOrder(forms);
   }
 
@@ -864,13 +637,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   private updateFormsOrder(forms: any[]): void {
     if (!this.event?.id) return;
 
-    // Update the local event object immediately for UI responsiveness
     this.event.forms = forms;
-
-    // Trigger animation state change for Angular animations
     this.formsAnimationState++;
 
-    // Update the forms order on the server
     this.eventsService.updateEvent(String(this.event.id), { forms })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -879,7 +648,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error updating forms order:', error);
-          // Reload the event to get the correct state from server
           this.eventsService.getEventById(String(this.event!.id))
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -948,21 +716,25 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   /**
    * Updates a user's role in the event team.
    */
-  updateUserRole(user: MageUser, event: any): void {
+  updateUserRole(user: MageUser, event: MatSelectChange): void {
     if (!this.eventTeam?.id) {
       console.error('Event team not found');
       return;
     }
 
-    const newRole = event.target.value;
-    console.log(`Updating user ${user.displayName} role to ${newRole}`);
+    const newRole = event.value;
 
     this.teamsService.updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedTeam: Team) => {
           this.eventTeam = updatedTeam;
-          this.getMembersPage();
+          const userIndex = this.membersPage.items.findIndex(u => u.id === user.id);
+          if (userIndex !== -1) {
+            const updatedUser = { ...this.membersPage.items[userIndex] };
+            this.membersPage.items[userIndex] = updatedUser;
+            this.membersDataSource.data = [...this.membersPage.items];
+          }
         },
         error: (error) => {
           console.error('Error updating user role:', error);
@@ -1160,17 +932,18 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Handles layer search input changes.
    */
   onLayerSearchChange(searchTerm?: string): void {
-    this.layerSearch = searchTerm || '';
-    this.layersPage = 0;
-    this.filterLayers();
+    this.layerSearchTerm = searchTerm || '';
+    this.layersPageIndex = 0;
+    this.filterAndPaginateLayers();
   }
 
   /**
    * Handles layer pagination changes.
    */
   onLayersPageChange(event: PageEvent): void {
-    this.layersPage = event.pageIndex;
-    this.layersPerPage = event.pageSize;
+    this.layersPageIndex = event.pageIndex;
+    this.layersPageSize = event.pageSize;
+    this.filterAndPaginateLayers();
   }
 
   /**
@@ -1255,7 +1028,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         this.teamsService.addUserToTeam(String(this.eventTeam.id), result.selectedItem).subscribe({
           next: () => {
             this.getMembersPage();
-            this.getNonMembersPage();
           },
           error: (error) => {
             console.error('Error adding member:', error);
@@ -1310,7 +1082,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         this.eventsService.addTeamToEvent(String(this.event.id), result.selectedItem).subscribe({
           next: () => {
             this.getTeamsPage();
-            this.getNonTeamsPage();
           },
           error: (error) => {
             console.error('Error adding team:', error);
@@ -1341,9 +1112,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
                 this.eventsService.getLayersForEvent(String(this.event?.id)).subscribe({
                   next: (eventLayers) => {
                     const eventLayerIds = eventLayers.map(l => l.id);
-                    let filteredLayers = allLayers.filter(layer => !eventLayerIds.includes(layer.id));
-
-                    if (searchTerm) {
+                    let filteredLayers = allLayers.filter(layer => !eventLayerIds.includes(layer.id)); if (searchTerm) {
                       filteredLayers = filteredLayers.filter(layer =>
                         layer.name.toLowerCase().includes(searchTerm.toLowerCase())
                       );

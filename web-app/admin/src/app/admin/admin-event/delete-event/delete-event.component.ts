@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EventsService } from '../events.service';
 import { Event as MageEvent } from 'src/app/filter/filter.types';
@@ -12,7 +12,7 @@ import { Event as MageEvent } from 'src/app/filter/filter.types';
     templateUrl: './delete-event.component.html',
     styleUrls: ['./delete-event.component.scss']
 })
-export class DeleteEventComponent implements OnInit {
+export class DeleteEventComponent {
     event: MageEvent;
     deleting = false;
     confirm: { text?: string } = {};
@@ -29,12 +29,6 @@ export class DeleteEventComponent implements OnInit {
         private eventsService: EventsService
     ) {
         this.event = data.event;
-    }
-
-    /**
-     * Component initialization lifecycle hook.
-     */
-    ngOnInit(): void {
     }
 
     /**

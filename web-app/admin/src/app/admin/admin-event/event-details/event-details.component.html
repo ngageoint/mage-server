@@ -121,14 +121,40 @@
                                                     <span *ngIf="!editMembers" [class]="getRoleClass(user)">
                                                         {{ getUserRole(user) }}
                                                     </span>
-                                                    <select *ngIf="hasUpdatePermission && editMembers"
-                                                        class="role-select" [value]="getUserRole(user)"
-                                                        (change)="updateUserRole(user, $event)"
+                                                    <mat-form-field *ngIf="hasUpdatePermission && editMembers"
+                                                        class="role-select-field" appearance="outline"
                                                         (click)="$event.stopPropagation()">
-                                                        <option value="GUEST">Guest</option>
-                                                        <option value="MANAGER">Manager</option>
-                                                        <option value="OWNER">Owner</option>
-                                                    </select>
+                                                        <mat-select [value]="getUserRole(user)"
+                                                            (selectionChange)="updateUserRole(user, $event)"
+                                                            (click)="$event.stopPropagation()"
+                                                            panelClass="role-select-panel"
+                                                            disableOptionCentering="true">
+                                                            <mat-select-trigger>
+                                                                {{ getUserRole(user) }}
+                                                            </mat-select-trigger>
+                                                            <mat-option value="GUEST">
+                                                                <div class="role-option">
+                                                                    <div class="role-name">Guest</div>
+                                                                    <div class="role-description">Can view and
+                                                                        contribute observations</div>
+                                                                </div>
+                                                            </mat-option>
+                                                            <mat-option value="MANAGER">
+                                                                <div class="role-option">
+                                                                    <div class="role-name">Manager</div>
+                                                                    <div class="role-description">Can edit event
+                                                                        settings and manage members</div>
+                                                                </div>
+                                                            </mat-option>
+                                                            <mat-option value="OWNER">
+                                                                <div class="role-option">
+                                                                    <div class="role-name">Owner</div>
+                                                                    <div class="role-description">Full control including
+                                                                        deletion</div>
+                                                                </div>
+                                                            </mat-option>
+                                                        </mat-select>
+                                                    </mat-form-field>
                                                 </div>
                                                 <div class="row-actions" *ngIf="hasUpdatePermission && editMembers">
                                                     <button class="action-button btn-danger btn-sm"
@@ -240,7 +266,7 @@
 
                             <div class="table-scroll">
                                 <table mat-table [class.mat-table]="true" [dataSource]="layersDataSource"
-                                    class="mat-table-no-header" *ngIf="filteredLayers.length > 0">
+                                    class="mat-table-no-header" *ngIf="layersPage.totalCount > 0 && !loadingLayers">
                                     <ng-container matColumnDef="content">
                                         <td mat-cell *matCellDef="let layer" class="table-row-content">
                                             <div class="row-item" (click)="gotoLayer(layer)">
@@ -267,16 +293,23 @@
                                     </tr>
                                 </table>
 
-                                <div class="empty-state" *ngIf="filteredLayers.length === 0">
+                                <div class="empty-state" *ngIf="layersPage.totalCount === 0 && !loadingLayers">
                                     <div class="empty-state-content">
                                         <i class="fa fa-map empty-state-icon"></i>
                                         <div class="empty-state-text">No layers for {{ event?.name }}</div>
                                     </div>
                                 </div>
                             </div>
-                            <mat-paginator [length]="filteredLayers.length" [pageSize]="layersPerPage"
+                            <mat-paginator [length]="layersPage.totalCount" [pageSize]="layersPageSize"
                                 [pageSizeOptions]="pageSizeOptions" (page)="onLayersPageChange($event)">
                             </mat-paginator>
+
+                            <div class="loading-overlay" *ngIf="loadingLayers">
+                                <div class="loading-content">
+                                    <div class="loading-text">Loading</div>
+                                    <i class="fa fa-spinner fa-spin loading-spinner"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -293,7 +326,7 @@
                             [@listAnimation]="formsAnimationState" #formsList>
                             <div class="form-item" cdkDrag [cdkDragBoundary]="formsList"
                                 [class.form-moving]="animatingFormId === form.id"
-                                *ngFor="let form of filteredForms; let first = first; let last = last; trackBy: trackByFormId"
+                                *ngFor="let form of filteredForms; trackBy: trackByFormId"
                                 (click)="editForm(event, form)">
                                 <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
                                 <mat-icon>description</mat-icon>
@@ -306,12 +339,12 @@
                                     <button mat-icon-button (click)="preview($event, form)" matTooltip="Preview Form">
                                         <mat-icon>visibility</mat-icon>
                                     </button>
-                                    <button mat-icon-button *ngIf="!first" (click)="moveFormUp($event, form)"
-                                        matTooltip="Move form up">
+                                    <button mat-icon-button *ngIf="canMoveFormUp(form)"
+                                        (click)="moveFormUp($event, form)" matTooltip="Move form up">
                                         <mat-icon>arrow_upward</mat-icon>
                                     </button>
-                                    <button mat-icon-button *ngIf="!last" (click)="moveFormDown($event, form)"
-                                        matTooltip="Move form down">
+                                    <button mat-icon-button *ngIf="canMoveFormDown(form)"
+                                        (click)="moveFormDown($event, form)" matTooltip="Move form down">
                                         <mat-icon>arrow_downward</mat-icon>
                                     </button>
                                 </div>

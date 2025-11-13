@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSelectChange } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 
@@ -97,9 +98,9 @@ describe('EventDetailsComponent', () => {
       expect(component.membersPageIndex).toBe(0);
       expect(component.membersPageSize).toBe(5);
       expect(component.teamsPageIndex).toBe(0);
-      expect(component.teamsPageSize).toBe(2);
-      expect(component.layersPage).toBe(0);
-      expect(component.layersPerPage).toBe(5);
+      expect(component.teamsPageSize).toBe(5);
+      expect(component.layersPageIndex).toBe(0);
+      expect(component.layersPageSize).toBe(5);
     });
   });
 
@@ -334,16 +335,6 @@ describe('EventDetailsComponent', () => {
       expect(eventsService.getMembers).toHaveBeenCalled();
     });
 
-    it('should search non-members and reset page', () => {
-      component.nonMembersPageIndex = 2;
-      component.nonMemberSearchTerm = 'test';
-
-      component.searchNonMembers();
-
-      expect(component.nonMembersPageIndex).toBe(0);
-      expect(eventsService.getNonMembers).toHaveBeenCalled();
-    });
-
     it('should search teams and reset page', () => {
       component.teamsPageIndex = 2;
       component.teamSearchTerm = 'test';
@@ -353,238 +344,75 @@ describe('EventDetailsComponent', () => {
       expect(component.teamsPageIndex).toBe(0);
       expect(eventsService.getTeamsInEvent).toHaveBeenCalled();
     });
-
-    it('should search non-teams and reset page', () => {
-      component.nonTeamsPageIndex = 2;
-      component.nonTeamSearchTerm = 'test';
-
-      component.searchNonTeams();
-
-      expect(component.nonTeamsPageIndex).toBe(0);
-      expect(eventsService.getTeamsNotInEvent).toHaveBeenCalled();
-    });
-  });
-
-  describe('Layer Filtering', () => {
-    beforeEach(() => {
-      component.eventLayers = [
-        { id: 1, name: 'Alpha Layer', type: 'Feature' } as any,
-        { id: 2, name: 'Beta Layer', type: 'Imagery' } as any
-      ];
-    });
-
-    it('should filter layers by search term', () => {
-      component.layerSearch = 'alpha';
-
-      component.filterLayers();
-
-      expect(component.filteredLayers.length).toBe(1);
-      expect(component.filteredLayers[0].name).toBe('Alpha Layer');
-    });
-
-    it('should return all layers when search is empty', () => {
-      component.layerSearch = '';
-
-      component.filterLayers();
-
-      expect(component.filteredLayers.length).toBe(2);
-    });
-
-    it('should filter non-layers by search term', () => {
-      component.nonLayers = [
-        { id: 3, name: 'Gamma Layer', type: 'Feature' } as any,
-        { id: 4, name: 'Delta Layer', type: 'Imagery' } as any
-      ];
-      component.nonLayerSearch = 'gamma';
-
-      component.filterNonLayers();
-
-      expect(component.filteredNonLayers.length).toBe(1);
-      expect(component.filteredNonLayers[0].name).toBe('Gamma Layer');
-    });
-  });
-
-  describe('Pagination Helpers', () => {
-    describe('Member Pagination', () => {
-      it('should check if has next member page', () => {
-        component.membersPageIndex = 0;
-        component.membersPageSize = 5;
-        component.membersPage = { items: [], totalCount: 15 };
-
-        expect(component.hasNextMember()).toBe(true);
-      });
-
-      it('should check if has previous member page', () => {
-        component.membersPageIndex = 1;
-        component.membersPage = { items: [], totalCount: 15 };
-
-        expect(component.hasPreviousMember()).toBe(true);
-      });
-
-      it('should return false when on first page', () => {
-        component.membersPageIndex = 0;
-        component.membersPage = { items: [], totalCount: 15 };
-
-        expect(component.hasPreviousMember()).toBe(false);
-      });
-    });
-
-    describe('Team Pagination', () => {
-      it('should check if has next team page', () => {
-        component.teamsPageIndex = 0;
-        component.teamsPageSize = 2;
-        component.teamsPage = { items: [], totalCount: 10 };
-
-        expect(component.hasNextTeam()).toBe(true);
-      });
-
-      it('should check if has previous team page', () => {
-        component.teamsPageIndex = 1;
-        component.teamsPage = { items: [], totalCount: 10 };
-
-        expect(component.hasPreviousTeam()).toBe(true);
-      });
-    });
-
-    describe('Non-Member Pagination', () => {
-      it('should check if has next non-member page', () => {
-        component.nonMembersPageIndex = 0;
-        component.nonMembersPageSize = 5;
-        component.nonMembersPage = { items: [], totalCount: 20 };
-
-        expect(component.hasNextNonMember()).toBe(true);
-      });
-
-      it('should check if has previous non-member page', () => {
-        component.nonMembersPageIndex = 1;
-        component.nonMembersPage = { items: [], totalCount: 20 };
-
-        expect(component.hasPreviousNonMember()).toBe(true);
-      });
-    });
-
-    describe('Non-Team Pagination', () => {
-      it('should check if has next non-team page', () => {
-        component.nonTeamsPageIndex = 0;
-        component.nonTeamsPageSize = 5;
-        component.nonTeamsPage = { items: [], totalCount: 15 };
-
-        expect(component.hasNextNonTeam()).toBe(true);
-      });
-
-      it('should check if has previous non-team page', () => {
-        component.nonTeamsPageIndex = 1;
-        component.nonTeamsPage = { items: [], totalCount: 15 };
-
-        expect(component.hasPreviousNonTeam()).toBe(true);
-      });
-    });
-  });
-
-  describe('Pagination Navigation', () => {
-    beforeEach(() => {
-      component.event = { id: 1, name: 'Test' } as any;
-    });
-
-    it('should navigate to next member page', () => {
-      component.membersPageIndex = 0;
-      component.membersPageSize = 5;
-      component.membersPage = { items: [], totalCount: 15 };
-
-      component.nextMemberPage();
-
-      expect(component.membersPageIndex).toBe(1);
-      expect(eventsService.getMembers).toHaveBeenCalled();
-    });
-
-    it('should navigate to previous member page', () => {
-      component.membersPageIndex = 2;
-      component.membersPage = { items: [], totalCount: 15 };
-
-      component.previousMemberPage();
-
-      expect(component.membersPageIndex).toBe(1);
-      expect(eventsService.getMembers).toHaveBeenCalled();
-    });
-
-    it('should not navigate when no next member page', () => {
-      component.membersPageIndex = 2;
-      component.membersPageSize = 5;
-      component.membersPage = { items: [], totalCount: 15 };
-
-      component.nextMemberPage();
-
-      expect(component.membersPageIndex).toBe(2);
-    });
-
-    it('should navigate to next team page', () => {
-      component.teamsPageIndex = 0;
-      component.teamsPageSize = 2;
-      component.teamsPage = { items: [], totalCount: 10 };
-
-      component.nextTeamPage();
-
-      expect(component.teamsPageIndex).toBe(1);
-      expect(eventsService.getTeamsInEvent).toHaveBeenCalled();
-    });
-
-    it('should navigate to previous team page', () => {
-      component.teamsPageIndex = 2;
-      component.teamsPage = { items: [], totalCount: 10 };
-
-      component.previousTeamPage();
-
-      expect(component.teamsPageIndex).toBe(1);
-      expect(eventsService.getTeamsInEvent).toHaveBeenCalled();
-    });
-
-    it('should navigate to next non-member page', () => {
-      component.nonMembersPageIndex = 0;
-      component.nonMembersPageSize = 5;
-      component.nonMembersPage = { items: [], totalCount: 20 };
-
-      component.nextNonMemberPage();
-
-      expect(component.nonMembersPageIndex).toBe(1);
-      expect(eventsService.getNonMembers).toHaveBeenCalled();
-    });
-
-    it('should navigate to previous non-member page', () => {
-      component.nonMembersPageIndex = 2;
-      component.nonMembersPage = { items: [], totalCount: 20 };
-
-      component.previousNonMemberPage();
-
-      expect(component.nonMembersPageIndex).toBe(1);
-      expect(eventsService.getNonMembers).toHaveBeenCalled();
-    });
-
-    it('should navigate to next non-team page', () => {
-      component.nonTeamsPageIndex = 0;
-      component.nonTeamsPageSize = 5;
-      component.nonTeamsPage = { items: [], totalCount: 15 };
-
-      component.nextNonTeamPage();
-
-      expect(component.nonTeamsPageIndex).toBe(1);
-      expect(eventsService.getTeamsNotInEvent).toHaveBeenCalled();
-    });
-
-    it('should navigate to previous non-team page', () => {
-      component.nonTeamsPageIndex = 2;
-      component.nonTeamsPage = { items: [], totalCount: 15 };
-
-      component.previousNonTeamPage();
-
-      expect(component.nonTeamsPageIndex).toBe(1);
-      expect(eventsService.getTeamsNotInEvent).toHaveBeenCalled();
-    });
   });
 
   describe('Member Management', () => {
     beforeEach(() => {
       component.event = { id: 1, name: 'Test' } as any;
       component.eventTeam = { id: '1', name: 'Test Team' } as any;
+    });
+
+    it('should open dialog to add member to event', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(null));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.addMemberToEvent();
+
+      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        panelClass: 'search-modal-dialog',
+        data: jasmine.objectContaining({
+          title: 'Add Members to Event',
+          type: 'members'
+        })
+      }));
+    });
+
+    it('should add member when dialog returns selection', () => {
+      const selectedUser = { id: '2', username: 'newuser' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedUser }));
+      dialog.open.and.returnValue(dialogRef);
+      teamsService.addUserToTeam.and.returnValue(of({} as any));
+      spyOn(component, 'getMembersPage');
+
+      component.addMemberToEvent();
+
+      expect(teamsService.addUserToTeam).toHaveBeenCalledWith('1', selectedUser);
+      expect(component.getMembersPage).toHaveBeenCalled();
+    });
+
+    it('should handle error when adding member fails', () => {
+      const selectedUser = { id: '2', username: 'newuser' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedUser }));
+      dialog.open.and.returnValue(dialogRef);
+      teamsService.addUserToTeam.and.returnValue(throwError(() => new Error('Add failed')));
+      spyOn(console, 'error');
+
+      component.addMemberToEvent();
+
+      expect(console.error).toHaveBeenCalledWith('Error adding member:', jasmine.any(Error));
+    });
+
+    it('should not add member when dialog is cancelled', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(null));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.addMemberToEvent();
+
+      expect(teamsService.addUserToTeam).not.toHaveBeenCalled();
+    });
+
+    it('should not open dialog when event team not found', () => {
+      component.eventTeam = null;
+      spyOn(console, 'error');
+
+      component.addMemberToEvent();
+
+      expect(console.error).toHaveBeenCalledWith('Event team not found');
+      expect(dialog.open).not.toHaveBeenCalled();
     });
 
     it('should remove member from team', () => {
@@ -622,20 +450,18 @@ describe('EventDetailsComponent', () => {
 
     it('should update user role', () => {
       const user = { id: '1', username: 'user1', displayName: 'User One' } as any;
-      const roleEvent = { target: { value: 'MANAGER' } };
+      const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
       teamsService.updateUserRole.and.returnValue(of({ id: '1' } as any));
-      spyOn(console, 'log');
 
       component.updateUserRole(user, roleEvent);
 
-      expect(console.log).toHaveBeenCalledWith('Updating user User One role to MANAGER');
       expect(teamsService.updateUserRole).toHaveBeenCalledWith('1', '1', 'MANAGER');
     });
 
     it('should handle update role error', () => {
       component.eventTeam = null;
       const user = { id: '1', username: 'user1' } as any;
-      const roleEvent = { target: { value: 'MANAGER' } };
+      const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
       spyOn(console, 'error');
 
       component.updateUserRole(user, roleEvent);
@@ -649,16 +475,65 @@ describe('EventDetailsComponent', () => {
       component.event = { id: 1, name: 'Test' } as any;
     });
 
-    it('should add team and log', () => {
-      const team = { id: '1', name: 'Team 1' } as any;
-      const event = new MouseEvent('click');
-      spyOn(event, 'stopPropagation');
-      spyOn(console, 'log');
+    it('should open dialog to add team to event', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(null));
+      dialog.open.and.returnValue(dialogRef);
 
-      component.addTeam(event, team);
+      component.addTeamToEvent();
 
-      expect(event.stopPropagation).toHaveBeenCalled();
-      expect(console.log).toHaveBeenCalledWith('Adding team:', team);
+      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        panelClass: 'search-modal-dialog',
+        data: jasmine.objectContaining({
+          title: 'Add Teams to Event',
+          type: 'teams'
+        })
+      }));
+    });
+
+    it('should add team when dialog returns selection', () => {
+      const selectedTeam = { id: '2', name: 'New Team' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedTeam }));
+      dialog.open.and.returnValue(dialogRef);
+      eventsService.addTeamToEvent.and.returnValue(of(undefined));
+      spyOn(component, 'getTeamsPage');
+
+      component.addTeamToEvent();
+
+      expect(eventsService.addTeamToEvent).toHaveBeenCalledWith('1', selectedTeam);
+      expect(component.getTeamsPage).toHaveBeenCalled();
+    });
+
+    it('should handle error when adding team fails', () => {
+      const selectedTeam = { id: '2', name: 'New Team' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedTeam }));
+      dialog.open.and.returnValue(dialogRef);
+      eventsService.addTeamToEvent.and.returnValue(throwError(() => new Error('Add failed')));
+      spyOn(console, 'error');
+
+      component.addTeamToEvent();
+
+      expect(console.error).toHaveBeenCalledWith('Error adding team:', jasmine.any(Error));
+    });
+
+    it('should not add team when dialog is cancelled', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(null));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.addTeamToEvent();
+
+      expect(eventsService.addTeamToEvent).not.toHaveBeenCalled();
+    });
+
+    it('should not open dialog when event not found', () => {
+      component.event = null;
+
+      component.addTeamToEvent();
+
+      expect(dialog.open).not.toHaveBeenCalled();
     });
 
     it('should remove team from event', () => {
@@ -689,7 +564,7 @@ describe('EventDetailsComponent', () => {
       eventsService.getTeamsInEvent.and.returnValue(of({
         items: mockTeams,
         totalCount: 2,
-        pageSize: 2,
+        pageSize: 5,
         pageIndex: 0
       }));
 
@@ -697,7 +572,7 @@ describe('EventDetailsComponent', () => {
 
       expect(eventsService.getTeamsInEvent).toHaveBeenCalledWith('1', {
         page: 0,
-        page_size: 2,
+        page_size: 5,
         term: '',
         total: true,
         omit_event_teams: true
@@ -711,26 +586,6 @@ describe('EventDetailsComponent', () => {
 
       expect(eventsService.getTeamsInEvent).not.toHaveBeenCalled();
     });
-
-    it('should load non-teams page', () => {
-      const mockTeams = [{ id: '3', name: 'Team 3' } as any];
-      eventsService.getTeamsNotInEvent.and.returnValue(of({
-        items: mockTeams,
-        totalCount: 1,
-        pageSize: 5,
-        pageIndex: 0
-      }));
-
-      component.getNonTeamsPage();
-
-      expect(eventsService.getTeamsNotInEvent).toHaveBeenCalledWith('1', {
-        page: 0,
-        page_size: 5,
-        term: '',
-        total: true,
-        omit_event_teams: true
-      });
-    });
   });
 
   describe('Layer Management', () => {
@@ -738,18 +593,73 @@ describe('EventDetailsComponent', () => {
       component.event = { id: 1, name: 'Test' } as any;
     });
 
+    it('should open dialog to add layer to event', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(null));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.addLayerToEvent();
+
+      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        panelClass: 'search-modal-dialog',
+        data: jasmine.objectContaining({
+          title: 'Add Layers to Event',
+          type: 'layers'
+        })
+      }));
+    });
+
+    it('should add layer when dialog returns selection', () => {
+      const selectedLayer = { id: 2, name: 'New Layer' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedLayer }));
+      dialog.open.and.returnValue(dialogRef);
+      eventsService.addLayerToEvent.and.returnValue(of(undefined));
+      spyOn(component, 'loadLayers');
+
+      component.addLayerToEvent();
+
+      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', { id: 2 });
+      expect(component.loadLayers).toHaveBeenCalled();
+    });
+
+    it('should handle error when adding layer fails', () => {
+      const selectedLayer = { id: 2, name: 'New Layer' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedLayer }));
+      dialog.open.and.returnValue(dialogRef);
+      eventsService.addLayerToEvent.and.returnValue(throwError(() => new Error('Add failed')));
+      spyOn(console, 'error');
+
+      component.addLayerToEvent();
+
+      expect(console.error).toHaveBeenCalledWith('Error adding layer:', jasmine.any(Error));
+    });
+
+    it('should not add layer when dialog is cancelled', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(null));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.addLayerToEvent();
+
+      expect(eventsService.addLayerToEvent).not.toHaveBeenCalled();
+    });
+
+    it('should not open dialog when event not found', () => {
+      component.event = null;
+
+      component.addLayerToEvent();
+
+      expect(dialog.open).not.toHaveBeenCalled();
+    });
+
     it('should load layers successfully', () => {
-      const allLayers = [
-        { id: 1, name: 'Layer 1' } as any,
-        { id: 2, name: 'Layer 2' } as any
-      ];
       const eventLayers = [{ id: 1, name: 'Layer 1' } as any];
-      eventsService.getAllLayers.and.returnValue(of(allLayers));
       eventsService.getLayersForEvent.and.returnValue(of(eventLayers));
 
       component.loadLayers();
 
-      expect(eventsService.getAllLayers).toHaveBeenCalled();
       expect(eventsService.getLayersForEvent).toHaveBeenCalledWith('1');
     });
 
@@ -758,7 +668,7 @@ describe('EventDetailsComponent', () => {
 
       component.loadLayers();
 
-      expect(eventsService.getAllLayers).not.toHaveBeenCalled();
+      expect(eventsService.getLayersForEvent).not.toHaveBeenCalled();
     });
 
     it('should add layer to event', () => {
@@ -1032,22 +942,6 @@ describe('EventDetailsComponent', () => {
 
       expect(component.teamsPageIndex).toBe(2);
       expect(component.teamsPageSize).toBe(5);
-    });
-
-    it('should handle layer search change', () => {
-      component.eventLayers = [{ id: 1, name: 'Layer 1' } as any];
-
-      component.onLayerSearchChange('layer');
-
-      expect(component.layerSearch).toBe('layer');
-      expect(component.layersPage).toBe(0);
-    });
-
-    it('should handle layers page change', () => {
-      component.onLayersPageChange({ pageIndex: 1, pageSize: 10, length: 20 });
-
-      expect(component.layersPage).toBe(1);
-      expect(component.layersPerPage).toBe(10);
     });
   });
 

@@ -1,9 +1,7 @@
-// Container
 .container {
     padding: 16px;
 }
 
-// Page Header Styles (from team-details)
 .page-header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
@@ -52,7 +50,6 @@
     }
 }
 
-// Details Section
 .details-section {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -120,7 +117,6 @@
     }
 }
 
-// Action Cards
 .action-card {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
@@ -182,7 +178,6 @@
     }
 }
 
-// Sections Container
 .sections-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -194,7 +189,6 @@
     }
 }
 
-// Layers Container
 .layers-container {
     margin-top: 2rem;
     display: grid;
@@ -336,13 +330,12 @@
     min-width: fit-content;
 }
 
-// Role display and editing styles
 .row-role {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    margin-left: auto; // Push to the right
-    margin-right: 0.5rem; // Add some space before row-actions
+    margin-left: auto;
+    margin-right: 0.5rem;
 
     .user-role-badge {
         display: inline-block;
@@ -353,11 +346,9 @@
         text-transform: uppercase;
         letter-spacing: 0.025em;
 
-        // Default styling
         background-color: #f3f4f6;
         color: #6b7280;
 
-        // Role-specific colors
         &.role-owner {
             background-color: #fef3c7;
             color: #d97706;
@@ -391,6 +382,63 @@
         }
 
         &:hover {
+            border-color: #9ca3af;
+        }
+    }
+
+    .role-select-field {
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
+        font-size: 0.875rem;
+
+        ::ng-deep .mat-form-field-wrapper {
+            padding-bottom: 0;
+            margin: 0;
+        }
+
+        ::ng-deep .mat-form-field-underline {
+            display: none;
+        }
+
+        ::ng-deep .mat-form-field-outline {
+            display: none;
+        }
+
+        ::ng-deep .mat-form-field-flex {
+            padding: 0;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        ::ng-deep .mat-form-field-infix {
+            padding: 0.5rem 0.75rem;
+            border: 0;
+            width: 100%;
+        }
+
+        ::ng-deep .mat-select-value {
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        ::ng-deep .mat-select-trigger {
+            min-height: auto;
+        }
+
+        ::ng-deep .mat-select-arrow-wrapper {
+            transform: translateY(0);
+            padding-right: 0.5rem;
+        }
+
+        &.mat-focused ::ng-deep .mat-form-field-flex {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        &:hover:not(.mat-focused) ::ng-deep .mat-form-field-flex {
             border-color: #9ca3af;
         }
     }
@@ -514,7 +562,6 @@
     cursor: pointer;
 }
 
-// Legacy styles for compatibility
 .muted {
     opacity: 0.7;
 }
@@ -555,7 +602,6 @@
     width: 100%;
 }
 
-// Forms Section - Additional styles
 mat-card {
     margin-bottom: 1.5rem;
     border-radius: 12px;
@@ -623,7 +669,6 @@ mat-card-content {
         }
     }
 
-    // Highlight when moved with buttons
     &.form-moving {
         background-color: #e3f2fd;
         box-shadow: 0 4px 12px rgba(33, 150, 243, 0.25);
@@ -631,7 +676,6 @@ mat-card-content {
     }
 }
 
-// CDK Drag and Drop Styles
 .cdk-drag-preview {
     box-sizing: border-box;
     border-radius: 8px;
@@ -686,7 +730,6 @@ mat-card-content {
     }
 }
 
-// Form Restrictions
 .restrictions-help {
     padding: 16px;
     background-color: #e3f2fd;
@@ -739,8 +782,6 @@ mat-form-field {
     }
 }
 
-
-// Forms
 .forms-list {
     margin: 16px 0;
 }
@@ -783,7 +824,6 @@ mat-form-field {
     gap: 8px;
 }
 
-// Form Restrictions
 .restrictions-help {
     padding: 16px;
     background-color: #e3f2fd;
@@ -834,7 +874,6 @@ mat-form-field {
     }
 }
 
-// Alert
 .alert {
     padding: 16px;
     border-radius: 4px;
@@ -861,7 +900,6 @@ mat-form-field {
     }
 }
 
-// Material Card overrides
 mat-card {
     margin-bottom: 16px;
 }
@@ -883,7 +921,65 @@ mat-card-actions {
     padding: 0;
 }
 
-// Spinner centering
 mat-spinner {
     margin: 20px auto;
+}
+
+.role-option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0;
+
+    .role-name {
+        font-weight: 500;
+        font-size: 0.875rem;
+        color: #111827;
+        white-space: normal;
+        line-height: 1.3;
+    }
+
+    .role-description {
+        font-size: 0.7rem;
+        color: #6b7280;
+        line-height: 1.2;
+        white-space: normal;
+        word-wrap: break-word;
+        font-style: italic;
+    }
+}
+
+::ng-deep .role-select-panel {
+    min-width: 240px !important;
+    max-width: 320px !important;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    transform-origin: top !important;
+    margin-top: 24px !important;
+    margin-left: 6px !important;
+
+    .mat-option {
+        height: auto !important;
+        min-height: 40px !important;
+        padding: 8px 12px !important;
+        line-height: normal !important;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #f3f4f6;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background-color: #f9fafb !important;
+        }
+
+        &.mat-selected {
+            background-color: #eff6ff !important;
+
+            &:hover {
+                background-color: #dbeafe !important;
+            }
+        }
+    }
 }

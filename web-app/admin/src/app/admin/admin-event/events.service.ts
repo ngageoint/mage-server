@@ -29,6 +29,16 @@ export interface PagedResponse<T> {
     totalCount?: number;
 }
 
+const setParams = (options: any): HttpParams => {
+    let params = new HttpParams();
+    for (const key of Object.keys(options)) {
+        if (options[key] !== undefined && options[key] !== null) {
+            params = params.set(key, String(options[key]));
+        }
+    }
+    return params;
+};
+
 @Injectable({
     providedIn: 'root'
 })
@@ -37,27 +47,7 @@ export class EventsService {
     constructor(private http: HttpClient) { }
 
     getEvents(options: SearchOptions): Observable<EventsResponse> {
-        let params = new HttpParams();
-
-        if (options.term !== undefined) {
-            params = params.set('term', options.term);
-        }
-        if (options.page !== undefined) {
-            params = params.set('start', String(options.page));
-        }
-        if (options.page_size !== undefined) {
-            params = params.set('limit', String(options.page_size));
-        }
-        if (options.teamId !== undefined) {
-            params = params.set('teamId', options.teamId);
-        }
-        if (options.excludeTeamId !== undefined) {
-            params = params.set('excludeTeamId', options.excludeTeamId);
-        }
-        if (options.userId !== undefined) {
-            params = params.set('userId', options.userId);
-        }
-
+        let params = setParams(options);
         params = params.set('includePagination', 'true');
 
         return this.http.get<EventsResponse>('/api/events', { params });
@@ -89,21 +79,7 @@ export class EventsService {
         term?: string;
         total?: boolean;
     }): Observable<PagedResponse<User>> {
-        let params = new HttpParams();
-
-        if (options.page !== undefined) {
-            params = params.set('page', String(options.page));
-        }
-        if (options.page_size !== undefined) {
-            params = params.set('page_size', String(options.page_size));
-        }
-        if (options.term !== undefined) {
-            params = params.set('term', options.term);
-        }
-        if (options.total !== undefined) {
-            params = params.set('total', String(options.total));
-        }
-
+        const params = setParams(options);
         return this.http.get<PagedResponse<User>>(`/api/events/${eventId}/members`, { params });
     }
 
@@ -113,21 +89,7 @@ export class EventsService {
         term?: string;
         total?: boolean;
     }): Observable<PagedResponse<User>> {
-        let params = new HttpParams();
-
-        if (options.page !== undefined) {
-            params = params.set('page', String(options.page));
-        }
-        if (options.page_size !== undefined) {
-            params = params.set('page_size', String(options.page_size));
-        }
-        if (options.term !== undefined) {
-            params = params.set('term', options.term);
-        }
-        if (options.total !== undefined) {
-            params = params.set('total', String(options.total));
-        }
-
+        const params = setParams(options);
         return this.http.get<PagedResponse<User>>(`/api/events/${eventId}/nonMembers`, { params });
     }
 
@@ -138,24 +100,7 @@ export class EventsService {
         total?: boolean;
         omit_event_teams?: boolean;
     }): Observable<PagedResponse<Team>> {
-        let params = new HttpParams();
-
-        if (options.page !== undefined) {
-            params = params.set('page', String(options.page));
-        }
-        if (options.page_size !== undefined) {
-            params = params.set('page_size', String(options.page_size));
-        }
-        if (options.term !== undefined) {
-            params = params.set('term', options.term);
-        }
-        if (options.total !== undefined) {
-            params = params.set('total', String(options.total));
-        }
-        if (options.omit_event_teams !== undefined) {
-            params = params.set('omit_event_teams', String(options.omit_event_teams));
-        }
-
+        const params = setParams(options);
         return this.http.get<PagedResponse<Team>>(`/api/events/${eventId}/teams`, { params });
     }
 
@@ -166,24 +111,7 @@ export class EventsService {
         total?: boolean;
         omit_event_teams?: boolean;
     }): Observable<PagedResponse<Team>> {
-        let params = new HttpParams();
-
-        if (options.page !== undefined) {
-            params = params.set('page', String(options.page));
-        }
-        if (options.page_size !== undefined) {
-            params = params.set('page_size', String(options.page_size));
-        }
-        if (options.term !== undefined) {
-            params = params.set('term', options.term);
-        }
-        if (options.total !== undefined) {
-            params = params.set('total', String(options.total));
-        }
-        if (options.omit_event_teams !== undefined) {
-            params = params.set('omit_event_teams', String(options.omit_event_teams));
-        }
-
+        const params = setParams(options);
         return this.http.get<PagedResponse<Team>>(`/api/events/${eventId}/nonTeams`, { params });
     }
 
