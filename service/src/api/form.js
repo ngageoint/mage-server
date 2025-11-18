@@ -32,22 +32,22 @@ function compareDisplayName(a, b) {
 }
 
 function getUserFields(form) {
-  return form.fields.filter(function(field) {
+  return form.fields.filter(function (field) {
     if (field.archived) return false;
 
-    return form.userFields.some(function(memberField) {
+    return form.userFields.some(function (memberField) {
       return memberField === field.name;
     });
   });
 }
 
-Form.prototype.populateUserFields = function(callback) {
+Form.prototype.populateUserFields = function (callback) {
   var event = this._event;
   var form = this._form;
 
   var forms = form ? [form] : event.forms;
   var formsUserFields = [];
-  forms.forEach(function(form) {
+  forms.forEach(function (form) {
     var userFields = getUserFields(form);
     if (userFields.length) {
       formsUserFields.push(userFields);
@@ -67,7 +67,7 @@ Form.prototype.populateUserFields = function(callback) {
   clean-up.
   */
   const teamIds = (event.teamIds || []).map(x => x._id ? x._id : x)
-  Team.getTeams({ teamIds }, function(err, teams) {
+  Team.getTeams({ teamIds }, function (err, teams) {
     if (err) {
       console.error(err);
       return callback(err);
@@ -76,8 +76,8 @@ Form.prototype.populateUserFields = function(callback) {
     var choices = [];
     var users = {};
 
-    teams.forEach(function(team) {
-      team.userIds.forEach(function(user) {
+    teams.forEach(function (team) {
+      team.userIds.forEach(function (user) {
         users[user.displayName] = user.displayName;
       });
     });
@@ -93,12 +93,12 @@ Form.prototype.populateUserFields = function(callback) {
     }
 
     // Update the choices for user field
-    formsUserFields.forEach(function(userFields) {
-      userFields.forEach(function(userField) {
+    formsUserFields.forEach(function (userFields) {
+      userFields.forEach(function (userField) {
         userField.choices = choices.slice();
 
         if (!userField.required && userField.type === 'dropdown') {
-          userField.choices.unshift({id: 0, value: 0, title: ""});
+          userField.choices.unshift({ id: 0, value: 0, title: "" });
         }
       });
     });
@@ -107,15 +107,15 @@ Form.prototype.populateUserFields = function(callback) {
   });
 };
 
-Form.prototype.export = function(formId, callback) {
+Form.prototype.export = function (formId, callback) {
   var iconBasePath = new api.Icon(this._event._id).getBasePath();
   var formBasePath = path.join(iconBasePath, formId.toString());
 
   var archive = archiver('zip');
   archive.directory(formBasePath, 'form/icons');
-  archive.append("", {name: 'icons/', prefix: 'form'});
+  archive.append("", { name: 'icons/', prefix: 'form' });
 
-  var forms = this._event.forms.filter(function(form) {
+  var forms = this._event.forms.filter(function (form) {
     return form._id === formId;
   });
 
@@ -125,7 +125,7 @@ Form.prototype.export = function(formId, callback) {
     return callback(err);
   }
 
-  archive.append(JSON.stringify(forms[0]), {name: "form/form.json"});
+  archive.append(JSON.stringify(forms[0]), { name: "form/form.json" });
   archive.finalize();
 
   callback(null, {
@@ -134,7 +134,7 @@ Form.prototype.export = function(formId, callback) {
   });
 };
 
-Form.prototype.validate = function(file, callback) {
+Form.prototype.validate = function (file, callback) {
   let archiveError = new Error('Form archive file is invalid, please choose a valid file.');
   archiveError.status = 400;
 
@@ -169,7 +169,7 @@ Form.prototype.validate = function(file, callback) {
   callback(null, form);
 };
 
-Form.prototype.importIcons = function(file, form, callback) {
+Form.prototype.importIcons = function (file, form, callback) {
   var event = this._event;
   var zip = new Zip(file.path);
 
@@ -177,11 +177,19 @@ Form.prototype.importIcons = function(file, form, callback) {
   if (iconsEntry) {
     var iconPath = path.join(new api.Icon(event._id).getBasePath(), form._id.toString()) + path.sep;
 
-    zip.extractEntryTo(iconsEntry, iconPath, false, false);
+    // Extract all entries within form/icons/
+    zip.getEntries().forEach(function (entry) {
+      if (entry.entryName.startsWith('form/icons/') && !entry.isDirectory) {
+        var relativePath = entry.entryName.substring('form/icons/'.length);
+        var targetDir = path.join(iconPath, path.dirname(relativePath));
+        var fileName = path.basename(relativePath);
+        zip.extractEntryTo(entry, targetDir, false, true, false, fileName);
+      }
+    });
 
     // for each file in each directory
     var walker = walk.walk(iconPath);
-    walker.on("file", function(filePath, stat, next) {
+    walker.on("file", function (filePath, stat, next) {
       var primary = null;
       var variant = null;
       var regex = new RegExp(iconPath + path.sep + "+(.*)");
@@ -193,11 +201,11 @@ Form.prototype.importIcons = function(file, form, callback) {
         variant = variants.shift();
       }
 
-      new api.Icon(event._id, form._id, primary, variant).add({name: stat.name}, function(err) {
+      new api.Icon(event._id, form._id, primary, variant).add({ name: stat.name }, function (err) {
         next(err);
       });
     });
-    walker.on("end", function() {
+    walker.on("end", function () {
       callback(null);
     });
   } else {
@@ -262,7 +270,7 @@ function cleanForm(form) {
     return form.userFields.includes(field.name);
   });
 
-  form.userFields =  [...userFields.reduce((fields, field) => {
+  form.userFields = [...userFields.reduce((fields, field) => {
     if (form.userFields.includes(field.name)) {
       fields.add(fieldName(field.id));
     }
