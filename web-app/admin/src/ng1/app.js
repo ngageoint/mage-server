@@ -34,6 +34,7 @@ import { EventDetailsComponent } from '../app/admin/admin-event/event-details/ev
 import { FormDetailsComponent } from '../app/admin/admin-event/admin-event-form/form-details/form-details.component';
 import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user-details.component';
 import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
+import { EventDashboardComponent } from '../app/admin/admin-event/dashboard/event-dashboard.component';
 
 require('angular-minicolors');
 require('select2');
@@ -126,6 +127,10 @@ app
   .directive(
     'adminDashboard',
     downgradeComponent({ component: AdminDashboardComponent })
+  )
+  .directive(
+    'adminEvents',
+    downgradeComponent({ component: EventDashboardComponent })
   );
 
 app

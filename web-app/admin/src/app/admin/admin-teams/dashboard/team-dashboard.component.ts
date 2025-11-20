@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -26,15 +26,16 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
   pageIndex = 0;
   pageSizeOptions = [5, 10, 25];
 
+  numChars = 180;
+  toolTipWidth = '1000px';
+
   dataSource = new MatTableDataSource<Team>();
-  displayedColumns = ['name', 'description'];
+  displayedColumns = ['name'];
 
   breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Teams',
     iconClass: 'fa fa-users'
   }]
-
-  actionButtons: CardActionButton[] = [{ label: 'New Team', type: 'btn-secondary', action: () => this.newTeam() }];
 
   private destroy$ = new Subject<void>();
 
@@ -48,6 +49,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    */
   ngOnInit(): void {
     this.fetchTeams();
+    this.updateResponsiveLayout();
   }
 
   /**
@@ -113,7 +115,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * Opens the create team dialog and handles the result.
    * If a new team is created, refetches the teams list to include the new team.
    */
-  newTeam(): void {
+  createTeam(): void {
     const dialogRef = this.modal.open(CreateTeamDialogComponent, {
       data: { team: {} }
     });
@@ -134,5 +136,17 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
     // TODO: convert to this to using a router once upgrade is complete
     const baseUrl = window.location.href.split('#')[0];
     window.location.href = `${baseUrl}#/home/teams/${team.id}`;
+  }
+
+  /** Update layout-related values on resize */
+  @HostListener('window:resize')
+  onResize(): void {
+    this.updateResponsiveLayout();
+  }
+
+  /** Calculates responsive values */
+  private updateResponsiveLayout(): void {
+    this.numChars = Math.ceil(window.innerWidth / 8.5);
+    this.toolTipWidth = `${window.innerWidth * 0.75}px`;
   }
 }

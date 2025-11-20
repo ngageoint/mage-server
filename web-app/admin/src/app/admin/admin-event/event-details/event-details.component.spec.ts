@@ -4,6 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSelectChange } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
+import { StateService } from '@uirouter/angular';
 
 import { EventDetailsComponent } from './event-details.component';
 import { EventsService } from '../../admin-event/events.service';
@@ -15,6 +16,7 @@ describe('EventDetailsComponent', () => {
   let eventsService: jasmine.SpyObj<EventsService>;
   let teamsService: jasmine.SpyObj<TeamsService>;
   let dialog: jasmine.SpyObj<MatDialog>;
+  let stateService: jasmine.SpyObj<StateService>;
 
   beforeEach(async () => {
     const eventsServiceSpy = jasmine.createSpyObj('EventsService', [
@@ -39,6 +41,8 @@ describe('EventDetailsComponent', () => {
     ]);
 
     const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+    const stateServiceSpy = jasmine.createSpyObj('StateService', ['go']);
+    stateServiceSpy.params = { eventId: '1' };
 
     await TestBed.configureTestingModule({
       declarations: [EventDetailsComponent],
@@ -47,8 +51,7 @@ describe('EventDetailsComponent', () => {
         { provide: EventsService, useValue: eventsServiceSpy },
         { provide: TeamsService, useValue: teamsServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
-        { provide: '$stateParams', useValue: { eventId: '1' } },
-        { provide: '$state', useValue: { go: jasmine.createSpy('go') } }
+        { provide: StateService, useValue: stateServiceSpy }
       ]
     })
       .compileComponents();
@@ -56,6 +59,7 @@ describe('EventDetailsComponent', () => {
     eventsService = TestBed.inject(EventsService) as jasmine.SpyObj<EventsService>;
     teamsService = TestBed.inject(TeamsService) as jasmine.SpyObj<TeamsService>;
     dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
+    stateService = TestBed.inject(StateService) as jasmine.SpyObj<StateService>;
 
     eventsService.getEventById.and.returnValue(of({
       id: 1,
@@ -713,11 +717,10 @@ describe('EventDetailsComponent', () => {
 
     it('should navigate to layer', () => {
       const layer = { id: 1, name: 'Layer 1' } as any;
-      const mockState = component['$state'];
 
       component.gotoLayer(layer);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.layer', { layerId: 1 });
+      expect(stateService.go).toHaveBeenCalledWith('admin.layer', { layerId: 1 });
     });
   });
 
@@ -807,55 +810,47 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should navigate to edit event', () => {
-      const mockState = component['$state'];
-
       component.editEvent(component.event as any);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.eventEdit', { eventId: 1 });
+      expect(stateService.go).toHaveBeenCalledWith('admin.eventEdit', { eventId: 1 });
     });
 
     it('should navigate to edit access', () => {
-      const mockState = component['$state'];
-
       component.editAccess(component.event as any);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.eventAccess', { eventId: 1 });
+      expect(stateService.go).toHaveBeenCalledWith('admin.eventAccess', { eventId: 1 });
     });
 
     it('should navigate to edit form', () => {
       const form = { id: 1, name: 'Form 1' };
-      const mockState = component['$state'];
 
       component.editForm(component.event as any, form);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.formEdit', { eventId: 1, formId: 1 });
+      expect(stateService.go).toHaveBeenCalledWith('admin.formEdit', { eventId: 1, formId: 1 });
     });
 
     it('should navigate to member (user)', () => {
       const user = { id: '1', username: 'user1' } as any;
-      const mockState = component['$state'];
 
       component.gotoMember(user);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.user', { userId: '1' });
+      expect(stateService.go).toHaveBeenCalledWith('admin.user', { userId: '1' });
     });
 
     it('should navigate to member (team)', () => {
       const team = { id: '1', name: 'Team 1' } as any;
-      const mockState = component['$state'];
 
       component.gotoMember(team);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.team', { teamId: '1' });
+      expect(stateService.go).toHaveBeenCalledWith('admin.team', { teamId: '1' });
     });
 
     it('should navigate to team', () => {
       const team = { id: '1', name: 'Team 1' } as any;
-      const mockState = component['$state'];
 
       component.gotoTeam(team);
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.team', { teamId: '1' });
+      expect(stateService.go).toHaveBeenCalledWith('admin.team', { teamId: '1' });
     });
 
     it('should complete event', () => {

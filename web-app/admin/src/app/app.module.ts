@@ -253,7 +253,8 @@ import { ObservationModule } from './observation/observation.module';
     MatSlideToggleModule,
     MatStepperModule,
     InputMaskModule.forRoot(),
-    AdminDashboardModule
+    AdminDashboardModule,
+    AdminEventsModule
   ],
   providers: [
     mapServiceProvider,

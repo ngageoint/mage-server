@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, Inject, ViewChild } from '@angular/core';
-import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+import { trigger, transition, style, animate, query } from '@angular/animations';
+import { StateService } from '@uirouter/angular';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSelectChange } from '@angular/material/select';
@@ -36,22 +37,7 @@ interface PagedResult<T> {
 @Component({
   selector: 'mage-event-details',
   templateUrl: './event-details.component.html',
-  styleUrls: ['./event-details.component.scss'],
-  animations: [
-    trigger('listAnimation', [
-      transition('* => *', [
-        query(':enter', [
-          style({ opacity: 0, transform: 'translateY({{enterTransform}}px)' }),
-          animate('300ms cubic-bezier(0.4, 0, 0.2, 1)',
-            style({ opacity: 1, transform: 'translateY(0)' }))
-        ], { optional: true }),
-        query(':leave', [
-          animate('300ms cubic-bezier(0.4, 0, 0.2, 1)',
-            style({ opacity: 0, transform: 'translateY({{leaveTransform}}px)' }))
-        ], { optional: true })
-      ])
-    ])
-  ]
+  styleUrls: ['./event-details.component.scss']
 })
 /**
  * Manages event details including members, teams, layers, and forms.
@@ -123,10 +109,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   layers: Layer[] = [];
 
   constructor(
-    @Inject('$stateParams') private $stateParams: any,
-    @Inject('$state') private $state: any,
     @Inject(EventsService) private eventsService: EventsService,
     private teamsService: TeamsService,
+    private stateService: StateService,
     private dialog: MatDialog
   ) { }
 
@@ -178,7 +163,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const eventId = this.$stateParams.eventId;
+    const eventId = this.stateService.params.eventId;
 
     forkJoin({
       event: this.eventsService.getEventById(eventId),
@@ -447,7 +432,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Navigates to layer details page.
    */
   gotoLayer(layer: Layer): void {
-    this.$state.go('admin.layer', { layerId: layer.id });
+    this.stateService.go('admin.layer', { layerId: layer.id });
   }
 
   /**
@@ -529,9 +514,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result?.id) {
-        this.$state.go('admin.formEdit', { eventId: this.event?.id, formId: result.id });
+        this.stateService.go('admin.formEdit', { eventId: this.event?.id, formId: result.id });
       } else if (result) {
-        this.$state.go('admin.fieldsCreate', { eventId: this.event?.id, form: result });
+        this.stateService.go('admin.fieldsCreate', { eventId: this.event?.id, form: result });
       }
     });
   }
@@ -793,21 +778,21 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Navigates to event edit page.
    */
   editEvent(mageEvent: ExtendedEvent): void {
-    this.$state.go('admin.eventEdit', { eventId: mageEvent.id });
+    this.stateService.go('admin.eventEdit', { eventId: mageEvent.id });
   }
 
   /**
    * Navigates to event access page.
    */
   editAccess(mageEvent: ExtendedEvent): void {
-    this.$state.go('admin.eventAccess', { eventId: mageEvent.id });
+    this.stateService.go('admin.eventAccess', { eventId: mageEvent.id });
   }
 
   /**
    * Navigates to form edit page.
    */
   editForm(mageEvent: ExtendedEvent, form: any): void {
-    this.$state.go('admin.formEdit', { eventId: mageEvent.id, formId: form.id });
+    this.stateService.go('admin.formEdit', { eventId: mageEvent.id, formId: form.id });
   }
 
   /**
@@ -815,9 +800,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    */
   gotoMember(member: MageUser | Team): void {
     if ('username' in member) {
-      this.$state.go('admin.user', { userId: member.id });
+      this.stateService.go('admin.user', { userId: member.id });
     } else {
-      this.$state.go('admin.team', { teamId: member.id });
+      this.stateService.go('admin.team', { teamId: member.id });
     }
   }
 
@@ -887,7 +872,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.$state.go('admin.events');
+        this.stateService.go('admin.events');
       }
     });
   }
@@ -950,7 +935,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Navigates to team details page.
    */
   gotoTeam(team: Team): void {
-    this.$state.go('admin.team', { teamId: team.id });
+    this.stateService.go('admin.team', { teamId: team.id });
   }
 
   /**

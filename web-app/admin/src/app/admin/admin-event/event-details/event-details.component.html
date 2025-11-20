@@ -322,8 +322,7 @@
                         <mat-card-title>Forms</mat-card-title>
                     </mat-card-header>
                     <mat-card-content>
-                        <div class="forms-list" cdkDropList (cdkDropListDropped)="onFormDrop($event)"
-                            [@listAnimation]="formsAnimationState" #formsList>
+                        <div class="forms-list" cdkDropList (cdkDropListDropped)="onFormDrop($event)" #formsList>
                             <div class="form-item" cdkDrag [cdkDragBoundary]="formsList"
                                 [class.form-moving]="animatingFormId === form.id"
                                 *ngFor="let form of filteredForms; trackBy: trackByFormId"
