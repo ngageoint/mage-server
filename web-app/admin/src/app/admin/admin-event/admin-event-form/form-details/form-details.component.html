@@ -250,67 +250,79 @@
                                         map by selecting primary
                                         and variant fields for symbology.</p>
 
-                                    <!-- Map Symbology Preview -->
-                                    <div class="symbology-preview" *ngIf="form.primaryField">
-                                        <h4 class="subsection-title">Configured Symbology</h4>
-                                        <div class="symbology-list">
-                                            <div class="symbology-item">
-                                                <div class="symbology-icon">
-                                                    <i class="fa fa-map-marker" [style.color]="form.color"></i>
-                                                </div>
-                                                <div class="symbology-info">
-                                                    <span class="symbology-label">Default</span>
-                                                    <span class="symbology-detail">Primary: {{
-                                                        getFieldTitle(form.primaryField) }}</span>
-                                                    <span class="symbology-detail" *ngIf="form.variantField">Variant: {{
-                                                        getFieldTitle(form.variantField) }}</span>
+                                    <!-- Map Configuration Row: Symbology Preview + Field Dropdowns -->
+                                    <div
+                                        style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
+                                        <!-- Map Symbology Preview -->
+                                        <div class="symbology-preview" *ngIf="form.primaryField"
+                                            style="flex: 0 0 auto; min-width: 250px;">
+                                            <h4 class="subsection-title">Configured Symbology</h4>
+                                            <div class="symbology-list">
+                                                <div class="symbology-item">
+                                                    <div class="symbology-icon">
+                                                        <i class="fa fa-map-marker" [style.color]="form.color"></i>
+                                                    </div>
+                                                    <div class="symbology-info">
+                                                        <span class="symbology-label">Default</span>
+                                                        <span class="symbology-detail">Primary: {{
+                                                            getFieldTitle(form.primaryField) }}</span>
+                                                        <span class="symbology-detail"
+                                                            *ngIf="form.variantField">Variant: {{
+                                                            getFieldTitle(form.variantField) }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Primary Field Selection -->
-                                    <div class="config-section">
-                                        <h4 class="subsection-title">Primary Field</h4>
+                                        <!-- Field Selection Controls -->
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
+                                            <!-- Primary Field Selection -->
+                                            <div class="config-section">
+                                                <h4 class="subsection-title">Primary Field</h4>
 
-                                        <div class="config-inline-item">
-                                            <div class="config-inline-label">
-                                                <strong>Primary Field</strong>
-                                                <p class="field-hint">Select a dropdown field to use for primary map
-                                                    symbology.</p>
+                                                <div class="config-inline-item">
+                                                    <div class="config-inline-label">
+                                                        <strong>Primary Field</strong>
+                                                        <p class="field-hint">Select a dropdown field to use for primary
+                                                            map
+                                                            symbology.</p>
+                                                    </div>
+                                                    <div class="config-inline-control">
+                                                        <select class="form-input" [(ngModel)]="form.primaryField"
+                                                            (ngModelChange)="onMapFieldChange()" name="primaryField">
+                                                            <option [value]="null">No Primary Field</option>
+                                                            <option *ngFor="let field of getDropdownFields()"
+                                                                [value]="field.name">
+                                                                {{ field.title }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="config-inline-control">
-                                                <select class="form-input" [(ngModel)]="form.primaryField"
-                                                    (ngModelChange)="onMapFieldChange()" name="primaryField">
-                                                    <option [value]="null">No Primary Field</option>
-                                                    <option *ngFor="let field of getDropdownFields()"
-                                                        [value]="field.name">
-                                                        {{ field.title }}
-                                                    </option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <!-- Variant Field Selection -->
-                                    <div class="config-section" *ngIf="form.primaryField">
-                                        <h4 class="subsection-title">Variant Field</h4>
+                                            <!-- Variant Field Selection -->
+                                            <div class="config-section" *ngIf="form.primaryField">
+                                                <h4 class="subsection-title">Variant Field</h4>
 
-                                        <div class="config-inline-item">
-                                            <div class="config-inline-label">
-                                                <strong>Variant Field</strong>
-                                                <p class="field-hint">Select a second dropdown field for additional
-                                                    symbology variation.</p>
-                                            </div>
-                                            <div class="config-inline-control">
-                                                <select class="form-input" [(ngModel)]="form.variantField"
-                                                    (ngModelChange)="onMapFieldChange()" name="variantField">
-                                                    <option [value]="null">No Variant Field</option>
-                                                    <option *ngFor="let field of getDropdownFields(form.primaryField)"
-                                                        [value]="field.name">
-                                                        {{ field.title }}
-                                                    </option>
-                                                </select>
+                                                <div class="config-inline-item">
+                                                    <div class="config-inline-label">
+                                                        <strong>Variant Field</strong>
+                                                        <p class="field-hint">Select a second dropdown field for
+                                                            additional
+                                                            symbology variation.</p>
+                                                    </div>
+                                                    <div class="config-inline-control">
+                                                        <select class="form-input" [(ngModel)]="form.variantField"
+                                                            (ngModelChange)="onMapFieldChange()" name="variantField">
+                                                            <option [value]="null">No Variant Field</option>
+                                                            <option
+                                                                *ngFor="let field of getDropdownFields(form.primaryField)"
+                                                                [value]="field.name">
+                                                                {{ field.title }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -318,14 +330,7 @@
                                     <!-- Primary Field Choices Symbology -->
                                     <div class="primary-choices-section"
                                         *ngIf="form.primaryField && getPrimaryFieldChoices().length > 0">
-                                        <div class="subsection-header-collapsible" (click)="toggleSymbologyDetails()">
-                                            <h4 class="subsection-title">Symbology by Primary Field Value</h4>
-                                            <button class="icon-button-subtle" type="button">
-                                                <i class="fa"
-                                                    [ngClass]="showSymbologyDetails ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                                            </button>
-                                        </div>
-                                        <div class="choices-list" *ngIf="showSymbologyDetails">
+                                        <div class="choices-list">
                                             <div class="choice-symbology"
                                                 *ngFor="let choice of getPrimaryFieldChoices()">
                                                 <div class="choice-header">

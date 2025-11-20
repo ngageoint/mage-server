@@ -1,7 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { StateService } from '@uirouter/angular';
 import { EventsService } from '../../events.service';
 import { LocalStorageService, UserService } from '../../../../upgrade/ajs-upgraded-providers';
 import { Event as MageEvent } from 'src/app/filter/filter.types';
@@ -53,10 +54,10 @@ export class FormDetailsComponent implements OnInit {
   breadcrumbs: AdminBreadcrumb[] = [];
 
   // Collapsible section state
-  showFieldsSection = true;
-  showMapSection = true;
-  showFeedSection = true;
-  showSymbologyDetails = false;
+  showFieldsSection = false;
+  showMapSection = false;
+  showFeedSection = false;
+  showSymbologyDetails = true;
 
   // Section-specific dirty tracking and saving state
   fieldsChanged = false;
@@ -100,15 +101,14 @@ export class FormDetailsComponent implements OnInit {
     private snackBar: MatSnackBar,
     @Inject(LocalStorageService) private localStorageService: any,
     @Inject(UserService) private userService: any,
-    @Inject('$stateParams') private $stateParams: any,
-    @Inject('$state') private $state: any
+    private stateService: StateService
   ) { }
 
   ngOnInit(): void {
     this.token = this.localStorageService.getToken();
 
-    const eventId = this.$stateParams.eventId;
-    const formId = this.$stateParams.formId;
+    const eventId = this.stateService.params.eventId;
+    const formId = this.stateService.params.formId;
 
     // Initialize new field with default values
     this.newField = {
@@ -402,19 +402,19 @@ export class FormDetailsComponent implements OnInit {
 
   navigateToFields(): void {
     if (this.event?.id && this.form.id) {
-      this.$state.go('admin.formFieldsEdit', { eventId: this.event.id, formId: this.form.id });
+      this.stateService.go('admin.formFieldsEdit', { eventId: this.event.id, formId: this.form.id });
     }
   }
 
   navigateToMap(): void {
     if (this.event?.id && this.form.id) {
-      this.$state.go('admin.formMapEdit', { eventId: this.event.id, formId: this.form.id });
+      this.stateService.go('admin.formMapEdit', { eventId: this.event.id, formId: this.form.id });
     }
   }
 
   navigateToFeed(): void {
     if (this.event?.id && this.form.id) {
-      this.$state.go('admin.formFeedEdit', { eventId: this.event.id, formId: this.form.id });
+      this.stateService.go('admin.formFeedEdit', { eventId: this.event.id, formId: this.form.id });
     }
   }
 
@@ -706,7 +706,7 @@ export class FormDetailsComponent implements OnInit {
         this.form,
         Number(this.form.id),
         myself,
-        this.$stateParams.eventId,
+        this.stateService.params.eventId,
         this.localStorageService.getToken()
       );
     });
