@@ -1,29 +1,46 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AdminEventFormPreviewComponent } from './admin-event-form-preview/admin-event-form-preview.component';
-import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview/admin-event-form-preview-dialog.component';
+import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview/form-preview-dialog/admin-event-form-preview-dialog.component';
 import { ObservationModule } from '../../../observation/observation.module';
+import { FormDetailsComponent } from './form-details/form-details.component';
+import { AddFieldDialogComponent } from './form-details/add-field-dialog/add-field-dialog.component';
+import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
 
 @NgModule({
     declarations: [
         AdminEventFormPreviewComponent,
-        AdminEventFormPreviewDialogComponent
+        AdminEventFormPreviewDialogComponent,
+        FormDetailsComponent,
+        AddFieldDialogComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        DragDropModule,
         MatDialogModule,
         MatButtonModule,
-        ObservationModule
+        MatSnackBarModule,
+        MatTabsModule,
+        MatCardModule,
+        MatIconModule,
+        ObservationModule,
+        AdminBreadcrumbModule
     ],
     exports: [
         AdminEventFormPreviewComponent,
-        AdminEventFormPreviewDialogComponent
+        AdminEventFormPreviewDialogComponent,
+        FormDetailsComponent
     ]
 })
 export class AdminEventFormModule { }

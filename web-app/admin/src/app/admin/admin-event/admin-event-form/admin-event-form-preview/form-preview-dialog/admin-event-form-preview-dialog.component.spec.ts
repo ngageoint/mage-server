@@ -3,7 +3,7 @@ import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview-dialog.component';
 
-import { AdminEventFormPreviewComponent } from './admin-event-form-preview.component';
+import { AdminEventFormPreviewComponent } from '../admin-event-form-preview.component';
 
 describe('AdminEventFormPreviewComponent', () => {
   let component: AdminEventFormPreviewDialogComponent
@@ -23,13 +23,13 @@ describe('AdminEventFormPreviewComponent', () => {
             name: 'field1',
             title: 'Field 1',
             type: 'textfield'
-          },{
+          }, {
             id: 3,
             archived: false,
             name: 'field3',
             title: 'Field 3',
             type: 'textfield'
-          },{
+          }, {
             id: 2,
             archived: false,
             name: 'field2',

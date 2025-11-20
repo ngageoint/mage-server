@@ -31,6 +31,7 @@ import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-e
 import { TeamDashboardComponent } from '../app/admin/admin-teams/dashboard/team-dashboard.component';
 import { TeamDetailsComponent } from '../app/admin/admin-teams/team-details/team-details.component';
 import { EventDetailsComponent } from '../app/admin/admin-event/event-details/event-details.component';
+import { FormDetailsComponent } from '../app/admin/admin-event/admin-event-form/form-details/form-details.component';
 import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user-details.component';
 import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
 
@@ -109,6 +110,10 @@ app
   .directive(
     'adminEventDetails',
     downgradeComponent({ component: EventDetailsComponent })
+  )
+  .directive(
+    'adminEventFormDetails',
+    downgradeComponent({ component: FormDetailsComponent })
   )
   .directive(
     'adminUsers',
@@ -296,7 +301,7 @@ function config(
 
   $stateProvider.state('admin.formEdit', {
     url: '/events/:eventId/forms/:formId',
-    component: 'adminEventFormEdit',
+    component: 'adminEventFormDetails',
     resolve: resolveAdmin()
   });
 

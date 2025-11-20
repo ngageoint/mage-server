@@ -1,0 +1,439 @@
+// Shared styles for admin event components
+// Import this file in component stylesheets that need these common patterns
+
+// ============================================================================
+// SPACING UTILITIES
+// ============================================================================
+
+.container {
+    padding: 16px;
+}
+
+.top-gap {
+    margin-top: 15px;
+}
+
+.top-gap-s {
+    margin-top: 8px;
+}
+
+.top-gap-l {
+    margin-top: 30px;
+}
+
+.bottom-gap-l {
+    margin-bottom: 30px;
+}
+
+// ============================================================================
+// PAGE LAYOUT
+// ============================================================================
+
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .page-title {
+        flex: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+    }
+}
+
+.header-title-section {
+    flex: 1;
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+    }
+}
+
+// ============================================================================
+// CARDS
+// ============================================================================
+
+.details-card,
+.card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.action-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+
+    &.success {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+
+        .action-card-title {
+            color: #15803d;
+        }
+
+        .action-card-description {
+            color: #166534;
+        }
+    }
+
+    .action-card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e40af;
+        margin: 0 0 1rem 0;
+    }
+
+    .action-card-description {
+        font-size: 0.875rem;
+        color: #1e3a8a;
+        margin: 0 0 1.5rem 0;
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    .action-button {
+        align-self: flex-end;
+        margin-top: auto;
+    }
+}
+
+.danger-zone-card {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+
+    .danger-zone-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #dc2626;
+        margin: 0 0 1rem 0;
+    }
+
+    .danger-zone-description {
+        font-size: 0.875rem;
+        color: #7f1d1d;
+        margin: 0 0 1.5rem 0;
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    .action-button.btn-danger {
+        align-self: flex-end;
+        margin-top: auto;
+    }
+}
+
+// ============================================================================
+// FORMS
+// ============================================================================
+
+.details-form,
+.form-create {
+    .form-field {
+        margin-bottom: 1.5rem;
+
+        .field-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: none;
+            font-weight: 500;
+            color: #111827;
+
+            input[type="checkbox"] {
+                width: 1.125rem;
+                height: 1.125rem;
+                cursor: pointer;
+                accent-color: #3b82f6;
+            }
+
+            span {
+                cursor: pointer;
+            }
+        }
+
+        .field-content {
+            .field-value {
+                font-size: 1rem;
+                color: #111827;
+                line-height: 1.5;
+            }
+
+            .form-input {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                border: 1px solid #d1d5db;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                background-color: #f9fafb;
+                transition: all 0.2s ease;
+
+                &:focus {
+                    outline: none;
+                    border-color: #3b82f6;
+                    background-color: white;
+                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                }
+
+                &::placeholder {
+                    color: #9ca3af;
+                }
+            }
+
+            .color-input {
+                width: 100px;
+                height: 50px;
+                padding: 4px;
+                cursor: pointer;
+            }
+
+            textarea.form-input {
+                resize: vertical;
+                min-height: 100px;
+                font-family: inherit;
+            }
+
+            .field-error {
+                display: block;
+                color: #dc2626;
+                font-size: 0.875rem;
+                margin-top: 0.5rem;
+            }
+        }
+
+        .field-hint {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0.5rem 0 0 0;
+            line-height: 1.5;
+        }
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 2rem;
+    }
+}
+
+// ============================================================================
+// BUTTONS
+// ============================================================================
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: #f3f4f6;
+    color: #374151;
+
+    &:hover:not(:disabled) {
+        background-color: #e5e7eb;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    &.btn-primary {
+        background-color: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+
+        &:hover:not(:disabled) {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+    }
+
+    &.btn-danger {
+        background-color: #dc2626;
+        color: white;
+        border-color: #dc2626;
+
+        &:hover:not(:disabled) {
+            background-color: #b91c1c;
+            border-color: #b91c1c;
+        }
+    }
+
+    &.btn-success {
+        background-color: #16a34a;
+        color: white;
+        border-color: #16a34a;
+
+        &:hover:not(:disabled) {
+            background-color: #15803d;
+            border-color: #15803d;
+        }
+    }
+
+    i {
+        font-size: 1rem;
+    }
+}
+
+.icon-button {
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.375rem 0.625rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6b7280;
+
+    &:hover {
+        background-color: #f3f4f6;
+        border-color: #9ca3af;
+        color: #374151;
+    }
+
+    &.delete-button {
+        color: #dc2626;
+
+        &:hover {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+        }
+    }
+}
+
+// ============================================================================
+// SECTION CARDS
+// ============================================================================
+
+.section-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        border-color: #3b82f6;
+    }
+}
+
+.section-card-content {
+    padding: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.section-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.75rem 0;
+}
+
+.section-card-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+}
+
+// ============================================================================
+// EMPTY STATE
+// ============================================================================
+
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin: 1rem 0;
+
+    i {
+        font-size: 2.5rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    p {
+        margin: 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6b7280;
+
+        &:first-of-type {
+            font-weight: 500;
+            color: #374151;
+        }
+    }
+}
+
+// ============================================================================
+// DIVIDERS
+// ============================================================================
+
+hr {
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
