@@ -9,12 +9,27 @@
     <div
       class="integrated-navbar d-flex align-items-center justify-content-between"
     >
-      <mage-card-navbar
-        [isSearchable]="true"
-        [searchPlaceholder]="'Search users...'"
-        (searchTermChanged)="onSearchTermChanged($event)"
-        (searchCleared)="onSearchCleared()"
-      ></mage-card-navbar>
+      <div class="filters d-flex align-items-center">
+        <mage-card-navbar
+          [isSearchable]="true"
+          [searchPlaceholder]="'Search users...'"
+          (searchTermChanged)="onSearchTermChanged($event)"
+          (searchCleared)="onSearchCleared()"
+        ></mage-card-navbar>
+
+        <mat-form-field appearance="outline" class="ml-3 status-filter">
+          <mat-label>Status</mat-label>
+          <mat-select
+            [(value)]="userStatusFilter"
+            (selectionChange)="onStatusFilterChange($event.value)"
+          >
+            <mat-option value="all">All</mat-option>
+            <mat-option value="active">Active</mat-option>
+            <mat-option value="inactive">Inactive</mat-option>
+            <mat-option value="disabled">Disabled</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
       <div class="button-group">
         <button

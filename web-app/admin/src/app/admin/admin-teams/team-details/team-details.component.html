@@ -31,7 +31,7 @@
                             <div class="form-field">
                                 <label class="field-label">Description:</label>
                                 <div class="field-content">
-                                    <span *ngIf="!editingDetails" class="field-value">{{team.description}}</span>
+                                    <span *ngIf="!editingDetails" class="field-value break-word">{{team.description}}</span>
                                     <textarea *ngIf="editingDetails" class="form-input" rows="3"
                                         [(ngModel)]="editForm.description" placeholder="Team description"></textarea>
                                 </div>

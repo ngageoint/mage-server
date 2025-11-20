@@ -59,7 +59,7 @@ describe('TeamDashboardComponent', () => {
     expect(component.teamSearch).toBe('');
     expect(component.pageSize).toBe(10);
     expect(component.pageIndex).toBe(0);
-    expect(component.displayedColumns).toEqual(['name', 'description']);
+    expect(component.displayedColumns).toEqual(['name']);
   });
 
   it('should fetch teams on init', () => {
@@ -129,7 +129,7 @@ describe('TeamDashboardComponent', () => {
     dialogRefSpy.afterClosed.and.returnValue(of(null));
     mockDialog.open.and.returnValue(dialogRefSpy);
 
-    component.newTeam();
+    component.createTeam();
 
     expect(mockDialog.open).toHaveBeenCalledWith(CreateTeamDialogComponent, {
       data: { team: {} }
@@ -137,12 +137,12 @@ describe('TeamDashboardComponent', () => {
   });
 
   it('should refresh teams after creating new team', () => {
-    const newTeam = { id: '4', name: 'New Team', description: 'New team description' };
+    const createTeam = { id: '4', name: 'New Team', description: 'New team description' };
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
-    dialogRefSpy.afterClosed.and.returnValue(of(newTeam));
+    dialogRefSpy.afterClosed.and.returnValue(of(createTeam));
     mockDialog.open.and.returnValue(dialogRefSpy);
 
-    component.newTeam();
+    component.createTeam();
 
     expect(mockTeamsService.getTeams).toHaveBeenCalled();
   });
@@ -152,7 +152,7 @@ describe('TeamDashboardComponent', () => {
     dialogRefSpy.afterClosed.and.returnValue(of(null));
     mockDialog.open.and.returnValue(dialogRefSpy);
 
-    component.newTeam();
+    component.createTeam();
 
     expect(mockTeamsService.getTeams).not.toHaveBeenCalled();
   });
@@ -183,19 +183,8 @@ describe('TeamDashboardComponent', () => {
 
     const compiled = fixture.nativeElement;
     const headers = compiled.querySelectorAll('th.mat-header-cell');
-    expect(headers.length).toBe(2);
+    expect(headers.length).toBe(1);
     expect(headers[0].textContent).toContain('Name');
-    expect(headers[1].textContent).toContain('Description');
-  });
-
-  it('should add title attribute for description tooltips', () => {
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement;
-    const descriptionCells = compiled.querySelectorAll('.description-cell');
-
-    expect(descriptionCells[0].getAttribute('title')).toBe('First team description');
-    expect(descriptionCells[1].getAttribute('title')).toBe('Second team description with much longer text that might wrap');
   });
 
   it('should cleanup subscriptions on destroy', () => {
