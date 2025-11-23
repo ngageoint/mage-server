@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, Inject, ViewChild } from '@angular/core';
-import { trigger, transition, style, animate, query } from '@angular/animations';
 import { StateService } from '@uirouter/angular';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';

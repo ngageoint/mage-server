@@ -3,7 +3,6 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dial
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EventsService } from '../events.service';
 import { Event } from 'src/app/filter/filter.types';
-import { FieldDialogComponent, FieldDialogData } from '../admin-event-form/form-details/field-dialog/field-dialog.component';
 import { Field } from '../admin-event-form/form-details/observation-feed-helper';
 
 /**
