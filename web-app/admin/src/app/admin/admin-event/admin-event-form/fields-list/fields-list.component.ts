@@ -29,7 +29,6 @@ export class FieldsListComponent {
     @Input() fields: Field[] = [];
     @Input() fieldTypes: FieldType[] = [];
     @Input() attachmentAllowedTypes: AttachmentType[] = [];
-    @Input() enableDragDrop: boolean = false;
     @Input() showDetailedView: boolean = false;
     @Output() fieldsChange = new EventEmitter<Field[]>();
 
@@ -85,20 +84,24 @@ export class FieldsListComponent {
     }
 
     /**
-     * Removes a field from the list
+     * Removes a field from the list (permanently deletes)
      */
     removeField(field: Field): void {
-        if (this.enableDragDrop) {
-            // For edit mode, mark as archived instead of removing
-            field.archived = true;
-        } else {
-            // For create mode, actually remove from array
-            const index = this.fields.findIndex(f => f.id === field.id);
-            if (index !== -1) {
-                this.fields.splice(index, 1);
-            }
+        if (!this.canRemoveField()) {
+            return;
+        }
+        const index = this.fields.findIndex(f => f.id === field.id);
+        if (index !== -1) {
+            this.fields.splice(index, 1);
         }
         this.fieldsChange.emit(this.fields);
+    }
+
+    /**
+     * Checks if a field can be removed (must have at least one active field)
+     */
+    canRemoveField(): boolean {
+        return this.showDetailedView && this.getActiveFields().length > 1;
     }
 
     /**

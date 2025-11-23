@@ -1,6 +1,5 @@
-<!-- Detailed View (for edit form) -->
 <div *ngIf="showDetailedView" class="fields-list-detailed">
-    <mage-draggable-list [items]="getActiveFields()" [enableDragDrop]="enableDragDrop"
+    <mage-draggable-list [items]="getActiveFields()" [enableDragDrop]="true"
         [emptyMessage]="'No fields have been added yet.'" [emptyIcon]="'fa-file-text fa-3x'"
         [trackByFunction]="trackByFieldId" (itemsChange)="onItemsReordered($event)">
 
@@ -58,7 +57,9 @@
                 matTooltipPosition="above">
                 <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)" matTooltip="Delete field"
+            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)"
+                [disabled]="!canRemoveField()"
+                [matTooltip]="canRemoveField() ? 'Delete field' : 'Cannot delete last field'"
                 matTooltipPosition="above">
                 <mat-icon>delete</mat-icon>
             </button>
@@ -66,22 +67,19 @@
     </mage-draggable-list>
 
     <div class="section-save-actions">
-        <button class="action-button btn-primary" (click)="addField()">
-            <i class="fa fa-plus"></i> Add Field
+        <button type="button" class="action-button btn-primary" (click)="addField()">
+            <i class="fa fa-plus"></i>
+            Add Field
         </button>
     </div>
 </div>
 
-<!-- Compact View (for create form) -->
 <div *ngIf="!showDetailedView" class="fields-list-compact">
-    <mage-draggable-list [items]="getActiveFields()" [enableDragDrop]="false" [emptyMessage]="'No fields added yet'"
+    <mage-draggable-list [items]="getActiveFields()" [enableDragDrop]="true" [emptyMessage]="'No fields added yet'"
         [emptyIcon]="'fa-inbox'" [trackByFunction]="trackByFieldId" (itemsChange)="onItemsReordered($event)">
 
         <ng-template #itemTemplate let-field>
             <div class="field-content-compact">
-                <div class="field-icon">
-                    <i class="fa fa-bars"></i>
-                </div>
                 <div class="field-info">
                     <div class="field-title">{{ field.title }}</div>
                     <div class="field-type">{{ getFieldTypeLabel(field.type) }}
@@ -92,9 +90,15 @@
         </ng-template>
 
         <ng-template #itemActionsTemplate let-field>
-            <button type="button" class="icon-button delete-button"
-                (click)="$event.stopPropagation(); removeField(field)" title="Remove field">
-                <i class="fa fa-trash"></i>
+            <button mat-icon-button (click)="$event.stopPropagation(); editField(field)" matTooltip="Edit field"
+                matTooltipPosition="above">
+                <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)"
+                [disabled]="!canRemoveField()"
+                [matTooltip]="canRemoveField() ? 'Delete field' : 'Cannot delete last field'"
+                matTooltipPosition="above">
+                <mat-icon>delete</mat-icon>
             </button>
         </ng-template>
     </mage-draggable-list>
