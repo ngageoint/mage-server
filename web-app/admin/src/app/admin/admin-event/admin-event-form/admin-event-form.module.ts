@@ -8,12 +8,15 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { CoreModule } from 'admin/src/app/core/core.module';
 
 import { AdminEventFormPreviewComponent } from './admin-event-form-preview/admin-event-form-preview.component';
 import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview/form-preview-dialog/admin-event-form-preview-dialog.component';
 import { ObservationModule } from '../../../observation/observation.module';
 import { FormDetailsComponent } from './form-details/form-details.component';
-import { AddFieldDialogComponent } from './form-details/add-field-dialog/add-field-dialog.component';
+import { FieldDialogComponent } from './form-details/field-dialog/field-dialog.component';
+import { FieldsListComponent } from './fields-list/fields-list.component';
 import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
 
 @NgModule({
@@ -21,10 +24,12 @@ import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.m
         AdminEventFormPreviewComponent,
         AdminEventFormPreviewDialogComponent,
         FormDetailsComponent,
-        AddFieldDialogComponent
+        FieldDialogComponent,
+        FieldsListComponent
     ],
     imports: [
         CommonModule,
+        CoreModule,
         FormsModule,
         ReactiveFormsModule,
         DragDropModule,
@@ -34,13 +39,15 @@ import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.m
         MatTabsModule,
         MatCardModule,
         MatIconModule,
+        MatTooltipModule,
         ObservationModule,
         AdminBreadcrumbModule
     ],
     exports: [
         AdminEventFormPreviewComponent,
         AdminEventFormPreviewDialogComponent,
-        FormDetailsComponent
+        FormDetailsComponent,
+        FieldsListComponent
     ]
 })
 export class AdminEventFormModule { }

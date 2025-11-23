@@ -31,6 +31,7 @@ export interface Field {
     value?: any;
     min?: number;
     max?: number;
+    allowedAttachmentTypes?: string[];
 }
 
 export class ObservationFeedHelper {

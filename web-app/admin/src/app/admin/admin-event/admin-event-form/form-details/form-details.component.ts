@@ -8,7 +8,7 @@ import { LocalStorageService, UserService } from '../../../../upgrade/ajs-upgrad
 import { Event as MageEvent } from 'src/app/filter/filter.types';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
 import { ObservationFeedHelper, Observation, Field } from './observation-feed-helper';
-import { AddFieldDialogComponent, AddFieldDialogData, AddFieldResult } from './add-field-dialog/add-field-dialog.component';
+import { FieldDialogComponent, FieldDialogData } from './field-dialog/field-dialog.component';
 
 interface FormData {
   id?: number;
@@ -67,17 +67,6 @@ export class FormDetailsComponent implements OnInit {
   savingMap = false;
   savingFeeds = false;
 
-  // Field editing state
-  editingFieldId: number | null = null;
-  editingField: Field | null = null;
-
-  // Original state for comparison
-  private originalFields: any[] = [];
-  private originalPrimaryField: string | undefined;
-  private originalVariantField: string | undefined;
-  private originalPrimaryFeedField: string | undefined;
-  private originalSecondaryFeedField: string | undefined;
-
   // Fields tab
   newField: Field = {};
   observations: Observation[] = [];
@@ -90,9 +79,18 @@ export class FormDetailsComponent implements OnInit {
     { name: 'checkbox', title: 'Checkbox' },
     { name: 'radio', title: 'Radio Buttons' },
     { name: 'dropdown', title: 'Select' },
+    { name: 'multiselectdropdown', title: 'Multiple Select', hidden: true },
     { name: 'geometry', title: 'Location' },
     { name: 'attachment', title: 'Attachment' },
+    { name: 'userDropdown', title: 'User Select' },
+    { name: 'multiSelectUserDropdown', title: 'User Multiple Select', hidden: true },
     { name: 'hidden', title: 'Hidden' }
+  ];
+
+  attachmentAllowedTypes = [
+    { name: 'image', title: 'Image' },
+    { name: 'video', title: 'Video' },
+    { name: 'audio', title: 'Audio' }
   ];
 
   constructor(
@@ -160,9 +158,6 @@ export class FormDetailsComponent implements OnInit {
             };
           }
 
-          // Store original state for change tracking
-          this.storeOriginalState();
-
           // Generate sample observations for feed preview
           if (this.form.id) {
             this.generateSampleObservations();
@@ -174,14 +169,6 @@ export class FormDetailsComponent implements OnInit {
         }
       });
     }
-  }
-
-  private storeOriginalState(): void {
-    this.originalFields = this.form.fields ? JSON.parse(JSON.stringify(this.form.fields)) : [];
-    this.originalPrimaryField = this.form.primaryField;
-    this.originalVariantField = this.form.variantField;
-    this.originalPrimaryFeedField = this.form.primaryFeedField;
-    this.originalSecondaryFeedField = this.form.secondaryFeedField;
   }
 
   onFormChange(): void {
@@ -217,7 +204,6 @@ export class FormDetailsComponent implements OnInit {
         this.generalFormSubmitted = false;
         // Update form properties individually to preserve ngModel bindings
         Object.assign(this.form, savedForm);
-        this.storeOriginalState();
         this.snackBar.open('Form saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -258,7 +244,6 @@ export class FormDetailsComponent implements OnInit {
         if (savedForm.variantField === undefined) this.form.variantField = currentVariantField;
         if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
         if (savedForm.secondaryFeedField === undefined) this.form.secondaryFeedField = currentSecondaryFeedField;
-        this.originalFields = this.form.fields ? JSON.parse(JSON.stringify(this.form.fields)) : [];
         this.snackBar.open('Fields saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -297,8 +282,6 @@ export class FormDetailsComponent implements OnInit {
         if (savedForm.fields === undefined) this.form.fields = currentFields;
         if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
         if (savedForm.secondaryFeedField === undefined) this.form.secondaryFeedField = currentSecondaryFeedField;
-        this.originalPrimaryField = this.form.primaryField;
-        this.originalVariantField = this.form.variantField;
         this.snackBar.open('Map configuration saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -321,28 +304,10 @@ export class FormDetailsComponent implements OnInit {
     }
 
     this.savingFeeds = true;
-
-    // Store current field and map values
-    const currentFields = this.form.fields;
-    const currentPrimaryField = this.form.primaryField;
-    const currentVariantField = this.form.variantField;
-    const currentPrimaryFeedField = this.form.primaryFeedField;
-    const currentSecondaryFeedField = this.form.secondaryFeedField;
-
     this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
-      next: (savedForm) => {
+      next: () => {
         this.savingFeeds = false;
         this.feedsChanged = false;
-        // Update form properties individually to preserve ngModel bindings
-        Object.assign(this.form, savedForm);
-        // Restore fields and map configuration if they weren't in the saved response
-        if (savedForm.fields === undefined) this.form.fields = currentFields;
-        if (savedForm.primaryField === undefined) this.form.primaryField = currentPrimaryField;
-        if (savedForm.variantField === undefined) this.form.variantField = currentVariantField;
-        if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
-        if (savedForm.secondaryFeedField === undefined) this.form.secondaryFeedField = currentSecondaryFeedField;
-        this.originalPrimaryFeedField = this.form.primaryFeedField;
-        this.originalSecondaryFeedField = this.form.secondaryFeedField;
         this.snackBar.open('Feed configuration saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -394,8 +359,6 @@ export class FormDetailsComponent implements OnInit {
   }
 
   showError(error: ErrorDialogData): void {
-    // Simple error display using snackbar for now
-    // You can create a proper error dialog component if needed
     const errorMessage = error.title + ': ' + error.message;
     this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
   }
@@ -439,6 +402,12 @@ export class FormDetailsComponent implements OnInit {
   }
 
   // Fields Tab Methods
+  onFieldsChange(fields: Field[]): void {
+    this.form.fields = fields;
+    this.fieldsChanged = true;
+    this.saveFieldsToApi();
+  }
+
   getActiveFields(): Field[] {
     if (!this.form.fields) return [];
     return this.form.fields.filter(field => !field.archived).sort((a, b) => (a.id || 0) - (b.id || 0));
@@ -449,23 +418,37 @@ export class FormDetailsComponent implements OnInit {
     return fieldType ? fieldType.title : type;
   }
 
+  showAddOptions(field: Field): boolean {
+    return field.type === 'radio' || field.type === 'dropdown' || field.type === 'multiselectdropdown';
+  }
+
+  isMemberField(field: Field): boolean {
+    return this.form.userFields?.includes(field.name || '') || false;
+  }
+
+  isUserDropdown(field: Field): boolean {
+    return field.type === 'userDropdown';
+  }
+
   openAddFieldDialog(): void {
-    const dialogRef = this.dialog.open(AddFieldDialogComponent, {
+    const dialogRef = this.dialog.open(FieldDialogComponent, {
       width: '600px',
       panelClass: 'add-field-dialog',
       data: {
-        fieldTypes: this.fieldTypes
-      } as AddFieldDialogData
+        fieldTypes: this.fieldTypes,
+        attachmentAllowedTypes: this.attachmentAllowedTypes,
+        editMode: false
+      } as FieldDialogData
     });
 
-    dialogRef.afterClosed().subscribe((result: AddFieldResult | undefined) => {
+    dialogRef.afterClosed().subscribe((result: Field | undefined) => {
       if (result) {
         this.addFieldFromDialog(result);
       }
     });
   }
 
-  addFieldFromDialog(fieldData: AddFieldResult): void {
+  addFieldFromDialog(fieldData: Field): void {
     if (!this.form.fields) {
       this.form.fields = [];
     }
@@ -475,19 +458,33 @@ export class FormDetailsComponent implements OnInit {
     const newId = maxId + 1;
 
     const field: Field = {
+      ...fieldData,
       id: newId,
       name: `field${newId}`,
-      title: fieldData.title,
-      type: fieldData.type,
-      required: fieldData.required,
-      archived: false,
-      choices: []
+      archived: false
     };
+
+    // Ensure choices array exists for field types that need it
+    if (!field.choices && this.showAddOptions(field)) {
+      field.choices = [];
+    }
 
     fields.push(field);
 
     // Auto-save after adding field
     this.saveFieldsToApi();
+  }
+
+  getAttachmentTypesDisplay(field: Field): string {
+    if (!field.allowedAttachmentTypes || field.allowedAttachmentTypes.length === 0) {
+      return '';
+    }
+    return field.allowedAttachmentTypes
+      .map(typeName => {
+        const type = this.attachmentAllowedTypes.find(t => t.name === typeName);
+        return type ? type.title : typeName;
+      })
+      .join(', ');
   }
 
   removeField(field: Field): void {
@@ -560,46 +557,30 @@ export class FormDetailsComponent implements OnInit {
     return field.id;
   }
 
-  toggleEditField(field: Field): void {
-    if (this.editingFieldId === field.id && field.id !== undefined) {
-      // Already editing this field, close it
-      this.editingFieldId = null;
-      this.editingField = null;
-    } else {
-      // Start editing this field
-      this.editingFieldId = field.id !== undefined ? field.id : null;
-      // Create a copy of the field for editing
-      this.editingField = JSON.parse(JSON.stringify(field));
-    }
-  }
+  openEditFieldDialog(field: Field): void {
+    const dialogRef = this.dialog.open(FieldDialogComponent, {
+      width: '600px',
+      panelClass: 'add-field-dialog',
+      data: {
+        fieldTypes: this.fieldTypes,
+        attachmentAllowedTypes: this.attachmentAllowedTypes,
+        editMode: true,
+        existingField: field,
+        isMemberField: this.isMemberField(field)
+      } as FieldDialogData
+    });
 
-  saveEditedField(): void {
-    if (!this.editingField || this.editingFieldId === null && this.editingFieldId !== 0 || !this.form.fields) {
-      return;
-    }
-
-    // Find the field in the form and update it
-    const fieldIndex = this.form.fields.findIndex(f => f.id === this.editingFieldId);
-    if (fieldIndex !== -1) {
-      // Update the field with edited values
-      this.form.fields[fieldIndex] = { ...this.editingField };
-
-      // Close the editing accordion
-      this.editingFieldId = null;
-      this.editingField = null;
-
-      // Auto-save after editing field
-      this.saveFieldsToApi();
-    }
-  }
-
-  cancelEditField(): void {
-    this.editingFieldId = null;
-    this.editingField = null;
-  }
-
-  isEditingField(field: Field): boolean {
-    return this.editingFieldId !== null && this.editingFieldId === field.id;
+    dialogRef.afterClosed().subscribe((editedField: Field | undefined) => {
+      if (editedField && this.form.fields) {
+        // Find and update the field
+        const fieldIndex = this.form.fields.findIndex(f => f.id === field.id);
+        if (fieldIndex !== -1) {
+          this.form.fields[fieldIndex] = { ...editedField };
+          // Auto-save after editing field
+          this.saveFieldsToApi();
+        }
+      }
+    });
   }
 
   // Map Tab Methods

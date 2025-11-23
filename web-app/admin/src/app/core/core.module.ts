@@ -7,14 +7,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { Component } from '@angular/core';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { CardNavbarComponent } from './card-navbar/card-navbar.component';
 import { SearchModalComponent } from './search-modal/search-modal.component';
+import { DraggableListComponent } from './draggable-list/draggable-list.component';
 
 @NgModule({
     declarations: [
         CardNavbarComponent,
-        SearchModalComponent
+        SearchModalComponent,
+        DraggableListComponent
     ],
     imports: [
         CommonModule,
@@ -24,12 +28,14 @@ import { SearchModalComponent } from './search-modal/search-modal.component';
         MatButtonModule,
         MatTableModule,
         MatProgressSpinnerModule,
-        MatPaginatorModule
+        MatPaginatorModule,
+        DragDropModule
     ],
     providers: [],
     exports: [
         CardNavbarComponent,
-        SearchModalComponent
+        SearchModalComponent,
+        DraggableListComponent
     ]
 })
 export class CoreModule { }

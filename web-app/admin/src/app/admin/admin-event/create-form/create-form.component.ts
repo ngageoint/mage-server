@@ -1,8 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EventsService } from '../events.service';
 import { Event } from 'src/app/filter/filter.types';
+import { FieldDialogComponent, FieldDialogData } from '../admin-event-form/form-details/field-dialog/field-dialog.component';
+import { Field } from '../admin-event-form/form-details/observation-feed-helper';
 
 /**
  * Dialog component for creating new forms for an event.
@@ -17,12 +19,39 @@ export class CreateFormDialogComponent {
     formGroup: FormGroup;
     errorMessage: string = '';
     selectedFile: File | null = null;
+    currentStep: number = 1;
+    createdFields: Field[] = [];
+    saving: boolean = false;
+
+    fieldTypes = [
+        { name: 'textfield', title: 'Text' },
+        { name: 'textarea', title: 'Text Area' },
+        { name: 'numberfield', title: 'Number' },
+        { name: 'email', title: 'Email' },
+        { name: 'date', title: 'Date' },
+        { name: 'checkbox', title: 'Checkbox' },
+        { name: 'radio', title: 'Radio Buttons' },
+        { name: 'dropdown', title: 'Select' },
+        { name: 'multiselectdropdown', title: 'Multiple Select', hidden: true },
+        { name: 'geometry', title: 'Location' },
+        { name: 'attachment', title: 'Attachment' },
+        { name: 'userDropdown', title: 'User Select' },
+        { name: 'multiSelectUserDropdown', title: 'User Multiple Select', hidden: true },
+        { name: 'hidden', title: 'Hidden' }
+    ];
+
+    attachmentAllowedTypes = [
+        { name: 'image', title: 'Image' },
+        { name: 'video', title: 'Video' },
+        { name: 'audio', title: 'Audio' }
+    ];
 
     constructor(
         public dialogRef: MatDialogRef<CreateFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { event: Event },
         private fb: FormBuilder,
-        private eventsService: EventsService
+        private eventsService: EventsService,
+        private dialog: MatDialog
     ) {
         // Generate random color for the form
         const randomColor = '#' + ('000000' + Math.floor(Math.random() * 0xFFFFFF).toString(16)).slice(-6);
@@ -45,19 +74,50 @@ export class CreateFormDialogComponent {
     }
 
     /**
+     * Proceeds to the next step or saves the form
+     */
+    next(): void {
+        if (this.currentStep === 1) {
+            if (this.formGroup.invalid) {
+                this.errorMessage = 'Please fill in all required fields correctly.';
+                Object.keys(this.formGroup.controls).forEach(key => {
+                    this.formGroup.get(key)?.markAsTouched();
+                });
+                return;
+            }
+            this.errorMessage = '';
+            this.currentStep = 2;
+        }
+    }
+
+    /**
+     * Goes back to the previous step
+     */
+    back(): void {
+        if (this.currentStep === 2) {
+            this.currentStep = 1;
+        }
+    }
+
+    /**
+     * Handles changes to the fields list from the fields-list component
+     */
+    onFieldsChange(fields: Field[]): void {
+        this.createdFields = fields;
+    }
+
+    /**
      * Handles form submission for creating a new form.
-     * Validates the form, creates the form via the events service, and closes the dialog on success.
+     * Validates the form, creates the form via the events service with fields, and closes the dialog on success.
      */
     save(): void {
-        if (this.formGroup.invalid) {
-            this.errorMessage = 'Please fill in all required fields correctly.';
-            Object.keys(this.formGroup.controls).forEach(key => {
-                this.formGroup.get(key)?.markAsTouched();
-            });
+        if (this.createdFields.length === 0) {
+            this.errorMessage = 'Please add at least one field to the form.';
             return;
         }
 
         this.errorMessage = '';
+        this.saving = true;
 
         // If a file is selected, upload it with the form data
         if (this.selectedFile) {
@@ -69,15 +129,37 @@ export class CreateFormDialogComponent {
 
             this.eventsService.createForm(String(this.data.event.id), formData).subscribe({
                 next: (newForm) => {
+                    this.saving = false;
                     this.dialogRef.close(newForm);
                 },
                 error: (err) => {
+                    this.saving = false;
                     this.errorMessage = err.error || 'Failed to create form. Please try again.';
                 }
             });
         } else {
-            // If no file, just close with the form data (to be handled by the parent component)
-            this.dialogRef.close(this.formGroup.value);
+            // Create form with fields
+            const formPayload = {
+                name: this.formGroup.value.name,
+                description: this.formGroup.value.description || '',
+                color: this.formGroup.value.color,
+                archived: false,
+                fields: this.createdFields,
+                userFields: this.createdFields
+                    .filter(f => f.type === 'userDropdown' || f.type === 'multiSelectUserDropdown')
+                    .map(f => f.name)
+            };
+
+            this.eventsService.createForm(String(this.data.event.id), formPayload).subscribe({
+                next: (newForm) => {
+                    this.saving = false;
+                    this.dialogRef.close(newForm);
+                },
+                error: (err) => {
+                    this.saving = false;
+                    this.errorMessage = err.error?.message || err.error || 'Failed to create form. Please try again.';
+                }
+            });
         }
     }
 

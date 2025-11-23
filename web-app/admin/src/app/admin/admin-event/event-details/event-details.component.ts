@@ -5,7 +5,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSelectChange } from '@angular/material/select';
 import { MatTableDataSource } from '@angular/material/table';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
 import { NgForm } from '@angular/forms';
 import { Event as MageEvent, Layer } from 'src/app/filter/filter.types';
@@ -70,7 +69,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   formCreateOpen = false;
   previewForm: any = null;
   restrictionsError: any = null;
-  animatingFormId: number | null = null;
   formsAnimationState = 0;
 
   loadingMembers = true;
@@ -514,106 +512,21 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result?.id) {
+        // Form was successfully created with fields, navigate to edit it
         this.stateService.go('admin.formEdit', { eventId: this.event?.id, formId: result.id });
-      } else if (result) {
-        this.stateService.go('admin.fieldsCreate', { eventId: this.event?.id, form: result });
       }
     });
   }
 
   /**
-   * Checks if a form can be moved up in the filtered list.
+   * Handles reordered forms from the draggable list component.
    */
-  canMoveFormUp(form: any): boolean {
-    if (!this.event?.forms) return false;
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-    return filteredIndex > 0;
-  }
-
-  /**
-   * Checks if a form can be moved down in the filtered list.
-   */
-  canMoveFormDown(form: any): boolean {
-    if (!this.event?.forms) return false;
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-    return filteredIndex >= 0 && filteredIndex < filtered.length - 1;
-  }
-
-  /**
-   * Moves form up in display order with animation.
-   */
-  moveFormUp($event: MouseEvent, form: any): void {
-    $event.stopPropagation();
+  onFormsReordered(reorderedForms: any[]): void {
     if (!this.event?.forms) return;
 
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-
-    if (filteredIndex > 0) {
-      const previousForm = filtered[filteredIndex - 1];
-
-      const forms = [...this.event.forms];
-      const currentIndex = forms.indexOf(form);
-      const targetIndex = forms.indexOf(previousForm);
-
-      this.animatingFormId = form.id;
-
-      [forms[targetIndex], forms[currentIndex]] = [forms[currentIndex], forms[targetIndex]];
-      this.updateFormsOrder(forms);
-
-      setTimeout(() => {
-        this.animatingFormId = null;
-      }, 400);
-    }
-  }
-
-  /**
-   * Moves form down in display order with animation.
-   */
-  moveFormDown($event: MouseEvent, form: any): void {
-    $event.stopPropagation();
-    if (!this.event?.forms) return;
-
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-
-    if (filteredIndex >= 0 && filteredIndex < filtered.length - 1) {
-      const nextForm = filtered[filteredIndex + 1];
-
-      const forms = [...this.event.forms];
-      const currentIndex = forms.indexOf(form);
-      const targetIndex = forms.indexOf(nextForm);
-
-      this.animatingFormId = form.id;
-
-      [forms[currentIndex], forms[targetIndex]] = [forms[targetIndex], forms[currentIndex]];
-      this.updateFormsOrder(forms);
-
-      setTimeout(() => {
-        this.animatingFormId = null;
-      }, 400);
-    }
-  }
-
-  /**
-   * Handles drag-and-drop form reordering.
-   */
-  onFormDrop(event: CdkDragDrop<any[]>): void {
-    if (!this.event?.forms) return;
-
-    const filtered = this.filteredForms;
-
-    const movedForm = filtered[event.previousIndex];
-    const targetForm = filtered[event.currentIndex];
-
-    const forms = [...this.event.forms];
-    const currentIndex = forms.indexOf(movedForm);
-    const newIndex = forms.indexOf(targetForm);
-
-    moveItemInArray(forms, currentIndex, newIndex);
-    this.updateFormsOrder(forms);
+    // Update the full forms array to match the new order
+    this.event.forms = reorderedForms;
+    this.updateFormsOrder(reorderedForms);
   }
 
   /**

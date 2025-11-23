@@ -1,0 +1,209 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Field' : 'Add New Field' }}</h2>
+
+<mat-dialog-content>
+    <div class="dialog-form">
+        <div class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Field Type</strong>
+            </div>
+            <div class="config-inline-control">
+                <select class="form-input" [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode">
+                    <option *ngFor="let type of data.fieldTypes" [value]="type.name">
+                        {{ type.title }}
+                    </option>
+                </select>
+                <p class="field-hint" *ngIf="data.isMemberField">The 'User Select' type is a dynamic list of all users
+                    that are part of the event. As such you cannot add/remove choices, users will be automatically
+                    populated.</p>
+            </div>
+        </div>
+
+        <div class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Field Title *</strong>
+            </div>
+            <div class="config-inline-control">
+                <input type="text" class="form-input" [(ngModel)]="field.title" placeholder="Enter field title"
+                    name="fieldTitle" required>
+            </div>
+        </div>
+
+        <!-- Attachment Field Configuration -->
+        <div *ngIf="field.type === 'attachment'">
+            <div class="config-inline-item">
+                <div class="config-inline-label">
+                    <strong>Minimum Attachments</strong>
+                </div>
+                <div class="config-inline-control">
+                    <input type="number" class="form-input" [(ngModel)]="field.min" placeholder="No Attachment Minimum"
+                        name="fieldMin">
+                </div>
+            </div>
+
+            <div class="config-inline-item">
+                <div class="config-inline-label">
+                    <strong>Maximum Attachments</strong>
+                </div>
+                <div class="config-inline-control">
+                    <input type="number" class="form-input" [(ngModel)]="field.max" placeholder="No Attachment Maximum"
+                        name="fieldMax">
+                </div>
+            </div>
+
+            <div class="checkbox-section">
+                <label class="checkbox-label">
+                    <input type="checkbox"
+                        [checked]="field.allowedAttachmentTypes && field.allowedAttachmentTypes.length > 0"
+                        (change)="toggleAttachmentTypeRestriction()">
+                    <span>Restrict Attachment Types</span>
+                </label>
+            </div>
+
+            <div *ngIf="field.allowedAttachmentTypes && field.allowedAttachmentTypes.length > 0"
+                class="config-inline-item">
+                <div class="config-inline-label">
+                    <strong>Allowed Attachment Types</strong>
+                    <p class="field-hint">Restrict the type of attachments users can upload.</p>
+                </div>
+                <div class="config-inline-control">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label" *ngFor="let type of data.attachmentAllowedTypes">
+                            <input type="checkbox" [checked]="isAttachmentTypeSelected(type.name)"
+                                (change)="toggleAttachmentType(type.name, $any($event.target).checked)">
+                            <span>{{ type.title }}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Number Field Configuration -->
+        <div *ngIf="field.type === 'numberfield'">
+            <div class="config-inline-item">
+                <div class="config-inline-label">
+                    <strong>Minimum Value</strong>
+                </div>
+                <div class="config-inline-control">
+                    <input type="number" class="form-input" [(ngModel)]="field.min" placeholder="No Minimum"
+                        name="fieldMin">
+                </div>
+            </div>
+
+            <div class="config-inline-item">
+                <div class="config-inline-label">
+                    <strong>Maximum Value</strong>
+                </div>
+                <div class="config-inline-control">
+                    <input type="number" class="form-input" [(ngModel)]="field.max" placeholder="No Maximum"
+                        name="fieldMax">
+                </div>
+            </div>
+
+            <div class="config-inline-item">
+                <div class="config-inline-label">
+                    <strong>Default Value</strong>
+                </div>
+                <div class="config-inline-control">
+                    <input type="number" class="form-input" [(ngModel)]="field.value" [min]="field.min"
+                        [max]="field.max" placeholder="No Default" name="fieldValue">
+                </div>
+            </div>
+        </div>
+
+        <!-- Default Value for Text Fields -->
+        <div *ngIf="field.type === 'textfield' || field.type === 'email' || field.type === 'hidden'"
+            class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Default Value</strong>
+            </div>
+            <div class="config-inline-control">
+                <input type="text" class="form-input" [(ngModel)]="field.value" placeholder="No Default"
+                    name="fieldValue">
+            </div>
+        </div>
+
+        <!-- Default Value for Text Area -->
+        <div *ngIf="field.type === 'textarea'" class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Default Value</strong>
+            </div>
+            <div class="config-inline-control">
+                <textarea class="form-input" rows="3" [(ngModel)]="field.value" placeholder="No Default"
+                    name="fieldValue"></textarea>
+            </div>
+        </div>
+
+        <!-- Default Value for Checkbox -->
+        <div *ngIf="field.type === 'checkbox'" class="checkbox-section">
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="field.value" name="fieldValue">
+                <span>Default Value</span>
+            </label>
+        </div>
+
+        <!-- Field Options for Select/Radio Fields -->
+        <div *ngIf="showAddOptions() && !data.isMemberField" class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Field Options</strong>
+            </div>
+            <div class="config-inline-control">
+                <div class="options-list" *ngIf="field.choices && field.choices.length > 0">
+                    <div class="option-item" *ngFor="let option of field.choices; let i = index">
+                        <button type="button" class="icon-button" *ngIf="i > 0" (click)="moveOptionUp(option)"
+                            title="Move up">
+                            <i class="fa fa-arrow-up"></i>
+                        </button>
+                        <button type="button" class="icon-button" *ngIf="i < field.choices.length - 1"
+                            (click)="moveOptionDown(option)" title="Move down">
+                            <i class="fa fa-arrow-down"></i>
+                        </button>
+                        <span class="option-title">{{ option.title }}</span>
+                        <button type="button" class="icon-button delete-button" (click)="deleteOption(option)"
+                            title="Delete option">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="add-option-row">
+                    <input type="text" class="form-input" [(ngModel)]="newOptionTitle" placeholder="New option title"
+                        name="newOptionTitle" (keyup.enter)="addOption(newOptionTitle)">
+                    <button type="button" class="action-button btn-primary" (click)="addOption(newOptionTitle)"
+                        [disabled]="!newOptionTitle">
+                        <i class="fa fa-plus"></i> Add Option
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Default Value for Dropdown (single select) -->
+        <div *ngIf="field.type === 'dropdown' && !data.isMemberField" class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Default Value</strong>
+            </div>
+            <div class="config-inline-control">
+                <select class="form-input" [(ngModel)]="field.value" name="fieldDefaultValue">
+                    <option [value]="null">No Default</option>
+                    <option *ngFor="let choice of field.choices" [value]="choice.title">
+                        {{ choice.title }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="checkbox-section"
+            *ngIf="field.name !== 'timestamp' && field.name !== 'geometry' && field.type !== 'attachment'">
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="field.required" name="fieldRequired">
+                <span>Required Field</span>
+            </label>
+            <p class="field-hint">Users must enter a value for this field.</p>
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-button color="primary" (click)="onSave()" [disabled]="!field.title" cdkFocusInitial>
+        {{ isEditMode ? 'Save Changes' : 'Add Field' }}
+    </button>
+</mat-dialog-actions>

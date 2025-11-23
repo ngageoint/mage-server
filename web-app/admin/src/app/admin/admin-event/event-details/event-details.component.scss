@@ -709,6 +709,17 @@ mat-card-content {
 .form-name {
     font-weight: 500;
     line-height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .form-icon {
+        color: #999;
+        font-size: 1.25rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        flex-shrink: 0;
+    }
 }
 
 .form-actions {
@@ -982,4 +993,13 @@ mat-spinner {
             }
         }
     }
+}
+
+.section-save-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
 }

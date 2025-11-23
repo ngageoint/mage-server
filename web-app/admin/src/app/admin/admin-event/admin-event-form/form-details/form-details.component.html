@@ -123,108 +123,11 @@
                                     <p class="section-description">Create custom form fields that include your
                                         organization's unique information.</p>
 
-                                    <!-- Existing Fields List -->
-                                    <div class="fields-list" *ngIf="form.fields && form.fields.length > 0" cdkDropList
-                                        (cdkDropListDropped)="onFieldDrop($event)">
-                                        <div class="field-item" cdkDrag
-                                            *ngFor="let field of getActiveFields(); trackBy: trackByFieldId; let i = index">
-                                            <div class="field-header" (click)="toggleEditField(field)"
-                                                style="cursor: pointer;">
-                                                <mat-icon cdkDragHandle class="drag-handle"
-                                                    style="cursor: grab; margin-right: 0.5rem;"
-                                                    (click)="$event.stopPropagation()">drag_indicator</mat-icon>
-                                                <h4 class="field-title">{{ field.title || 'No title set' }}</h4>
-                                                <div class="field-actions" (click)="$event.stopPropagation()">
-                                                    <button class="icon-button" *ngIf="i > 0"
-                                                        (click)="moveFieldUp(field)" title="Move up">
-                                                        <i class="fa fa-arrow-up"></i>
-                                                    </button>
-                                                    <button class="icon-button" *ngIf="i < getActiveFields().length - 1"
-                                                        (click)="moveFieldDown(field)" title="Move down">
-                                                        <i class="fa fa-arrow-down"></i>
-                                                    </button>
-                                                    <button class="icon-button delete-button"
-                                                        (click)="removeField(field)" title="Delete field">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <!-- Non-editing view -->
-                                            <div class="field-details" *ngIf="!isEditingField(field)">
-                                                <div class="field-row">
-                                                    <span class="field-label">Type:</span>
-                                                    <span class="field-value">{{ getFieldTypeLabel(field.type) }}</span>
-                                                </div>
-                                                <div class="field-row" *ngIf="field.required">
-                                                    <span class="field-label">Required:</span>
-                                                    <span class="field-value">Yes</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Editing form -->
-                                            <div class="field-edit-form" *ngIf="isEditingField(field) && editingField">
-                                                <div class="config-inline-item">
-                                                    <div class="config-inline-label">
-                                                        <strong>Field Type</strong>
-                                                    </div>
-                                                    <div class="config-inline-control">
-                                                        <select class="form-input" [(ngModel)]="editingField.type"
-                                                            name="editFieldType">
-                                                            <option *ngFor="let type of fieldTypes" [value]="type.name">
-                                                                {{ type.title }}
-                                                            </option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="config-inline-item">
-                                                    <div class="config-inline-label">
-                                                        <strong>Field Title *</strong>
-                                                    </div>
-                                                    <div class="config-inline-control">
-                                                        <input type="text" class="form-input"
-                                                            [(ngModel)]="editingField.title"
-                                                            placeholder="Enter field title" name="editFieldTitle"
-                                                            required>
-                                                    </div>
-                                                </div>
-
-                                                <div class="checkbox-section">
-                                                    <label class="checkbox-label">
-                                                        <input type="checkbox" [(ngModel)]="editingField.required"
-                                                            name="editFieldRequired">
-                                                        <span>Required Field</span>
-                                                    </label>
-                                                    <p class="field-hint">Users must enter a value for this field.</p>
-                                                </div>
-
-                                                <div class="field-edit-actions">
-                                                    <button class="action-button btn-primary"
-                                                        (click)="saveEditedField()" [disabled]="!editingField.title">
-                                                        <i class="fa fa-save"></i> Save
-                                                    </button>
-                                                    <button class="action-button" (click)="cancelEditField()">
-                                                        <i class="fa fa-times"></i> Cancel
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="empty-state" *ngIf="!form.fields || form.fields.length === 0">
-                                        <i class="fa fa-file-text fa-3x"></i>
-                                        <p>No fields have been added to this form yet.</p>
-                                        <p class="section-description">Click the button below to add your first field.
-                                        </p>
-                                    </div>
-
-                                    <!-- Add Field Button -->
-                                    <div class="add-field-button-container">
-                                        <button class="action-button btn-primary" (click)="openAddFieldDialog()">
-                                            <i class="fa fa-plus"></i> Add Field
-                                        </button>
-                                    </div>
+                                    <!-- Use the fields-list component -->
+                                    <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
+                                        [attachmentAllowedTypes]="attachmentAllowedTypes" [enableDragDrop]="true"
+                                        [showDetailedView]="true" (fieldsChange)="onFieldsChange($event)">
+                                    </mage-fields-list>
                                 </div>
                             </div>
                         </div>
@@ -250,8 +153,46 @@
                                         map by selecting primary
                                         and variant fields for symbology.</p>
 
+                                    <!-- No Dropdown Fields Available Message -->
+                                    <div *ngIf="getDropdownFields().length === 0"
+                                        style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
+                                        <!-- Default Map Icon Preview -->
+                                        <div class="symbology-preview" style="flex: 0 0 auto; min-width: 250px;">
+                                            <h4 class="subsection-title">Default Symbology</h4>
+                                            <div class="symbology-list">
+                                                <div class="symbology-item">
+                                                    <div class="symbology-icon">
+                                                        <i class="fa fa-map-marker" [style.color]="form.color"></i>
+                                                    </div>
+                                                    <div class="symbology-info">
+                                                        <span class="symbology-label">Default</span>
+                                                        <span class="symbology-detail">No symbology configured</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Message -->
+                                        <div
+                                            style="flex: 1; padding: 2rem; background-color: #f5f5f5; border-radius: 8px;">
+                                            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                                <i class="fa fa-info-circle"
+                                                    style="font-size: 1.5rem; color: #999; margin-top: 0.25rem;"></i>
+                                                <div>
+                                                    <p
+                                                        style="color: #666; margin: 0; font-size: 1rem; font-weight: 500;">
+                                                        No dropdown fields available
+                                                    </p>
+                                                    <p style="color: #999; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                                                        Add a dropdown field to the form to configure map symbology
+                                                        options.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Map Configuration Row: Symbology Preview + Field Dropdowns -->
-                                    <div
+                                    <div *ngIf="getDropdownFields().length > 0"
                                         style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
                                         <!-- Map Symbology Preview -->
                                         <div class="symbology-preview" *ngIf="form.primaryField"
@@ -290,7 +231,7 @@
                                                     <div class="config-inline-control">
                                                         <select class="form-input" [(ngModel)]="form.primaryField"
                                                             (ngModelChange)="onMapFieldChange()" name="primaryField">
-                                                            <option [value]="null">No Primary Field</option>
+                                                            <option [value]="undefined">No Primary Field</option>
                                                             <option *ngFor="let field of getDropdownFields()"
                                                                 [value]="field.name">
                                                                 {{ field.title }}
@@ -301,7 +242,8 @@
                                             </div>
 
                                             <!-- Variant Field Selection -->
-                                            <div class="config-section" *ngIf="form.primaryField">
+                                            <div class="config-section"
+                                                *ngIf="form.primaryField && getDropdownFields(form.primaryField).length > 0">
                                                 <h4 class="subsection-title">Variant Field</h4>
 
                                                 <div class="config-inline-item">
@@ -314,7 +256,7 @@
                                                     <div class="config-inline-control">
                                                         <select class="form-input" [(ngModel)]="form.variantField"
                                                             (ngModelChange)="onMapFieldChange()" name="variantField">
-                                                            <option [value]="null">No Variant Field</option>
+                                                            <option [value]="undefined">No Variant Field</option>
                                                             <option
                                                                 *ngFor="let field of getDropdownFields(form.primaryField)"
                                                                 [value]="field.name">

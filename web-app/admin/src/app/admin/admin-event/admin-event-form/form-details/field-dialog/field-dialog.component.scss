@@ -92,4 +92,89 @@
             line-height: 1.4;
         }
     }
+
+    .options-list {
+        margin-bottom: 1rem;
+    }
+
+    .option-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+
+        .option-title {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .icon-button {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+
+            &:hover {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+            &.delete-button:hover {
+                color: #dc2626;
+            }
+        }
+    }
+
+    .add-option-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+
+        .form-input {
+            flex: 1;
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+
+            &.btn-primary {
+                background-color: #2563eb;
+                color: white;
+
+                &:hover:not(:disabled) {
+                    background-color: #1d4ed8;
+                }
+
+                &:disabled {
+                    background-color: #d1d5db;
+                    color: #6b7280;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .checkbox-label {
+            margin-bottom: 0;
+        }
+    }
 }

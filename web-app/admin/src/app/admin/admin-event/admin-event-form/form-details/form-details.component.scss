@@ -33,8 +33,6 @@
 }
 
 .section-icon-wrapper {
-    margin-bottom: 1.5rem;
-
     .fa-stack {
         width: 4rem;
         height: 4rem;
@@ -198,6 +196,70 @@ textarea.form-control {
     color: #5bc0de;
 }
 
+// Options List Styling
+.options-list {
+    margin-bottom: 1rem;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+
+    .option-title {
+        flex: 1;
+        font-size: 14px;
+    }
+
+    .icon-button {
+        padding: 0.25rem 0.5rem;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        &.delete-button:hover {
+            color: #dc2626;
+        }
+    }
+}
+
+.add-option-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    .form-input {
+        flex: 1;
+    }
+}
+
+// Checkbox Group Styling
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+// Field Edit Form Specific Styling
+.field-edit-form {
+    .config-inline-item {
+        margin-bottom: 1.5rem;
+    }
+}
+
 .text-info {
     color: #31708f;
 }
@@ -309,16 +371,12 @@ textarea.form-control {
 }
 
 .section-content {
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
 }
 
 .section-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f3f4f6;
 
     .section-icon-wrapper {
         width: 2.5rem;
@@ -356,6 +414,7 @@ textarea.form-control {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 1.5rem;
+    margin-top: 1rem;
     line-height: 1.5;
 }
 
@@ -431,6 +490,13 @@ textarea.form-control {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
+}
+
+.field-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
 }
 
 .field-title {
@@ -561,9 +627,14 @@ textarea.form-control {
     }
 }
 
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .add-field-button-container {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     margin-top: 1.5rem;
     padding: 1rem 0;
 }
