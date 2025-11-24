@@ -54,6 +54,14 @@ export class FormDetailsComponent implements OnInit {
   formDirty = false;
   breadcrumbs: AdminBreadcrumb[] = [];
 
+  editingDetails = false;
+  formEditForm = {
+    name: '',
+    description: '',
+    color: '',
+    default: false
+  };
+
   showFieldsSection = false;
   showMapSection = false;
   showFeedSection = false;
@@ -199,6 +207,56 @@ export class FormDetailsComponent implements OnInit {
 
   onFormChange(): void {
     this.formDirty = true;
+  }
+
+  toggleEditDetails(): void {
+    if (!this.editingDetails) {
+      this.formEditForm.name = this.form.name || '';
+      this.formEditForm.description = this.form.description || '';
+      this.formEditForm.color = this.form.color || '';
+      this.formEditForm.default = this.form.default || false;
+    }
+    this.editingDetails = !this.editingDetails;
+  }
+
+  saveFormDetails(): void {
+    if (!this.event?.id || !this.form.id) {
+      return;
+    }
+
+    const updatedForm = {
+      ...this.form,
+      name: this.formEditForm.name,
+      description: this.formEditForm.description,
+      color: this.formEditForm.color,
+      default: this.formEditForm.default
+    };
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), updatedForm).subscribe({
+      next: (savedForm) => {
+        Object.assign(this.form, savedForm);
+        this.editingDetails = false;
+        this.snackBar.open('Form details updated successfully', 'Close', { duration: 3000 });
+      },
+      error: (response) => {
+        const data = response.error || {};
+        this.showError({
+          title: 'Error Updating Form',
+          message: data.errors
+            ? "If the problem persists please contact your MAGE administrator for help."
+            : "Please try again later, if the problem persists please contact your MAGE administrator for help.",
+          errors: data.errors
+        });
+      }
+    });
+  }
+
+  cancelEditDetails(): void {
+    this.editingDetails = false;
+    this.formEditForm.name = this.form.name || '';
+    this.formEditForm.description = this.form.description || '';
+    this.formEditForm.color = this.form.color || '';
+    this.formEditForm.default = this.form.default || false;
   }
 
   validateForm(): boolean {

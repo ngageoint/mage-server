@@ -7,6 +7,12 @@
             <h2 class="page-title" *ngIf="form.id">{{ form.name }}</h2>
             <h2 class="page-title" *ngIf="!form.id">New Form</h2>
         </div>
+        <div class="header-actions" *ngIf="form.id">
+            <button class="action-button" [ngClass]="editingDetails ? 'btn-primary' : ''" (click)="toggleEditDetails()">
+                <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
+                {{editingDetails ? 'Cancel' : 'Edit Form'}}
+            </button>
+        </div>
     </div>
     <div class="container-fluid bottom-gap-l">
         <div class="row">
@@ -16,44 +22,77 @@
                     <div class="details-card">
                         <div class="details-form">
                             <div class="form-field">
-                                <label class="field-label">Name</label>
+                                <label class="field-label">Name:</label>
                                 <div class="field-content">
-                                    <input type="text" class="form-input" placeholder="Form name" name="name"
-                                        [(ngModel)]="form.name" (ngModelChange)="onFormChange()" required>
+                                    <span *ngIf="!editingDetails && form.id" class="field-value">{{form.name}}</span>
+                                    <input *ngIf="editingDetails && form.id" type="text" class="form-input"
+                                        placeholder="Form name" [(ngModel)]="formEditForm.name">
+                                    <input *ngIf="!form.id" type="text" class="form-input" placeholder="Form name"
+                                        name="name" [(ngModel)]="form.name" (ngModelChange)="onFormChange()" required>
                                     <span class="field-error" *ngIf="generalFormSubmitted && !form.name">Name is
                                         required</span>
                                 </div>
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label">Description</label>
+                                <label class="field-label">Description:</label>
                                 <div class="field-content">
-                                    <textarea class="form-input" rows="3" placeholder="Brief description of the form."
-                                        [(ngModel)]="form.description" (ngModelChange)="onFormChange()"
-                                        name="description"></textarea>
+                                    <span *ngIf="!editingDetails && form.id"
+                                        class="field-value">{{form.description}}</span>
+                                    <textarea *ngIf="editingDetails && form.id" class="form-input" rows="3"
+                                        placeholder="Brief description of the form."
+                                        [(ngModel)]="formEditForm.description"></textarea>
+                                    <textarea *ngIf="!form.id" class="form-input" rows="3"
+                                        placeholder="Brief description of the form." [(ngModel)]="form.description"
+                                        (ngModelChange)="onFormChange()" name="description"></textarea>
                                 </div>
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label">Color</label>
+                                <label class="field-label">Color:</label>
                                 <div class="field-content">
-                                    <input type="color" class="form-input color-input" [(ngModel)]="form.color"
-                                        (ngModelChange)="onFormChange()" name="color" required>
+                                    <span *ngIf="!editingDetails && form.id" class="field-value">
+                                        <span
+                                            style="display: inline-block; width: 20px; height: 20px; border-radius: 3px; vertical-align: middle; margin-right: 8px;"
+                                            [style.background-color]="form.color"></span>
+                                        {{form.color}}
+                                    </span>
+                                    <input *ngIf="editingDetails && form.id" type="color" class="form-input color-input"
+                                        [(ngModel)]="formEditForm.color">
+                                    <input *ngIf="!form.id" type="color" class="form-input color-input"
+                                        [(ngModel)]="form.color" (ngModelChange)="onFormChange()" name="color" required>
                                     <span class="field-error" *ngIf="generalFormSubmitted && !form.color">Color is
                                         invalid</span>
                                 </div>
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label checkbox-label">
-                                    <input type="checkbox" [(ngModel)]="form.default" (ngModelChange)="onFormChange()"
-                                        name="default">
-                                    <span>Add To Every New Observation</span>
-                                </label>
-                                <p class="field-hint">This form will be automatically added to all new observations.</p>
+                                <label class="field-label">Default Form:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails && form.id" class="field-value">{{form.default ? 'Yes -
+                                        Added to every new observation' : 'No'}}</span>
+                                    <label *ngIf="editingDetails && form.id" class="field-label checkbox-label">
+                                        <input type="checkbox" [(ngModel)]="formEditForm.default">
+                                        <span>Add To Every New Observation</span>
+                                    </label>
+                                    <label *ngIf="!form.id" class="field-label checkbox-label">
+                                        <input type="checkbox" [(ngModel)]="form.default"
+                                            (ngModelChange)="onFormChange()" name="default">
+                                        <span>Add To Every New Observation</span>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div class="form-actions">
+                            <div class="form-actions" *ngIf="editingDetails">
+                                <button class="action-button btn-primary" (click)="saveFormDetails()">
+                                    <i class="fa fa-save"></i> Save
+                                </button>
+                                <button class="action-button" (click)="cancelEditDetails()">
+                                    <i class="fa fa-times"></i> Cancel
+                                </button>
+                            </div>
+
+                            <div class="form-actions" *ngIf="!editingDetails && !form.id">
                                 <button class="action-button btn-primary" *ngIf="formDirty && !saving"
                                     (click)="saveForm()" [disabled]="!formValid">
                                     <i class="fa fa-save"></i> Save
