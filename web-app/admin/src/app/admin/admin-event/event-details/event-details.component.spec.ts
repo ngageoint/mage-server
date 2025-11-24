@@ -962,47 +962,24 @@ describe('EventDetailsComponent', () => {
       expect(dialog.open).toHaveBeenCalled();
     });
 
-    it('should move form up', () => {
+    it('should handle forms reordered', () => {
       eventsService.updateEvent.and.returnValue(of(component.event as any));
-      const form = component.event!.forms![1];
-      const event = new MouseEvent('click');
+      const reorderedForms = [
+        { id: 2, name: 'Form 2', archived: false },
+        { id: 1, name: 'Form 1', archived: false }
+      ];
 
-      component.moveFormUp(event, form);
+      component.onFormsReordered(reorderedForms);
 
       expect(eventsService.updateEvent).toHaveBeenCalled();
-      expect(component.animatingFormId).toBe(form.id);
+      expect(component.event!.forms![0].id).toBe(2);
+      expect(component.event!.forms![1].id).toBe(1);
     });
 
-    it('should move form down', () => {
-      eventsService.updateEvent.and.returnValue(of(component.event as any));
-      const form = component.event!.forms![0];
-      const event = new MouseEvent('click');
-
-      component.moveFormDown(event, form);
-
-      expect(eventsService.updateEvent).toHaveBeenCalled();
-      expect(component.animatingFormId).toBe(form.id);
-    });
-
-    it('should handle form drop', () => {
-      eventsService.updateEvent.and.returnValue(of(component.event as any));
-      const dropEvent = {
-        previousIndex: 0,
-        currentIndex: 1
-      } as any;
-
-      component.onFormDrop(dropEvent);
-
-      expect(eventsService.updateEvent).toHaveBeenCalled();
-    });
-
-    it('should not perform operations without forms', () => {
+    it('should not reorder forms when event has no forms', () => {
       component.event!.forms = undefined;
-      const event = new MouseEvent('click');
 
-      component.moveFormUp(event, { id: 1 });
-      component.moveFormDown(event, { id: 1 });
-      component.onFormDrop({ previousIndex: 0, currentIndex: 1 } as any);
+      component.onFormsReordered([]);
 
       expect(eventsService.updateEvent).not.toHaveBeenCalled();
     });

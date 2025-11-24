@@ -3,7 +3,8 @@ import { FormDetailsComponent } from './form-details.component';
 import { EventsService } from '../../events.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LocalStorageService } from '../../../../upgrade/ajs-upgraded-providers';
+import { LocalStorageService, UserService } from '../../../../upgrade/ajs-upgraded-providers';
+import { StateService } from '@uirouter/angular';
 import { of, throwError } from 'rxjs';
 import { Event as MageEvent } from 'src/app/filter/filter.types';
 
@@ -14,8 +15,8 @@ describe('FormDetailsComponent', () => {
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
   let mockLocalStorageService: any;
-  let mockStateParams: any;
-  let mockState: any;
+  let mockUserService: any;
+  let mockStateService: any;
 
   const mockEvent: MageEvent = {
     id: 1,
@@ -50,11 +51,16 @@ describe('FormDetailsComponent', () => {
     mockLocalStorageService = {
       getToken: jasmine.createSpy('getToken').and.returnValue('test-token')
     };
-    mockStateParams = {
-      eventId: '1',
-      formId: null
+    mockUserService = {
+      myself: jasmine.createSpy('myself')
     };
-    mockState = jasmine.createSpyObj('$state', ['go']);
+    mockStateService = {
+      params: {
+        eventId: '1',
+        formId: null
+      },
+      go: jasmine.createSpy('go')
+    };
 
     await TestBed.configureTestingModule({
       declarations: [FormDetailsComponent],
@@ -63,8 +69,8 @@ describe('FormDetailsComponent', () => {
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
         { provide: LocalStorageService, useValue: mockLocalStorageService },
-        { provide: '$stateParams', useValue: mockStateParams },
-        { provide: '$state', useValue: mockState }
+        { provide: UserService, useValue: mockUserService },
+        { provide: StateService, useValue: mockStateService }
       ]
     })
       .compileComponents();
@@ -78,9 +84,14 @@ describe('FormDetailsComponent', () => {
   });
 
   describe('ngOnInit', () => {
+    beforeEach(() => {
+      spyOn<any>(component, 'generateSampleObservations');
+      spyOn<any>(component, 'fetchFormIcons');
+    });
+
     it('should load event and setup breadcrumbs for new form', () => {
       mockEventsService.getEventById.and.returnValue(of(mockEvent));
-      mockStateParams.formId = null;
+      mockStateService.params.formId = null;
 
       component.ngOnInit();
 
@@ -98,7 +109,7 @@ describe('FormDetailsComponent', () => {
 
     it('should load event and existing form for edit', () => {
       mockEventsService.getEventById.and.returnValue(of(mockEvent));
-      mockStateParams.formId = '1';
+      mockStateService.params.formId = '1';
 
       component.ngOnInit();
 
@@ -122,7 +133,7 @@ describe('FormDetailsComponent', () => {
     it('should handle missing formId in event forms', () => {
       const eventWithoutForm = { ...mockEvent, forms: [] };
       mockEventsService.getEventById.and.returnValue(of(eventWithoutForm));
-      mockStateParams.formId = '999';
+      mockStateService.params.formId = '999';
 
       component.ngOnInit();
 
@@ -329,7 +340,7 @@ describe('FormDetailsComponent', () => {
 
       component.navigateToFields();
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.formFieldsEdit', { eventId: 1, formId: 1 });
+      expect(mockStateService.go).toHaveBeenCalledWith('admin.formFieldsEdit', { eventId: 1, formId: 1 });
     });
   });
 
@@ -340,7 +351,7 @@ describe('FormDetailsComponent', () => {
 
       component.navigateToMap();
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.formMapEdit', { eventId: 1, formId: 1 });
+      expect(mockStateService.go).toHaveBeenCalledWith('admin.formMapEdit', { eventId: 1, formId: 1 });
     });
   });
 
@@ -351,31 +362,44 @@ describe('FormDetailsComponent', () => {
 
       component.navigateToFeed();
 
-      expect(mockState.go).toHaveBeenCalledWith('admin.formFeedEdit', { eventId: 1, formId: 1 });
+      expect(mockStateService.go).toHaveBeenCalledWith('admin.formFeedEdit', { eventId: 1, formId: 1 });
     });
   });
 
   describe('exportForm', () => {
+    let mockAnchor: any;
+
     beforeEach(() => {
       component.event = mockEvent;
       component.form = { id: 1, name: 'Test Form' };
       component.token = 'test-token';
+
+      mockAnchor = {
+        href: '',
+        download: '',
+        style: { display: '' },
+        click: jasmine.createSpy('click')
+      };
+      spyOn(document, 'createElement').and.returnValue(mockAnchor);
+      spyOn(document.body, 'appendChild');
+      spyOn(document.body, 'removeChild');
     });
 
     it('should trigger download for form export', () => {
-      spyOn(document, 'createElement').and.callThrough();
-      spyOn(document.body, 'appendChild').and.callThrough();
-      spyOn(document.body, 'removeChild').and.callThrough();
-
       component.exportForm();
 
       expect(mockSnackBar.open).toHaveBeenCalledWith('Exporting form...', 'Close', { duration: 2000 });
       expect(document.createElement).toHaveBeenCalledWith('a');
+      expect(mockAnchor.href).toContain('/api/events/1/1/form.zip');
+      expect(mockAnchor.href).toContain('access_token=test-token');
+      expect(mockAnchor.download).toBe('Test Form.zip');
+      expect(document.body.appendChild).toHaveBeenCalledWith(mockAnchor);
+      expect(mockAnchor.click).toHaveBeenCalled();
+      expect(document.body.removeChild).toHaveBeenCalledWith(mockAnchor);
     });
 
     it('should not export if token is not available', () => {
       component.token = null;
-      spyOn(document, 'createElement');
 
       component.exportForm();
 
@@ -385,15 +409,10 @@ describe('FormDetailsComponent', () => {
 
     it('should use default filename if form name is not set', () => {
       component.form = { id: 1 };
-      const anchorElement = document.createElement('a');
-      spyOn(document, 'createElement').and.returnValue(anchorElement);
-      spyOn(document.body, 'appendChild');
-      spyOn(document.body, 'removeChild');
-      spyOn(anchorElement, 'click');
 
       component.exportForm();
 
-      expect(anchorElement.download).toBe('form.zip');
+      expect(mockAnchor.download).toBe('form.zip');
     });
   });
 });
