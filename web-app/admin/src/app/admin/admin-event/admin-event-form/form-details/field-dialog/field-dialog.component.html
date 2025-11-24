@@ -7,7 +7,7 @@
                 <strong>Field Type</strong>
             </div>
             <div class="config-inline-control">
-                <select class="form-input" [(ngModel)]="field.type" name="fieldType">
+                <select class="form-input" [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode">
                     <option *ngFor="let type of data.fieldTypes" [value]="type.name">
                         {{ type.title }}
                     </option>
@@ -220,7 +220,6 @@
                 <input type="checkbox" [(ngModel)]="field.required" name="fieldRequired">
                 <span>Required Field</span>
             </label>
-            <p class="field-hint">Users must enter a value for this field.</p>
         </div>
     </div>
 </mat-dialog-content>
