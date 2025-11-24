@@ -9,6 +9,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { CoreModule } from 'admin/src/app/core/core.module';
 
 import { AdminEventFormPreviewComponent } from './admin-event-form-preview/admin-event-form-preview.component';
@@ -16,6 +18,7 @@ import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview
 import { ObservationModule } from '../../../observation/observation.module';
 import { FormDetailsComponent } from './form-details/form-details.component';
 import { FieldDialogComponent } from './form-details/field-dialog/field-dialog.component';
+import { SymbologyDialogComponent } from './form-details/symbology-dialog/symbology-dialog.component';
 import { FieldsListComponent } from './fields-list/fields-list.component';
 import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
 
@@ -25,6 +28,7 @@ import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.m
         AdminEventFormPreviewDialogComponent,
         FormDetailsComponent,
         FieldDialogComponent,
+        SymbologyDialogComponent,
         FieldsListComponent
     ],
     imports: [
@@ -40,6 +44,8 @@ import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.m
         MatCardModule,
         MatIconModule,
         MatTooltipModule,
+        MatFormFieldModule,
+        MatInputModule,
         ObservationModule,
         AdminBreadcrumbModule
     ],

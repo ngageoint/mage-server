@@ -27,6 +27,7 @@ export interface Field {
     type?: string;
     required?: boolean;
     archived?: boolean;
+    multiselect?: boolean;
     choices?: any[];
     value?: any;
     min?: number;

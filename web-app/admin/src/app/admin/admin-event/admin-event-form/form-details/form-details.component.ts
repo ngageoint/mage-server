@@ -7,8 +7,9 @@ import { EventsService } from '../../events.service';
 import { LocalStorageService, UserService } from '../../../../upgrade/ajs-upgraded-providers';
 import { Event as MageEvent } from 'src/app/filter/filter.types';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
-import { ObservationFeedHelper, Observation, Field } from './observation-feed-helper';
+import { ObservationFeedHelper, Observation, Field } from '../../helpers/observation-feed-helper';
 import { FieldDialogComponent, FieldDialogData } from './field-dialog/field-dialog.component';
+import { SymbologyDialogComponent, SymbologyDialogData } from './symbology-dialog/symbology-dialog.component';
 
 interface FormData {
   id?: number;
@@ -53,13 +54,11 @@ export class FormDetailsComponent implements OnInit {
   formDirty = false;
   breadcrumbs: AdminBreadcrumb[] = [];
 
-  // Collapsible section state
   showFieldsSection = false;
   showMapSection = false;
   showFeedSection = false;
   showSymbologyDetails = true;
 
-  // Section-specific dirty tracking and saving state
   fieldsChanged = false;
   mapChanged = false;
   feedsChanged = false;
@@ -67,10 +66,9 @@ export class FormDetailsComponent implements OnInit {
   savingMap = false;
   savingFeeds = false;
 
-  // Fields tab
   newField: Field = {};
   observations: Observation[] = [];
-  fieldTypes: FieldType[] = [
+  fieldTypes = [
     { name: 'textfield', title: 'Text' },
     { name: 'textarea', title: 'Text Area' },
     { name: 'numberfield', title: 'Number' },
@@ -79,11 +77,9 @@ export class FormDetailsComponent implements OnInit {
     { name: 'checkbox', title: 'Checkbox' },
     { name: 'radio', title: 'Radio Buttons' },
     { name: 'dropdown', title: 'Select' },
-    { name: 'multiselectdropdown', title: 'Multiple Select', hidden: true },
     { name: 'geometry', title: 'Location' },
     { name: 'attachment', title: 'Attachment' },
     { name: 'userDropdown', title: 'User Select' },
-    { name: 'multiSelectUserDropdown', title: 'User Multiple Select', hidden: true },
     { name: 'hidden', title: 'Hidden' }
   ];
 
@@ -92,6 +88,9 @@ export class FormDetailsComponent implements OnInit {
     { name: 'video', title: 'Video' },
     { name: 'audio', title: 'Audio' }
   ];
+
+  private iconCache: any = {};
+  private pendingIconUploads: Array<{ primary: string; file: File; variant?: string; previewUrl: string }> = [];
 
   constructor(
     private eventsService: EventsService,
@@ -108,7 +107,6 @@ export class FormDetailsComponent implements OnInit {
     const eventId = this.stateService.params.eventId;
     const formId = this.stateService.params.formId;
 
-    // Initialize new field with default values
     this.newField = {
       type: 'textfield',
       required: false
@@ -119,7 +117,6 @@ export class FormDetailsComponent implements OnInit {
         next: (event) => {
           this.event = event;
 
-          // Set up breadcrumbs
           this.breadcrumbs = [
             {
               title: 'Events',
@@ -139,7 +136,6 @@ export class FormDetailsComponent implements OnInit {
             const existingForm = event.forms.find(f => f.id?.toString() === formId);
             if (existingForm) {
               this.form = { ...existingForm };
-              // Initialize fields array if not present
               if (!this.form.fields) {
                 this.form.fields = [];
               }
@@ -149,7 +145,6 @@ export class FormDetailsComponent implements OnInit {
               this.breadcrumbs[2].title = existingForm.name || 'Edit Form';
             }
           } else {
-            // New form
             this.form = {
               archived: false,
               color: '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
@@ -158,9 +153,9 @@ export class FormDetailsComponent implements OnInit {
             };
           }
 
-          // Generate sample observations for feed preview
           if (this.form.id) {
             this.generateSampleObservations();
+            this.fetchFormIcons();
           }
         },
         error: (error) => {
@@ -171,13 +166,43 @@ export class FormDetailsComponent implements OnInit {
     }
   }
 
+  fetchFormIcons(): void {
+    if (!this.event?.id || !this.form.id || !this.token) return;
+
+    const url = `/api/events/${this.event.id}/icons/${this.form.id}.json?access_token=${this.token}`;
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          return [];
+        }
+        return response.json();
+      })
+      .then((icons: any[]) => {
+        icons.forEach(iconData => {
+          if (iconData.primary && iconData.variant) {
+            if (!this.iconCache[iconData.primary]) {
+              this.iconCache[iconData.primary] = {};
+            }
+            this.iconCache[iconData.primary][iconData.variant] = iconData.icon; // base64 data
+          } else if (iconData.primary) {
+            this.iconCache[iconData.primary] = { ...this.iconCache[iconData.primary], icon: iconData.icon };
+          } else {
+            this.iconCache.icon = iconData.icon;
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching icons:', error);
+      });
+  }
+
   onFormChange(): void {
     this.formDirty = true;
   }
 
   validateForm(): boolean {
     this.generalFormSubmitted = true;
-    // Check if required fields are filled
     this.formValid = !!(this.form.name && this.form.color);
     return this.formValid;
   }
@@ -202,7 +227,6 @@ export class FormDetailsComponent implements OnInit {
         this.saving = false;
         this.formDirty = false;
         this.generalFormSubmitted = false;
-        // Update form properties individually to preserve ngModel bindings
         Object.assign(this.form, savedForm);
         this.snackBar.open('Form saved successfully', 'Close', { duration: 3000 });
       },
@@ -227,7 +251,6 @@ export class FormDetailsComponent implements OnInit {
 
     this.savingFields = true;
 
-    // Store current map and feed field values
     const currentPrimaryField = this.form.primaryField;
     const currentVariantField = this.form.variantField;
     const currentPrimaryFeedField = this.form.primaryFeedField;
@@ -237,9 +260,7 @@ export class FormDetailsComponent implements OnInit {
       next: (savedForm) => {
         this.savingFields = false;
         this.fieldsChanged = false;
-        // Update form properties individually to preserve ngModel bindings
         Object.assign(this.form, savedForm);
-        // Restore map and feed fields if they weren't in the saved response
         if (savedForm.primaryField === undefined) this.form.primaryField = currentPrimaryField;
         if (savedForm.variantField === undefined) this.form.variantField = currentVariantField;
         if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
@@ -267,22 +288,25 @@ export class FormDetailsComponent implements OnInit {
 
     this.savingMap = true;
 
-    // Store current field and feed values
     const currentFields = this.form.fields;
     const currentPrimaryFeedField = this.form.primaryFeedField;
     const currentSecondaryFeedField = this.form.secondaryFeedField;
 
     this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
       next: (savedForm) => {
-        this.savingMap = false;
-        this.mapChanged = false;
-        // Update form properties individually to preserve ngModel bindings
         Object.assign(this.form, savedForm);
-        // Restore fields and feed configuration if they weren't in the saved response
+
         if (savedForm.fields === undefined) this.form.fields = currentFields;
         if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
         if (savedForm.secondaryFeedField === undefined) this.form.secondaryFeedField = currentSecondaryFeedField;
-        this.snackBar.open('Map configuration saved successfully', 'Close', { duration: 3000 });
+
+        if (this.pendingIconUploads.length > 0) {
+          this.uploadPendingIcons();
+        } else {
+          this.savingMap = false;
+          this.mapChanged = false;
+          this.snackBar.open('Map configuration saved successfully', 'Close', { duration: 3000 });
+        }
       },
       error: (response) => {
         this.savingMap = false;
@@ -294,6 +318,28 @@ export class FormDetailsComponent implements OnInit {
             : "Please try again later, if the problem persists please contact your MAGE administrator for help.",
           errors: data.errors
         });
+      }
+    });
+  }
+
+  private uploadPendingIcons(): void {
+    const uploads = [...this.pendingIconUploads];
+    this.pendingIconUploads = [];
+
+    const uploadPromises = uploads.map(upload =>
+      this.uploadIcon(upload.primary, upload.file, upload.variant)
+    );
+
+    Promise.allSettled(uploadPromises).then(results => {
+      const hasError = results.some(result => result.status === 'rejected');
+
+      this.savingMap = false;
+      this.mapChanged = false;
+
+      if (hasError) {
+        this.snackBar.open('Map configuration saved with some icon upload errors', 'Close', { duration: 3000 });
+      } else {
+        this.snackBar.open('Map configuration saved successfully', 'Close', { duration: 3000 });
       }
     });
   }
@@ -389,7 +435,6 @@ export class FormDetailsComponent implements OnInit {
     const url = `/api/events/${this.event.id}/${this.form.id}/form.zip?access_token=${this.token}`;
     const fileName = `${this.form.name || 'form'}.zip`;
 
-    // Create a temporary anchor element to trigger download
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = fileName;
@@ -400,8 +445,6 @@ export class FormDetailsComponent implements OnInit {
 
     this.snackBar.open('Exporting form...', 'Close', { duration: 2000 });
   }
-
-  // Fields Tab Methods
   onFieldsChange(fields: Field[]): void {
     this.form.fields = fields;
     this.fieldsChanged = true;
@@ -423,11 +466,12 @@ export class FormDetailsComponent implements OnInit {
   }
 
   isMemberField(field: Field): boolean {
-    return this.form.userFields?.includes(field.name || '') || false;
+    const isUserField = field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
+    return isUserField || this.form.userFields?.includes(field.name || '') || false;
   }
 
   isUserDropdown(field: Field): boolean {
-    return field.type === 'userDropdown';
+    return field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
   }
 
   openAddFieldDialog(): void {
@@ -464,14 +508,11 @@ export class FormDetailsComponent implements OnInit {
       archived: false
     };
 
-    // Ensure choices array exists for field types that need it
     if (!field.choices && this.showAddOptions(field)) {
       field.choices = [];
     }
 
     fields.push(field);
-
-    // Auto-save after adding field
     this.saveFieldsToApi();
   }
 
@@ -492,8 +533,6 @@ export class FormDetailsComponent implements OnInit {
       const fieldToRemove = this.form.fields?.find(f => f.id === field.id);
       if (fieldToRemove) {
         fieldToRemove.archived = true;
-
-        // Auto-save after removing field
         this.saveFieldsToApi();
       }
     }
@@ -532,24 +571,18 @@ export class FormDetailsComponent implements OnInit {
   onFieldDrop(event: CdkDragDrop<any[]>): void {
     if (!this.form.fields || event.previousIndex === event.currentIndex) return;
 
-    // Get active (non-archived) fields
     const activeFields = this.form.fields.filter(f => !f.archived);
-
-    // Move the item in the active fields array
     const movedField = activeFields[event.previousIndex];
     activeFields.splice(event.previousIndex, 1);
     activeFields.splice(event.currentIndex, 0, movedField);
 
-    // Update IDs based on new positions
     activeFields.forEach((field, index) => {
       field.id = index;
     });
 
-    // Rebuild the form.fields array with archived fields at the end
     const archivedFields = this.form.fields.filter(f => f.archived);
     this.form.fields = [...activeFields, ...archivedFields];
 
-    // Auto-save after reordering fields
     this.saveFieldsToApi();
   }
 
@@ -572,18 +605,15 @@ export class FormDetailsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((editedField: Field | undefined) => {
       if (editedField && this.form.fields) {
-        // Find and update the field
         const fieldIndex = this.form.fields.findIndex(f => f.id === field.id);
         if (fieldIndex !== -1) {
           this.form.fields[fieldIndex] = { ...editedField };
-          // Auto-save after editing field
           this.saveFieldsToApi();
         }
       }
     });
   }
 
-  // Map Tab Methods
   getDropdownFields(excludeField?: string): Field[] {
     if (!this.form.fields) return [];
     return this.form.fields.filter(field =>
@@ -626,16 +656,14 @@ export class FormDetailsComponent implements OnInit {
   }
 
   getIconUrl(primary: string, variant?: string): string | null {
-    if (!this.form.style) return null;
-
-    try {
-      if (variant) {
-        return this.form.style[primary]?.[variant]?.icon?.iconUrl || null;
-      }
-      return this.form.style[primary]?.icon?.iconUrl || null;
-    } catch (e) {
-      return null;
+    if (variant && this.iconCache[primary]?.[variant]) {
+      return this.iconCache[primary][variant];
+    } else if (this.iconCache[primary]?.icon) {
+      return this.iconCache[primary].icon;
+    } else if (this.iconCache.icon) {
+      return this.iconCache.icon;
     }
+    return null;
   }
 
   getLineColor(primary: string, variant?: string): string {
@@ -643,9 +671,9 @@ export class FormDetailsComponent implements OnInit {
 
     try {
       if (variant) {
-        return this.form.style[primary]?.[variant]?.style?.stroke || '#3388ff';
+        return this.form.style[primary]?.[variant]?.stroke || '#3388ff';
       }
-      return this.form.style[primary]?.style?.stroke || '#3388ff';
+      return this.form.style[primary]?.stroke || '#3388ff';
     } catch (e) {
       return '#3388ff';
     }
@@ -656,31 +684,214 @@ export class FormDetailsComponent implements OnInit {
 
     try {
       if (variant) {
-        return this.form.style[primary]?.[variant]?.style?.fill || '#3388ff';
+        return this.form.style[primary]?.[variant]?.fill || '#3388ff';
       }
-      return this.form.style[primary]?.style?.fill || '#3388ff';
+      return this.form.style[primary]?.fill || '#3388ff';
     } catch (e) {
       return '#3388ff';
     }
   }
 
-  // Feeds Tab Methods
   onFeedFieldChange(): void {
     this.feedsChanged = true;
-    // Regenerate sample observations to reflect feed field changes
     if (this.form.id) {
       this.generateSampleObservations();
     }
   }
 
-  // Helper method to get field title by field name
+  editSymbology(primary: string, variant?: string): void {
+    const currentStyle = this.getStyleForChoice(primary, variant);
+    const currentIcon = this.getIconUrl(primary, variant);
+
+    const dialogData: SymbologyDialogData = {
+      primary,
+      variant,
+      icon: currentIcon || undefined,
+      style: currentStyle
+    };
+
+    const dialogRef = this.dialog.open(SymbologyDialogComponent, {
+      width: '800px',
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateSymbology(primary, result.style, result.file, variant);
+      }
+    });
+  }
+
+  private getStyleForChoice(primary: string, variant?: string): any {
+    if (!this.form.style) {
+      return {
+        stroke: '#3388ff',
+        strokeOpacity: 1.0,
+        strokeWidth: 2,
+        fill: '#3388ff',
+        fillOpacity: 0.2
+      };
+    }
+
+    try {
+      const defaultStyle = {
+        stroke: '#3388ff',
+        strokeOpacity: 1.0,
+        strokeWidth: 2,
+        fill: '#3388ff',
+        fillOpacity: 0.2
+      };
+
+      if (variant) {
+        const variantData = this.form.style[primary]?.[variant];
+        if (variantData) {
+          return {
+            stroke: variantData.stroke || defaultStyle.stroke,
+            strokeOpacity: variantData.strokeOpacity ?? defaultStyle.strokeOpacity,
+            strokeWidth: variantData.strokeWidth ?? defaultStyle.strokeWidth,
+            fill: variantData.fill || defaultStyle.fill,
+            fillOpacity: variantData.fillOpacity ?? defaultStyle.fillOpacity
+          };
+        }
+      } else {
+        const primaryData = this.form.style[primary];
+        if (primaryData) {
+          return {
+            stroke: primaryData.stroke || defaultStyle.stroke,
+            strokeOpacity: primaryData.strokeOpacity ?? defaultStyle.strokeOpacity,
+            strokeWidth: primaryData.strokeWidth ?? defaultStyle.strokeWidth,
+            fill: primaryData.fill || defaultStyle.fill,
+            fillOpacity: primaryData.fillOpacity ?? defaultStyle.fillOpacity
+          };
+        }
+      }
+
+      return defaultStyle;
+    } catch (e) {
+      return {
+        stroke: '#3388ff',
+        strokeOpacity: 1.0,
+        strokeWidth: 2,
+        fill: '#3388ff',
+        fillOpacity: 0.2
+      };
+    }
+  }
+
+  private updateSymbology(primary: string, style: any, file?: File, variant?: string): void {
+    if (!this.form.style) {
+      this.form.style = {};
+    }
+
+    if (variant) {
+      if (!this.form.style[primary]) {
+        this.form.style[primary] = {};
+      }
+      this.form.style[primary][variant] = {
+        ...this.form.style[primary][variant],
+        ...style
+      };
+    } else {
+      this.form.style[primary] = {
+        ...this.form.style[primary],
+        ...style
+      };
+    }
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const previewUrl = e.target.result;
+
+        if (variant) {
+          if (!this.iconCache[primary]) {
+            this.iconCache[primary] = {};
+          }
+          this.iconCache[primary][variant] = previewUrl;
+        } else {
+          if (!this.iconCache[primary]) {
+            this.iconCache[primary] = {};
+          }
+          this.iconCache[primary].icon = previewUrl;
+        }
+
+        this.iconCache = { ...this.iconCache };
+      };
+      reader.readAsDataURL(file);
+
+      this.pendingIconUploads = this.pendingIconUploads.filter(upload =>
+        !(upload.primary === primary && upload.variant === variant)
+      );
+
+      this.pendingIconUploads.push({ primary, file, variant, previewUrl: '' });
+    }
+
+    this.mapChanged = true;
+  }
+
+  private uploadIcon(primary: string, file: File, variant?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.event?.id || !this.form.id) {
+        reject(new Error('Missing event or form ID'));
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('icon', file);
+
+      let url = `/api/events/${this.event.id}/icons/${this.form.id}/${encodeURIComponent(primary)}`;
+      if (variant) {
+        url += `/${encodeURIComponent(variant)}`;
+      }
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Authorization', `Bearer ${this.token}`);
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+
+            if (response.icon) {
+              if (variant) {
+                if (!this.iconCache[primary]) {
+                  this.iconCache[primary] = {};
+                }
+                this.iconCache[primary][variant] = response.icon;
+              } else {
+                if (!this.iconCache[primary]) {
+                  this.iconCache[primary] = {};
+                }
+                this.iconCache[primary].icon = response.icon;
+              }
+
+              this.iconCache = { ...this.iconCache };
+            }
+
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Network error during upload'));
+      };
+
+      xhr.send(formData);
+    });
+  }
+
   getFieldTitle(fieldName: string | undefined): string {
     if (!fieldName || !this.form.fields) return '';
     const field = this.form.fields.find(f => f.name === fieldName);
     return field?.title || fieldName;
   }
 
-  // Sample Observation Generation Methods
   generateSampleObservations(): void {
     this.userService.getMyself().then((myself: any) => {
       this.observations = ObservationFeedHelper.generateSampleObservations(

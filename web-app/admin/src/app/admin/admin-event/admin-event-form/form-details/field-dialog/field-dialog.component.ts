@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Field } from '../observation-feed-helper';
+import { Field } from '../../../helpers/observation-feed-helper';
 
 export interface FieldDialogData {
     fieldTypes: { name: string; title: string; hidden?: boolean }[];
@@ -14,6 +14,7 @@ export interface FieldResult {
     title: string;
     type: string;
     required: boolean;
+    multiselect?: boolean;
     choices?: any[];
     value?: any;
     min?: number;
@@ -38,14 +39,20 @@ export class FieldDialogComponent {
         this.isEditMode = data.editMode || false;
 
         if (this.isEditMode && data.existingField) {
-            // Edit mode: create a deep copy of the existing field
             this.field = JSON.parse(JSON.stringify(data.existingField));
+            if (this.field.type === 'multiselectdropdown') {
+                this.field.type = 'dropdown';
+                this.field.multiselect = true;
+            } else if (this.field.type === 'multiSelectUserDropdown') {
+                this.field.type = 'userDropdown';
+                this.field.multiselect = true;
+            }
         } else {
-            // Add mode: create new field with defaults
             this.field = {
                 type: data.fieldTypes && data.fieldTypes.length > 0 ? data.fieldTypes[0].name : 'textfield',
                 title: '',
                 required: false,
+                multiselect: false,
                 choices: []
             };
         }
@@ -57,14 +64,17 @@ export class FieldDialogComponent {
 
     onSave(): void {
         if (this.field.title) {
+            if (this.field.type === 'dropdown' && this.field.multiselect) {
+                this.field.type = 'multiselectdropdown';
+            } else if (this.field.type === 'userDropdown' && this.field.multiselect) {
+                this.field.type = 'multiSelectUserDropdown';
+            }
             this.dialogRef.close(this.field);
         }
     }
 
     showAddOptions(): boolean {
-        return this.field.type === 'radio' ||
-            this.field.type === 'dropdown' ||
-            this.field.type === 'multiselectdropdown';
+        return this.field.type === 'radio' || this.field.type === 'dropdown';
     }
 
     addOption(optionTitle: string): void {
@@ -107,7 +117,6 @@ export class FieldDialogComponent {
             const temp = this.field.choices[index];
             this.field.choices[index] = this.field.choices[index - 1];
             this.field.choices[index - 1] = temp;
-            // Update values to reflect new order
             this.field.choices.forEach((choice, idx) => choice.value = idx);
         }
     }
@@ -120,7 +129,6 @@ export class FieldDialogComponent {
             const temp = this.field.choices[index];
             this.field.choices[index] = this.field.choices[index + 1];
             this.field.choices[index + 1] = temp;
-            // Update values to reflect new order
             this.field.choices.forEach((choice, idx) => choice.value = idx);
         }
     }
@@ -148,6 +156,20 @@ export class FieldDialogComponent {
             }
         } else {
             this.field.allowedAttachmentTypes = this.field.allowedAttachmentTypes.filter(t => t !== typeName);
+        }
+    }
+
+    toggleDefaultValue(choiceTitle: string, checked: boolean): void {
+        if (!Array.isArray(this.field.value)) {
+            this.field.value = [];
+        }
+
+        if (checked) {
+            if (!this.field.value.includes(choiceTitle)) {
+                this.field.value.push(choiceTitle);
+            }
+        } else {
+            this.field.value = this.field.value.filter((v: string) => v !== choiceTitle);
         }
     }
 }

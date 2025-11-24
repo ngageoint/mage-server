@@ -125,8 +125,8 @@
 
                                     <!-- Use the fields-list component -->
                                     <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
-                                        [attachmentAllowedTypes]="attachmentAllowedTypes"
-                                        [showDetailedView]="true" (fieldsChange)="onFieldsChange($event)">
+                                        [attachmentAllowedTypes]="attachmentAllowedTypes" [showDetailedView]="true"
+                                        (fieldsChange)="onFieldsChange($event)">
                                     </mage-fields-list>
                                 </div>
                             </div>
@@ -293,17 +293,24 @@
                                                                 </div>
                                                                 <div class="color-swatches">
                                                                     <div class="color-swatch line-color"
-                                                                        [style.background-color]="getLineColor(choice.title)"
-                                                                        title="Line Color"></div>
+                                                                        [style.color]="getLineColor(choice.title)"
+                                                                        matTooltip="Line Color"
+                                                                        matTooltipPosition="above"></div>
                                                                     <div class="color-swatch fill-color"
                                                                         [style.background-color]="getFillColor(choice.title)"
-                                                                        title="Fill Color"></div>
+                                                                        matTooltip="Fill Color"
+                                                                        matTooltipPosition="above"></div>
                                                                 </div>
                                                             </div>
                                                             <div class="symbology-label-section">
                                                                 <span class="symbology-label">Default</span>
                                                                 <span class="symbology-detail">{{ choice.title }}</span>
                                                             </div>
+                                                            <button class="edit-symbology-button"
+                                                                (click)="editSymbology(choice.title)"
+                                                                title="Edit symbology">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                     <div class="symbology-variant-item"
@@ -322,11 +329,13 @@
                                                                 </div>
                                                                 <div class="color-swatches">
                                                                     <div class="color-swatch line-color"
-                                                                        [style.background-color]="getLineColor(choice.title, variant.title)"
-                                                                        title="Line Color"></div>
+                                                                        [style.color]="getLineColor(choice.title, variant.title)"
+                                                                        matTooltip="Line Color"
+                                                                        matTooltipPosition="above"></div>
                                                                     <div class="color-swatch fill-color"
                                                                         [style.background-color]="getFillColor(choice.title, variant.title)"
-                                                                        title="Fill Color"></div>
+                                                                        matTooltip="Fill Color"
+                                                                        matTooltipPosition="above"></div>
                                                                 </div>
                                                             </div>
                                                             <div class="symbology-label-section">
@@ -334,6 +343,11 @@
                                                                 <span class="symbology-detail">{{ choice.title }} + {{
                                                                     variant.title }}</span>
                                                             </div>
+                                                            <button class="edit-symbology-button"
+                                                                (click)="editSymbology(choice.title, variant.title)"
+                                                                title="Edit symbology">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>

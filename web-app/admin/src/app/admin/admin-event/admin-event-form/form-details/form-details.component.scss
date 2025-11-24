@@ -587,6 +587,18 @@
     align-items: center;
     gap: 1rem;
     width: 100%;
+    position: relative;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #f9fafb;
+
+        .edit-symbology-button {
+            opacity: 1;
+        }
+    }
 }
 
 .symbology-visual {
@@ -621,25 +633,32 @@
 }
 
 .color-swatch {
-    width: 24px;
+    width: 32px;
     height: 24px;
-    border-radius: 4px;
     border: 1px solid #d1d5db;
-    cursor: help;
+    cursor: default;
+    position: relative;
 
     &.line-color {
-        position: relative;
+        border-radius: 2px;
+        background: white;
 
         &::after {
             content: '';
             position: absolute;
             top: 50%;
-            left: 10%;
-            right: 10%;
+            left: 4px;
+            right: 4px;
             height: 3px;
-            background-color: inherit;
+            background-color: currentColor;
             transform: translateY(-50%);
         }
+    }
+
+    &.fill-color {
+        border-radius: 50%;
+        width: 24px;
+        // background-color is set inline via [style.background-color]
     }
 }
 
@@ -648,6 +667,35 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+}
+
+.edit-symbology-button {
+    padding: 0.5rem 0.75rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    opacity: 0;
+
+    i {
+        font-size: 14px;
+    }
+
+    &:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
 }
 
 .feed-samples-section {

@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dial
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EventsService } from '../events.service';
 import { Event } from 'src/app/filter/filter.types';
-import { Field } from '../admin-event-form/form-details/observation-feed-helper';
+import { Field } from '../helpers/observation-feed-helper';
 
 /**
  * Dialog component for creating new forms for an event.
@@ -31,11 +31,9 @@ export class CreateFormDialogComponent {
         { name: 'checkbox', title: 'Checkbox' },
         { name: 'radio', title: 'Radio Buttons' },
         { name: 'dropdown', title: 'Select' },
-        { name: 'multiselectdropdown', title: 'Multiple Select', hidden: true },
         { name: 'geometry', title: 'Location' },
         { name: 'attachment', title: 'Attachment' },
         { name: 'userDropdown', title: 'User Select' },
-        { name: 'multiSelectUserDropdown', title: 'User Multiple Select', hidden: true },
         { name: 'hidden', title: 'Hidden' }
     ];
 
@@ -49,10 +47,8 @@ export class CreateFormDialogComponent {
         public dialogRef: MatDialogRef<CreateFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { event: Event },
         private fb: FormBuilder,
-        private eventsService: EventsService,
-        private dialog: MatDialog
+        private eventsService: EventsService
     ) {
-        // Generate random color for the form
         const randomColor = '#' + ('000000' + Math.floor(Math.random() * 0xFFFFFF).toString(16)).slice(-6);
 
         this.formGroup = this.fb.group({
@@ -114,11 +110,9 @@ export class CreateFormDialogComponent {
             this.errorMessage = 'Please add at least one field to the form.';
             return;
         }
-
         this.errorMessage = '';
         this.saving = true;
 
-        // If a file is selected, upload it with the form data
         if (this.selectedFile) {
             const formData = new FormData();
             formData.append('form', this.selectedFile);
@@ -137,7 +131,6 @@ export class CreateFormDialogComponent {
                 }
             });
         } else {
-            // Create form with fields
             const formPayload = {
                 name: this.formGroup.value.name,
                 description: this.formGroup.value.description || '',

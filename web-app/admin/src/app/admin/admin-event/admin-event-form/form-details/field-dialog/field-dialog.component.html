@@ -7,7 +7,7 @@
                 <strong>Field Type</strong>
             </div>
             <div class="config-inline-control">
-                <select class="form-input" [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode">
+                <select class="form-input" [(ngModel)]="field.type" name="fieldType">
                     <option *ngFor="let type of data.fieldTypes" [value]="type.name">
                         {{ type.title }}
                     </option>
@@ -28,7 +28,22 @@
             </div>
         </div>
 
-        <!-- Attachment Field Configuration -->
+        <div *ngIf="field.type === 'dropdown' && !data.isMemberField" class="checkbox-section">
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="field.multiselect" name="fieldMultiselect">
+                <span>Allow Multiple Selections</span>
+            </label>
+            <p class="field-hint">Allow users to select multiple options from the list.</p>
+        </div>
+
+        <div *ngIf="field.type === 'userDropdown'" class="checkbox-section">
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="field.multiselect" name="fieldMultiselectUser">
+                <span>Allow Multiple Selections</span>
+            </label>
+            <p class="field-hint">Allow users to select multiple users from the list.</p>
+        </div>
+
         <div *ngIf="field.type === 'attachment'">
             <div class="config-inline-item">
                 <div class="config-inline-label">
@@ -77,7 +92,6 @@
             </div>
         </div>
 
-        <!-- Number Field Configuration -->
         <div *ngIf="field.type === 'numberfield'">
             <div class="config-inline-item">
                 <div class="config-inline-label">
@@ -110,7 +124,6 @@
             </div>
         </div>
 
-        <!-- Default Value for Text Fields -->
         <div *ngIf="field.type === 'textfield' || field.type === 'email' || field.type === 'hidden'"
             class="config-inline-item">
             <div class="config-inline-label">
@@ -122,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Default Value for Text Area -->
         <div *ngIf="field.type === 'textarea'" class="config-inline-item">
             <div class="config-inline-label">
                 <strong>Default Value</strong>
@@ -133,7 +145,6 @@
             </div>
         </div>
 
-        <!-- Default Value for Checkbox -->
         <div *ngIf="field.type === 'checkbox'" class="checkbox-section">
             <label class="checkbox-label">
                 <input type="checkbox" [(ngModel)]="field.value" name="fieldValue">
@@ -141,7 +152,6 @@
             </label>
         </div>
 
-        <!-- Field Options for Select/Radio Fields -->
         <div *ngIf="showAddOptions() && !data.isMemberField" class="config-inline-item">
             <div class="config-inline-label">
                 <strong>Field Options</strong>
@@ -175,8 +185,7 @@
             </div>
         </div>
 
-        <!-- Default Value for Dropdown (single select) -->
-        <div *ngIf="field.type === 'dropdown' && !data.isMemberField" class="config-inline-item">
+        <div *ngIf="field.type === 'dropdown' && !field.multiselect && !data.isMemberField" class="config-inline-item">
             <div class="config-inline-label">
                 <strong>Default Value</strong>
             </div>
@@ -187,6 +196,21 @@
                         {{ choice.title }}
                     </option>
                 </select>
+            </div>
+        </div>
+
+        <div *ngIf="field.type === 'dropdown' && field.multiselect && !data.isMemberField" class="config-inline-item">
+            <div class="config-inline-label">
+                <strong>Default Values</strong>
+            </div>
+            <div class="config-inline-control">
+                <div class="checkbox-group">
+                    <label class="checkbox-label" *ngFor="let choice of field.choices">
+                        <input type="checkbox" [checked]="field.value && field.value.includes(choice.title)"
+                            (change)="toggleDefaultValue(choice.title, $any($event.target).checked)">
+                        <span>{{ choice.title }}</span>
+                    </label>
+                </div>
             </div>
         </div>
 
