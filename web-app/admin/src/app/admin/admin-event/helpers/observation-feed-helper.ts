@@ -1,10 +1,5 @@
 import moment from 'moment';
 
-/**
- * Call the JS built-in random to generate test data, but avoid a lot of
- * false positives in a security scan for using a cryptographically unsafe
- * random number generator.
- */
 const testNumber = () => Math.random();
 
 export interface Observation {
@@ -95,6 +90,7 @@ export class ObservationFeedHelper {
         switch (field.type) {
             case 'radio':
             case 'dropdown':
+            case 'userDropdown':
                 if (field.choices && field.choices.length) {
                     formData[fieldName] = field.choices[Math.floor(testNumber() * field.choices.length)].title;
                 } else {

@@ -164,7 +164,8 @@
 
                                     <!-- Use the fields-list component -->
                                     <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
-                                        [attachmentAllowedTypes]="attachmentAllowedTypes" [showDetailedView]="true"
+                                        [attachmentAllowedTypes]="attachmentAllowedTypes"
+                                        [userFields]="form.userFields || []" [showDetailedView]="true"
                                         (fieldsChange)="onFieldsChange($event)">
                                     </mage-fields-list>
                                 </div>
@@ -255,10 +256,10 @@
                                         </div>
 
                                         <!-- Field Selection Controls -->
-                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
-                                            <!-- Primary Field Selection -->
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                                            <!-- Field Selection -->
                                             <div class="config-section">
-                                                <h4 class="subsection-title">Primary Field</h4>
+                                                <h4 class="subsection-title">Configure Fields</h4>
 
                                                 <div class="config-inline-item">
                                                     <div class="config-inline-label">
@@ -278,14 +279,9 @@
                                                         </select>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <!-- Variant Field Selection -->
-                                            <div class="config-section"
-                                                *ngIf="form.primaryField && getDropdownFields(form.primaryField).length > 0">
-                                                <h4 class="subsection-title">Variant Field</h4>
-
-                                                <div class="config-inline-item">
+                                                <div class="config-inline-item"
+                                                    *ngIf="form.primaryField && getDropdownFields(form.primaryField).length > 0">
                                                     <div class="config-inline-label">
                                                         <strong>Variant Field</strong>
                                                         <p class="field-hint">Select a second dropdown field for
@@ -414,7 +410,7 @@
                                         <div class="section-icon-wrapper feed-color">
                                             <i class="fa fa-list-ul"></i>
                                         </div>
-                                        <h3 class="section-title">Feed Configuration</h3>
+                                        <h3 class="section-title">Observation Feed Configuration</h3>
                                     </div>
                                     <button class="icon-button-subtle" type="button">
                                         <i class="fa"

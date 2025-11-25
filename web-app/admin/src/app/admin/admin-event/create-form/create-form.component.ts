@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EventsService } from '../events.service';
 import { Event } from 'src/app/filter/filter.types';
 import { Field } from '../helpers/observation-feed-helper';
+import { deriveUserFieldNames, prepareFormPayload } from '../helpers/form-field-utils';
 
 /**
  * Dialog component for creating new forms for an event.
@@ -20,6 +21,7 @@ export class CreateFormDialogComponent {
     selectedFile: File | null = null;
     currentStep: number = 1;
     createdFields: Field[] = [];
+    createdUserFields: string[] = [];
     saving: boolean = false;
 
     fieldTypes = [
@@ -99,6 +101,7 @@ export class CreateFormDialogComponent {
      */
     onFieldsChange(fields: Field[]): void {
         this.createdFields = fields;
+        this.createdUserFields = deriveUserFieldNames(this.createdFields);
     }
 
     /**
@@ -131,16 +134,16 @@ export class CreateFormDialogComponent {
                 }
             });
         } else {
-            const formPayload = {
+            const payloadBase = {
                 name: this.formGroup.value.name,
                 description: this.formGroup.value.description || '',
                 color: this.formGroup.value.color,
                 archived: false,
                 fields: this.createdFields,
-                userFields: this.createdFields
-                    .filter(f => f.type === 'userDropdown' || f.type === 'multiSelectUserDropdown')
-                    .map(f => f.name)
+                userFields: this.createdUserFields
             };
+
+            const formPayload = prepareFormPayload(payloadBase);
 
             this.eventsService.createForm(String(this.data.event.id), formPayload).subscribe({
                 next: (newForm) => {

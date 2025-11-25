@@ -214,8 +214,19 @@ describe('FormDetailsComponent', () => {
       component.saveForm();
 
       expect(component.saving).toBe(false);
-      expect(mockEventsService.updateForm).toHaveBeenCalledWith('1', '1', component.form);
-      expect(component.form).toEqual(savedForm);
+      expect(mockEventsService.updateForm).toHaveBeenCalled();
+      const [eventId, formId, payload] = mockEventsService.updateForm.calls.mostRecent().args;
+      expect(eventId).toBe('1');
+      expect(formId).toBe('1');
+      expect(payload).toEqual(jasmine.objectContaining({
+        name: 'Test Form',
+        color: '#ff0000'
+      }));
+      expect(payload.fields).toEqual([]);
+      expect(payload.userFields).toEqual([]);
+      expect(component.form).toEqual(jasmine.objectContaining(savedForm));
+      expect(component.form.fields).toEqual([]);
+      expect(component.form.userFields).toEqual([]);
       expect(component.formDirty).toBe(false);
       expect(component.generalFormSubmitted).toBe(false);
       expect(mockSnackBar.open).toHaveBeenCalledWith('Form saved successfully', 'Close', { duration: 3000 });
@@ -268,7 +279,11 @@ describe('FormDetailsComponent', () => {
       component.archiveForm();
 
       expect(component.form.archived).toBe(true);
-      expect(mockEventsService.updateForm).toHaveBeenCalledWith('1', '1', component.form);
+      expect(mockEventsService.updateForm).toHaveBeenCalledWith(
+        '1',
+        '1',
+        jasmine.objectContaining({ archived: true })
+      );
       expect(mockSnackBar.open).toHaveBeenCalledWith('Form archived successfully', 'Close', { duration: 3000 });
     });
 
@@ -304,7 +319,11 @@ describe('FormDetailsComponent', () => {
       component.restoreForm();
 
       expect(component.form.archived).toBe(false);
-      expect(mockEventsService.updateForm).toHaveBeenCalledWith('1', '1', component.form);
+      expect(mockEventsService.updateForm).toHaveBeenCalledWith(
+        '1',
+        '1',
+        jasmine.objectContaining({ archived: false })
+      );
       expect(mockSnackBar.open).toHaveBeenCalledWith('Form restored successfully', 'Close', { duration: 3000 });
     });
 

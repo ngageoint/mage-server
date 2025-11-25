@@ -24,6 +24,7 @@ export class FieldsListComponent {
     @Input() fields: Field[] = [];
     @Input() fieldTypes: FieldType[] = [];
     @Input() attachmentAllowedTypes: AttachmentType[] = [];
+    @Input() userFields: string[] = [];
     @Input() showDetailedView: boolean = false;
     @Output() fieldsChange = new EventEmitter<Field[]>();
 
@@ -124,9 +125,18 @@ export class FieldsListComponent {
         this.fieldsChange.emit(this.fields);
     }
 
-    getFieldTypeLabel(type: string): string {
-        const fieldType = this.fieldTypes.find(ft => ft.name === type);
-        return fieldType?.title || type;
+    getFieldTypeLabel(type: string, field?: Field): string {
+        if (field && this.isMemberField(field)) {
+            const userType = this.fieldTypes.find(ft => ft.name === 'userDropdown');
+            return userType?.title || 'User Select';
+        }
+
+        const lookupType = type === 'multiselectdropdown' ? 'dropdown' : type;
+        const fieldType = this.fieldTypes.find(ft => ft.name === lookupType);
+        if (fieldType) {
+            return fieldType.title;
+        }
+        return type === 'multiselectdropdown' ? 'Select' : type;
     }
 
     getActiveFields(): Field[] {
@@ -150,7 +160,8 @@ export class FieldsListComponent {
     }
 
     isMemberField(field: Field): boolean {
-        return field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
+        const isExplicitUserType = field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
+        return isExplicitUserType || this.userFields.includes(field.name || '');
     }
 
     private getNextFieldId(): number {

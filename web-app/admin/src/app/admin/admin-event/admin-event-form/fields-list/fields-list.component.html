@@ -11,7 +11,7 @@
                 <div class="field-details">
                     <div class="field-row">
                         <span class="field-label">Type:</span>
-                        <span class="field-value">{{ getFieldTypeLabel(field.type) }}</span>
+                        <span class="field-value">{{ getFieldTypeLabel(field.type, field) }}</span>
                         <span class="field-label" *ngIf="field.required" style="margin-left: 1rem;">Required:</span>
                         <span class="field-value" *ngIf="field.required">Yes</span>
                     </div>
@@ -81,7 +81,7 @@
             <div class="field-content-compact">
                 <div class="field-info">
                     <div class="field-title">{{ field.title }}</div>
-                    <div class="field-type">{{ getFieldTypeLabel(field.type) }}
+                    <div class="field-type">{{ getFieldTypeLabel(field.type, field) }}
                         <span *ngIf="field.required" class="required-badge">Required</span>
                     </div>
                 </div>

@@ -10,6 +10,7 @@ import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.mode
 import { ObservationFeedHelper, Observation, Field } from '../../helpers/observation-feed-helper';
 import { FieldDialogComponent, FieldDialogData } from './field-dialog/field-dialog.component';
 import { SymbologyDialogComponent, SymbologyDialogData } from './symbology-dialog/symbology-dialog.component';
+import { decorateFormForDisplay, deriveUserFieldNames, prepareFormPayload, isUserFieldType } from '../../helpers/form-field-utils';
 
 interface FormData {
   id?: number;
@@ -161,6 +162,8 @@ export class FormDetailsComponent implements OnInit {
             };
           }
 
+          decorateFormForDisplay(this.form as FormData);
+
           if (this.form.id) {
             this.generateSampleObservations();
             this.fetchFormIcons();
@@ -224,17 +227,19 @@ export class FormDetailsComponent implements OnInit {
       return;
     }
 
-    const updatedForm = {
-      ...this.form,
+    const overrides: Partial<FormData> = {
       name: this.formEditForm.name,
       description: this.formEditForm.description,
       color: this.formEditForm.color,
       default: this.formEditForm.default
     };
 
-    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), updatedForm).subscribe({
+    const payload = prepareFormPayload<FormData>(this.form as FormData, overrides);
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
       next: (savedForm) => {
         Object.assign(this.form, savedForm);
+        decorateFormForDisplay(this.form as FormData);
         this.editingDetails = false;
         this.snackBar.open('Form details updated successfully', 'Close', { duration: 3000 });
       },
@@ -276,9 +281,11 @@ export class FormDetailsComponent implements OnInit {
 
     this.saving = true;
 
+    const payload = prepareFormPayload<FormData>(this.form as FormData);
+
     const saveObservable = this.form.id
-      ? this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form)
-      : this.eventsService.createForm(this.event.id.toString(), this.form);
+      ? this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+      : this.eventsService.createForm(this.event.id.toString(), payload);
 
     saveObservable.subscribe({
       next: (savedForm) => {
@@ -286,6 +293,7 @@ export class FormDetailsComponent implements OnInit {
         this.formDirty = false;
         this.generalFormSubmitted = false;
         Object.assign(this.form, savedForm);
+        decorateFormForDisplay(this.form as FormData);
         this.snackBar.open('Form saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -308,17 +316,21 @@ export class FormDetailsComponent implements OnInit {
     }
 
     this.savingFields = true;
+    this.form.userFields = deriveUserFieldNames(this.form.fields);
 
     const currentPrimaryField = this.form.primaryField;
     const currentVariantField = this.form.variantField;
     const currentPrimaryFeedField = this.form.primaryFeedField;
     const currentSecondaryFeedField = this.form.secondaryFeedField;
 
-    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
+    const payload = prepareFormPayload<FormData>(this.form as FormData);
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
       next: (savedForm) => {
         this.savingFields = false;
         this.fieldsChanged = false;
         Object.assign(this.form, savedForm);
+        decorateFormForDisplay(this.form as FormData);
         if (savedForm.primaryField === undefined) this.form.primaryField = currentPrimaryField;
         if (savedForm.variantField === undefined) this.form.variantField = currentVariantField;
         if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
@@ -350,13 +362,18 @@ export class FormDetailsComponent implements OnInit {
     const currentPrimaryFeedField = this.form.primaryFeedField;
     const currentSecondaryFeedField = this.form.secondaryFeedField;
 
-    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
+    this.form.userFields = deriveUserFieldNames(this.form.fields);
+    const payload = prepareFormPayload<FormData>(this.form as FormData);
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
       next: (savedForm) => {
         Object.assign(this.form, savedForm);
 
         if (savedForm.fields === undefined) this.form.fields = currentFields;
         if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
         if (savedForm.secondaryFeedField === undefined) this.form.secondaryFeedField = currentSecondaryFeedField;
+
+        decorateFormForDisplay(this.form as FormData);
 
         if (this.pendingIconUploads.length > 0) {
           this.uploadPendingIcons();
@@ -408,10 +425,17 @@ export class FormDetailsComponent implements OnInit {
     }
 
     this.savingFeeds = true;
-    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
-      next: () => {
+    this.form.userFields = deriveUserFieldNames(this.form.fields);
+    const payload = prepareFormPayload<FormData>(this.form as FormData);
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
+      next: (savedForm) => {
         this.savingFeeds = false;
         this.feedsChanged = false;
+        if (savedForm) {
+          Object.assign(this.form, savedForm);
+          decorateFormForDisplay(this.form as FormData);
+        }
         this.snackBar.open('Feed configuration saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -434,8 +458,14 @@ export class FormDetailsComponent implements OnInit {
     }
 
     this.form.archived = true;
-    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
-      next: () => {
+    const payload = prepareFormPayload<FormData>(this.form as FormData, { archived: true });
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
+      next: (savedForm) => {
+        if (savedForm) {
+          Object.assign(this.form, savedForm);
+          decorateFormForDisplay(this.form as FormData);
+        }
         this.snackBar.open('Form archived successfully', 'Close', { duration: 3000 });
       },
       error: (error) => {
@@ -451,8 +481,14 @@ export class FormDetailsComponent implements OnInit {
     }
 
     this.form.archived = false;
-    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), this.form).subscribe({
-      next: () => {
+    const payload = prepareFormPayload<FormData>(this.form as FormData, { archived: false });
+
+    this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
+      next: (savedForm) => {
+        if (savedForm) {
+          Object.assign(this.form, savedForm);
+          decorateFormForDisplay(this.form as FormData);
+        }
         this.snackBar.open('Form restored successfully', 'Close', { duration: 3000 });
       },
       error: (error) => {
@@ -505,6 +541,7 @@ export class FormDetailsComponent implements OnInit {
   }
   onFieldsChange(fields: Field[]): void {
     this.form.fields = fields;
+    this.form.userFields = deriveUserFieldNames(this.form.fields);
     this.fieldsChanged = true;
     this.saveFieldsToApi();
   }
@@ -524,12 +561,12 @@ export class FormDetailsComponent implements OnInit {
   }
 
   isMemberField(field: Field): boolean {
-    const isUserField = field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
-    return isUserField || this.form.userFields?.includes(field.name || '') || false;
+    const name = field.name || '';
+    return isUserFieldType(field) || (name ? this.form.userFields?.includes(name) : false) || false;
   }
 
   isUserDropdown(field: Field): boolean {
-    return field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
+    return isUserFieldType(field);
   }
 
   openAddFieldDialog(): void {
@@ -571,6 +608,7 @@ export class FormDetailsComponent implements OnInit {
     }
 
     fields.push(field);
+    this.form.userFields = deriveUserFieldNames(this.form.fields);
     this.saveFieldsToApi();
   }
 
@@ -591,6 +629,7 @@ export class FormDetailsComponent implements OnInit {
       const fieldToRemove = this.form.fields?.find(f => f.id === field.id);
       if (fieldToRemove) {
         fieldToRemove.archived = true;
+        this.form.userFields = deriveUserFieldNames(this.form.fields);
         this.saveFieldsToApi();
       }
     }
@@ -666,6 +705,7 @@ export class FormDetailsComponent implements OnInit {
         const fieldIndex = this.form.fields.findIndex(f => f.id === field.id);
         if (fieldIndex !== -1) {
           this.form.fields[fieldIndex] = { ...editedField };
+          this.form.userFields = deriveUserFieldNames(this.form.fields);
           this.saveFieldsToApi();
         }
       }
@@ -675,7 +715,7 @@ export class FormDetailsComponent implements OnInit {
   getDropdownFields(excludeField?: string): Field[] {
     if (!this.form.fields) return [];
     return this.form.fields.filter(field =>
-      field.type === 'dropdown' &&
+      (field.type === 'dropdown' || field.type === 'multiselectdropdown' || field.type === 'userDropdown') &&
       !field.archived &&
       field.name !== excludeField
     );

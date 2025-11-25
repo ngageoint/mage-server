@@ -69,8 +69,8 @@
 
             <!-- Use the fields-list component -->
             <mage-fields-list [fields]="createdFields" [fieldTypes]="fieldTypes"
-                [attachmentAllowedTypes]="attachmentAllowedTypes" [showDetailedView]="false"
-                (fieldsChange)="onFieldsChange($event)">
+                [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="createdUserFields"
+                [showDetailedView]="false" (fieldsChange)="onFieldsChange($event)">
             </mage-fields-list>
         </div>
     </div>

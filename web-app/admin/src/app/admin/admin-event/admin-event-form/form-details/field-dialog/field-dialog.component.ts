@@ -40,10 +40,16 @@ export class FieldDialogComponent {
 
         if (this.isEditMode && data.existingField) {
             this.field = JSON.parse(JSON.stringify(data.existingField));
-            if (this.field.type === 'multiselectdropdown') {
+            const originalType = this.field.type;
+
+            if (data.isMemberField) {
+                const wasMultiselect = originalType === 'multiselectdropdown' || !!this.field.multiselect;
+                this.field.type = 'userDropdown';
+                this.field.multiselect = wasMultiselect;
+            } else if (originalType === 'multiselectdropdown') {
                 this.field.type = 'dropdown';
                 this.field.multiselect = true;
-            } else if (this.field.type === 'multiSelectUserDropdown') {
+            } else if (originalType === 'multiSelectUserDropdown') {
                 this.field.type = 'userDropdown';
                 this.field.multiselect = true;
             }
@@ -64,11 +70,6 @@ export class FieldDialogComponent {
 
     onSave(): void {
         if (this.field.title) {
-            if (this.field.type === 'dropdown' && this.field.multiselect) {
-                this.field.type = 'multiselectdropdown';
-            } else if (this.field.type === 'userDropdown' && this.field.multiselect) {
-                this.field.type = 'multiSelectUserDropdown';
-            }
             this.dialogRef.close(this.field);
         }
     }
