@@ -34,6 +34,7 @@ import { EventDetailsComponent } from '../app/admin/admin-event/event-details/ev
 import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user-details.component';
 import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
 import { EventDashboardComponent } from '../app/admin/admin-event/dashboard/event-dashboard.component';
+import { LayerDashboardComponent } from '../app/admin/admin-layers/dashboard/layer-dashboard.component';
 
 require('angular-minicolors');
 require('select2');
@@ -126,6 +127,10 @@ app
   .directive(
     'adminEvents',
     downgradeComponent({ component: EventDashboardComponent })
+  )
+  .directive(
+    'layerDashboard',
+    downgradeComponent({ component: LayerDashboardComponent })
   );
 
 app
@@ -351,7 +356,7 @@ function config(
   // Admin layer routes
   $stateProvider.state('admin.layers', {
     url: '/layers',
-    component: 'adminLayers',
+    component: 'layerDashboard',
     resolve: resolveAdmin()
   });
 

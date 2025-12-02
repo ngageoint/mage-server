@@ -1,0 +1,341 @@
+.dialog-modal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.dialog-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.dialog-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: #333;
+}
+
+.dialog-content {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    position: relative;
+}
+
+.error-popover {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.layer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .field-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        background-color: #f9fafb;
+        transition: all 0.2s ease;
+        resize: vertical;
+        font-family: inherit;
+
+        &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        &::placeholder {
+            color: #9ca3af;
+        }
+
+        &:disabled {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+    }
+
+    // Select-specific styles
+    select.form-input {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+    }
+
+    .field-error {
+        min-height: 1.2em;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .field-error .error-text {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        color: #d9534f;
+        font-size: 0.875rem;
+    }
+
+    .field-error .error-text.visible {
+        opacity: 1;
+    }
+
+    .type-description {
+        margin-top: 0.25rem;
+        min-height: 0;
+    }
+
+    .description-text {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-style: italic;
+
+        i {
+            color: #3b82f6;
+            font-size: 0.875rem;
+        }
+    }
+}
+
+.conditional-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+
+    input[type="radio"] {
+        width: 1rem;
+        height: 1rem;
+        cursor: pointer;
+    }
+
+    &:hover {
+        color: #1976d2;
+    }
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 500;
+
+    input[type="checkbox"] {
+        width: 1.125rem;
+        height: 1.125rem;
+        cursor: pointer;
+    }
+
+    &:hover {
+        color: #1976d2;
+    }
+}
+
+.file-upload-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    background-color: white;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+
+    i {
+        font-size: 1rem;
+        color: #3b82f6;
+    }
+
+    .file-name {
+        color: #374151;
+        font-weight: 600;
+    }
+
+    &:hover {
+        border-color: #3b82f6;
+        background-color: #f0f9ff;
+    }
+}
+
+.field-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: #6b7280;
+    font-style: italic;
+
+    i {
+        color: #3b82f6;
+        font-size: 0.8125rem;
+    }
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    background-color: transparent;
+}
+
+.action-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover:not(:disabled) {
+        opacity: 0.9;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &:not(.btn-primary) {
+        background-color: transparent;
+        color: #1976d2;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(25, 118, 210, 0.08);
+        }
+    }
+
+    &.btn-primary {
+        background-color: #1976d2;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #1565c0;
+        }
+    }
+}
+
+::ng-deep .mat-dialog-container {
+    padding: 0;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+::ng-deep mat-dialog-container {
+    min-height: 460px;
+    max-height: 90vh;
+    width: 700px;
+}
+
+::ng-deep .mat-dialog-actions {
+    padding: 0;
+    margin: 0;
+}
+
+::ng-deep .mat-dialog-content {
+    padding: 0;
+    margin: 0;
+}
+
+::ng-deep .mat-dialog-title {
+    padding: 0;
+    margin: 0;
+}

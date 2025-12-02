@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Delete Layer</h2>
+
+<mat-dialog-content>
+    <p>Are you sure you want to delete layer <strong>{{ layer.name }}</strong>?</p>
+    <p class="text-muted">This action cannot be undone.</p>
+
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="deleting">
+        Cancel
+    </button>
+    <button mat-raised-button color="warn" (click)="deleteLayer()" [disabled]="deleting">
+        <span *ngIf="!deleting">Delete</span>
+        <span *ngIf="deleting">Deleting...</span>
+    </button>
+</mat-dialog-actions>
