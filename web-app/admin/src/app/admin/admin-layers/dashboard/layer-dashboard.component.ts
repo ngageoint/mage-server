@@ -5,7 +5,6 @@ import { StateService } from '@uirouter/angular';
 import { UserService } from 'admin/src/app/upgrade/ajs-upgraded-providers';
 import { LayersService, Layer } from '../layers.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import { LayerDeleteDialogComponent } from './layer-delete-dialog/layer-delete-dialog.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import _ from 'underscore';
 
@@ -77,13 +76,11 @@ export class LayerDashboardComponent implements OnInit {
     const term = this.layerSearch.trim().toLowerCase();
 
     this.filteredLayers = this.layers.filter(layer => {
-      // Apply search filter
       const matchesSearch = !term ||
         layer.name?.toLowerCase().includes(term) ||
         layer.description?.toLowerCase().includes(term) ||
         layer.url?.toLowerCase().includes(term);
 
-      // Apply type filter
       const matchesType = this.filterByType(layer);
 
       return matchesSearch && matchesType;
@@ -180,29 +177,6 @@ export class LayerDashboardComponent implements OnInit {
   /** Navigate to layer detail */
   gotoLayer(layer: Layer): void {
     this.stateService.go('admin.layer', { layerId: layer.id });
-  }
-
-  /** Navigate to edit layer */
-  editLayer(event: Event, layer: Layer): void {
-    event.stopPropagation();
-    this.stateService.go('admin.layerEdit', { layerId: layer.id });
-  }
-
-  /** Open delete confirmation dialog */
-  deleteLayer(event: Event, layer: Layer): void {
-    event.stopPropagation();
-
-    const dialogRef = this.modal.open(LayerDeleteDialogComponent, {
-      width: '500px',
-      data: { layer }
-    });
-
-    dialogRef.afterClosed().subscribe((deletedLayer) => {
-      if (deletedLayer) {
-        this.layers = _.without(this.layers, deletedLayer);
-        this.applyFilters();
-      }
-    });
   }
 
   /** Update layout-related values on resize */

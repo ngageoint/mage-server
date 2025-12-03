@@ -14,11 +14,17 @@
                 <label class="field-label">Layer Name</label>
                 <input type="text" class="form-input" formControlName="name" placeholder="Enter layer name" />
                 <div class="field-error">
-                    <span class="error-text" [class.visible]="
-              layerForm.get('name').invalid &&
+                    <span class="error-text visible" *ngIf="
+              layerForm.get('name').hasError('required') &&
               (layerForm.get('name').touched || layerForm.get('name').dirty)
             ">
                         Name is required
+                    </span>
+                    <span class="error-text visible" *ngIf="
+              layerForm.get('name').hasError('duplicateName') &&
+              (layerForm.get('name').touched || layerForm.get('name').dirty)
+            ">
+                        A layer with this name already exists
                     </span>
                 </div>
             </div>

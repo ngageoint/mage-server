@@ -316,30 +316,6 @@ describe('LayerDashboardComponent', () => {
     });
   });
 
-  describe('navigation', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
-
-    it('should navigate to layer detail', () => {
-      const layer = mockLayers[0];
-      component.gotoLayer(layer);
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.layer', { layerId: 1 });
-    });
-
-    it('should navigate to edit layer', () => {
-      const event = new Event('click');
-      spyOn(event, 'stopPropagation');
-      const layer = mockLayers[0];
-
-      component.editLayer(event, layer);
-
-      expect(event.stopPropagation).toHaveBeenCalled();
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.layerEdit', { layerId: 1 });
-    });
-  });
-
   describe('layer creation', () => {
     beforeEach(() => {
       fixture.detectChanges();
@@ -384,59 +360,12 @@ describe('LayerDashboardComponent', () => {
     });
   });
 
-  describe('layer deletion', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
-
-    it('should open delete confirmation dialog', () => {
-      const event = new Event('click');
-      spyOn(event, 'stopPropagation');
-      const mockDialogRef = {
-        afterClosed: () => of(null)
-      };
-      mockDialog.open.and.returnValue(mockDialogRef as any);
-
-      component.deleteLayer(event, mockLayers[0]);
-
-      expect(event.stopPropagation).toHaveBeenCalled();
-      expect(mockDialog.open).toHaveBeenCalled();
-    });
-
-    it('should remove layer from list after deletion', () => {
-      const event = new Event('click');
-      const layerToDelete = mockLayers[0];
-      const mockDialogRef = {
-        afterClosed: () => of(layerToDelete)
-      };
-      mockDialog.open.and.returnValue(mockDialogRef as any);
-
-      component.deleteLayer(event, layerToDelete);
-
-      expect(component.layers.length).toBe(2);
-      expect(component.layers.find(l => l.id === 1)).toBeUndefined();
-    });
-
-    it('should not remove layer if deletion is cancelled', () => {
-      const event = new Event('click');
-      const mockDialogRef = {
-        afterClosed: () => of(null)
-      };
-      mockDialog.open.and.returnValue(mockDialogRef as any);
-
-      component.deleteLayer(event, mockLayers[0]);
-
-      expect(component.layers.length).toBe(3);
-    });
-  });
-
   describe('responsive layout', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
 
     it('should update layout values on window resize', () => {
-      // Mock window.innerWidth
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,

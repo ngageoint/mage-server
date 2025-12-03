@@ -61,7 +61,7 @@ export class LayersService {
         return this.http.put<Layer>(`/api/layers/${id}`, layer);
     }
 
-    createLayer(layer: Partial<Layer>): Observable<Layer> {
+    createLayer(layer: Partial<Layer> | FormData): Observable<Layer> {
         return this.http.post<Layer>('/api/layers', layer);
     }
 

@@ -11,7 +11,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CoreModule } from '../../core/core.module';
 import { LayerDashboardComponent } from './dashboard/layer-dashboard.component';
-import { LayerDeleteDialogComponent } from './dashboard/layer-delete-dialog/layer-delete-dialog.component';
 import { CreateLayerDialogComponent } from './create-layer/create-layer.component';
 import { LayersService } from './layers.service';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
@@ -19,7 +18,6 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
 @NgModule({
     declarations: [
         LayerDashboardComponent,
-        LayerDeleteDialogComponent,
         CreateLayerDialogComponent
     ],
     imports: [

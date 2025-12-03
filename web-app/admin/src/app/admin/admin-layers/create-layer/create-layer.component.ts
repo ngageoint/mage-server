@@ -1,7 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, AsyncValidatorFn } from '@angular/forms';
 import { LayersService, Layer } from '../layers.service';
+import { Observable, of } from 'rxjs';
+import { map, catchError, debounceTime, first } from 'rxjs/operators';
 
 /**
  * Dialog component for creating new layers.
@@ -25,14 +27,40 @@ export class CreateLayerDialogComponent {
         private layersService: LayersService
     ) {
         this.layerForm = this.fb.group({
-            name: [data.layer?.name ?? '', [Validators.required]],
+            name: [
+                data.layer?.name ?? '',
+                [Validators.required],
+                [this.duplicateLayerNameValidator()]
+            ],
             type: [data.layer?.type ?? '', [Validators.required]],
             description: [data.layer?.description ?? ''],
-            // Imagery fields
             url: [''],
             format: ['XYZ'],
             base: [false]
         });
+    }
+
+    /**
+     * Async validator to check if a layer name already exists
+     */
+    private duplicateLayerNameValidator(): AsyncValidatorFn {
+        return (control: AbstractControl): Observable<ValidationErrors | null> => {
+            if (!control.value) {
+                return of(null);
+            }
+
+            return this.layersService.getLayers().pipe(
+                debounceTime(300),
+                map(layers => {
+                    const nameExists = layers.some(
+                        layer => layer.name?.toLowerCase() === control.value.toLowerCase()
+                    );
+                    return nameExists ? { duplicateName: true } : null;
+                }),
+                catchError(() => of(null)),
+                first()
+            );
+        };
     }
 
     /**
@@ -82,7 +110,6 @@ export class CreateLayerDialogComponent {
             return;
         }
 
-        // Validate GeoPackage file
         if (this.layerForm.get('type')?.value === 'GeoPackage' && !this.geopackageFile) {
             this.errorMessage = 'Please select a GeoPackage file.';
             return;
@@ -90,19 +117,31 @@ export class CreateLayerDialogComponent {
 
         this.errorMessage = '';
         const formValue = this.layerForm.value;
-        const layerData: any = {
-            name: formValue.name,
-            type: formValue.type,
-            description: formValue.description
-        };
 
-        // Add type-specific fields
-        if (formValue.type === 'Imagery') {
-            layerData.url = formValue.url;
-            layerData.format = formValue.format;
-            layerData.base = formValue.base;
-        } else if (formValue.type === 'GeoPackage' && this.geopackageFile) {
-            layerData.geopackage = this.geopackageFile;
+        let layerData: any;
+
+        if (formValue.type === 'GeoPackage' && this.geopackageFile) {
+            const formData = new FormData();
+            formData.append('name', formValue.name);
+            formData.append('type', formValue.type);
+            if (formValue.description) {
+                formData.append('description', formValue.description);
+            }
+            formData.append('geopackage', this.geopackageFile);
+            layerData = formData;
+        } else {
+            // Use regular JSON for other layer types
+            layerData = {
+                name: formValue.name,
+                type: formValue.type,
+                description: formValue.description
+            };
+
+            if (formValue.type === 'Imagery') {
+                layerData.url = formValue.url;
+                layerData.format = formValue.format;
+                layerData.base = formValue.base;
+            }
         }
 
         this.layersService.createLayer(layerData).subscribe({
