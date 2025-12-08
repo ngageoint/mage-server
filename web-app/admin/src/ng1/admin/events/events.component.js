@@ -49,18 +49,17 @@ class AdminEventsController {
   }
 
   handleSearchChange() {
-    // Debounce search to avoid too many requests
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }
     this.searchTimeout = setTimeout(() => {
-      this.page = 0; // Reset to first page on search
+      this.page = 0;
       this.loadEvents();
     }, 300);
   }
 
   handleFilterChange() {
-    this.page = 0; // Reset to first page on filter change
+    this.page = 0;
     this.loadEvents();
   }
 
