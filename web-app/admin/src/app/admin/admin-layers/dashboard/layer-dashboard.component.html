@@ -38,10 +38,13 @@
                             <i class="icon fa fa-map mr-2" aria-hidden="true"></i>
                             <div class="w-100">
                                 <div class="strong">{{ layer.name }}</div>
-                                <div [matTooltip]="layer.description" [matTooltipDisabled]="
-                                        !layer.description || layer.description.length <= numChars
-                                    " matTooltipClass="mat-tooltip-event-desc" class="w-90">
-                                    <p class="muted ellipsis">{{ layer.description }}</p>
+                                <div class="d-flex align-items-center">
+                                    <p class="muted ellipsis description-text" [matTooltip]="layer.description"
+                                        [matTooltipDisabled]="!layer.description || layer.description.length <= 100"
+                                        matTooltipClass="mat-tooltip-event-desc">
+                                        {{ layer.description || 'No description' }}
+                                    </p>
+                                    <span *ngIf="layer.type">{{ layer.type }}</span>
                                 </div>
                             </div>
                         </div>
