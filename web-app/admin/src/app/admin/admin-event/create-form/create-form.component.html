@@ -1,0 +1,70 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <h2 class="dialog-title">Create New Form For "{{ data.event.name }}"</h2>
+    </div>
+
+    <div class="dialog-content">
+        <div *ngIf="errorMessage" class="error-alert">
+            <i class="fa fa-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+        </div>
+
+        <form [formGroup]="formGroup" class="form-create">
+            <div class="form-field">
+                <label class="field-label">Name <span class="required">*</span></label>
+                <input type="text" class="form-input" formControlName="name" placeholder="Form name"
+                    [class.error]="hasError('name', 'required')">
+                <div *ngIf="hasError('name', 'required')" class="field-error">
+                    <i class="fa fa-exclamation-circle"></i>
+                    Name is required
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Description</label>
+                <textarea class="form-input" formControlName="description" rows="3"
+                    placeholder="Brief description of the form."></textarea>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Color <span class="required">*</span></label>
+                <input type="color" class="form-input color-input" formControlName="color"
+                    [class.error]="hasError('color', 'required') || hasError('color', 'pattern')">
+                <input type="text" class="form-input color-text-input" formControlName="color" placeholder="#000000"
+                    [class.error]="hasError('color', 'required') || hasError('color', 'pattern')">
+                <div *ngIf="hasError('color', 'required')" class="field-error">
+                    <i class="fa fa-exclamation-circle"></i>
+                    Color is required
+                </div>
+                <div *ngIf="hasError('color', 'pattern')" class="field-error">
+                    <i class="fa fa-exclamation-circle"></i>
+                    Color must be a valid hex color (e.g., #FF5733)
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Form Archive (optional)</label>
+                <p class="help-text">
+                    If you would like to create this form based on a previously archived MAGE form, please upload it
+                    here.
+                </p>
+                <div class="file-input-container">
+                    <input type="file" id="form-file" class="file-input" accept=".zip,application/zip"
+                        (change)="onFileSelected($event)">
+                    <label for="form-file" class="file-label">
+                        <i class="fa fa-upload"></i>
+                        {{ selectedFile ? selectedFile.name : 'Choose file...' }}
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" (click)="cancel()">Cancel</button>
+        <button class="action-button btn-primary" (click)="save()" [disabled]="formGroup.invalid">
+            <i class="fa fa-plus"></i>
+            Create Form
+        </button>
+    </div>
+</div>

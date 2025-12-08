@@ -1,0 +1,57 @@
+<div class="dialog-modal">
+  <div class="dialog-header">
+    <h2 class="dialog-title">Create a New Event</h2>
+  </div>
+
+  <div class="dialog-content">
+    <div *ngIf="errorMessage" class="error-popover">
+      <i class="fa fa-exclamation-triangle"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <form [formGroup]="eventForm" class="event-form">
+      <div class="form-field">
+        <label class="field-label">Event Name</label>
+        <input
+          type="text"
+          class="form-input"
+          formControlName="name"
+          placeholder="Enter event name"
+        />
+        <div class="field-error">
+          <span
+            class="error-text"
+            [class.visible]="
+              eventForm.get('name').invalid &&
+              (eventForm.get('name').touched || eventForm.get('name').dirty)
+            "
+          >
+            Name is required
+          </span>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">Description</label>
+        <textarea
+          class="form-input"
+          formControlName="description"
+          rows="3"
+          placeholder="Enter event description (optional)"
+        ></textarea>
+      </div>
+    </form>
+  </div>
+
+  <div class="dialog-actions">
+    <button class="action-button" (click)="cancel()">Cancel</button>
+    <button
+      class="action-button btn-primary"
+      (click)="save()"
+      [disabled]="eventForm.invalid"
+    >
+      <i class="fa fa-save"></i>
+      Create Event
+    </button>
+  </div>
+</div>

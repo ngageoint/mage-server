@@ -18,6 +18,13 @@ import { Team } from '../../admin-teams/team';
 import pLimit from 'p-limit';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 
+type UserFilter = {
+  limit?: number;
+  page?: number;
+  enabled?: boolean;
+  active?: boolean;
+};
+
 @Component({
   selector: 'admin-users',
   templateUrl: './user-dashboard.component.html',
@@ -55,10 +62,14 @@ export class UserDashboardComponent implements OnInit {
   isFinalizing = false;
   isFinished = false;
 
-  breadcrumbs: AdminBreadcrumb[] = [{
-    title: 'Users',
-    iconClass: 'fa fa-user'
-  }]
+  breadcrumbs: AdminBreadcrumb[] = [
+    {
+      title: 'Users',
+      iconClass: 'fa fa-user'
+    }
+  ];
+
+  userStatusFilter: 'all' | 'active' | 'inactive' | 'disabled' = 'all';
 
   /**
    * Constructs the UserDashboardComponent with necessary services.
@@ -141,6 +152,25 @@ export class UserDashboardComponent implements OnInit {
       });
   }
 
+  getFilter(): UserFilter {
+    const filterObject: UserFilter = {};
+
+    filterObject.limit = this.pageSize;
+    filterObject.page = this.pageIndex;
+    if (this.userStatusFilter === 'all') return filterObject;
+
+    if (this.userStatusFilter === 'disabled') {
+      filterObject.active = true;
+      filterObject.enabled = false;
+    } else if (this.userStatusFilter === 'active') {
+      filterObject.active = true;
+    } else {
+      filterObject.active = false;
+    }
+
+    return filterObject;
+  }
+
   /**
    * Refreshes the paginated list of users.
    */
@@ -150,9 +180,7 @@ export class UserDashboardComponent implements OnInit {
     state.pageSize = this.pageSize;
     state.pageIndex = this.pageIndex;
 
-    state.userFilter = state.userFilter || {};
-    state.userFilter.limit = this.pageSize;
-    state.userFilter.page = this.pageIndex;
+    state.userFilter = this.getFilter();
 
     return this.userPagingService.refresh(this.stateAndData).then(() => {
       const users = this.userPagingService.users(state);
@@ -183,6 +211,8 @@ export class UserDashboardComponent implements OnInit {
    * Executes a search query on the user list.
    */
   search(): void {
+    this.stateAndData['all'].userFilter.active = this.getFilter();
+
     this.userPagingService
       .search(this.stateAndData['all'], this.userSearch)
       .then((users) => {
@@ -312,6 +342,14 @@ export class UserDashboardComponent implements OnInit {
           });
       }
     });
+  }
+
+  onStatusFilterChange(
+    value: 'all' | 'active' | 'inactive' | 'disabled'
+  ): void {
+    this.userStatusFilter = value;
+    this.pageIndex = 0;
+    this.refreshUsers();
   }
 
   /**

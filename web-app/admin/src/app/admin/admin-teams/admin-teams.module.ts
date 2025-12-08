@@ -20,6 +20,7 @@ import { TeamDetailsComponent } from './team-details/team-details.component';
 import { CoreModule } from '../../core/core.module';
 import { DeleteTeamComponent } from './delete-team/delete-team.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
     declarations: [
@@ -44,6 +45,7 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
         MatIconModule,
         MatProgressSpinnerModule,
         AdminBreadcrumbModule,
+        MatTooltipModule,
     ],
     providers: [
         TeamsService,

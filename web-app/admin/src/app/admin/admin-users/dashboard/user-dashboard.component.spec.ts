@@ -132,7 +132,7 @@ describe('UserDashboardComponent', () => {
         MatCardModule,
         MatProgressSpinnerModule,
         MatDividerModule,
-        MatListModule,
+        MatListModule
       ],
       declarations: [UserDashboardComponent],
       providers: [
@@ -229,4 +229,56 @@ describe('UserDashboardComponent', () => {
       userId: '1'
     });
   });
+
+  it('should set userStatusFilter and refresh users when filter changes', fakeAsync(() => {
+    spyOn(component, 'refreshUsers').and.callThrough();
+
+    component.onStatusFilterChange('active');
+    expect(component.userStatusFilter).toBe('active');
+    expect(component.pageIndex).toBe(0);
+    expect(component.refreshUsers).toHaveBeenCalled();
+    flush();
+  }));
+
+  it('should apply "active" filter in refreshUsers()', fakeAsync(() => {
+    component.userStatusFilter = 'active';
+    component.refreshUsers();
+    tick();
+
+    const state = component.stateAndData['all'];
+    expect(state.userFilter.active).toBeTrue();
+    expect(pagingServiceSpy.refresh).toHaveBeenCalled();
+    flush();
+  }));
+
+  it('should apply "inactive" filter in refreshUsers()', fakeAsync(() => {
+    component.userStatusFilter = 'inactive';
+    component.refreshUsers();
+    tick();
+
+    const state = component.stateAndData['all'];
+    expect(state.userFilter.active).toBeFalse();
+    flush();
+  }));
+
+  it('should apply "disabled" filter in refreshUsers()', fakeAsync(() => {
+    component.userStatusFilter = 'disabled';
+    component.refreshUsers();
+    tick();
+
+    const state = component.stateAndData['all'];
+    expect(state.userFilter.enabled).toBeFalse();
+    flush();
+  }));
+
+  it('should clear filters for "all" option in refreshUsers()', fakeAsync(() => {
+    component.userStatusFilter = 'all';
+    component.refreshUsers();
+    tick();
+
+    const state = component.stateAndData['all'];
+    expect(state.userFilter.active).toBeUndefined();
+    expect(state.userFilter.disabled).toBeUndefined();
+    flush();
+  }));
 });
