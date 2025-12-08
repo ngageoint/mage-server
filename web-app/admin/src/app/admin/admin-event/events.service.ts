@@ -12,6 +12,7 @@ export interface SearchOptions {
     page?: number;
     page_size?: number;
     userId?: string;
+    state?: string;
 }
 
 interface EventsResponse {
@@ -35,10 +36,13 @@ export class EventsService {
             params = params.set('term', options.term);
         }
         if (options.page !== undefined) {
-            params = params.set('start', String(options.page));
+            params = params.set('page', String(options.page));
         }
         if (options.page_size !== undefined) {
-            params = params.set('limit', String(options.page_size));
+            params = params.set('page_size', String(options.page_size));
+        }
+        if (options.state !== undefined) {
+            params = params.set('state', options.state);
         }
         if (options.teamId !== undefined) {
             params = params.set('teamId', options.teamId);

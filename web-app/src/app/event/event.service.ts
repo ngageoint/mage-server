@@ -57,7 +57,7 @@ export class EventService {
     private locationService: LocationService,
     private observationService: ObservationService,
     private localStorageService: LocalStorageService
-  ) {}
+  ) { }
 
   init() {
     this.filterService.addListener(this);
@@ -82,7 +82,19 @@ export class EventService {
 
   query(options?: any): Observable<any> {
     options = options || {};
-    return this.httpClient.get<any>("/api/events/", options);
+    let params = new HttpParams();
+
+    for (const key of Object.keys(options)) {
+      if (options[key] !== undefined && options[key] !== null) {
+        params = params.set(key, String(options[key]));
+      }
+    }
+
+    if (!options.limit && !options.page_size) {
+      params = params.set('limit', '100');
+    }
+
+    return this.httpClient.get<any>("/api/events/", { params });
   }
 
   addFeed(eventId: string, feed: any): Observable<any> {
@@ -541,7 +553,7 @@ export class EventService {
         map(res => res.items)
       );
   }
-  
+
 
   isUserInEvent(user, event): boolean {
     if (!event) return false;

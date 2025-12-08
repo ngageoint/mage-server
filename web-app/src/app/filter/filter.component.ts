@@ -3,7 +3,7 @@ import { MatDialogRef } from "@angular/material/dialog";
 import { FilterService } from "./filter.service";
 import { EventService } from "../event/event.service";
 import { FormControl } from "@angular/forms";
-import { Observable, firstValueFrom, map, startWith, take } from "rxjs";
+import { Observable, firstValueFrom, map, startWith, debounceTime, switchMap, of } from "rxjs";
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
 import { LocalStorageService } from "../http/local-storage.service";
@@ -61,7 +61,7 @@ export class FilterComponent implements OnInit {
     private eventService: EventService,
     private filterService: FilterService,
     private localStorageService: LocalStorageService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     const event: Event = this.filterService.getEvent();
@@ -125,7 +125,7 @@ export class FilterComponent implements OnInit {
       return [];
     }
   }
-  
+
   /**
    * Resets Filter When Event is Selected
    * @param  {Event[]} events List of Events
@@ -139,8 +139,15 @@ export class FilterComponent implements OnInit {
 
     this.filteredEvents = this.eventControl.valueChanges.pipe(
       startWith(""),
-      map((value) => (typeof value === "string" ? value : value.name)),
-      map((name) => (name ? this.filterEvent(name) : this.events.slice()))
+      debounceTime(300),
+      switchMap((value) => {
+        const searchTerm = typeof value === "string" ? value : value?.name || "";
+        if (searchTerm && searchTerm.trim()) {
+          return this.eventService.query({ term: searchTerm.trim(), limit: 100 });
+        } else {
+          return of(this.events);
+        }
+      })
     );
 
     this.filteredTeams = this.teamControl.valueChanges.pipe(
@@ -237,14 +244,14 @@ export class FilterComponent implements OnInit {
 
     if (this.eventUsers.length > 0) this.userControl.enable({ emitEvent: false });
     else this.userControl.disable({ emitEvent: false });
-    
+
     if (newEvent.forms.length > 0) this.formControl.enable({ emitEvent: false });
     else this.formControl.disable({ emitEvent: false });
 
     if (this.eventControl.value.teams.length > 0) this.teamControl.enable({ emitEvent: false });
     else this.teamControl.disable({ emitEvent: false });
 
-    if (this.events.length > 0)  this.eventControl.enable({ emitEvent: false });
+    if (this.events.length > 0) this.eventControl.enable({ emitEvent: false });
     else this.eventControl.disable({ emitEvent: false });
 
     this.eventService.query().subscribe(async (events: Event[]) => {
@@ -259,7 +266,7 @@ export class FilterComponent implements OnInit {
   private filterEvent(name: string): Event[] {
     const filterValue = name.toLowerCase();
     return this.events.filter(
-      (option) => option.name.toLowerCase().indexOf(filterValue) === 0
+      (option) => option.name.toLowerCase().includes(filterValue)
     );
   }
 

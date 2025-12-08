@@ -211,16 +211,16 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       if (req.parameters!.userId) {
         filter.userId = req.parameters!.userId
       }
-      const limit = req.query!.limit || 20
-      const start = req.query!.start || 0
-      EventModel.getEvents({ access: req.access, filter: filter, populate: req.parameters!.populate, projection: req.parameters!.projection, limit: limit, start: start }, (err, events, totalCount) => {
+      const pageSize = parseInt(String(req.query.page_size)) || parseInt(String(req.query.limit)) || 20
+      const page = parseInt(String(req.query.page)) || parseInt(String(req.query.start)) || 0
+      EventModel.getEvents({ access: req.access, filter: filter, populate: req.parameters!.populate, projection: req.parameters!.projection, limit: pageSize, start: page }, (err, events, totalCount) => {
         if (err) {
           return next(err);
         }
         if (req.query.includePagination) {
           res.json({
-            pageSize: limit,
-            pageIndex: start,
+            pageSize: pageSize,
+            page: page,
             items: events!.map((event) => {
               return event.toObject({ access: req.access!, projection: req.parameters!.projection });
             }),
