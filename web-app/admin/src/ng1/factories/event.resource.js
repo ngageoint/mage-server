@@ -1,7 +1,7 @@
 function Event($rootScope, $resource) {
   const Event = $resource('/api/events/:id', {
     id: '@id'
-  },{
+  }, {
     get: {
       method: 'GET',
       responseType: 'json'
@@ -21,6 +21,11 @@ function Event($rootScope, $resource) {
     query: {
       isArray: true,
       responseType: 'json'
+    },
+    queryWithPagination: {
+      method: 'GET',
+      responseType: 'json',
+      isArray: false
     },
     count: {
       method: 'GET',
@@ -101,7 +106,7 @@ function Event($rootScope, $resource) {
     }
   });
 
-  Event.prototype.$save = function(success, error) {
+  Event.prototype.$save = function (success, error) {
     if (this.id) {
       this.$update(success, error);
     } else {
@@ -118,7 +123,7 @@ function EventAccess($resource) {
   const EventAccess = $resource('/api/events/:eventId/acl', {
     eventId: '@eventId',
     userId: '@userId'
-  },{
+  }, {
     update: {
       method: 'PUT',
       headers: {

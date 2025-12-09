@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.dev-instance",
-  "version": "6.5.1-beta",
+  "version": "6.5.3",
   "description": "Assemble a Mage Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool because the dependencies point to relative directories instead of production packages.  This can however serve as a starting point to create a production Mage instance package.json.",
   "scripts": {
     "start": "npm run start:dev",
@@ -28,6 +28,7 @@
     "@ngageoint/mage.arcgis.web-app": "../plugins/arcgis/web-app/dist/main",
     "@ngageoint/mage.sftp.web": "../plugins/sftp/web/dist/main",
     "@ngageoint/mage.sftp.service": "../plugins/sftp/service",
+    "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
     "@ngageoint/mage.service": "../service",
     "@ngageoint/mage.web-app": "../web-app/dist"
   }

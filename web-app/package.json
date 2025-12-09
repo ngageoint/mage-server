@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@ngageoint/mage.web-app",
-  "version": "6.5.1-beta",
+  "version": "6.5.3",
   "description": "The Mage web-app is the UI for interacting with the Mage service in a web browser.",
   "keywords": [
     "NGA",
