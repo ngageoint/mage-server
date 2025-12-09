@@ -133,7 +133,7 @@
 
     <div class="dialog-actions">
         <button class="action-button" (click)="cancel()">Cancel</button>
-        <button class="action-button btn-primary" (click)="save()" [disabled]="layerForm.invalid">
+        <button class="action-button btn-primary" (click)="save()" [disabled]="canSave">
             <i class="fa fa-save"></i>
             Create Layer
         </button>

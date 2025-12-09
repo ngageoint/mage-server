@@ -166,6 +166,23 @@ export class CreateLayerDialogComponent {
     }
 
     /**
+     * Checks if the save button should be disabled
+     */
+    get canSave(): boolean {
+        const nameControl = this.layerForm.get('name');
+        const typeControl = this.layerForm.get('type');
+
+        if (!nameControl?.value || !typeControl?.value) {
+            return true;
+        }
+        if (typeControl.value === 'GeoPackage' && !this.geopackageFile) {
+            return true;
+        }
+
+        return this.layerForm.invalid;
+    }
+
+    /**
      * Closes the dialog without saving any data or making any changes.
      */
     cancel(): void {
