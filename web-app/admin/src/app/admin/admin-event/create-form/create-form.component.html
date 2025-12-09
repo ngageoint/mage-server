@@ -80,9 +80,12 @@
         <button class="action-button" *ngIf="currentStep === 2 && !saving" (click)="back()">
             Back
         </button>
-        <button class="action-button btn-primary" *ngIf="currentStep === 1" (click)="next()"
+        <button class="action-button btn-primary" *ngIf="currentStep === 1 && !saving" (click)="next()"
             [disabled]="formGroup.invalid">
-            Next: Add Fields
+            {{ selectedFile ? 'Create Form' : 'Next: Add Fields' }}
+        </button>
+        <button class="action-button btn-primary" *ngIf="currentStep === 1 && saving" disabled>
+            Creating...
         </button>
         <button class="action-button btn-primary" *ngIf="currentStep === 2 && !saving" (click)="save()"
             [disabled]="createdFields.length === 0">

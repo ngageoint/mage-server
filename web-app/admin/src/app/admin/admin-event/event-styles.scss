@@ -175,9 +175,22 @@
         flex: 1;
     }
 
-    .action-button.btn-danger {
+    .action-button {
         align-self: flex-end;
         margin-top: auto;
+    }
+
+    &.warning {
+        background: #fffbeb;
+        border-color: #fde68a;
+
+        .danger-zone-title {
+            color: #a16207;
+        }
+
+        .danger-zone-description {
+            color: #7c4a03;
+        }
     }
 }
 
@@ -522,6 +535,17 @@ mat-card-content {
         }
     }
 
+    &.btn-warning {
+        background-color: #fbbf24;
+        border-color: #fbbf24;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+        }
+    }
+
     i {
         font-size: 1rem;
     }
@@ -613,9 +637,7 @@ mat-card-content {
 .empty-state {
     text-align: center;
     padding: 2.5rem 1rem;
-    background: #f9fafb;
     border-radius: 8px;
-    margin: 1rem 0;
 
     .empty-state-icon,
     i {

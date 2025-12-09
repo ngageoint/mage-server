@@ -83,8 +83,35 @@ export class CreateFormDialogComponent {
                 return;
             }
             this.errorMessage = '';
-            this.currentStep = 2;
+            if (this.selectedFile) {
+                this.createFormWithFile();
+            } else {
+                this.currentStep = 2;
+            }
         }
+    }
+
+    /**
+     * Creates a form with an uploaded file
+     */
+    private createFormWithFile(): void {
+        this.saving = true;
+        const formData = new FormData();
+        formData.append('form', this.selectedFile!);
+        formData.append('name', this.formGroup.value.name);
+        formData.append('description', this.formGroup.value.description || '');
+        formData.append('color', this.formGroup.value.color);
+
+        this.eventsService.createForm(String(this.data.event.id), formData).subscribe({
+            next: (newForm) => {
+                this.saving = false;
+                this.dialogRef.close(newForm);
+            },
+            error: (err) => {
+                this.saving = false;
+                this.errorMessage = err.error || 'Failed to create form. Please try again.';
+            }
+        });
     }
 
     /**
@@ -116,46 +143,27 @@ export class CreateFormDialogComponent {
         this.errorMessage = '';
         this.saving = true;
 
-        if (this.selectedFile) {
-            const formData = new FormData();
-            formData.append('form', this.selectedFile);
-            formData.append('name', this.formGroup.value.name);
-            formData.append('description', this.formGroup.value.description || '');
-            formData.append('color', this.formGroup.value.color);
+        const payloadBase = {
+            name: this.formGroup.value.name,
+            description: this.formGroup.value.description || '',
+            color: this.formGroup.value.color,
+            archived: false,
+            fields: this.createdFields,
+            userFields: this.createdUserFields
+        };
 
-            this.eventsService.createForm(String(this.data.event.id), formData).subscribe({
-                next: (newForm) => {
-                    this.saving = false;
-                    this.dialogRef.close(newForm);
-                },
-                error: (err) => {
-                    this.saving = false;
-                    this.errorMessage = err.error || 'Failed to create form. Please try again.';
-                }
-            });
-        } else {
-            const payloadBase = {
-                name: this.formGroup.value.name,
-                description: this.formGroup.value.description || '',
-                color: this.formGroup.value.color,
-                archived: false,
-                fields: this.createdFields,
-                userFields: this.createdUserFields
-            };
+        const formPayload = prepareFormPayload(payloadBase);
 
-            const formPayload = prepareFormPayload(payloadBase);
-
-            this.eventsService.createForm(String(this.data.event.id), formPayload).subscribe({
-                next: (newForm) => {
-                    this.saving = false;
-                    this.dialogRef.close(newForm);
-                },
-                error: (err) => {
-                    this.saving = false;
-                    this.errorMessage = err.error?.message || err.error || 'Failed to create form. Please try again.';
-                }
-            });
-        }
+        this.eventsService.createForm(String(this.data.event.id), formPayload).subscribe({
+            next: (newForm) => {
+                this.saving = false;
+                this.dialogRef.close(newForm);
+            },
+            error: (err) => {
+                this.saving = false;
+                this.errorMessage = err.error?.message || err.error || 'Failed to create form. Please try again.';
+            }
+        });
     }
 
     /**

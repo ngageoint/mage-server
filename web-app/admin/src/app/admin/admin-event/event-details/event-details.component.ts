@@ -79,6 +79,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   membersDataSource = new MatTableDataSource<MageUser>();
   membersDisplayedColumns = ['content'];
   pageSizeOptions = [5, 10, 25];
+  pendingRoleChanges = new Map<string, string>();
 
   loadingTeams = true;
   teamsPageIndex = 0;
@@ -481,8 +482,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           if (this.restrictionsForm) {
             this.restrictionsForm.form.markAsPristine();
           }
-
-          console.log('Form restrictions saved successfully');
         },
         error: (error) => {
           console.error('Error saving form restrictions:', error);
@@ -595,11 +594,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Gets user's role in the event team.
    */
   getUserRole(user: MageUser): string {
-    if (!this.eventTeam?.acl) {
-      return 'GUEST';
-    }
-    const userAcl = this.eventTeam.acl[user.id];
-    return userAcl?.role || 'GUEST';
+    if (!this.eventTeam?.acl) return 'GUEST';
+
+    const pendingRole = this.pendingRoleChanges.get(String(user.id));
+    if (pendingRole) return pendingRole;
+
+    return this.eventTeam.acl[user.id]?.role || 'GUEST';
   }
 
   /**
@@ -614,29 +614,8 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Updates a user's role in the event team.
    */
   updateUserRole(user: MageUser, event: MatSelectChange): void {
-    if (!this.eventTeam?.id) {
-      console.error('Event team not found');
-      return;
-    }
-
-    const newRole = event.value;
-
-    this.teamsService.updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (updatedTeam: Team) => {
-          this.eventTeam = updatedTeam;
-          const userIndex = this.membersPage.items.findIndex(u => u.id === user.id);
-          if (userIndex !== -1) {
-            const updatedUser = { ...this.membersPage.items[userIndex] };
-            this.membersPage.items[userIndex] = updatedUser;
-            this.membersDataSource.data = [...this.membersPage.items];
-          }
-        },
-        error: (error) => {
-          console.error('Error updating user role:', error);
-        }
-      });
+    this.pendingRoleChanges.set(String(user.id), event.value);
+    this.membersDataSource.data = [...this.membersDataSource.data];
   }
 
   /**
@@ -736,7 +715,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updated) => {
           this.event = updated;
-          console.log('Event marked as complete:', updated);
         },
         error: (error) => {
           console.error('Error completing event:', error);
@@ -854,8 +832,47 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Toggles member edit mode and updates action buttons.
    */
   toggleEditMembers(): void {
+    if (this.editMembers) {
+      this.applyPendingRoleChanges();
+    } else {
+      this.pendingRoleChanges.clear();
+    }
     this.editMembers = !this.editMembers;
     this.updateActionButtons();
+  }
+
+  /**
+   * Applies all pending role changes to the backend.
+   */
+  private applyPendingRoleChanges(): void {
+    if (!this.eventTeam?.id || this.pendingRoleChanges.size === 0) {
+      this.pendingRoleChanges.clear();
+      return;
+    }
+
+    const updateObservables: Observable<Team>[] = [];
+    this.pendingRoleChanges.forEach((newRole, userId) => {
+      updateObservables.push(
+        this.teamsService.updateUserRole(String(this.eventTeam!.id), userId, newRole)
+      );
+    });
+
+    forkJoin(updateObservables)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedTeams: Team[]) => {
+          if (updatedTeams.length > 0) {
+            this.eventTeam = updatedTeams[updatedTeams.length - 1];
+          }
+          this.pendingRoleChanges.clear();
+          this.getMembersPage();
+        },
+        error: (error) => {
+          console.error('Error updating user roles:', error);
+          this.pendingRoleChanges.clear();
+          this.getMembersPage();
+        }
+      });
   }
 
   /**

@@ -118,11 +118,11 @@
                         </div>
 
                         <!-- Archive Form Card -->
-                        <div class="danger-zone-card card-spacing" *ngIf="form.id && !form.archived">
+                        <div class="danger-zone-card warning card-spacing" *ngIf="form.id && !form.archived">
                             <h3 class="danger-zone-title">Archive Form</h3>
                             <p class="danger-zone-description">Archiving a form will remove it from the list of forms a
                                 users sees when creating an observation. The form can be restored at any time.</p>
-                            <button class="action-button btn-danger" (click)="archiveForm()">
+                            <button class="action-button btn-warning" (click)="archiveForm()">
                                 <i class="fa fa-archive"></i> Archive
                             </button>
                         </div>
@@ -193,7 +193,7 @@
                                         map by selecting primary
                                         and variant fields for symbology.</p>
 
-                                    <!-- No Dropdown Fields Available Message -->
+                                    <!-- No Select Fields Available Message -->
                                     <div *ngIf="getDropdownFields().length === 0"
                                         style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
                                         <!-- Default Map Icon Preview -->
@@ -220,10 +220,10 @@
                                                 <div>
                                                     <p
                                                         style="color: #666; margin: 0; font-size: 1rem; font-weight: 500;">
-                                                        No dropdown fields available
+                                                        No Select fields available
                                                     </p>
                                                     <p style="color: #999; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
-                                                        Add a dropdown field to the form to configure map symbology
+                                                        Add a Select field to the form to configure map symbology
                                                         options.
                                                     </p>
                                                 </div>
