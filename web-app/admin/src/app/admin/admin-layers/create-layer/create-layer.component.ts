@@ -72,7 +72,6 @@ export class CreateLayerDialogComponent {
         const formatControl = this.layerForm.get('format');
         const baseControl = this.layerForm.get('base');
 
-        // Reset conditional fields
         urlControl?.clearValidators();
         urlControl?.setValue('');
         formatControl?.setValue('XYZ');
@@ -80,12 +79,10 @@ export class CreateLayerDialogComponent {
         this.geopackageFile = null;
         this.geopackageFileName = '';
 
-        // Add validators based on layer type
         if (type === 'Imagery') {
             urlControl?.setValidators([Validators.required]);
         }
 
-        // Update validity
         urlControl?.updateValueAndValidity();
     }
 
@@ -94,7 +91,7 @@ export class CreateLayerDialogComponent {
      */
     onGeoPackageFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
-        if (input.files && input.files.length > 0) {
+        if (input.files?.length > 0) {
             this.geopackageFile = input.files[0];
             this.geopackageFileName = this.geopackageFile.name;
         }
@@ -148,16 +145,16 @@ export class CreateLayerDialogComponent {
             next: (newLayer) => {
                 this.dialogRef.close(newLayer);
             },
-            error: (err) => {
-                if (err.status === 400 && err.error?.errors) {
-                    const fieldErrors = err.error.errors;
+            error: ({ status, error }) => {
+                if (status === 400 && error?.errors) {
+                    const fieldErrors = error.errors;
                     if (fieldErrors.name?.type === 'unique') {
                         this.errorMessage = fieldErrors.name.message;
                     } else {
-                        this.errorMessage = err.error.message ?? 'Validation failed';
+                        this.errorMessage = error.message ?? 'Validation failed';
                     }
-                } else if (err.status === 409) {
-                    this.errorMessage = err.error;
+                } else if (status === 409) {
+                    this.errorMessage = error;
                 } else {
                     this.errorMessage = 'Failed to create layer. Please try again.';
                 }
