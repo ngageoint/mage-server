@@ -2,7 +2,7 @@ import _ from 'underscore'
 import { Component, OnInit, Inject, ElementRef, ViewChild } from '@angular/core'
 import { UntypedFormControl } from '@angular/forms'
 import { Observable } from 'rxjs'
-import { map, startWith } from 'rxjs/operators'
+import { map, startWith, debounceTime, switchMap } from 'rxjs/operators'
 import { StateService } from '@uirouter/angular'
 import { UserService, Event } from '../../../upgrade/ajs-upgraded-providers'
 import { ServiceType, FeedTopic, Service, FeedExpanded, FeedService } from '@ngageoint/mage.web-core-lib/feed'
@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { trigger, state, transition, style, animate } from '@angular/animations'
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model'
 import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.component'
+import { EventsService } from '../../admin-event/events.service'
 
 @Component({
   selector: 'app-admin-feed',
@@ -51,6 +52,7 @@ export class AdminFeedComponent implements OnInit {
 
   eventsPerPage = 10
   eventsPage = 0
+  totalFeedEvents = 0
   editEvent = false
   addEvent = false
   selectedEvent: string
@@ -61,6 +63,7 @@ export class AdminFeedComponent implements OnInit {
   events = []
   nonFeedEvents: Array<Event> = []
   feedEvents = [] as any[]
+  loadingEvents = false
 
   service: Service
   feedServiceType: ServiceType
@@ -73,14 +76,15 @@ export class AdminFeedComponent implements OnInit {
     private stateService: StateService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
-    @Inject(UserService) private userService: { myself: { id: string, role: {permissions: Array<string>}}},
+    private eventsService: EventsService,
+    @Inject(UserService) private userService: { myself: { id: string, role: { permissions: Array<string> } } },
     @Inject(Event) private eventResource: any
-    ) {
-      this.hasFeedCreatePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
-      this.hasFeedEditPermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
-      this.hasFeedDeletePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
-      this.hasUpdateEventPermission = _.contains(userService.myself.role.permissions, 'UPDATE_EVENT')
-    }
+  ) {
+    this.hasFeedCreatePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
+    this.hasFeedEditPermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
+    this.hasFeedDeletePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
+    this.hasUpdateEventPermission = _.contains(userService.myself.role.permissions, 'UPDATE_EVENT')
+  }
 
   ngOnInit(): void {
     if (this.stateService.params.feedId) {
@@ -98,56 +102,59 @@ export class AdminFeedComponent implements OnInit {
         this.feedService.fetchServiceType(this.service.serviceType as string).subscribe(serviceType => {
           this.feedServiceType = serviceType
         });
+
+        this.loadAllEvents();
+        this.filteredChoices = this.searchControl.valueChanges.pipe(
+          startWith(''),
+          debounceTime(300),
+          switchMap(value => {
+            const searchTerm = !value || typeof value === 'string' ? value : value.name;
+            return this.loadAvailableEvents(searchTerm || '');
+          })
+        );
       });
+    }
   }
 
-    this.eventResource.query(events => {
-      this.events = events.sort((a: {name: string}, b: {name: string}) => {
-        if (a.name < b.name) { return -1; }
-        if (a.name > b.name) { return 1; }
-        return 0;
-      });
-
-      this.feedEvents = _.filter(events, event => {
-        return _.some(event.feedIds, feedId => {
-          return this.feed.id === feedId;
-        });
-      });
-
-      let chain = _.chain(events);
-      if (!this.hasUpdateEventPermission) {
-        // filter teams based on acl
-        chain = chain.filter(event => {
-          const permissions = event.acl[this.userService.myself.id]
-            ? event.acl[this.userService.myself.id].permissions
-            : [];
-          return _.contains(permissions, 'update');
-        });
+  loadAllEvents(): void {
+    this.loadingEvents = true;
+    this.eventsService.getEvents({
+      feedId: this.feed.id,
+      page: this.eventsPage,
+      page_size: this.eventsPerPage
+    }).subscribe({
+      next: (response) => {
+        this.feedEvents = response.items || [];
+        this.totalFeedEvents = response.totalCount || 0;
+        this.loadingEvents = false;
+      },
+      error: (err) => {
+        console.error('Error loading feed events:', err);
+        this.loadingEvents = false;
       }
-
-      this.nonFeedEvents = chain.reject(event => {
-        return _.some(event.feedIds, (feedId: string) => {
-          return this.feed.id === feedId
-        });
-      })
-      .value()
-      .sort((a: any, b:any) => a.name < b.name ? -1 : 1)
-
-      this.filteredChoices = this.searchControl.valueChanges.pipe(
-        startWith(''),
-        map(value => {
-          return !value || typeof value === 'string' ? value : value.title
-        }),
-        map(title => {
-          return title ? this.filter(title) : this.nonFeedEvents.slice()
-        })
-      );
     });
   }
 
-  private filter(title: string): Event[] {
-    const filterValue = title.toLowerCase()
-    return this.nonFeedEvents.filter((event: any) => event.name.toLowerCase().indexOf(filterValue) === 0)
+  loadAvailableEvents(searchTerm: string): Observable<any[]> {
+    return this.eventsService.getEvents({
+      term: searchTerm,
+      excludeFeedId: this.feed.id,
+      page: 0,
+      page_size: 20
+    }).pipe(
+      map(response => {
+        let events = response.items || [];
+
+        if (!this.hasUpdateEventPermission) {
+          events = events.filter(event => {
+            const permissions = event.acl?.[this.userService.myself.id]?.permissions || [];
+            return permissions.includes('update');
+          });
+        }
+
+        return events;
+      })
+    );
   }
 
   toggleNewEvent(): void {
@@ -162,14 +169,11 @@ export class AdminFeedComponent implements OnInit {
 
   addFeedToEvent($event: MatAutocompleteSelectedEvent): void {
     this.eventResource.addFeed({ id: $event.option.id }, `"${this.feed.id}"`, event => {
-      this.feedEvents.push(event);
-      this.nonFeedEvents = _.reject(this.nonFeedEvents, e => {
-        return e.id === event.id
-      })
       this.searchControl.reset()
-
       this.eventModel = null
       this.addEvent = false
+
+      this.loadAllEvents();
 
       this.snackBar.open(`Feed added to event ${event.name}`, undefined, {
         duration: 5 * 1000,
@@ -181,17 +185,20 @@ export class AdminFeedComponent implements OnInit {
     $event.stopPropagation();
 
     this.eventResource.removeFeed({ id: event.id, feedId: this.feed.id }, removed => {
-      this.feedEvents = _.reject(this.feedEvents, e => {
-        return e.id === event.id
-      });
-      this.nonFeedEvents.push(event)
-      this.nonFeedEvents = this.nonFeedEvents.sort((a: any, b: any) => a.name < b.name ? -1 : 1)
       this.searchControl.reset()
+
+      this.loadAllEvents();
 
       this.snackBar.open(`Feed removed from event ${event.name}`, undefined, {
         duration: 5 * 1000,
       });
     });
+  }
+
+  onEventsPageChange(event: any): void {
+    this.eventsPage = event.pageIndex;
+    this.eventsPerPage = event.pageSize;
+    this.loadAllEvents();
   }
 
   editFeed(): void {

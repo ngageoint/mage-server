@@ -344,6 +344,12 @@ exports.getEvents = async function (options, callback) {
   if (filter.teamId != null) {
     query.teamIds = { ...query.teamIds, $in: filter.teamId };
   }
+  if (filter.excludeFeedId != null) {
+    query.feedIds = { $nin: [filter.excludeFeedId] };
+  }
+  if (filter.feedId != null) {
+    query.feedIds = { ...query.feedIds, $in: [filter.feedId] };
+  }
 
   let projection = {};
   if (options.projection) {

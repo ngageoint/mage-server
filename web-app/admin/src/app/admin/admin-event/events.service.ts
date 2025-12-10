@@ -8,6 +8,8 @@ export interface SearchOptions {
     term?: string;
     teamId?: string;
     excludeTeamId?: string;
+    feedId?: string;
+    excludeFeedId?: string;
     id?: string;
     page?: number;
     page_size?: number;
@@ -49,6 +51,12 @@ export class EventsService {
         }
         if (options.excludeTeamId !== undefined) {
             params = params.set('excludeTeamId', options.excludeTeamId);
+        }
+        if (options.feedId !== undefined) {
+            params = params.set('feedId', options.feedId);
+        }
+        if (options.excludeFeedId !== undefined) {
+            params = params.set('excludeFeedId', options.excludeFeedId);
         }
         if (options.userId !== undefined) {
             params = params.set('userId', options.userId);

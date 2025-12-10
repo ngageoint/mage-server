@@ -88,7 +88,8 @@
                 <mat-form-field>
                   <input type="text" #eventSelect placeholder="Add Feed To Event" matInput [matAutocomplete]="auto"
                     [formControl]="searchControl">
-                  <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="addFeedToEvent($event)">
+                  <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete"
+                    (optionSelected)="addFeedToEvent($event)">
                     <mat-option *ngFor="let event of filteredChoices | async" [value]="event.name" [id]="event.id">
                       {{event.name}}
                     </mat-option>
@@ -98,8 +99,7 @@
             </div>
 
             <mat-nav-list>
-              <ng-container
-                *ngFor="let event of feedEvents | slice:(eventsPage*eventsPerPage):((eventsPage+1)*eventsPerPage);">
+              <ng-container *ngFor="let event of feedEvents;">
                 <mat-list-item (click)="goToEvent(event)">
                   <mat-icon class="feed__icon" mat-list-icon>event</mat-icon>
                   <div mat-line>{{event.name}}</div>
@@ -113,7 +113,8 @@
 
               </ng-container>
 
-              <mat-paginator [length]="feedEvents.length" [pageSize]="eventsPerPage" (page)="eventsPage = $event.pageIndex">
+              <mat-paginator [length]="totalFeedEvents" [pageSize]="eventsPerPage" [pageIndex]="eventsPage"
+                (page)="onEventsPageChange($event)">
               </mat-paginator>
 
             </mat-nav-list>
