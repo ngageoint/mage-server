@@ -11,4 +11,4 @@ import { AdminBreadcrumbModule } from './admin-breadcrumb/admin-breadcrumb.modul
   declarations: [AdminPluginTabContentComponent, AdminNavComponent],
   exports: [AdminPluginTabContentComponent, AdminUsersModule, AdminNavComponent]
 })
-export class AdminModule {}
+export class AdminModule { }

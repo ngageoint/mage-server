@@ -122,14 +122,30 @@ describe('EventDashboardComponent', () => {
     expect(component.totalEvents).toBe(2);
   }));
 
-  it('should filter events by search term', () => {
+  it('should no longer filter events client-side', () => {
     component.events = mockEventsResponse;
+  
     component.eventSearch = 'event a';
     component['applyFilters']();
-    expect(component.filteredEvents.length).toBe(1);
+  
+    // Expect no filtering to occur
+    expect(component.filteredEvents.length).toBe(2);
     expect(component.filteredEvents[0].name).toBe('Event A');
+    expect(component.filteredEvents[1].name).toBe('Event B');
   });
-
+  
+  it('should send search term to server when searching', fakeAsync(() => {
+    eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse));
+  
+    component.onSearchTermChanged('event a');
+    tick();
+  
+    expect(component.searchOptions.term).toBe('event a');
+    expect(eventServiceSpy.getEvents).toHaveBeenCalledWith(
+      jasmine.objectContaining({ term: 'event a' })
+    );
+  }));
+  
   it('should clear search and refresh events', fakeAsync(() => {
     eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse));
     component.onSearchCleared();

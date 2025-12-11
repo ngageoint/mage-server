@@ -16,19 +16,14 @@ export interface SearchOptions {
     state?: string;
 }
 
-export interface EventsResponse {
-    pageSize?: number;
-    page?: number;
-    items: Event[];
-    totalCount?: number;
-}
-
 export interface PagedResponse<T> {
     pageSize?: number;
     pageIndex?: number;
     items: T[];
     totalCount?: number;
 }
+
+export interface EventsResponse extends PagedResponse<Event> { }
 
 const setParams = (options: any): HttpParams => {
     let params = new HttpParams();
@@ -44,16 +39,30 @@ const setParams = (options: any): HttpParams => {
     providedIn: 'root'
 })
 export class EventsService {
-
     constructor(private http: HttpClient) { }
 
     getEvents(options: SearchOptions): Observable<EventsResponse> {
-        let params = setParams(options);
+        const page = options.page ?? 0;
+        const pageSize = options.page_size ?? 10;
 
-        params = params.set('includePagination', 'true');
+        const query: any = {
+            term: options.term,
+            teamId: options.teamId,
+            excludeTeamId: options.excludeTeamId,
+            userId: options.userId,
+            state: options.state,
+
+            limit: pageSize,
+            start: page,
+
+            includePagination: true
+        };
+
+        const params = setParams(query);
 
         return this.http.get<EventsResponse>('/api/events', { params });
     }
+
 
     getEventById(eventId: string): Observable<Event> {
         return this.http.get<Event>(`/api/events/${eventId}`);
@@ -79,46 +88,69 @@ export class EventsService {
         return this.http.delete<void>(`/api/events/${eventId}/teams/${teamId}`);
     }
 
-    getMembers(eventId: string, options: {
-        page?: number;
-        page_size?: number;
-        term?: string;
-        total?: boolean;
-    }): Observable<PagedResponse<User>> {
+    getMembers(
+        eventId: string,
+        options: {
+            page?: number;
+            page_size?: number;
+            term?: string;
+            total?: boolean;
+        }
+    ): Observable<PagedResponse<User>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<User>>(`/api/events/${eventId}/members`, { params });
+        return this.http.get<PagedResponse<User>>(
+            `/api/events/${eventId}/members`,
+            { params }
+        );
     }
 
-    getNonMembers(eventId: string, options: {
-        page?: number;
-        page_size?: number;
-        term?: string;
-        total?: boolean;
-    }): Observable<PagedResponse<User>> {
+    getNonMembers(
+        eventId: string,
+        options: {
+            page?: number;
+            page_size?: number;
+            term?: string;
+            total?: boolean;
+        }
+    ): Observable<PagedResponse<User>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<User>>(`/api/events/${eventId}/nonMembers`, { params });
+        return this.http.get<PagedResponse<User>>(
+            `/api/events/${eventId}/nonMembers`,
+            { params }
+        );
     }
 
-    getTeamsInEvent(eventId: string, options: {
-        page?: number;
-        page_size?: number;
-        term?: string;
-        total?: boolean;
-        omit_event_teams?: boolean;
-    }): Observable<PagedResponse<Team>> {
+    getTeamsInEvent(
+        eventId: string,
+        options: {
+            page?: number;
+            page_size?: number;
+            term?: string;
+            total?: boolean;
+            omit_event_teams?: boolean;
+        }
+    ): Observable<PagedResponse<Team>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<Team>>(`/api/events/${eventId}/teams`, { params });
+        return this.http.get<PagedResponse<Team>>(`/api/events/${eventId}/teams`, {
+            params
+        });
     }
 
-    getTeamsNotInEvent(eventId: string, options: {
-        page?: number;
-        page_size?: number;
-        term?: string;
-        total?: boolean;
-        omit_event_teams?: boolean;
-    }): Observable<PagedResponse<Team>> {
+    getTeamsNotInEvent(
+        eventId: string,
+        options: {
+            page?: number;
+            page_size?: number;
+            term?: string;
+            total?: boolean;
+            omit_event_teams?: boolean;
+        }
+    ): Observable<PagedResponse<Team>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<Team>>(`/api/events/${eventId}/nonTeams`, { params });
+        return this.http.get<PagedResponse<Team>>(
+            `/api/events/${eventId}/nonTeams`,
+            { params }
+        );
     }
 
     getAllLayers(): Observable<Layer[]> {

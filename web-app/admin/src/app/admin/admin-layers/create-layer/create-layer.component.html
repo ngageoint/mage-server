@@ -1,0 +1,139 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <h2 class="dialog-title">Create a New Layer</h2>
+    </div>
+
+    <div class="dialog-content">
+        <div *ngIf="errorMessage" class="error-popover">
+            <i class="fa fa-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+        </div>
+
+        <form [formGroup]="layerForm" class="layer-form">
+            <div class="form-field">
+                <label class="field-label">Layer Name</label>
+                <input type="text" class="form-input" formControlName="name" placeholder="Enter layer name" />
+                <div class="field-error">
+                    <span class="error-text visible" *ngIf="
+              layerForm.get('name').hasError('required') &&
+              (layerForm.get('name').touched || layerForm.get('name').dirty)
+            ">
+                        Name is required
+                    </span>
+                    <span class="error-text visible" *ngIf="
+              layerForm.get('name').hasError('duplicateName') &&
+              (layerForm.get('name').touched || layerForm.get('name').dirty)
+            ">
+                        A layer with this name already exists
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Layer Type</label>
+                <select class="form-input" formControlName="type" (change)="onTypeChange()">
+                    <option value="" disabled>Select a layer type</option>
+                    <option value="Imagery">Imagery</option>
+                    <option value="Feature">Feature</option>
+                    <option value="GeoPackage">GeoPackage</option>
+                </select>
+                <div class="type-description">
+                    <span *ngIf="layerForm.get('type').value === 'Imagery'" class="description-text">
+                        <i class="fa fa-info-circle"></i>
+                        WMS, XYZ or TMS Layers
+                    </span>
+                    <span *ngIf="layerForm.get('type').value === 'Feature'" class="description-text">
+                        <i class="fa fa-info-circle"></i>
+                        Static layers (KML/KMZ)
+                    </span>
+                    <span *ngIf="layerForm.get('type').value === 'GeoPackage'" class="description-text">
+                        <i class="fa fa-info-circle"></i>
+                        Downloadable GeoPackage layers
+                    </span>
+                </div>
+                <div class="field-error">
+                    <span class="error-text" [class.visible]="
+              layerForm.get('type').invalid &&
+              (layerForm.get('type').touched || layerForm.get('type').dirty)
+            ">
+                        Type is required
+                    </span>
+                </div>
+            </div>
+
+            <div *ngIf="layerForm.get('type').value === 'Imagery'" class="conditional-fields">
+                <div class="form-field">
+                    <label class="field-label">Layer URL</label>
+                    <input type="text" class="form-input" formControlName="url"
+                        placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <div class="field-error">
+                        <span class="error-text" [class.visible]="
+                            layerForm.get('url').invalid &&
+                            (layerForm.get('url').touched || layerForm.get('url').dirty)
+                        ">
+                            URL is required for Imagery layers
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Format</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" formControlName="format" value="XYZ" />
+                            <span>XYZ</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" formControlName="format" value="TMS" />
+                            <span>TMS</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" formControlName="format" value="WMS" />
+                            <span>WMS</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" formControlName="base" />
+                        <span>Base Layer</span>
+                    </label>
+                </div>
+            </div>
+
+            <div *ngIf="layerForm.get('type').value === 'GeoPackage'" class="conditional-fields">
+                <div class="form-field">
+                    <label class="field-label">Choose GeoPackage File</label>
+                    <div class="file-upload-container">
+                        <input type="file" id="geopackage-file" class="file-input" accept=".gpkg"
+                            (change)="onGeoPackageFileSelected($event)" />
+                        <label for="geopackage-file" class="file-label">
+                            <i class="fa fa-upload"></i>
+                            <span *ngIf="!geopackageFileName">Select GeoPackage file...</span>
+                            <span *ngIf="geopackageFileName" class="file-name">{{ geopackageFileName }}</span>
+                        </label>
+                    </div>
+                    <div class="field-hint">
+                        <i class="fa fa-info-circle"></i>
+                        Select a .gpkg file to upload
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Description</label>
+                <textarea class="form-input" formControlName="description" rows="3"
+                    placeholder="Enter layer description (optional)"></textarea>
+            </div>
+        </form>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" (click)="cancel()">Cancel</button>
+        <button class="action-button btn-primary" (click)="save()" [disabled]="canSave">
+            <i class="fa fa-save"></i>
+            Create Layer
+        </button>
+    </div>
+</div>

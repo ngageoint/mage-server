@@ -70,37 +70,41 @@ export class EventDashboardComponent implements OnInit {
     this.eventService.getEvents(this.searchOptions).subscribe({
       next: (events) => {
         this.events = events;
-        this.applyFilters();
-      },
+        this.filteredEvents = events.items;
+        this.totalEvents = events.totalCount ?? 0;
+      }
+      ,
       error: (err) => console.error('Error fetching events:', err)
     });
   }
 
   /** Apply search term filter */
   private applyFilters(): void {
-    if (!this.events) return;
-    const term = this.eventSearch.trim().toLowerCase();
-    this.filteredEvents = this.events.items.filter(
-      (e) =>
-        !term || (
-        e.name?.toLowerCase().includes(term) ??
-        e.description?.toLowerCase().includes(term))
-    );
+    this.filteredEvents = this.events.items;
     this.totalEvents = this.events.totalCount ?? 0;
-  }
+  }  
 
   /** Handle search term change */
   onSearchTermChanged(term: string): void {
     this.eventSearch = term;
-    this.searchOptions.page = 0;
-    this.applyFilters();
-  }
+    this.searchOptions = {
+      ...this.searchOptions,
+      term,
+      page: 0
+    };
+    this.refreshEvents();
+  }  
 
   /** Clear search */
   onSearchCleared(): void {
     this.eventSearch = '';
+    this.searchOptions = { 
+      ...this.searchOptions, 
+      term: '', 
+      page: 0 
+    };
     this.refreshEvents();
-  }
+  }  
 
   /** Reset all filters and pagination */
   reset(): void {
