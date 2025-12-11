@@ -455,22 +455,27 @@ describe('EventDetailsComponent', () => {
     it('should update user role', () => {
       const user = { id: '1', username: 'user1', displayName: 'User One' } as any;
       const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
-      teamsService.updateUserRole.and.returnValue(of({ id: '1' } as any));
+      component.membersDataSource.data = [user];
 
       component.updateUserRole(user, roleEvent);
 
-      expect(teamsService.updateUserRole).toHaveBeenCalledWith('1', '1', 'MANAGER');
+      expect(component['pendingRoleChanges'].get('1')).toBe('MANAGER');
+      expect(component.membersDataSource.data.length).toBe(1);
     });
 
-    it('should handle update role error', () => {
-      component.eventTeam = null;
-      const user = { id: '1', username: 'user1' } as any;
-      const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
-      spyOn(console, 'error');
+    it('should store multiple pending role changes', () => {
+      const user1 = { id: '1', username: 'user1' } as any;
+      const user2 = { id: '2', username: 'user2' } as any;
+      const roleEvent1 = { source: null, value: 'MANAGER' } as MatSelectChange;
+      const roleEvent2 = { source: null, value: 'OWNER' } as MatSelectChange;
+      component.membersDataSource.data = [user1, user2];
 
-      component.updateUserRole(user, roleEvent);
+      component.updateUserRole(user1, roleEvent1);
+      component.updateUserRole(user2, roleEvent2);
 
-      expect(console.error).toHaveBeenCalledWith('Event team not found');
+      expect(component['pendingRoleChanges'].get('1')).toBe('MANAGER');
+      expect(component['pendingRoleChanges'].get('2')).toBe('OWNER');
+      expect(component['pendingRoleChanges'].size).toBe(2);
     });
   });
 
