@@ -240,8 +240,8 @@
                   <div class="col-md-12">
                     <ui-select ng-model="$ctrl.event.selected" theme="bootstrap">
                       <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
-                      <ui-select-choices
-                        repeat="event in $ctrl.nonLayerEvents | orderBy: 'name' | filter: $select.search">
+                      <ui-select-choices repeat="event in $ctrl.nonLayerEvents | orderBy: 'name'"
+                        refresh="$ctrl.onEventSearch($select.search)" refresh-delay="300">
                         <div ng-bind-html="event.name | highlight: $select.search"></div>
                       </ui-select-choices>
                     </ui-select>

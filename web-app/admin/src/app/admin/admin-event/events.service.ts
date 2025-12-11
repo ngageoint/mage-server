@@ -9,6 +9,8 @@ export interface SearchOptions {
     term?: string;
     teamId?: string;
     excludeTeamId?: string;
+    feedId?: string;
+    excludeFeedId?: string;
     id?: string;
     page?: number;
     page_size?: number;

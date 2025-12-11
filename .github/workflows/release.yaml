@@ -18,14 +18,6 @@ on:
         required: false
         default: true
 
-  # TODO: possibly use release branches to perform the release process
-  # push:
-  #   branches:
-  #     - release/*
-  #     - prerelease/*
-  # TODO: possibly use release event to perform the release process
-  # release:
-
 jobs:
   config:
     uses: ./.github/workflows/config.yaml
@@ -110,11 +102,17 @@ jobs:
     name: publish packages
     needs: [config, create_release]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
+          registry-url: "https://registry.npmjs.org"
+      - name: update npm
+        run: npm install -g npm@latest
       - name: install json util
         run: npm i -g json
       - name: download service packages
@@ -127,13 +125,10 @@ jobs:
           name: mage.web-app-artifacts
       - name: publish mage service
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz) ${{(inputs.is_prerelease && '--tag beta') || ''}} || echo "skipping mage service publish..."
       - name: publish mage web
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz) ${{(inputs.is_prerelease && '--tag beta') || ''}} || echo "skipping mage web app publish..."
       - name: publish mage core
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz) ${{(inputs.is_prerelease && '--tag beta') || ''}} || echo "skipping mage core publish..."

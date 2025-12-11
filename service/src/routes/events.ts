@@ -205,6 +205,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         complete: req.parameters!.complete,
         teamId: req.query.teamId as string | undefined,
         excludeTeamId: req.query.excludeTeamId as string | undefined,
+        feedId: req.query.feedId as string | undefined,
+        excludeFeedId: req.query.excludeFeedId as string | undefined,
         searchTerm: req.query.term as string | undefined,
         userId: req.query.userId as string | undefined
       };
