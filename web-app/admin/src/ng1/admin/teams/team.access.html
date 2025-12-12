@@ -1,0 +1,112 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-users admin-dashboard"></i><a ui-sref="admin.teams">Teams</a></li>
+      <li><a ui-sref="admin.team({ teamId: $ctrl.team.id })">{{ $ctrl.team.name }}</a></li>
+      <li class="active">Access</li>
+    </ol>
+  </div>
+</div>
+
+<div class="container bottom-gap-l">
+  <div class="row">
+    <div class="col-md-12" ng-show="$ctrl.team">
+
+      <h4><i class="fa fa-shield"></i> {{$ctrl.team.name}} Access</h4>
+
+      <hr>
+
+      <p>Add a new member to <strong class="muted">{{$ctrl.team.name}}</strong></p>
+
+      <div class="row">
+        <div class="col-md-8">
+          <input type="text" ng-model="$ctrl.nonMember.selected" placeholder="Search for a user"
+            uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
+            typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults" class="form-control"
+            typeahead-min-length="0" ng-model-options="{ debounce: 1000 }">
+        </div>
+
+        <div class="col-md-2">
+          <select class="form-control" name="permissions" ng-model="$ctrl.nonMember.role">
+            <option value="OWNER">Owner</option>
+            <option value="MANAGER">Manager</option>
+            <option value="GUEST">Guest</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <button class="btn btn-success" ng-click="$ctrl.addMember()"
+            ng-disabled="($ctrl.nonMember.selected == null || !$ctrl.nonMember.selected.id)"><i class="fa fa-plus"></i> 
+              Add member to team
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row top-gap-l">
+    <div class="col-md-12">
+      <nav class="navbar navbar-default admin-dashboard-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand">Existing Members <sup><span
+                  class="badge">{{$ctrl.count()}}</span></sup></a>
+          </div>
+
+          <form class="navbar-form navbar-left">
+            <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch "
+              ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
+          </form>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="admin-table">
+        <div class="well-item" ng-repeat="member in ($ctrl.filteredMembers = ($ctrl.teamMembers | filter:$ctrl.filterMembers)) | orderBy:'displayName'" >
+          <div class="row admin-event-member">
+            <div class="col-md-10 pointer" ng-click="$ctrl.gotoUser(member)">
+              <div class="admin-event-member">
+                <div class="right-gap">
+                  <user-avatar [user]="member" avatar-width="40" avatar-height="40"></user-avatar>
+                </div>
+                <span class="strong">{{member.displayName}}</span>
+                <span class="muted">{{member.email}}</span>
+              </div>
+            </div>
+
+            <div class="col-md-2">
+
+              <div ng-if="member.role === 'OWNER' || $ctrl.owners.length <= 1">
+                <div ng-if="$ctrl.owners.length <= 1 && member.role === 'OWNER'">
+                  <span class="muted pull-right">Owner</span>
+                </div>
+              </div>
+
+              <div ng-if="member.role !== 'OWNER' || $ctrl.owners.length > 1">
+                <div class="form-inline pull-right">
+                  <select class="form-control right-gap" name="permissions" ng-model="member.role"
+                    ng-change="$ctrl.updateRole(member, member.role)">
+                    <option value="OWNER">Owner</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="GUEST">Guest</option>
+                  </select>
+
+                  <button class="btn btn-danger" ng-click="$ctrl.removeMember(member)"><i
+                      class="fa fa-trash"></i></button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

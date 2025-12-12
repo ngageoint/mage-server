@@ -18,7 +18,7 @@ export class TimeFormatComponent implements OnInit {
     title: 'Absolute',
     format: 'absolute'
   }, {
-    title: 'Relative',
+    title: '30 Seconds',
     format: 'relative'
   }]
   formatOption: TimeFormatOption

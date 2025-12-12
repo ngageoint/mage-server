@@ -1,0 +1,350 @@
+<div class="admin-main">
+  <div class="admin-nav-gap">
+    <div class="container-fluid">
+      <ol class="breadcrumb">
+        <li><i class="fa fa-user admin-dashboard"></i><a ui-sref="admin.users">Users</a></li>
+        <li class="active">{{$ctrl.user.displayName}}</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="container-fluid bottom-gap-l">
+    <div class="row">
+      <div class="col-md-offset-1 col-md-10" ng-show="$ctrl.user">
+
+        <div class="row">
+          <div class="col-md-10">
+            <h2>User: {{$ctrl.user.displayName}}</h2>
+          </div>
+          <div class="col-md-2" ng-if="$ctrl.hasUserEditPermission">
+            <h2>
+              <button class="btn btn-default pull-right" ng-click="$ctrl.editUser($ctrl.user)"><i class="fa fa-edit"></i> Edit</button>
+            </h2>
+          </div>
+        </div>
+        <hr>
+
+        <div class="row top-gap-l">
+          <div class="col-md-6 col-xs-12">
+
+            <div class="row">
+
+              <div class="col-md-2">
+                <span class="muted">Avatar:&nbsp;</span>
+              </div>
+
+              <div class="col-md-10">
+                <user-avatar [user]="$ctrl.user" [avatar-width]="75" [avatar-height]="75"></user-avatar>
+              </div>
+            </div>
+
+            <div class="row top-gap">
+              <div class="col-md-2">
+                <span class="muted">Map Icon:&nbsp;</span>
+              </div>
+              <div class="col-md-10">
+                <div icon-user="$ctrl.user"></div>
+              </div>
+            </div>
+
+            <div class="row top-gap-l" ng-if="$ctrl.user.authentication.type === 'local'">
+              <div class="col-md-2">
+                <span class="muted">Username:&nbsp;</span>
+              </div>
+              <div class="col-md-10">
+                <span>{{$ctrl.user.username}}</span>
+              </div>
+            </div>
+
+            <div class="row top-gap-s">
+              <div class="col-md-2">
+                <span class="muted">Display Name:&nbsp;</span>
+              </div>
+              <div class="col-md-10">
+                <span>{{$ctrl.user.displayName}}</span>
+              </div>
+            </div>
+
+            <div class="row top-gap-s" ng-if="$ctrl.user.email">
+              <div class="col-md-2">
+                <span class="muted">Email:&nbsp;</span>
+              </div>
+              <div class="col-md-10">
+                <span>{{$ctrl.user.email}}</span>
+              </div>
+            </div>
+
+            <div class="row top-gap-s" ng-if="$ctrl.user.phones[0]">
+              <div class="col-md-2">
+                <span class="muted">Phone:&nbsp;</span>
+              </div>
+              <div class="col-md-10">
+                <span>{{$ctrl.user.phones[0].number}}</span>
+              </div>
+            </div>
+
+            <div class="row top-gap-s">
+              <div class="col-md-2">
+                <span class="muted">Role:&nbsp;</span>
+              </div>
+              <div class="col-md-10">
+                <span>{{$ctrl.user.role.name}}</span>
+              </div>
+            </div>
+
+            <div class="row top-gap-s bottom-gap">
+              <div class="col-md-2">
+                <span class="muted">Auth:&nbsp;</span>
+              </div>
+              <div class="col-md-10" ng-if="$ctrl.user.authentication.authenticationConfiguration">
+                <span>{{$ctrl.user.authentication.authenticationConfiguration.title}}</span>
+              </div>
+              <div class="col-md-10" ng-if="!$ctrl.user.authentication.authenticationConfiguration">
+                <strong>Authentication strategy no longer exists</strong>
+            </div>
+            </div>
+
+          </div>
+
+          <div class="col-md-6">
+            <div class="card" ng-if="!$ctrl.user.active && $ctrl.hasUserEditPermission">
+              <div class="card-content">
+                <strong class="text-success">Activate New User Account</strong>
+                <p class="text-success">This is a new user account.  Activate the account to allow user to access MAGE.</p>
+                <button class="btn btn-success top-gap" ng-click="$ctrl.activateUser($ctrl.user)"> <i class="fa fa-check"></i> Activate</button>
+              </div>
+            </div>
+
+            <div class="card" ng-if="!$ctrl.user.enabled && $ctrl.user.active && $ctrl.hasUserEditPermission">
+              <div class="card-content">
+                <strong class="text-warning">User Account Disabled</strong>
+                <p class="text-warning">This account is disabled. Enable the account to allow user to access MAGE. Accounts can be disabled manually by an administrator, or for security reasons, such as too many invalid login attempts.</p>
+                <button class="btn btn-warning top-gap" ng-click="$ctrl.enableUser($ctrl.user)"> <i class="fa fa-check"></i> Enable</button>
+              </div>
+            </div>
+
+            <div class="card" ng-if="$ctrl.user.enabled && $ctrl.user.active && $ctrl.hasUserEditPermission">
+              <div class="card-content">
+                <strong class="text-warning">Disable User Account</strong>
+                <p class="text-warning">Disabling will prevent the account user from accessing MAGE. MAGE will retain all account information and you can enable the account again at any time.</p>
+                <button class="btn btn-warning top-gap" ng-click="$ctrl.disableUser($ctrl.user)"> <i class="fa fa-ban"></i> Disable</button>
+              </div>
+            </div>
+
+            <div class="card top-gap" ng-if="$ctrl.hasUserDeletePermission">
+              <div class="card-content">
+                <strong class="text-danger">Delete User Account</strong>
+                <p class="text-danger">Deleting the account will remove all associated user information including location data. This cannot be undone, and the user's data will be unrecoverable.</p>
+                <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteUser($ctrl.user)"> <i class="fa fa-trash-o"></i> Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <div class="col-md-6 col-xs-12">
+            <div class="row">
+              <div class="col-md-12">
+                <nav class="navbar navbar-default admin-dashboard-navbar">
+                  <div class="container-fluid">
+                    <div class="navbar-header">
+                      <a class="navbar-brand">Add User to a <i class="fa fa-users fa-small"></i> Team or <i class="fa fa-calendar fa-small"></i> Event</a>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </div>
+
+            <script type="text/ng-template" id="teamEventTemplate.html">
+              <a>
+                  <i ng-show="match.model.teamEventId" class="fa fa-calendar fa-small"></i>
+                  <i ng-show="!match.model.teamEventId" class="fa fa-users fa-small"></i>
+                  <span ng-bind-html="match.model.name"></span>
+              </a>
+            </script>
+
+            <div class="admin-table">
+              <div class="well-item">
+                <div class="row">
+                  <div class="col-md-12">
+                    <input type="text" ng-model="$ctrl.nonUserTeam" placeholder="Search for a team"
+                    uib-typeahead="team as team.name for team in $ctrl.searchNonUserTeams($viewValue)"
+                    typeahead-loading="$ctrl.nonUserTeamSearchResults" typeahead-no-results="noSearchResults"
+                    typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }" 
+                    typeahead-template-url="teamEventTemplate.html">
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-12">
+                      <button class="btn btn-success" ng-click="$ctrl.addUserToTeam()"
+                      ng-disabled="($ctrl.nonUserTeam == null || !$ctrl.nonUserTeam.id)"><i class="fa fa-plus"></i> Add To Team</button>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row top-gap-l">
+              <div class="col-md-12">
+                <nav class="navbar navbar-default admin-dashboard-navbar">
+                  <div class="container-fluid">
+                    <div class="navbar-header">
+                      <a class="navbar-brand">Current Teams and Events</a>
+                    </div>
+
+                    <form class="navbar-form navbar-left">
+                      <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.userTeamSearch"
+            ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.searchUserTeam()">
+                      </div>
+                    </form>
+                    <div class="navbar-form navbar-right right-gap-s">
+                      <button class="btn btn-default navbar-right" ng-click="$ctrl.editTeam = !$ctrl.editTeam">Edit</button>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="admin-table">
+                  <div class="well-item"
+                      ng-repeat="team in $ctrl.userTeams" >
+                    <div class="row pointer" ng-click="$ctrl.gotoTeam(team)">
+                      <div class="col-md-12">
+                        <div class="right-gap pull-left">
+                          <i class="fa" ng-class="{'fa-users': !team.teamEventId, 'fa-calendar': team.teamEventId}"></i>
+                        </div>
+                        <span>{{team.name}}</span>
+
+                        <span class="pull-right" ng-show="$ctrl.editTeam">
+                          <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeUserFromTeam($event, team)"><i class="fa fa-minus"></i></a>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="row" ng-if="team.description &&!team.teamEventId">
+                      <div class="col-md-12">
+                        <span class="muted">{{team.description}}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <ul class="pager pull-right">
+                  <li ng-class="{'disabled': $ctrl.hasPreviousUserTeam() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.previousUserTeam()">&larr; Previous</a>
+                  </li>
+                  <li ng-class="{'disabled': $ctrl.hasNextUserTeam() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.nextUserTeam()">Next&rarr;</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <div class="col-md-12">
+            <nav class="navbar navbar-default admin-dashboard-navbar">
+              <div class="container-fluid">
+                <div class="navbar-header">
+                  <button type="button" class="admin-navbar-toggle navbar-toggle collapsed" data-toggle="collapse" data-target="#login-nav" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand">Logins</a>
+                </div>
+                <div class="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
+                  <form class="navbar-form navbar-left fixed-width-navbar">
+                    <div class="form-group">
+                      <input type="text" ng-model="$ctrl.device" placeholder="Filter on device"
+                      uib-typeahead="device as device.userAgent for device in $ctrl.searchLogins($viewValue)"
+                      typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noDeviceSearchResults"
+                      typeahead-min-length="0"  class="form-control" ng-model-options="{ debounce: 1000 }"
+                      typeahead-on-select='$ctrl.filterLogins()'>
+                    </div>
+                    <div class="form-group">
+                      <div class="input-group">
+                        <input type="text" placeholder="Start Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="$ctrl.login.startDate" is-open="$ctrl.login.startDateOpened" close-text="Close" />
+                        <span class="input-group-btn">
+                          <button type="button" class="btn btn-default" ng-click="$ctrl.openLoginStart($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <span class="navbar-text-inverse">&nbsp;to&nbsp;</span>
+                    </div>
+                    <div class="form-group">
+                      <div class="input-group">
+                        <input type="text" placeholder="End Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="$ctrl.login.endDate" is-open="$ctrl.login.endDateOpened"  close-text="Close" />
+                        <span class="input-group-btn">
+                          <button type="button" class="btn btn-default" ng-click="$ctrl.openLoginEnd($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                      </div>
+                    </div>
+                  </form>
+                  <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                      <span class="navbar-text-inverse">Results: </span>
+                      <select class="form-control" ng-init="$ctrl.loginResultsLimit = 10" ng-model="$ctrl.loginResultsLimit" ng-change="$ctrl.loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="admin-table">
+              <div class="well-item" ng-repeat="login in $ctrl.loginPage.logins" >
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="right-gap pull-left">
+                      <i class="fa fa-fw fa-sign-in"></i>
+                    </div>
+                    <strong class="right-gap">{{login.user.displayName}}</strong>
+                    <span class="muted"><a href="javascript:void(0);" ng-click="$ctrl.gotoDevice(login.device)"><i class="fa fa-fw" ng-class="$ctrl.iconClass(login.device)"></i>{{login.device.uid}}</a></span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="right-gap pull-left">
+                      <i class="fa fa-fw"></i>
+                    </div>
+                    <span>{{login.timestamp | moment:'fromNow'}} ({{login.timestamp | moment:'MMM D YYYY hh:mm:ss A'}})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <ul class="pager pull-right">
+              <li ng-class="{'disabled': !$ctrl.showPrevious}">
+                <a href="javascript:void(0);" ng-click="$ctrl.pageLogin($ctrl.loginPage.prev)">&larr; Previous</a>
+              </li>
+              <li ng-class="{'disabled': !showNext}">
+                <a href="javascript:void(0);" ng-click="$ctrl.pageLogin($ctrl.loginPage.next)">Next &rarr;</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -26,8 +26,12 @@ services:
       - 389:389
       - 636:636
     volumes:
-      - ./ldapseed.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif
-    command: --copy-service
+      - type: bind
+        source: ./ldap/db
+        target: /var/lib/ldap
+      - type: bind
+        source: ./ldap/config
+        target: /etc/ldap/slapd.d
     networks:
       - ldap.mage.net
 

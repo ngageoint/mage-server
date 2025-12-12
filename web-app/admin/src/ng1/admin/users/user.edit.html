@@ -1,0 +1,214 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb" ng-if="$ctrl.user.id">
+      <li><i class="fa fa-user admin-dashboard"></i><a ui-sref="admin.users">Users</a></li>
+      <li><a ui-sref="admin.user({ userId: $ctrl.user.id })">{{ $ctrl.user.displayName }}</a></li>
+      <li class="active">Edit</li>
+    </ol>
+    <ol class="breadcrumb" ng-if="!$ctrl.user.id">
+      <li><i class="fa fa-user admin-dashboard"></i><a ui-sref="admin.users">Users</a></li>
+      <li class="active">New</li>
+    </ol>
+  </div>
+</div>
+
+<div class="container top-gap">
+  <div class="row bottom-gap">
+    <div class="col-sm-10">
+      <div class="card">
+        <div class="card-content">
+
+          <h3 style="display: inline;" ng-if="$ctrl.user.id">{{$ctrl.user.displayName}}</h3>
+          <h3 style="display: inline;" ng-if="!$ctrl.user.id">New user</h3>
+          <hr>
+
+          <div class="row top-gap-l">
+            <div class="col-md-12">
+              <form ng-submit="$ctrl.saveUser($ctrl.user)" class="form-horizontal" name="account" method="post" autocomplete="off">
+
+                  <div class="form-group" ng-show="!$ctrl.user.id || $ctrl.user.authentication.type == 'local'">
+                    <label class="control-label col-sm-2">Username</label>
+                    <div class="col-sm-10">
+                      <input type="text" ng-model="$ctrl.user.username" class="form-control" ng-disabled="$ctrl.user.id && $ctrl.user.authentication.type === local"/>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Display Name</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="Johnny Appleseed" ng-model="$ctrl.user.displayName" name="displayName" class="form-control">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Email</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="johnny@appleseed.com" ng-model="$ctrl.user.email" name="email" class="form-control">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Phone</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="$ctrl.user.phones[0].number" name="phone" class="form-control">
+                    </div>
+                  </div>
+
+                  <div class="form-group" ng-class="{error: 'has-error', success: 'has-success'}[$ctrl.passwordStatus.status]" ng-if="!$ctrl.user.id">
+                    <label class="control-label col-sm-2">Password</label>
+                    <div class="col-sm-10">
+                      <input type="password" ng-model="$ctrl.user.password" name="password" class="form-control">
+                      <span class="help-inline" ng-show="$ctrl.passwordStatus.status">{{$ctrl.passwordStatus.msg}}</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group" ng-class="{error: 'has-error', success: 'has-success'}[$ctrl.passwordStatus.status]" ng-if="!$ctrl.user.id">
+                    <label class="control-label col-sm-2">Confirm Password</label>
+                    <div class="col-sm-10">
+                      <input type="password" ng-model="$ctrl.user.passwordconfirm" name="passwordconfirm" class="form-control">
+                      <span class="help-inline" ng-show="$ctrl.passwordStatus.status">{{$ctrl.passwordStatus.msg}}</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Role</label>
+                    <div class="col-sm-10">
+                      <select class="form-control" ng-model="$ctrl.user.role.id" ng-options="role.id as role.name for role in $ctrl.roles" ng-disabled="!$ctrl.canEditRole"></select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Avatar</label>
+                    <div class="col-sm-8">
+                      <user-avatar-edit user="$ctrl.user" on-avatar-changed="$ctrl.avatarChanged($event)"/>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Map Icon</label>
+                    <div class="col-sm-8">
+                      <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" value="none" ng-model="$ctrl.iconMetadata.type" ng-change="$ctrl.iconTypeChanged($ctrl.iconMetadata)"> None
+                      </label>
+                      <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" value="create" ng-model="$ctrl.iconMetadata.type" ng-change="$ctrl.iconTypeChanged($ctrl.iconMetadata)"> Create
+                      </label>
+                      <label class="radio-inline">
+                        <input type="radio" name="inlineRadioOptions" value="upload" ng-model="$ctrl.iconMetadata.type" ng-change="$ctrl.iconTypeChanged($ctrl.iconMetadata)"> Upload
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="form-group" ng-if="$ctrl.iconMetadata.type === 'create'">
+                    <div class="col-sm-8 col-sm-offset-2">
+                      <div class="user-icon-container">
+                        <map-icon icon="$ctrl.iconMetadata"></map-icon>
+                        <div class="user-icon-initials">
+                          <input class="form-control user-map-icon" type="text" ng-model="$ctrl.iconMetadata.text" maxlength="2">
+                        </div>
+                        <div class="user-icon-color">
+                          <input minicolors="minicolorSettings" class="form-control" type="text" ng-model="$ctrl.iconMetadata.color">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group" ng-if="$ctrl.iconMetadata.type === 'upload'">
+                    <div class="col-sm-8 col-sm-offset-2">
+                      <user-icon-edit user="$ctrl.user" on-icon-changed="$ctrl.iconChanged($event)"></user-icon-edit>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span class="pull-right">
+                      <a class="btn btn-default" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.cancel()">Cancel</a>
+                      <button type="submit" class="btn btn-success" ng-class="{'disabled': $ctrl.saving}"><i class="fa fa-check"></i> Save</button>
+                    </span>
+                  </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap-l bottom-gap" ng-show="$ctrl.user.authentication.type === 'local' && $ctrl.canUpdatePassword">
+    <div class="col-sm-10">
+
+      <div class="card">
+        <div class="card-content">
+          <div class="admin-password-container">
+            <div>
+              <i class="fa fa-fw fa-2x muted fa-lock"></i>
+            </div>
+            <div class="admin-password-text">
+              <div><span>Update Password</span></div>
+              <div><span class="muted">Reset users password</span></div>
+            </div>
+            <div>
+              <button class="btn btn-default pull-right" ng-click="$ctrl.editPassword = !$ctrl.editPassword">{{$ctrl.editPassword ? 'Close' : 'Edit'}}</button>
+            </div>
+          </div>
+
+          <div ng-show="$ctrl.editPassword">
+            <hr>
+            <form ng-submit="$ctrl.updatePassword(authentication)" name="authentication" class="form-horizontal clearfix" autocomplete="off" method="post" novalidate>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2">Password</label>
+                <div class="col-sm-10" ng-class="{'has-error': authentication.$submitted && authentication.password.$invalid}">
+                  <input type="password" ng-model="$ctrl.user.password" ng-change="$ctrl.passwordChanged($ctrl.user.password)" name="password" class="form-control" required>
+                  <div class="help-block" ng-messages="authentication.$submitted && authentication.password.$error" ng-if="authentication.password.$invalid">
+                    <div ng-message="required">Password is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2">Re-type Password</label>
+                <div class="col-sm-10" ng-class="{'has-error': authentication.$submitted && authentication.passwordconfirm.$invalid}">
+                  <input type="password" ng-model="$ctrl.user.passwordconfirm" name="passwordconfirm" class="form-control" required>
+                  <div class="help-block" ng-messages="authentication.passwordconfirm.$error" ng-if="authentication.$submitted && authentication.passwordconfirm.$invalid">
+                    <div ng-message="required">New password confirmation is required</div>
+                    <div ng-messages="nomatch">Passwords do not match</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-offset-2 col-sm-10">
+                  <div><strong class="muted">Password Strength: <span class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></strong></div>
+                  <uib-progressbar max="5" value="$ctrl.passwordStrengthScore" type="{{$ctrl.passwordStrengthType}}"></uib-progressbar>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-offset-2 col-sm-10">
+                  <button type="submit" class="btn btn-primary pull-right">Change password</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="top-gap clearfix col-md-offset-2 col-sm-10" ng-if="$ctrl.passwordStatus.msg">
+                  <div class="alert alert-{{$ctrl.passwordStatus.status}}">
+                    <p>{{$ctrl.passwordStatus.msg}}<p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap" ng-if="$ctrl.error">
+    <div class="col-md-10">
+      <div class="alert alert-danger">
+        <h4>Error Saving User</h4>
+        <span>{{$ctrl.error}}</span>
+      </div>
+    </div>
+  </div>
+</div>

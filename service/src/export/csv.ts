@@ -3,15 +3,16 @@
 import async from 'async'
 import archiver from 'archiver'
 import path from 'path'
+import { AllGeoJSON } from '@turf/helpers'
 import { Exporter } from './exporter'
-import { centroid as turfCenteroid } from '@turf/centroid'
+import turfCentroid from '@turf/centroid'
 import * as User from '../models/user'
 import * as Device from '../models/device'
 import * as json2csv from 'json2csv'
 const mgrs = require('mgrs')
 const log = require('winston')
 const wkx = require('wkx')
-import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
+import { attachmentBaseDirectory as attachmentBase } from  '../environment/env'
 import stream from 'stream'
 import { ObservationDocument } from '../models/observation'
 import { UserDocument } from '../adapters/users/adapters.users.db.mongoose'
@@ -91,7 +92,7 @@ export class Csv extends Exporter {
           });
         },
         (done): void => {
-          if (!this._filter.exportLocations) {
+          if (!this._filter.exportLocations){
             return done();
           }
           const asyncParser = new json2csv.AsyncParser({ fields: locationFields }, { readableObjectMode: true, writableObjectMode: true });
@@ -160,7 +161,7 @@ export class Csv extends Exporter {
       flat.device = cache.device.uid;
     }
 
-    const centroid = turfCenteroid(observation);
+    const centroid = turfCentroid(observation as AllGeoJSON);
     flat.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
     flat.shapeType = observation.geometry.type;
@@ -191,7 +192,7 @@ export class Csv extends Exporter {
     }
 
     if (observation.attachments) {
-      observation.attachments.forEach((attachment) => {
+      observation.attachments.forEach((attachment, index) => {
         if (!attachment.relativePath) {
           // exclude attachments that are pending upload and/or not saved
           return
@@ -220,16 +221,16 @@ export class Csv extends Exporter {
       stream.push(locationRecord)
       numLocations++
     })
-      .then(() => {
-        if (cursor) {
-          cursor.close
-        }
-        log.info('Successfully wrote ' + numLocations + ' locations to CSV')
-        log.info('done writing locations')
-        stream.push(null)
-        done()
-      })
-      .catch(err => done(err))
+    .then(() => {
+      if (cursor) {
+        cursor.close
+      }
+      log.info('Successfully wrote ' + numLocations + ' locations to CSV')
+      log.info('done writing locations')
+      stream.push(null)
+      done()
+    })
+    .catch(err => done(err))
   }
 
   async flattenLocation(location: UserLocationDocument, cache: { user: UserDocument | null, device: any }): Promise<any> {

@@ -7,17 +7,15 @@ class AdminEventEditController {
 
   $onInit() {
     if (this.$stateParams.eventId) {
-      this.Event.get({ id: this.$stateParams.eventId }, event => {
+      this.Event.get({id: this.$stateParams.eventId}, event => {
         this.event = new this.Event({
           id: event.id,
           name: event.name,
-          description: event.description,
-          // noGeometry: !!event.noGeometry
+          description: event.description
         });
       });
     } else {
       this.event = new this.Event();
-      this.event.noGeometry = false;
     }
   }
 

@@ -10,20 +10,15 @@
   justify-content: space-between;
 }
 
-.collapsed-menu {
+.menu {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 }
 
-.actions {
-  display: none;
-}
-
-.event-title {
-  margin-top: 0.2rem;
-  font-size: 0.75em;
+.title {
+  margin-left: 16px;
 }
 
 .profile-avatar {
@@ -33,12 +28,11 @@
   justify-content: center;
 }
 
-@media (min-width: 900px) {
+@media(min-width:900px) {
   .navigation-options {
+    visibility: hidden;
     display: none;
-  }
-
-  .actions {
-    display: block;
+    width: 0;
+    padding: 0;
   }
 }

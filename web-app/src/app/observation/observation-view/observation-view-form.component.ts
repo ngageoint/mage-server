@@ -1,4 +1,3 @@
-import { analytics } from '@angular-devkit/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 
@@ -27,7 +26,6 @@ export class ObservationViewFormComponent implements OnInit, OnChanges {
   @Input() form: any
   @Input() attachments: any[]
   @Input() expand: boolean
-  @Input() geometryStyle: any;
 
   primaryField: any = {}
   secondaryField: any = {}

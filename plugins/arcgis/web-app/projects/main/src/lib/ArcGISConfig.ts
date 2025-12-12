@@ -9,11 +9,6 @@ export interface FeatureServiceConfig {
     url: string
 
     /**
-     * The ArcGIS portal API URL
-     */
-    portalUrl?: string
-
-    /**
      * Flag indicating valid authentication
      */
     authenticated: boolean
@@ -42,7 +37,7 @@ export interface FeatureLayerConfig {
     /**
      * The event ids or names that sync to this arc feature layer.
      */
-    events?: (number | string)[]
+    events?: (number|string)[]
 }
 
 /**

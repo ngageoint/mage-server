@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LocalAuthenticationComponent } from './local-authentication.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { AuthenticationButtonComponent } from '../button/authentication-button.component';
 
 describe('Local Authentication Component', () => {
   let component: LocalAuthenticationComponent;
@@ -10,8 +8,8 @@ describe('Local Authentication Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LocalAuthenticationComponent, AuthenticationButtonComponent],
-      imports: [HttpClientTestingModule, MatFormFieldModule]
+      declarations: [LocalAuthenticationComponent],
+      imports: [HttpClientTestingModule]
     }).compileComponents();
   }));
 
