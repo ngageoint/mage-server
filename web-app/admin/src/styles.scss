@@ -4,11 +4,17 @@
 @import "./roboto.scss";
 @import "./ng1/css/style.scss";
 @import "./ng1/css/map.scss";
-html, body { height: 100%; }
+
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   font-size: unset;
+  overflow: hidden;
 }
 
 bootstrap {
@@ -18,7 +24,7 @@ bootstrap {
 mat-bottom-sheet-container.feed-panel {
   position: absolute;
   left: 0;
-  bottom:0;
+  bottom: 0;
   width: 450px;
   min-width: 450px;
 }
@@ -26,5 +32,121 @@ mat-bottom-sheet-container.feed-panel {
 .form-remove-snackbar {
   position: absolute;
   left: 29px;
-  bottom:0;
+  bottom: 0;
+}
+
+// Dialog styles
+
+.dialog-modal {
+  flex-direction: column;
+  min-width: 700px;
+
+  @media (max-width: 768px) {
+    min-width: 100%;
+  }
+
+  .dialog-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .dialog-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0;
+      line-height: 1.2;
+    }
+  }
+
+  .dialog-content {
+    padding: 2rem;
+    flex: 1;
+  }
+
+  .dialog-actions {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background-color: #f9fafb;
+
+    .action-button {
+      padding: 0.75rem 1.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      color: #374151;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover:not(:disabled) {
+        background-color: #f9fafb;
+        border-color: #9ca3af;
+      }
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        background-color: #f9fafb;
+      }
+
+      &.btn-danger {
+        background-color: #dc2626;
+        border-color: #dc2626;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #b91c1c;
+          border-color: #b91c1c;
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+          border-color: #dc2626;
+        }
+
+        &:disabled {
+          background-color: #9ca3af;
+          border-color: #9ca3af;
+          opacity: 0.6;
+        }
+      }
+
+      &.btn-primary {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #2563eb;
+          border-color: #2563eb;
+        }
+
+        &:disabled {
+          background-color: #9ca3af;
+          border-color: #9ca3af;
+        }
+      }
+
+      i {
+        font-size: 0.75rem;
+      }
+    }
+  }
 }

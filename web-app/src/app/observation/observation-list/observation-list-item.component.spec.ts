@@ -9,6 +9,9 @@ import { MapService } from 'src/app/map/map.service';
 import { UserService } from 'src/app/user/user.service';
 import { EventService } from 'src/app/event/event.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatRippleModule } from '@angular/material/core';
 
 class MockMapService {}
 
@@ -18,75 +21,81 @@ class MockUserService {
     role: {
       permissions: []
     }
-  }
+  };
 
   hasPermission(): boolean {
-    return true
+    return true;
   }
 }
 
 class MockEventService {
   getFormsForEvent(): any {
-    return [{
-      id: 1,
-      name: "Test",
-      description: "Mock Form",
-      fields: [{
-        name: "field1",
+    return [
+      {
         id: 1,
-        required: false,
-        type: "attachment",
-        title: "Media",
-        allowedAttachmentTypes: [
-          "image",
-          "video",
-          "audio"
+        name: 'Test',
+        description: 'Mock Form',
+        fields: [
+          {
+            name: 'field1',
+            id: 1,
+            required: false,
+            type: 'attachment',
+            title: 'Media',
+            allowedAttachmentTypes: ['image', 'video', 'audio'],
+            choices: []
+          }
         ],
-        choices: []
-      }],
-      userFields: [],
-      archived: false,
-      default: false
-    }]
+        userFields: [],
+        archived: false,
+        default: false
+      }
+    ];
   }
   createForm(): any {
     return {
       id: 1,
-      remoteId: "mockRemoteFormId",
-      fields: [{
-        name: 'field1'
-      }]
-    }
+      remoteId: 'mockRemoteFormId',
+      fields: [
+        {
+          name: 'field1'
+        }
+      ]
+    };
   }
 }
 
 class MockLocalStorageService {
   getToken(): string {
-    return 'mockToken'
+    return 'mockToken';
   }
   getTimeFormat(): string {
-    return 'absolute'
+    return 'absolute';
   }
   getTimeZoneView(): string {
-    return 'local'
+    return 'local';
   }
   getCoordinateSystemView(): string {
-    return 'wgs84'
+    return 'wgs84';
   }
 }
 
 @Component({
   selector: `host-component`,
-  template: `<observation-list-item [observation]="observation" [event]="event"></observation-list-item>`
+  template: `<observation-list-item
+    [observation]="observation"
+    [event]="event"
+  ></observation-list-item>`
 })
 class TestHostComponent {
   event: any = {
     acl: {}
-  }
+  };
 
-  observation: any
+  observation: any;
 
-  @ViewChild(ObservationListItemComponent) observationListItem: ObservationListItemComponent;
+  @ViewChild(ObservationListItemComponent)
+  observationListItem: ObservationListItemComponent;
 }
 
 describe('ObservationListItemComponent', () => {
@@ -96,19 +105,37 @@ describe('ObservationListItemComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationListItemComponent, MomentPipe, GeometryPipe, TestHostComponent ],
-      imports: [ NoopAnimationsModule ],
-      providers: [{
-        provide: MapService, useClass: MockMapService
-      },{
-        provide: UserService, useClass: MockUserService
-      },{
-        provide: EventService, useClass: MockEventService
-      },{
-        provide: LocalStorageService, useClass: MockLocalStorageService
-      }]
-    })
-    .compileComponents();
+      declarations: [
+        ObservationListItemComponent,
+        MomentPipe,
+        GeometryPipe,
+        TestHostComponent
+      ],
+      imports: [
+        NoopAnimationsModule,
+        MatIconModule,
+        MatCardModule,
+        MatRippleModule
+      ],
+      providers: [
+        {
+          provide: MapService,
+          useClass: MockMapService
+        },
+        {
+          provide: UserService,
+          useClass: MockUserService
+        },
+        {
+          provide: EventService,
+          useClass: MockEventService
+        },
+        {
+          provide: LocalStorageService,
+          useClass: MockLocalStorageService
+        }
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -127,26 +154,30 @@ describe('ObservationListItemComponent', () => {
       style: {},
       favoriteUserIds: [],
       properties: {
-        forms: [{
-          id: "mockRemoteFormId",
-          field2: "",
-          field1: "None",
-          field0: "Protest",
-          formId: 1
-        }],
-        timestamp: "2022-04-01T21:44:28.848Z"
+        forms: [
+          {
+            id: 'mockRemoteFormId',
+            field2: '',
+            field1: 'None',
+            field0: 'Protest',
+            formId: 1
+          }
+        ],
+        timestamp: '2022-04-01T21:44:28.848Z'
       },
-      attachments: [{
-        observationFormId: "mockRemoteFormId",
-        fieldName: "field1",
-        name: "attachment.png",
-        contentType: "image/png"
-      }]
-    }
+      attachments: [
+        {
+          observationFormId: 'mockRemoteFormId',
+          fieldName: 'field1',
+          name: 'attachment.png',
+          contentType: 'image/png'
+        }
+      ]
+    };
 
-    fixture.detectChanges()
+    fixture.detectChanges();
 
-    expect(component.attachments.length).toBe(1)
+    expect(component.attachments.length).toBe(1);
   });
 
   it('should filter attachments', () => {
@@ -155,18 +186,20 @@ describe('ObservationListItemComponent', () => {
       favoriteUserIds: [],
       properties: {
         forms: [],
-        timestamp: "2022-04-01T21:44:28.848Z"
+        timestamp: '2022-04-01T21:44:28.848Z'
       },
-      attachments: [{
-        observationFormId: "mockRemoteFormId",
-        fieldName: "field1",
-        name: "attachment.png",
-        contentType: "image/png"
-      }]
-    }
+      attachments: [
+        {
+          observationFormId: 'mockRemoteFormId',
+          fieldName: 'field1',
+          name: 'attachment.png',
+          contentType: 'image/png'
+        }
+      ]
+    };
 
-    fixture.detectChanges()
+    fixture.detectChanges();
 
-    expect(component.attachments.length).toBe(0)
+    expect(component.attachments.length).toBe(0);
   });
 });

@@ -6,8 +6,7 @@ import archiver from 'archiver'
 import moment from 'moment'
 import stream from 'stream'
 import path from 'path'
-import turfCentroid from '@turf/centroid'
-import { AllGeoJSON } from '@turf/helpers'
+import { centroid as turfCentroid } from '@turf/centroid'
 import { Exporter } from './exporter'
 import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
 import User, { UserDocument } from '../models/user'
@@ -17,7 +16,7 @@ import { FormFieldType } from '../entities/events/entities.events.forms'
 const mgrs = require('mgrs')
 
 const logger = require('../logger')
-const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, methodName: string): any => {
+const log = ['debug', 'info', 'warn', 'error', 'log'].reduce((log: any, methodName: string): any => {
   const logMethod = logger[methodName] as (...args: any[]) => any
   return {
     ...log,
@@ -64,7 +63,7 @@ export class GeoJson extends Exporter {
   }
 
   mapObservationProperties(observation: ObservationDocument, archive: archiver.Archiver): void {
-    const centroid = turfCentroid(observation as AllGeoJSON)
+    const centroid = turfCentroid(observation);
     const exportProperties = {
       ...observation.properties,
       id: observation._id,
@@ -88,7 +87,7 @@ export class GeoJson extends Exporter {
             return attachment.relativePath &&
               attachment.fieldName === field.name &&
               String(attachment.observationFormId) === String(formEntry._id)
-            }
+          }
           )
           const attachmentRelPaths = fieldAttachments.map(x => x.relativePath)
           fieldEntryHash[field.name] = attachmentRelPaths
@@ -150,17 +149,17 @@ export class GeoJson extends Exporter {
       stream.write(data);
       numObservations++;
     })
-    .then(() => {
-      if (cursor) {
-        cursor.close()
-      }
-      stream.write(']}');
-      // throw in icons
-      archive.directory(new api.Icon(this._event.id).getBasePath(), 'mage-export/icons', { date: new Date() });
-      log.info(`wrote ${numObservations} observations`);
-      done();
-    })
-    .catch(err => done(err));
+      .then(() => {
+        if (cursor) {
+          cursor.close()
+        }
+        stream.write(']}');
+        // throw in icons
+        archive.directory(new api.Icon(this._event.id).getBasePath(), 'mage-export/icons', { date: new Date() });
+        log.info(`wrote ${numObservations} observations`);
+        done();
+      })
+      .catch(err => done(err));
   }
 
   streamLocations(stream: NodeJS.WritableStream, done: (err?: any) => void): void {
@@ -180,14 +179,14 @@ export class GeoJson extends Exporter {
       stream.write(data);
       numLocations++;
     })
-    .then(() => {
-      if (cursor) {
-        cursor.close();
-      }
-      stream.write(']}');
-      log.info(`wrote ${numLocations} locations`);
-      done();
-    })
-    .catch(err => done(err));
+      .then(() => {
+        if (cursor) {
+          cursor.close();
+        }
+        stream.write(']}');
+        log.info(`wrote ${numLocations} locations`);
+        done();
+      })
+      .catch(err => done(err));
   }
 }

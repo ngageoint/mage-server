@@ -1,0 +1,748 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="container bottom-gap-l" *ngIf="user">
+  <div class="page-header">
+    <div class="header-title-section">
+      <h2 class="page-title">{{ user.displayName }}</h2>
+    </div>
+    <div class="header-actions" *ngIf="hasUserEditPermission">
+      <button
+        class="action-button"
+        [ngClass]="isEditingUser ? 'btn-primary' : ''"
+        (click)="toggleEditUser()"
+      >
+        <i class="fa" [ngClass]="isEditingUser ? 'fa-times' : 'fa-edit'"></i>
+        {{ isEditingUser ? 'Cancel' : 'Edit User' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="details-section">
+    <div class="details-card" [ngClass]="{ 'edit-full-width': isEditingUser }">
+      <div class="details-form">
+        <div class="form-row">
+          <div class="form-field map-icon-field" [ngClass]="{ 'edit-full-width': isEditingUser }">
+            <label class="field-label">Avatar</label>
+            <div class="field-content">
+              <div class="avatar-display" *ngIf="!isEditingUser">
+                <img
+                  *ngIf="user.avatarUrl"
+                  [src]="userAvatarImgUrl"
+                  width="75"
+                  height="75"
+                  class="avatar-image"
+                />
+                <div *ngIf="!user.avatarUrl" class="avatar-placeholder">
+                  <i class="fa fa-user"></i>
+                </div>
+              </div>
+
+              <div class="map-icon-container" *ngIf="isEditingUser">
+                <div class="map-icon-top">
+                  <div class="map-icon-preview">
+                    <ng-container
+                      *ngIf="avatarPreviewUrl || user.avatarUrl; else noAvatar"
+                    >
+                      <img
+                        [src]="avatarPreviewUrl || userAvatarImgUrl"
+                        width="75"
+                        height="75"
+                        class="map-icon-thumb"
+                      />
+                    </ng-container>
+                    <ng-template #noAvatar>
+                      <div class="map-icon-empty">No avatar</div>
+                    </ng-template>
+                  </div>
+                  <div class="map-icon-type-select">
+                    <label>Avatar</label>
+                    <div class="helper-text">
+                      Upload a square image; it will be cropped to a circle.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="map-icon-section">
+                  <div class="map-icon-section-title">Upload Avatar</div>
+                  <div class="upload-actions">
+                    <input
+                      id="avatarUploadInput"
+                      type="file"
+                      accept="image/*"
+                      (change)="onAvatarChanged($event)"
+                      [disabled]="saving"
+                    />
+                    <label
+                      for="avatarUploadInput"
+                      class="action-button btn-secondary imageLabel"
+                      [class.disabled]="saving"
+                    >
+                      <i class="fa fa-upload"></i> Choose Image
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-field map-icon-field">
+            <label class="field-label">Map Icon</label>
+            <div class="field-content">
+              <div class="map-icon-header" *ngIf="!isEditingUser">
+                <img
+                  *ngIf="user.iconUrl"
+                  [src]="userIconImgUrl"
+                  width="75"
+                  height="75"
+                  class="map-icon-thumb"
+                />
+                <div *ngIf="!user.iconUrl" class="map-icon-preview">
+                  <div class="map-icon-empty">No icon</div>
+                </div>
+              </div>
+
+              <div class="map-icon-container" *ngIf="isEditingUser">
+                <div class="map-icon-editor">
+                  <div class="map-icon-top">
+                    <div class="map-icon-preview">
+                      <ng-container [ngSwitch]="iconMetadata.type">
+                        <img
+                          *ngSwitchCase="'upload'"
+                          [src]="iconPreviewUrl || userIconImgUrl"
+                          width="75"
+                          height="75"
+                          class="map-icon-thumb"
+                        />
+                        <canvas
+                          *ngSwitchCase="'create'"
+                          #mapIconCanvas
+                          width="75"
+                          height="75"
+                          class="map-icon-thumb"
+                        ></canvas>
+                        <div *ngSwitchDefault class="map-icon-empty">
+                          No icon
+                        </div>
+                      </ng-container>
+                    </div>
+
+                    <div class="map-icon-type-select">
+                      <label for="iconTypeSelect">Icon Type</label>
+                      <select
+                        id="iconTypeSelect"
+                        class="form-input"
+                        [(ngModel)]="iconMetadata.type"
+                        (change)="iconTypeChanged()"
+                      >
+                        <option [ngValue]="'none'">None</option>
+                        <option [ngValue]="'create'">Create</option>
+                        <option [ngValue]="'upload'">Upload</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div
+                    class="map-icon-section"
+                    *ngIf="iconMetadata.type === 'create'"
+                  >
+                    <div class="map-icon-section-title">Create Icon</div>
+                    <div class="map-icon-create">
+                      <div class="create-grid">
+                        <div class="create-field">
+                          <label>Initials</label>
+                          <input
+                            class="form-input"
+                            type="text"
+                            [value]="iconMetadata.text"
+                            maxlength="2"
+                            (input)="
+                              onCreateTextChanged($any($event.target).value)
+                            "
+                            placeholder="AB"
+                          />
+                        </div>
+                        <div class="create-field">
+                          <label>Color</label>
+                          <input
+                            class="form-input color-input"
+                            type="color"
+                            [value]="iconMetadata.color || '#007bff'"
+                            (input)="
+                              onCreateColorChanged($any($event.target).value)
+                            "
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="map-icon-section"
+                    *ngIf="iconMetadata.type === 'upload'"
+                  >
+                    <div class="map-icon-section-title">Upload Icon</div>
+                    <div class="map-icon-upload">
+                      <div class="upload-actions">
+                        <input
+                          id="iconUploadInput"
+                          type="file"
+                          accept="image/*"
+                          (change)="onIconChanged($event)"
+                          [disabled]="saving"
+                        />
+                        <label
+                          for="iconUploadInput"
+                          class="action-button btn-secondary imageLabel"
+                          [class.disabled]="saving"
+                        >
+                          <i class="fa fa-upload"></i> Choose Image
+                        </label>
+                        <button
+                          class="action-button btn-danger"
+                          type="button"
+                          (click)="removeIcon()"
+                          [disabled]="saving"
+                        >
+                          <i class="fa fa-trash"></i> Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="map-icon-section"
+                    *ngIf="iconMetadata.type === 'none'"
+                  >
+                    <div class="map-icon-section-title">No Icon</div>
+                    <div class="map-icon-none">
+                      <span class="field-value text-muted"
+                        >No icon selected</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="user.authentication?.type === 'local'">
+          <label class="field-label">Username</label>
+          <div class="field-content">
+            <span *ngIf="!isEditingUser" class="field-value">{{
+              user.username
+            }}</span>
+            <input
+              *ngIf="isEditingUser"
+              type="text"
+              class="form-input"
+              [(ngModel)]="editUser.username"
+              [disabled]="saving"
+              required
+              placeholder="Username"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Display Name</label>
+          <div class="field-content">
+            <span *ngIf="!isEditingUser" class="field-value">{{
+              user.displayName
+            }}</span>
+            <input
+              *ngIf="isEditingUser"
+              type="text"
+              class="form-input"
+              [(ngModel)]="editUser.displayName"
+              [disabled]="saving"
+              required
+              placeholder="Display Name"
+            />
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="user.email || isEditingUser">
+          <label class="field-label">Email</label>
+          <div class="field-content">
+            <span *ngIf="!isEditingUser" class="field-value">{{
+              user.email
+            }}</span>
+            <input
+              *ngIf="isEditingUser"
+              type="email"
+              class="form-input"
+              [(ngModel)]="editUser.email"
+              [disabled]="saving"
+              placeholder="Email Address"
+            />
+          </div>
+        </div>
+
+        <div
+          class="form-field"
+          *ngIf="(user.phones && user.phones[0]) || isEditingUser"
+        >
+          <label class="field-label">Phone</label>
+          <div class="field-content">
+            <span *ngIf="!isEditingUser" class="field-value">{{
+              user.phones && user.phones[0] ? user.phones[0].number : ''
+            }}</span>
+            <input
+              *ngIf="isEditingUser"
+              type="tel"
+              class="form-input"
+              [value]="getPhoneNumber()"
+              [disabled]="saving"
+              (input)="updatePhoneNumber($any($event.target).value)"
+              placeholder="Phone Number"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Role</label>
+          <div class="field-content">
+            <span *ngIf="!isEditingUser" class="field-value">{{
+              user.role?.name
+            }}</span>
+            <select
+              *ngIf="isEditingUser && canEditRole"
+              class="form-input"
+              [(ngModel)]="editUser.selectedRole"
+              [disabled]="saving"
+            >
+              <option *ngFor="let role of roles" [ngValue]="role">
+                {{ role.name }}
+              </option>
+            </select>
+            <span *ngIf="isEditingUser && !canEditRole" class="field-value">{{
+              user.role?.name
+            }}</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Authentication</label>
+          <div class="field-content">
+            <span
+              *ngIf="user.authentication?.authenticationConfiguration"
+              class="field-value"
+            >
+              {{ user.authentication.authenticationConfiguration.title }}
+            </span>
+            <span
+              *ngIf="!user.authentication?.authenticationConfiguration"
+              class="field-value text-warning"
+            >
+              <strong>Authentication strategy no longer exists</strong>
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="form-field"
+          *ngIf="
+            isEditingUser &&
+            user.authentication?.type === 'local' &&
+            canUpdatePassword
+          "
+        >
+          <div class="field-content">
+            <button
+              *ngIf="!changePassword"
+              class="action-button"
+              type="button"
+              (click)="changePassword = true"
+            >
+              <i class="fa fa-lock"></i>
+              Change Password
+            </button>
+
+            <form
+              *ngIf="changePassword"
+              #pwForm="ngForm"
+              (ngSubmit)="updatePassword(pwForm)"
+              novalidate
+              class="password-change"
+            >
+              <div class="create-grid">
+                <div class="create-field">
+                  <label>New Password</label>
+                  <input
+                    name="password"
+                    type="password"
+                    class="form-input"
+                    placeholder="New password"
+                    [(ngModel)]="newPassword"
+                    (input)="passwordChanged(newPassword)"
+                    [disabled]="updatingPassword"
+                    required
+                    autocomplete="new-password"
+                  />
+                  <div
+                    class="helper-text"
+                    *ngIf="
+                      pwForm.submitted &&
+                      pwForm.controls.password?.errors?.required
+                    "
+                  >
+                    Password is required.
+                  </div>
+                </div>
+                <div class="create-field">
+                  <label>Confirm Password</label>
+                  <input
+                    name="passwordconfirm"
+                    type="password"
+                    class="form-input"
+                    placeholder="Confirm new password"
+                    [(ngModel)]="newPasswordConfirm"
+                    [disabled]="updatingPassword"
+                    required
+                    autocomplete="new-password"
+                  />
+                  <div
+                    class="helper-text"
+                    *ngIf="
+                      pwForm.submitted &&
+                      pwForm.controls.passwordconfirm?.errors?.required
+                    "
+                  >
+                    Confirmation is required.
+                  </div>
+                  <div
+                    class="helper-text"
+                    *ngIf="
+                      pwForm.submitted &&
+                      newPassword &&
+                      newPasswordConfirm &&
+                      newPassword !== newPasswordConfirm
+                    "
+                  >
+                    Passwords do not match.
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="helper-text top-gap-s"
+                *ngIf="passwordStrength"
+                [ngClass]="{
+                  'text-danger': passwordStrengthType === 'danger',
+                  'text-warning': passwordStrengthType === 'warning',
+                  'text-info': passwordStrengthType === 'info',
+                  'text-primary': passwordStrengthType === 'primary',
+                  'text-success': passwordStrengthType === 'success'
+                }"
+              >
+                Strength: {{ passwordStrength }}
+              </div>
+              <div
+                class="helper-text top-gap-s"
+                *ngIf="passwordStatus.status"
+                [ngClass]="{
+                  'text-danger': passwordStatus.status === 'danger'
+                }"
+              >
+                {{ passwordStatus.msg }}
+              </div>
+
+              <div class="form-actions">
+                <button
+                  class="action-button btn-primary"
+                  type="submit"
+                  [disabled]="
+                    updatingPassword ||
+                    pwForm.invalid ||
+                    newPassword !== newPasswordConfirm
+                  "
+                >
+                  <i class="fa fa-save"></i>
+                  Save Password
+                </button>
+                <button
+                  class="action-button"
+                  type="button"
+                  (click)="cancelPasswordChange()"
+                  [disabled]="updatingPassword"
+                >
+                  <i class="fa fa-times"></i>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="error && isEditingUser">
+          <div class="alert alert-danger">
+            {{ error }}
+          </div>
+        </div>
+
+        <div class="form-actions" *ngIf="isEditingUser">
+          <button
+            class="action-button btn-primary"
+            (click)="saveUser()"
+            [disabled]="saving || changePassword || updatingPassword"
+          >
+            <i class="fa fa-save"></i> Save
+          </button>
+          <button
+            class="action-button"
+            (click)="cancelEdit()"
+            [disabled]="saving || updatingPassword"
+          >
+            <i class="fa fa-times"></i> Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-cards" *ngIf="!isEditingUser">
+      <div class="action-card" *ngIf="!user.active && hasUserEditPermission">
+        <div class="action-card-content">
+          <div class="action-card-icon success">
+            <i class="fa fa-check"></i>
+          </div>
+          <div class="action-card-body">
+            <h4 class="action-card-title">Activate New User Account</h4>
+            <p class="action-card-description">
+              This is a new user account. Activate the account to allow user to
+              access MAGE.
+            </p>
+            <button
+              class="action-button btn-success"
+              (click)="activateUser(user)"
+            >
+              <i class="fa fa-check"></i> Activate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="danger-zone-card warning"
+        *ngIf="user.active && hasUserEditPermission && !isSelf"
+      >
+        <h3 class="danger-zone-title">
+          {{ user.enabled ? 'Disable User Account' : 'User Account Disabled' }}
+        </h3>
+        <p class="danger-zone-description">
+          {{
+            user.enabled
+              ? 'Disabling will prevent the account user from accessing MAGE. MAGE will retain all account
+                    information and you can enable the account again at any time.'
+              : 'This account is disabled. Enable the account to allow user to access MAGE. Accounts can be
+                    disabled manually by an administrator, or for security reasons, such as too many invalid login
+                    attempts.'
+          }}
+        </p>
+        <button
+          class="action-button"
+          [ngClass]="user.enabled ? 'btn-warning' : 'btn-success'"
+          (click)="user.enabled ? disableUser(user) : enableUser(user)"
+        >
+          <i class="fa" [ngClass]="user.enabled ? 'fa-ban' : 'fa-check'"></i>
+          {{ user.enabled ? 'Disable' : 'Enable' }}
+        </button>
+      </div>
+
+      <div
+        class="danger-zone-card sticky-bottom"
+        *ngIf="hasUserDeletePermission"
+      >
+        <h3 class="danger-zone-title">Delete User Account</h3>
+        <p class="danger-zone-description">
+          Deleting the account will remove all associated user information
+          including location data. This cannot be undone, and the user's data
+          will be unrecoverable.
+        </p>
+        <button
+          class="action-button btn-danger"
+          (click)="confirmDeleteUser(user)"
+        >
+          <i class="fa fa-trash-o"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="sections-container">
+    <!-- Teams Section -->
+    <div class="section-card">
+      <div class="table-wrapper mat-elevation-z2">
+        <div class="section-table-title">User Teams</div>
+        <div class="integrated-navbar">
+          <mage-card-navbar
+            [title]="'User Teams'"
+            [isSearchable]="true"
+            [searchPlaceholder]="'Search teams...'"
+            (searchTermChanged)="searchUserTeam($event)"
+            (searchCleared)="searchUserTeam()"
+            [actionButtons]="teamActionButtons"
+          ></mage-card-navbar>
+        </div>
+
+        <div class="table-scroll">
+          <table
+            mat-table
+            [class.mat-table]="true"
+            [dataSource]="teamsDataSource"
+            class="mat-table-no-header"
+            *ngIf="userTeams.length > 0"
+          >
+            <ng-container matColumnDef="teamContent">
+              <td mat-cell *matCellDef="let team" class="table-row-content">
+                <div class="row-item" (click)="gotoTeam(team)">
+                  <div class="row-icon">
+                    <i class="fa fa-users"></i>
+                  </div>
+                  <div class="row-info">
+                    <div class="row-primary">{{ team.name }}</div>
+                    <div class="row-secondary" *ngIf="team.description">
+                      {{ team.description }}
+                    </div>
+                  </div>
+                  <div
+                    class="row-actions"
+                    *ngIf="editTeam && hasUserEditPermission"
+                  >
+                    <button
+                      class="action-button btn-danger btn-sm"
+                      (click)="removeUserFromTeam($event, team)"
+                      title="Remove from Team"
+                    >
+                      <i class="fa fa-trash"></i>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr
+              mat-row
+              *matRowDef="let row; columns: teamsDisplayedColumns"
+              class="pointer"
+            ></tr>
+          </table>
+
+          <div
+            class="empty-state"
+            *ngIf="userTeams.length === 0 && !loadingTeams"
+          >
+            <div class="empty-state-content">
+              <i class="fa fa-users empty-state-icon"></i>
+              <div class="empty-state-text">
+                No teams assigned to {{ user?.displayName }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <mat-paginator
+          [length]="totalUserTeams"
+          [pageSize]="userTeamsPageSize"
+          [pageIndex]="userTeamsPageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onUserTeamsPageChange($event)"
+        >
+        </mat-paginator>
+
+        <div class="loading-overlay" *ngIf="loadingTeams">
+          <div class="loading-content">
+            <div class="loading-text">Loading</div>
+            <i class="fa fa-spinner fa-spin loading-spinner"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="section-card">
+      <div class="table-wrapper mat-elevation-z2">
+        <div class="section-table-title">User Events</div>
+        <div class="integrated-navbar">
+          <mage-card-navbar
+            [title]="'User Events'"
+            [isSearchable]="true"
+            [searchPlaceholder]="'Search events...'"
+            (searchTermChanged)="searchUserEvent($event)"
+            (searchCleared)="searchUserEvent()"
+          ></mage-card-navbar>
+        </div>
+
+        <div class="table-scroll">
+          <table
+            mat-table
+            [class.mat-table]="true"
+            [dataSource]="eventsDataSource"
+            class="mat-table-no-header"
+            *ngIf="userEvents.length > 0"
+          >
+            <ng-container matColumnDef="eventContent">
+              <td mat-cell *matCellDef="let event" class="table-row-content">
+                <div class="row-item" (click)="gotoEvent(event)">
+                  <div class="row-icon">
+                    <i class="fa fa-calendar"></i>
+                  </div>
+                  <div class="row-info">
+                    <div class="row-primary">{{ event.name }}</div>
+                    <div class="row-secondary" *ngIf="event.description">
+                      {{ event.description }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr
+              mat-row
+              *matRowDef="let row; columns: eventsDisplayedColumns"
+              class="pointer"
+            ></tr>
+          </table>
+
+          <div
+            class="empty-state"
+            *ngIf="userEvents.length === 0 && !loadingEvents"
+          >
+            <div class="empty-state-content">
+              <i class="fa fa-calendar empty-state-icon"></i>
+              <div class="empty-state-text">
+                No events assigned to {{ user?.displayName }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <mat-paginator
+          [length]="totalUserEvents"
+          [pageSize]="userEventsPageSize"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onUserEventsPageChange($event)"
+        >
+        </mat-paginator>
+
+        <div class="loading-overlay" *ngIf="loadingEvents">
+          <div class="loading-content">
+            <div class="loading-text">Loading</div>
+            <i class="fa fa-spinner fa-spin loading-spinner"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="table-wrapper mat-elevation-z2">
+      <mage-logins [userId]="user?.id"></mage-logins>
+    </div>
+  </div>
+</div>

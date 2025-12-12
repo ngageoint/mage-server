@@ -1,7 +1,7 @@
 {
   "name": "@ngageoint/mage.nga-msi",
-  "version": "1.0.5",
-  "description": "The NGA-MSI package is a MAGE server plugin that provides feeds from National Geospatial-Intelligence Agency's Maritime Safety Information API.",
+  "version": "1.0.6",
+  "description": "The NGA-MSI package is a Mage server plugin that provides feeds from National Geospatial-Intelligence Agency's Maritime Safety Information API.",
   "main": "lib/index.js",
   "files": [
     "lib",
@@ -49,6 +49,6 @@
     "typescript": "5.8.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "6.3.0-beta.7"
+    "@ngageoint/mage.service": ">=6.3.0 || 6.5.0-beta.1"
   }
 }

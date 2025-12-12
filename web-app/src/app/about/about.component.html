@@ -8,76 +8,106 @@
 </mat-toolbar>
 
 <div class="content">
-  <div>
-    <p>
+  <section class="section">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">info</mat-icon>
+      What is MAGE?
+    </h3>
+    <p class="section-text">
       Mage is a dynamic, secure, mobile situational awareness and field data collection platform that supports
       low-bandwidth and disconnected users. Mage can integrate with existing command centers and common operating
-      pictures or stand alone as a complete, mission-ready solution. The Mage mobile app on iOS and Android
+      pictures or stand alone as a complete, mission-ready solution.
+    </p>
+    <p class="section-text">
+      The Mage mobile app on iOS and Android
       allows agents in the field to create and share geo-tagged observations with attached photos, videos,
       audio, and form data. Mage's data collection forms are easily tailored to suit any team and mission with
-      custom form fields and map symbologies. In addition to data collection, the Mage mobile app can optionally
+      custom form fields and map symbologies.
+    </p>
+    <p class="section-text">
+      In addition to data collection, the Mage mobile app can optionally
       report field agents' locations at regular intervals to the Mage server. The Mage server's web app provides
       a common operating picture of field agents' observations and latest reported locations.
     </p>
+  </section>
 
+  <section class="section">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">get_app</mat-icon>
+      Download the App
+    </h3>
     <div class="app-store">
-      <a
-        class="center-content"
-        href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8"
-      >
-        <img class="app-store-icon" src="/assets/images/ios_app_store_black.svg">
+      <a href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8">
+        <img class="app-store-icon" src="/assets/images/ios_app_store_black.svg" alt="Download on the App Store">
       </a>
-      <a
-        class="center-content"
-        href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en"
-      >
-        <img class="app-store-icon" src="/assets/images/google-play-badge.png">
+      <a href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en">
+        <img class="app-store-icon" src="/assets/images/google-play-badge.png" alt="Get it on Google Play">
       </a>
-    </div> 
-  </div>
-
-  <div>
-    <h3>
-      <span>API</span>
-    </h3>
-    <div>
-      Browse and try the Mage API live with <a href="#/swagger">Swagger UI.</a> Swagger interactive documentation will modify Mage data via API calls; please be careful with <strong>POST/PUT/DELETE</strong> operations.
     </div>
-  </div>
-
-  <div>
-    <h3>
-      <span>System</span>
+  </section>
+  <section class="section">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">api</mat-icon>
+      API Access
     </h3>
-    <div>Server Version {{mageVersion?.major}}.{{mageVersion?.minor}}.{{mageVersion?.micro}}</div>
-    <div>Node Version {{nodeVersion}}</div>
-    <div>MongoDB Version {{mongoVersion}}</div>
-  </div>
+    <p class="section-text">
+      Browse and try the MAGE API via <a href="#/swagger">Swagger UI</a>. Be cautious when using <strong>POST / PUT / DELETE</strong> — they affect live data.
+    </p>
+  </section>
 
-  <div>
-    <h3>
-      <span>Acknowledgements</span>
+  <section class="section">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">settings</mat-icon>
+      System Info
     </h3>
-      <div>Mage is built with the MEAN stack
-        <a href="https://www.mongodb.org/" target="_blank">MongoDB</a>, 
-        <a href="https://expressjs.com/" target="_blank">Express</a>, 
-        <a href="https://angular.dev/" target="_blank">Angular</a> and
-        <a href="https://nodejs.org/" target="_blank">NodeJS</a>.
-      </div>
+    <div class="system-info">
+      <div><span class="label">Server</span>{{mageVersion?.major}}.{{mageVersion?.minor}}.{{mageVersion?.micro}}</div>
+      <div><span class="label">Node</span>{{nodeVersion}}</div>
+      <div><span class="label">MongoDB</span>{{mongoVersion}}</div>
+    </div>
+  </section>
 
-      <div>Authentication is locked down by
-        <a href="https://passportjs.org/" target="_blank">Passport</a>
-      </div>
-
-      <div>Maps are powered by
-        <a href="https://leafletjs.com/" target="_blank">Leaflet</a>
-      </div>
-  </div>
-  <div>
-    <h3>
-      <span>Contact Us</span>
+  <section class="section">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">emoji_objects</mat-icon>
+      Acknowledgements
     </h3>
-    <p><i class="fa fa-phone"></i> +1-571-557-1121</p>
-    <p><i class="fa fa-envelope"></i><a href="mailto:magesuitesupport@nga.mil"> magesuitesupport@nga.mil</a></p>
-  </div>
+    <p class="section-text">
+      Mage is built with the MEAN stack:
+      <a href="https://www.mongodb.org/" target="_blank">MongoDB</a>,
+      <a href="https://expressjs.com/" target="_blank">Express</a>,
+      <a href="https://angular.dev/" target="_blank">Angular</a>, and
+      <a href="https://nodejs.org/" target="_blank">NodeJS</a>.
+    </p>
+    <p class="section-text">
+      Authentication via <a href="https://passportjs.org/" target="_blank">Passport</a>. Maps via
+      <a href="https://leafletjs.com/" target="_blank">Maps by Leaflet</a>.
+    </p>
+  </section>
+
+  <section class="section" *ngIf="adminPhone || adminEmail">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">contact_mail</mat-icon>
+      Contact Us
+    </h3>
+    <div class="contact-info">
+      <div *ngIf="adminPhone">
+        <mat-icon>phone</mat-icon> {{adminPhone}}
+      </div>
+      <div *ngIf="adminEmail">
+        <mat-icon>email</mat-icon> <a href="mailto:{{adminEmail}}">{{adminEmail}}</a>
+      </div>
+    </div>
+  </section>  
+  
+  <section class="section" *ngIf="showDevContact">
+    <h3 class="section-title">
+      <mat-icon class="section-icon">contact_mail</mat-icon>
+      Contact NGA POC
+    </h3>
+    <div class="contact-info">
+      <div><mat-icon>phone</mat-icon> +1-571-557-1121</div>
+      <div><mat-icon>email</mat-icon> <a href="mailto:magesuitesupport@nga.mil">magesuitesupport@nga.mil</a></div>
+    </div>
+  </section>  
 </div>

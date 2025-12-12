@@ -110,36 +110,31 @@ describe('AdminBreadcrumbComponent', () => {
   });
 
   it('should have one active and two inactive breadcrumb', () => {
-    component.breadcrumbs = [{
-      title: 'Title',
-      icon: 'map',
-      state: {
-        name: 'name',
-        params: {
-          param1: 'toast'
-        }
-      }
-    }, {
-      title: 'Title2',
-      state: {
-        name: 'name2',
-        params: {
-          param1: 'toast2'
-        }
-      }
-    }, {
-      title: 'Inactive',
-      icon: 'map'
-    }]
+    component.breadcrumbs = [
+      {
+        title: 'Title',
+        icon: 'map',
+        state: { name: 'name', params: { param1: 'toast' } },
+      },
+      {
+        title: 'Title2',
+        state: { name: 'name2', params: { param1: 'toast2' } },
+      },
+      {
+        title: 'Inactive',
+        icon: 'map',
+      },
+    ];
     fixture.detectChanges();
+  
     const breadcrumbElements = element.querySelectorAll('.admin-breadcrumb');
     expect(breadcrumbElements.length).toEqual(3);
     expect(element.querySelectorAll('.admin-breadcrumb__separator').length).toEqual(2);
     expect(element.querySelectorAll('.admin-breadcrumb--active').length).toEqual(1);
     expect(element.querySelectorAll('mat-icon').length).toEqual(2);
-
-    expect(breadcrumbElements.item(0).innerHTML).toEqual(component.breadcrumbs[0].title);
-    expect(breadcrumbElements.item(1).innerHTML).toEqual(component.breadcrumbs[1].title);
-    expect(breadcrumbElements.item(2).innerHTML).toEqual(component.breadcrumbs[2].title);
+    expect(breadcrumbElements.item(0).textContent.trim()).toEqual(component.breadcrumbs[0].title);
+    expect(breadcrumbElements.item(1).textContent.trim()).toEqual(component.breadcrumbs[1].title);
+    expect(breadcrumbElements.item(2).textContent.trim()).toEqual(component.breadcrumbs[2].title);
   });
+  
 });

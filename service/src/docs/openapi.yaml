@@ -1,9 +1,9 @@
 openapi: 3.0.1
 info:
-  title: MAGE API
-  description: MAGE API
+  title: Mage API
+  description: Mage API
   contact:
-    name: MAGE Support
+    name: Mage Support
     email: mage@nga.mil
   license:
     name: Apache 2.0
@@ -174,7 +174,7 @@ paths:
             schema: { $ref: '#/components/schemas/DeviceIn' }
       responses:
         200:
-          description: Successful device authorization, MAGE api token is returned.
+          description: Successful device authorization, Mage api token is returned.
         401:
           description:  User is not authorized.  Typically this means you need to authenticate `/auth/local/signin`.
         403:
@@ -275,7 +275,7 @@ paths:
         be inactive and an admin must activate the user later.  Additionally,
         the `roleId` key is required when the requesting user is an admin.
         Otherwise, the created user receives a default role.  When the request
-        body contains `multipart/form-data`, MAGE will handle the `icon` and/or
+        body contains `multipart/form-data`, Mage will handle the `icon` and/or
         `avatar` file form parameters.  The server only sets the user's map
         icon if the requesting user has the `CREATE_USER` permission.
       operationId: createUser
@@ -777,7 +777,7 @@ paths:
         - in: query
           name: omit_event_teams
           description: >
-            Whether to omit the event's implicit team that MAGE automatically
+            Whether to omit the event's implicit team that Mage automatically
             creates for adding individual users to an event.
           schema:
             type: boolean
@@ -949,7 +949,7 @@ paths:
       operationId: createEvent
       description: >
         Create a new event.  The requesting user must have `CREATE_EVENT`
-        permission.  MAGE assigns the requesting user to the event's ACL with
+        permission.  Mage assigns the requesting user to the event's ACL with
         the `OWNER` role.  Creating a new event implicitly creates a team
         coupled to the event by the team's `teamEventId` property.  One can
         add users to this team to allow access to the event on an individual
@@ -973,7 +973,7 @@ paths:
     get:
       tags: [ Event ]
       description: >
-        Get all of the MAGE server's events.  The requesting user must have
+        Get all of the Mage server's events.  The requesting user must have
         `READ_EVENT_ALL` permission and an ACL entry on the even with `read`
         permission.
       operationId: getEvents
@@ -1170,8 +1170,8 @@ paths:
         The `<primary_x>` and `<variant_x>` directory components above are
         named after the choice values of the form's primary and variant
         select fields, respectively.  Each `primary_x/variant_x` directory
-        contains the map icon image that MAGE clients will use to represent
-        observations with those values on a map.  MAGE clients will use the
+        contains the map icon image that Mage clients will use to represent
+        observations with those values on a map.  Mage clients will use the
         form's default icon image to represent primary/variant combinations
         that are not present in the `icons` directory.  The requesting user
         must have `READ_EVENT_ALL` permission and an ACL entry with `read`
@@ -1535,7 +1535,7 @@ paths:
           description: >
             The `populate` parameter is a comma-separated list of keys in the
             returned team documents to populate with their referenced documents.
-            When the value of `populate` includes `users`, MAGE will populate
+            When the value of `populate` includes `users`, Mage will populate
             the returned team documents with the user documents they reference,
             replacing the `userIds` key in each team document with `users`.
           schema:
@@ -1545,7 +1545,7 @@ paths:
         - in: query
           name: omit_event_teams
           description: >
-            Whether to omit the event's implicit team that MAGE automatically
+            Whether to omit the event's implicit team that Mage automatically
             creates for adding individual users to an event.
           schema:
             type: boolean
@@ -2950,10 +2950,10 @@ paths:
       tags: [ Export ]
       operationId: export
       description: >
-        Export MAGE data (GeoJSON, KML, GeoPackage, CSV) in the background. The requesting user must have
+        Export Mage data (GeoJSON, KML, GeoPackage, CSV) in the background. The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` or an ACL entry in the
         event with `read`.
-      summary: Export MAGE data using a background task.
+      summary: Export Mage data using a background task.
       requestBody:
         content:
           application/json:
@@ -3019,7 +3019,7 @@ components:
     mageToken:
       type: http
       description: >
-        MAGE generates an API token when a client authenticates
+        Mage generates an API token when a client authenticates
         initially.  The client can use the token for subsequent requests until
         it expires.
       scheme: bearer
@@ -3106,7 +3106,7 @@ components:
     UserRef:
       description: >
         `UserRef` is an object that references an existing user document with
-        the required `id` property.  MAGE ignores any properties other than
+        the required `id` property.  Mage ignores any properties other than
         `id`.
       type: object
       allOf:
@@ -3318,7 +3318,7 @@ components:
         teamEventId:
           $ref: '#/components/schemas/Event/properties/id'
           description: >
-            MAGE adds this property to indicate that a team is the implicitly
+            Mage adds this property to indicate that a team is the implicitly
             created team paired with an event for grouping the event's users
             on an individual basis.  This property references the ID of the
             event document to which the team belongs.  To add an individual
@@ -3496,7 +3496,7 @@ components:
           type: string
     FormIcon:
       description: >
-        `FormIcon` documents are the meta-data about icon images that MAGE
+        `FormIcon` documents are the meta-data about icon images that Mage
         clients use to mark the location on the map display of observations
         with the associated form.
       type: object
@@ -3596,9 +3596,9 @@ components:
     Observation:
       title: Observation
       description: >
-        The `Observation` is the operative concept of MAGE's geospatial data
+        The `Observation` is the operative concept of Mage's geospatial data
         collection functionality.  Observation documents are the geo-tagged
-        form and media records that MAGE users submit to the MAGE server.
+        form and media records that Mage users submit to the Mage server.
         Observation documents are extensions of GeoJSON feature documents, so
         all observations have a `type` property whose value is `Feature`, as
         well as a `geometry` property that holds the geospatial geometry of the
@@ -3695,7 +3695,7 @@ components:
       }
     ObservationFeatureProperties:
       description: >
-        This schema defines the specific keys that MAGE recognizes under the
+        This schema defines the specific keys that Mage recognizes under the
         GeoJSON feature's `properties` entry.
       type: object
       properties:

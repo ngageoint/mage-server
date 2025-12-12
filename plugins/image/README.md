@@ -1,14 +1,14 @@
-# MAGE Image Plugin
+# Mage Image Plugin
 
-The MAGE Image plugin will ensure that all images clients attach to observations
+The Mage Image plugin will ensure that all images clients attach to observations
 are rotated properly according to the image EXIF data.  The plugin will also
-create thumbnails of configured sizes for each image attachment.  MAGE clients
+create thumbnails of configured sizes for each image attachment.  Mage clients
 will attempt to pull the smaller thumbnail images for certain views based on the
 client's view size and resolution. Enabling this plugin is optional.
 
 ## Configuration
 
-The image plugin utilizes the basic [plugin state repository](../../service/src/plugins.api/index.ts) that core MAGE
+The image plugin utilizes the basic [plugin state repository](../../service/src/plugins.api/index.ts) that core Mage
 Service provides to store its configuration.  The configuration document is
 fairly simple, and looks like
 ```json

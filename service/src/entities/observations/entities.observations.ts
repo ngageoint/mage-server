@@ -31,6 +31,11 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
    *   a unique id
    */
   states: readonly ObservationState[]
+
+  /**
+   * A boolean flag to indicate whether the observation has geometry.
+   */
+  noGeometry?: boolean
 }
 
 export interface ObservationFeatureProperties {
@@ -170,7 +175,7 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
     lastModified: new Date(from.lastModified.getTime()),
     attachments: from.attachments.map(copyAttachmentAttrs),
     important: from.important ? copyImportantFlagAttrs(from.important) : undefined,
-    favoriteUserIds: Object.freeze([ ...from.favoriteUserIds ]),
+    favoriteUserIds: Object.freeze([...from.favoriteUserIds]),
     states: Object.freeze(from.states.map(copyObservationStateAttrs)),
     type: 'Feature',
     // meh, these shallow copies are probably fine ... right?
@@ -179,7 +184,8 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
       ...from.properties,
       timestamp: new Date(from.properties.timestamp),
       forms: from.properties.forms.map(x => ({ ...x })),
-    }
+    },
+    noGeometry: !!from.noGeometry
   }
 }
 
@@ -281,9 +287,9 @@ export class Observation implements Readonly<ObservationAttrs> {
     const updateAttachments = update.attachments.reduce((updateAttachments, att) => {
       return updateAttachments.set(att.id, att)
     }, new Map<AttachmentId, Attachment>())
-    const removedAttachments = target.attachments.filter(x =>!updateAttachments.has(x.id))
+    const removedAttachments = target.attachments.filter(x => !updateAttachments.has(x.id))
     // TODO: whatever other mods generate events that matter
-    const updateEvents = removedAttachments.length ? [ AttachmentsRemovedDomainEvent(target, removedAttachments) ] : [] as PendingObservationDomainEvent[]
+    const updateEvents = removedAttachments.length ? [AttachmentsRemovedDomainEvent(target, removedAttachments)] : [] as PendingObservationDomainEvent[]
     const pendingEvents = mergePendingDomainEvents(target, updateEvents)
     return createObservation(update, target.mageEvent, pendingEvents)
   }
@@ -316,6 +322,7 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly properties: Readonly<ObservationFeatureProperties>
   readonly attachments: readonly Attachment[]
   readonly pendingEvents: readonly PendingObservationDomainEvent[]
+  readonly noGeometry?: boolean
 
   constructor(...args: unknown[]) {
     if (args[0] !== ObservationConstructionToken) {
@@ -342,12 +349,13 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.type = 'Feature'
     this.bbox = attrs.bbox
     this.geometry = attrs.geometry
-    this.attachments = Object.freeze([ ...attrs.attachments ])
+    this.attachments = Object.freeze([...attrs.attachments])
     this.properties = { ...attrs.properties }
-    this.#formEntriesById = new Map(this.properties.forms.map(x => [ x.id, x ]))
-    this.#attachmentsById = new Map(this.attachments.map(x => [ x.id, x ]))
+    this.#formEntriesById = new Map(this.properties.forms.map(x => [x.id, x]))
+    this.#attachmentsById = new Map(this.attachments.map(x => [x.id, x]))
     this.#validation = args[3] as ObservationValidationResult
     this.pendingEvents = (args[4] || []) as PendingObservationDomainEvent[]
+    this.noGeometry = !!attrs.noGeometry
   }
 
   get validation(): ObservationValidationResult {
@@ -394,11 +402,11 @@ export enum ObservationDomainEventType {
 export type PendingObservationDomainEvent = {
   readonly type: ObservationDomainEventType
 } & (
-  | {
-    type: ObservationDomainEventType.AttachmentsRemoved
-    readonly removedAttachments: readonly Readonly<Attachment>[]
-  }
-)
+    | {
+      type: ObservationDomainEventType.AttachmentsRemoved
+      readonly removedAttachments: readonly Readonly<Attachment>[]
+    }
+  )
 
 // export type ObservationDomainEvent = PendingObservationDomainEvent & {
 
@@ -428,14 +436,14 @@ export type AttachmentsRemovedDomainEvent = Extract<PendingObservationDomainEven
 export interface ObservationValidationResult {
   readonly hasErrors: boolean
   readonly coreAttrsErrors: { readonly [attr in ObservationValidationCoreAttrKey]?: string }
-  readonly formCountErrors: readonly [ FormId, FormCountError ][]
-  readonly formEntryErrors: readonly [ number, FormEntryValidationError ][]
+  readonly formCountErrors: readonly [FormId, FormCountError][]
+  readonly formEntryErrors: readonly [number, FormEntryValidationError][]
   /**
    * This list contains attachment error map entries where the key is the
    * position of the attachment in the `attachments` array on the observation,
    * and the value is the `AttachmentValidationError`.
    */
-  readonly attachmentErrors: readonly [ number, AttachmentValidationError ][]
+  readonly attachmentErrors: readonly [number, AttachmentValidationError][]
   readonly totalFormCountError: TotalFormCountError | null
 }
 
@@ -489,7 +497,7 @@ export class FormCountError {
     readonly constraintCount: number,
     readonly formId: FormId,
     readonly formName: string
-    ) { }
+  ) { }
 
   message(): string {
     if (this.constraint === MinFormsConstraint) {
@@ -510,7 +518,7 @@ export class FormEntryValidationError {
    */
   formName: string | null = null
 
-  constructor(readonly formEntryId: FormEntryId, readonly formEntryPosition: number) {}
+  constructor(readonly formEntryId: FormEntryId, readonly formEntryPosition: number) { }
 
   addEntryLevelError(x: FormEntryValidationErrorReason): this {
     this.#entryLevelErrors.add(x)
@@ -582,7 +590,7 @@ export class AttachmentValidationError {
   constructor(
     readonly reason: AttachmentValidationErrorReason,
     readonly message: string
-  ) {}
+  ) { }
 }
 
 export function validationResultMessage(result: ObservationValidationResult): string {
@@ -601,16 +609,16 @@ export function validationResultMessage(result: ObservationValidationResult): st
   if (totalFormCountError) {
     errList.push(`${bulletPoint} ${totalFormCountError.message()}`)
   }
-  for (const [ formId, err ] of formCountErrors) {
+  for (const [formId, err] of formCountErrors) {
     errList.push(`${bulletPoint} ${err.message()}`)
   }
-  for (const [ formEntryId, formEntryErr ] of formEntryErrors) {
+  for (const [formEntryId, formEntryErr] of formEntryErrors) {
     errList.push(`${bulletPoint} Form entry ${formEntryErr.formEntryPosition + 1} (${formEntryErr.formName}) is invalid.`)
     for (const fieldErr of formEntryErr.fieldErrors.values()) {
       errList.push(`  ${bulletPoint} ${fieldErr.message}`)
     }
   }
-  for (const [ pos, attachmentErr ] of attachmentErrors) {
+  for (const [pos, attachmentErr] of attachmentErrors) {
     errList.push(`${bulletPoint} Attachment ${pos + 1} is invalid.  ${attachmentErr.message}`)
   }
   return errList.join('\n')
@@ -688,7 +696,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
     return AttachmentAddError.invalidNewAttachment(invalid)
   }
   const mod = copyObservationAttrs(observation)
-  mod.attachments = [ ...mod.attachments, attachment ]
+  mod.attachments = [...mod.attachments, attachment]
   return Observation.assignTo(observation, mod) as Observation
 }
 
@@ -702,7 +710,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
  * @param patch
  * @returns
  */
- export function patchAttachment(observation: Observation, attachmentId: AttachmentId, patch: AttachmentPatchAttrs): Observation | AttachmentNotFoundError {
+export function patchAttachment(observation: Observation, attachmentId: AttachmentId, patch: AttachmentPatchAttrs): Observation | AttachmentNotFoundError {
   const targetPos = observation.attachments.findIndex(x => x.id === attachmentId)
   const target = observation.attachments[targetPos]
   if (!target) {
@@ -775,7 +783,7 @@ export function putAttachmentThumbnailForMinDimension(observation: Observation, 
  */
 export function thumbnailIndexForTargetDimension(targetDimension: number, attachment: Attachment): number | undefined {
   if (attachment.thumbnails.length === 0) {
-    return void(0)
+    return void (0)
   }
   return attachment.thumbnails.reduce<number | undefined>((best, candidate, index) => {
     if (candidate.minDimension >= targetDimension &&
@@ -783,7 +791,7 @@ export function thumbnailIndexForTargetDimension(targetDimension: number, attach
       return index
     }
     return best
-  }, void(0))
+  }, void (0))
 }
 
 export class AttachmentAddError extends Error {
@@ -881,7 +889,7 @@ export interface ObservationRepositoryForEvent {
 export type StagedAttachmentContentId = unknown
 
 export class StagedAttachmentContentRef {
-  constructor(readonly id: StagedAttachmentContentId) {}
+  constructor(readonly id: StagedAttachmentContentId) { }
 }
 
 export class StagedAttachmentContent extends StagedAttachmentContentRef {
@@ -1057,7 +1065,7 @@ function validateObservationFormEntries(validation: ObservationValidationContext
     return formEntryCounts
   }, activeFormEntryCounts)
   let totalActiveFormEntryCount = 0
-  for (const [ formId, formEntryCount ] of formEntryCounts) {
+  for (const [formId, formEntryCount] of formEntryCounts) {
     const form = mageEvent.formFor(formId)!
     if (typeof form.min === 'number' && formEntryCount < form.min) {
       validation.addFormCountError(FormCountError.tooFewEntriesForForm(form))
@@ -1184,7 +1192,7 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
     if (resultEntry instanceof FormFieldValidationError) {
       formEntryError.addFieldError(resultEntry)
     }
-    else if (resultEntry !== void(0)) {
+    else if (resultEntry !== void (0)) {
       formEntry[field.name] = resultEntry
     }
   })
@@ -1203,8 +1211,8 @@ class ObservationValidationContext {
 
   constructor(from: ObservationValidationContext)
   constructor(observationAttrs: ObservationAttrs, mageEvent: MageEvent)
-  constructor(...args: [ from: ObservationValidationContext ] | [ attrs: ObservationAttrs, mageEvent: MageEvent ]) {
-    const [ fromOrAttrs, maybeMageEvent ] = args
+  constructor(...args: [from: ObservationValidationContext] | [attrs: ObservationAttrs, mageEvent: MageEvent]) {
+    const [fromOrAttrs, maybeMageEvent] = args
     if (fromOrAttrs instanceof ObservationValidationContext) {
       this.observationAttrs = fromOrAttrs.observationAttrs
       this.mageEvent = fromOrAttrs.mageEvent
@@ -1303,13 +1311,13 @@ function AttachmentsRemovedDomainEvent(observation: Observation, removedAttachme
 
 function mergePendingDomainEvents(from: Observation, nextEvents: PendingObservationDomainEvent[]): PendingObservationDomainEvent[] {
   const removedAttachments = [] as Readonly<Attachment>[]
-  const merged = [ ...from.pendingEvents, ...nextEvents ].reduce((merged, e) => {
+  const merged = [...from.pendingEvents, ...nextEvents].reduce((merged, e) => {
     if (e.type === ObservationDomainEventType.AttachmentsRemoved) {
       removedAttachments.push(...e.removedAttachments)
       return merged
     }
     else {
-      return [ ...merged, e ]
+      return [...merged, e]
     }
   }, [] as PendingObservationDomainEvent[])
   if (removedAttachments.length) {

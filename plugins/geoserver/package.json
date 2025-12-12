@@ -1,10 +1,10 @@
 {
   "name": "mage-geoserver",
   "version": "0.0.1",
-  "description": "Geoserver plugin for MAGE",
+  "description": "Geoserver plugin for Mage",
   "keywords": [
     "NGA",
-    "MAGE",
+    "Mage",
     "GeoServer"
   ],
   "author": {

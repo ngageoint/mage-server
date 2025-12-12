@@ -75,6 +75,9 @@ interface EventQueryParams {
   complete?: boolean
   userId?: string
   populate?: boolean
+  limit?: number
+  start?: number
+  includePagination?: boolean
 }
 
 function clearUserFieldChoicesFromFormJson(form: FormJson): FormJson {
@@ -119,16 +122,16 @@ const parseForm: express.RequestHandler = function parseRequestBodyAsForm(req, r
 
   if (form.style) {
     const whitelistStyle = reduceStyle(form.style) as FieldChoiceStyles
-    const primaryField = form.fields.filter(function(field) {
+    const primaryField = form.fields.filter(function (field) {
       return field.name === form.primaryField;
     }).shift();
-    const primaryChoices = primaryField ? primaryField.choices.map(function(item) {
+    const primaryChoices = primaryField ? primaryField.choices.map(function (item) {
       return item.title;
     }) : [];
-    const secondaryField = form.fields.filter(function(field) {
+    const secondaryField = form.fields.filter(function (field) {
       return field.name === form.variantField;
     }).shift();
-    const secondaryChoices = secondaryField ? secondaryField.choices.map(function(choice) {
+    const secondaryChoices = secondaryField ? secondaryField.choices.map(function (choice) {
       return choice.title;
     }) : [];
 
@@ -157,8 +160,8 @@ const parseForm: express.RequestHandler = function parseRequestBodyAsForm(req, r
  * @param style an object that could have style keys
  */
 function reduceStyle(style: any): LineStyle {
-  const styleKeys: (keyof LineStyle)[] = [ 'fill', 'fillOpacity', 'stroke', 'strokeOpacity', 'strokeWidth' ]
-  return styleKeys.reduce<LineStyle>(function(result, styleKey): LineStyle {
+  const styleKeys: (keyof LineStyle)[] = ['fill', 'fillOpacity', 'stroke', 'strokeOpacity', 'strokeWidth']
+  return styleKeys.reduce<LineStyle>(function (result, styleKey): LineStyle {
     if (style[styleKey] !== undefined) {
       result[styleKey] = style[styleKey]
     }
@@ -182,8 +185,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events',
     passport.authenticate('bearer'),
     access.authorize(MageEventPermission.CREATE_EVENT),
-    function(req, res, next) {
-      new api.Event().createEvent(req.body, req.user, function(err: any, event: MageEventDocument) {
+    function (req, res, next) {
+      new api.Event().createEvent(req.body, req.user, function (err: any, event: MageEventDocument) {
         if (err) {
           return next(err);
         }
@@ -200,17 +203,36 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     function (req, res, next) {
       const filter = {
         complete: req.parameters!.complete,
-      } as any
+        teamId: req.query.teamId as string | undefined,
+        excludeTeamId: req.query.excludeTeamId as string | undefined,
+        feedId: req.query.feedId as string | undefined,
+        excludeFeedId: req.query.excludeFeedId as string | undefined,
+        searchTerm: req.query.term as string | undefined,
+        userId: req.query.userId as string | undefined
+      };
       if (req.parameters!.userId) {
         filter.userId = req.parameters!.userId
       }
-      EventModel.getEvents({access: req.access, filter: filter, populate: req.parameters!.populate, projection: req.parameters!.projection}, function(err, events) {
+      const pageSize = parseInt(String(req.query.page_size)) || parseInt(String(req.query.limit)) || 20
+      const page = parseInt(String(req.query.page)) || parseInt(String(req.query.start)) || 0
+      EventModel.getEvents({ access: req.access, filter: filter, populate: req.parameters!.populate, projection: req.parameters!.projection, limit: pageSize, start: page }, (err, events, totalCount) => {
         if (err) {
           return next(err);
         }
-        res.json(events!.map(function(event) {
-          return event.toObject({access: req.access!, projection: req.parameters!.projection});
-        }));
+        if (req.query.includePagination) {
+          res.json({
+            pageSize: pageSize,
+            page: page,
+            items: events!.map((event) => {
+              return event.toObject({ access: req.access!, projection: req.parameters!.projection });
+            }),
+            totalCount: totalCount
+          })
+        } else {
+          res.json(events!.map((event) => {
+            return event.toObject({ access: req.access!, projection: req.parameters!.projection });
+          }));
+        }
       });
     }
   );
@@ -219,11 +241,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/count',
     passport.authenticate('bearer'),
     determineReadAccess,
-    function(req, res, next) {
-      EventModel.count({access: req.access}, function(err, count) {
+    function (req, res, next) {
+      EventModel.count({ access: req.access }, function (err, count) {
         if (err) return next(err);
 
-        return res.json({count: count});
+        return res.json({ count: count });
       });
     }
   );
@@ -237,11 +259,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     function (req, res, next) {
       // TODO already queried event to check access, don't need to get it again.  Just need to populate the
       // correct fields based on query params
-      EventModel.getById(req.event!._id, {access: req.access, populate: req.parameters!.populate}, function(err, event) {
+      EventModel.getById(req.event!._id, { access: req.access, populate: req.parameters!.populate }, function (err, event) {
         if (err) return next(err);
         if (!event) return res.sendStatus(404);
 
-        res.json(event.toObject({access: req.access!, projection: req.parameters!.projection}));
+        res.json(event.toObject({ access: req.access!, projection: req.parameters!.projection }));
       });
     }
   );
@@ -250,12 +272,12 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      new api.Event(req.event).updateEvent(req.body, {}, function(err: any, event: MageEventDocument) {
+    function (req, res, next) {
+      new api.Event(req.event).updateEvent(req.body, {}, function (err: any, event: MageEventDocument) {
         if (err) {
           return next(err);
         }
-        new api.Form(event).populateUserFields(function(err: any) {
+        new api.Form(event).populateUserFields(function (err: any) {
           if (err) {
             return next(err);
           }
@@ -269,8 +291,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.DELETE_EVENT, EventAccessType.Delete),
-    function(req, res, next) {
-      new api.Event(req.event).deleteEvent(function(err: any) {
+    function (req, res, next) {
+      new api.Event(req.event).deleteEvent(function (err: any) {
         if (err) return next(err);
         res.status(204).send();
       });
@@ -282,7 +304,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     upload.single('form'),
-    function(req, res, next) {
+    function (req, res, next) {
 
       if (!req.is('multipart/form-data')) {
         return next();
@@ -295,13 +317,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       function updateEvent(form: FormDocument, callback: any): void {
         form.name = req.param('name');
         form.color = req.param('color');
-        new api.Event(req.event).addForm(form, function(err: any, form: FormDocument) {
+        new api.Event(req.event).addForm(form, function (err: any, form: FormDocument) {
           callback(err, form);
         });
       }
 
       function importIcons(form: FormDocument, callback: any): void {
-        new api.Form(req.event).importIcons(req.file, form, function(err: any) {
+        new api.Form(req.event).importIcons(req.file, form, function (err: any) {
           callback(err, form);
         });
       }
@@ -324,23 +346,23 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     parseForm,
-    function(req, res, next) {
+    function (req, res, next) {
       const form = req.form;
-      new api.Event(req.event).addForm(form, function(err: any, form: FormDocument) {
+      new api.Event(req.event).addForm(form, function (err: any, form: FormDocument) {
         if (err) return next(err);
 
         async.parallel([
-          function(done: any): void {
-            new api.Icon(req.event!._id, form._id).saveDefaultIconToEventForm(function(err: any) {
+          function (done: any): void {
+            new api.Icon(req.event!._id, form._id).saveDefaultIconToEventForm(function (err: any) {
               done(err);
             });
           },
-          function(done: any): void {
-            new api.Form(req.event, form).populateUserFields(function(err: any) {
+          function (done: any): void {
+            new api.Form(req.event, form).populateUserFields(function (err: any) {
               done(err);
             });
           }
-        ], function(err: any): void {
+        ], function (err: any): void {
           if (err) return next(err);
           res.status(201).json(form.toJSON());
         });
@@ -353,14 +375,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     parseForm,
-    function(req, res, next) {
+    function (req, res, next) {
       const form = req.form as any
       form._id = parseInt(req.params.formId)
-      new api.Event(req.event).updateForm(form, function(err: any, form: any) {
+      new api.Event(req.event).updateForm(form, function (err: any, form: any) {
         if (err) {
           return next(err);
         }
-        new api.Form(req.event, form).populateUserFields(function(err: any) {
+        new api.Form(req.event, form).populateUserFields(function (err: any) {
           if (err) {
             return next(err);
           }
@@ -376,8 +398,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/:formId/form.zip',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function(req, res, next) {
-      new api.Form(req.event).export(parseInt(req.params.formId, 10), function(err: any, form: any) {
+    function (req, res, next) {
+      new api.Form(req.event).export(parseInt(req.params.formId, 10), function (err: any, form: any) {
         if (err) {
           return next(err);
         }
@@ -391,10 +413,10 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/form/icons.zip',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function(req, res) {
-      new api.Icon(req.event!._id).getZipPath(function(err: any, zipPath: string) {
-        res.on('finish', function() {
-          fs.remove(zipPath, function() {
+    function (req, res) {
+      new api.Icon(req.event!._id).getZipPath(function (err: any, zipPath: string) {
+        res.on('finish', function () {
+          fs.remove(zipPath, function () {
             console.log('Deleted the temp icon zip %s', zipPath);
           });
         });
@@ -409,7 +431,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/form/icons*',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function(req, res) {
+    function (req, res) {
       res.sendFile(api.Icon.defaultIconPath);
     }
   );
@@ -418,12 +440,12 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/icons/:formId.json',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function(req, res, next) {
-      new api.Icon(req.event!._id, req.params.formId).getIcons(function(err: any, icons: any) {
+    function (req, res, next) {
+      new api.Icon(req.event!._id, req.params.formId).getIcons(function (err: any, icons: any) {
         if (err) {
           return next();
         }
-        async.map(icons, function(icon: any, done: any) {
+        async.map(icons, function (icon: any, done: any) {
           fs.readFile(icon.path, async (err, data) => {
             if (err) {
               return done(err);
@@ -443,12 +465,12 @@ function EventRoutes(app: express.Application, security: { authentication: authe
             });
           });
         },
-        function(err: any, icons: any) {
-          if (err) {
-            return next(err);
-          }
-          res.json(icons);
-        });
+          function (err: any, icons: any) {
+            if (err) {
+              return next(err);
+            }
+            res.json(icons);
+          });
       });
     }
   );
@@ -460,8 +482,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
     upload.single('icon'),
-    function(req, res, next) {
-      new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).create(req.file, function(err: any, icon: any) {
+    function (req, res, next) {
+      new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).create(req.file, function (err: any, icon: any) {
         if (err) {
           return next(err);
         }
@@ -475,16 +497,16 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function(req, res, next) {
-      new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err: any, icon: any) {
+    function (req, res, next) {
+      new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function (err: any, icon: any) {
         if (err || !icon) {
           return next();
         }
         res.format({
-          'image/*': function() {
+          'image/*': function () {
             res.sendFile(icon.path);
           },
-          'application/json': function() {
+          'application/json': function () {
             fs.readFile(icon.path, async (err: any, data) => {
               if (err) {
                 return next(err);
@@ -509,8 +531,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).delete(function(err: any) {
+    function (req, res, next) {
+      new api.Icon(req.event!._id, req.params.formId, req.params.primary, req.params.variant).delete(function (err: any) {
         if (err) return next(err);
 
         return res.status(204).send();
@@ -522,8 +544,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/layers',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      EventModel.addLayer(req.event!, req.body, function(err: any, event?: MageEventDocument) {
+    function (req, res, next) {
+      EventModel.addLayer(req.event!, req.body, function (err: any, event?: MageEventDocument) {
         if (err) {
           return next(err);
         }
@@ -536,8 +558,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/layers/:id',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      EventModel.removeLayer(req.event!, {id: req.params.id}, function(err: any, event?: MageEventDocument) {
+    function (req, res, next) {
+      EventModel.removeLayer(req.event!, { id: req.params.id }, function (err: any, event?: MageEventDocument) {
         if (err) {
           return next(err);
         }
@@ -552,11 +574,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     determineReadAccess,
     function (req, res, next) {
-      EventModel.getUsers(req.event!._id, function(err, users) {
+      EventModel.getUsers(req.event!._id, function (err, users) {
         if (err) {
           return next(err);
         }
-        users = userTransformer.transform(users, {path: req.getRoot()});
+        users = userTransformer.transform(users, { path: req.getRoot() });
         res.json(users);
       });
     }
@@ -566,8 +588,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/teams',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      EventModel.addTeam(req.event!, req.body, function(err, event) {
+    function (req, res, next) {
+      EventModel.addTeam(req.event!, req.body, function (err, event) {
         if (err) {
           return next(err);
         }
@@ -580,8 +602,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/teams/:teamId',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      EventModel.removeTeam(req.event!, req.team, function(err, event) {
+    function (req, res, next) {
+      EventModel.removeTeam(req.event!, req.team, function (err, event) {
         if (err) {
           return next(err);
         }
@@ -594,8 +616,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/acl/:targetUserId',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      EventModel.updateUserInAcl(req.event!._id, req.params.targetUserId, req.body.role, function(err, event) {
+    function (req, res, next) {
+      EventModel.updateUserInAcl(req.event!._id, req.params.targetUserId, req.body.role, function (err, event) {
         if (err) {
           return next(err);
         }
@@ -608,8 +630,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/acl/:targetUserId',
     passport.authenticate('bearer'),
     middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function(req, res, next) {
-      EventModel.removeUserFromAcl(req.event!._id, req.params.targetUserId, function(err, event) {
+    function (req, res, next) {
+      EventModel.removeUserFromAcl(req.event!._id, req.params.targetUserId, function (err, event) {
         if (err) {
           return next(err);
         }
@@ -712,7 +734,7 @@ export = EventRoutes
 
 function parseIntOrUndefined(input: any): number | undefined {
   const num = parseInt(String(input))
-  return Number.isNaN(num) ? void(0) : num
+  return Number.isNaN(num) ? void (0) : num
 }
 
 function teamQueryOptionsFromRequest(req: express.Request): any {

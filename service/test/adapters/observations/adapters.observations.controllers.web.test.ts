@@ -32,7 +32,7 @@ describe('observations web controller', function () {
   let attachmentStore: SubstituteOf<AttachmentStore>
   let context: ObservationRequestContext
 
-  beforeEach(function() {
+  beforeEach(function () {
     mageEvent = new MageEvent({
       id: Date.now(),
       name: 'Test Obsevation Web Layer',
@@ -69,9 +69,9 @@ describe('observations web controller', function () {
     client = supertest(webApp)
   })
 
-  describe('observation response json', function() {
+  describe('observation response json', function () {
 
-    it('is exo observation with urls added', function() {
+    it('is exo observation with urls added', function () {
 
       const obs: ExoObservation = {
         id: uniqid(),
@@ -80,7 +80,7 @@ describe('observations web controller', function () {
         createdAt: new Date(),
         lastModified: new Date(),
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date(),
           forms: [
@@ -88,7 +88,7 @@ describe('observations web controller', function () {
           ]
         },
         state: { id: uniqid(), name: 'active', userId: uniqid() },
-        favoriteUserIds: [ uniqid(), uniqid() ],
+        favoriteUserIds: [uniqid(), uniqid()],
         attachments: [
           { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false, contentStored: true },
           { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false, contentStored: true }
@@ -109,7 +109,7 @@ describe('observations web controller', function () {
       expect(obsWeb.attachments[1].url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/attachments/${obs.attachments[1].id}`)
     })
 
-    it('omits attachment url if content is not stored', function() {
+    it('omits attachment url if content is not stored', function () {
 
       const obs: ExoObservation = {
         id: uniqid(),
@@ -118,7 +118,7 @@ describe('observations web controller', function () {
         createdAt: new Date(),
         lastModified: new Date(),
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date(),
           forms: []
@@ -134,9 +134,9 @@ describe('observations web controller', function () {
     })
   })
 
-  describe('POST /id', function() {
+  describe('POST /id', function () {
 
-    it('allocates an observation id', async function() {
+    it('allocates an observation id', async function () {
 
       const observationId = uniqid()
       app.allocateObservationId(Arg.any()).resolves(AppResponse.success(observationId))
@@ -155,7 +155,7 @@ describe('observations web controller', function () {
       })
     })
 
-    it('returns 403 without permission', async function() {
+    it('returns 403 without permission', async function () {
 
       app.allocateObservationId(Arg.any()).resolves(AppResponse.error(permissionDenied('create', testUser)))
       const res = await client.post(`${basePath}/events/${mageEvent.id}/observations/id`)
@@ -166,13 +166,13 @@ describe('observations web controller', function () {
     })
   })
 
-  describe('PUT /observations/{observationId}', function() {
+  describe('PUT /observations/{observationId}', function () {
 
-    it('saves the observation for a mod request', async function() {
+    it('saves the observation for a mod request', async function () {
 
       const obsId = uniqid()
       const reqBody = {
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -185,6 +185,7 @@ describe('observations web controller', function () {
         id: obsId,
         type: 'Feature',
         geometry: reqBody.geometry as Geometry,
+        noGeometry: false,
         properties: {
           timestamp: new Date(reqBody.properties.timestamp),
           forms: reqBody.properties.forms
@@ -221,12 +222,12 @@ describe('observations web controller', function () {
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
     })
 
-    it('picks only geometry and properties from the request body', async function() {
+    it('picks only geometry and properties from the request body', async function () {
 
       const obsId = uniqid()
       const reqBody = {
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -245,6 +246,7 @@ describe('observations web controller', function () {
         id: obsId,
         type: 'Feature',
         geometry: reqBody.geometry as Geometry,
+        noGeometry: false,
         properties: {
           timestamp: new Date(reqBody.properties.timestamp),
           forms: reqBody.properties.forms
@@ -281,7 +283,7 @@ describe('observations web controller', function () {
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
     })
 
-    it('retains only valid properties', async function() {
+    it('retains only valid properties', async function () {
 
       const validProperties: Required<ObservationFeatureProperties> = {
         timestamp: new Date(Date.now() - 500),
@@ -300,12 +302,12 @@ describe('observations web controller', function () {
       }
     })
 
-    it('uses event id only from the path', async function() {
+    it('uses event id only from the path', async function () {
 
       const obsId = uniqid()
       const reqBody = {
         eventId: mageEvent.id + 100,
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -323,12 +325,12 @@ describe('observations web controller', function () {
       app.didNotReceive().saveObservation(Arg.all())
     })
 
-    it('uses observation id only from the path', async function() {
+    it('uses observation id only from the path', async function () {
 
       const obsIdInPath = uniqid()
       const reqBody = {
         id: uniqid(),
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -346,11 +348,11 @@ describe('observations web controller', function () {
       app.didNotReceive().saveObservation(Arg.all())
     })
 
-    it('returns 403 without permission', async function() {
+    it('returns 403 without permission', async function () {
 
       const obsId = uniqid()
       const reqBody = {
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -369,11 +371,11 @@ describe('observations web controller', function () {
       expect(res.body).to.deep.equal({ message: `permission denied: ${appRes.error?.data.permission}` })
     })
 
-    it('returns 404 when the observation id does not exist', async function() {
+    it('returns 404 when the observation id does not exist', async function () {
 
       const obsId = uniqid()
       const reqBody = {
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        geometry: { type: 'Point', coordinates: [23, 45] },
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -392,11 +394,11 @@ describe('observations web controller', function () {
       expect(res.body).to.deep.equal({ message: `Observation not found: ${obsId}` })
     })
 
-    it('returns 400 when the observation is invalid', async function() {
+    it('returns 400 when the observation is invalid', async function () {
 
       const obsId = uniqid()
       const reqBody = {
-        geometry: { type: 'Point', coordinates: [ 23, 45 ] } as Point,
+        geometry: { type: 'Point', coordinates: [23, 45] } as Point,
         properties: {
           timestamp: new Date().toISOString(),
           forms: [
@@ -433,21 +435,21 @@ describe('observations web controller', function () {
     })
   })
 
-  describe('PUT /observations/{observationId}/attachments/{attachmentId}', function() {
+  describe('PUT /observations/{observationId}/attachments/{attachmentId}', function () {
 
     let observationId: string
     let attachmentId: string
     let attachmentRequestPath: string
     let attachmentBytes: Buffer
 
-    beforeEach(function() {
+    beforeEach(function () {
       observationId = uniqid()
       attachmentId = uniqid()
       attachmentRequestPath = `${basePath}/events/${mageEvent.id}/observations/${observationId}/attachments/${attachmentId}`
       attachmentBytes = Buffer.from(Array.from({ length: 10000 }).map(x => uniqid()).join(' | '))
     })
 
-    it('accepts a file upload to store as attachment content', async function() {
+    it('accepts a file upload to store as attachment content', async function () {
 
       const fileName = uniqid('attachment-', '.mp4')
       const obs: ExoObservation = {
@@ -457,7 +459,8 @@ describe('observations web controller', function () {
         eventId: mageEvent.id,
         favoriteUserIds: [],
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [ 65, 56 ] },
+        geometry: { type: 'Point', coordinates: [65, 56] },
+        noGeometry: false,
         properties: {
           timestamp: new Date(),
           forms: []
@@ -499,7 +502,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('accepts the upload if the first part is the attachment in an invalid request', async function() {
+    it('accepts the upload if the first part is the attachment in an invalid request', async function () {
 
       const fileName = uniqid('attachment-', '.mp4')
       const obs: ExoObservation = {
@@ -509,7 +512,7 @@ describe('observations web controller', function () {
         eventId: mageEvent.id,
         favoriteUserIds: [],
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [ 65, 56 ] },
+        geometry: { type: 'Point', coordinates: [65, 56] },
         properties: {
           timestamp: new Date(),
           forms: []
@@ -554,7 +557,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('returns 403 without permission', async function() {
+    it('returns 403 without permission', async function () {
 
       app.storeAttachmentContent(Arg.all()).resolves(AppResponse.error(permissionDenied('store attachment', 'you', observationId)))
       const res = await client.put(attachmentRequestPath)
@@ -563,7 +566,7 @@ describe('observations web controller', function () {
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.deep.equal({ message: `permission denied: store attachment`})
+      expect(res.body).to.deep.equal({ message: `permission denied: store attachment` })
       app.received(1).storeAttachmentContent(Arg.all())
       app.received(1).storeAttachmentContent(Arg.is(actualReq => {
         expect(actualReq.observationId).to.equal(observationId)
@@ -577,7 +580,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('returns 404 when the observation is not found', async function() {
+    it('returns 404 when the observation is not found', async function () {
 
       app.storeAttachmentContent(Arg.all()).resolves(AppResponse.error(entityNotFound(observationId, 'Observation')))
       const res = await client.put(attachmentRequestPath)
@@ -586,7 +589,7 @@ describe('observations web controller', function () {
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.deep.equal({ message: `Observation not found: ${observationId}`})
+      expect(res.body).to.deep.equal({ message: `Observation not found: ${observationId}` })
       app.received(1).storeAttachmentContent(Arg.all())
       app.received(1).storeAttachmentContent(Arg.is(actualReq => {
         expect(actualReq.observationId).to.equal(observationId)
@@ -600,7 +603,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('returns 404 when the attachment is not found', async function() {
+    it('returns 404 when the attachment is not found', async function () {
 
       const notFound = entityNotFound(attachmentId, `Attachment on observation ${observationId}`)
       app.storeAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))
@@ -624,7 +627,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('returns 400 when the attachment multipart field is not a file', async function() {
+    it('returns 400 when the attachment multipart field is not a file', async function () {
 
       const res = await client.put(attachmentRequestPath)
         .field('attachment', 'not a file.png')
@@ -636,7 +639,7 @@ describe('observations web controller', function () {
       app.didNotReceive().storeAttachmentContent(Arg.all())
     })
 
-    it('returns 400 when there is more than one multipart field preceding the attachment', async function() {
+    it('returns 400 when there is more than one multipart field preceding the attachment', async function () {
 
       const res = await client.put(attachmentRequestPath)
         .field('why', 'is this here')
@@ -650,7 +653,7 @@ describe('observations web controller', function () {
       app.didNotReceive().storeAttachmentContent(Arg.all())
     })
 
-    it('returns 400 if the request is not multipart/form-data', async function() {
+    it('returns 400 if the request is not multipart/form-data', async function () {
 
       const res = await client.put(attachmentRequestPath)
         .accept('application/json')
@@ -662,7 +665,7 @@ describe('observations web controller', function () {
       app.didNotReceive().storeAttachmentContent(Arg.all())
     })
 
-    it('returns 400 when the content type does not match the attachment', async function() {
+    it('returns 400 when the content type does not match the attachment', async function () {
 
       const invalid = invalidInput('content type must match attachment media type')
       app.storeAttachmentContent(Arg.all()).resolves(AppResponse.error(invalid))
@@ -686,7 +689,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('returns 400 when the file name does not match the attachment', async function() {
+    it('returns 400 when the file name does not match the attachment', async function () {
 
       const invalid = invalidInput('content name must match attachment name')
       app.storeAttachmentContent(Arg.all()).resolves(AppResponse.error(invalid))
@@ -713,26 +716,26 @@ describe('observations web controller', function () {
     it('TODO: supports localization - uploading localized attachment content, e.g. video or audio recordings?')
   })
 
-  describe('HEAD /observations/{observationId}/attachments/{attachmentId}', function() {
+  describe('HEAD /observations/{observationId}/attachments/{attachmentId}', function () {
     it('TODO: query for the attachment and return the headers based on the attachment meta-data')
     // TODO: include 'accept-ranges: bytes' header https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
   })
 
-  describe('GET /observations/{observationId}/attachments/{attachmentId}', function() {
+  describe('GET /observations/{observationId}/attachments/{attachmentId}', function () {
 
     let observationId: string
     let attachmentId: string
     let attachmentRequestPath: string
     let attachmentBytes: Buffer
 
-    beforeEach(function() {
+    beforeEach(function () {
       observationId = uniqid()
       attachmentId = uniqid()
       attachmentRequestPath = `${basePath}/events/${mageEvent.id}/observations/${observationId}/attachments/${attachmentId}`
       attachmentBytes = Buffer.from(Array.from({ length: 10000 }).map(x => uniqid()).join(' | '))
     })
 
-    it('requests the content for the attachment in the request path', async function() {
+    it('requests the content for the attachment in the request path', async function () {
 
       const content: ExoAttachmentContent = {
         attachment: {
@@ -766,7 +769,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('gets the specified minimum thumbnail dimension', async function() {
+    it('gets the specified minimum thumbnail dimension', async function () {
 
       const content: ExoAttachmentContent = {
         attachment: {
@@ -801,7 +804,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('passes the requested content range to the app layer', async function() {
+    it('passes the requested content range to the app layer', async function () {
 
       const content: ExoAttachmentContent = {
         attachment: {
@@ -838,7 +841,7 @@ describe('observations web controller', function () {
       }))
     })
 
-    it('returns 403 without permission', async function() {
+    it('returns 403 without permission', async function () {
 
       const denied = permissionDenied('read attachment content', 'bernie')
       app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(denied))
@@ -850,7 +853,7 @@ describe('observations web controller', function () {
       app.received(1).readAttachmentContent(Arg.all())
     })
 
-    it('returns 404 if the attachment does not exist', async function() {
+    it('returns 404 if the attachment does not exist', async function () {
 
       const notFound = entityNotFound(attachmentId, 'Attachment')
       app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))
@@ -862,7 +865,7 @@ describe('observations web controller', function () {
       app.received(1).readAttachmentContent(Arg.all())
     })
 
-    it('returns 404 if the attachment content does not exist', async function() {
+    it('returns 404 if the attachment content does not exist', async function () {
 
       const notFound = entityNotFound(attachmentId, 'Attachment content')
       app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))
@@ -874,7 +877,7 @@ describe('observations web controller', function () {
       app.received(1).readAttachmentContent(Arg.all())
     })
 
-    it('returns 404 if the observation does not exist', async function() {
+    it('returns 404 if the observation does not exist', async function () {
 
       const notFound = entityNotFound(observationId, 'Observation')
       app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))

@@ -1,10 +1,23 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb">
-      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
-      <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
-      <li class="active">{{$ctrl.form.name}}</li>
-    </ol>
+<div class="admin-breadcrumbs mat-elevation-z1">
+  <i class="fa fa-calendar"></i>
+  <div>
+    <span class="admin-breadcrumb"><a ui-sref="admin.events">Events</a></span>
+  </div>
+  <div>
+    <span class="admin-breadcrumb__separator">/</span>
+  </div>
+  <div ng-if="$ctrl.event.id">
+    <span class="admin-breadcrumb admin-breadcrumb--active"
+      ><a ui-sref="admin.event({ eventId: $ctrl.event.id })"
+        >{{ $ctrl.event.name }}</a
+      ></span
+    >
+  </div>
+  <div ng-if="$ctrl.event.id">
+    <span class="admin-breadcrumb__separator">/</span>
+  </div>
+  <div>
+    <span class="admin-breadcrumb admin-breadcrumb--active">{{$ctrl.form.name}}</span>
   </div>
 </div>
 

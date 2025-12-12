@@ -1,0 +1,93 @@
+<admin-breadcrumb
+  class="spacer"
+  *ngIf="pluginActive"
+  [breadcrumbs]="pluginBreadcrumbs"
+>
+</admin-breadcrumb>
+
+<div class="nav-float-wrapper" [class.open]="drawerOpen">
+  <button
+    class="nav-toggle"
+    type="button"
+    (click)="toggleDrawer()"
+    aria-haspopup="true"
+    [attr.aria-expanded]="drawerOpen"
+    aria-controls="adminNavDrawer"
+    title="Open navigation"
+  >
+    <i *ngIf="!drawerOpen" class="fa fa-bars" aria-hidden="true"></i>
+    <i *ngIf="drawerOpen" class="fa fa-times" aria-hidden="true"></i>
+    <span class="label">Menu</span>
+  </button>
+
+  <div class="nav-divider"></div>
+
+  <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
+
+  <nav
+    id="adminNavDrawer"
+    class="drawer"
+    role="menu"
+    [class.open]="drawerOpen"
+    (keydown.escape)="closeDrawer()"
+  >
+    <div class="drawer-scroller">
+      <ng-container *ngFor="let item of navItems">
+        <button
+          *ngIf="!item.permission || hasPermission(item.permission)"
+          class="nav-row"
+          role="menuitem"
+          [class.selected]="stateName === item.state"
+          [attr.aria-current]="stateName === item.state ? 'page' : null"
+          [attr.aria-disabled]="stateName === item.state ? 'true' : null"
+          [disabled]="stateName === item.state"
+          (click)="stateName !== item.state && onClick(item.state)"
+        >
+          <i [class]="item.icon" class="icon" aria-hidden="true"></i>
+          <span class="text">{{ item.label }}</span>
+
+          <span
+            *ngIf="item.count && item.count > 0"
+            class="badge"
+            [attr.aria-label]="item.count + ' pending items'"
+          >
+            {{ item.count }}
+          </span>
+        </button>
+      </ng-container>
+
+      <ng-container *ngFor="let plugin of pluginTabs">
+        <button
+          *ngIf="hasPermission('UPDATE_SETTINGS')"
+          class="nav-row"
+          role="menuitem"
+          [class.selected]="stateName === plugin.state"
+          [attr.aria-current]="stateName === plugin.state ? 'page' : null"
+          [attr.aria-disabled]="stateName === plugin.state ? 'true' : null"
+          [disabled]="stateName === plugin.state"
+          (click)="stateName !== plugin.state && onClick(plugin.state)"
+        >
+          <span class="icon plugin">
+            <img
+              *ngIf="plugin.icon?.path"
+              class="plugin-icon"
+              [src]="'/ui_plugins/' + plugin.id + '/' + plugin.icon.path + '?access_token=' + token"
+              alt=""
+            />
+            <i
+              *ngIf="plugin.icon?.className"
+              [class]="plugin.icon.className"
+              aria-hidden="true"
+            ></i>
+            <i
+              *ngIf="!plugin.icon || (!plugin.icon.path && !plugin.icon.className)"
+              class="fa fa-plug"
+              aria-hidden="true"
+            ></i>
+          </span>
+          <span class="text">{{ plugin.title }}</span>
+        </button>
+      </ng-container>
+    </div>
+  </nav>
+</div>

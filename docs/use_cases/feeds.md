@@ -3,15 +3,15 @@
 See the [Feeds section](../domain.md#feeds) in the domain document for a summary of the feeds concept.
 
 ## Notes
-Some feeds may contain sensitive content and require some kind of authentication and authorization.  Sometimes this could even require clients to authenticate and fetch data directly from a feed endpoint, excluding the MAGE server, to support customer security requirements.
+Some feeds may contain sensitive content and require some kind of authentication and authorization.  Sometimes this could even require clients to authenticate and fetch data directly from a feed endpoint, excluding the Mage server, to support customer security requirements.
 
-Feeds could be made available globally to all users of a particular MAGE instance, or restricted based on event membership, or perhaps even restricted to specific users.
+Feeds could be made available globally to all users of a particular Mage instance, or restricted based on event membership, or perhaps even restricted to specific users.
 
 Only administrators and event managers should have permission to create a feed and assign a feed to an event.  Event managers may only be able to create certain types of feeds and only assign feeds to events they manage, while administrators can create any type of feed and assign feeds to any event.
 
 A single feed could be assigned to multiple events.
 
-A feed implementation should be a plugin that can be deployed alongside core MAGE.  The feed plugin would implement an adapter interface that can fetch data from the feed service and transform the data to a format MAGE can present to the user.  A feed plugin could provide multiple feeds from a single source.  For example, an external service could provide several different data sets from a single API, such as NGA's Maritime Safety Information [ReST API](https://msi.nga.mil/api/swagger-ui.html).  A single plugin may also be able to communicate to many different sources, for example an RSS/GeoRSS/Atom feed plugin, or an OGC WFS plugin would be able to fetch data from any service implementing those specifications.  A feed plugin should register its feed implementations with core MAGE to make those implementations available for administrators to configure.
+A feed implementation should be a plugin that can be deployed alongside core Mage.  The feed plugin would implement an adapter interface that can fetch data from the feed service and transform the data to a format Mage can present to the user.  A feed plugin could provide multiple feeds from a single source.  For example, an external service could provide several different data sets from a single API, such as NGA's Maritime Safety Information [ReST API](https://msi.nga.mil/api/swagger-ui.html).  A single plugin may also be able to communicate to many different sources, for example an RSS/GeoRSS/Atom feed plugin, or an OGC WFS plugin would be able to fetch data from any service implementing those specifications.  A feed plugin should register its feed implementations with core Mage to make those implementations available for administrators to configure.
 
 ## Scenarios
 

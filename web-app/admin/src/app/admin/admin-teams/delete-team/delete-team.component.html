@@ -1,0 +1,54 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <div class="warning-icon">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <div class="header-content">
+            <h2 class="dialog-title">Delete Team</h2>
+            <p class="dialog-subtitle">This action cannot be undone</p>
+        </div>
+    </div>
+
+    <div class="dialog-content">
+        <div class="warning-message">
+            <p>Team <strong>"{{team.name}}"</strong> will be permanently deleted.</p>
+        </div>
+
+        <div class="form-field">
+            <label class="checkbox-field">
+                <input type="checkbox" [(ngModel)]="deleteAllUsers" class="checkbox-input">
+                <span class="checkbox-label">Delete all users that are part of this team</span>
+            </label>
+        </div>
+
+        <div class="danger-zone" *ngIf="deleteAllUsers">
+            <div class="danger-zone-header">
+                <i class="fa fa-exclamation-circle"></i>
+                <h3>Are you ABSOLUTELY sure?</h3>
+            </div>
+            <div class="danger-zone-content">
+                <p>This will delete <strong>all users</strong> that are part of this team, regardless of whether they
+                    are in other teams.</p>
+                <p>This action <strong>CANNOT</strong> be undone.</p>
+                <div class="confirmation-field">
+                    <label class="field-label">Type the team name to confirm:</label>
+                    <input type="text" class="form-input" [(ngModel)]="confirm.text" placeholder="{{team.name}}"
+                        autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" (click)="cancel()">Cancel</button>
+        <button class="action-button btn-danger" *ngIf="!deleteAllUsers" (click)="deleteTeam()">
+            <i class="fa fa-trash"></i>
+            Delete Team
+        </button>
+        <button class="action-button btn-danger" *ngIf="deleteAllUsers"
+            [disabled]="deleting || team.name !== confirm.text" (click)="deleteTeam()">
+            <i class="fa" [ngClass]="deleting ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+            Delete Team and Users
+        </button>
+    </div>
+</div>

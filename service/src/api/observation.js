@@ -1,9 +1,9 @@
-const async = require('async')
-  , log = require('winston')
-  , ObservationEvents = require('./events/observation.js')
-  , FieldFactory = require('./field')
-  , ObservationModel = require('../models/observation')
-  , Attachment = require('./attachment');
+const async = require("async"),
+  log = require("winston"),
+  ObservationEvents = require("./events/observation.js"),
+  FieldFactory = require("./field"),
+  ObservationModel = require("../models/observation"),
+  Attachment = require("./attachment");
 
 const fieldFactory = new FieldFactory();
 
@@ -16,26 +16,30 @@ function Observation(event, user, deviceId) {
 const EventEmitter = new ObservationEvents();
 Observation.on = EventEmitter;
 
-Observation.prototype.getAll = function(options, callback) {
+Observation.prototype.getAll = function (options, callback) {
   const event = this._event;
   const filter = options.filter;
   if (filter && filter.geometries) {
     let allObservations = [];
     async.each(
       filter.geometries,
-      function(geometry, done) {
+      function (geometry, done) {
         options.filter.geometry = geometry;
-        ObservationModel.getObservations(event, options, function (err, observations) {
-          if (err) return done(err);
+        ObservationModel.getObservations(
+          event,
+          options,
+          function (err, observations) {
+            if (err) return done(err);
 
-          if (observations) {
-            allObservations = allObservations.concat(observations);
+            if (observations) {
+              allObservations = allObservations.concat(observations);
+            }
+
+            done();
           }
-
-          done();
-        });
+        );
       },
-      function(err) {
+      function (err) {
         callback(err, allObservations);
       }
     );
@@ -44,44 +48,66 @@ Observation.prototype.getAll = function(options, callback) {
   }
 };
 
-Observation.prototype.getById = function(observationId, options, callback) {
-  if (typeof options === 'function') {
+Observation.prototype.getById = function (observationId, options, callback) {
+  if (typeof options === "function") {
     callback = options;
     options = {};
   }
 
-  ObservationModel.getObservationById(this._event, observationId, options, callback);
+  ObservationModel.getObservationById(
+    this._event,
+    observationId,
+    options,
+    callback
+  );
 };
 
-Observation.prototype.validate = function(observation) {
+Observation.prototype.validate = function (observation) {
   const errors = {};
-  let message = '';
+  let message = "";
 
-  if (observation.type !== 'Feature') {
-    errors.type = { error: 'required', message: observation.type ? 'type is required' :  'type must equal "Feature"' };
-    message += observation.type ? '\u2022 type is required\n' : '\u2022 type must equal "Feature"\n'
+  if (observation.type !== "Feature") {
+    errors.type = {
+      error: "required",
+      message: observation.type
+        ? "type is required"
+        : 'type must equal "Feature"',
+    };
+    message += observation.type
+      ? "\u2022 type is required\n"
+      : '\u2022 type must equal "Feature"\n';
   }
 
   // validate timestamp
   const properties = observation.properties || {};
-  const timestampError = fieldFactory.createField({
-    type: 'date',
-    required: true,
-    name: 'timestamp',
-    title: 'Date'
-  }, properties).validate();
+  const timestampError = fieldFactory
+    .createField(
+      {
+        type: "date",
+        required: true,
+        name: "timestamp",
+        title: "Date",
+      },
+      properties
+    )
+    .validate();
   if (timestampError) {
     errors.timestamp = timestampError;
     message += `\u2022 ${timestampError.message}\n`;
   }
 
   // validate geometry
-  const geometryError = fieldFactory.createField({
-    type: 'geometry',
-    required: true,
-    name: 'geometry',
-    title: 'Location'
-  }, observation).validate();
+  const geometryError = fieldFactory
+    .createField(
+      {
+        type: "geometry",
+        required: true,
+        name: "geometry",
+        title: "Location",
+      },
+      observation
+    )
+    .validate();
   if (geometryError) {
     errors.geometry = geometryError;
     message += `\u2022 ${geometryError.message}\n`;
@@ -91,17 +117,23 @@ Observation.prototype.validate = function(observation) {
   const formCount = formEntries.reduce((count, form) => {
     count[form.formId] = (count[form.formId] || 0) + 1;
     return count;
-  }, {})
+  }, {});
 
   const formDefinitions = {};
 
   // Validate total number of forms
-  if (this._event.minObservationForms != null && formEntries.length < this._event.minObservationForms) {
+  if (
+    this._event.minObservationForms != null &&
+    formEntries.length < this._event.minObservationForms
+  ) {
     errors.minObservationForms = new Error("Insufficient number of forms");
     message += `\u2022 Total number of forms in observation must be at least ${this._event.minObservationForms}\n`;
   }
 
-  if (this._event.maxObservationForms != null && formEntries.length > this._event.maxObservationForms) {
+  if (
+    this._event.maxObservationForms != null &&
+    formEntries.length > this._event.maxObservationForms
+  ) {
     errors.maxObservationForms = new Error("Exceeded maximum number of forms");
     message += `\u2022 Total number of forms in observation cannot be more than ${this._event.maxObservationForms}\n`;
   }
@@ -109,23 +141,23 @@ Observation.prototype.validate = function(observation) {
   // Validate forms min/max occurrences
   const formError = {};
   this._event.forms
-    .filter(form => !form.archived)
-    .forEach(formDefinition => {
+    .filter((form) => !form.archived)
+    .forEach((formDefinition) => {
       formDefinitions[formDefinition._id] = formDefinition;
 
       const count = formCount[formDefinition.id] || 0;
       if (formDefinition.min && count < formDefinition.min) {
         formError[formDefinition.id] = {
-          error: 'min',
-          message: `${formDefinition.name} form must be included in observation at least ${formDefinition.min} times`
-        }
+          error: "min",
+          message: `${formDefinition.name} form must be included in observation at least ${formDefinition.min} times`,
+        };
 
         message += `\u2022 ${formDefinition.name} form must be included in observation at least ${formDefinition.min} times\n`;
-      } else if  (formDefinition.max && (count > formDefinition.max)) {
+      } else if (formDefinition.max && count > formDefinition.max) {
         formError[formDefinition.id] = {
-          error: 'max',
-          message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times`
-        }
+          error: "max",
+          message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times`,
+        };
 
         message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times\n`;
       }
@@ -140,14 +172,18 @@ Observation.prototype.validate = function(observation) {
   // Validate form fields
   const formErrors = [];
 
-  formEntries.forEach(formEntry => {
-    let fieldsMessage = '';
+  formEntries.forEach((formEntry) => {
+    let fieldsMessage = "";
     const fieldsError = {};
 
     formDefinitions[formEntry.formId].fields
-      .filter(fieldDefinition => !fieldDefinition.archived)
-      .forEach(fieldDefinition => {
-        const field = fieldFactory.createField(fieldDefinition, formEntry, observation);
+      .filter((fieldDefinition) => !fieldDefinition.archived)
+      .forEach((fieldDefinition) => {
+        const field = fieldFactory.createField(
+          fieldDefinition,
+          formEntry,
+          observation
+        );
         const fieldError = field.validate();
 
         if (fieldError) {
@@ -164,12 +200,12 @@ Observation.prototype.validate = function(observation) {
   });
 
   if (formErrors.length) {
-    errors.forms = formErrors
+    errors.forms = formErrors;
   }
 
   if (Object.keys(errors).length) {
-    const err = new Error('Invalid Observation');
-    err.name = 'ValidationError';
+    const err = new Error("Invalid Observation");
+    err.name = "ValidationError";
     err.status = 400;
     err.message = message;
     err.errors = errors;
@@ -177,12 +213,12 @@ Observation.prototype.validate = function(observation) {
   }
 };
 
-Observation.prototype.createObservationId = function(callback) {
+Observation.prototype.createObservationId = function (callback) {
   ObservationModel.createObservationId(callback);
 };
 
-Observation.prototype.validateObservationId = function(id, callback) {
-  ObservationModel.getObservationId(id, function(err, id) {
+Observation.prototype.validateObservationId = function (id, callback) {
+  ObservationModel.getObservationId(id, function (err, id) {
     if (err) return callback(err);
 
     if (!id) {
@@ -195,70 +231,112 @@ Observation.prototype.validateObservationId = function(id, callback) {
 };
 
 // TODO create is gone, do I need to figure out if this is an observation create?
-Observation.prototype.update = function(observationId, observation, callback) {
+Observation.prototype.update = function (observationId, observation, callback) {
   if (this._user) observation.userId = this._user._id;
   if (this._deviceId) observation.deviceId = this._deviceId;
 
   const err = this.validate(observation);
   if (err) return callback(err);
 
-  ObservationModel.updateObservation(this._event, observationId, observation, (err, updatedObservation) => {
-    if (updatedObservation) {
-      EventEmitter.emit(ObservationEvents.events.update, updatedObservation.toObject({event: this._event}), this._event, this._user);
+  ObservationModel.updateObservation(
+    this._event,
+    observationId,
+    observation,
+    (err, updatedObservation) => {
+      if (updatedObservation) {
+        EventEmitter.emit(
+          ObservationEvents.events.update,
+          updatedObservation.toObject({ event: this._event }),
+          this._event,
+          this._user
+        );
 
-      // Remove any deleted attachments from file system
-      /*
+        // Remove any deleted attachments from file system
+        /*
       TODO: this might not even work. observation form entries are not stored
       with field entry keys for attachment fields, so finding attachments based
       on matching form entry keys with form field names will not produce any
       results.
       */
-      const {forms: formEntries = []}  = observation.properties || {};
-      formEntries.forEach(formEntry => {
-        const formDefinition = this._event.forms.find(form => form._id === formEntry.formId);
-        Object.keys(formEntry).forEach(fieldName => {
-          const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
-          if (fieldDefinition && fieldDefinition.type === 'attachment') {
-            const attachmentsField = formEntry[fieldName] || [];
-            attachmentsField.filter(attachmentField => attachmentField.action === 'delete').forEach(attachmentField => {
-              const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentField.id);
-              if (attachment) {
-                console.info(`deleting attachment ${attachment.id} for field ${fieldName} on observation ${observation.id}`)
-                new Attachment(this._event, observation).delete(attachment._id, err => {
-                  log.warn('Error removing deleted attachment from file system', err);
+        const { forms: formEntries = [] } = observation.properties || {};
+        formEntries.forEach((formEntry) => {
+          const formDefinition = this._event.forms.find(
+            (form) => form._id === formEntry.formId
+          );
+          Object.keys(formEntry).forEach((fieldName) => {
+            const fieldDefinition = formDefinition.fields.find(
+              (field) => field.name === fieldName
+            );
+            if (fieldDefinition && fieldDefinition.type === "attachment") {
+              const attachmentsField = formEntry[fieldName] || [];
+              attachmentsField
+                .filter(
+                  (attachmentField) => attachmentField.action === "delete"
+                )
+                .forEach((attachmentField) => {
+                  const attachment = observation.attachments.find(
+                    (attachment) =>
+                      attachment._id.toString() === attachmentField.id
+                  );
+                  if (attachment) {
+                    console.info(
+                      `deleting attachment ${attachment.id} for field ${fieldName} on observation ${observation.id}`
+                    );
+                    new Attachment(this._event, observation).delete(
+                      attachment._id,
+                      (err) => {
+                        log.warn(
+                          "Error removing deleted attachment from file system",
+                          err
+                        );
+                      }
+                    );
+                  }
                 });
-              }
-            });
-          }
+            }
+          });
         });
-      });
-    }
+      }
 
-    callback(err, updatedObservation);
-  });
+      callback(err, updatedObservation);
+    }
+  );
 };
 
-Observation.prototype.addFavorite = function(observationId, user, callback) {
+Observation.prototype.addFavorite = function (observationId, user, callback) {
   ObservationModel.addFavorite(this._event, observationId, user, callback);
 };
 
-Observation.prototype.removeFavorite = function(observation, user, callback) {
+Observation.prototype.removeFavorite = function (observation, user, callback) {
   ObservationModel.removeFavorite(this._event, observation, user, callback);
 };
 
-Observation.prototype.addImportant = function(observationId, important, callback) {
-  ObservationModel.addImportant(this._event, observationId, important, callback);
+Observation.prototype.addImportant = function (
+  observationId,
+  important,
+  callback
+) {
+  ObservationModel.addImportant(
+    this._event,
+    observationId,
+    important,
+    callback
+  );
 };
 
-Observation.prototype.removeImportant = function(observation, callback) {
+Observation.prototype.removeImportant = function (observation, callback) {
   ObservationModel.removeImportant(this._event, observation, callback);
 };
 
-Observation.prototype.addState = function(observationId, state, callback) {
+Observation.prototype.addState = function (observationId, state, callback) {
   ObservationModel.addState(this._event, observationId, state, (err, state) => {
     if (!err) {
-      if (state.name === 'archive') {
-        EventEmitter.emit(ObservationEvents.events.remove, observationId, this._event);
+      if (state.name === "archive") {
+        EventEmitter.emit(
+          ObservationEvents.events.remove,
+          observationId,
+          this._event
+        );
       }
     }
     callback(err, state);

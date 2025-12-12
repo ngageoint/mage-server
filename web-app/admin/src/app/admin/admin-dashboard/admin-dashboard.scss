@@ -1,0 +1,256 @@
+::ng-deep .admin-main-content {
+  transition: margin-left 0.3s;
+  &:has(admin-dashboard) {
+    height: 92vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    @media (max-width: 959px) {
+      overflow: auto;
+    }
+  }
+
+  width: 100%;
+}
+
+.admin-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  overflow: hidden;
+
+  .mat-card-title {
+    font-size: 15px;
+  }
+
+  .top-card {
+    height: 31vh;
+
+    @media (max-width: 959px) {
+      height: 800px;
+    }
+
+    @media (max-height: 600px) {
+      height: 800px;
+    }
+  }
+
+  .top-row {
+    display: flex;
+    gap: 24px;
+    height: 29vh;
+
+    @media (max-width: 959px) {
+      height: 784px;
+    }
+
+    @media (max-height: 600px) {
+      height: 784px;
+    }
+
+    overflow: hidden;
+
+    .inactive-users,
+    .unregistered-devices {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      .search-wrapper {
+        background-color: #f0f0f0;
+        padding: 4px;
+        border: 1px solid black;
+        border-bottom: none;
+      }
+
+      mat-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 4px 16px;
+
+        mat-form-field {
+          margin-bottom: -21px;
+        }
+
+        mat-list {
+          flex: 1;
+          overflow-y: auto;
+          max-height: 28vh;
+          border: 1px solid gray;
+
+          :ng-deep .mat-list-base {
+            padding-top: 0;
+          }
+
+          ::ng-deep mat-list-item .mat-list-item-content {
+            height: 20px;
+          }
+
+          mat-list-item {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+            min-height: 48px;
+
+            mat-icon {
+              font-size: 21px;
+              margin-right: 8px;
+              color: #666;
+              margin-top: 4px;
+            }
+
+            div[matLine] {
+              font-size: 18px;
+              line-height: 1.2;
+            }
+
+            button[mat-mini-button] {
+              font-size: 11px;
+              padding: 0 4px;
+              height: 24px;
+              line-height: 24px;
+              min-width: auto;
+              margin-left: auto;
+              display: inline-flex;
+              align-items: center;
+
+              mat-icon {
+                font-size: 16px;
+                margin-right: 2px;
+                height: 18px;
+                width: 24px;
+              }
+
+              span,
+              ::ng-deep .mat-button-wrapper {
+                line-height: 1;
+                display: flex;
+                align-items: center;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 959px) {
+      flex-direction: column;
+      max-height: none;
+
+      .inactive-users,
+      .unregistered-devices {
+        height: 300px;
+      }
+    }
+
+    @media (max-height: 600px) {
+      flex-direction: column;
+      max-height: none;
+
+      .inactive-users,
+      .unregistered-devices {
+        height: 300px;
+      }
+    }
+  }
+
+  .title-with-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    .inline-badge {
+      position: absolute !important;
+      transform: none !important;
+      display: inline-flex;
+      vertical-align: middle;
+      right: 20px;
+
+      ::ng-deep .mat-badge-content {
+        transform: none;
+        top: auto;
+        right: auto;
+        position: relative;
+        font-size: 11px;
+        height: 16px;
+        min-width: 16px;
+        line-height: 16px;
+      }
+    }
+  }
+
+  .pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+
+    button {
+      min-width: 100px;
+    }
+
+    @media (max-width: 480px) {
+      align-items: stretch;
+      gap: 12px;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    @media (max-height: 600px) {
+      align-items: stretch;
+      gap: 12px;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .section-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    margin-top: 8px;
+    margin-bottom: 24px;
+  }
+
+  .table-wrapper {
+    --row-height: 73px;
+    --min-page-size: 5;
+    --base-table-height: calc(var(--row-height) * var(--min-page-size));
+
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .table-scroll {
+    height: var(--base-table-height);
+    max-height: var(--base-table-height);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .section-table-title {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 1.5rem 0.5rem 1.5rem;
+    color: #111827;
+  }
+}
+
+.mt-5 {
+  margin-top: 3rem;
+}

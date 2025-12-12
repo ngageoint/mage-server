@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LandingComponent } from './landing.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { IngressModule } from '../ingress/ingress.module';
+import { InfoComponent } from './info.component';
 
 describe('Landing Component', () => {
   let component: LandingComponent;
@@ -8,8 +10,8 @@ describe('Landing Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LandingComponent],
-      imports: [HttpClientTestingModule]
+      declarations: [LandingComponent, InfoComponent],
+      imports: [HttpClientTestingModule, IngressModule]
     }).compileComponents();
   }));
 

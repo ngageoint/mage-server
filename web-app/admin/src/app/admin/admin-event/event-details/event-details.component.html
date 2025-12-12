@@ -1,0 +1,439 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="container bottom-gap-l" *ngIf="event">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-title-section">
+            <h2 class="page-title">{{event.name}}</h2>
+        </div>
+        <div class="header-actions" *ngIf="hasUpdatePermission">
+            <button class="action-button" [ngClass]="editingDetails ? 'btn-primary' : ''" (click)="toggleEditDetails()">
+                <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
+                {{editingDetails ? 'Cancel' : 'Edit Event'}}
+            </button>
+        </div>
+    </div>
+
+    <div class="container-fluid bottom-gap-l">
+        <div class="row">
+            <div class="col-12">
+                <!-- Event Details Section -->
+                <div class="details-section">
+                    <div class="details-card">
+                        <div class="details-form">
+                            <div class="form-field">
+                                <label class="field-label">Name:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails" class="field-value">{{event.name}}</span>
+                                    <input *ngIf="editingDetails" type="text" class="form-input"
+                                        [(ngModel)]="eventEditForm.name" placeholder="Event name">
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="field-label">Description:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails" class="field-value">{{event.description}}</span>
+                                    <textarea *ngIf="editingDetails" class="form-input" rows="3"
+                                        [(ngModel)]="eventEditForm.description"
+                                        placeholder="Event description"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-actions" *ngIf="editingDetails">
+                                <button class="action-button btn-primary" (click)="saveEventDetails()">
+                                    <i class="fa fa-save"></i> Save
+                                </button>
+                                <button class="action-button" (click)="cancelEditDetails()">
+                                    <i class="fa fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- Complete Event Card -->
+                        <div class="action-card" *ngIf="!event.complete && hasUpdatePermission">
+                            <h3 class="action-card-title">Complete Event</h3>
+                            <p class="action-card-description">Marking an event as complete will remove it as a
+                                selectable
+                                event. The event is not destroyed and can be changed back to an active state at any
+                                time.</p>
+                            <button class="action-button btn-primary" (click)="completeEvent(event)">
+                                <i class="fa fa-check-circle"></i> Complete
+                            </button>
+                        </div>
+
+                        <!-- Activate Event Card -->
+                        <div class="action-card" *ngIf="event.complete && hasUpdatePermission">
+                            <h3 class="action-card-title">Activate Event</h3>
+                            <p class="action-card-description">Marking an event as active will show it as a selectable
+                                event on
+                                clients. At that point users can contribute observations and locations to the event.</p>
+                            <button class="action-button btn-primary" (click)="activateEvent(event)">
+                                <i class="fa fa-play-circle"></i> Activate
+                            </button>
+                        </div>
+
+                        <!-- Delete Event Card -->
+                        <div class="danger-zone-card" *ngIf="hasDeletePermission">
+                            <h3 class="danger-zone-title">Delete Event</h3>
+                            <p class="danger-zone-description">Deleting an event will remove all event information
+                                including
+                                observation and location data. This cannot be undone, and all event data will be
+                                unrecoverable.</p>
+                            <button class="action-button btn-danger" (click)="deleteEvent()">
+                                <i class="fa fa-trash-o"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Members and Teams Section -->
+                <div class="sections-container">
+                    <!-- Members Column -->
+                    <div class="section-card">
+                        <div class="table-wrapper mat-elevation-z2">
+                            <div class="section-table-title">Team Members</div>
+                            <div class="integrated-navbar">
+                                <mage-card-navbar [title]="'Team Members'" [isSearchable]="true"
+                                    [searchPlaceholder]="'Search members...'"
+                                    (searchTermChanged)="onMemberSearchChange($event)"
+                                    (searchCleared)="onMemberSearchChange()" [actionButtons]="memberActionButtons">
+                                </mage-card-navbar>
+                            </div>
+                            <div class="table-scroll">
+                                <table mat-table [class.mat-table]="true" [dataSource]="membersDataSource"
+                                    class="mat-table-no-header" *ngIf="membersPage.totalCount > 0">
+                                    <ng-container matColumnDef="content">
+                                        <td mat-cell *matCellDef="let user" class="table-row-content">
+                                            <div class="row-item" (click)="gotoMember(user)">
+                                                <div class="row-icon">
+                                                    <i class="fa fa-user"></i>
+                                                </div>
+                                                <div class="row-info">
+                                                    <div class="row-primary">{{ user.displayName }}</div>
+                                                    <div class="row-secondary">{{ user.username }}</div>
+                                                </div>
+                                                <div class="row-role">
+                                                    <span *ngIf="!editMembers" [class]="getRoleClass(user)">
+                                                        {{ getUserRole(user) }}
+                                                    </span>
+                                                    <mat-form-field *ngIf="hasUpdatePermission && editMembers"
+                                                        class="role-select-field" appearance="outline"
+                                                        (click)="$event.stopPropagation()">
+                                                        <mat-select [value]="getUserRole(user)"
+                                                            (selectionChange)="updateUserRole(user, $event)"
+                                                            (click)="$event.stopPropagation()"
+                                                            panelClass="role-select-panel"
+                                                            disableOptionCentering="true">
+                                                            <mat-select-trigger>
+                                                                {{ getUserRole(user) }}
+                                                            </mat-select-trigger>
+                                                            <mat-option value="GUEST">
+                                                                <div class="role-option">
+                                                                    <div class="role-name">Guest</div>
+                                                                    <div class="role-description">Can view and
+                                                                        contribute observations</div>
+                                                                </div>
+                                                            </mat-option>
+                                                            <mat-option value="MANAGER">
+                                                                <div class="role-option">
+                                                                    <div class="role-name">Manager</div>
+                                                                    <div class="role-description">Can edit event
+                                                                        settings and manage members</div>
+                                                                </div>
+                                                            </mat-option>
+                                                            <mat-option value="OWNER">
+                                                                <div class="role-option">
+                                                                    <div class="role-name">Owner</div>
+                                                                    <div class="role-description">Full control including
+                                                                        deletion</div>
+                                                                </div>
+                                                            </mat-option>
+                                                        </mat-select>
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="row-actions" *ngIf="hasUpdatePermission && editMembers">
+                                                    <button class="action-button btn-danger btn-sm"
+                                                        (click)="removeMember($event, user)" title="Remove Member">
+                                                        <i class="fa fa-trash"></i>
+                                                        Remove Member
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </ng-container>
+
+                                    <tr mat-row *matRowDef="let row; columns: membersDisplayedColumns;" class="pointer">
+                                    </tr>
+                                </table>
+
+                                <div class="empty-state" *ngIf="membersPage.totalCount === 0 && !loadingMembers">
+                                    <div class="empty-state-content">
+                                        <i class="fa fa-users empty-state-icon"></i>
+                                        <div class="empty-state-text">No members for {{ event?.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <mat-paginator [length]="membersPage.totalCount" [pageSize]="membersPageSize"
+                                [pageSizeOptions]="pageSizeOptions" (page)="onMembersPageChange($event)">
+                            </mat-paginator>
+
+                            <div class="loading-overlay" *ngIf="loadingMembers">
+                                <div class="loading-content">
+                                    <div class="loading-text">Loading</div>
+                                    <i class="fa fa-spinner fa-spin loading-spinner"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teams Column -->
+                    <div class="section-card">
+                        <div class="table-wrapper mat-elevation-z2">
+                            <div class="section-table-title">Teams</div>
+                            <div class="integrated-navbar">
+                                <mage-card-navbar [title]="'Teams'" [isSearchable]="true"
+                                    [searchPlaceholder]="'Search teams...'"
+                                    (searchTermChanged)="onTeamSearchChange($event)"
+                                    (searchCleared)="onTeamSearchChange()" [actionButtons]="teamActionButtons">
+                                </mage-card-navbar>
+                            </div>
+                            <div class="table-scroll">
+                                <table mat-table [class.mat-table]="true" [dataSource]="teamsDataSource"
+                                    class="mat-table-no-header" *ngIf="teamsPage.totalCount > 0">
+                                    <ng-container matColumnDef="content">
+                                        <td mat-cell *matCellDef="let team" class="table-row-content">
+                                            <div class="row-item" (click)="gotoTeam(team)">
+                                                <div class="row-icon">
+                                                    <i class="fa fa-users"></i>
+                                                </div>
+                                                <div class="row-info">
+                                                    <div class="row-primary">{{ team.name }}</div>
+                                                    <div class="row-secondary">{{ team.description }}</div>
+                                                </div>
+                                                <div class="row-actions" *ngIf="hasUpdatePermission && editTeams">
+                                                    <button class="action-button btn-danger btn-sm"
+                                                        (click)="removeTeam($event, team)" title="Remove Team">
+                                                        <i class="fa fa-trash"></i>
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </ng-container>
+
+                                    <tr mat-row *matRowDef="let row; columns: teamsDisplayedColumns;" class="pointer">
+                                    </tr>
+                                </table>
+
+                                <div class="empty-state" *ngIf="teamsPage.totalCount === 0 && !loadingTeams">
+                                    <div class="empty-state-content">
+                                        <i class="fa fa-users empty-state-icon"></i>
+                                        <div class="empty-state-text">No teams for {{ event?.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <mat-paginator [length]="teamsPage.totalCount" [pageSize]="teamsPageSize"
+                                [pageSizeOptions]="pageSizeOptions" (page)="onTeamsPageChange($event)">
+                            </mat-paginator>
+
+                            <div class="loading-overlay" *ngIf="loadingTeams">
+                                <div class="loading-content">
+                                    <div class="loading-text">Loading</div>
+                                    <i class="fa fa-spinner fa-spin loading-spinner"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layers Section -->
+                <div class="layers-container">
+                    <div class="section-card">
+                        <div class="table-wrapper mat-elevation-z2">
+                            <div class="section-table-title">Layers</div>
+                            <div class="integrated-navbar">
+                                <mage-card-navbar [title]="'Layers'" [isSearchable]="true"
+                                    [searchPlaceholder]="'Search layers...'"
+                                    (searchTermChanged)="onLayerSearchChange($event)"
+                                    (searchCleared)="onLayerSearchChange()" [actionButtons]="layerActionButtons">
+                                </mage-card-navbar>
+                            </div>
+
+                            <div class="table-scroll">
+                                <table mat-table [class.mat-table]="true" [dataSource]="layersDataSource"
+                                    class="mat-table-no-header" *ngIf="layersPage.totalCount > 0 && !loadingLayers">
+                                    <ng-container matColumnDef="content">
+                                        <td mat-cell *matCellDef="let layer" class="table-row-content">
+                                            <div class="row-item" (click)="gotoLayer(layer)">
+                                                <div class="row-icon">
+                                                    <i class="fa fa-map"></i>
+                                                </div>
+                                                <div class="row-info">
+                                                    <div class="row-primary">{{ layer.name }}</div>
+                                                    <div class="row-secondary" *ngIf="layer.description">{{
+                                                        layer.description }}</div>
+                                                </div>
+                                                <div class="row-actions" *ngIf="hasUpdatePermission && editLayers">
+                                                    <button class="action-button btn-danger btn-sm"
+                                                        (click)="removeLayer($event, layer)" title="Remove Layer">
+                                                        <i class="fa fa-trash"></i>
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </ng-container>
+
+                                    <tr mat-row *matRowDef="let row; columns: layersDisplayedColumns;" class="pointer">
+                                    </tr>
+                                </table>
+
+                                <div class="empty-state" *ngIf="layersPage.totalCount === 0 && !loadingLayers">
+                                    <div class="empty-state-content">
+                                        <i class="fa fa-map empty-state-icon"></i>
+                                        <div class="empty-state-text">No layers for {{ event?.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <mat-paginator [length]="layersPage.totalCount" [pageSize]="layersPageSize"
+                                [pageSizeOptions]="pageSizeOptions" (page)="onLayersPageChange($event)">
+                            </mat-paginator>
+
+                            <div class="loading-overlay" *ngIf="loadingLayers">
+                                <div class="loading-content">
+                                    <div class="loading-text">Loading</div>
+                                    <i class="fa fa-spinner fa-spin loading-spinner"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Forms Section -->
+                <mat-card class="top-gap-l">
+                    <mat-card-header>
+                        <mat-card-title>Forms</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="forms-list" cdkDropList (cdkDropListDropped)="onFormDrop($event)" #formsList>
+                            <div class="form-item" cdkDrag [cdkDragBoundary]="formsList"
+                                [class.form-moving]="animatingFormId === form.id"
+                                *ngFor="let form of filteredForms; trackBy: trackByFormId"
+                                (click)="editForm(event, form)">
+                                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                                <mat-icon>description</mat-icon>
+                                <div class="form-info">
+                                    <div class="form-name">
+                                        {{form.name}}<span *ngIf="form.archived" class="text-danger"> (Archived)</span>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button mat-icon-button (click)="preview($event, form)" matTooltip="Preview Form">
+                                        <mat-icon>visibility</mat-icon>
+                                    </button>
+                                    <button mat-icon-button *ngIf="canMoveFormUp(form)"
+                                        (click)="moveFormUp($event, form)" matTooltip="Move form up">
+                                        <mat-icon>arrow_upward</mat-icon>
+                                    </button>
+                                    <button mat-icon-button *ngIf="canMoveFormDown(form)"
+                                        (click)="moveFormDown($event, form)" matTooltip="Move form down">
+                                        <mat-icon>arrow_downward</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="action-button" (click)="showArchivedForms = !showArchivedForms">
+                                <i class="fa" [ngClass]="showArchivedForms ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                {{ showArchivedForms ? 'Hide' : 'Show' }} Archived Forms
+                            </button>
+                            <button class="action-button btn-primary" (click)="createForm()">
+                                <i class="fa fa-plus"></i> Create Form
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Form Restrictions Section -->
+                <mat-card class="top-gap-l">
+                    <mat-card-header>
+                        <mat-card-title>Form Restrictions</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form #restrictions="ngForm">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Min Forms Per Observation</mat-label>
+                                <input matInput type="number" name="minObservationForms"
+                                    [(ngModel)]="event.minObservationForms" placeholder="No Minimum">
+                                <mat-hint>Minimum number of forms that must be present in an observation for this
+                                    event</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>Max Forms Per Observation</mat-label>
+                                <input matInput type="number" name="maxObservationForms"
+                                    [(ngModel)]="event.maxObservationForms" placeholder="No Maximum">
+                                <mat-hint>Limit the total number of forms that can be added to an observation for this
+                                    event</mat-hint>
+                            </mat-form-field>
+
+                            <div class="restrictions-help">
+                                <p>Add restrictions to individual forms that include the minimum number times a form
+                                    must be present in an observation, and/or the maximum number times this form can be
+                                    present in an observation.</p>
+                            </div>
+
+                            <div class="form-restrictions-list">
+                                <div class="form-restriction-item" *ngFor="let form of nonArchivedForms">
+                                    <mat-icon>description</mat-icon>
+                                    <div class="form-restriction-info">
+                                        <div class="form-restriction-name">{{form.name}}</div>
+                                        <div class="form-restriction-controls">
+                                            <mat-form-field appearance="outline">
+                                                <mat-label>Min</mat-label>
+                                                <input matInput type="number" [(ngModel)]="form.min"
+                                                    [name]="'form_' + form.id + '_min'">
+                                            </mat-form-field>
+                                            <mat-form-field appearance="outline">
+                                                <mat-label>Max</mat-label>
+                                                <input matInput type="number" [(ngModel)]="form.max"
+                                                    [name]="'form_' + form.id + '_max'">
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="restrictionsError" class="alert alert-danger">
+                                <strong>Form Restriction Error</strong>
+                                <p *ngIf="restrictionsError.message">{{restrictionsError.message}}</p>
+                                <ul *ngIf="restrictionsError.errors">
+                                    <li *ngFor="let error of restrictionsError.errors | keyvalue">
+                                        {{error.value.message}}</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="action-button btn-primary" (click)="saveFormRestrictions()"
+                                    [disabled]="!restrictions.dirty">
+                                    <i class="fa fa-save"></i> Save Restrictions
+                                </button>
+                            </div>
+                        </form>
+                    </mat-card-content>
+                </mat-card>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<admin-event-form-preview [formDefinition]="previewForm" (onClose)="closePreview()"></admin-event-form-preview>

@@ -1,69 +1,108 @@
 <div class="content">
-  <div>
-    <h2 mat-dialog-title>Filter</h2>
-    <div mat-dialog-content>
-      <div>
-        <mat-form-field appearance="fill">
-          <mat-label>Event</mat-label>
-          <input type="text" matInput [formControl]="eventControl" [matAutocomplete]="autoEvent">
-          <mat-autocomplete #autoEvent="matAutocomplete" [displayWith]="onDisplayEvent" (optionSelected)="onSelectEvent()">
-            <mat-option *ngFor="let event of filteredEvents | async" [value]="event">
-              <div class="option-text">{{event.name}}</div>
-              <div class="option-description">{{event.description}}</div>
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-      </div>
-    
-      <div>
-        <mat-form-field appearance="fill">
-          <mat-label>Teams</mat-label>
-          <mat-chip-list #chipList>
-            <mat-chip *ngFor="let team of selectedTeams" [removable]="true" (removed)="onRemoveTeam(team)">
-              {{team.name}}
-              <mat-icon matChipRemove>cancel</mat-icon>
-            </mat-chip>
-            <input [formControl]="teamControl" [matAutocomplete]="autoTeam" [matChipInputFor]="chipList"
-              [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="onSelectTeam($event)">
-          </mat-chip-list>
-          <mat-autocomplete #autoTeam="matAutocomplete" [displayWith]="onDisplayTeam"
-            (optionSelected)="onSelectTeam($event)">
-            <mat-option *ngFor="let team of filteredTeams | async" [value]="team">
-              <span>{{team.name}}</span>
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-      </div>
-    
-      <div>
-        <mat-form-field appearance="fill">
-          <mat-label>Time</mat-label>
-          <mat-select [(value)]="intervalChoice" [compareWith]="compareIntervalChoices">
-            <mat-option *ngFor="let choice of intervalChoices" [value]="choice">
-              <span>{{choice.label}}</span>
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <div class="datetime" *ngIf="intervalChoice.filter === 'custom'">
-          <div>
-            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone" (dateTimeChange)="onStartDate($event)"></datetime-picker>
-            <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone" (dateTimeChange)="onStartDate($event)"></datetime-picker>
-          </div>
-          <div class="timezone">
-            <button mat-stroked-button class="timezone__button" (click)="onTimezone()">
-              <span *ngIf="timeZone === 'local'">Local ({{localOffset}})</span>
-              <span *ngIf="timeZone === 'gmt'">GMT (+00:00)</span>
-            </button>
-          </div>
+    <div>
+        <h2 mat-dialog-title>Filter</h2>
+        <div mat-dialog-content>
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ (filteredEvents | async)?.length === 0 ? 'Events (no options)' : 'Events' }}</mat-label>
+                    <input type="text" matInput [formControl]="eventControl" [matAutocomplete]="autoEvent" />
+                    <mat-autocomplete #autoEvent="matAutocomplete" [displayWith]="onDisplayEvent"
+                        (optionSelected)="onSelectEvent($event)">
+                        <mat-option *ngFor="let event of filteredEvents | async" [value]="event">
+                            <div class="option-text">{{event.name}}</div>
+                            <div class="option-description">{{event.description}}</div>
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ (filteredTeams | async)?.length === 0 ? 'Teams (no options)' : 'Teams' }}</mat-label>
+                    <mat-chip-list #chipListTeam>
+                        <mat-chip *ngFor="let team of selectedTeams" [removable]="true" (removed)="onRemoveTeam(team)">
+                            {{team.name}}
+                            <mat-icon matChipRemove>cancel</mat-icon>
+                        </mat-chip>
+                        <input [formControl]="teamControl" [matAutocomplete]="autoTeam" [matChipInputFor]="chipListTeam"
+                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                            (matChipInputTokenEnd)="onSelectTeam($event)" />
+                    </mat-chip-list>
+                    <mat-autocomplete #autoTeam="matAutocomplete" [displayWith]="onDisplayTeam"
+                        (optionSelected)="onSelectTeam($event)">
+                        <mat-option *ngFor="let team of filteredTeams | async" [value]="team">
+                            <span>{{team.name}}</span>
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ (filteredUsers | async)?.length === 0 ? 'Users (no options)' : 'Users' }}</mat-label>
+                    <mat-chip-list #chipListUser>
+                        <mat-chip *ngFor="let user of selectedUsers" [removable]="true" (removed)="onRemoveUser(user)">
+                            {{user.displayName || user.username}}
+                            <mat-icon matChipRemove>cancel</mat-icon>
+                        </mat-chip>
+                        <input [formControl]="userControl" [matAutocomplete]="autoUser" [matChipInputFor]="chipListUser"
+                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                            (matChipInputTokenEnd)="onSelectUser($event)" />
+                    </mat-chip-list>
+                    <mat-autocomplete #autoUser="matAutocomplete" [displayWith]="onDisplayUser"
+                        (optionSelected)="onSelectUser($event)">
+                        <mat-option *ngFor="let user of filteredUsers | async" [value]="user">
+                            <span>{{user.displayName || user.username}}</span>
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ (filteredForms | async)?.length === 0 ? 'Forms (no options)' : 'Forms' }}</mat-label>
+                    <mat-chip-list #chipListForm>
+                        <mat-chip *ngFor="let form of selectedForms" [removable]="true" (removed)="onRemoveForm(form)">
+                            {{form.name}}
+                            <mat-icon matChipRemove>cancel</mat-icon>
+                        </mat-chip>
+                        <input [formControl]="formControl" [matAutocomplete]="autoForm" [matChipInputFor]="chipListForm"
+                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                            (matChipInputTokenEnd)="onSelectForm($event)" />
+                    </mat-chip-list>
+                    <mat-autocomplete #autoForm="matAutocomplete" [displayWith]="onDisplayForm"
+                        (optionSelected)="onSelectForm($event)">
+                        <mat-option *ngFor="let form of filteredForms | async" [value]="form">
+                            <span>{{form.name}}</span>
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+            <div>
+                <mat-form-field appearance="fill">
+                    <mat-label>Time</mat-label>
+                    <mat-select [(value)]="intervalChoice" [compareWith]="compareIntervalChoices">
+                        <mat-option *ngFor="let choice of intervalChoices" [value]="choice">
+                            <span>{{choice.label}}</span>
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="datetime" *ngIf="intervalChoice?.filter === 'custom'">
+                    <div>
+                        <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone"
+                            (dateTimeChange)="onStartDate($event)"></datetime-picker>
+                        <datetime-picker title="End" [datetime]="defaultEndDate" [timezone]="timeZone"
+                            (dateTimeChange)="onEndDate($event)"></datetime-picker>
+                    </div>
+                    <div class="timezone">
+                        <button mat-stroked-button class="timezone__button" (click)="onTimezone()">
+                            <span *ngIf="timeZone === 'local'">Local ({{localOffset}})</span>
+                            <span *ngIf="timeZone === 'gmt'">GMT (+00:00)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <div mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()">Cancel</button>
-    <button mat-button color="primary" cdkFocusInitial (click)="onFilter()">Filter</button>
-  </div>
-
+    <div mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">Cancel</button>
+        <button mat-button color="primary" cdkFocusInitial (click)="onFilter()">Filter</button>
+    </div>
 </div>

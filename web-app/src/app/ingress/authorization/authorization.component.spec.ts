@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AuthorizationComponent } from './authorization.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 describe('Authorization Component', () => {
   let component: AuthorizationComponent;
@@ -9,7 +10,7 @@ describe('Authorization Component', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AuthorizationComponent],
-      imports: [HttpClientTestingModule]
+      imports: [HttpClientTestingModule, MatFormFieldModule]
     }).compileComponents();
   }));
 

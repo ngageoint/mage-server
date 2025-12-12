@@ -2,13 +2,16 @@ import _ from 'underscore';
 import angular from 'angular';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
-import uiRouter from "@uirouter/angularjs";
-import { downgradeComponent, downgradeInjectable } from '@angular/upgrade/static';
+import uiRouter from '@uirouter/angularjs';
+import {
+  downgradeComponent,
+  downgradeInjectable
+} from '@angular/upgrade/static';
 
-import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
+import { BootstrapComponent } from '../app/bootstrap/bootstrap.component';
 
-import { FeedService } from '@ngageoint/mage.web-core-lib/feed'
-import { PluginService } from '../app/plugin/plugin.service'
+import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { PluginService } from '../app/plugin/plugin.service';
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserReadService } from '@ngageoint/mage.web-core-lib/user';
@@ -19,11 +22,19 @@ import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settin
 import { AdminAuthenticationComponent } from '../app/admin/admin-authentication/admin-authentication.component';
 import { AdminMapComponent } from '../app/admin/admin-map/admin-map.component';
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
+import { AdminDashboardComponent } from '../app/admin/admin-dashboard/admin-dashboard';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
-import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component'
+import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component';
 import { AdminFeedEditComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed-edit/admin-feed-edit.component';
 import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
 import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
+import { TeamDashboardComponent } from '../app/admin/admin-teams/dashboard/team-dashboard.component';
+import { TeamDetailsComponent } from '../app/admin/admin-teams/team-details/team-details.component';
+import { EventDetailsComponent } from '../app/admin/admin-event/event-details/event-details.component';
+import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user-details.component';
+import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
+import { EventDashboardComponent } from '../app/admin/admin-event/dashboard/event-dashboard.component';
+import { LayerDashboardComponent } from '../app/admin/admin-layers/dashboard/layer-dashboard.component';
 
 require('angular-minicolors');
 require('select2');
@@ -41,28 +52,86 @@ const app = angular.module('mage', [
   require('./auth/http-auth-interceptor')
 ]);
 
-app
-  .directive('bootstrap', downgradeComponent({ component: BootstrapComponent }));
+app.directive(
+  'bootstrap',
+  downgradeComponent({ component: BootstrapComponent })
+);
 
 app
   .factory('FeedService', downgradeInjectable(FeedService))
   .factory('PluginService', downgradeInjectable(PluginService))
   // TODO: remove this once we have a new user service
-  .factory('UserReadService', downgradeInjectable(UserReadService))
+  .factory('UserReadService', downgradeInjectable(UserReadService));
 
 // Downgraded Angular components
 app
-  .directive('userAvatar', downgradeComponent({ component: UserAvatarComponent }))
+  .directive(
+    'userAvatar',
+    downgradeComponent({ component: UserAvatarComponent })
+  )
   .directive('feeds', downgradeComponent({ component: AdminFeedsComponent }))
   .directive('adminFeed', downgradeComponent({ component: AdminFeedComponent }))
-  .directive('adminService', downgradeComponent({ component: AdminServiceComponent }))
-  .directive('feedEdit', downgradeComponent({ component: AdminFeedEditComponent }))
-  .directive('upgradedAdminMapSettings', downgradeComponent({ component: AdminMapComponent }))
-  .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
-  .directive('upgradedAdminAuthentication', downgradeComponent({ component: AdminAuthenticationComponent }))
-  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
+  .directive(
+    'adminService',
+    downgradeComponent({ component: AdminServiceComponent })
+  )
+  .directive(
+    'feedEdit',
+    downgradeComponent({ component: AdminFeedEditComponent })
+  )
+  .directive(
+    'upgradedAdminMapSettings',
+    downgradeComponent({ component: AdminMapComponent })
+  )
+  .directive(
+    'upgradedAdminSettings',
+    downgradeComponent({ component: AdminSettingsComponent })
+  )
+  .directive(
+    'upgradedAdminAuthentication',
+    downgradeComponent({ component: AdminAuthenticationComponent })
+  )
+  .directive(
+    'authenticationCreate',
+    downgradeComponent({ component: AuthenticationCreateComponent })
+  )
   .directive('contact', downgradeComponent({ component: ContactComponent }))
-  .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
+  .directive(
+    'adminEventFormPreview',
+    downgradeComponent({ component: AdminEventFormPreviewComponent })
+  )
+  .directive(
+    'adminTeams',
+    downgradeComponent({ component: TeamDashboardComponent })
+  )
+  .directive(
+    'adminTeamDetails',
+    downgradeComponent({ component: TeamDetailsComponent })
+  )
+  .directive(
+    'adminEventDetails',
+    downgradeComponent({ component: EventDetailsComponent })
+  )
+  .directive(
+    'adminUsers',
+    downgradeComponent({ component: UserDashboardComponent })
+  )
+  .directive(
+    'adminUserDetails',
+    downgradeComponent({ component: UserDetailsComponent })
+  )
+  .directive(
+    'adminDashboard',
+    downgradeComponent({ component: AdminDashboardComponent })
+  )
+  .directive(
+    'adminEvents',
+    downgradeComponent({ component: EventDashboardComponent })
+  )
+  .directive(
+    'layerDashboard',
+    downgradeComponent({ component: LayerDashboardComponent })
+  );
 
 app
   .component('navbar', require('./navbar/navbar.component'))
@@ -70,7 +139,10 @@ app
   .component('fileUpload', fileUpload)
   .component('fileBrowser', fileBrowser)
   .controller('NavController', require('./mage/mage-nav.controller'))
-  .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
+  .directive(
+    'fileUploadGrid',
+    require('./file-upload/file-upload-grid.directive')
+  )
   .animation('.slide-down', function () {
     return {
       enter: function (element) {
@@ -84,41 +156,60 @@ app
   .config(config)
   .run(run);
 require('./mage');
-require('./authentication') // for modal in admin pages if token expires
+require('./authentication'); // for modal in admin pages if token expires
 require('./factories');
 require('./filters');
 require('./admin');
 require('./user');
 require('./material-components');
 
-config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$animateProvider'];
+config.$inject = [
+  '$httpProvider',
+  '$stateProvider',
+  '$urlRouterProvider',
+  '$animateProvider'
+];
 
-function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvider) {
+function config(
+  $httpProvider,
+  $stateProvider,
+  $urlRouterProvider,
+  $animateProvider
+) {
   $httpProvider.defaults.withCredentials = true;
-  $httpProvider.defaults.headers.post = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  $httpProvider.defaults.headers.post = {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
 
   $animateProvider.classNameFilter(/ng-animatable/);
 
   function resolveAdmin() {
     return {
-      user: ['$q', 'UserService', function ($q, UserService) {
-        const deferred = $q.defer();
+      user: [
+        '$q',
+        'UserService',
+        function ($q, UserService) {
+          const deferred = $q.defer();
 
-        UserService.getMyself().then(function (myself) {
-          if (myself == null) {
-            deferred.reject();
-            return;
-          }
+          UserService.getMyself().then(function (myself) {
+            if (myself == null) {
+              deferred.reject();
+              return;
+            }
 
-          // TODO don't just check for these 2 roles, this should be permission based
-          // Important when doing this the admin page also has to be permission based
-          // and only show what each user can see.
-          // Possible that each role should have an 'admin' permission to abstract this
-          myself.role.name === 'ADMIN_ROLE' || myself.role.name === 'EVENT_MANAGER_ROLE' ? deferred.resolve(myself) : deferred.reject();
-        });
+            // TODO don't just check for these 2 roles, this should be permission based
+            // Important when doing this the admin page also has to be permission based
+            // and only show what each user can see.
+            // Possible that each role should have an 'admin' permission to abstract this
+            myself.role.name === 'ADMIN_ROLE' ||
+              myself.role.name === 'EVENT_MANAGER_ROLE'
+              ? deferred.resolve(myself)
+              : deferred.reject();
+          });
 
-        return deferred.promise;
-      }]
+          return deferred.promise;
+        }
+      ]
     };
   }
 
@@ -150,87 +241,63 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
 
   $stateProvider.state('admin.bulkUser', {
     url: '/users/bulk',
-    component: "adminUserBulk",
+    component: 'adminUserBulk',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.user', {
     url: '/users/:userId',
-    component: "adminUser",
-    resolve: resolveAdmin()
-  });
-
-  $stateProvider.state('admin.editUser', {
-    url: '/users/:userId/edit',
-    component: "adminUserEdit",
+    component: 'adminUserDetails',
     resolve: resolveAdmin()
   });
 
   // Admin team routes
   $stateProvider.state('admin.teams', {
     url: '/teams',
-    component: "adminTeams",
-    resolve: resolveAdmin()
-  });
-
-  $stateProvider.state('admin.createTeam', {
-    url: '/teams/new',
-    component: "adminTeamEdit",
+    component: 'adminTeams',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.team', {
     url: '/teams/:teamId',
-    component: "adminTeam",
-    resolve: resolveAdmin()
-  });
-
-  $stateProvider.state('admin.editTeam', {
-    url: '/teams/:teamId/edit',
-    component: "adminTeamEdit",
-    resolve: resolveAdmin()
-  });
-
-  $stateProvider.state('admin.teamAccess', {
-    url: '/teams/:teamId/access',
-    component: "adminTeamAccess",
+    component: 'adminTeamDetails',
     resolve: resolveAdmin()
   });
 
   // Admin event routes
   $stateProvider.state('admin.events', {
     url: '/events',
-    component: "adminEvents",
+    component: 'adminEvents',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.eventCreate', {
     url: '/events/new',
-    component: "adminEventEdit",
+    component: 'adminEventEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.event', {
     url: '/events/:eventId',
-    component: "adminEvent",
+    component: 'adminEventDetails',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.eventEdit', {
     url: '/events/:eventId/edit',
-    component: "adminEventEdit",
+    component: 'adminEventEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.eventAccess', {
     url: '/events/:eventId/access',
-    component: "adminEventAccess",
+    component: 'adminEventAccess',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.fieldsCreate', {
     url: '/events/:eventId/forms/new',
-    component: "adminEventFormFieldsEdit",
+    component: 'adminEventFormFieldsEdit',
     params: {
       form: null
     },
@@ -239,165 +306,173 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
 
   $stateProvider.state('admin.formEdit', {
     url: '/events/:eventId/forms/:formId',
-    component: "adminEventFormEdit",
+    component: 'adminEventFormEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.formFieldsEdit', {
     url: '/events/:eventId/forms/:formId/fields',
-    component: "adminEventFormFieldsEdit",
+    component: 'adminEventFormFieldsEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.formMapEdit', {
     url: '/events/:eventId/forms/:formId/map',
-    component: "adminEventFormMapEdit",
+    component: 'adminEventFormMapEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.formFeedEdit', {
     url: '/events/:eventId/forms/:formId/feed',
-    component: "adminEventFormFeedEdit",
+    component: 'adminEventFormFeedEdit',
     resolve: resolveAdmin()
   });
 
   // Admin device routes
   $stateProvider.state('admin.devices', {
     url: '/devices',
-    component: "adminDevices",
+    component: 'adminDevices',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.deviceCreate', {
     url: '/devices/new',
-    component: "adminDeviceEdit",
+    component: 'adminDeviceEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.device', {
     url: '/devices/:deviceId',
-    component: "adminDevice",
+    component: 'adminDevice',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.deviceEdit', {
     url: '/devices/:deviceId/edit',
-    component: "adminDeviceEdit",
+    component: 'adminDeviceEdit',
     resolve: resolveAdmin()
   });
 
   // Admin layer routes
   $stateProvider.state('admin.layers', {
     url: '/layers',
-    component: "adminLayers",
+    component: 'layerDashboard',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.layerCreate', {
     url: '/layers/new',
-    component: "adminLayerEdit",
+    component: 'adminLayerEdit',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.layer', {
     url: '/layers/:layerId',
-    component: "adminLayer",
+    component: 'adminLayer',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.layerEdit', {
     url: '/layers/:layerId/edit',
-    component: "adminLayerEdit",
+    component: 'adminLayerEdit',
     resolve: resolveAdmin()
   });
 
   // Admin feed routes
   $stateProvider.state('admin.feeds', {
     url: '/feeds',
-    component: "adminFeeds",
+    component: 'adminFeeds',
     resolve: resolveAdmin()
   });
   $stateProvider.state('admin.feed', {
     url: '/feeds/:feedId',
-    component: "adminFeed",
+    component: 'adminFeed',
     resolve: resolveAdmin()
   });
   $stateProvider.state('admin.feedCreate', {
     url: '/feeds/new',
-    component: "feedEdit",
+    component: 'feedEdit',
     resolve: resolveAdmin()
   });
   $stateProvider.state('admin.feedEdit', {
     url: '/feeds/:feedId/edit',
-    component: "feedEdit",
+    component: 'feedEdit',
     resolve: resolveAdmin()
   });
 
   // Admin service routes
   $stateProvider.state('admin.service', {
     url: '/services/:serviceId',
-    component: "adminService",
+    component: 'adminService',
     resolve: resolveAdmin()
   });
 
   // Admin map routes
   $stateProvider.state('admin.map', {
     url: '/map',
-    component: "upgradedAdminMapSettings",
+    component: 'upgradedAdminMapSettings',
     resolve: resolveAdmin()
   });
 
   // Security settings routes
   $stateProvider.state('admin.security', {
     url: '/security',
-    component: "upgradedAdminAuthentication",
+    component: 'upgradedAdminAuthentication',
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.authenticationCreate', {
     url: '/security/new',
-    component: "authenticationCreate",
+    component: 'authenticationCreate',
     resolve: resolveAdmin()
   });
 
   // Admin settings routes
   $stateProvider.state('admin.settings', {
     url: '/settings',
-    component: "upgradedAdminSettings",
+    component: 'upgradedAdminSettings',
     resolve: resolveAdmin()
   });
 }
 
 run.$inject = ['$rootScope', '$uibModal', '$state', 'Api', 'UserService'];
 function run($rootScope, $uibModal, $state, Api, UserService) {
-
   $rootScope.$on('event:auth-loginRequired', function (e, response) {
     const stateExceptions = ['landing'];
     const requestExceptions = ['/api/users/myself/password'];
-    if (!$rootScope.loginDialogPresented && !_(stateExceptions).contains($state.current.name) && !_(requestExceptions).contains(response.config.url)) {
+    if (
+      !$rootScope.loginDialogPresented &&
+      !_(stateExceptions).contains($state.current.name) &&
+      !_(requestExceptions).contains(response.config.url)
+    ) {
       $rootScope.loginDialogPresented = true;
       Api.get(function (api) {
         let successful = false;
         const options = {
           template: require('./authentication/signin-modal.html'),
-          controller: ['$scope', '$uibModalInstance', 'authService', function ($scope, $uibModalInstance, authService) {
-            $uibModalInstance.scope = $scope;
-            $scope.api = api;
-            $scope.hideSignup = true;
+          controller: [
+            '$scope',
+            '$uibModalInstance',
+            'authService',
+            function ($scope, $uibModalInstance, authService) {
+              $uibModalInstance.scope = $scope;
+              $scope.api = api;
+              $scope.hideSignup = true;
 
-            $scope.onSuccess = function () {
-              authService.loginConfirmed();
-              $rootScope.loginDialogPresented = false;
-              successful = true;
-              $uibModalInstance.close($scope);
-            };
+              $scope.onSuccess = function () {
+                authService.loginConfirmed();
+                $rootScope.loginDialogPresented = false;
+                successful = true;
+                $uibModalInstance.close($scope);
+              };
 
-            $scope.logout = function () {
-              $rootScope.loginDialogPresented = false;
-              successful = true;
-              $uibModalInstance.close($scope);
-            };
-          }]
+              $scope.logout = function () {
+                $rootScope.loginDialogPresented = false;
+                successful = true;
+                $uibModalInstance.close($scope);
+              };
+            }
+          ]
         };
         let modalInstance = $uibModal.open(options);
         const modalClosed = function () {

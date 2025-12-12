@@ -1,7 +1,7 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
-MAGE adheres to [Semantic Versioning](http://semver.org/).
+Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ---
 

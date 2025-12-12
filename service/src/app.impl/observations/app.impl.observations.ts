@@ -23,14 +23,14 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   return async function saveObservation(req: api.SaveObservationRequest): ReturnType<api.SaveObservation> {
     const repo = req.context.observationRepository
     const mod = req.observation
-    const before = await repo.findById(mod.id)
-    const denied = before ?
-       await permissionService.ensureUpdateObservationPermission(req.context) :
-       await permissionService.ensureCreateObservationPermission(req.context)
+    const existingObservation = await repo.findById(mod.id)
+    const denied = existingObservation ?
+      await permissionService.ensureUpdateObservationPermission(req.context) :
+      await permissionService.ensureCreateObservationPermission(req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
-    const obs = await prepareObservationMod(mod, before, req.context)
+    const obs = await prepareObservationMod(mod, existingObservation, req.context)
     if (obs instanceof MageError) {
       return AppResponse.error(obs)
     }
@@ -111,11 +111,11 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
       return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
     }
     const contentRange = typeof req.contentRange?.start === 'number' && typeof req.contentRange.end === 'number' ?
-      { start: req.contentRange.start, end: req.contentRange.end } : void(0)
+      { start: req.contentRange.start, end: req.contentRange.end } : void (0)
     let contentStream: NodeJS.ReadableStream | null | AttachmentStoreError = null
     let exoAttachment: api.ExoAttachment = api.exoAttachmentFor(attachment)
     if (typeof req.minDimension === 'number') {
-      const thumbIndex =  thumbnailIndexForTargetDimension(req.minDimension, attachment)
+      const thumbIndex = thumbnailIndexForTargetDimension(req.minDimension, attachment)
       const thumb = attachment.thumbnails[Number(thumbIndex)]
       if (thumb) {
         contentStream = await attachmentStore.readThumbnailContent(thumb.minDimension, attachment.id, obs)
@@ -138,7 +138,7 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
     return AppResponse.success({
       attachment: exoAttachment,
       bytes: contentStream,
-      bytesRange: typeof req.minDimension === 'number' ? void(0) : contentRange
+      bytesRange: typeof req.minDimension === 'number' ? void (0) : contentRange
     })
   }
 }
@@ -169,20 +169,20 @@ export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitt
  * an `isPending` property.  That should be reasonable to implement, but no
  * time now, as usual.
  */
-async function prepareObservationMod(mod: api.ExoObservationMod, before: Observation | null, context: api.ObservationRequestContext): Promise<Observation | InvalidInputError> {
+async function prepareObservationMod(mod: api.ExoObservationMod, observationToUpdate: Observation | null, context: api.ObservationRequestContext): Promise<Observation | InvalidInputError> {
   const event = context.mageEvent
   const repo = context.observationRepository
-  const modAttrs = baseObservationAttrsForMod(mod, before, context)
+  const modAttrs = baseObservationAttrsForMod(mod, observationToUpdate, context)
   // first get new form entry ids so new attachments have a proper id to reference
-  const [ removedFormEntries, newFormEntries ] = mod.properties.forms.reduce(([ removed, added ], entryMod ) => {
-    if (entryMod.id && before?.formEntryForId(entryMod.id)) {
+  const [removedFormEntries, newFormEntries] = mod.properties.forms.reduce(([removed, added], entryMod) => {
+    if (entryMod.id && observationToUpdate?.formEntryForId(entryMod.id)) {
       removed.delete(entryMod.id)
     }
     else {
       added.push(entryMod)
     }
-    return [ removed, added ]
-  }, [ new Map(before?.formEntries.map(x => [ x.id, x ]) || []), [] as api.ExoFormEntryMod[] ])
+    return [removed, added]
+  }, [new Map(observationToUpdate?.formEntries.map(x => [x.id, x]) || []), [] as api.ExoFormEntryMod[]])
   const newFormEntryIds = newFormEntries.length ? await repo.nextFormEntryIds(newFormEntries.length) : []
   newFormEntries.forEach(x => x.id = newFormEntryIds.shift())
   const attachmentExtraction = extractAttachmentModsFromFormEntries(mod, event)
@@ -190,12 +190,12 @@ async function prepareObservationMod(mod: api.ExoObservationMod, before: Observa
   const attachmentMods = attachmentExtraction.attachmentMods
   const addCount = attachmentMods.reduce((count, x) => x.action === api.AttachmentModAction.Add ? count + 1 : count, 0)
   const attachmentIds = addCount ? await repo.nextAttachmentIds(addCount) : []
-  const afterRemovedFormEntryAttachments = before?.attachments.reduce((obs, attachment) => {
+  const afterRemovedFormEntryAttachments = observationToUpdate?.attachments.reduce((obs, attachment) => {
     if (removedFormEntries.has(attachment.observationFormId)) {
       return removeAttachment(obs, attachment.id) as Observation
     }
     return obs
-  }, before)
+  }, observationToUpdate)
   if (afterRemovedFormEntryAttachments) {
     modAttrs.attachments = afterRemovedFormEntryAttachments.attachments
   }
@@ -206,17 +206,16 @@ async function prepareObservationMod(mod: api.ExoObservationMod, before: Observa
     if (obs instanceof MageError) {
       return obs
     }
-    const mod =
-      attachmentMod.action === api.AttachmentModAction.Add ?
-        addAttachment(obs, attachmentIds.shift() as string, attachmentMod.fieldName, attachmentMod.formEntryId, attachmentCreateAttrsForMod(attachmentMod)) :
-      attachmentMod.action === api.AttachmentModAction.Delete ?
-        removeAttachment(obs, attachmentMod.id) :
-      null
+    let mod;
+    if (attachmentMod.action === api.AttachmentModAction.Add) {
+      mod = addAttachment(obs, attachmentIds.shift() as string, attachmentMod.fieldName, attachmentMod.formEntryId, attachmentCreateAttrsForMod(attachmentMod))
+    } else if (attachmentMod.action === api.AttachmentModAction.Delete) {
+      mod = removeAttachment(obs, attachmentMod.id)
+    } else {
+      return invalidInput(`invalid attachment action: ${attachmentMod.action}`)
+    }
     if (mod instanceof Observation) {
       return mod
-    }
-    if (mod === null) {
-      return invalidInput(`invalid attachment action: ${attachmentMod.action}`)
     }
     const message = `error adding attachment on observation ${obs.id}`
     return invalidInput(`${message}: ${String(mod)}`)
@@ -229,32 +228,33 @@ async function prepareObservationMod(mod: api.ExoObservationMod, before: Observa
  * existing observation.  The result will not include form entries and
  * attachments, which require separate processing to resolve IDs and actions.
  * @param mod the modifications from an external client
- * @param before the observation to update, or null if none exists
+ * @param observationToUpdate the observation to update, or null if none exists
  */
-function baseObservationAttrsForMod(mod: api.ExoObservationMod, before: Observation | null, context: api.ObservationRequestContext): ObservationAttrs {
+function baseObservationAttrsForMod(mod: api.ExoObservationMod, observationToUpdate: Observation | null, context: api.ObservationRequestContext): ObservationAttrs {
   const attrs: ObservationAttrs = {
     id: mod.id,
     eventId: context.mageEvent.id,
-    userId: before ? before.userId : context.userId,
-    deviceId: before ? before.deviceId : context.deviceId,
-    createdAt: before ? before.createdAt : new Date(),
+    userId: observationToUpdate ? observationToUpdate.userId : context.userId,
+    deviceId: observationToUpdate ? observationToUpdate.deviceId : context.deviceId,
+    createdAt: observationToUpdate ? observationToUpdate.createdAt : new Date(),
     lastModified: new Date(),
     geometry: mod.geometry,
     type: 'Feature',
-    states: before ? before.states : [],
-    bbox: mod.bbox || before?.bbox,
-    favoriteUserIds: before?.favoriteUserIds || [],
-    important: before?.important,
+    states: observationToUpdate ? observationToUpdate.states : [],
+    bbox: mod.bbox || observationToUpdate?.bbox,
+    favoriteUserIds: observationToUpdate?.favoriteUserIds || [],
+    important: observationToUpdate?.important,
     properties: {
       // TODO: should timestamp be optional on the mod object?
       timestamp: mod.properties.timestamp,
       forms: []
     },
     attachments: [],
+    noGeometry: !!mod.noGeometry,
   }
-  assignFirstDefined('accuracy', attrs.properties, mod.properties, before?.properties)
-  assignFirstDefined('delta', attrs.properties, mod.properties, before?.properties)
-  assignFirstDefined('provider', attrs.properties, mod.properties, before?.properties)
+  assignFirstDefined('accuracy', attrs.properties, mod.properties, observationToUpdate?.properties)
+  assignFirstDefined('delta', attrs.properties, mod.properties, observationToUpdate?.properties)
+  assignFirstDefined('provider', attrs.properties, mod.properties, observationToUpdate?.properties)
   return attrs
 }
 
@@ -295,11 +295,11 @@ function extractAttachmentModsFromFormEntries(mod: api.ExoObservationMod, event:
 function extractAttachmentModsFromFormEntry(formEntryMod: api.ExoFormEntryMod, event: MageEvent): { formEntry: FormEntry, attachmentMods: QualifiedAttachmentMod[] } {
   const attachmentMods = [] as QualifiedAttachmentMod[]
   const { id, formId, ...fieldEntries } = formEntryMod as Required<api.ExoFormEntryMod>
-  const formEntry = Object.entries(fieldEntries).reduce((formEntry, [ fieldName, fieldEntry ]) => {
+  const formEntry = Object.entries(fieldEntries).reduce((formEntry, [fieldName, fieldEntry]) => {
     const field = event.formFieldFor(fieldName, formId)
     if (field?.type === FormFieldType.Attachment) {
       const attachmentModEntry = (fieldEntry || []) as api.ExoAttachmentMod[]
-      attachmentModEntry.forEach(x => void(x.action && attachmentMods.push({ ...x, formEntryId: formEntry.id, fieldName })))
+      attachmentModEntry.forEach(x => void (x.action && attachmentMods.push({ ...x, formEntryId: formEntry.id, fieldName })))
     }
     else {
       // let it be invalid

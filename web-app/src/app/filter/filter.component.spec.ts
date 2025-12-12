@@ -4,6 +4,9 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
 
 describe('FilterComponent', () => {
   let component: FilterComponent;
@@ -17,7 +20,10 @@ describe('FilterComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         MatAutocompleteModule,
-        MatDialogModule
+        MatDialogModule,
+        MatFormFieldModule,
+        MatChipsModule,
+        MatSelectModule
       ],
       providers: [{
         provide: MatDialogRef, useValue: {}

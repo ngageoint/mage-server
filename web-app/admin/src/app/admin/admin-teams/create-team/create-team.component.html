@@ -1,0 +1,37 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <h2 class="dialog-title">Create a New Team</h2>
+    </div>
+
+    <div class="dialog-content">
+        <div *ngIf="errorMessage" class="error-alert">
+            <i class="fa fa-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+        </div>
+
+        <form [formGroup]="teamForm" class="team-form">
+            <div class="form-field">
+                <label class="field-label">Team Name</label>
+                <input type="text" class="form-input" formControlName="name" placeholder="Enter team name">
+                <div *ngIf="teamForm.get('name').hasError('required')" class="field-error">
+                    <i class="fa fa-exclamation-circle"></i>
+                    Name is required
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Description</label>
+                <textarea class="form-input" formControlName="description" rows="3"
+                    placeholder="Enter team description (optional)"></textarea>
+            </div>
+        </form>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" (click)="cancel()">Cancel</button>
+        <button class="action-button btn-primary" (click)="save()" [disabled]="teamForm.invalid">
+            <i class="fa fa-save"></i>
+            Create Team
+        </button>
+    </div>
+</div>

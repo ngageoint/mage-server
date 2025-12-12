@@ -9,6 +9,7 @@ import { StateService } from '@uirouter/angular';
 })
 export class AdminBreadcrumbComponent {
   @Input() icon: string
+  @Input() iconClass: string
   @Input() breadcrumbs: AdminBreadcrumb[]
 
   constructor(private stateService: StateService) {}

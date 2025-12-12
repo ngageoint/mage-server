@@ -1,0 +1,43 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <div class="warning-icon">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <div class="header-content">
+            <h2 class="dialog-title">Delete Event</h2>
+            <p class="dialog-subtitle">This action cannot be undone</p>
+        </div>
+    </div>
+
+    <div class="dialog-content">
+        <div class="warning-message">
+            <p>Event <strong>"{{event.name}}"</strong> will be permanently deleted.</p>
+        </div>
+
+        <div class="danger-zone">
+            <div class="danger-zone-header">
+                <i class="fa fa-exclamation-circle"></i>
+                <h3>Are you ABSOLUTELY sure?</h3>
+            </div>
+            <div class="danger-zone-content">
+                <p>Deleting this event will remove <strong>all event information</strong> including observation and
+                    location data.</p>
+                <p>This action <strong>CANNOT</strong> be undone, and all event data will be unrecoverable.</p>
+                <div class="confirmation-field">
+                    <label class="field-label">Type the event name to confirm:</label>
+                    <input type="text" class="form-input" [(ngModel)]="confirm.text" placeholder="{{event.name}}"
+                        autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" (click)="cancel()">Cancel</button>
+        <button class="action-button btn-danger" [disabled]="deleting || event.name !== confirm.text"
+            (click)="deleteEvent()">
+            <i class="fa" [ngClass]="deleting ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+            Delete Event
+        </button>
+    </div>
+</div>

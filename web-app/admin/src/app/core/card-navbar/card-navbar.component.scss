@@ -1,0 +1,229 @@
+.navbar-container {
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    gap: 1.5rem;
+    min-height: 4rem;
+
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+}
+
+.navbar-header {
+    flex-shrink: 0;
+    align-items: center;
+    display: flex;
+}
+
+.navbar-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.search-section {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.search-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    padding-right: 3rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background-color: #f9fafb;
+    transition: all 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+        color: #6b7280;
+    }
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: #6b7280;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #e5e7eb;
+        color: #374151;
+    }
+
+    i {
+        font-size: 0.875rem;
+    }
+}
+
+.actions-section {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.action-button {
+    padding: 0.50rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    flex: 0 0 auto;
+
+    &:hover:not(:disabled) {
+        background-color: #f9fafb;
+        border-color: #9ca3af;
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.btn-primary {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+    }
+
+    &.btn-success {
+        background-color: #10b981;
+        border-color: #10b981;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #059669;
+            border-color: #059669;
+        }
+    }
+
+    &.btn-danger {
+        background-color: #ef4444;
+        border-color: #ef4444;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #dc2626;
+            border-color: #dc2626;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .navbar-header {
+        justify-content: center;
+    }
+
+    .navbar-title {
+        max-width: 100%;
+        text-align: center;
+        font-size: 1.125rem;
+    }
+
+    .search-section {
+        max-width: 100%;
+        min-width: unset;
+    }
+
+    .actions-section {
+        justify-content: center;
+        margin-left: 0;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-container {
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .navbar-title {
+        font-size: 1rem;
+    }
+
+    .search-input {
+        font-size: 0.875rem;
+        padding: 0.625rem 0.875rem;
+        padding-right: 2.5rem;
+    }
+
+    .action-button {
+        font-size: 0.875rem;
+        padding: 0.625rem 1.25rem;
+    }
+
+    .actions-section {
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modern-navbar .navbar-container {
+        flex-wrap: wrap;
+    }
+
+    .modern-navbar .actions-section {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+}

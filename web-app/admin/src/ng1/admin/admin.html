@@ -1,11 +1,24 @@
-<admin-tab state-name="{{$ctrl.stateName}}" inactive-users="$ctrl.inactiveUsers" unregistered-devices="$ctrl.unregisteredDevices" plugin-tabs="$ctrl.pluginTabs"></admin-tab>
+<app-admin-side-nav
+  state-name="{{$ctrl.stateName}}"
+  inactive-users="{{$ctrl.inactiveUsers}}"
+  unregistered-devices="{{$ctrl.unregisteredDevices}}"
+  plugin-tabs="{{$ctrl.pluginTabs}}"
+  token="{{$ctrl.token}}"
+  on-plugin-active-change="$ctrl.pluginActiveChanged($event)"
+>
+</app-admin-side-nav>
+
+<div ng-if="$ctrl.pluginActive">
+  <admin-breadcrumb [breadcrumbs]="$ctrl.breadcrumbs"></admin-breadcrumb>
+</div>
 
 <div class="admin-main">
   <div class="admin-main-content">
     <ui-view
-        on-user-activated="$ctrl.userActivated($event)"
-        on-device-registered="$ctrl.deviceRegistered($event)"
-        on-device-unregistered="$ctrl.deviceUnregistered($event)">
+      on-user-activated="$ctrl.userActivated($event)"
+      on-device-registered="$ctrl.deviceRegistered($event)"
+      on-device-unregistered="$ctrl.deviceUnregistered($event)"
+    >
       <admin-dashboard></admin-dashboard>
     </ui-view>
   </div>

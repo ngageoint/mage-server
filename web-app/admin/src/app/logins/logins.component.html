@@ -1,0 +1,184 @@
+<div class="filter-header">
+  <div class="section-table-title">Logins</div>
+  <div class="filter-toggle-wrapper">
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="toggleFilters = !toggleFilters"
+      [attr.aria-expanded]="toggleFilters"
+    >
+      <mat-icon>{{ toggleFilters ? 'close' : 'filter_list' }}</mat-icon>
+      {{ toggleFilters ? 'Hide Filters' : 'Show Filters' }}
+    </button>
+  </div>
+</div>
+<div class="integrated-navbar">
+  <div class="login-filters">
+    <div class="filter-section" [ngClass]="{ expanded: toggleFilters }">
+      <div class="form-group" *ngIf="!userId">
+        <label class="filter-label">User:</label>
+        <div class="input-with-clear">
+          <input
+            type="text"
+            class="form-input user-input"
+            placeholder="Search users..."
+            [(ngModel)]="userText"
+            (ngModelChange)="onUserSearchChange($event)"
+          />
+          <button
+            type="button"
+            class="clear-btn"
+            *ngIf="userText"
+            (click)="onClearUserInput()"
+            aria-label="Clear user search"
+          >
+            ×
+          </button>
+          <div
+            class="suggestions"
+            *ngIf="loginSearchResults?.length && userText"
+          >
+            <div
+              class="suggestion-item"
+              *ngFor="let u of loginSearchResults"
+              (click)="selectUser(u)"
+            >
+              {{ u.displayName }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Device:</label>
+        <div class="input-with-clear">
+          <input
+            type="text"
+            [(ngModel)]="deviceText"
+            placeholder="Filter on device"
+            class="form-input"
+            (ngModelChange)="onDeviceSearchChange($event)"
+          />
+          <button
+            type="button"
+            class="clear-btn"
+            *ngIf="deviceText"
+            (click)="onClearDeviceInput()"
+            aria-label="Clear device search"
+          >
+            ×
+          </button>
+          <div
+            class="suggestions"
+            *ngIf="loginDeviceSearchResults?.length && deviceText"
+          >
+            <div
+              class="suggestion-item"
+              *ngFor="let d of loginDeviceSearchResults"
+              (click)="selectDevice(d)"
+            >
+              <i class="fa" [ngClass]="iconClass(d)"></i>
+              {{ d?.uid || d?.userAgent || 'Unknown Device' }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Date Range:</label>
+        <div class="date-range-inputs">
+          <input
+            type="date"
+            placeholder="Start Date"
+            class="form-input date-input"
+            [(ngModel)]="login.startDate"
+            (ngModelChange)="dateFilterChanged()"
+          />
+          <span class="date-separator">to</span>
+          <input
+            type="date"
+            placeholder="End Date"
+            class="form-input date-input"
+            [(ngModel)]="login.endDate"
+            (ngModelChange)="dateFilterChanged()"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Results:</label>
+        <select
+          class="form-input results-select"
+          [(ngModel)]="loginResultsLimit"
+          (ngModelChange)="loginResultsLimitChanged()"
+        >
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-scroll login-table-scroll">
+  <table class="logins-table" *ngIf="loginPage && loginPage.logins.length > 0">
+    <thead>
+      <tr>
+        <th *ngIf="!userId">User</th>
+        <th>Device</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let login of loginPage.logins">
+        <td *ngIf="!userId">
+          {{ login.user.displayName }}
+        </td>
+        <td>
+          <span class="login-device" *ngIf="login.device">
+            <a href="javascript:void(0);" (click)="gotoDevice(login.device)">
+              <i class="fa" [ngClass]="iconClass(login.device)"></i>
+              {{ login.device.uid }}
+            </a>
+          </span>
+          <span class="login-device unknown" *ngIf="!login.device">
+            <i class="fa fa-question-circle"></i>
+            Unknown Device
+          </span>
+        </td>
+        <td>
+          {{ fromNow(login.timestamp) }} ({{ formatDate(login.timestamp) }})
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="0" class="prev-button">
+          <button
+            mat-button
+            (click)="pageLogin(loginPage?.prev)"
+            [disabled]="!showPrevious"
+          >
+            ← Previous
+          </button>
+        </td>
+        <td *ngIf="!userId"></td>
+        <td colspan="0" class="next-button">
+          <button
+            mat-button
+            (click)="pageLogin(loginPage?.next)"
+            [disabled]="!showNext"
+          >
+            Next →
+          </button>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="empty-state" *ngIf="!loginPage || loginPage.logins.length === 0">
+    <div class="empty-state-content">
+      <i class="fa fa-sign-in empty-state-icon"></i>
+      <div class="empty-state-text">No login history found</div>
+    </div>
+  </div>
+</div>

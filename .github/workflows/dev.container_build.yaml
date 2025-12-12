@@ -1,0 +1,42 @@
+name: Dev Container Build
+
+on:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set IMAGE_TAG
+        run: |
+          if [[ "${{ github.ref_name }}" == "test" ]]; then
+            echo "IMAGE_TAG=test" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+          fi
+
+      - name: Login to Github Registry ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG .
+
+      - name: Push Image
+        if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
+        run: |
+          docker push ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG

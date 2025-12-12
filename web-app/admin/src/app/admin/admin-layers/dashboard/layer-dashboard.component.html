@@ -1,0 +1,70 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="container bottom-gap-l">
+    <div class="page-header">
+        <h2 class="page-title">Layers</h2>
+    </div>
+
+    <div class="table-wrapper mat-elevation-z2">
+        <div class="integrated-navbar d-flex align-items-center justify-content-between">
+            <div class="filters d-flex align-items-center">
+                <mage-card-navbar [isSearchable]="true" searchPlaceholder="Search Layers..."
+                    (searchTermChanged)="onSearchTermChanged($event)"
+                    (searchCleared)="onSearchCleared()"></mage-card-navbar>
+
+                <mat-form-field appearance="outline" class="ml-3 type-filter">
+                    <mat-label>Type</mat-label>
+                    <mat-select [(ngModel)]="typeFilter" (selectionChange)="onTypeFilterChange($event.value)">
+                        <mat-option value="all">All Layers</mat-option>
+                        <mat-option value="online">Online Layers</mat-option>
+                        <mat-option value="offline">Downloadable Layers</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="button-group">
+                <button *ngIf="hasLayerCreatePermission" mat-flat-button color="primary" (click)="newLayer()">
+                    New Layer
+                </button>
+            </div>
+        </div>
+
+        <div class="table-scroll" *ngIf="filteredLayers?.length; else noLayers">
+            <table mat-table [dataSource]="getPaginatedLayers()" class="mat-table-even-columns mat-table">
+                <ng-container matColumnDef="layer">
+                    <th mat-header-cell *matHeaderCellDef>Layer</th>
+                    <td mat-cell *matCellDef="let layer">
+                        <div class="d-flex align-items-center pointer">
+                            <i class="icon fa fa-map mr-2" aria-hidden="true"></i>
+                            <div class="w-100">
+                                <div class="strong">{{ layer.name }}</div>
+                                <div class="d-flex align-items-center">
+                                    <p class="muted ellipsis description-text" [matTooltip]="layer.description"
+                                        [matTooltipDisabled]="!layer.description || layer.description.length <= 100"
+                                        matTooltipClass="mat-tooltip-event-desc">
+                                        {{ layer.description || 'No description' }}
+                                    </p>
+                                    <span *ngIf="layer.type">{{ layer.type }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns" class="pointer" (click)="gotoLayer(row)">
+                </tr>
+            </table>
+        </div>
+
+        <ng-template #noLayers>
+            <div class="text-center p-4 muted">No layers found.</div>
+        </ng-template>
+
+        <div class="pagination">
+            <mat-paginator [length]="totalLayers" [pageSize]="itemsPerPage" [pageIndex]="page"
+                [pageSizeOptions]="pageSizeOptions" showFirstLastButtons (page)="onPageChange($event)">
+            </mat-paginator>
+        </div>
+    </div>
+</div>

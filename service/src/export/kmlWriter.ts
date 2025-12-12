@@ -1,11 +1,10 @@
 'use strict';
 
 const mgrs = require('mgrs')
-import moment  from 'moment'
+import moment from 'moment'
 import path from 'path'
-import turfCentroid from '@turf/centroid'
-import { AllGeoJSON } from '@turf/helpers'
-import { fragment }  from 'xmlbuilder2'
+import { centroid as turfCentroid } from '@turf/centroid'
+import { fragment } from 'xmlbuilder2'
 import { UserDocument } from '../models/user'
 import { FormDocument, FormFieldDocument, MageEventDocument } from '../models/event'
 import { ObservationDocument, ObservationDocumentFormEntry } from '../models/observation'
@@ -28,10 +27,10 @@ const defaultStyle: Required<LineStyle> = {
 function requiredStyle(style: BaseFormStyle): Required<BaseFormStyle> {
   const dup = copyBaseFormStyle(style)
   dup.fill = style.fill || defaultStyle.fill,
-  dup.stroke = style.stroke || defaultStyle.stroke,
-  dup.fillOpacity = isNumber(style.fillOpacity) ? style.fillOpacity : defaultStyle.fillOpacity,
-  dup.strokeOpacity = isNumber(style.strokeOpacity) ? style.strokeOpacity : defaultStyle.strokeOpacity,
-  dup.strokeWidth = isNumber(style.strokeWidth) ? style.strokeWidth : defaultStyle.strokeWidth
+    dup.stroke = style.stroke || defaultStyle.stroke,
+    dup.fillOpacity = isNumber(style.fillOpacity) ? style.fillOpacity : defaultStyle.fillOpacity,
+    dup.strokeOpacity = isNumber(style.strokeOpacity) ? style.strokeOpacity : defaultStyle.strokeOpacity,
+    dup.strokeWidth = isNumber(style.strokeWidth) ? style.strokeWidth : defaultStyle.strokeWidth
   return dup as Required<BaseFormStyle>
 }
 
@@ -264,7 +263,7 @@ export function generateObservationStyles(event: MageEventDocument, icons: any[]
   const formStyles = event.forms.map(form => {
     return generateFormStyles(event, form, icons.filter(icon => icon.formId === form._id));
   })
-  return [ generateEventStyle(event, icons), ...formStyles ].join('')
+  return [generateEventStyle(event, icons), ...formStyles].join('')
 }
 
 export function generateObservationPlacemark(observation: ObservationDocument, event: MageEvent): string {
@@ -336,7 +335,7 @@ export function generateObservationPlacemark(observation: ObservationDocument, e
     sections.push({ title: 'GPS', properties: gpsProperties })
   }
 
-  const styles = [ String(event.id) ]
+  const styles = [String(event.id)]
   if (firstFormEntry) {
     const form = event.formFor(firstFormEntry.formId)
     if (form) {
@@ -406,21 +405,21 @@ export function generateKMLClose(): string {
   return '</kml>'
 }
 
-export function generateDescription(feature: Feature, sections: any[]): { description: { $: string }} {
-  const centroid = turfCentroid(feature as AllGeoJSON);
+export function generateDescription(feature: Feature, sections: any[]): { description: { $: string } } {
+  const centroid = turfCentroid(feature);
   const header = [{
     section: [
       {
-        span: [ { label: 'Timestamp' }, moment(feature.properties!.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z' ]
+        span: [{ label: 'Timestamp' }, moment(feature.properties!.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z']
       },
       {
-        span: [ { label: 'Latitude' }, centroid.geometry.coordinates[1] ]
+        span: [{ label: 'Latitude' }, centroid.geometry.coordinates[1]]
       },
       {
-        span: [ { label: 'Longitude' }, centroid.geometry.coordinates[0] ]
+        span: [{ label: 'Longitude' }, centroid.geometry.coordinates[0]]
       },
       {
-        span: [ { label: 'MGRS' }, mgrs.forward(centroid.geometry.coordinates) ]
+        span: [{ label: 'MGRS' }, mgrs.forward(centroid.geometry.coordinates)]
       }
     ]
   }]
@@ -458,7 +457,7 @@ export function generateDescription(feature: Feature, sections: any[]): { descri
         })
       } else {
         properties.push({
-          span: [ { label: property.key }, property.value.toString() ]
+          span: [{ label: property.key }, property.value.toString()]
         })
       }
     });

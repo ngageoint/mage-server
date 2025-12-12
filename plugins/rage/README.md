@@ -1,17 +1,17 @@
-# MAGE RAGE plugin
+# Mage RAGE plugin
 
-The mage-rage plugin replicates all MAGE data to another MAGE server.
+The mage-rage plugin replicates all Mage data to another Mage server.
 
 Configuration:
 
-* url - MAGE server url to replicate data to.
-* credentials - MAGE replication server credentials used for authentication.
- * username - username on MAGE replication server
+* url - Mage server url to replicate data to.
+* credentials - Mage replication server credentials used for authentication.
+ * username - username on Mage replication server
  * uid - device uid
  * password - password
 * interval - frequency (seconds) at which the plugin will sync data to the replication server.
 * mongodb
- * url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main MAGE configuration.
+ * url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main Mage configuration.
  * poolSize - mongodb connection pool size for this plugin
 
 ```json

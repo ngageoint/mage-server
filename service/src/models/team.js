@@ -65,6 +65,23 @@ TeamSchema.pre('remove', function(next) {
   Event.removeTeamFromEvents(team, next);
 });
 
+TeamSchema.pre('save', function(next) {
+  var team = this;
+  Team.findOne({ name: new RegExp('^' + team.name + '$', 'i') }, function (err, possibleDuplicate) {
+    if (err) {
+      return next(err);
+    }
+
+    if (possibleDuplicate && !possibleDuplicate._id.equals(team._id)) {
+      const error = new Error('Team already exists');
+      error.status = 409;
+      return next(error);
+    }
+
+    next();
+  })
+})
+
 function transform(team, ret, options) {
   ret.id = ret._id;
   delete ret._id;
@@ -360,7 +377,8 @@ exports.getTeams = async function(options, callback) {
     }
   }
 
-  let baseQuery = Team.find(conditions).sort('_id');
+  const sortoptions = options.sort ? JSON.parse(options.sort) : { _id: 1 };
+  let baseQuery = Team.find(conditions).collation({ locale: 'en', strength: 2 }).sort(sortoptions);
   if (options.populate == null || options.populate == 'true') {
     baseQuery = baseQuery.populate('userIds');
   }

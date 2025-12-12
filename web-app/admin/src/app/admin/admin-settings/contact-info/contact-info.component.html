@@ -21,4 +21,36 @@
             <mat-icon>close</mat-icon>
         </button>
     </mat-form-field>
+    
+    <div style="display: flex; align-items: center;">
+        <mat-checkbox [(ngModel)]="contactinfo.showDevContact" (change)="setDirty(true)">
+          Show NGA Contact Information on About page
+        </mat-checkbox>
+      
+        <button mat-icon-button [matMenuTriggerFor]="contactInfoMenu" aria-label="Contact info help">
+            <mat-icon>info</mat-icon>
+          </button>
+          
+          <mat-menu #contactInfoMenu="matMenu" class="contact-menu" [overlapTrigger]="false">
+            <div class="menu-panel-content">
+              <h3 class="section-title">
+                <mat-icon class="section-icon">contact_mail</mat-icon>
+                Contact NGA POC
+              </h3>
+              <hr class="divider" />
+              <div class="contact-info">
+                <div>
+                  <mat-icon>phone</mat-icon>
+                  +1-571-557-1121
+                </div>
+                <div>
+                  <mat-icon>email</mat-icon>
+                  <a href="mailto:magesuitesupport@nga.mil">magesuitesupport@nga.mil</a>
+                </div>
+              </div>
+            </div>
+          </mat-menu>
+               
+    </div>
+      
 </section>

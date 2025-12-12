@@ -24,7 +24,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 0.75rem;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   cursor: hand;
@@ -41,7 +41,7 @@
   color: var(--mdc-theme-primary, #1E88E5);
 }
 
-.tab > mat-icon {
+.tab>mat-icon {
   font-size: 24px;
   height: 24px;
   width: 24px;

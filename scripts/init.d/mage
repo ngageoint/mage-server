@@ -15,7 +15,7 @@ scriptId=$sourceDir/$applicationFile
 start() {
     echo "Starting $scriptId"
 
-    # Start our MAGE app through forever
+    # Start our Mage app through forever
     # Notice that we change the PATH because on reboot
     # the PATH does not include the path to node.
     # Launching forever or coffee with a full path

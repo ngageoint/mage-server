@@ -14,7 +14,7 @@ export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<Obser
   properties: ObservationDocumentProperties
   toJSON(options?: ObservationJsonOptions): ObservationDocumentJson
 }
-export interface ObservationModel extends mongoose.Model<ObservationDocument> {}
+export interface ObservationModel extends mongoose.Model<ObservationDocument> { }
 export type ObservationDocumentJson = Omit<ObservationAttrs, 'id' | 'eventId' | 'attachments' | 'states'> & {
   id: mongoose.Types.ObjectId
   eventId?: number

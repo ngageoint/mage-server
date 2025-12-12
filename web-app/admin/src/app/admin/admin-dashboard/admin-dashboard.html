@@ -1,0 +1,139 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="admin-content p-4">
+  <mat-card class="mb-4 top-card">
+    <div fxLayout="row" fxLayoutGap="24px" fxLayoutAlign="start stretch">
+      <div class="top-row">
+        <div class="inactive-users">
+          <mat-card>
+            <mat-card-title>
+              <span class="title-with-badge">
+                Inactive Users
+                <span
+                  matBadge="{{ count() || 0 }}"
+                  matBadgeColor="accent"
+                  matBadgeOverlap="false"
+                  class="inline-badge"
+                ></span>
+              </span>
+            </mat-card-title>
+            <div class="search-wrapper">
+              <mat-form-field class="w-100 mb-3">
+                <mat-label>Search</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="userSearch"
+                  (ngModelChange)="search()"
+                />
+              </mat-form-field>
+            </div>
+            <mat-list>
+              <mat-list-item
+                *ngFor="let user of inactiveUsers || []"
+                (click)="gotoUser(user)"
+                class="clickable"
+              >
+                <mat-icon matListIcon>person</mat-icon>
+                <div matLine>{{ user?.displayName || 'Unknown User' }}</div>
+                <button
+                  mat-mini-button
+                  color="primary"
+                  *ngIf="hasPermission('UPDATE_USER')"
+                  (click)="activateUser($event, user)"
+                >
+                  <mat-icon>check</mat-icon>
+                  <span>Activate</span>
+                </button>
+              </mat-list-item>
+            </mat-list>
+            <div class="pagination-controls">
+              <button
+                mat-button
+                (click)="previous()"
+                [disabled]="!hasPrevious()"
+              >
+                ← Previous User
+              </button>
+              <button mat-button (click)="next()" [disabled]="!hasNext()">
+                Next User →
+              </button>
+            </div>
+          </mat-card>
+        </div>
+
+        <div class="unregistered-devices">
+          <mat-card>
+            <mat-card-title>
+              <span class="title-with-badge">
+                Unregistered Devices
+                <span
+                  matBadge="{{ deviceCount() || 0 }}"
+                  matBadgeColor="accent"
+                  matBadgeOverlap="false"
+                  class="inline-badge"
+                ></span>
+              </span>
+            </mat-card-title>
+            <div class="search-wrapper">
+              <mat-form-field class="w-100 mb-3">
+                <mat-label>Search</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="deviceSearch"
+                  (ngModelChange)="searchDevices()"
+                />
+              </mat-form-field>
+            </div>
+            <mat-list>
+              <mat-list-item
+                *ngFor="let d of unregisteredDevices || []"
+                (click)="gotoDevice(d)"
+                class="clickable"
+              >
+                <mat-icon matListIcon [ngClass]="iconClass(d)"></mat-icon>
+                <div class="mat-line-horizontal">
+                  <span *ngIf="d?.user"
+                    >{{ d.user?.displayName || 'Unknown User' }}</span
+                  >
+                  <span class="text-muted"
+                    >({{ d?.uid || 'Unknown UID' }})</span
+                  >
+                </div>
+                <button
+                  mat-mini-button
+                  color="primary"
+                  *ngIf="hasPermission('UPDATE_DEVICE')"
+                  (click)="registerDevice($event, d)"
+                >
+                  <mat-icon>check</mat-icon> Register
+                </button>
+              </mat-list-item>
+            </mat-list>
+            <div class="pagination-controls">
+              <button
+                mat-button
+                (click)="previousDevice()"
+                [disabled]="!hasPreviousDevice()"
+              >
+                ← Previous Device
+              </button>
+              <button
+                mat-button
+                (click)="nextDevice()"
+                [disabled]="!hasNextDevice()"
+              >
+                Next Device →
+              </button>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+
+  <div class="section-card">
+    <div class="table-wrapper mat-elevation-z2">
+      <mage-logins [devices]="devices" [users]="users"></mage-logins>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-MAGE 6.2.x on Amazon Linux 2023
+Mage 6.2.x on Amazon Linux 2023
 
 1. Install docker
 ```

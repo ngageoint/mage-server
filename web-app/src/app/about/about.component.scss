@@ -1,52 +1,125 @@
 @use '@angular/material' as mat;
 @import "variables.scss";
 
+$content-padding: 32px;
+$mobile-padding: 16px;
+
 .content {
-  width: 75vw;
-  margin: 0 auto;
-  padding: 32px 0;
+  width: 84%;
+  padding: $content-padding 8vw;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 20px;
+
+  @media (max-width: 600px) {
+    padding: $mobile-padding 5vw;
+    gap: 10px;
+  }
 }
 
 .container {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: center;
-}
-
-h3 {
-  width:100%;
-  text-align:left;
-  border-bottom: 1px solid #000;
-  line-height:0.1em;
-  margin:10px 0 20px;
-  color: mat.get-color-from-palette($app-primary);
-} 
-h3 span {
-  background:#fff;
-  padding:0 10px;
-  border: none;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
 }
 
 .title {
-  margin-left: 16px;
+  font-size: 1.5rem;
+  font-weight: 500;
+
+  @media (max-width: 600px) {
+    font-size: 1.25rem;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: mat.get-color-from-palette($app-primary);
+  border-bottom: 2px solid mat.get-color-from-palette($app-primary);
+  padding-bottom: 4px;
+}
+
+.section-icon {
+  font-size: 1.4rem;
+  color: mat.get-color-from-palette($app-primary);
+}
+
+.section-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+
+  a {
+    color: mat.get-color-from-palette($app-primary);
+    text-decoration: underline;
+  }
 }
 
 .app-store {
   display: flex;
-  flex-direction: row;
-  gap: 16px;
+  gap: 50px;
   align-items: center;
-  margin-top: 20px;
+  flex-wrap: wrap;
+  margin: 0 auto;
+
+  @media (max-width: 600px) {
+    justify-content: center;
+  }
 }
 
 .app-store-icon {
   height: 48px;
+
+  @media (max-width: 600px) {
+    height: 40px;
+  }
 }
 
-.center-content{
-  margin: 0 auto !important;
+.system-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0 auto;
+
+  div {
+    font-size: 0.95rem;
+    color: #333;
+    background: #f6f6f6;
+    padding: 8px 12px;
+    border-radius: 6px;
+  }
+
+  .label {
+    font-weight: 600;
+    margin-right: 4px;
+    display: inline-block;
+  }
+}
+
+.contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 80px;
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+
+    a {
+      color: mat.get-color-from-palette($app-primary);
+    }
+  }
 }

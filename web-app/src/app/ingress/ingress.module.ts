@@ -18,6 +18,7 @@ import { AccountStatusComponent } from './account-status/account-status.componen
 import { AuthenticationDialogComponent } from './authentication/authentication-dialog.component';
 import { LdapAuthenticationComponent } from './authentication/ldap/ldap-authentication.component';
 import { AuthenticationButtonComponent } from './authentication/button/authentication-button.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [],
@@ -29,7 +30,8 @@ import { AuthenticationButtonComponent } from './authentication/button/authentic
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatTooltipModule,
   ]
 })
 class AngularModule { }

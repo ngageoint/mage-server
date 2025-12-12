@@ -1,9 +1,13 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb">
-      <li><i class="fa fa-mobile-phone admin-dashboard"></i><a ui-sref="admin.devices">Devices</a></li>
-      <li class="active">{{$ctrl.device.uid}}</li>
-    </ol>
+<div class="admin-breadcrumbs mat-elevation-z1">
+  <i class="fa fa-mobile-phone icon-fix"></i>
+  <div>
+    <span class="admin-breadcrumb"><a ui-sref="admin.devices">Devices</a></span>
+  </div>
+  <div>
+    <span class="admin-breadcrumb__separator">/</span>
+  </div>
+  <div>
+    <span class="admin-breadcrumb admin-breadcrumb--active">{{$ctrl.device.id}}</span>
   </div>
 </div>
 

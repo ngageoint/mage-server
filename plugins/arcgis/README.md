@@ -1,5 +1,5 @@
 # Build with arcgis plugin
-> This plugin allows for MAGE observation data to be passed to an Arcgis feature service. Follow the instructions in the root README.
+> This plugin allows for Mage observation data to be passed to an Arcgis feature service. Follow the instructions in the root README.
 
 ## Build ArcGIS plugin
 - After completing the web-app package install and build in the 'Building from source' section:

@@ -1,7 +1,7 @@
 {
   "name": "mage-rage",
   "version": "0.0.1",
-  "description": "Plugin to sync all MAGE data to another MAGE server.",
+  "description": "Plugin to sync all Mage data to another Mage server.",
   "author": "NGA",
   "contributors": {
     "name": "Billy Newman",

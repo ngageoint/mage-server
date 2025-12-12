@@ -6,6 +6,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { Api, AuthenticationStrategy } from '../../../../app/api/api.entity';
 import { UserService } from '../../../user/user.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'local-authentication',
@@ -44,12 +45,16 @@ export class LocalAuthenticationComponent implements OnInit {
   }
 
   constructor(
+    private router: Router,
     private apiService: ApiService,
     private userService: UserService,
     private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
+    if (this.userService.myself) {
+      this.router.navigate(['home']);
+    }
     this.apiService.getApi().subscribe((api: any) => {
       this.api = api
     })
@@ -85,6 +90,10 @@ export class LocalAuthenticationComponent implements OnInit {
 
   onSignup(): void {
     this.signup.emit()
+  }
+
+  onAboutClick(): void {
+    this.router.navigate(['about']);
   }
 
   scrollToError(): void {

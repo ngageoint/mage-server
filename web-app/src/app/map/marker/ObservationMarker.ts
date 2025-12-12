@@ -12,7 +12,8 @@ export class ObservationMarker extends FixedWidthMarker {
   constructor(latLng: LatLngExpression, options?: ObservationMarkerOptions) {
     super(latLng, options)
 
-    this.accuracyCircle = circle(latLng, 0, {
+    this.accuracyCircle = circle(latLng, {
+      radius: 0,
       interactive: false,
       color: '#1565C0',
       fillColor: '#1E88E5',
@@ -44,7 +45,7 @@ export class ObservationMarker extends FixedWidthMarker {
     this.options.accuracy = accuracy
     return this
   }
-  
+
 }
 
 export function observationMarker(latlng: LatLngExpression, options: ObservationMarkerOptions): ObservationMarker {

@@ -64,36 +64,54 @@ class AdminLayerController {
 
       this.updateUrlLayers();
 
-      this.Event.query((events) => {
-        this.event = {};
-        this.layerEvents = _.filter(events, (event) => {
-          return _.some(event.layers, (layer) => {
-            return this.layer.id === layer.id;
-          });
-        });
-
-        let nonLayerEvents = _.chain(events);
-        if (
-          !_.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT')
-        ) {
-          // filter teams based on acl
-          nonLayerEvents = nonLayerEvents.filter((event) => {
-            const permissions = event.acl[this.UserService.myself.id]
-              ? event.acl[this.UserService.myself.id].permissions
-              : [];
-            return _.contains(permissions, 'update');
-          });
-        }
-
-        nonLayerEvents = nonLayerEvents.reject((event) => {
-          return _.some(event.layers, (layer) => {
-            return this.layer.id === layer.id;
-          });
-        });
-
-        this.nonLayerEvents = nonLayerEvents.value();
-      });
+      this.loadEvents();
     });
+  }
+
+  loadEvents(searchTerm) {
+    const params = {
+      includePagination: true,
+      page_size: 100
+    };
+
+    if (searchTerm) {
+      params.term = searchTerm;
+    }
+
+    this.Event.queryWithPagination(params, (response) => {
+      const events = response.items || [];
+      this.event = {};
+      this.layerEvents = _.filter(events, (event) => {
+        return _.some(event.layers, (layer) => {
+          return this.layer.id === layer.id;
+        });
+      });
+
+      let nonLayerEvents = _.chain(events);
+      if (
+        !_.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT')
+      ) {
+        // filter teams based on acl
+        nonLayerEvents = nonLayerEvents.filter((event) => {
+          const permissions = event.acl[this.UserService.myself.id]
+            ? event.acl[this.UserService.myself.id].permissions
+            : [];
+          return _.contains(permissions, 'update');
+        });
+      }
+
+      nonLayerEvents = nonLayerEvents.reject((event) => {
+        return _.some(event.layers, (layer) => {
+          return this.layer.id === layer.id;
+        });
+      });
+
+      this.nonLayerEvents = nonLayerEvents.value();
+    });
+  }
+
+  onEventSearch(searchTerm) {
+    this.loadEvents(searchTerm || '');
   }
 
   $postLink() {
@@ -113,9 +131,8 @@ class AdminLayerController {
       this.layer.tables.forEach((table) => {
         mapping.push({
           table: table.name,
-          url: `/api/layers/${this.layer.id}/${
-            table.name
-          }/{z}/{x}/{y}.png?access_token=${this.LocalStorageService.getToken()}`
+          url: `/api/layers/${this.layer.id}/${table.name
+            }/{z}/{x}/{y}.png?access_token=${this.LocalStorageService.getToken()}`
         });
       });
     }

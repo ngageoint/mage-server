@@ -1,5 +1,5 @@
 import { Inject, Pipe, PipeTransform } from '@angular/core'
-import * as turfCenter from '@turf/center'
+import { center as turfCenter } from '@turf/center'
 import { Feature, Point } from 'geojson'
 import * as mgrs from 'mgrs'
 import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'

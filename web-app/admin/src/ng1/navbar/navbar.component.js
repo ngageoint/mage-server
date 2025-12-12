@@ -16,7 +16,6 @@ function NavbarController($state, $transitions, window, UserService) {
   };
 
   this.$onInit = function () {
-    console.log('hello nav bar init')
     this.state = $state.current.name;
     $transitions.onSuccess({}, transition => {
       this.state = transition.to().name;

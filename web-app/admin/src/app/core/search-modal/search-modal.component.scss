@@ -1,0 +1,158 @@
+.results-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background-color: white;
+    min-height: 280px;
+
+    .search-results-table {
+        flex: 1;
+
+        ::ng-deep .mat-header-cell {
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            height: 48px;
+        }
+
+        ::ng-deep .mat-cell {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f3f4f6;
+            color: #111827;
+            height: 56px; // Reduced from 70px
+        }
+
+        ::ng-deep .mat-row {
+            transition: background-color 0.15s ease;
+            cursor: pointer;
+
+            &:hover {
+                background-color: #f9fafb;
+            }
+
+            &.selected {
+                background-color: #eff6ff;
+                border-left: 4px solid #3b82f6;
+                border-color: #dbeafe;
+            }
+
+            &.selected:hover {
+                background-color: #dbeafe;
+            }
+        }
+
+        .content-cell {
+            user-select: none;
+
+            .item-content {
+                .item-title {
+                    font-weight: 500;
+                    margin-bottom: 0.5rem;
+                    color: #111827;
+                    font-size: 1rem;
+                }
+
+                .item-subtitle {
+                    font-size: 0.875rem;
+                    color: #6b7280;
+                }
+            }
+
+            .column-content {
+                font-size: 0.875rem;
+                color: #111827;
+                line-height: 1.4;
+                padding: 0.25rem 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+        }
+
+        .column-header {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    }
+
+    .no-results {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5rem 2rem;
+        gap: 1rem;
+        color: #9ca3af;
+        min-height: 150px;
+
+        i {
+            font-size: 2.5rem;
+            color: #d1d5db;
+        }
+
+        span {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    }
+}
+
+::ng-deep .search-modal-dialog {
+    .mat-paginator {
+        border-top: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        color: #374151;
+        min-height: 48px;
+
+        .mat-paginator-container {
+            padding: 0.5rem 1rem;
+            min-height: 48px;
+        }
+
+        .mat-paginator-page-size-label,
+        .mat-paginator-range-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.2;
+        }
+
+        .mat-select-value {
+            font-size: 0.75rem;
+            color: #374151;
+        }
+    }
+
+    .mat-dialog-container {
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .mat-dialog-actions {
+        padding: 0;
+        margin: 0;
+    }
+
+    .mat-dialog-content {
+        overflow: hidden;
+    }
+
+    .mat-dialog-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+}

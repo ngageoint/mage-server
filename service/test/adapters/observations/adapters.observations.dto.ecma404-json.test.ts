@@ -6,12 +6,12 @@ import { JsonObject } from '../../../lib/entities/entities.json_types'
 import { MageError, InvalidInputError, ErrInvalidInput } from '../../../lib/app.api/app.api.errors'
 import _ from 'lodash'
 
-describe('observation json dto transform', function() {
+describe('observation json dto transform', function () {
 
   let modJson: JsonObject
   let modPropertiesJson: JsonObject
 
-  beforeEach(function() {
+  beforeEach(function () {
 
     modPropertiesJson = {
       timestamp: new Date(Date.now() - 113355).toISOString(),
@@ -37,19 +37,20 @@ describe('observation json dto transform', function() {
     modJson = {
       id: uniqid(),
       type: 'Feature',
-      bbox: [ 11, 22, 33, 12, 23, 33 ],
+      bbox: [11, 22, 33, 12, 23, 33],
       geometry: {
         type: 'Point',
-        coordinates: [ 23, 45, 67 ],
-        bbox: [ 11, 22, 33, 12, 23, 33 ]
+        coordinates: [23, 45, 67],
+        bbox: [11, 22, 33, 12, 23, 33]
       },
+      noGeometry: false,
       properties: modPropertiesJson
     }
   })
 
-  describe('observation mod transform', function() {
+  describe('observation mod transform', function () {
 
-    it('preserves all valid observation mod properties', function() {
+    it('preserves all valid observation mod properties', function () {
 
       const expectedMod: Required<ExoObservationMod> = {
         ...modJson as any,
@@ -64,7 +65,7 @@ describe('observation json dto transform', function() {
       expect(mod).to.deep.equal(expectedMod)
     })
 
-    it('adds geojson type property if not present', function() {
+    it('adds geojson type property if not present', function () {
 
       delete modJson.type
       let mod = exoObservationModFromJson(modJson) as ExoObservationMod
@@ -79,13 +80,13 @@ describe('observation json dto transform', function() {
 
     describe('validation', () => {
 
-      it('fails if the json is not an object hash', function() {
+      it('fails if the json is not an object hash', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ 'invalid', 'string' ],
-          [ [], 'array' ],
-          [ null, 'null' ],
+          [true, 'boolean'],
+          [0, 'number'],
+          ['invalid', 'string'],
+          [[], 'array'],
+          [null, 'null'],
         ].forEach(testCase => {
           const invalid = exoObservationModFromJson(testCase[0]) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
@@ -94,106 +95,106 @@ describe('observation json dto transform', function() {
         })
       })
 
-      it('fails if id is not a string', function() {
+      it('fails if id is not a string', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ {}, 'object' ],
-          [ [], 'array' ],
-          [ null, 'null' ],
+          [true, 'boolean'],
+          [0, 'number'],
+          [{}, 'object'],
+          [[], 'array'],
+          [null, 'null'],
         ].forEach(testCase => {
           const invalidJson = { ...modJson, id: testCase[0] }
           const invalid = exoObservationModFromJson(invalidJson) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
           expect(invalid.code).to.equal(ErrInvalidInput, testCase[1] as string)
-          expect(invalid.data).to.deep.equal([[ 'id' ]], testCase[1] as string)
+          expect(invalid.data).to.deep.equal([['id']], testCase[1] as string)
         })
       })
 
-      it('fails if geojson type is not feature', function() {
+      it('fails if geojson type is not feature', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ {}, 'object' ],
-          [ [], 'array' ],
-          [ null, 'null' ],
-          [ 'FeatureCollection', 'wrong type' ],
-          [ 'feature', 'case-sensitive' ],
+          [true, 'boolean'],
+          [0, 'number'],
+          [{}, 'object'],
+          [[], 'array'],
+          [null, 'null'],
+          ['FeatureCollection', 'wrong type'],
+          ['feature', 'case-sensitive'],
         ].forEach(testCase => {
           const invalidJson = { ...modJson, type: testCase[0] }
           const invalid = exoObservationModFromJson(invalidJson) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
           expect(invalid.code).to.equal(ErrInvalidInput, testCase[1] as string)
-          expect(invalid.data).to.deep.equal([[ 'type' ]], testCase[1] as string)
+          expect(invalid.data).to.deep.equal([['type']], testCase[1] as string)
         })
       })
 
-      it('fails if bbox is present and not an array', function() {
+      it('fails if bbox is present and not an array', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ {}, 'object' ],
-          [ null, 'null' ],
-          [ 'wut', 'string' ],
+          [true, 'boolean'],
+          [0, 'number'],
+          [{}, 'object'],
+          [null, 'null'],
+          ['wut', 'string'],
         ].forEach(testCase => {
           const invalidJson = { ...modJson, bbox: testCase[0] }
           const invalid = exoObservationModFromJson(invalidJson) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
           expect(invalid.code).to.equal(ErrInvalidInput, testCase[1] as string)
-          expect(invalid.data).to.deep.equal([[ 'bbox' ]], testCase[1] as string)
+          expect(invalid.data).to.deep.equal([['bbox']], testCase[1] as string)
         })
 
         const valid = exoObservationModFromJson(_.omit(modJson, 'bbox')) as ExoObservationMod
         expect(valid).to.not.be.instanceOf(Error)
       })
 
-      it('fails if geometry is not an object hash', function() {
+      it('fails if geometry is not an object hash', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ [], 'array' ],
-          [ null, 'null' ],
-          [ 'wut', 'string' ],
+          [true, 'boolean'],
+          [0, 'number'],
+          [[], 'array'],
+          [null, 'null'],
+          ['wut', 'string'],
         ].forEach(testCase => {
           const invalidJson = { ...modJson, geometry: testCase[0] }
           const invalid = exoObservationModFromJson(invalidJson) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
           expect(invalid.code).to.equal(ErrInvalidInput, testCase[1] as string)
-          expect(invalid.data).to.deep.equal([[ 'geometry' ]], testCase[1] as string)
+          expect(invalid.data).to.deep.equal([['geometry']], testCase[1] as string)
         })
       })
 
-      it('fails if properties is not an object hash', function() {
+      it('fails if properties is not an object hash', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ [], 'array' ],
-          [ null, 'null' ],
-          [ 'wut', 'string' ],
+          [true, 'boolean'],
+          [0, 'number'],
+          [[], 'array'],
+          [null, 'null'],
+          ['wut', 'string'],
         ].forEach(testCase => {
           const invalidJson = { ...modJson, properties: testCase[0] }
           const invalid = exoObservationModFromJson(invalidJson) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
           expect(invalid.code).to.equal(ErrInvalidInput, testCase[1] as string)
-          expect(invalid.data).to.deep.equal([[ 'properties' ]], testCase[1] as string)
+          expect(invalid.data).to.deep.equal([['properties']], testCase[1] as string)
         })
       })
 
-      it('fails if the timestamp is not an iso-8601 date string', function() {
+      it('fails if the timestamp is not an iso-8601 date string', function () {
         [
-          [ true, 'boolean' ],
-          [ 0, 'number' ],
-          [ [], 'array' ],
-          [ {}, 'object' ],
-          [ null, 'null' ],
-          [ 'wut', 'string' ],
-          [ '31 Oct', 'not iso' ]
+          [true, 'boolean'],
+          [0, 'number'],
+          [[], 'array'],
+          [{}, 'object'],
+          [null, 'null'],
+          ['wut', 'string'],
+          ['31 Oct', 'not iso']
         ].forEach(testCase => {
-          const invalidJson = { ...modJson, properties: { ...modPropertiesJson, timestamp: testCase[0] }}
+          const invalidJson = { ...modJson, properties: { ...modPropertiesJson, timestamp: testCase[0] } }
           const invalid = exoObservationModFromJson(invalidJson) as InvalidInputError
           expect(invalid).to.be.instanceOf(MageError, testCase[1] as string)
           expect(invalid.code).to.equal(ErrInvalidInput, testCase[1] as string)
-          expect(invalid.data).to.deep.equal([[ 'properties', 'timestamp' ]], testCase[1] as string)
+          expect(invalid.data).to.deep.equal([['properties', 'timestamp']], testCase[1] as string)
         })
       })
     })

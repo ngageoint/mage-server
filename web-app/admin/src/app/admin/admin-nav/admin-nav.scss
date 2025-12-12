@@ -1,0 +1,213 @@
+::ng-deep app-admin-side-nav {
+  position: relative;
+}
+
+::ng-deep app-admin-side-nav > admin-breadcrumb {
+  display: block;
+  position: fixed;
+  width: 100%;
+  z-index: 5;
+  margin-bottom: 0.5rem;
+}
+
+.nav-float-wrapper {
+  position: fixed;
+  top: 72px;
+  left: 5px;
+  z-index: 10000;
+  display: flex;
+  @media (max-width: 599px) {
+    top: 66px !important;
+  }
+
+  .nav-divider {
+    left: 105px;
+    width: 1px;
+    height: 38px;
+    background: rgba(0, 0, 0, 0.25);
+    margin: 0 4px;
+    border-radius: 1px;
+    position: fixed;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #000;
+    border: none;
+    padding: 0.55rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.15s ease;
+    position: fixed;
+
+    .label {
+      font-weight: 400;
+      color: #000;
+      font-size: revert;
+      line-height: 14px;
+      padding: 2px;
+      user-select: none;
+    }
+    &:active {
+      transform: translateY(1px);
+    }
+    i {
+      font-size: 1.3rem;
+    }
+  }
+
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(1px);
+    margin-top: 120px;
+    @media (max-width: 599px) {
+      margin-top: 110px;
+    }
+  }
+
+  .drawer {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 320px;
+    background: #2f2f2f;
+    border: 2px solid #5f5f5f;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    transform: translateY(-14px);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+
+    &.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .drawer-scroller {
+      max-height: min(70vh, 640px);
+      overflow: auto;
+      padding: 0.5rem;
+    }
+
+    .nav-row {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: transparent;
+      color: #d1d1d1;
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 0.75rem;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s ease, color 0.2s ease;
+      margin-bottom: 6px;
+
+      .badge {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #d9534f;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 9999px;
+        padding: 0.15rem 0.45rem;
+        line-height: 1;
+        min-width: 1.2rem;
+        text-align: center;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+      }
+
+      .icon {
+        font-size: 1.35rem;
+        width: 1.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &.plugin .plugin-icon {
+          width: 1.35rem;
+          height: 1.35rem;
+          object-fit: contain;
+          display: block;
+        }
+      }
+      .text {
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      &:hover:not(.selected):not([disabled]) {
+        background: #434343;
+        color: #fff;
+      }
+
+      &.selected,
+      &[disabled] {
+        background: #585858;
+        color: #fff;
+        cursor: default;
+      }
+    }
+  }
+  @media (max-width: 599px) {
+    .drawer {
+      position: fixed;
+      top: 25px;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      border: none;
+      transform: translateY(-100%);
+      opacity: 0;
+
+      &.open {
+        transform: translateY(0);
+        opacity: 1;
+        margin-top: 86px;
+        transform: translateY(0);
+        opacity: 1;
+        height: auto;
+        max-height: 730px;
+        overflow: auto;
+      }
+
+      .drawer-scroller {
+        max-height: none;
+        height: 100%;
+        padding: 1rem;
+      }
+
+      .nav-row {
+        padding: 1rem 1.1rem;
+        .icon {
+          font-size: 1.6rem;
+          width: 2rem;
+        }
+        .icon.plugin .plugin-icon {
+          width: 1.6rem;
+          height: 1.6rem;
+        }
+        .text {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}
+
+.icon-fix {
+  font-size: 2em !important;
+}

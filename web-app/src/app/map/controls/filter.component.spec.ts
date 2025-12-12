@@ -3,6 +3,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FilterControlComponent } from './filter.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
 
 describe('Filter Control Component', () => {
   let component: FilterControlComponent;
@@ -10,10 +13,15 @@ describe('Filter Control Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ MatIconModule, MatButtonModule ],
-      declarations: [ FilterControlComponent ]
-    })
-    .compileComponents();
+      imports: [
+        MatIconModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatChipsModule,
+        MatSelectModule,
+      ],
+      declarations: [FilterControlComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -1,0 +1,47 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Search and Select</h2>
+    </div>
+
+    <div class="dialog-content" mat-dialog-content>
+        <div class="results-container">
+            <mage-card-navbar [title]="data.title" [isSearchable]="true" [searchPlaceholder]="data.searchPlaceholder"
+                (searchTermChanged)="onSearchTermChanged($event)" (searchCleared)="onSearchCleared()">
+            </mage-card-navbar>
+
+            <mat-table [dataSource]="dataSource" class="search-results-table" data-testid="search-results-table">
+                <ng-container *ngFor="let column of columns" [matColumnDef]="column.key">
+                    <mat-header-cell *matHeaderCellDef [style.width]="column.width">
+                        <span class="column-header">{{ column.label }}</span>
+                    </mat-header-cell>
+                    <mat-cell *matCellDef="let item" class="content-cell" [style.width]="column.width">
+                        <div class="column-content">
+                            {{ getColumnValue(item, column) }}
+                        </div>
+                    </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;" class="search-result-row"
+                    [class.selected]="isSelected(row)" (click)="onRowClick(row, $event)">
+                </mat-row>
+            </mat-table>
+
+            <div class="no-results" *ngIf="dataSource.data.length === 0" data-testid="no-results">
+                <span>No results found</span>
+            </div>
+
+            <mat-paginator *ngIf="totalCount > 0" [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[]"
+                (page)="onPageChange($event)" data-testid="paginator">
+            </mat-paginator>
+        </div>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" mat-dialog-close data-testid="cancel-button">Cancel</button>
+        <button class="action-button btn-primary" (click)="onConfirm()" [disabled]="getSelectedCount() === 0"
+            data-testid="confirm-button">
+            Add Selected
+        </button>
+    </div>
+</div>

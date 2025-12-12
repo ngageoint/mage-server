@@ -69,27 +69,32 @@ describe('ObservationEditCheckboxComponent', () => {
     expect(label.textContent).toContain('*')
   })
 
-  it('should not be checked', (done) => {
-    component.definition.value = false
-    fixture.detectChanges()
-
-    fixture.whenStable().then(() => {
-      const checkbox = fixture.debugElement.query(By.directive(MatCheckbox)).componentInstance
-      expect(checkbox.checked).toBeFalsy
-      done();
-    });
-  })
-
-  it('should be checked', (done) => {
-    component.definition.value = true
-    fixture.detectChanges()
-
-    fixture.whenStable().then(() => {
-      const checkbox = fixture.debugElement.query(By.directive(MatCheckbox)).componentInstance
-      expect(checkbox.checked).toBeTruthy
-      done();
-    });
-  })
+  it('should be not checked', async () => {
+    component.definition.value = false;
+    fixture.detectChanges();
+  
+    await fixture.whenStable();
+  
+    const checkboxDebugEl = fixture.debugElement.query(By.directive(MatCheckbox));
+    expect(checkboxDebugEl).withContext('MatCheckbox not found').toBeTruthy();
+  
+    const checkbox = checkboxDebugEl.componentInstance as MatCheckbox;
+    expect(checkbox.checked).withContext('Checkbox should be not checked').toBeFalse();
+  });
+  
+  
+  it('should be checked', async () => {
+    component.definition.value = true;
+    fixture.detectChanges();
+  
+    await fixture.whenStable();
+  
+    const checkboxDebugEl = fixture.debugElement.query(By.directive(MatCheckbox));
+    expect(checkboxDebugEl).withContext('MatCheckbox not found').toBeTruthy();
+  
+    const checkbox = checkboxDebugEl.componentInstance as MatCheckbox;
+    expect(checkbox.checked).withContext('Checkbox should be checked').toBeTrue();
+  });
 
   it('should show error on invalid and touched', async () => {
     const checkboxes = await loader.getAllHarnesses(MatCheckboxHarness);

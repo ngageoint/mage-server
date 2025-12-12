@@ -1,10 +1,10 @@
 # Running with Docker
 
-## MAGE server image
+## Mage server image
 
-The MAGE Server image contains the the core MAGE server Node app that consists
-of the ReST web service and the MAGE web app.  By default, the image also
-includes plugins maintained in the [MAGE server repository](../plugins/).  By
+The Mage Server image contains the the core Mage server Node app that consists
+of the ReST web service and the Mage web app.  By default, the image also
+includes plugins maintained in the [Mage server repository](../plugins/).  By
 default, the server [Dockerfile](./server/Dockerfile) pulls the latest tagged
 versions from the NPM registry.  You can override the version using Docker's
 `--build-arg` CLI switch to set the package versions you want in the image.
@@ -23,23 +23,23 @@ Dockerfile builds exactly the same as the standard Dockerfile.
 
 ## Docker Compose
 
-You can start a MAGE server by using [docker compose](https://docs.docker.com/compose/) to start services
-defined in MAGE's [Compose file](docker-compose.yml).
+You can start a Mage server by using [docker compose](https://docs.docker.com/compose/) to start services
+defined in Mage's [Compose file](docker-compose.yml).
 
-The first time you run MAGE with Docker, execute the following steps from the directory where you cloned the
-MAGE Git repository.
+The first time you run Mage with Docker, execute the following steps from the directory where you cloned the
+Mage Git repository.
 ```bash
 $ cd ./docker
 $ docker compose up -d # build the service images, then create and start the service containers for the first time
 ```
-If you want to use a MAGE server image tagged with a different version than
+If you want to use a Mage server image tagged with a different version than
 the `mage-server` Compose service currently defines, prepend the `MAGE_VERSION`
 environment variable to the command.
 ```bash
 $ MAGE_VERSION=6.3.0-beta.1 docker compose up -d
 ```
 With all the default settings, you should then be able to browse to
-http://localhost:4242 to interact with the MAGE web app.
+http://localhost:4242 to interact with the Mage web app.
 
 ## Interacting with the containers
 
@@ -49,7 +49,7 @@ you are operating from the [`docker`](docker) directory.
 After the initial `up` command, you can use `docker compose stop` and
 `docker compose start` to stop and start the service containers.
 
-You can use [`docker compose ps`](https://docs.docker.com/engine/reference/commandline/compose_ps/) to see the state of the MAGE service containers.
+You can use [`docker compose ps`](https://docs.docker.com/engine/reference/commandline/compose_ps/) to see the state of the Mage service containers.
 ```bash
 $ docker compose ps
 NAME                   COMMAND                  SERVICE             STATUS              PORTS
@@ -59,10 +59,10 @@ docker-mage-server-1   "./mage.service --pl…"   mage-server         running   
 You can use [`docker-compose logs <service>`](https://docs.docker.com/engine/reference/commandline/compose_logs/) to display console logging for a service.
 ```
 $ docker compose logs mage-server
-mage-server_1  | 2018-04-26T23:30:30.684Z - info: Starting MAGE Server ...
+mage-server_1  | 2018-04-26T23:30:30.684Z - info: Starting Mage Server ...
 mage-server_1  | 2018-04-26T23:30:31.403Z - info: setting up provision uid
 mage-server_1  | 2018-04-26T23:30:31.861Z - info: Using '/var/lib/mage/attachments' as base directory for feature attachments.
-mage-server_1  | 2018-04-26T23:30:31.861Z - info: Using '/var/lib/mage/icons' as base directory for MAGE icons.
+mage-server_1  | 2018-04-26T23:30:31.861Z - info: Using '/var/lib/mage/icons' as base directory for Mage icons.
 # etc., etc.
 ```
 While the service containers are up, you can interact with them using
@@ -75,7 +75,7 @@ UID        PID  PPID  C STIME TTY          TIME CMD
 mongodb      1     0  0 07:16 ?        00:03:47 mongod --dbpath /data/mage --logpath /var/log
 root        67     0  0 22:37 pts/0    00:00:00 bash
 root        73    67  0 22:37 pts/0    00:00:00 ps -ef
-root@df8b00beafa2:/# mongo # interact directly with the running MAGE database # do some ill-advised things directly to the database
+root@df8b00beafa2:/# mongo # interact directly with the running Mage database # do some ill-advised things directly to the database
 MongoDB shell version v3.6.3
 connecting to: mongodb://127.0.0.1:27017
 MongoDB server version: 3.6.3
@@ -112,8 +112,8 @@ users
 
 ### App Services
 
-The MAGE Server Docker app consists of three service containers: the MongoDB
-database, the MAGE Node.js app, and the optional nginx TLS reverse proxy.
+The Mage Server Docker app consists of three service containers: the MongoDB
+database, the Mage Node.js app, and the optional nginx TLS reverse proxy.
 
 ### MongoDB
 
@@ -121,13 +121,13 @@ The MongoDB image is the official MongoDB image available from [Docker Hub](http
 file builds that image unmodified, but uses a custom command to launch MongoDB with specific settings.  The Compose file
 runs MongoDB as the service `mage-db`.
 
-### MAGE server
+### Mage server
 
 The Compose file references a custom, local [Dockerfile](server/Dockerfile) based on the official [Node.js](https://hub.docker.com/_/node/)
-image to build the MAGE server image.  At build time, the MAGE server Dockerfile
-copies whatever MAGE server package tarballs you supply into the MAGE server
+image to build the Mage server image.  At build time, the Mage server Dockerfile
+copies whatever Mage server package tarballs you supply into the Mage server
 image, which might not match the default version the Compose currently defines.
-If you want the MAGE server image that Compose builds to have a different tag,
+If you want the Mage server image that Compose builds to have a different tag,
 override the `MAGE_VERSION` default value in the Compose file.
 ```bash
 MAGE_VERSION=6.2.0 docker compose build

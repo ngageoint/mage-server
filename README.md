@@ -1,32 +1,32 @@
-# MAGE Web Service & Web App
+# Mage Web Service & Web App
 
-The [MAGE](https://ngageoint.github.io/MAGE) platform, provides
-mobile situational awareness and data collection capabilities.  This project comprises the ReST API web service the MAGE
-client apps use to submit and fetch MAGE data, as well as the browser-based web app.  The MAGE web app provides user
-interfaces to view and edit MAGE observations similar to the MAGE mobile apps, and additionally provides the
-administrative UI to manage the MAGE server settings, access control, events, data collection forms, etc.
+The [Mage](https://ngageoint.github.io/MAGE) platform, provides
+mobile situational awareness and data collection capabilities.  This project comprises the ReST API web service the Mage
+client apps use to submit and fetch Mage data, as well as the browser-based web app.  The Mage web app provides user
+interfaces to view and edit Mage observations similar to the Mage mobile apps, and additionally provides the
+administrative UI to manage the Mage server settings, access control, events, data collection forms, etc.
 
-MAGE was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The
+Mage was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The
 government has "unlimited rights" and is releasing this software to increase the impact of government investments by
 providing developers with the opportunity to take things in new directions. The software use, modification, and
 distribution rights are stipulated within the [Apache license](LICENSE).
 
 ## Technology stack
 
-MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(software_bundle)).  The components of the MEAN
+Mage is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(software_bundle)).  The components of the MEAN
 stack are as follows:
 * [MongoDB](https://www.mongodb.com/) - a NoSQL JSON document database
 * [Express.js](http://expressjs.com/) - a web server framework for Node to handle ReST API requests
 * [Angular](https://angular.io/) - a JavaScript MVC framework for web app front-ends
 * [Node.js](https://nodejs.org/) - a software platform for scalable server-side and networking applications.
 
-The MAGE server code is [TypeScript](https://www.typescriptlang.org/) for strong typing, which transpiles to JavaScript
+The Mage server code is [TypeScript](https://www.typescriptlang.org/) for strong typing, which transpiles to JavaScript
 that runs on Node.js.  At the time of this writing, the transition of legacy JavaScript to TypeScript is still in
 progress.
 
 ## Project structure
 
-The MAGE server project is essentially a monorepo with several NPM package components that assemble into a running
+The Mage server project is essentially a monorepo with several NPM package components that assemble into a running
 server instance.
 
 ### [`service`](./service/)
@@ -37,7 +37,7 @@ web and mobile apps consume.
 ### [`web-app`](./web-app/)
 
 The `web-app` directory contains the `@ngageoint/mage.web-app` package.  The package is the bundled, [Angular](https://angular.io)-based
-web app MAGE client that includes standard user functionality as well as access administrative functions.
+web app Mage client that includes standard user functionality as well as access administrative functions.
 
 ### [`core-lib`](./web-app/projects/core-lib/)
 
@@ -47,36 +47,36 @@ plugins can use to add custom UI elements to the web app.
 
 ### [`instance`](./instance/)
 
-The `instance` directory is a development instance of the MAGE server whose dependencies are the relative paths to the
-other packages in the project.  This is useful as an example of how to assemble and configure a MAGE server instance,
+The `instance` directory is a development instance of the Mage server whose dependencies are the relative paths to the
+other packages in the project.  This is useful as an example of how to assemble and configure a Mage server instance,
 as well as to run and test the server during development.
 
 ### [`plugins`](./plugins/)
 
-The `plugins` directory contains various plugin packages that the MAGE team maintains as part of the MAGE server open
-source project.  Some of these are automatically bundled with MAGE server releases, and some serve as examples and/or
+The `plugins` directory contains various plugin packages that the Mage team maintains as part of the Mage server open
+source project.  Some of these are automatically bundled with Mage server releases, and some serve as examples and/or
 development utilities.
 
-## Running a MAGE server
+## Running a Mage server
 
-The MAGE server Node.js app is generally intended to run on Unix-like platforms.  The server _should_ run on Windows,
+The Mage server Node.js app is generally intended to run on Unix-like platforms.  The server _should_ run on Windows,
 but be aware some path-separator related bugs may exist
 
 ### Install Node.js
 
-The MAGE server is a [Node.js](https://nodejs.org) application, so of course you'll need to install Node on your
+The Mage server is a [Node.js](https://nodejs.org) application, so of course you'll need to install Node on your
 platform of choice.  [Node Version Manager](https://github.com/nvm-sh/nvm) is a nice tool to use for installing and
-managing different versions of Node, as opposed to various package managers.  At the time of this writing, MAGE
+managing different versions of Node, as opposed to various package managers.  At the time of this writing, Mage
 requires Node > 18.x.  Developers should use the latest LTS, 20.x at the time of this writing.
 
 ### Install MongoDB
 
-Before running a MAGE server, you'll need to install and start [MongoDB](https://www.mongodb.com/try/download/community).
-At the time of this writing, MAGE supports MongoDB version 6.x (6.0).
+Before running a Mage server, you'll need to install and start [MongoDB](https://www.mongodb.com/try/download/community).
+At the time of this writing, Mage supports MongoDB version 6.x (6.0).
 
-### Install MAGE server packages
+### Install Mage server packages
 
-Starting with release [6.2.2](https://github.com/ngageoint/mage-server/releases/tag/6.2.2), the MAGE server packages
+Starting with release [6.2.2](https://github.com/ngageoint/mage-server/releases/tag/6.2.2), the Mage server packages
 are available from the [NPM registry](https://npmjs.com).
 ```bash
 mkdir mage
@@ -96,11 +96,11 @@ That will yield a `package.json` file that looks something like
   }
 }
 ```
-as well as a `package-lock.json` file and `node_modules` directory containing all of the MAGE server's dependencies.
+as well as a `package-lock.json` file and `node_modules` directory containing all of the Mage server's dependencies.
 
 ### Register plugins
 
-As the example instance [configuration](./instance/config.js) demonstrates, you'll need to tell the MAGE service what
+As the example instance [configuration](./instance/config.js) demonstrates, you'll need to tell the Mage service what
 plugins to load.  See the `plugins` entry in the configuration object, as well as the [plugins readme](./plugins/README.md).
 Note that the `@ngageoint/mage.image.service` package in the dependency list above is a plugin package, and
 [resides](./plugins/image/service) in this monorepo.
@@ -154,20 +154,20 @@ print the configuration as a JSON string and exit without starting the server.
 ```
 <MAGE_*=value...> npx @ngageoint/mage.service <options...> --show-config
 ```
-By default, the MAGE server will attempt to create and use a directory at `/var/lib/mage` for storing data and media
-such as videos, photos, and icons.  If the system user account that runs the MAGE server does not have permission to
+By default, the Mage server will attempt to create and use a directory at `/var/lib/mage` for storing data and media
+such as videos, photos, and icons.  If the system user account that runs the Mage server does not have permission to
 create that directory, you must create it before starting the server.  Of course you can change the directories the
 server uses through the script command line switches and/or environment variables.
 
-For convenience, the MAGE server project contains an [environment script](./service/src/environment/magerc.sh) that you
-can copy and customize.  You can configure the MAGE system user account to source the script at login.
+For convenience, the Mage server project contains an [environment script](./service/src/environment/magerc.sh) that you
+can copy and customize.  You can configure the Mage system user account to source the script at login.
 
-The Node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at
-[http://127.0.0.1:4242](http://127.0.0.1:4242) if you are running MAGE locally.
+The Node Mage server runs on port 4242 by default.  You can access the Mage web app in your web browser at
+[http://127.0.0.1:4242](http://127.0.0.1:4242) if you are running Mage locally.
 
 ### Running with [Docker](https://www.docker.com/what-docker)
 
-Refer to the [Docker README](docker/README.md) for details on running the MAGE server using Docker.
+Refer to the [Docker README](docker/README.md) for details on running the Mage server using Docker.
 
 ### Production notes
 
@@ -175,23 +175,23 @@ When running a publicly accessible production server, consider the following poi
 
 #### Configuration location
 
-If all of your MAGE server configuration options come from environment variables, as should be the case with most
+If all of your Mage server configuration options come from environment variables, as should be the case with most
 cloud server deployments, you will not need to worry about the location of a configuration file.  If you are using
 a JSON or JavaScript module configuration file, be sure to the store the file in a location outside where you have
-install the MAGE server packages.  For example, if you installed the MAGE server in `/opt/mage`, keep your
+install the Mage server packages.  For example, if you installed the Mage server in `/opt/mage`, keep your
 configuration in some non-overlapping directory like `/etc/mage.json`.  That way, if you decide to delete the contents
 of `/opt/mage` and start fresh, your configuration will remain intact.
 
 #### Running with `forever`
 
-Use a tool like [`forever`](https://www.npmjs.com/package/forever) to run the MAGE server process as a daemon in a
-production environment.  `forever` will restart the MAGE server process if it happens to terminate unexpectedly.
+Use a tool like [`forever`](https://www.npmjs.com/package/forever) to run the Mage server process as a daemon in a
+production environment.  `forever` will restart the Mage server process if it happens to terminate unexpectedly.
 First, you'll need to install `forever`.
 ```bash
 npm install -g forever
 ```
-To run the MAGE server with `forever`, you can start the server like the following, assuming you are in the directory
-where you have installed the MAGE server packages.
+To run the Mage server with `forever`, you can start the server like the following, assuming you are in the directory
+where you have installed the Mage server packages.
 ```bash
 forever start ./node_modules/.bin/mage.service <...options>
 ```
@@ -213,8 +213,8 @@ var Service = require('node-windows').Service;
 // Create a new service object
 var svc = new Service({
   name:'Mage Service',
-  description: 'To run MAGE Server as a windows service',
-  script: '{MAGE Install Directory}\\node_modules\\@ngageoint\\mage.service\\bin\\mage.service.js',
+  description: 'To run Mage Server as a windows service',
+  script: '{Mage Install Directory}\\node_modules\\@ngageoint\\mage.service\\bin\\mage.service.js',
   nodeOptions: [
   ]
   //, workingDirectory: '...'
@@ -233,13 +233,13 @@ Upon running the created script, a new Windows service will be created matching 
 
 #### HTTPS/TLS
 
-When running a MAGE server in a publicly accessible production environment, as with any web application, you should use
+When running a Mage server in a publicly accessible production environment, as with any web application, you should use
 a reverse proxy such as [Apache HTTP Server](https://httpd.apache.org/) or [NGINX](https://nginx.org/) to force
-external connections to use HTTPS and run the MAGE server Node process on a private subnet host.  The MAGE server Node
+external connections to use HTTPS and run the Mage server Node process on a private subnet host.  The Mage server Node
 application itself does not support HTTPS/TLS connections.
 
 **IMPORTANT:** Be sure your reverse proxy properly sets the `X-Forwarded-Host` and `X-Forwarded-Proto` headers properly.
-The MAGE Node.js app builds URLs, via [Express.js](https://expressjs.com/en/4x/api.html#req.hostname), that MAGE clients
+The Mage Node.js app builds URLs, via [Express.js](https://expressjs.com/en/4x/api.html#req.hostname), that Mage clients
 use to request resources.
 
 For Microsoft ISS installations, in addition to running a reverse proxy, you must configure ISS to preserve
@@ -250,31 +250,31 @@ host headers. To do this, execute the following command:
 
 #### Cloud Foundry deployment
 
-MAGE uses the [cfenv](https://github.com/cloudfoundry-community/node-cfenv) Node module to read settings from Cloud Foundry's
+Mage uses the [cfenv](https://github.com/cloudfoundry-community/node-cfenv) Node module to read settings from Cloud Foundry's
 [environment variables](https://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html).  If Cloud Foundry's
 environment variables are present, they will take precedence over any of their counterparts derived from the
 [magerc.sh](environment/env.js) file.  This pertains mostly to defining the connection to the MongoDB server as a bound service
 in Cloud Foundry, for which Cloud Foundry should supply the connection string and credentials in the `VCAP_SERVICES` value.
 
-### Upgrading MAGE server
+### Upgrading Mage server
 
-Upgrading the MAGE server essentially consists of the same process as [installing for the first time](#install-mage-server-packages).
+Upgrading the Mage server essentially consists of the same process as [installing for the first time](#install-mage-server-packages).
 1. As above, install the desired versions of the packages.
-1. Stop your current MAGE server if it is running.
+1. Stop your current Mage server if it is running.
 1. *_[BACK UP YOUR DATABASE](https://docs.mongodb.com/manual/core/backups/)!_* (You already do that regularly, right?)
-1. Start your new MAGE server, which will automatically run any database [migrations](./service/src/migrations) present in
+1. Start your new Mage server, which will automatically run any database [migrations](./service/src/migrations) present in
    the new version.
 
 ## Building from source
 
-First, clone the MAGE server GitHub repository, or download a release source tarball and extract the contents to an
+First, clone the Mage server GitHub repository, or download a release source tarball and extract the contents to an
 empty directory, such as `mage-server`.  The project has a monorepo structure.  The main packages to build are [`@ngageoint/mage.service`](./service/)
 and [`@ngageoint/mage.web-app`](./web-app/).  There are more optional packages in the [`plugins`](./plugins/)
-directory.  The [`instance`](./instance/) package is an example of assembling all the packages into a running MAGE
+directory.  The [`instance`](./instance/) package is an example of assembling all the packages into a running Mage
 server instance.
 
 The project's root [`package.json`](./package.json) provides convenience script entries to install, build, and run
-the MAGE server components.
+the Mage server components.
 
 Download and install the dependencies:
 
@@ -300,7 +300,7 @@ Run the app with the `instance/config.ts` settings
 
 If the monogo database is up and running and everything is built, you should see a message like:
 
-    2025-05-13T20:12:36.120Z - info: MAGE Server listening at address 127.0.0.1 on port 4242
+    2025-05-13T20:12:36.120Z - info: Mage Server listening at address 127.0.0.1 on port 4242
 
 Open a browser to: <http://127.0.0.1:4242>. If the ArcGIS and SFTP plug-ins were built, you'll see those tabs on the sidebar in Settings.
 
@@ -369,13 +369,13 @@ By default, the Dockerfile includes additional plugins. Should you want to add/r
 ### HTTPS/TLS reverse proxy
 
 Then `mage-web-proxy` service is optional when developing and running on
-localhost, but highly recommended when running MAGE Server on publicly
+localhost, but highly recommended when running Mage Server on publicly
 accessible servers.  The service in `docker-compose.yml` uses the official
 nginx docker image with an appropriate [configuration](web/nginx.conf).  This
 is an example of setting up a reverse proxy in front of the Node server to
 enforce HTTPS/TLS connections to the server.  Of course, you could use any
 reverse proxy you see fit, such as [Apache HTTP Server](https://httpd.apache.org/)
-or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  To run your MAGE server behind the TLS
+or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  To run your Mage server behind the TLS
 reverse proxy, peform the following modifications to `docker-compose.yml`.
 1. Comment the `ports` block for the `mage-server` service to disallow
   connections directly to the Node.js server.
@@ -384,7 +384,7 @@ reverse proxy, peform the following modifications to `docker-compose.yml`.
 For testing in a development environment, you can create a self-signed server
 certificate for nginx to use.  The following OpenSSL command, run from the
 directory of this README, will create a self-signed server certificate and
-private key in the `web` directory that should allow the MAGE mobile app to
+private key in the `web` directory that should allow the Mage mobile app to
 connect to nginx.  Replace the values of the `SUBJ_*` variables at the
 beginning of the command with your own values.
 ```
@@ -410,8 +410,8 @@ substitution and allows treating the enclosed command output as a file.  The
 public certificate, `mage-web.crt`, as a trusted authority on a mobile device.
 
 **IMPORTANT** If you intend to connect to your reverse proxy from a mobile
-device or simulator/emulator running the MAGE mobile app, make sure that the
-value of the `SUBJ_CN` variable matches the IP address of your MAGE Server
+device or simulator/emulator running the Mage mobile app, make sure that the
+value of the `SUBJ_CN` variable matches the IP address of your Mage Server
 host on your network, or the resolvable host name of the host.  TLS connections
 will not succeed if Common Name and Subject Alternative Name fields in the
 public certificate do not match the host name.
@@ -423,28 +423,28 @@ connecting from a mobile device on the same network.
 ### Bind mounts
 
 The Compose file uses [bind mounts](https://docs.docker.com/storage/bind-mounts/)
-for the MongoDB database directory, database log path, and MAGE server
+for the MongoDB database directory, database log path, and Mage server
 [resources](../README.md#mage-local-media-directory).  By default, the source
 paths of those bind mounts are `database/data`, `database/log`, and
 `server/resources`, respectively.  You can change the source paths according to
 your environment and needs.
 
-With these bind mounts, the MAGE server will retain its data on your host file
+With these bind mounts, the Mage server will retain its data on your host file
 system in directories you can explore and manage yourself.  For example, this
-setup allows you to mount a directory into the MAGE server container from a
+setup allows you to mount a directory into the Mage server container from a
 [FUSE-based](https://github.com/libfuse/libfuse) file system, which might
 provide extra functionality like [encryption](https://www.veracrypt.fr) or
 [remote mounting](https://github.com/libfuse/sshfs) transparently to the
-Docker container and MAGE application.  If you don't have any requirements of
+Docker container and Mage application.  If you don't have any requirements of
 that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
 
 ### Ports
 The only port the Compose file exposes to the host by default is 4242 on the
 `mage-server` service to allow HTTP connections from your host web browser to
-the MAGE server running in the Docker container.  In a production environment,
+the Mage server running in the Docker container.  In a production environment,
 you could add another service in the Compose file to run an
 [nginx](https://hub.docker.com/_/nginx/) or [httpd](https://hub.docker.com/_/httpd/)
-reverse proxy with TLS or other security measures in front of the MAGE Server
+reverse proxy with TLS or other security measures in front of the Mage Server
 Node application.  In that case you would remove the
 ```yaml
 ports:
@@ -465,8 +465,8 @@ your host machine to examine or modify the database contents.
 
 ### Environment settings
 
-You can configure the MAGE server Docker app using [environment variables](../README.md#mage-environment-settings).
-The Compose file does this by necessity to configure the MongoDB URL for the MAGE server.
+You can configure the Mage server Docker app using [environment variables](../README.md#mage-environment-settings).
+The Compose file does this by necessity to configure the MongoDB URL for the Mage server.
 ```yaml
 environment:
     MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
@@ -536,13 +536,13 @@ By default, the Dockerfile includes additional plugins. Should you want to add/r
 ### HTTPS/TLS reverse proxy
 
 Then `mage-web-proxy` service is optional when developing and running on
-localhost, but highly recommended when running MAGE Server on publicly
+localhost, but highly recommended when running Mage Server on publicly
 accessible servers.  The service in `docker-compose.yml` uses the official
 nginx docker image with an appropriate [configuration](web/nginx.conf).  This
 is an example of setting up a reverse proxy in front of the Node server to
 enforce HTTPS/TLS connections to the server.  Of course, you could use any
 reverse proxy you see fit, such as [Apache HTTP Server](https://httpd.apache.org/)
-or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  To run your MAGE server behind the TLS
+or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html).  To run your Mage server behind the TLS
 reverse proxy, peform the following modifications to `docker-compose.yml`.
 1. Comment the `ports` block for the `mage-server` service to disallow
   connections directly to the Node.js server.
@@ -551,7 +551,7 @@ reverse proxy, peform the following modifications to `docker-compose.yml`.
 For testing in a development environment, you can create a self-signed server
 certificate for nginx to use.  The following OpenSSL command, run from the
 directory of this README, will create a self-signed server certificate and
-private key in the `web` directory that should allow the MAGE mobile app to
+private key in the `web` directory that should allow the Mage mobile app to
 connect to nginx.  Replace the values of the `SUBJ_*` variables at the
 beginning of the command with your own values.
 ```
@@ -577,8 +577,8 @@ substitution and allows treating the enclosed command output as a file.  The
 public certificate, `mage-web.crt`, as a trusted authority on a mobile device.
 
 **IMPORTANT** If you intend to connect to your reverse proxy from a mobile
-device or simulator/emulator running the MAGE mobile app, make sure that the
-value of the `SUBJ_CN` variable matches the IP address of your MAGE Server
+device or simulator/emulator running the Mage mobile app, make sure that the
+value of the `SUBJ_CN` variable matches the IP address of your Mage Server
 host on your network, or the resolvable host name of the host.  TLS connections
 will not succeed if Common Name and Subject Alternative Name fields in the
 public certificate do not match the host name.
@@ -590,28 +590,28 @@ connecting from a mobile device on the same network.
 ### Bind mounts
 
 The Compose file uses [bind mounts](https://docs.docker.com/storage/bind-mounts/)
-for the MongoDB database directory, database log path, and MAGE server
+for the MongoDB database directory, database log path, and Mage server
 [resources](../README.md#mage-local-media-directory).  By default, the source
 paths of those bind mounts are `database/data`, `database/log`, and
 `server/resources`, respectively.  You can change the source paths according to
 your environment and needs.
 
-With these bind mounts, the MAGE server will retain its data on your host file
+With these bind mounts, the Mage server will retain its data on your host file
 system in directories you can explore and manage yourself.  For example, this
-setup allows you to mount a directory into the MAGE server container from a
+setup allows you to mount a directory into the Mage server container from a
 [FUSE-based](https://github.com/libfuse/libfuse) file system, which might
 provide extra functionality like [encryption](https://www.veracrypt.fr) or
 [remote mounting](https://github.com/libfuse/sshfs) transparently to the
-Docker container and MAGE application.  If you don't have any requirements of
+Docker container and Mage application.  If you don't have any requirements of
 that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
 
 ### Ports
 The only port the Compose file exposes to the host by default is 4242 on the
 `mage-server` service to allow HTTP connections from your host web browser to
-the MAGE server running in the Docker container.  In a production environment,
+the Mage server running in the Docker container.  In a production environment,
 you could add another service in the Compose file to run an
 [nginx](https://hub.docker.com/_/nginx/) or [httpd](https://hub.docker.com/_/httpd/)
-reverse proxy with TLS or other security measures in front of the MAGE Server
+reverse proxy with TLS or other security measures in front of the Mage Server
 Node application.  In that case you would remove the
 ```yaml
 ports:
@@ -632,8 +632,8 @@ your host machine to examine or modify the database contents.
 
 ### Environment settings
 
-You can configure the MAGE server Docker app using [environment variables](../README.md#mage-environment-settings).
-The Compose file does this by necessity to configure the MongoDB URL for the MAGE server.
+You can configure the Mage server Docker app using [environment variables](../README.md#mage-environment-settings).
+The Compose file does this by necessity to configure the MongoDB URL for the Mage server.
 ```yaml
 environment:
     MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
@@ -642,20 +642,20 @@ environment:
 
 ## ReST API
 
-The MAGE ReSTful API is documented using [OpenAPI](https://swagger.io/specification/).  A MAGE server instance includes
-a [Swagger UI](https://swagger.io/tools/swagger-ui/) page that renders a web app from the MAGE [OpenAPI document](service/src/docs/openapi.yaml).
-The Swagger UI page is handy for testing the ReST API operations individually.  The _About_ page in the MAGE web app has
+The Mage ReSTful API is documented using [OpenAPI](https://swagger.io/specification/).  A Mage server instance includes
+a [Swagger UI](https://swagger.io/tools/swagger-ui/) page that renders a web app from the Mage [OpenAPI document](service/src/docs/openapi.yaml).
+The Swagger UI page is handy for testing the ReST API operations individually.  The _About_ page in the Mage web app has
 a link to the Swagger UI.  After logging in to the web app, the Swagger UI will automatically use the authentication
 token from your login to authenticate ReST API requests.  Be mindful that the SwaggerUI is interacting with your
 server's data, so use caution when trying POST/PUT/DELETE operations that mutate data.
 
 ### Code generation
 
-You can use the MAGE server's OpenAPI document to generate an HTTP client that can consume the API.  Swagger and many other tools exist to generate client stubs based on OpenAPI.  [OpenAPI.Tools](https://openapi.tools/) is a good place to start.
+You can use the Mage server's OpenAPI document to generate an HTTP client that can consume the API.  Swagger and many other tools exist to generate client stubs based on OpenAPI.  [OpenAPI.Tools](https://openapi.tools/) is a good place to start.
 
 ### Android & iOS client apps
 
-The MAGE team develops [Android](https://github.com/ngageoint/mage-android) and [iOS](https://github.com/ngageoint/mage-ios)
+The Mage team develops [Android](https://github.com/ngageoint/mage-android) and [iOS](https://github.com/ngageoint/mage-ios)
 apps that interact with the ReST API.  The apps are open source and available under the Apache License for anyone to
 use.  Check them out if you are considering mobile capabilities.
 

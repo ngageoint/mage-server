@@ -9,7 +9,8 @@
   <mat-dialog-content>
     <div class="dialog-content">
       <mat-accordion>
-        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate" [disabled]="featureService?.authenticated">
+        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate"
+          [disabled]="featureService?.authenticated">
           <mat-expansion-panel-header>
             <mat-panel-title *ngIf="!featureService?.authenticated">Feature Service</mat-panel-title>
             <mat-panel-title *ngIf="featureService?.authenticated">{{featureService?.url}}</mat-panel-title>
@@ -19,23 +20,31 @@
               </div>
             </mat-panel-description>
           </mat-expansion-panel-header>
-          
+
           <form class="validate" [formGroup]="layerForm" class="form">
             <mat-form-field>
-              <mat-label>URL</mat-label>
-              <input matInput formControlName="url" required placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer"/>
+              <mat-label>Feature Service URL</mat-label>
+              <input matInput formControlName="url" required
+                placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer" />
               <mat-error *ngIf="layerForm.hasError('required')">URL is required</mat-error>
             </mat-form-field>
-          
-            <mat-form-field appearance="fill">
+
+            <mat-form-field>
+              <mat-label>Portal API URL</mat-label>
+              <input matInput formControlName="portalUrl" placeholder="http{s}://{domain}/arcgis/sharing/rest" />
+              <mat-hint>Leave empty to use default portal URL derived from feature service URL</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="authentication-field">
               <mat-label>Authentication</mat-label>
               <mat-select formControlName="authenticationType">
-                <mat-option *ngFor="let authenticationState of authenticationStates" [value]="authenticationState.value">
+                <mat-option *ngFor="let authenticationState of authenticationStates"
+                  [value]="authenticationState.value">
                   {{authenticationState.text}}
                 </mat-option>
               </mat-select>
             </mat-form-field>
-          
+
             <ng-container [ngSwitch]="layerForm.controls.authenticationType.value">
               <div *ngSwitchCase="AuthenticationType.Token" formGroupName="token">
                 <mat-form-field appearance="fill">
@@ -57,7 +66,7 @@
                   <input matInput formControlName="username" required />
                   <mat-error>Username Id is required</mat-error>
                 </mat-form-field>
-          
+
                 <mat-form-field appearance="fill">
                   <mat-label>Password</mat-label>
                   <input matInput formControlName="password" type="password" required />
@@ -66,7 +75,7 @@
               </div>
             </ng-container>
           </form>
-      
+
           <div class="actions">
             <button mat-flat-button color="primary" [disabled]="loading" (click)="onValidate()">
               <div class="actions__save">
@@ -77,13 +86,13 @@
             </button>
           </div>
         </mat-expansion-panel>
-      
-        <mat-expansion-panel [expanded]="state === State.Layers"  (opened)="state = State.Layers">
+
+        <mat-expansion-panel [expanded]="state === State.Layers" (opened)="state = State.Layers">
           <mat-expansion-panel-header>
             <mat-panel-title>Layers</mat-panel-title>
           </mat-expansion-panel-header>
-      
-          <form [formGroup]="layerForm" class="form">      
+
+          <form [formGroup]="layerForm" class="form">
             <div>
               <mat-selection-list #layerList color="primary" class="layers">
                 <mat-list-option *ngFor="let layer of layers" [value]="layer.name" [selected]="hasLayer(layer)">

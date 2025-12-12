@@ -24,28 +24,28 @@ export function exoObservationModFromJson(json: Json): ExoObservationMod | Inval
     return invalidInput('Observation update must be a JSON object.')
   }
   if (typeof json.id !== 'string') {
-    return invalidInput('Observation must have a string ID.', [ 'id' ])
+    return invalidInput('Observation must have a string ID.', ['id'])
   }
   const bbox = json.bbox
   if (bbox !== undefined && !Array.isArray(bbox)) {
-    return invalidInput('BBox must be an array.', [ 'bbox' ])
+    return invalidInput('BBox must be an array.', ['bbox'])
   }
   if (typeof json?.geometry !== 'object' || Array.isArray(json.geometry) || json.geometry === null) {
-    return invalidInput('Geometry must be an object.', [ 'geometry' ])
+    return invalidInput('Geometry must be an object.', ['geometry'])
   }
   if (json.type !== undefined && json.type !== 'Feature') {
-    return invalidInput('GeoJSON type must be \'Feature\'', [ 'type' ])
+    return invalidInput('GeoJSON type must be \'Feature\'', ['type'])
   }
   const properties = json.properties
   if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
-    return invalidInput('Observation properties must be an object.', [ 'properties' ])
+    return invalidInput('Observation properties must be an object.', ['properties'])
   }
   if (!properties.timestamp || typeof properties.timestamp !== 'string') {
-    return invalidInput('Observation timestamp must be a string.', [ 'properties', 'timestamp' ])
+    return invalidInput('Observation timestamp must be a string.', ['properties', 'timestamp'])
   }
   const timestamp = moment(properties.timestamp, moment.ISO_8601, true)
   if (!timestamp.isValid()) {
-    return invalidInput('Observation timestamp must be a valid ISO-8601 date.', [ 'properties', 'timestamp' ])
+    return invalidInput('Observation timestamp must be a valid ISO-8601 date.', ['properties', 'timestamp'])
   }
   const mod: ExoObservationMod = {
     id: json.id,
@@ -54,7 +54,8 @@ export function exoObservationModFromJson(json: Json): ExoObservationMod | Inval
     properties: {
       ...properties as any,
       timestamp: timestamp.toDate()
-    }
+    },
+    noGeometry: !!json.noGeometry
   }
   if (bbox) {
     mod.bbox = bbox as BBox

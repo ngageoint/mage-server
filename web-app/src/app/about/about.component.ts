@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { ApiService } from '../api/api.service';
-import { Router } from '@angular/router';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'about',
@@ -16,22 +16,30 @@ export class AboutComponent implements OnInit {
   apk: string
   nodeVersion: string
   mongoVersion: string
+  adminPhone: string = null;
+  adminEmail: string = null;
+  showDevContact: boolean = false;
 
   constructor(
-    private router: Router,
-    @Inject(ApiService) public apiService: ApiService
+    private _location: Location,
+    @Inject(ApiService) public apiService: ApiService,
   ) {}
 
   ngOnInit(): void {
     this.apiService.getApi().subscribe(api =>{
-      this.mageVersion = api.version;
-      this.apk = api.apk;
-      this.nodeVersion = api.environment.nodeVersion;
-      this.mongoVersion = api.environment.mongodbVersion;
+      this.mageVersion = api?.version;
+      this.apk = api?.apk;
+      this.nodeVersion = api.environment?.nodeVersion;
+      this.mongoVersion = api.environment?.mongodbVersion;
+      if (api.contactInfo) {
+        this.adminEmail = api.contactInfo?.email ?? null;
+        this.adminPhone = api.contactInfo?.phone ?? null;
+        this.showDevContact = api.contactInfo?.showDevContact ?? false;
+      }
     })
   }
 
   onBack(): void {
-    this.router.navigate(['home']);
+    this._location.back();
   }
 }

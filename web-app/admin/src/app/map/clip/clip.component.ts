@@ -129,7 +129,8 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
 
     let bounds = this.layer.getBounds()
     if (this.accuracy && this.accuracy.radius > 0) {
-      this.accuracyLayer = new Circle(this.accuracy.latlng, this.accuracy.radius, {
+      this.accuracyLayer = new Circle(this.accuracy.latlng, {
+        radius: this.accuracy.radius,
         color: this.accuracy.color,
         fillColor: this.accuracy.color,
         fillOpacity: 0.15,

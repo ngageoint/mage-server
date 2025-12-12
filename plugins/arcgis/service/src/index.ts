@@ -82,21 +82,23 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               return res.status(404).send('clientId is required');
             }
 
+            const portalUrl = req.query.portalUrl as string;
+
             const config = await processor.safeGetConfig();
             ArcGISIdentityManager.authorize({
               clientId,
-              portal: getPortalUrl(url),
+              portal: portalUrl || getPortalUrl(url),
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
-              state: JSON.stringify({ url: url, clientId: clientId })
+              state: JSON.stringify({ url: url, clientId: clientId, portalUrl: portalUrl })
             }, res);
           });
 
           routes.get('/oauth/authenticate', async (req, res) => {
             const code = req.query.code as string;
-            let state: { url: string, clientId: string };
+            let state: { url: string, clientId: string, portalUrl?: string };
             try {
-              const { url, clientId } = JSON.parse(req.query.state as string);
-              state = { url, clientId };
+              const { url, clientId, portalUrl } = JSON.parse(req.query.state as string);
+              state = { url, clientId, portalUrl };
             } catch (err) {
               console.error('error parsing relay state', err);
               return res.sendStatus(500);
@@ -106,18 +108,22 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             const creds = {
               clientId: state.clientId,
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
-              portal: getPortalUrl(state.url)
+              portal: state.portalUrl || getPortalUrl(state.url)
             };
             ArcGISIdentityManager.exchangeAuthorizationCode(creds, code).then(async (idManager: ArcGISIdentityManager) => {
               let service = config.featureServices.find(service => service.url === state.url);
               if (!service) {
                 service = {
                   url: state.url,
+                  portalUrl: state.portalUrl,
                   identityManager: idManager.serialize(),
                   layers: []
                 };
               } else {
                 service.identityManager = idManager.serialize();
+                if (state.portalUrl) {
+                  service.portalUrl = state.portalUrl;
+                }
               }
 
               config.featureServices.push(service);
@@ -203,6 +209,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
 
                 return {
                   url: updateService.url,
+                  portalUrl: updateService.portalUrl,
                   layers: layers,
                   // Map existing identityManager, client does not send this
                   identityManager: existingService?.identityManager || '',
@@ -215,12 +222,12 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               processor.stop();
               await processor.start();
 
-              res.status(200).json({success: true});
+              res.status(200).json({ success: true });
             });
 
           routes.post('/featureService/validate', async (req, res) => {
             const config = await processor.safeGetConfig();
-            const { url, token, username, password } = req.body;
+            const { url, portalUrl, token, username, password } = req.body;
             if (!URL.canParse(url)) {
               return res.send('Invalid feature service url').status(400);
             }
@@ -229,14 +236,14 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             let identityManager: ArcGISIdentityManager;
             if (token) {
               identityManager = await ArcGISIdentityManager.fromToken({ token });
-              service = { url, layers: [], identityManager: identityManager.serialize() };
+              service = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
             } else if (username && password) {
               identityManager = await ArcGISIdentityManager.signIn({
                 username,
                 password,
-                portal: getPortalUrl(url)
+                portal: portalUrl || getPortalUrl(url)
               });
-              service = { url, layers: [], identityManager: identityManager.serialize() };
+              service = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
             } else {
               return res.sendStatus(400);
             }

@@ -76,6 +76,7 @@ const EventSchema = new Schema({
   _id: { type: Number, required: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
+  // noGeometry: { type: Boolean, default: false },
   complete: { type: Boolean },
   collectionName: { type: String, required: true },
   teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
@@ -110,7 +111,7 @@ EventSchema.virtual('id')
 async function uniqueViolationToValidationErrorHook(err, _, next) {
   if (err.code === 11000 || err.code === 11001) {
     err = new mongoose.Error.ValidationError()
-    err.errors = { name: { type: 'unique', message: 'Duplicate event name' }}
+    err.errors = { name: { type: 'unique', message: 'Duplicate event name' } }
   }
   return next(err)
 }
@@ -315,12 +316,12 @@ exports.count = function (options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Event.count(conditions, function (err, count) {
+  Event.countDocuments(conditions, function (err, count) {
     callback(err, count);
   });
 };
 
-exports.getEvents = function (options, callback) {
+exports.getEvents = async function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -330,6 +331,25 @@ exports.getEvents = function (options, callback) {
   const filter = options.filter || {};
   if (filter.complete === true) query.complete = true;
   if (filter.complete === false) query.complete = { $ne: true };
+  if (filter.searchTerm) {
+    const searchRegex = new RegExp(filter.searchTerm, 'i');
+    query['$or'] = [
+      { name: searchRegex },
+      { description: searchRegex }
+    ];
+  }
+  if (filter.excludeTeamId != null) {
+    query.teamIds = { $nin: [filter.excludeTeamId] };
+  }
+  if (filter.teamId != null) {
+    query.teamIds = { ...query.teamIds, $in: filter.teamId };
+  }
+  if (filter.excludeFeedId != null) {
+    query.feedIds = { $nin: [filter.excludeFeedId] };
+  }
+  if (filter.feedId != null) {
+    query.feedIds = { ...query.feedIds, $in: [filter.feedId] };
+  }
 
   let projection = {};
   if (options.projection) {
@@ -340,47 +360,61 @@ exports.getEvents = function (options, callback) {
     projection.teamIds = true;
   }
 
-  Event.find(query, projection, function (err, events) {
+  try {
+    const andClauses = [];
+
+    const buildAccessClause = async (userId) => {
+      if (!userId) return null;
+
+      const teamDocs = await Team.TeamModel.find({ userIds: { $in: [userId] } }, { _id: 1 }).lean();
+      const teamIdsForUser = teamDocs.map(t => t._id);
+      const readRoles = rolesWithPermission('read');
+      const aclKey = `acl.${userId.toString()}`;
+      return {
+        $or: [
+          { teamIds: { $in: teamIdsForUser } },
+          { [aclKey]: { $in: readRoles } }
+        ]
+      };
+    };
+
+    const accessUserId = options && options.access && options.access.user ? options.access.user._id : null;
+    const filterUserId = filter && filter.userId ? filter.userId : null;
+
+    const [accessClause, filterClause] = await Promise.all([
+      buildAccessClause(accessUserId),
+      buildAccessClause(filterUserId)
+    ]);
+
+    if (accessClause) andClauses.push(accessClause);
+    if (filterClause) andClauses.push(filterClause);
+    if (andClauses.length) {
+      if (query.$and) {
+        query.$and = query.$and.concat(andClauses);
+      } else {
+        query.$and = andClauses;
+      }
+    }
+  } catch (err) {
+    return callback(err);
+  }
+
+  const totalCount = await Event.countDocuments(query).exec();
+
+  Event.find(query, projection, (err, events) => {
     if (err) return callback(err);
 
-    const filters = [];
-
-    // First filter out events user cannot access
-    if (options.access && options.access.user) {
-      filters.push(function (done) {
-        filterEventsByUserId(events, options.access.user._id, function (err, filteredEvents) {
-          if (err) return done(err);
-
-          events = filteredEvents;
-          done();
-        });
+    if (options.populate) {
+      Event.populate(events, [{ path: 'teamIds' }, { path: 'layerIds' }], function (err, events) {
+        callback(err, events, totalCount);
       });
+    } else {
+      callback(null, events, totalCount);
     }
-
-    // Filter again if filtering based on particular user
-    if (options.filter && options.filter.userId) {
-      filters.push(function (done) {
-        filterEventsByUserId(events, options.filter.userId, function (err, filteredEvents) {
-          if (err) return done(err);
-
-          events = filteredEvents;
-          done();
-        });
-      });
-    }
-
-    async.series(filters, function (err) {
-      if (err) return callback(err);
-
-      if (options.populate) {
-        Event.populate(events, [{ path: 'teamIds' }, { path: 'layerIds' }], function (err, events) {
-          callback(err, events);
-        });
-      } else {
-        callback(null, events);
-      }
-    });
-  });
+  })
+    .sort({ name: 1, _id: 1 })
+    .limit(options.limit || 1000)
+    .skip(options.start * options.limit || 0);
 };
 
 exports.getById = function (id, options, callback) {
@@ -491,7 +525,7 @@ exports.update = function (id, event, options, callback) {
     options = {};
   }
 
-  const update = ['name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function(o, k) {
+  const update = ['name', 'description', 'noGeometry', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function (o, k) {
     if (Object.prototype.hasOwnProperty.call(event, k)) {
       o[k] = event[k];
     }
@@ -606,7 +640,7 @@ exports.getMembers = async function (eventId, options) {
 
     const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
     if (includeTotalCount) {
-      page.totalCount = await User.Model.count(params);
+      page.totalCount = await User.Model.countDocuments(params);
     }
 
     return page;
@@ -664,7 +698,7 @@ exports.getNonMembers = async function (eventId, options) {
 
     const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
     if (includeTotalCount) {
-      page.totalCount = await User.Model.count(params);
+      page.totalCount = await User.Model.countDocuments(params);
     }
 
     return page;
@@ -709,7 +743,7 @@ exports.getTeamsInEvent = async function (eventId, options) {
   };
   const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
   if (includeTotalCount) {
-    page.totalCount = await Team.TeamModel.count(params);
+    page.totalCount = await Team.TeamModel.countDocuments(params);
   }
   return page;
 };
@@ -747,7 +781,7 @@ exports.getTeamsNotInEvent = async function (eventId, options) {
 
   const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
   if (includeTotalCount) {
-    page.totalCount = await Team.TeamModel.count(params);
+    page.totalCount = await Team.TeamModel.countDocuments(params);
   }
 
   return page;

@@ -9,10 +9,12 @@ class AdminEventsController {
     this.UserService = UserService;
 
     this.events = [];
+    this.totalEvents = 0;
     this.filter = 'active'; // possible values all, active, complete
     this.page = 0;
     this.itemsPerPage = 10;
     this.eventSearch = '';
+    this.searchTimeout = null;
 
     this.projection = {
       name: true,
@@ -20,57 +22,70 @@ class AdminEventsController {
       acl: true,
       complete: true
     };
-
-    // For some reason angular is not calling into filter function with correct context
-    this.filterEvents = this._filterEvents.bind(this);
-    this.filterComplete = this._filterComplete.bind(this);
   }
 
   $onInit() {
-    this.Event.query(
-      {
-        state: 'all',
-        populate: false,
-        projection: JSON.stringify(this.projection)
-      },
-      (events) => {
-        this.events = events;
-      }
-    );
+    this.loadEvents();
+  }
+
+  loadEvents() {
+    const params = {
+      state: this.filter,
+      populate: false,
+      projection: JSON.stringify(this.projection),
+      page: this.page,
+      page_size: this.itemsPerPage,
+      includePagination: true
+    };
+
+    if (this.eventSearch && this.eventSearch.trim()) {
+      params.term = this.eventSearch.trim();
+    }
+
+    this.Event.queryWithPagination(params, (response) => {
+      this.events = response.items || [];
+      this.totalEvents = response.totalCount || 0;
+    });
   }
 
   handleSearchChange() {
-    const filtered = this.events.filter((event) => this._filterEvents(event));
-
-    // If there are filtered results, reset to page 0, else keep the current page
-    this.page = filtered.length > 0 ? 0 : this.page;
-  }
-
-  _filterEvents(event) {
-    const searchTerm = this.eventSearch.trim().toLowerCase();
-    if (!searchTerm) {
-      return true;
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
     }
-    const nameMatches = event.name.toLowerCase().includes(searchTerm);
-    const descriptionMatches =
-      event.description && event.description.toLowerCase().includes(searchTerm);
-    return nameMatches || descriptionMatches;
+    this.searchTimeout = setTimeout(() => {
+      this.page = 0;
+      this.loadEvents();
+    }, 300);
   }
 
-  _filterComplete(event) {
-    switch (this.filter) {
-      case 'all':
-        return true;
-      case 'active':
-        return !event.complete;
-      case 'complete':
-        return event.complete;
+  handleFilterChange() {
+    this.page = 0;
+    this.loadEvents();
+  }
+
+  handlePageChange() {
+    this.loadEvents();
+  }
+
+  nextPage() {
+    if ((this.page + 1) * this.itemsPerPage < this.totalEvents) {
+      this.page++;
+      this.loadEvents();
+    }
+  }
+
+  previousPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadEvents();
     }
   }
 
   reset() {
     this.page = 0;
     this.eventSearch = '';
+    this.filter = 'active';
+    this.loadEvents();
   }
 
   newEvent() {

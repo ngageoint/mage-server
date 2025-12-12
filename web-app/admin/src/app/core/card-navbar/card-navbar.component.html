@@ -1,0 +1,21 @@
+<div class="navbar-container">
+    <div class="search-section" *ngIf="isSearchable" data-testid="search-section">
+        <div class="search-input-container">
+            <input type="text" class="search-input" [placeholder]="searchPlaceholder" [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchChange($event)" data-testid="search-input">
+            <button type="button" class="clear-search-btn" (click)="clearSearch()"
+                *ngIf="searchTerm && searchTerm.trim()" data-testid="clear-search-btn">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="actions-section" *ngIf="actionButtons.length > 0" data-testid="actions-section">
+        <ng-container *ngFor="let button of actionButtons">
+            <button type="button" class="action-button {{ button.type }}" (click)="onActionButtonClick(button)"
+                [disabled]="button.disabled" data-testid="action-button">
+                {{ button.label }}
+            </button>
+        </ng-container>
+    </div>
+</div>

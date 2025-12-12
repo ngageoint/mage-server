@@ -1,0 +1,123 @@
+<div class="bulk-user-import-modal">
+  <mat-dialog-content class="modal-body">
+    <div class="form-grid">
+      <mat-form-field appearance="fill">
+        <mat-label>Team</mat-label>
+        <mat-select [(ngModel)]="selectedTeam" name="selectedTeam">
+          <mat-option *ngFor="let team of teams" [value]="team">
+            {{ team.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Role</mat-label>
+        <mat-select [(ngModel)]="selectedRole" name="selectedRole">
+          <mat-option *ngFor="let role of roles" [value]="role">
+            {{ role.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="file-upload-container" style="grid-column: 1 / 3">
+        <div class="file-upload-row">
+          <div class="file-upload">
+            <input
+              type="file"
+              id="csvUpload"
+              (change)="onFileChange($event)"
+              accept=".csv"
+              [disabled]="!selectedRole"
+            />
+            <label
+              for="csvUpload"
+              class="upload-label"
+              [matTooltip]="
+                !selectedRole
+                  ? 'Please select a role before uploading a file'
+                  : ''
+              "
+                >Choose CSV</label
+            >
+          </div>
+
+          <button
+            mat-icon-button
+            type="button"
+            (click)="showCsvInfo = !showCsvInfo"
+            [matTooltip]="
+              showCsvInfo ? 'Hide CSV Format Info' : 'Show CSV Format Info'
+            "
+            aria-label="CSV format info"
+            class="info-btn"
+          >
+            <mat-icon color="primary" class="icon-margin">{{
+              showCsvInfo ? 'close' : 'info'
+            }}</mat-icon>
+          </button>
+        </div>
+
+        <div class="filename" *ngIf="filename">{{ filename }}</div>
+
+        <div *ngIf="showCsvInfo" class="csv-info-popover mat-elevation-z4">
+          <h4>CSV Format Requirements</h4>
+          <p><strong>Required:</strong> Username, Display Name, Password</p>
+          <p>
+            <strong>Optional:</strong> Email, Phone Number, Icon Initials, Icon
+            Color
+          </p>
+          <p>Ensure headers match these exactly (case-insensitive).</p>
+          <code>Username,Display Name,Email,Phone Number,Password</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="unmapped" *ngIf="unmappedFields.length">
+      <div *ngFor="let field of unmappedFields" class="unmapped-field">
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ field.title }} is required but not mapped.</span>
+      </div>
+    </div>
+
+    <div class="table-wrapper" *ngIf="users.length">
+      <table mat-table [dataSource]="users" class="mat-elevation-z1">
+        <ng-container matColumnDef="team">
+          <th mat-header-cell *matHeaderCellDef>Team</th>
+          <td mat-cell *matCellDef="let user">
+            {{ user.team?.name }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let user">
+            {{ user.role?.name }}
+          </td>
+        </ng-container>
+
+        <ng-container *ngFor="let column of columns" [matColumnDef]="column">
+          <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+          <td mat-cell *matCellDef="let user">{{ user[column] }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  </mat-dialog-content>
+
+  <div class="modal-footer">
+    <button type="button" class="action-button" (click)="onClose()">
+      <i class="fa fa-times"></i> Cancel
+    </button>
+    <button
+      type="submit"
+      class="action-button btn-primary"
+      (click)="onSubmit()"
+      [disabled]="!filename"
+      [matTooltip]="!filename ? 'Please select a file for import' : ''"
+    >
+      <i class="fa fa-save"></i> Import
+    </button>
+  </div>
+</div>

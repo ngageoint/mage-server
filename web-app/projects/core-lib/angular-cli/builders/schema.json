@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
   "title": "ng-packagr Target",
-  "description": "plugin-library target options for Build Architect. Use to build MAGE plugin library projects.",
+  "description": "plugin-library target options for Build Architect. Use to build Mage plugin library projects.",
   "type": "object",
   "properties": {
     "project": {

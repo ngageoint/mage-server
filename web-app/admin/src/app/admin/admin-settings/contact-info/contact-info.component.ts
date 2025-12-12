@@ -13,11 +13,13 @@ export class ContactInfoComponent implements OnInit, OnChanges {
 
     oldEmail: string;
     oldPhone: string;
+    oldShowDevContact: boolean;
     isDirty = false;
 
     contactinfo = {
         phone: '',
-        email: ''
+        email: '',
+        showDevContact: false,
     }
 
     constructor(
@@ -42,6 +44,7 @@ export class ContactInfoComponent implements OnInit, OnChanges {
 
             this.oldEmail = this.contactinfo.email;
             this.oldPhone = this.contactinfo.phone;
+            this.oldShowDevContact = this.contactinfo.showDevContact;
         }).catch(err => {
             console.log(err);
         });

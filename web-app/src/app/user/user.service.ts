@@ -69,7 +69,7 @@ export class UserService {
   }
 
   ldapSignin(username: string, password: string): Observable<any> {
-    return this.httpClient.post<any>('/api/ldap/signin', {
+    return this.httpClient.post<any>('/auth/ldap/signin', {
       username,
       password,
       appVersion: 'Web Client'

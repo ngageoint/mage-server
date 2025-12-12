@@ -20,7 +20,9 @@ function LoginService($http, $httpParamSerializer) {
     if (filter.user) {
       parameters.userId = filter.user.id;
     }
-    if (filter.device) {
+    if (filter.deviceIds) {
+      parameters.deviceIds = filter.deviceIds;
+    } else if (filter.device) {
       parameters.deviceId = filter.device.id;
     }
     if (filter.startDate) {

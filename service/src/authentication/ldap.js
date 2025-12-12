@@ -23,7 +23,9 @@ function configure(strategy) {
       groupSearchScope: strategy.settings.groupSearchScope,
       bindProperty: strategy.settings.bindProperty,
       groupDnProperty: strategy.settings.groupDnProperty
-    }
+    },
+    usernameField: 'username',
+    passwordField: 'password'
   },
     function (profile, done) {
       const username = profile[strategy.settings.profile.id ];
@@ -103,43 +105,42 @@ function initialize(strategy) {
     invalidCredentials: `Invalid ${strategy.title} username/password.`
   };
 
-  app.post(`/auth/${strategy.name}/signin`,
-    function authenticate(req, res, next) {
-      passport.authenticate(strategy.name, authenticationOptions, function (err, user, info = {}) {
-        if (err) return next(err);
+  app.post(`/auth/${strategy.name}/signin`, function authenticate(req, res, next) {
+    passport.authenticate(strategy.name, authenticationOptions, function (err, user, info = {}) {
+      if (err) return next(err);
 
-        if (!user) {
-          return res.status(401).send(info.message);
-        }
+      if (!user) {
+        return res.status(401).send(info.message);
+      }
 
-        if (!user.active) {
-          return res.status(info.status || 401).send('User account is not approved, please contact your MAGE administrator to approve your account.');
-        }
+      if (!user.active) {
+        return res.status(info.status || 401).send('User account is not approved, please contact your MAGE administrator to approve your account.');
+      }
 
-        if (!user.enabled) {
-          log.warn('Failed user login attempt: User ' + user.username + ' account is disabled.');
-          return res.status(401).send('Your account has been disabled, please contact a MAGE administrator for assistance.')
-        }
+      if (!user.enabled) {
+        log.warn('Failed user login attempt: User ' + user.username + ' account is disabled.');
+        return res.status(401).send('Your account has been disabled, please contact a MAGE administrator for assistance.')
+      }
 
-        if (!user.authentication.authenticationConfigurationId) {
-          log.warn('Failed user login attempt: ' + user.authentication.type + ' is not configured');
-          return res.status(401).send(user.authentication.type + ' authentication is not configured, please contact a MAGE administrator for assistance.')
-        }
+      if (!user.authentication.authenticationConfigurationId) {
+        log.warn('Failed user login attempt: ' + user.authentication.type + ' is not configured');
+        return res.status(401).send(user.authentication.type + ' authentication is not configured, please contact a MAGE administrator for assistance.')
+      }
 
-        if (!user.authentication.authenticationConfiguration.enabled) {
-          log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.title + ' is disabled.');
-          return res.status(401).send(user.authentication.authenticationConfiguration.title + ' authentication is disabled, please contact a MAGE administrator for assistance.')
-        }
+      if (!user.authentication.authenticationConfiguration.enabled) {
+        log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.title + ' is disabled.');
+        return res.status(401).send(user.authentication.authenticationConfiguration.title + ' authentication is disabled, please contact a MAGE administrator for assistance.')
+      }
 
-        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
-          .then(token => {
-            res.json({
-              user: userTransformer.transform(req.user, { path: req.getRoot() }),
-              token: token
-            });
-          }).catch(err => next(err));
-      })(req, res, next);
-    }
+      tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+        .then(token => {
+          res.json({
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            token: token
+          });
+        }).catch(err => next(err));
+    })(req, res, next);
+  }
   );
 };
 

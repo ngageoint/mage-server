@@ -1,7 +1,7 @@
 {
   "name": "mage-epic",
   "version": "0.0.1",
-  "description": "Plugin to sync MAGE observations to an ESRI feature server.",
+  "description": "Plugin to sync Mage observations to an ESRI feature server.",
   "author": "NGA",
   "contributors": {
     "name": "Billy Newman",

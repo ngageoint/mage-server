@@ -11,6 +11,11 @@ export interface FeatureServiceConfig {
     url: string
 
     /**
+     * The ArcGIS portal API URL
+     */
+    portalUrl?: string
+
+    /**
     * Serialized ArcGISIdentityManager
     */
     identityManager: string

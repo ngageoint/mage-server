@@ -1,35 +1,37 @@
-<form [formGroup]="authenticationForm" (ngSubmit)="onSignin()">
-  <div>
-    <mat-form-field appearance="fill">
-      <mat-label>Username</mat-label>
-      <input matInput placeholder="Username" formControlName="username" required>
-      <mat-error >Username is required</mat-error>
-    </mat-form-field>
+<form [formGroup]="authenticationForm" (ngSubmit)="onSignin()" class="auth-form">
+  <mat-form-field appearance="fill" class="auth-form__field">
+    <mat-label>Username</mat-label>
+    <input matInput formControlName="username" required placeholder="Enter your username">
+    <mat-error *ngIf="authenticationForm.get('username')?.hasError('required')">
+      Username is required
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="auth-form__field">
+    <mat-label>Password</mat-label>
+    <input matInput type="password" formControlName="password" required placeholder="Enter your password">
+    <mat-error *ngIf="authenticationForm.get('password')?.hasError('required')">
+      Password is required
+    </mat-error>
+  </mat-form-field>
+
+  <button mat-flat-button color="primary" class="auth-form__button" type="submit">
+    Sign In
+  </button>
+
+  <div *ngIf="error" class="auth-form__error" [@slide] (@slide.done)="scrollToError()" #errorElement>
+    <span class="material-symbols-outlined auth-form__error-icon">sentiment_dissatisfied</span>
+    <div class="auth-form__error-message" [innerHTML]="error.message"></div>
   </div>
 
-  <div>
-    <mat-form-field appearance="fill">
-      <mat-label>Password</mat-label>
-      <input matInput placeholder="Password" type="password" formControlName="password" required>
-      <mat-error>Password is required</mat-error>
-    </mat-form-field>
-  </div>
-
-  <div>
-    <button class="auth-button" mat-flat-button color="primary">Sign In</button>
-  </div>
-
-  <div #errorElement *ngIf="error" class="error-container" [@slide] (@slide.done)="scrollToError()">
-    <div class="error" >
-      <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
-      <div class="error__message">
-        <div [innerHTML]="error.message"></div>
-      </div>
+  <div *ngIf="landing" class="auth-form__footer">
+    <div>
+      <span class="auth-form__footer-text">New to Mage?</span>
+      <a class="auth-form__footer-link" (click)="onSignup()">Sign Up Now</a>
     </div>
-  </div>
-
-  <div *ngIf="landing" class="signup">
-    <span class="signup-text">New to Mage?</span>
-    <a class="signup-button" (click)="onSignup()">Sign Up Now</a>
+    <div>
+      <span class="auth-form__footer-text">Need More Info?</span>
+      <a class="auth-form__footer-link" (click)="onAboutClick()">About Mage.</a>
+    </div>
   </div>
 </form>

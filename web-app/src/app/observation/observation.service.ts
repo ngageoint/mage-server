@@ -1,135 +1,194 @@
-import { Injectable } from "@angular/core"
+import { Injectable } from "@angular/core";
 import { LocalStorageService } from "../http/local-storage.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable, map, mergeMap } from "rxjs";
-import * as _ from 'underscore';
+import * as _ from "underscore";
 import { MageEvent } from "core-lib-src/event";
+import { Form, Observation } from "../filter/filter.types";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class ObservationService {
-
   constructor(
     private client: HttpClient,
     private localStorageService: LocalStorageService
   ) { }
 
   getId(eventId: number): Observable<any> {
-    return this.client.post<any>(`/api/events/${eventId}/observations/id/`, { eventId: eventId });
+    return this.client.post<any>(`/api/events/${eventId}/observations/id/`, {
+      eventId: eventId,
+    });
   }
 
   getObservation(eventId: string, observationId: string): Observable<any> {
-    return this.client.get<any>(`/api/events/${eventId}/observations/${observationId}`);
+    return this.client.get<any>(
+      `/api/events/${eventId}/observations/${observationId}`
+    );
   }
 
   getObservationsForEvent(event: MageEvent, options: any): Observable<any> {
-    const parameters: any = { eventId: event.id, states: 'active', populate: 'true' };
+    const parameters: any = {
+      eventId: event.id,
+      states: "active",
+      populate: "true",
+    };
     if (options.interval) {
       parameters.observationStartDate = options.interval.start;
       parameters.observationEndDate = options.interval.end;
     }
 
-    return this.client.get<any>(`/api/events/${event.id}/observations`, { params: parameters }).pipe(
-      map((observations: any) => {
-        return this.transformObservations(observations, event)
-      })
-    )
+    return this.client
+      .get<any>(`/api/events/${event.id}/observations`, { params: parameters })
+      .pipe(
+        map((observations: any) => {
+          return this.transformObservations(observations, event);
+        })
+      );
   }
 
   saveObservationForEvent(event: MageEvent, observation: any): Observable<any> {
     return this.saveObservation(event, observation).pipe(
       map((observation) => {
         return this.transformObservations(observation, event)[0]
-     })
+      })
     )
   }
 
   private saveObservation(event: MageEvent, observation: any): Observable<any> {
+    // If the noGemetry flag is set, override the geometry to a default point.
+    if (!!observation.noGeometry) {
+      observation.geometry = {
+        type: 'Point',
+        coordinates: [0, 0]
+      }
+    }
     if (observation.id) {
-      return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}`, observation);
+      return this.client.put<any>(
+        `/api/events/${event.id}/observations/${observation.id}`,
+        observation
+      );
     } else {
       return this.getId(event.id).pipe(
-        mergeMap(result => {
-          return this.client.put<any>(`/api/events/${event.id}/observations/${result.id}`, observation);
+        mergeMap((result) => {
+          return this.client.put<any>(
+            `/api/events/${event.id}/observations/${result.id}`,
+            observation
+          );
         })
-      )
+      );
     }
   }
 
   addObservationFavorite(event, observation): Observable<any> {
-    return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}/favorite`, observation)
+    return this.client.put<any>(
+      `/api/events/${event.id}/observations/${observation.id}/favorite`,
+      observation
+    );
   }
 
   removeObservationFavorite(event, observation): Observable<any> {
-    return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/favorite`, { body: observation })
+    return this.client.delete<any>(
+      `/api/events/${event.id}/observations/${observation.id}/favorite`,
+      { body: observation }
+    );
   }
 
-  markObservationAsImportantForEvent(event, observation, important): Observable<any>  {
-    return this.client.put<any>(`/api/events/${event.id}/observations/${observation.id}/important`, important)
+  markObservationAsImportantForEvent(
+    event,
+    observation,
+    important
+  ): Observable<any> {
+    return this.client.put<any>(
+      `/api/events/${event.id}/observations/${observation.id}/important`,
+      important
+    );
   }
 
-  clearObservationAsImportantForEvent(event, observation): Observable<any>  {
-    return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/important`, { body: observation })
+  clearObservationAsImportantForEvent(event, observation): Observable<any> {
+    return this.client.delete<any>(
+      `/api/events/${event.id}/observations/${observation.id}/important`,
+      { body: observation }
+    );
   }
 
   archiveObservationForEvent(event, observation): Observable<any> {
-    return this.client.post<any>(`/api/events/${event.id}/observations/${observation.id}/states`, { name: 'archive' }).pipe(
-      map(() => observation)
-    )
+    return this.client
+      .post<any>(
+        `/api/events/${event.id}/observations/${observation.id}/states`,
+        { name: "archive" }
+      )
+      .pipe(map(() => observation));
   }
 
   addAttachmentToObservationForEvent(event, observation, attachment) {
     const attachments = observation.attachments.slice();
-    const update = attachments.find(a => a.id === attachment.id);
+    const update = attachments.find((a) => a.id === attachment.id);
     if (update) {
       update.url = attachment.url;
     }
 
-    observation.attachments = attachments
+    observation.attachments = attachments;
   }
 
-  deleteAttachmentInObservationForEvent(event, observation, attachment): Observable<any> {
-    return this.client.delete<any>(`/api/events/${event.id}/observations/${observation.id}/attachments/${attachment.id}`).pipe(
-      map((response: any) => {
-        response.attachments = _.reject(observation.attachments, function (a) { return attachment.id === a.id; });
-        return response
-      })
-    )
+  deleteAttachmentInObservationForEvent(
+    event,
+    observation,
+    attachment
+  ): Observable<any> {
+    return this.client
+      .delete<any>(
+        `/api/events/${event.id}/observations/${observation.id}/attachments/${attachment.id}`
+      )
+      .pipe(
+        map((response: any) => {
+          response.attachments = _.reject(
+            observation.attachments,
+            function (a) {
+              return attachment.id === a.id;
+            }
+          );
+          return response;
+        })
+      );
   }
 
   transformObservations(observations, event) {
     if (!_.isArray(observations)) observations = [observations];
 
-    var formMap = _.indexBy(event.forms, 'id');
-    observations.forEach((observation: any) => {
-      let form: any;
+    let formMap = _.indexBy(event.forms, "id");
+    observations.forEach((observation: Observation) => {
+      let form: Form;
       if (observation.properties.forms.length) {
         form = formMap[observation.properties.forms[0].formId];
       }
 
-      observation.style = this.getObservationStyleForForm(observation, event, form);
-      if (observation.geometry.type === 'Polygon') {
+      observation.style = this.getObservationStyleForForm(
+        observation,
+        event,
+        form
+      );
+      if (observation.geometry.type === "Polygon") {
         this.minimizePolygon(observation.geometry.coordinates);
-      } else if (observation.geometry.type === 'LineString') {
+      } else if (observation.geometry.type === "LineString") {
         this.minimizeLineString(observation.geometry.coordinates);
       }
-    })
+    });
 
-    return observations
+    return observations;
   }
 
   minimizePolygon(polygon) {
-    for (var i = 0; i < polygon.length; i++) {
+    for (let i = 0; i < polygon.length; i++) {
       this.minimizeLineString(polygon[i]);
     }
   }
 
   minimizeLineString(lineString) {
-    var world = 360;
-    var coord = lineString[0];
-    for (var i = 1; i < lineString.length; i++) {
-      var next = lineString[i];
+    let world = 360;
+    let coord = lineString[0];
+    for (let i = 1; i < lineString.length; i++) {
+      let next = lineString[i];
       if (coord[0] < next[0]) {
         if (next[0] - coord[0] > coord[0] - next[0] + world) {
           next[0] = next[0] - world;
@@ -143,30 +202,45 @@ export class ObservationService {
   }
 
   getObservationStyleForForm(observation, event, form) {
-    var formId = null;
-    var formStyle = null;
-    var primaryField = null;
-    var variantField = null;
+    let formId = null;
+    let formStyle = null;
+    let primaryField = null;
+    let letiantField = null;
 
     if (observation.properties.forms.length) {
-      var firstForm = observation.properties.forms[0];
+      let firstForm = observation.properties.forms[0];
       formId = form.id;
       formStyle = form.style;
       primaryField = firstForm[form.primaryField];
-      variantField = firstForm[form.variantField];
+      letiantField = firstForm[form.letiantField];
     }
 
-    let style: any = this.getObservationStyle(event.style, formStyle, primaryField, variantField);
-    style.iconUrl = this.getObservationIconUrlForEvent(event.id, formId, primaryField, variantField);
+    let style: any = this.getObservationStyle(
+      event.style,
+      formStyle,
+      primaryField,
+      letiantField
+    );
+    style.iconUrl = this.getObservationIconUrlForEvent(
+      event.id,
+      formId,
+      primaryField,
+      letiantField
+    );
 
     return style;
   }
 
-  getObservationStyle(eventStyle, formStyle, primary, variant) {
-    var style = eventStyle || {};
+  getObservationStyle(eventStyle, formStyle, primary, letiant) {
+    let style = eventStyle || {};
     if (formStyle) {
-      if (primary && formStyle[primary] && variant && formStyle[primary][variant]) {
-        style = formStyle[primary][variant];
+      if (
+        primary &&
+        formStyle[primary] &&
+        letiant &&
+        formStyle[primary][letiant]
+      ) {
+        style = formStyle[primary][letiant];
       } else if (primary && formStyle[primary]) {
         style = formStyle[primary];
       } else {
@@ -179,29 +253,28 @@ export class ObservationService {
       fillColor: style.fill,
       fillOpacity: style.fillOpacity,
       opacity: style.strokeOpacity,
-      weight: style.strokeWidth
+      weight: style.strokeWidth,
     };
   }
 
-  getObservationIconUrlForEvent(eventId, formId, primary, variant) {
-    var url = '/api/events/' + eventId + '/icons';
+  getObservationIconUrlForEvent(eventId, formId, primary, letiant) {
+    let url = "/api/events/" + eventId + "/icons";
 
     if (formId) {
-      url += '/' + formId;
+      url += "/" + formId;
     }
 
     if (primary) {
-      url += '/' + primary;
+      url += "/" + primary;
     }
 
-    if (variant) {
-      url += '/' + variant;
+    if (letiant) {
+      url += "/" + letiant;
     }
 
-    var params = new HttpParams();
-    params = params.append('access_token', this.localStorageService.getToken())
-    
+    let params = new HttpParams();
+    params = params.append("access_token", this.localStorageService.getToken());
 
-    return url + '?' + params.toString()
+    return url + "?" + params.toString();
   }
 }

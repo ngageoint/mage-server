@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core'
-import * as turfCenter from '@turf/center'
+import { center as turfCenter } from '@turf/center'
 import { Feature, Point } from 'geojson'
 import * as mgrs from 'mgrs'
 import * as DMS from './geometry-dms'
@@ -41,6 +41,10 @@ export class GeometryPipe implements PipeTransform {
   }
 
   center(value: any): Point {
+    if (!value || !value.coordinates || !Array.isArray(value.coordinates)) {
+      return { type: 'Point', coordinates: [0, 0] }
+    }
+
     const feature: Feature = {
       type: 'Feature',
       properties: {},

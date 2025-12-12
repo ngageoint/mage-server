@@ -22,3 +22,52 @@ section {
     margin-left: 16px;
     margin-right: 16px;
 }
+
+::ng-deep .mat-menu-panel.contact-menu {
+    width: 495px !important;
+    min-width: unset;
+    max-width: unset;
+    padding: 0 !important;
+  }
+  
+  .menu-panel-content {
+    padding: 16px 24px;
+    box-sizing: border-box;
+  }
+  
+  .section-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    margin: 0;
+    gap: 8px;
+  }
+  
+  .divider {
+    margin: 12px 0;
+    border: none;
+    border-top: 1px solid #ccc;
+  }
+  
+  .contact-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 80px;
+  
+    div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+  
+      a {
+        color: mat.get-color-from-palette($app-primary);
+        text-decoration: none;
+  
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  

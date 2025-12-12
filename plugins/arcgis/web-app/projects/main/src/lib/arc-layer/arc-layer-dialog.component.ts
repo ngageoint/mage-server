@@ -37,10 +37,10 @@ export class ArcLayerDialogComponent {
 	authenticationStates: AuthenticationState[] = [{
 		text: 'OAuth',
 		value: AuthenticationType.OAuth
-	},{
+	}, {
 		text: 'Username/Password',
 		value: AuthenticationType.UsernamePassword
-	},{
+	}, {
 		text: 'API Key',
 		value: AuthenticationType.Token
 	}]
@@ -62,7 +62,8 @@ export class ArcLayerDialogComponent {
 
 		this.state = this.featureService === undefined || !this.featureService.authenticated ? State.Validate : State.Layers
 		this.layerForm = new FormGroup({
-			url: new FormControl({value: this.featureService?.url, disabled: this.featureService !== undefined }, [Validators.required]),
+			url: new FormControl({ value: this.featureService?.url, disabled: this.featureService !== undefined }, [Validators.required]),
+			portalUrl: new FormControl(this.featureService?.portalUrl || ''),
 			authenticationType: new FormControl('', [Validators.required]),
 			token: new FormGroup({
 				token: new FormControl('', [Validators.required])
@@ -99,22 +100,22 @@ export class ArcLayerDialogComponent {
 
 	onValidate(): void {
 		this.loading = true
-		const { url, authenticationType } = this.layerForm.value
+		const { url, portalUrl, authenticationType } = this.layerForm.value
 
 		switch (authenticationType) {
 			case AuthenticationType.Token: {
 				const { token } = this.layerForm.controls.token.value
-				this.arcService.validateFeatureService({ url, token }).subscribe((service) => this.validated(service))
+				this.arcService.validateFeatureService({ url, portalUrl, token }).subscribe((service) => this.validated(service))
 				break;
 			}
 			case AuthenticationType.OAuth: {
 				const { clientId } = this.layerForm.controls.oauth.value
-				this.arcService.oauth(url, clientId).subscribe((service) => this.validated(service))
+				this.arcService.oauth(url, clientId, portalUrl).subscribe((service) => this.validated(service))
 				break;
 			}
 			case AuthenticationType.UsernamePassword: {
 				const { username, password } = this.layerForm.controls.local.value
-				this.arcService.validateFeatureService({url, username, password}).subscribe((service) => this.validated(service))
+				this.arcService.validateFeatureService({ url, portalUrl, username, password }).subscribe((service) => this.validated(service))
 				break;
 			}
 		}

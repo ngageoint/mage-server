@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { polygon } from "@turf/helpers";
-import * as turfKinks from '@turf/kinks'
+import { kinks as turfKinks } from '@turf/kinks'
 
 @Injectable({
   providedIn: 'root'
