@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ObservationEditGeometryMapComponent } from './observation-edit-geometry-map.component';
-import { MatIconModule } from '@angular/material/icon';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('ObservationEditGeometryMapComponent', () => {
   let component: ObservationEditGeometryMapComponent;
@@ -10,9 +8,7 @@ describe('ObservationEditGeometryMapComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditGeometryMapComponent],
-      imports: [MatIconModule], 
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
+      declarations: [ObservationEditGeometryMapComponent ]
     })
     .compileComponents();
   }));

@@ -40,8 +40,7 @@ export interface FeatureLayer {
 
 export type ValidationRequest = {
   url: string
-  portalUrl?: string
-} & ({ token: string } | { username: string, password: string })
+} & { token: string } | { username: string, password: string }
 
 @Injectable({
   providedIn: 'root'
@@ -50,7 +49,7 @@ export class ArcService implements ArcServiceInterface {
 
   constructor(
     private http: HttpClient
-  ) { }
+  ) {}
 
   fetchArcConfig(): Observable<ArcGISPluginConfig> {
     return this.http.get<ArcGISPluginConfig>(`${baseUrl}/config`)
@@ -60,19 +59,10 @@ export class ArcService implements ArcServiceInterface {
     return this.http.get<FeatureLayer[]>(`${baseUrl}/featureService/layers?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}`)
   }
 
-  oauth(featureServiceUrl: string, clientId: string, portalUrl?: string): Observable<FeatureServiceConfig> {
+  oauth(featureServiceUrl: string, clientId: string): Observable<FeatureServiceConfig> {
     let subject = new Subject<FeatureServiceConfig>();
 
-    const params = new URLSearchParams({
-      featureServiceUrl: featureServiceUrl,
-      clientId: clientId
-    });
-
-    if (portalUrl) {
-      params.set('portalUrl', portalUrl);
-    }
-
-    const url = `${baseUrl}/oauth/signin?${params.toString()}`;
+    const url = `${baseUrl}/oauth/signin?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}&clientId=${encodeURIComponent(clientId)}`;
     const oauthWindow = window.open(url, "_blank");
 
     const listener = (event: any) => {
@@ -82,9 +72,9 @@ export class ArcService implements ArcServiceInterface {
         if (event.origin !== window.location.origin) {
           subject.error('target origin mismatch')
         }
-
+  
         subject.next(event.data)
-
+  
         oauthWindow?.close();
       }
     }
@@ -95,7 +85,7 @@ export class ArcService implements ArcServiceInterface {
   }
 
   validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig> {
-    return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/validate`, request)
+    return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/validate`, request) 
   }
 
   fetchEvents(): Observable<MageEvent[]> {

@@ -9,12 +9,8 @@ class AdminController {
     this.$transitions = $transitions;
     this.pluginService = pluginService;
     this.UserPagingService = UserPagingService;
-    this.DevicePagingService = DevicePagingService;this.pluginActive = false;
+    this.DevicePagingService = DevicePagingService;
 
-    this.pluginActiveChanged = function (event) {
-      this.pluginActive = !!event;
-    };
-    
     this.userState = 'inactive';
     this.inactiveUsers = [];
     const defaultUserQueries = this.UserPagingService.constructDefault();

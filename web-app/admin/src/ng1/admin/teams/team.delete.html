@@ -1,0 +1,35 @@
+<div class="modal-header">
+  <h3 class="modal-title">Delete "{{$ctrl.team.name}}"</h3>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+    <div class="col-md-12">
+      <p>Team "{{$ctrl.team.name}}" will be deleted.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="$ctrl.deleteAllUsers"> Delete all users that are a part of this team.
+        </label>
+      </div>
+
+      <div class="top-gap has-error" ng-if="$ctrl.deleteAllUsers">
+        <h4 class="text-danger">Are you ABSOLUTELY sure?</h4>
+        <p>This will delete all users that are part of this event, regardless of if they are in other events This action <strong>CANNOT</strong> be undone.</p>
+        <p>Please type in the name of the team to confirm.</p>
+        <input type="text" class="form-control" ng-model="$ctrl.confirm.text">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="$ctrl.cancel()" ngm-tap="cancel()">Cancel</button>
+  <button class="btn btn-danger" ng-if="!$ctrl.deleteAllUsers" ng-click="$ctrl.deleteTeam($ctrl.team, true)"><i class="icon-trash"> </i>Delete Team</button>
+  <button class="btn btn-danger" ng-if="$ctrl.deleteAllUsers" ng-disabled="$ctrl.deleting || $ctrl.team.name !== $ctrl.confirm.text" ng-click="$ctrl.deleteTeam($ctrl.team, true)"><i class="fa" ng-class="$ctrl.deleting ? 'fa-spinner fa-spin' : 'fa-trash'"></i> Delete Team and Users</button>
+</div>

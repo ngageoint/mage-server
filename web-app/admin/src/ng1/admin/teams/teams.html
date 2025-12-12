@@ -1,0 +1,75 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li class="active"><i class="fa fa-users"></i> Teams</li>
+    </ol>
+  </div>
+</div>
+
+<div class="container bottom-gap-l">
+  <div class="row">
+    <div class="col-md-3">
+
+      <form class="form">
+        <div class="top-gap">
+          <label>Search</label>
+          <input type="text" class="form-control" placeholder="team name, description" ng-model="$ctrl.teamSearch"
+            ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
+        </div>
+      </form>
+      <hr>
+
+      <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
+    </div>
+
+    <div class="col-md-9">
+      <nav class="navbar navbar-default admin-dashboard-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand">Teams</a>
+          </div>
+
+          <form class="navbar-form navbar-right" role="search">
+            <button type="submit" class="btn btn-default" ng-click="$ctrl.newTeam()">New Team</button>
+          </form>
+        </div>
+      </nav>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="admin-table">
+            <div class="well-item"
+                ng-repeat="t in $ctrl.teams" >
+
+                <div class="row pointer" ng-click="$ctrl.gotoTeam(t)">
+                  <div class="col-md-8">
+                    <div class="right-gap pull-left">
+                      <i class="fa fa-users admin-layer-icon"></i>
+                    </div>
+                    <div class="strong">{{t.name}}</div>
+                    <div class="muted">{{t.description}}</div>
+                  </div>
+                  <div class="col-md-4">
+                    <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasDeletePermission(t)" ng-click="$ctrl.deleteTeam($event, t)">Delete</button>
+                    <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasUpdatePermission(t)" ng-click="$ctrl.editTeam($event, t)">Edit</button>
+                  </div>
+                </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="pager pull-right">
+                <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
+                </li>
+                <li ng-class="{'disabled': $ctrl.hasNext() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

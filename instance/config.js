@@ -36,8 +36,7 @@ module.exports = {
     plugins: {
       servicePlugins: [
         '@ngageoint/mage.arcgis.service',
-        '@ngageoint/mage.sftp.service',
-        '@ngageoint/mage.nga-msi'
+        '@ngageoint/mage.sftp.service'
       ],
       webUIPlugins: [
         '@ngageoint/mage.arcgis.web-app',

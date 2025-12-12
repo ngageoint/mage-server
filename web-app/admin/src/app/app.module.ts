@@ -10,12 +10,7 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
-import {
-  SaturationModule,
-  HueModule,
-  CheckboardModule,
-  AlphaModule
-} from 'ngx-color';
+import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -50,9 +45,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatStepperModule } from '@angular/material/stepper';
 
-import { MatDatetimepickerModule } from '@mat-datetimepicker/core';
-import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment';
-import { InputMaskModule } from '@ngneat/input-mask';
+import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
+import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
+import { InputMaskModule } from '@ngneat/input-mask'
 
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
@@ -81,11 +76,7 @@ import {
   teamProvider,
   eventProvider,
   authenticationConfigurationServiceProvider,
-  userPagingServiceProvider,
-  deviceServiceProvider,
-  devicePagingServiceProvider,
-  loginServiceProvider,
-  layerServiceProvider
+  userPagingServiceProvider
 } from './upgrade/ajs-upgraded-providers';
 
 import {
@@ -110,16 +101,13 @@ import {
 import { FeedItemComponent } from './feed/feed-item/feed-item.component';
 import { FeedItemSummaryModule } from './feed/feed-item/feed-item-summary/feed-item-summary.module';
 import { AdminFeedsModule } from './admin/admin-feeds/admin-feeds.module';
-import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon';
-import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common';
-import { AdminModule } from './admin/admin.module';
+import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
+import { AdminModule } from './admin/admin.module'
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 import { ContactInfoComponent } from './admin/admin-settings/admin-settings';
-import {
-  SecurityBannerComponent,
-  SecurityDisclaimerComponent
-} from './admin/admin-settings/admin-settings';
+import { SecurityBannerComponent, SecurityDisclaimerComponent } from './admin/admin-settings/admin-settings';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
 import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
@@ -127,7 +115,7 @@ import { ObservationEditDiscardComponent } from './observation/observation-edit/
 import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
 import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
 import { ContactComponent } from './contact/contact.component';
-import { ContactDialogComponent } from './contact/contact-dialog.component';
+import { ContactDialogComponent } from "./contact/contact-dialog.component";
 import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
 import { AuthenticationDeleteComponent } from './admin/admin-authentication/admin-authentication-delete/admin-authentication-delete.component';
 import { AdminAuthenticationLocalComponent } from './admin/admin-authentication/admin-authentication-local/admin-authentication-local.component';
@@ -142,15 +130,10 @@ import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/a
 import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authentication-create/button-preview/button-preview.component';
 import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
 import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
-import { AdminEventFormModule } from './admin/admin-event/admin-event-form/admin-event-form.module';
+import { AdminEventFormPreviewComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
+import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview-dialog.component';
 import { AdminMapComponent } from './admin/admin-map/admin-map.component';
-import { AdminTeamsModule } from './admin/admin-teams/admin-teams.module';
-import { AdminEventsModule } from './admin/admin-event/admin-events.module';
-import { AdminLayersModule } from './admin/admin-layers/admin-layers.module';
-import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.module';
-import { MatMenuModule } from '@angular/material/menu';
-import { AdminUsersModule } from './admin/admin-users/admin-users.module';
-import { ObservationModule } from './observation/observation.module';
+
 
 @NgModule({
   declarations: [
@@ -158,7 +141,27 @@ import { ObservationModule } from './observation/observation.module';
     DMSValidatorDirective,
     MGRSValidatorDirective,
     FeedItemComponent,
+    ObservationEditComponent,
+    ObservationEditAttachmentComponent,
+    ObservationEditFormComponent,
+    ObservationEditFormPickerComponent,
+    ObservationEditMultiselectComponent,
+    ObservationEditCheckboxComponent,
+    ObservationEditSelectComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditRadioComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditGeometryMapComponent,
+    ObservationEditGeometryFormComponent,
+    ObservationEditDateComponent,
+    MapClipComponent,
     BootstrapComponent,
+    AttachmentComponent,
+    FilenamePipe,
+    AttachUploadComponent,
     UserAvatarComponent,
     AdminSettingsComponent,
     PasswordPolicyComponent,
@@ -170,6 +173,8 @@ import { ObservationModule } from './observation/observation.module';
     IconUploadComponent,
     ContactInfoComponent,
     DatetimePickerComponent,
+    ObservationEditDiscardComponent,
+    ObservationEditPasswordComponent,
     ContactComponent,
     ContactDialogComponent,
     AdminAuthenticationOidcComponent,
@@ -181,6 +186,8 @@ import { ObservationModule } from './observation/observation.module';
     ButtonPreviewComponent,
     AdminAuthenticationSettingsComponent,
     AdminSettingsUnsavedComponent,
+    AdminEventFormPreviewComponent,
+    AdminEventFormPreviewDialogComponent,
     AdminMapComponent
   ],
   imports: [
@@ -193,7 +200,6 @@ import { ObservationModule } from './observation/observation.module';
     ReactiveFormsModule,
     BrowserAnimationsModule,
     DragDropModule,
-    ObservationModule,
     MatBadgeModule,
     MatBottomSheetModule,
     MatDialogModule,
@@ -207,7 +213,6 @@ import { ObservationModule } from './observation/observation.module';
     MatTooltipModule,
     MatTabsModule,
     MatButtonModule,
-    MatMenuModule,
     MatCardModule,
     MatGridListModule,
     MatProgressSpinnerModule,
@@ -243,19 +248,13 @@ import { ObservationModule } from './observation/observation.module';
     MatDatepickerModule,
     NgxMatSelectSearchModule,
     AdminModule,
-    AdminTeamsModule,
-    AdminUsersModule,
-    AdminEventsModule,
-    AdminLayersModule,
-    AdminEventFormModule,
     AdminFeedsModule,
     FeedItemSummaryModule,
     StaticIconModule,
     AdminBreadcrumbModule,
     MatSlideToggleModule,
     MatStepperModule,
-    InputMaskModule.forRoot(),
-    AdminDashboardModule
+    InputMaskModule.forRoot()
   ],
   providers: [
     mapServiceProvider,
@@ -272,18 +271,11 @@ import { ObservationModule } from './observation/observation.module';
     eventProvider,
     authenticationConfigurationServiceProvider,
     userPagingServiceProvider,
-    deviceServiceProvider,
-    devicePagingServiceProvider,
-    loginServiceProvider,
-    layerServiceProvider,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: TokenInterceptorService,
-      multi: true
-    }
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ]
 })
 export class AppModule implements DoBootstrap {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  public ngDoBootstrap(appRef: ApplicationRef): void { }
+  public ngDoBootstrap(appRef: ApplicationRef): void {
+  }
 }

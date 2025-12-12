@@ -1,4 +1,4 @@
-# NGA Maritime Safety Information Service Mage Plugin
+# NGA Maritime Safety Information Service MAGE Plugin
 
 ## Links
 The region/subregion scheme that man MSI data collections reference seem to be

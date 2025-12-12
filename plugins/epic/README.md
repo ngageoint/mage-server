@@ -1,6 +1,6 @@
-# Mage EPIC plugin
+# MAGE EPIC plugin
 
-The mage-epic plugin replicates Mage observations to an ESRI ArcGIS server using [ESRI's ReST API](http://resources.arcgis.com/en/help/rest/apiref/).
+The mage-epic plugin replicates MAGE observations to an ESRI ArcGIS server using [ESRI's ReST API](http://resources.arcgis.com/en/help/rest/apiref/).
 
 Configuration:
 
@@ -13,18 +13,18 @@ Configuration:
       * serviceName - ESRI service name partial url
       * serviceType - ESRI service type partial url
       * layerId - ESRI layerId partial url
-  * observations - Mage observation mapping.  Add one for each event id (i.e. 7 maps Mage fields from eventId 7)
+  * observations - MAGE observation mapping.  Add one for each event id (i.e. 7 maps MAGE fields from eventId 7)
       * enable - turn on/off sync'ing of this event
       * interval - frequency (seconds) at which the plugin will sync this event to the ESRI server.
       * fields - array that maps each observation field to an ESRI fields
           * type - primitive type
-          * mage - obseravtion field name in Mage
+          * mage - obseravtion field name in MAGE
           * esri - ESRI field name
   * attachments
       * enable - turn on/off attachment sync'ing
       * interval - frequency (seconds) at which the plugin will sync attachments to the ESRI server.
 * mongodb
-  * url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main Mage configuration.
+  * url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main MAGE configuration.
   * poolSize - mongodb connection pool size for this plugin
 
 ```json

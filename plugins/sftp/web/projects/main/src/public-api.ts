@@ -13,7 +13,7 @@ export const MAGE_WEB_HOOKS: PluginHooks = {
   adminTab: {
     title: 'SFTP',
     icon: {
-      className: 'fa fa-folder-open'
+      path: 'assets/drive_file_move_black_24dp.svg'
     },
     tabContentComponent: ConfigurationComponent
   }

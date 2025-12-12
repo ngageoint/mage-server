@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
-import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: `host-component`,
@@ -27,8 +26,7 @@ describe('ObservationEditAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditAttachmentComponent, TestHostComponent],
-      imports: [MatIconModule]
+      declarations: [ObservationEditAttachmentComponent, TestHostComponent]
     })
     .compileComponents();
   }));

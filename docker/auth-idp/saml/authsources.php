@@ -8,15 +8,15 @@ $config = array(
 
     'example-userpass' => array(
         'exampleauth:UserPass',
-        'frodo.baggins:showmerings' => array(
+        'saml.user1:user1pass' => array(
             'uid' => array('1'),
             'eduPersonAffiliation' => array('group1'),
-            'email' => 'frodo.baggins@saml.mage.test',
+            'email' => 'user1@saml.mage.test',
         ),
-        'samwise.gamgee:bringyourgardner' => array(
+        'saml.user2:user2pass' => array(
             'uid' => array('2'),
             'eduPersonAffiliation' => array('group2'),
-            'email' => 'samwise.gamgee@saml.mage.test',
+            'email' => 'user2@saml.mage.test',
         ),
     ),
 

@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LdapAuthenticationComponent } from './ldap-authentication.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { AuthenticationButtonComponent } from '../button/authentication-button.component';
 
 describe('LDAP Authentication Component', () => {
   let component: LdapAuthenticationComponent;
@@ -10,8 +8,8 @@ describe('LDAP Authentication Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LdapAuthenticationComponent, AuthenticationButtonComponent],
-      imports: [HttpClientTestingModule, MatFormFieldModule]
+      declarations: [LdapAuthenticationComponent],
+      imports: [HttpClientTestingModule]
     }).compileComponents();
   }));
 
