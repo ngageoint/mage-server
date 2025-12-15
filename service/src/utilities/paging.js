@@ -37,6 +37,7 @@ function page(count, query, options, dataKey, dataConverter) {
     pageInfo.limit = limit;
     pageInfo[dataKey] = data;
     pageInfo.size = data.length;
+    pageInfo.totalCount = count
 
     const estimatedNext = start + limit;
 

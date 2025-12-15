@@ -36,6 +36,7 @@ import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user
 import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
 import { EventDashboardComponent } from '../app/admin/admin-event/dashboard/event-dashboard.component';
 import { LayerDashboardComponent } from '../app/admin/admin-layers/dashboard/layer-dashboard.component';
+import { DeviceDashboardComponent } from '../app/admin/admin-devices/dashboard/devices-dashboard.component';
 
 require('angular-minicolors');
 require('select2');
@@ -136,7 +137,12 @@ app
   .directive(
     'layerDashboard',
     downgradeComponent({ component: LayerDashboardComponent })
+  )
+  .directive(
+    'adminDevices',
+    downgradeComponent({ component: DeviceDashboardComponent })
   );
+
 
 app
   .component('navbar', require('./navbar/navbar.component'))

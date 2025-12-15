@@ -151,6 +151,7 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
 import { MatMenuModule } from '@angular/material/menu';
 import { AdminUsersModule } from './admin/admin-users/admin-users.module';
 import { ObservationModule } from './observation/observation.module';
+import { AdminDevicessModule } from './admin/admin-devices/admin-devices.module';
 
 @NgModule({
   declarations: [
@@ -255,7 +256,8 @@ import { ObservationModule } from './observation/observation.module';
     MatSlideToggleModule,
     MatStepperModule,
     InputMaskModule.forRoot(),
-    AdminDashboardModule
+    AdminDashboardModule,
+    AdminDevicessModule,
   ],
   providers: [
     mapServiceProvider,

@@ -110,10 +110,41 @@ exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
   return query.exec();
 };
 
-exports.getDevices = function (options = {}) {
+exports.getDevices = async function (options = {}) {
   const { filter = {}, expand = {} } = options;
+  const { term, ...restFilter } = filter;
 
-  const conditions = createQueryConditions(filter);
+  let conditions = createQueryConditions(restFilter);
+
+  if (term) {
+    const regex = new RegExp(term, 'i');
+    const base = Object.keys(conditions).length ? [conditions] : [];
+  
+    // 🔹 Find users whose displayName matches the term
+    const users = await User.Model
+      .find({ displayName: regex })
+      .select('_id')
+      .lean()
+      .exec();
+  
+    const userIds = users.map(u => u._id);
+  
+    // 🔹 Build OR condition over device fields + matching users
+    const searchCondition = {
+      $or: [
+        { uid: regex },
+        { name: regex },
+        { description: regex },
+        ...(userIds.length ? [{ userId: { $in: userIds } }] : [])
+      ]
+    };
+  
+    // Combine existing filters with search
+    conditions = base.length
+      ? { $and: [...base, searchCondition] }
+      : searchCondition;
+  }
+  
 
   let query = Device.find(conditions);
 
@@ -130,7 +161,6 @@ exports.getDevices = function (options = {}) {
       query.populate('userId');
     }
   } else {
-    // TODO is this minimum enough??
     query.populate({
       path: 'userId',
       select: 'displayName'
