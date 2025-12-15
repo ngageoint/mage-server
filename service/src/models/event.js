@@ -344,6 +344,9 @@ exports.getEvents = async function (options, callback) {
   if (filter.teamId != null) {
     query.teamIds = { ...query.teamIds, $in: filter.teamId };
   }
+  if (filter.layerId != null) {
+    query.layerIds = { ...query.layerIds, $in: [filter.layerId] };
+  }
 
   let projection = {};
   if (options.projection) {

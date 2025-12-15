@@ -14,6 +14,7 @@ export interface SearchOptions {
     page_size?: number;
     userId?: string;
     state?: string;
+    layerId?: string;
 }
 
 export interface EventsResponse {
