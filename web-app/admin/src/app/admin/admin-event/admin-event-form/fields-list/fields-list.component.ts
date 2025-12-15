@@ -36,7 +36,8 @@ export class FieldsListComponent {
             data: {
                 fieldTypes: this.fieldTypes,
                 attachmentAllowedTypes: this.attachmentAllowedTypes,
-                editMode: false
+                editMode: false,
+                existingFields: this.fields
             } as FieldDialogData
         });
 
@@ -59,7 +60,8 @@ export class FieldsListComponent {
                 attachmentAllowedTypes: this.attachmentAllowedTypes,
                 editMode: true,
                 existingField: field,
-                isMemberField: this.isMemberField(field)
+                isMemberField: this.isMemberField(field),
+                existingFields: this.fields
             } as FieldDialogData
         });
 
@@ -72,18 +74,11 @@ export class FieldsListComponent {
     }
 
     removeField(field: Field): void {
-        if (!this.canRemoveField()) {
-            return;
-        }
         const index = this.fields.findIndex(f => f.id === field.id);
         if (index !== -1) {
             this.fields.splice(index, 1);
         }
         this.fieldsChange.emit(this.fields);
-    }
-
-    canRemoveField(): boolean {
-        return this.showDetailedView && this.getActiveFields().length > 1;
     }
 
     moveFieldUp(field: Field): void {

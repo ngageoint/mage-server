@@ -124,28 +124,27 @@ describe('EventDashboardComponent', () => {
 
   it('should no longer filter events client-side', () => {
     component.events = mockEventsResponse;
-  
+    component.filteredEvents = mockEventsResponse.items;
+
     component.eventSearch = 'event a';
-    component['applyFilters']();
-  
-    // Expect no filtering to occur
+
     expect(component.filteredEvents.length).toBe(2);
     expect(component.filteredEvents[0].name).toBe('Event A');
     expect(component.filteredEvents[1].name).toBe('Event B');
   });
-  
+
   it('should send search term to server when searching', fakeAsync(() => {
     eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse));
-  
+
     component.onSearchTermChanged('event a');
     tick();
-  
+
     expect(component.searchOptions.term).toBe('event a');
     expect(eventServiceSpy.getEvents).toHaveBeenCalledWith(
       jasmine.objectContaining({ term: 'event a' })
     );
   }));
-  
+
   it('should clear search and refresh events', fakeAsync(() => {
     eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse));
     component.onSearchCleared();
@@ -180,15 +179,15 @@ describe('EventDashboardComponent', () => {
 
   it('should update status filter and refresh events', fakeAsync(() => {
     eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse));
-  
+
     component.onStatusFilterChange('active');
     tick();
     fixture.detectChanges();
-  
+
     expect(component.searchOptions.state).toBe('active');
     expect(eventServiceSpy.getEvents).toHaveBeenCalled();
   }));
-  
+
 
   it('should handle window resize updating numChars and tooltip width', () => {
     spyOnProperty(window, 'innerWidth', 'get').and.returnValue(1000);

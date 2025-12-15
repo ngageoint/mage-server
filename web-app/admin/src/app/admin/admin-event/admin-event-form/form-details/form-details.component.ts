@@ -358,21 +358,11 @@ export class FormDetailsComponent implements OnInit {
 
     this.savingMap = true;
 
-    const currentFields = this.form.fields;
-    const currentPrimaryFeedField = this.form.primaryFeedField;
-    const currentSecondaryFeedField = this.form.secondaryFeedField;
-
     this.form.userFields = deriveUserFieldNames(this.form.fields);
     const payload = prepareFormPayload<FormData>(this.form as FormData);
 
     this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
-      next: (savedForm) => {
-        Object.assign(this.form, savedForm);
-
-        if (savedForm.fields === undefined) this.form.fields = currentFields;
-        if (savedForm.primaryFeedField === undefined) this.form.primaryFeedField = currentPrimaryFeedField;
-        if (savedForm.secondaryFeedField === undefined) this.form.secondaryFeedField = currentSecondaryFeedField;
-
+      next: () => {
         decorateFormForDisplay(this.form as FormData);
 
         if (this.pendingIconUploads.length > 0) {
@@ -429,13 +419,10 @@ export class FormDetailsComponent implements OnInit {
     const payload = prepareFormPayload<FormData>(this.form as FormData);
 
     this.eventsService.updateForm(this.event.id.toString(), this.form.id.toString(), payload).subscribe({
-      next: (savedForm) => {
+      next: () => {
         this.savingFeeds = false;
         this.feedsChanged = false;
-        if (savedForm) {
-          Object.assign(this.form, savedForm);
-          decorateFormForDisplay(this.form as FormData);
-        }
+        decorateFormForDisplay(this.form as FormData);
         this.snackBar.open('Feed configuration saved successfully', 'Close', { duration: 3000 });
       },
       error: (response) => {
@@ -715,7 +702,8 @@ export class FormDetailsComponent implements OnInit {
   getDropdownFields(excludeField?: string): Field[] {
     if (!this.form.fields) return [];
     return this.form.fields.filter(field =>
-      (field.type === 'dropdown' || field.type === 'multiselectdropdown' || field.type === 'userDropdown') &&
+      (field.type === 'dropdown' || field.type === 'userDropdown') &&
+      !field.multiselect &&
       !field.archived &&
       field.name !== excludeField
     );

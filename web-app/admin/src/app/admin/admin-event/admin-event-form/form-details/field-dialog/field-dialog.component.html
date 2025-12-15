@@ -7,7 +7,8 @@
                 <strong>Field Type</strong>
             </div>
             <div class="config-inline-control">
-                <select class="form-input" [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode">
+                <select class="form-input" [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode"
+                    (ngModelChange)="onFieldTypeChange($event)">
                     <option *ngFor="let type of data.fieldTypes" [value]="type.name">
                         {{ type.title }}
                     </option>
@@ -25,6 +26,9 @@
             <div class="config-inline-control">
                 <input type="text" class="form-input" [(ngModel)]="field.title" placeholder="Enter field title"
                     name="fieldTitle" required>
+                <p class="field-error" *ngIf="field.title && isFieldNameDuplicate()">
+                    A field with this name already exists. Please choose a different title.
+                </p>
             </div>
         </div>
 
@@ -65,20 +69,11 @@
                 </div>
             </div>
 
-            <div class="checkbox-section">
-                <label class="checkbox-label">
-                    <input type="checkbox"
-                        [checked]="field.allowedAttachmentTypes && field.allowedAttachmentTypes.length > 0"
-                        (change)="toggleAttachmentTypeRestriction()">
-                    <span>Restrict Attachment Types</span>
-                </label>
-            </div>
-
-            <div *ngIf="field.allowedAttachmentTypes && field.allowedAttachmentTypes.length > 0"
-                class="config-inline-item">
+            <div class="config-inline-item">
                 <div class="config-inline-label">
-                    <strong>Allowed Attachment Types</strong>
-                    <p class="field-hint">Restrict the type of attachments users can upload.</p>
+                    <strong>Allowed Attachment Types *</strong>
+                    <p class="field-hint">Select which types of attachments users can upload. At least one type must be
+                        selected.</p>
                 </div>
                 <div class="config-inline-control">
                     <div class="checkbox-group">
@@ -226,7 +221,7 @@
 
 <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancel</button>
-    <button mat-button color="primary" (click)="onSave()" [disabled]="!field.title" cdkFocusInitial>
+    <button mat-button color="primary" (click)="onSave()" [disabled]="!canSave()" cdkFocusInitial>
         {{ isEditMode ? 'Save Changes' : 'Add Field' }}
     </button>
 </mat-dialog-actions>

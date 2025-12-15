@@ -56,10 +56,7 @@
                 matTooltipPosition="above">
                 <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)"
-                [disabled]="!canRemoveField()"
-                [matTooltip]="canRemoveField() ? 'Delete field' : 'Cannot delete last field'"
-                matTooltipPosition="above">
+            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)" matTooltipPosition="above">
                 <mat-icon>delete</mat-icon>
             </button>
         </ng-template>
@@ -93,10 +90,7 @@
                 matTooltipPosition="above">
                 <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)"
-                [disabled]="!canRemoveField()"
-                [matTooltip]="canRemoveField() ? 'Delete field' : 'Cannot delete last field'"
-                matTooltipPosition="above">
+            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)" matTooltipPosition="above">
                 <mat-icon>delete</mat-icon>
             </button>
         </ng-template>

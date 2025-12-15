@@ -8,6 +8,7 @@ export interface FieldDialogData {
     isMemberField?: boolean;
     editMode?: boolean;
     existingField?: Field;
+    existingFields?: Field[];
 }
 
 export interface FieldResult {
@@ -62,14 +63,57 @@ export class FieldDialogComponent {
                 choices: []
             };
         }
+
+        if (this.field.type === 'attachment') {
+            if (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0) {
+                this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
+            }
+        }
+    }
+
+    onFieldTypeChange(newType: string): void {
+        if (newType === 'attachment') {
+            if (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0) {
+                this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
+            }
+        }
     }
 
     onCancel(): void {
         this.dialogRef.close();
     }
 
+    isFieldNameDuplicate(): boolean {
+        if (!this.field.title || !this.data.existingFields) {
+            return false;
+        }
+
+        const newFieldName = this.field.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+        return this.data.existingFields.some(f => {
+            if (this.isEditMode && f.id === this.data.existingField?.id) {
+                return false;
+            }
+            const existingName = f.name || f.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            return existingName === newFieldName;
+        });
+    }
+
+    canSave(): boolean {
+        if (!this.field.title) {
+            return false;
+        }
+        if (this.isFieldNameDuplicate()) {
+            return false;
+        }
+        if (this.field.type === 'attachment') {
+            return this.field.allowedAttachmentTypes && this.field.allowedAttachmentTypes.length > 0;
+        }
+        return true;
+    }
+
     onSave(): void {
-        if (this.field.title) {
+        if (this.canSave()) {
             this.dialogRef.close(this.field);
         }
     }
@@ -131,14 +175,6 @@ export class FieldDialogComponent {
             this.field.choices[index] = this.field.choices[index + 1];
             this.field.choices[index + 1] = temp;
             this.field.choices.forEach((choice, idx) => choice.value = idx);
-        }
-    }
-
-    toggleAttachmentTypeRestriction(): void {
-        if (this.field.allowedAttachmentTypes && this.field.allowedAttachmentTypes.length > 0) {
-            this.field.allowedAttachmentTypes = [];
-        } else {
-            this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
         }
     }
 

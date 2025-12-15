@@ -358,7 +358,7 @@
                 </mat-card>
 
                 <!-- Form Restrictions Section -->
-                <mat-card class="top-gap-l">
+                <mat-card class="top-gap-l" *ngIf="nonArchivedForms.length > 0">
                     <mat-card-header>
                         <mat-card-title>Form Restrictions</mat-card-title>
                     </mat-card-header>
