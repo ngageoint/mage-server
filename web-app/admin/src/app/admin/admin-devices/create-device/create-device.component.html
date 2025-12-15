@@ -1,0 +1,61 @@
+<div class="dialog-modal">
+  <div class="dialog-header">
+    <h2 class="dialog-title">Create a New Device</h2>
+  </div>
+
+  <div class="dialog-content">
+    <div *ngIf="errorMessage" class="error-popover">
+      <i class="fa fa-exclamation-triangle"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <form [formGroup]="deviceForm" class="device-form">
+      <div class="form-field">
+        <label class="field-label">Device uid</label>
+        <input
+          type="text"
+          class="form-input"
+          formControlName="uid"
+          placeholder="ex: 01:02:03:04:05:06:07"
+        />
+        <div class="field-error">
+          <span
+            class="error-text"
+            [class.visible]="
+              deviceForm.get('uid').invalid &&
+              (deviceForm.get('uid').touched ||
+                deviceForm.get('uid').dirty)
+            "
+          >
+            uid is required
+          </span>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Description</label>
+        <textarea
+          class="form-input"
+          formControlName="description"
+          rows="3"
+          placeholder="Enter device description (optional)"
+        ></textarea>
+      </div>
+      <user-search-box
+        placeholder="Pick a contact user..."
+        (userSelected)="onPointOfContactSelected($event)"
+      ></user-search-box>
+    </form>
+  </div>
+
+  <div class="dialog-actions">
+    <button class="action-button" (click)="cancel()">Cancel</button>
+    <button
+      class="action-button btn-primary"
+      (click)="save()"
+      [disabled]="deviceForm.invalid"
+    >
+      <i class="fa fa-save"></i>
+      Create Device
+    </button>
+  </div>
+</div>

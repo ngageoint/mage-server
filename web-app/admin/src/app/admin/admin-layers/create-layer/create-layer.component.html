@@ -61,7 +61,6 @@
                 </div>
             </div>
 
-            <!-- Imagery Layer Fields -->
             <div *ngIf="layerForm.get('type').value === 'Imagery'" class="conditional-fields">
                 <div class="form-field">
                     <label class="field-label">Layer URL</label>
@@ -103,7 +102,6 @@
                 </div>
             </div>
 
-            <!-- GeoPackage Layer Fields -->
             <div *ngIf="layerForm.get('type').value === 'GeoPackage'" class="conditional-fields">
                 <div class="form-field">
                     <label class="field-label">Choose GeoPackage File</label>
@@ -133,7 +131,7 @@
 
     <div class="dialog-actions">
         <button class="action-button" (click)="cancel()">Cancel</button>
-        <button class="action-button btn-primary" (click)="save()" [disabled]="layerForm.invalid">
+        <button class="action-button btn-primary" (click)="save()" [disabled]="canSave">
             <i class="fa fa-save"></i>
             Create Layer
         </button>

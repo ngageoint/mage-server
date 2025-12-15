@@ -24,6 +24,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BulkUserComponent } from './bulk-user/bulk-user.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
+import { UserSearchBoxComponent } from './user-search/user-search-box.component';
 
 @NgModule({
   imports: [
@@ -52,13 +53,15 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
     UserDetailsComponent,
     DeleteUserComponent,
     CreateUserModalComponent,
-    BulkUserComponent
+    BulkUserComponent,
+    UserSearchBoxComponent
   ],
   exports: [
     UserDetailsComponent,
     UserDashboardComponent,
     CreateUserModalComponent,
-    BulkUserComponent
+    BulkUserComponent,
+    UserSearchBoxComponent
   ]
 })
 export class AdminUsersModule {}
