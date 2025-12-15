@@ -1,0 +1,12 @@
+<div class="preview-container">
+    <div *ngIf="shouldShowMap()" class="map-wrapper">
+        <div #mapContainer class="layer-preview-map"></div>
+    </div>
+
+    <div *ngIf="!shouldShowMap()" class="no-preview">
+        <div class="no-preview-content">
+            <i class="fa fa-map no-preview-icon"></i>
+            <h4 class="no-preview-text">Map preview only available for imagery and feature layers.</h4>
+        </div>
+    </div>
+</div>

@@ -35,6 +35,7 @@ import { UserDetailsComponent } from '../app/admin/admin-users/user-details/user
 import { UserDashboardComponent } from '../app/admin/admin-users/dashboard/user-dashboard.component';
 import { EventDashboardComponent } from '../app/admin/admin-event/dashboard/event-dashboard.component';
 import { LayerDashboardComponent } from '../app/admin/admin-layers/dashboard/layer-dashboard.component';
+import { LayerDetailsComponent } from '../app/admin/admin-layers/layer-details/layer-details.component';
 
 require('angular-minicolors');
 require('select2');
@@ -131,6 +132,10 @@ app
   .directive(
     'layerDashboard',
     downgradeComponent({ component: LayerDashboardComponent })
+  )
+  .directive(
+    'layerDetails',
+    downgradeComponent({ component: LayerDetailsComponent })
   );
 
 app
@@ -360,21 +365,9 @@ function config(
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('admin.layerCreate', {
-    url: '/layers/new',
-    component: 'adminLayerEdit',
-    resolve: resolveAdmin()
-  });
-
   $stateProvider.state('admin.layer', {
     url: '/layers/:layerId',
-    component: 'adminLayer',
-    resolve: resolveAdmin()
-  });
-
-  $stateProvider.state('admin.layerEdit', {
-    url: '/layers/:layerId/edit',
-    component: 'adminLayerEdit',
+    component: 'layerDetails',
     resolve: resolveAdmin()
   });
 

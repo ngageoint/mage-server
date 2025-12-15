@@ -17,7 +17,25 @@ export interface Layer {
     format?: string;
     base?: string;
     wms?: any;
+    wmsOptions?: any;
     state?: 'available' | 'processing' | 'unavailable';
+    tables?: Array<{ name: string;[key: string]: any }>;
+    processing?: Array<{
+        layer: string;
+        type: 'tile' | 'feature';
+        complete: boolean;
+        description?: string;
+        count?: number;
+        total?: number;
+    }>;
+    validating?: boolean;
+    invalid?: {
+        errors: Array<{
+            error: string;
+            warning?: boolean;
+            fatal?: boolean;
+        }>;
+    };
 }
 
 export interface LayersResponse {
@@ -54,7 +72,7 @@ export class LayersService {
     }
 
     deleteLayer(layer: Layer): Observable<any> {
-        return this.http.delete(`/api/layers/${layer.id}`);
+        return this.http.delete(`/api/layers/${layer.id}`, { responseType: 'text' });
     }
 
     updateLayer(id: string, layer: Partial<Layer>): Observable<Layer> {
