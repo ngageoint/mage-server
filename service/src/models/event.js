@@ -345,7 +345,12 @@ exports.getEvents = async function (options, callback) {
     query.teamIds = { ...query.teamIds, $in: filter.teamId };
   }
   if (filter.layerId != null) {
-    query.layerIds = { ...query.layerIds, $in: [filter.layerId] };
+    const layerIdNum = typeof filter.layerId === 'string' ? parseInt(filter.layerId) : filter.layerId;
+    query.layerIds = { ...query.layerIds, $in: [layerIdNum] };
+  }
+  if (filter.excludeLayerId != null) {
+    const excludeLayerIdNum = typeof filter.excludeLayerId === 'string' ? parseInt(filter.excludeLayerId) : filter.excludeLayerId;
+    query.layerIds = { ...query.layerIds, $nin: [excludeLayerIdNum] };
   }
   if (filter.excludeFeedId != null) {
     query.feedIds = { $nin: [filter.excludeFeedId] };

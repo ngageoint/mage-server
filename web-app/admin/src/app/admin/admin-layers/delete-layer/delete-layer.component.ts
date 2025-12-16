@@ -38,17 +38,13 @@ export class DeleteLayerComponent {
         this.error = null;
 
         this.layersService.deleteLayer(this.layer).subscribe({
-            next: (response) => {
-                console.log('Layer deleted successfully:', response);
+            next: () => {
                 this.dialogRef.close(this.layer);
             },
             error: (error) => {
                 console.error('Error deleting layer:', error);
-                console.error('Error status:', error.status);
-                console.error('Error error:', error.error);
                 this.deleting = false;
 
-                // Extract user-friendly error message
                 if (error.error?.message) {
                     this.error = error.error.message;
                 } else if (error.statusText && error.status) {

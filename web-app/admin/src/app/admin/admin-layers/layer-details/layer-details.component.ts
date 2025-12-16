@@ -61,7 +61,6 @@ export class LayerDetailsComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  // Event filtering and pagination
   loadingEvents = true;
   eventsPageIndex = 0;
   eventsPageSize = 5;
@@ -73,15 +72,6 @@ export class LayerDetailsComponent implements OnInit {
   pageSizeOptions = [5, 10, 25];
   eventActionButtons: CardActionButton[] = [];
 
-  // Legacy event properties (keeping for compatibility)
-  eventSearch = '';
-  filteredEvents: Event[] = [];
-  eventsPage_old = 0;
-  eventsPerPage = 10;
-  editEvent = false;
-  selectedEvent: Event | null = null;
-
-  // Upload management
   uploads: UploadItem[] = [{}];
   uploadConfirmed = false;
   uploadStatuses: { [key: number]: UploadStatus } = {};
@@ -90,11 +80,9 @@ export class LayerDetailsComponent implements OnInit {
   fileUploadUrl = '';
   isUploading = false;
 
-  // Permissions
   hasLayerEditPermission = false;
   hasLayerDeletePermission = false;
 
-  // Inline editing
   editingDetails = false;
   layerEditForm = {
     name: '',
@@ -113,43 +101,27 @@ export class LayerDetailsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('LayerDetailsComponent ngOnInit called');
-    console.log('State params:', this.stateService.params);
-
     const layerId = this.stateService.params.layerId;
-    console.log('Layer ID:', layerId);
-
     if (!layerId) {
       console.error('No layerId found in route params');
       return;
     }
 
-    // Set permissions
-    console.log('UserService.myself:', this.userService.myself);
     const permissions = this.userService.myself?.role?.permissions || [];
     this.hasLayerEditPermission = permissions.includes('UPDATE_LAYER');
     this.hasLayerDeletePermission = permissions.includes('DELETE_LAYER');
-    console.log('Permissions:', { hasLayerEditPermission: this.hasLayerEditPermission, hasLayerDeletePermission: this.hasLayerDeletePermission });
 
-    // Set upload URL
     this.fileUploadUrl = `/api/layers/${layerId}/kml?access_token=${this.localStorageService.getToken()}`;
 
-    // Load layer
     this.loadLayer(layerId);
 
-    // Load events
-    this.loadEvents(layerId);
-
-    // Initialize action buttons
     this.updateActionButtons();
   }
 
   private loadLayer(layerId: string): void {
-    console.log('Loading layer with ID:', layerId);
     this.loading = true;
     this.layersService.getLayerById(layerId).subscribe({
       next: (layer) => {
-        console.log('Layer loaded successfully:', layer);
         this.layer = layer;
         this.loading = false;
         this.breadcrumbs.push({
@@ -161,6 +133,7 @@ export class LayerDetailsComponent implements OnInit {
         }
 
         this.updateUrlLayers();
+        this.getEventsPage();
       },
       error: (error) => {
         console.error('Error loading layer:', error);
@@ -169,12 +142,6 @@ export class LayerDetailsComponent implements OnInit {
         this.snackBar.open('Error loading layer: ' + this.error, 'Close', { duration: 5000 });
       }
     });
-  }
-
-  private loadEvents(layerId: string): void {
-    console.log('Loading events for layer:', layerId);
-    // Load the first page of events immediately
-    this.getEventsPage();
   }
 
   private updateUrlLayers(): void {
@@ -220,53 +187,27 @@ export class LayerDetailsComponent implements OnInit {
       return;
     }
 
-    this.loadingEvents = true;
-
-    // Build search options for server-side pagination
     const searchOptions: any = {
       page: this.eventsPageIndex,
-      page_size: this.eventsPageSize
+      page_size: this.eventsPageSize,
+      layerId: String(this.layer.id)
     };
 
     if (this.eventSearchTerm) {
       searchOptions.term = this.eventSearchTerm;
     }
 
-    // Get all events and filter client-side for now
-    // (Since there's no direct API endpoint for events by layer with pagination)
     this.eventsService.getEvents(searchOptions).subscribe({
       next: (response) => {
-        console.log('Events page loaded:', response);
-        const allEvents = response.items || [];
+        const layerEvents = response.items || [];
 
-        // Filter events that have this layer
-        const layerEvents = allEvents.filter(event =>
-          event.layers?.some(l => l.id === this.layer.id)
-        );
-
-        // Update the layerEvents array for other operations
         if (this.eventsPageIndex === 0) {
           this.layerEvents = layerEvents;
         }
 
-        // For non-layer events, get all events without pagination for the add dialog
-        if (this.eventsPageIndex === 0 && !this.eventSearchTerm) {
-          this.nonLayerEvents = allEvents.filter(event =>
-            !event.layers?.some(l => l.id === this.layer.id)
-          );
-
-          // Further filter based on permissions
-          if (!this.userService.myself?.role?.permissions?.includes('UPDATE_EVENT')) {
-            this.nonLayerEvents = this.nonLayerEvents.filter(event => {
-              const permissions = event.acl?.[this.userService.myself.id]?.permissions || [];
-              return permissions.includes('update');
-            });
-          }
-        }
-
         this.eventsPage = {
           items: layerEvents,
-          totalCount: layerEvents.length,
+          totalCount: response.totalCount || layerEvents.length,
           pageSize: this.eventsPageSize,
           pageIndex: this.eventsPageIndex
         };
@@ -330,16 +271,19 @@ export class LayerDetailsComponent implements OnInit {
         type: 'events',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
           return new Observable(observer => {
-            this.eventsService.getEvents({}).subscribe({
+            const searchOptions: any = {
+              page: page,
+              page_size: pageSize,
+              excludeLayerId: String(this.layer.id)
+            };
+
+            if (searchTerm) {
+              searchOptions.term = searchTerm;
+            }
+
+            this.eventsService.getEvents(searchOptions).subscribe({
               next: (response) => {
-                const allEvents = response.items || [];
-
-                // Filter out events that already have this layer
-                let filteredEvents = allEvents.filter(event =>
-                  !event.layers?.some(l => l.id === this.layer.id)
-                );
-
-                // Further filter based on permissions
+                let filteredEvents = response.items || [];
                 if (!this.userService.myself?.role?.permissions?.includes('UPDATE_EVENT')) {
                   filteredEvents = filteredEvents.filter(event => {
                     const permissions = event.acl?.[this.userService.myself.id]?.permissions || [];
@@ -347,21 +291,9 @@ export class LayerDetailsComponent implements OnInit {
                   });
                 }
 
-                // Apply search term filter
-                if (searchTerm) {
-                  filteredEvents = filteredEvents.filter(event =>
-                    event.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    event.description?.toLowerCase().includes(searchTerm.toLowerCase())
-                  );
-                }
-
-                // Paginate results
-                const start = page * pageSize;
-                const paginatedEvents = filteredEvents.slice(start, start + pageSize);
-
                 observer.next({
-                  items: paginatedEvents,
-                  totalCount: filteredEvents.length,
+                  items: filteredEvents,
+                  totalCount: response.totalCount || filteredEvents.length,
                   pageSize: pageSize,
                   pageIndex: page
                 });
@@ -390,11 +322,13 @@ export class LayerDetailsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
       if (result && result.selectedItem && this.layer?.id) {
-        this.eventsService.addLayerToEvent(String(result.selectedItem.id), { id: this.layer.id }).subscribe({
+        const selectedEvent = result.selectedItem;
+        console.log('Adding layer to selected event:', selectedEvent);
+
+        this.eventsService.addLayerToEvent(String(selectedEvent.id), { id: this.layer.id }).subscribe({
           next: () => {
-            // Reload events to update the list
-            this.loadEvents(String(this.layer.id));
-            this.snackBar.open('Layer added to event', null, { duration: 2000 });
+            this.getEventsPage();
+            this.snackBar.open(`Layer added to event: ${selectedEvent.name}`, null, { duration: 2000 });
           },
           error: (error) => {
             console.error('Error adding layer to event:', error);
@@ -416,8 +350,7 @@ export class LayerDetailsComponent implements OnInit {
     this.eventsService.removeLayerFromEvent(event.id.toString(), this.layer.id)
       .subscribe({
         next: () => {
-          // Reload events to update the list
-          this.loadEvents(String(this.layer.id));
+          this.getEventsPage();
           this.snackBar.open('Layer removed from event', null, { duration: 2000 });
         },
         error: (error) => {
@@ -443,7 +376,7 @@ export class LayerDetailsComponent implements OnInit {
     const updatedLayer = {
       name: this.layerEditForm.name,
       description: this.layerEditForm.description,
-      type: this.layer.type // Required by server validation
+      type: this.layer.type
     };
 
     this.layersService.updateLayer(String(this.layer.id), updatedLayer)
@@ -511,7 +444,6 @@ export class LayerDetailsComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
 
-      // Validate file type
       const validExtensions = ['.kml', '.kmz', '.zip'];
       const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
@@ -521,8 +453,8 @@ export class LayerDetailsComponent implements OnInit {
         return;
       }
 
-      // Validate file size (50MB limit)
-      const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+      // 50MB in bytes
+      const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
         this.uploads[index].error = `File size exceeds 50MB limit.`;
         this.snackBar.open(this.uploads[index].error, 'Close', { duration: 5000 });
@@ -531,12 +463,10 @@ export class LayerDetailsComponent implements OnInit {
 
       this.uploads[index].file = file;
       this.uploads[index].error = undefined;
-      console.log(`File selected for upload ${index}:`, file.name);
     }
   }
 
   confirmUpload(): void {
-    // Validate that at least one file is selected
     const filesSelected = this.uploads.filter(u => u.file).length;
 
     if (filesSelected === 0) {
@@ -544,7 +474,6 @@ export class LayerDetailsComponent implements OnInit {
       return;
     }
 
-    // Check layer type before uploading
     if (this.layer.type !== 'Feature') {
       this.snackBar.open(`Cannot upload to layer of type "${this.layer.type}". Only Feature (Static) layers support file uploads.`, 'Close', { duration: 5000 });
       return;
@@ -555,10 +484,7 @@ export class LayerDetailsComponent implements OnInit {
     let successCount = 0;
     let errorCount = 0;
 
-    // Clear previous upload results
     this.completedUploads = [];
-
-    // Upload each file
     this.uploads.forEach((upload, index) => {
       if (upload.file) {
         uploadCount++;
@@ -570,35 +496,24 @@ export class LayerDetailsComponent implements OnInit {
             upload.uploading = false;
             successCount++;
 
-            console.log(`Upload ${index} successful - full response:`, response);
-
-            // Server returns { files: [{ name, size, features }] }
             const fileInfo = response.files && response.files[0];
             const featuresCreated = fileInfo ? fileInfo.features : 0;
 
-            // Store upload status on the upload item
             upload.uploadStatus = {
               name: upload.file.name,
               features: featuresCreated
             };
 
-            // Also store in the statuses object for backward compatibility
             this.uploadStatuses[index] = upload.uploadStatus;
 
-            console.log(`Upload ${index} created ${featuresCreated} features`);
-
-            // Check if all uploads are complete
             if (successCount + errorCount === uploadCount) {
               this.onAllUploadsComplete(successCount, errorCount);
             }
           },
           error: (error) => {
             upload.uploading = false;
-
-            // Extract detailed error message - try multiple sources
             let errorMessage = 'Upload failed';
 
-            // Try to get the actual server response text
             if (typeof error.error === 'string' && error.error.trim()) {
               errorMessage = error.error;
             } else if (error.error?.message) {
@@ -609,36 +524,17 @@ export class LayerDetailsComponent implements OnInit {
               errorMessage = error.statusText;
             }
 
-            // Add status code to message if available
             if (error.status && error.status !== 0) {
               errorMessage = `${error.status}: ${errorMessage}`;
             }
 
-            // Include filename in error message
             upload.error = `${upload.file.name}: ${errorMessage}`;
-
-            // Store error status on the upload item for display
             upload.uploadStatus = {
               name: upload.file.name,
               error: errorMessage
             };
-
             errorCount++;
-
-            console.error(`Upload ${index} failed:`, {
-              fullError: error,
-              status: error.status,
-              statusText: error.statusText,
-              errorBody: error.error,
-              errorType: typeof error.error,
-              message: errorMessage,
-              headers: error.headers,
-              url: error.url
-            });
-
             this.snackBar.open(`Failed to upload ${upload.file.name}: ${errorMessage}`, 'Close', { duration: 8000 });
-
-            // Check if all uploads are complete
             if (successCount + errorCount === uploadCount) {
               this.onAllUploadsComplete(successCount, errorCount);
             }
@@ -653,47 +549,27 @@ export class LayerDetailsComponent implements OnInit {
     formData.append('file', file);
 
     const uploadUrl = `/api/layers/${this.layer.id}/kml`;
-
-    console.log('Uploading file:', {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      layerId: this.layer.id,
-      layerType: this.layer.type,
-      url: uploadUrl
-    });
-
-    // The TokenInterceptorService will automatically add the Bearer token
     return this.http.post<any>(uploadUrl, formData);
   }
 
   private onAllUploadsComplete(successCount: number, errorCount: number): void {
     this.isUploading = false;
 
-    // Save completed upload statuses (both successful and failed)
     const successfulUploads = this.uploads
       .filter(upload => upload.uploadStatus)
       .map(upload => upload.uploadStatus);
 
     this.completedUploads = [...this.completedUploads, ...successfulUploads];
 
-    // Show summary message
     if (successCount > 0 && errorCount === 0) {
       this.snackBar.open(`Successfully uploaded ${successCount} file(s)`, 'Close', { duration: 3000 });
-
-      // Trigger preview refresh by creating a new layer object reference
-      // The timestamp property forces Angular change detection to recognize the layer has changed
       this.layer = { ...this.layer, _timestamp: Date.now() } as any;
     } else if (successCount > 0 && errorCount > 0) {
       this.snackBar.open(`Uploaded ${successCount} file(s), ${errorCount} failed`, 'Close', { duration: 5000 });
-
-      // Trigger preview refresh by creating a new layer object reference
       this.layer = { ...this.layer, _timestamp: Date.now() } as any;
     }
 
-    // Clear all uploaded files (both successful and failed)
     this.uploads = [{}];
-    // Individual errors are already shown via snackBar in the error handler
   }
 
   removeUploadFile(index: number): void {
@@ -701,15 +577,12 @@ export class LayerDetailsComponent implements OnInit {
       this.uploads.splice(index, 1);
       delete this.uploadStatuses[index];
     } else {
-      // Keep at least one upload slot
       this.uploads[0] = {};
       delete this.uploadStatuses[0];
     }
   }
 
   confirmCreateLayer(): void {
-    // Call makeAvailable API
-    // This would need to be added to LayersService
     this.snackBar.open('Creating layer...', null, { duration: 2000 });
     setTimeout(() => this.checkLayerProcessingStatus(), 1500);
   }

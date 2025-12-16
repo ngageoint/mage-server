@@ -209,7 +209,8 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         excludeFeedId: req.query.excludeFeedId as string | undefined,
         searchTerm: req.query.term as string | undefined,
         userId: req.query.userId as string | undefined,
-        layerId: req.query.layerId as string | undefined
+        layerId: req.query.layerId as string | undefined,
+        excludeLayerId: req.query.excludeLayerId as string | undefined
       };
       if (req.parameters!.userId) {
         filter.userId = req.parameters!.userId

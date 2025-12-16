@@ -17,6 +17,7 @@ export interface SearchOptions {
     userId?: string;
     state?: string;
     layerId?: string;
+    excludeLayerId?: string;
 }
 
 export interface PagedResponse<T> {
@@ -54,6 +55,8 @@ export class EventsService {
             excludeTeamId: options.excludeTeamId,
             userId: options.userId,
             state: options.state,
+            layerId: options.layerId,
+            excludeLayerId: options.excludeLayerId,
 
             limit: pageSize,
             start: page,
