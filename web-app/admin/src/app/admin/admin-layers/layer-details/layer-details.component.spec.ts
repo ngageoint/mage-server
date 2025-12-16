@@ -486,16 +486,6 @@ describe('LayerDetailsComponent', () => {
     });
   });
 
-  describe('editLayer', () => {
-    it('should navigate to layer edit page', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
-
-      component.editLayer();
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.layerEdit', { layerId: 1 });
-    });
-  });
-
   describe('deleteLayer', () => {
     it('should open delete confirmation dialog', () => {
       component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;

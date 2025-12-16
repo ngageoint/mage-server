@@ -1,0 +1,9 @@
+<div class="preview-map-container">
+  <div ng-show="$ctrl.url || $ctrl.layers" class="layer-preview-leaflet"/>
+  <div ng-show="!$ctrl.url && !$ctrl.layers" class="layer-preview-none">
+    <div>
+      <i class="material-icons layer-preview-none-icon">map</i>
+    </div>
+    <h4 class="mdc-typography--headline4 layer-preview-none-text">Map preview only available for imagery layers.</h4>
+  </div>
+</div>

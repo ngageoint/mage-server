@@ -162,16 +162,17 @@ export class LayerDashboardComponent implements OnInit {
 
   /** Open create layer dialog */
   newLayer(): void {
-    const dialogRef = this.modal.open(CreateLayerDialogComponent, {
-      data: { layer: {} }
-    });
+    this.stateService.go('admin.layerCreate');
+    // const dialogRef = this.modal.open(CreateLayerDialogComponent, {
+    //   data: { layer: {} }
+    // });
 
-    dialogRef.afterClosed().subscribe((newLayer) => {
-      if (newLayer) {
-        this.refreshLayers();
-        this.stateService.go('admin.layer', { layerId: newLayer.id });
-      }
-    });
+    // dialogRef.afterClosed().subscribe((newLayer) => {
+    //   if (newLayer) {
+    //     this.refreshLayers();
+    //     this.stateService.go('admin.layer', { layerId: newLayer.id });
+    //   }
+    // });
   }
 
   /** Navigate to layer detail */

@@ -20,4 +20,5 @@ angular
 
 require('./devices');
 require('./events');
+require('./layers');
 require('./feeds');

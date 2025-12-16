@@ -17,10 +17,14 @@
             <h2 class="page-title">{{ layer.name }}</h2>
         </div>
         <div class="header-actions" *ngIf="hasLayerEditPermission">
-            <button class="action-button" [ngClass]="editingDetails ? 'btn-primary' : ''" (click)="toggleEditDetails()">
+            <button class="action-button" (click)="editLayer()">
+                <i class="fa fa-edit"></i>
+                Edit Layer
+            </button>
+            <!-- <button class="action-button" [ngClass]="editingDetails ? 'btn-primary' : ''" (click)="toggleEditDetails()">
                 <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
                 {{editingDetails ? 'Cancel' : 'Edit Layer'}}
-            </button>
+            </button> -->
             <button class="action-button" *ngIf="isLayerFileBased()" (click)="downloadLayer()"
                 [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating">
                 <i class="fa fa-download"></i>
@@ -35,19 +39,14 @@
                 <div class="form-field">
                     <label class="field-label">Name:</label>
                     <div class="field-content">
-                        <span *ngIf="!editingDetails" class="field-value">{{ layer.name }}</span>
-                        <input *ngIf="editingDetails" type="text" class="form-input" [(ngModel)]="layerEditForm.name"
-                            placeholder="Layer name">
+                        <span class="field-value">{{ layer.name }}</span>
                     </div>
                 </div>
 
                 <div class="form-field">
                     <label class="field-label">Description:</label>
                     <div class="field-content">
-                        <span *ngIf="!editingDetails" class="field-value">{{ layer.description || 'No description'
-                            }}</span>
-                        <textarea *ngIf="editingDetails" class="form-input" rows="3"
-                            [(ngModel)]="layerEditForm.description" placeholder="Layer description"></textarea>
+                        <span class="field-value">{{ layer.description || 'No description' }}</span>
                     </div>
                 </div>
 
@@ -112,15 +111,6 @@
                     <div class="field-content">
                         <span class="field-value">{{ layer.wms?.version }}</span>
                     </div>
-                </div>
-
-                <div class="form-actions" *ngIf="editingDetails">
-                    <button class="action-button btn-primary" (click)="saveLayerDetails()">
-                        <i class="fa fa-save"></i> Save
-                    </button>
-                    <button class="action-button" (click)="cancelEditDetails()">
-                        <i class="fa fa-times"></i> Cancel
-                    </button>
                 </div>
             </div>
         </div>

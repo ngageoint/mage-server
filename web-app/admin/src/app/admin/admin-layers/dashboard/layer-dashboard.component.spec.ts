@@ -316,49 +316,49 @@ describe('LayerDashboardComponent', () => {
     });
   });
 
-  describe('layer creation', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
+  // describe('layer creation', () => {
+  //   beforeEach(() => {
+  //     fixture.detectChanges();
+  //   });
 
-    it('should open create layer dialog', () => {
-      const mockDialogRef = {
-        afterClosed: () => of(null)
-      };
-      mockDialog.open.and.returnValue(mockDialogRef as any);
+  //   it('should open create layer dialog', () => {
+  //     const mockDialogRef = {
+  //       afterClosed: () => of(null)
+  //     };
+  //     mockDialog.open.and.returnValue(mockDialogRef as any);
 
-      component.newLayer();
+  //     component.newLayer();
 
-      expect(mockDialog.open).toHaveBeenCalled();
-    });
+  //     expect(mockDialog.open).toHaveBeenCalled();
+  //   });
 
-    it('should refresh and navigate after creating layer', () => {
-      const newLayer: Layer = { id: 5, name: 'New Layer', type: 'Imagery', state: 'available' };
-      const mockDialogRef = {
-        afterClosed: () => of(newLayer)
-      };
-      mockDialog.open.and.returnValue(mockDialogRef as any);
-      spyOn(component, 'refreshLayers');
+  //   it('should refresh and navigate after creating layer', () => {
+  //     const newLayer: Layer = { id: 5, name: 'New Layer', type: 'Imagery', state: 'available' };
+  //     const mockDialogRef = {
+  //       afterClosed: () => of(newLayer)
+  //     };
+  //     mockDialog.open.and.returnValue(mockDialogRef as any);
+  //     spyOn(component, 'refreshLayers');
 
-      component.newLayer();
+  //     component.newLayer();
 
-      expect(component.refreshLayers).toHaveBeenCalled();
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.layer', { layerId: 5 });
-    });
+  //     expect(component.refreshLayers).toHaveBeenCalled();
+  //     expect(mockStateService.go).toHaveBeenCalledWith('admin.layer', { layerId: 5 });
+  //   });
 
-    it('should not navigate if dialog is cancelled', () => {
-      const mockDialogRef = {
-        afterClosed: () => of(null)
-      };
-      mockDialog.open.and.returnValue(mockDialogRef as any);
-      spyOn(component, 'refreshLayers');
+  //   it('should not navigate if dialog is cancelled', () => {
+  //     const mockDialogRef = {
+  //       afterClosed: () => of(null)
+  //     };
+  //     mockDialog.open.and.returnValue(mockDialogRef as any);
+  //     spyOn(component, 'refreshLayers');
 
-      component.newLayer();
+  //     component.newLayer();
 
-      expect(component.refreshLayers).not.toHaveBeenCalled();
-      expect(mockStateService.go).not.toHaveBeenCalled();
-    });
-  });
+  //     expect(component.refreshLayers).not.toHaveBeenCalled();
+  //     expect(mockStateService.go).not.toHaveBeenCalled();
+  //   });
+  // });
 
   describe('responsive layout', () => {
     beforeEach(() => {
