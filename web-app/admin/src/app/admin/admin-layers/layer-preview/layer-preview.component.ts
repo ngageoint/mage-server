@@ -1,7 +1,8 @@
-import { Component, Input, OnChanges, SimpleChanges, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, AfterViewInit, ElementRef, ViewChild, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 import { Layer } from '../layers.service';
+import { LocalStorageService } from '../../../upgrade/ajs-upgraded-providers';
 
 interface LayerBounds {
     bounds?: number[];
@@ -19,7 +20,10 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
     private map: L.Map;
     private mapLayer: L.Layer;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        @Inject(LocalStorageService) private localStorageService: any
+    ) { }
 
     ngAfterViewInit(): void {
         this.initializeMap();
@@ -47,7 +51,6 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
             worldCopyJump: true
         });
 
-        // Add base layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18
@@ -57,13 +60,11 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
     private updateMap(): void {
         if (!this.map || !this.layer) return;
 
-        // Remove existing layer
         if (this.mapLayer) {
             this.map.removeLayer(this.mapLayer);
             this.mapLayer = null;
         }
 
-        // Handle different layer types
         if (this.layer.type === 'Feature') {
             this.addFeatureLayer();
         } else if (this.layer.type === 'Imagery') {
@@ -72,7 +73,6 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
             this.addGeoPackageLayer();
         }
 
-        // Fit bounds if available
         if (this.layer.bounds) {
             const bounds = L.latLngBounds(
                 [this.layer.bounds[1], this.layer.bounds[0]],
@@ -169,9 +169,9 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
     private addGeoPackageLayer(): void {
         if (!this.layer.tables || this.layer.tables.length === 0) return;
 
-        // Add tile layers for each table
         this.layer.tables.forEach(table => {
-            const url = `/api/layers/${this.layer.id}/${table.name}/{z}/{x}/{y}.png`;
+            const accessToken = this.localStorageService.getToken();
+            const url = `/api/layers/${this.layer.id}/${table.name}/{z}/{x}/{y}.png?access_token=${accessToken}`;
             const tileLayer = L.tileLayer(url, {
                 maxZoom: 18
             }).addTo(this.map);
