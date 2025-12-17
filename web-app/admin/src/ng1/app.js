@@ -377,18 +377,6 @@ function config(
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('admin.layerCreate', {
-    url: '/layers/new',
-    component: 'adminLayerEdit',
-    resolve: resolveAdmin()
-  });
-
-  $stateProvider.state('admin.layerEdit', {
-    url: '/layers/:layerId/edit',
-    component: 'adminLayerEdit',
-    resolve: resolveAdmin()
-  });
-
   // Admin feed routes
   $stateProvider.state('admin.feeds', {
     url: '/feeds',
