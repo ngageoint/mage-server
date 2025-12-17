@@ -428,7 +428,7 @@ describe('LayerDetailsComponent', () => {
 
     it('should update layer details', () => {
       component.layer = { id: 1, name: 'Old Name', type: 'Feature' } as any;
-      component.layerEditForm = { name: 'New Name', description: 'New Description' };
+      component.layerEditForm = { name: 'New Name', description: 'New Description', format: '', base: false };
       const snackBarSpy = spyOn(component['snackBar'], 'open');
 
       component.saveLayerDetails();
@@ -476,7 +476,7 @@ describe('LayerDetailsComponent', () => {
         type: 'Feature'
       } as any;
       component.editingDetails = true;
-      component.layerEditForm = { name: 'Changed', description: 'Changed' };
+      component.layerEditForm = { name: 'Changed', description: 'Changed', format: '', base: false };
 
       component.cancelEditDetails();
 

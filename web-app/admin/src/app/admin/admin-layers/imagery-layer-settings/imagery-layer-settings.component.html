@@ -1,0 +1,175 @@
+<div class="imagery-settings-container">
+    <div class="form-field">
+        <label class="field-label">Layer URL</label>
+        <input type="text" class="form-input" [(ngModel)]="config.url" (ngModelChange)="onConfigChange()"
+            placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    </div>
+
+    <div class="form-field">
+        <label class="field-label">Format</label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" [(ngModel)]="config.format" value="XYZ" (change)="onFormatChange()" />
+                <span>XYZ</span>
+            </label>
+            <label class="radio-label">
+                <input type="radio" [(ngModel)]="config.format" value="TMS" (change)="onFormatChange()" />
+                <span>TMS</span>
+            </label>
+            <label class="radio-label">
+                <input type="radio" [(ngModel)]="config.format" value="WMS" (change)="onFormatChange()" />
+                <span>WMS</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- WMS Section -->
+    <div *ngIf="config.format === 'WMS'" class="wms-section">
+        <button type="button" class="action-button btn-secondary" (click)="fetchWmsCapabilities()"
+            [disabled]="!config.url || isLoadingWms">
+            <i class="fa" [class.fa-refresh]="!isLoadingWms" [class.fa-spinner]="isLoadingWms"
+                [class.fa-spin]="isLoadingWms"></i>
+            {{ isLoadingWms ? 'Loading...' : 'Load WMS Capabilities' }}
+        </button>
+
+        <div *ngIf="wmsError" class="wms-error">
+            <i class="fa fa-exclamation-triangle"></i>
+            <span>{{ wmsError }}</span>
+        </div>
+
+        <div *ngIf="wmsCapabilities" class="wms-server-info">
+            <h4>{{ wmsCapabilities.Service?.Title }}</h4>
+            <div *ngIf="wmsCapabilities.Service?.Abstract" class="wms-abstract">
+                {{ wmsCapabilities.Service.Abstract }}
+            </div>
+            <div class="wms-version">WMS Version: {{ wmsCapabilities.version }}</div>
+            <div *ngIf="wmsCapabilities.Service?.ContactInformation?.ContactPersonPrimary" class="wms-contact">
+                <div>Contact Person:
+                    {{ wmsCapabilities.Service.ContactInformation.ContactPersonPrimary.ContactPerson }}
+                </div>
+                <div>Contact Organization:
+                    {{ wmsCapabilities.Service.ContactInformation.ContactPersonPrimary.ContactOrganization }}
+                </div>
+                <div *ngIf="wmsCapabilities.Service.ContactInformation.ContactVoiceTelephone">
+                    Contact Telephone:
+                    <a href="tel:{{ wmsCapabilities.Service.ContactInformation.ContactVoiceTelephone }}">
+                        {{ wmsCapabilities.Service.ContactInformation.ContactVoiceTelephone }}
+                    </a>
+                </div>
+                <div *ngIf="wmsCapabilities.Service.ContactInformation.ContactElectronicMailAddress">
+                    Contact Email:
+                    <a href="mailto:{{ wmsCapabilities.Service.ContactInformation.ContactElectronicMailAddress }}">
+                        {{ wmsCapabilities.Service.ContactInformation.ContactElectronicMailAddress }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="wmsLayers.length > 0" class="wms-layers-section">
+            <h5>Available EPSG:3857 layers on this WMS server. Choose layers to create your map with:</h5>
+            <div class="form-field">
+                <input type="text" class="form-input" [(ngModel)]="wmsLayerSearchQuery"
+                    placeholder="Search layers..." />
+            </div>
+            <div class="wms-layers-list">
+                <label *ngFor="let layer of filteredWmsLayers()" class="wms-layer-item">
+                    <input type="checkbox" [(ngModel)]="selectedWmsLayers[layer.Name]"
+                        (ngModelChange)="onWmsLayerSelectionChange()" />
+                    <span class="layer-info">
+                        <span class="layer-title">{{ layer.Title }}</span>
+                        <span *ngIf="layer.Abstract" class="layer-abstract">{{ layer.Abstract }}</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div *ngIf="wmsOtherLayers.length > 0" class="wms-other-layers-section">
+            <h5 class="warning-text">These layers appear to not be available in EPSG:3857. MAGE clients can
+                only show EPSG:3857 layers.</h5>
+            <div class="wms-layers-list">
+                <label *ngFor="let layer of filteredWmsOtherLayers()" class="wms-layer-item disabled">
+                    <input type="checkbox" disabled />
+                    <span class="layer-info">
+                        <span class="layer-title">{{ layer.Title }}</span>
+                        <span *ngIf="layer.Abstract" class="layer-abstract">{{ layer.Abstract }}</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="wms-advanced-section">
+            <h4>
+                <a href="javascript:void(0)" (click)="toggleAdvancedOptions()">
+                    <i class="fa" [class.fa-chevron-down]="!advancedOptionsExpanded"
+                        [class.fa-chevron-up]="advancedOptionsExpanded"></i>
+                    Advanced Options
+                </a>
+            </h4>
+            <div *ngIf="advancedOptionsExpanded" class="advanced-options-content">
+                <div class="form-field">
+                    <label class="field-label">WMS Version</label>
+                    <input type="text" class="form-input" [(ngModel)]="config.wmsVersion"
+                        (ngModelChange)="onConfigChange()" placeholder="i.e. 1.3.0" />
+                </div>
+
+                <div class="form-field">
+                    <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="config.wmsTransparent" (ngModelChange)="onConfigChange()" />
+                        <span>Transparent</span>
+                    </label>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Styles</label>
+                    <input type="text" class="form-input" [(ngModel)]="config.wmsStyles"
+                        (ngModelChange)="onConfigChange()" placeholder="Comma separated list of layer styles" />
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="wmsCapabilities" class="wms-capabilities-section">
+            <h4>
+                <a href="javascript:void(0)" (click)="toggleWmsCapabilitiesDocument()">
+                    <i class="fa" [class.fa-chevron-down]="!showWmsCapabilitiesDocument"
+                        [class.fa-chevron-up]="showWmsCapabilitiesDocument"></i>
+                    Show WMS Capabilities Document
+                </a>
+            </h4>
+            <div *ngIf="showWmsCapabilitiesDocument" class="capabilities-document-content">
+                <pre>{{ wmsCapabilities | json }}</pre>
+            </div>
+        </div>
+
+        <div class="wms-preview-section">
+            <button type="button" class="action-button btn-secondary" (click)="openPreview()"
+                [disabled]="!getSelectedWmsLayers()">
+                <i class="fa fa-map"></i>
+                Preview Map
+            </button>
+        </div>
+    </div>
+
+    <!-- Preview for non-WMS imagery -->
+    <div *ngIf="config.format !== 'WMS' && config.url" class="imagery-preview-section">
+        <button type="button" class="action-button btn-secondary" (click)="openPreview()">
+            <i class="fa fa-map"></i>
+            Preview Map
+        </button>
+    </div>
+
+    <!-- Preview Map Modal -->
+    <div *ngIf="showPreview" class="preview-map-modal">
+        <div class="preview-map-overlay" (click)="closePreview()"></div>
+        <div class="preview-map-content">
+            <div class="preview-map-header">
+                <h3>Layer Preview</h3>
+                <button type="button" class="close-button" (click)="closePreview()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="preview-map-body">
+                <div #previewMapContainer class="preview-map-container"></div>
+            </div>
+        </div>
+    </div>
+</div>

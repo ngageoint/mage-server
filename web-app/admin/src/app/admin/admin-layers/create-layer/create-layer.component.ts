@@ -5,7 +5,7 @@ import { LayersService, Layer } from '../layers.service';
 import { Observable, of } from 'rxjs';
 import { map, catchError, debounceTime, first } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import * as L from 'leaflet';
+import { ImageryLayerConfig } from '../imagery-layer-settings/imagery-layer-settings.component';
 
 /**
  * Dialog component for creating new layers.
@@ -21,20 +21,16 @@ export class CreateLayerDialogComponent implements AfterViewInit {
     errorMessage: string = '';
     geopackageFile: File | null = null;
     geopackageFileName: string = '';
-    wmsCapabilities: any = null;
-    wmsError: string = '';
-    wmsLayers: any[] = [];
-    wmsOtherLayers: any[] = [];
-    selectedWmsLayers: { [key: string]: boolean } = {};
-    advancedOptionsExpanded: boolean = false;
-    isLoadingWms: boolean = false;
-    showPreview: boolean = false;
-    previewMap: L.Map | null = null;
-    previewMapLayer: L.Layer | null = null;
-    showWmsCapabilitiesDocument: boolean = false;
-    wmsLayerSearchQuery: string = '';
 
-    @ViewChild('previewMapContainer') previewMapContainer: ElementRef;
+    // Imagery layer configuration for the helper component
+    imageryConfig: ImageryLayerConfig = {
+        url: '',
+        format: 'XYZ',
+        wmsVersion: '1.3.0',
+        wmsTransparent: true,
+        wmsStyles: ''
+    };
+    selectedWmsLayersString: string = '';
 
     constructor(
         public dialogRef: MatDialogRef<CreateLayerDialogComponent>,
@@ -51,12 +47,7 @@ export class CreateLayerDialogComponent implements AfterViewInit {
             ],
             type: [data.layer?.type ?? '', [Validators.required]],
             description: [data.layer?.description ?? ''],
-            url: [''],
-            format: ['XYZ'],
-            base: [false],
-            wmsVersion: ['1.3.0'],
-            wmsTransparent: [true],
-            wmsStyles: ['']
+            base: [false]
         });
     }
     ngAfterViewInit(): void {
@@ -87,31 +78,21 @@ export class CreateLayerDialogComponent implements AfterViewInit {
     }
 
     /**
-     * Handles layer type change to add/remove validators and reset fields
+     * Handles layer type change to reset fields
      */
     onTypeChange(): void {
         const type = this.layerForm.get('type')?.value;
-        const urlControl = this.layerForm.get('url');
-        const formatControl = this.layerForm.get('format');
-        const baseControl = this.layerForm.get('base');
 
-        urlControl?.clearValidators();
-        urlControl?.setValue('');
-        formatControl?.setValue('XYZ');
-        baseControl?.setValue(false);
+        this.imageryConfig = {
+            url: '',
+            format: 'XYZ',
+            wmsVersion: '1.3.0',
+            wmsTransparent: true,
+            wmsStyles: ''
+        };
+        this.selectedWmsLayersString = '';
         this.geopackageFile = null;
         this.geopackageFileName = '';
-        this.wmsCapabilities = null;
-        this.wmsError = '';
-        this.wmsLayers = [];
-        this.wmsOtherLayers = [];
-        this.selectedWmsLayers = {};
-
-        if (type === 'Imagery') {
-            urlControl?.setValidators([Validators.required]);
-        }
-
-        urlControl?.updateValueAndValidity();
     }
 
     /**
@@ -126,277 +107,17 @@ export class CreateLayerDialogComponent implements AfterViewInit {
     }
 
     /**
-     * Handles format change to fetch WMS capabilities when WMS is selected
+     * Handles imagery config changes from the helper component
      */
-    onFormatChange(): void {
-        const format = this.layerForm.get('format')?.value;
-        const url = this.layerForm.get('url')?.value;
-
-        if (format === 'WMS' && url) {
-            this.fetchWmsCapabilities();
-        } else {
-            this.wmsCapabilities = null;
-            this.wmsError = '';
-            this.wmsLayers = [];
-            this.wmsOtherLayers = [];
-            this.selectedWmsLayers = {};
-        }
+    onImageryConfigChange(config: ImageryLayerConfig): void {
+        this.imageryConfig = config;
     }
 
     /**
-     * Fetches WMS GetCapabilities document from the server
+     * Handles WMS layer selection changes from the helper component
      */
-    fetchWmsCapabilities(): void {
-        const url = this.layerForm.get('url')?.value;
-        if (!url) {
-            this.wmsError = 'Please enter a WMS URL first';
-            return;
-        }
-
-        this.isLoadingWms = true;
-        this.wmsError = '';
-        this.wmsCapabilities = null;
-        this.wmsLayers = [];
-        this.wmsOtherLayers = [];
-        this.selectedWmsLayers = {};
-
-        const baseUrl = url.split('?')[0];
-        this.http.post<any>('/api/layers/wms/getcapabilities', { url: baseUrl }).subscribe({
-            next: (response) => {
-                this.isLoadingWms = false;
-                if (response?.Capability) {
-                    this.wmsCapabilities = response;
-                    this.parseWmsLayers(response.Capability.Layer, this.wmsLayers, this.wmsOtherLayers);
-                    this.layerForm.patchValue({ wmsVersion: response.version || '1.3.0' });
-
-                    if (this.wmsLayers.length === 0 && this.wmsOtherLayers.length === 0) {
-                        this.wmsError = 'No layers found in WMS Capabilities document.';
-                    }
-                } else {
-                    this.wmsError = 'Invalid response received from WMS Server, please check your URL and try again.';
-                }
-            },
-            error: (error) => {
-                this.isLoadingWms = false;
-                let errorMessage = 'Failed to load WMS Capabilities document.';
-
-                if (error.error) {
-                    if (typeof error.error === 'string') {
-                        errorMessage = error.error;
-                    } else if (error.error.message) {
-                        errorMessage = error.error.message;
-                    }
-                }
-
-                this.wmsError = errorMessage;
-            }
-        });
-    }
-
-    /**
-     * Parses WMS layers from capabilities document
-     */
-    private parseWmsLayers(layer: any, layers: any[], otherLayers: any[], layerHierarchy?: string): void {
-        const all = Array.isArray(layer) ? layer : [layer];
-        all.forEach(l => {
-            if (l.Name) {
-                l.Title = layerHierarchy ? `${layerHierarchy} - ${l.Title}` : l.Title;
-                if (this.checkWmsLayer(l)) {
-                    layers.push(l);
-                } else {
-                    otherLayers.push(l);
-                }
-            }
-
-            if (l.Layer) {
-                this.parseWmsLayers(l.Layer, layers, otherLayers, l.Title);
-            }
-        });
-    }
-
-    /**
-     * Checks if layer supports EPSG:3857
-     */
-    private checkWmsLayer(layer: any): boolean {
-        if (layer.CRS) {
-            return layer.CRS.some((crs: string) =>
-                crs.indexOf('EPSG:3857') !== -1 || crs.indexOf('EPSG:900913') !== -1
-            );
-        }
-        return false;
-    }
-
-    /**
-     * Toggles advanced options visibility
-     */
-    toggleAdvancedOptions(): void {
-        this.advancedOptionsExpanded = !this.advancedOptionsExpanded;
-    }
-
-    /**
-     * Toggles WMS capabilities document visibility
-     */
-    toggleWmsCapabilitiesDocument(): void {
-        this.showWmsCapabilitiesDocument = !this.showWmsCapabilitiesDocument;
-    }
-
-    /**
-     * Opens preview map
-     */
-    openPreview(): void {
-        try {
-            this.showPreview = true;
-            setTimeout(() => {
-                this.initializePreviewMap();
-                this.updatePreviewMap();
-            }, 100);
-        } catch (error) {
-            console.error('Error opening preview:', error);
-            this.errorMessage = 'Failed to open preview map. Please try again.';
-            this.showPreview = false;
-            setTimeout(() => this.errorMessage = '', 3000);
-        }
-    }
-
-    /**
-     * Closes preview map
-     */
-    closePreview(): void {
-        this.showPreview = false;
-        if (this.previewMap) {
-            this.previewMap.remove();
-            this.previewMap = null;
-            this.previewMapLayer = null;
-        }
-    }
-
-    /**
-     * Initializes the Leaflet preview map
-     */
-    private initializePreviewMap(): void {
-        if (!this.previewMapContainer || this.previewMap) return;
-
-        this.previewMap = L.map(this.previewMapContainer.nativeElement, {
-            center: [0, 0],
-            zoom: 3,
-            minZoom: 0,
-            maxZoom: 18,
-            zoomControl: true,
-            trackResize: true,
-            scrollWheelZoom: true,
-            attributionControl: true,
-            worldCopyJump: true
-        });
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(this.previewMap);
-    }
-
-    /**
-     * Updates the preview map with the current layer configuration
-     */
-    private updatePreviewMap(): void {
-        if (!this.previewMap) return;
-
-        try {
-            if (this.previewMapLayer) {
-                this.previewMap.removeLayer(this.previewMapLayer);
-                this.previewMapLayer = null;
-            }
-
-            const formValue = this.layerForm.value;
-            const url = formValue.url;
-            const format = formValue.format;
-
-            if (!url || !format) return;
-
-            if (format === 'XYZ' || format === 'TMS') {
-                this.previewMapLayer = L.tileLayer(url, {
-                    tms: format === 'TMS',
-                    maxZoom: 18,
-                    errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
-                }).addTo(this.previewMap);
-            } else if (format === 'WMS') {
-                const selectedLayers = this.getSelectedWmsLayers();
-                if (!selectedLayers) return;
-
-                const wmsOptions: any = {
-                    layers: selectedLayers,
-                    version: formValue.wmsVersion || '1.3.0',
-                    format: formValue.wmsTransparent ? 'image/png' : 'image/jpeg',
-                    transparent: formValue.wmsTransparent
-                };
-
-                if (formValue.wmsStyles) {
-                    wmsOptions.styles = formValue.wmsStyles;
-                }
-
-                this.previewMapLayer = L.tileLayer.wms(url, wmsOptions).addTo(this.previewMap);
-
-                const firstSelectedLayer = this.wmsLayers.find(l => this.selectedWmsLayers[l.Name]);
-                if (firstSelectedLayer?.EX_GeographicBoundingBox) {
-                    const extent = firstSelectedLayer.EX_GeographicBoundingBox;
-                    const bounds = L.latLngBounds(
-                        [extent[1], extent[0]],
-                        [extent[3], extent[2]]
-                    );
-                    this.previewMap.fitBounds(bounds);
-                }
-            }
-
-            setTimeout(() => {
-                if (this.previewMap) {
-                    this.previewMap.invalidateSize();
-                }
-            }, 100);
-        } catch (error) {
-            console.error('Error updating preview map:', error);
-            this.errorMessage = 'Failed to load layer in preview. Please check your configuration.';
-            setTimeout(() => this.errorMessage = '', 3000);
-        }
-    }
-
-    /**
-     * Filters WMS layers based on search query
-     */
-    filteredWmsLayers(): any[] {
-        if (!this.wmsLayerSearchQuery || this.wmsLayerSearchQuery.trim() === '') {
-            return this.wmsLayers;
-        }
-
-        const query = this.wmsLayerSearchQuery.toLowerCase();
-        return this.wmsLayers.filter(layer =>
-            layer.Title?.toLowerCase().includes(query) ||
-            layer.Name?.toLowerCase().includes(query) ||
-            layer.Abstract?.toLowerCase().includes(query)
-        );
-    }
-
-    /**
-     * Filters unavailable WMS layers based on search query
-     */
-    filteredWmsOtherLayers(): any[] {
-        if (!this.wmsLayerSearchQuery || this.wmsLayerSearchQuery.trim() === '') {
-            return this.wmsOtherLayers;
-        }
-
-        const query = this.wmsLayerSearchQuery.toLowerCase();
-        return this.wmsOtherLayers.filter(layer =>
-            layer.Title?.toLowerCase().includes(query) ||
-            layer.Name?.toLowerCase().includes(query) ||
-            layer.Abstract?.toLowerCase().includes(query)
-        );
-    }
-
-    /**
-     * Gets selected WMS layer names as comma-separated string
-     */
-    getSelectedWmsLayers(): string {
-        return Object.keys(this.selectedWmsLayers)
-            .filter(name => this.selectedWmsLayers[name])
-            .join(',');
+    onWmsLayersSelected(layers: string): void {
+        this.selectedWmsLayersString = layers;
     }
 
     /**
@@ -411,6 +132,11 @@ export class CreateLayerDialogComponent implements AfterViewInit {
 
         if (this.layerForm.get('type')?.value === 'GeoPackage' && !this.geopackageFile) {
             this.errorMessage = 'Please select a GeoPackage file.';
+            return;
+        }
+
+        if (this.layerForm.get('type')?.value === 'Imagery' && !this.imageryConfig.url) {
+            this.errorMessage = 'Please enter a layer URL.';
             return;
         }
 
@@ -436,19 +162,17 @@ export class CreateLayerDialogComponent implements AfterViewInit {
             };
 
             if (formValue.type === 'Imagery') {
-                layerData.url = formValue.url;
-                layerData.format = formValue.format;
+                layerData.url = this.imageryConfig.url;
+                layerData.format = this.imageryConfig.format;
                 layerData.base = formValue.base;
 
-                if (formValue.format === 'WMS') {
-                    const selectedLayers = this.getSelectedWmsLayers();
-
+                if (this.imageryConfig.format === 'WMS') {
                     layerData.wms = {
-                        layers: selectedLayers || '',
-                        version: formValue.wmsVersion,
-                        transparent: formValue.wmsTransparent,
-                        format: formValue.wmsTransparent ? 'image/png' : 'image/jpeg',
-                        styles: formValue.wmsStyles || ''
+                        layers: this.selectedWmsLayersString || '',
+                        version: this.imageryConfig.wmsVersion,
+                        transparent: this.imageryConfig.wmsTransparent,
+                        format: this.imageryConfig.wmsTransparent ? 'image/png' : 'image/jpeg',
+                        styles: this.imageryConfig.wmsStyles || ''
                     };
                 }
             }
@@ -486,6 +210,9 @@ export class CreateLayerDialogComponent implements AfterViewInit {
             return true;
         }
         if (typeControl.value === 'GeoPackage' && !this.geopackageFile) {
+            return true;
+        }
+        if (typeControl.value === 'Imagery' && !this.imageryConfig.url) {
             return true;
         }
 

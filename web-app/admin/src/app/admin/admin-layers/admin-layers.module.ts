@@ -23,6 +23,7 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
 import { LayerDetailsComponent } from './layer-details/layer-details.component';
 import { DeleteLayerComponent } from './delete-layer/delete-layer.component';
 import { LayerPreviewComponent } from './layer-preview/layer-preview.component';
+import { ImageryLayerSettingsComponent } from './imagery-layer-settings/imagery-layer-settings.component';
 
 @NgModule({
     declarations: [
@@ -30,7 +31,8 @@ import { LayerPreviewComponent } from './layer-preview/layer-preview.component';
         CreateLayerDialogComponent,
         LayerDetailsComponent,
         DeleteLayerComponent,
-        LayerPreviewComponent
+        LayerPreviewComponent,
+        ImageryLayerSettingsComponent
     ],
     imports: [
         CommonModule,
