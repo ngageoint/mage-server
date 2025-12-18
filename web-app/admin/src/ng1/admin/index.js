@@ -18,6 +18,4 @@ angular
     downgradeComponent({ component: AdminNavComponent })
   );
 
-require('./devices');
-require('./events');
 require('./feeds');
