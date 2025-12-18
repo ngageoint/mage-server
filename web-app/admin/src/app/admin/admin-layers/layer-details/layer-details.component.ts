@@ -92,7 +92,6 @@ export class LayerDetailsComponent implements OnInit {
     base: false
   };
 
-  // Imagery layer configuration for the helper component
   imageryConfig: ImageryLayerConfig = {
     url: '',
     format: 'XYZ',
@@ -380,7 +379,6 @@ export class LayerDetailsComponent implements OnInit {
       this.layerEditForm.name = this.layer?.name || '';
       this.layerEditForm.description = this.layer?.description || '';
 
-      // Initialize imagery fields if editing an imagery layer
       if (this.layer?.type === 'Imagery') {
         this.layerEditForm.format = this.layer.format || 'XYZ';
         this.layerEditForm.base = !!this.layer.base;
@@ -393,7 +391,6 @@ export class LayerDetailsComponent implements OnInit {
           wmsStyles: this.layer.wms?.styles || ''
         };
 
-        // Store existing WMS layers for pre-selection
         if (this.layer.format === 'WMS' && this.layer.wms?.layers) {
           this.selectedWmsLayersString = this.layer.wms.layers;
         }
@@ -427,13 +424,11 @@ export class LayerDetailsComponent implements OnInit {
       type: this.layer.type
     };
 
-    // Add imagery-specific fields
     if (this.layer.type === 'Imagery') {
       updatedLayer.url = this.imageryConfig.url;
       updatedLayer.format = this.imageryConfig.format;
       updatedLayer.base = this.layerEditForm.base;
 
-      // Add WMS-specific fields
       if (this.imageryConfig.format === 'WMS') {
         updatedLayer.wms = {
           layers: this.selectedWmsLayersString || '',

@@ -24,7 +24,7 @@ export class ImageryLayerSettingsComponent implements OnChanges {
         wmsStyles: ''
     };
 
-    @Input() existingWmsLayers?: string; // For editing existing layers
+    @Input() existingWmsLayers?: string;
     @Output() configChange = new EventEmitter<ImageryLayerConfig>();
     @Output() wmsLayersSelected = new EventEmitter<string>();
 
@@ -46,7 +46,6 @@ export class ImageryLayerSettingsComponent implements OnChanges {
     constructor(private http: HttpClient) { }
 
     ngOnChanges(changes: SimpleChanges): void {
-        // When existing WMS layers are provided, pre-select them
         if (changes['existingWmsLayers'] && this.existingWmsLayers) {
             const layers = this.existingWmsLayers.split(',');
             layers.forEach(layerName => {
@@ -101,7 +100,6 @@ export class ImageryLayerSettingsComponent implements OnChanges {
                     this.parseWmsLayers(response.Capability.Layer, this.wmsLayers, this.wmsOtherLayers);
                     this.config.wmsVersion = response.version || '1.3.0';
 
-                    // Re-select existing layers if they were previously selected
                     if (this.existingWmsLayers) {
                         const layers = this.existingWmsLayers.split(',');
                         layers.forEach(layerName => {
