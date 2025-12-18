@@ -1,0 +1,172 @@
+@import '../../../event-styles';
+
+::ng-deep .add-field-dialog {
+    .mat-mdc-dialog-container {
+        --mdc-dialog-container-color: #ffffff;
+    }
+
+    mat-dialog-content {
+        padding: 0 24px;
+    }
+}
+
+.dialog-form {
+    min-width: 500px;
+    padding: 16px 0;
+
+    .config-inline-item {
+        display: grid;
+        grid-template-columns: 175px 1fr;
+        gap: 16px;
+        align-items: start;
+
+        .config-inline-label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-top: 8px;
+
+            strong {
+                font-weight: 600;
+                color: #333;
+                font-size: 14px;
+            }
+
+            .field-hint {
+                font-size: 12px;
+                color: #666;
+                margin: 0;
+                line-height: 1.4;
+            }
+        }
+
+        .config-inline-control {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .field-error {
+                font-size: 12px;
+                color: #dc2626 !important;
+                margin: 4px 0 0 0;
+                line-height: 1.4;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                i {
+                    color: #dc2626;
+                }
+            }
+
+            .form-input {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                transition: border-color 0.2s;
+
+                &:focus {
+                    outline: none;
+                    border-color: #1976d2;
+                }
+            }
+
+            select.form-input {
+                height: 38px;
+                background-color: #fff;
+                cursor: pointer;
+            }
+        }
+    }
+
+
+    .options-list {
+        margin-bottom: 1rem;
+    }
+
+    .option-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+
+        .option-title {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .icon-button {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+
+            &:hover {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+            &.delete-button:hover {
+                color: #dc2626;
+            }
+        }
+    }
+
+    .add-option-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+
+        .form-input {
+            flex: 1;
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+
+            &.btn-primary {
+                background-color: #2563eb;
+                color: white;
+
+                &:hover:not(:disabled) {
+                    background-color: #1d4ed8;
+                }
+
+                &:disabled {
+                    background-color: #d1d5db;
+                    color: #6b7280;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .checkbox-label {
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    }
+}

@@ -27,10 +27,15 @@ import { MatOptionModule } from '@angular/material/core';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDialogComponent } from './create-device/create-device.component';
 import { AdminUsersModule } from '../admin-users/admin-users.module';
+import { DeviceDetailsComponent } from './device-details/device-details.component';
+import { DeleteDeviceComponent } from './delete-device/delete-device.component';
+import { LoginsModule } from '../../logins/logins.module';
 
 @NgModule({
     declarations: [
         DeviceDashboardComponent,
+        DeviceDetailsComponent,
+        DeleteDeviceComponent,
         CreateDeviceDialogComponent,
     ],
     imports: [
@@ -63,10 +68,12 @@ import { AdminUsersModule } from '../admin-users/admin-users.module';
         MatTableModule,
         MatPaginatorModule,
         DragDropModule,
-        AdminUsersModule
+        AdminUsersModule,
+        LoginsModule
     ],
     exports: [
         DeviceDashboardComponent,
+        DeviceDetailsComponent,
     ],
     providers: [
         DevicesService

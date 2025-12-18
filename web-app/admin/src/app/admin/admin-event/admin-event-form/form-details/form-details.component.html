@@ -1,0 +1,567 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="container bottom-gap-l" *ngIf="event">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-title-section">
+            <h2 class="page-title" *ngIf="form.id">{{ form.name }}</h2>
+            <h2 class="page-title" *ngIf="!form.id">New Form</h2>
+        </div>
+        <div class="header-actions" *ngIf="form.id">
+            <button class="action-button" [ngClass]="editingDetails ? 'btn-primary' : ''" (click)="toggleEditDetails()">
+                <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
+                {{editingDetails ? 'Cancel' : 'Edit Form'}}
+            </button>
+        </div>
+    </div>
+    <div class="container-fluid bottom-gap-l">
+        <div class="row">
+            <div class="col-12">
+                <!-- Form Details Section -->
+                <div class="details-section">
+                    <div class="details-card">
+                        <div class="details-form">
+                            <div class="form-field">
+                                <label class="field-label">Name:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails && form.id" class="field-value">{{form.name}}</span>
+                                    <input *ngIf="editingDetails && form.id" type="text" class="form-input"
+                                        placeholder="Form name" [(ngModel)]="formEditForm.name">
+                                    <input *ngIf="!form.id" type="text" class="form-input" placeholder="Form name"
+                                        name="name" [(ngModel)]="form.name" (ngModelChange)="onFormChange()" required>
+                                    <span class="field-error" *ngIf="generalFormSubmitted && !form.name">Name is
+                                        required</span>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="field-label">Description:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails && form.id"
+                                        class="field-value">{{form.description}}</span>
+                                    <textarea *ngIf="editingDetails && form.id" class="form-input" rows="3"
+                                        placeholder="Brief description of the form."
+                                        [(ngModel)]="formEditForm.description"></textarea>
+                                    <textarea *ngIf="!form.id" class="form-input" rows="3"
+                                        placeholder="Brief description of the form." [(ngModel)]="form.description"
+                                        (ngModelChange)="onFormChange()" name="description"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="field-label">Color:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails && form.id" class="field-value">
+                                        <span
+                                            style="display: inline-block; width: 20px; height: 20px; border-radius: 3px; vertical-align: middle; margin-right: 8px;"
+                                            [style.background-color]="form.color"></span>
+                                        {{form.color}}
+                                    </span>
+                                    <input *ngIf="editingDetails && form.id" type="color" class="form-input color-input"
+                                        [(ngModel)]="formEditForm.color">
+                                    <input *ngIf="!form.id" type="color" class="form-input color-input"
+                                        [(ngModel)]="form.color" (ngModelChange)="onFormChange()" name="color" required>
+                                    <span class="field-error" *ngIf="generalFormSubmitted && !form.color">Color is
+                                        invalid</span>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="field-label">Default Form:</label>
+                                <div class="field-content">
+                                    <span *ngIf="!editingDetails && form.id" class="field-value">{{form.default ? 'Yes -
+                                        Added to every new observation' : 'No'}}</span>
+                                    <label *ngIf="editingDetails && form.id" class="field-label checkbox-label">
+                                        <input type="checkbox" [(ngModel)]="formEditForm.default">
+                                        <span>Add To Every New Observation</span>
+                                    </label>
+                                    <label *ngIf="!form.id" class="field-label checkbox-label">
+                                        <input type="checkbox" [(ngModel)]="form.default"
+                                            (ngModelChange)="onFormChange()" name="default">
+                                        <span>Add To Every New Observation</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-actions" *ngIf="editingDetails">
+                                <button class="action-button btn-primary" (click)="saveFormDetails()">
+                                    <i class="fa fa-save"></i> Save
+                                </button>
+                                <button class="action-button" (click)="cancelEditDetails()">
+                                    <i class="fa fa-times"></i> Cancel
+                                </button>
+                            </div>
+
+                            <div class="form-actions" *ngIf="!editingDetails && !form.id">
+                                <button class="action-button btn-primary" *ngIf="formDirty && !saving"
+                                    (click)="saveForm()" [disabled]="!formValid">
+                                    <i class="fa fa-save"></i> Save
+                                </button>
+                                <button class="action-button" *ngIf="!formDirty && !saving" disabled>
+                                    <i class="fa fa-save"></i> Save
+                                </button>
+                                <button class="action-button" *ngIf="saving" disabled>
+                                    <i class="fa fa-spinner fa-spin"></i> Saving
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-actions">
+                        <!-- Export Form Card -->
+                        <div class="action-card card-spacing" *ngIf="form.id">
+                            <h3 class="action-card-title">Export Form</h3>
+                            <p class="action-card-description">Export this form for use in another event.</p>
+                            <button class="action-button btn-primary" (click)="exportForm()" *ngIf="form.id">
+                                <i class="fa fa-download"></i> Export
+                            </button>
+                        </div>
+
+                        <!-- Archive Form Card -->
+                        <div class="danger-zone-card warning card-spacing" *ngIf="form.id && !form.archived">
+                            <h3 class="danger-zone-title">Archive Form</h3>
+                            <p class="danger-zone-description">Archiving a form will remove it from the list of forms a
+                                users sees when creating an observation. The form can be restored at any time.</p>
+                            <button class="action-button btn-warning" (click)="archiveForm()">
+                                <i class="fa fa-archive"></i> Archive
+                            </button>
+                        </div>
+
+                        <!-- Restore Form Card -->
+                        <div class="action-card success card-spacing" *ngIf="form.id && form.archived">
+                            <h3 class="action-card-title">Restore Form</h3>
+                            <p class="action-card-description">Restoring a form will add it back to the list of forms a
+                                users sees when creating an observation.</p>
+                            <button class="action-button btn-success" (click)="restoreForm()">
+                                <i class="fa fa-undo"></i> Restore
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Sections (only for existing forms) -->
+                <div class="configuration-sections" *ngIf="form.id">
+                    <h3 class="sections-header">Form Configuration</h3>
+                    <div class="sections-grid">
+                        <!-- Fields Section Card -->
+                        <div class="configuration-card">
+                            <div class="section-content">
+                                <div class="section-header" (click)="toggleFieldsSection()" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                                        <div class="section-icon-wrapper fields-color">
+                                            <i class="fa fa-file-text"></i>
+                                        </div>
+                                        <h3 class="section-title">Fields</h3>
+                                    </div>
+                                    <button class="icon-button-subtle" type="button">
+                                        <i class="fa"
+                                            [ngClass]="showFieldsSection ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                    </button>
+                                </div>
+                                <div *ngIf="showFieldsSection">
+                                    <p class="section-description">Create custom form fields that include your
+                                        organization's unique information.</p>
+
+                                    <!-- Use the fields-list component -->
+                                    <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
+                                        [attachmentAllowedTypes]="attachmentAllowedTypes"
+                                        [userFields]="form.userFields || []" [showDetailedView]="true"
+                                        (fieldsChange)="onFieldsChange($event)">
+                                    </mage-fields-list>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map Section Card -->
+                        <div class="configuration-card">
+                            <div class="section-content">
+                                <div class="section-header" (click)="toggleMapSection()" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                                        <div class="section-icon-wrapper map-color">
+                                            <i class="fa fa-map-marker"></i>
+                                        </div>
+                                        <h3 class="section-title">Map Symbology</h3>
+                                    </div>
+                                    <button class="icon-button-subtle" type="button">
+                                        <i class="fa"
+                                            [ngClass]="showMapSection ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                    </button>
+                                </div>
+                                <div *ngIf="showMapSection">
+                                    <p class="section-description">Configure how observations using this form appear on
+                                        the
+                                        map by selecting primary
+                                        and variant fields for symbology.</p>
+
+                                    <!-- No Select Fields Available Message -->
+                                    <div *ngIf="getDropdownFields().length === 0"
+                                        style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
+                                        <!-- Default Map Icon Preview -->
+                                        <div class="symbology-preview" style="flex: 0 0 auto; min-width: 250px;">
+                                            <h4 class="subsection-title">Default Symbology</h4>
+                                            <div class="symbology-list">
+                                                <div class="symbology-item">
+                                                    <div class="symbology-icon">
+                                                        <i class="fa fa-map-marker" [style.color]="form.color"></i>
+                                                    </div>
+                                                    <div class="symbology-info">
+                                                        <span class="symbology-label">Default</span>
+                                                        <span class="symbology-detail">No symbology configured</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Message -->
+                                        <div
+                                            style="flex: 1; padding: 2rem; background-color: #f5f5f5; border-radius: 8px;">
+                                            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                                <i class="fa fa-info-circle"
+                                                    style="font-size: 1.5rem; color: #999; margin-top: 0.25rem;"></i>
+                                                <div>
+                                                    <p
+                                                        style="color: #666; margin: 0; font-size: 1rem; font-weight: 500;">
+                                                        No Select fields available
+                                                    </p>
+                                                    <p style="color: #999; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                                                        Add a Select field to the form to configure map symbology
+                                                        options.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Map Configuration Row: Symbology Preview + Field Dropdowns -->
+                                    <div *ngIf="getDropdownFields().length > 0"
+                                        style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
+                                        <!-- Map Symbology Preview -->
+                                        <div class="symbology-preview" *ngIf="form.primaryField"
+                                            style="flex: 0 0 auto; min-width: 250px;">
+                                            <h4 class="subsection-title">Configured Symbology</h4>
+                                            <div class="symbology-list">
+                                                <div class="symbology-item">
+                                                    <div class="symbology-icon">
+                                                        <i class="fa fa-map-marker" [style.color]="form.color"></i>
+                                                    </div>
+                                                    <div class="symbology-info">
+                                                        <span class="symbology-label">Default</span>
+                                                        <span class="symbology-detail">Primary: {{
+                                                            getFieldTitle(form.primaryField) }}</span>
+                                                        <span class="symbology-detail"
+                                                            *ngIf="form.variantField">Variant: {{
+                                                            getFieldTitle(form.variantField) }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Field Selection Controls -->
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                                            <!-- Field Selection -->
+                                            <div class="config-section">
+                                                <h4 class="subsection-title">Configure Fields</h4>
+
+                                                <div class="config-inline-item">
+                                                    <div class="config-inline-label">
+                                                        <strong>Primary Field</strong>
+                                                        <p class="field-hint">Select a dropdown field to use for primary
+                                                            map
+                                                            symbology.</p>
+                                                    </div>
+                                                    <div class="config-inline-control">
+                                                        <select class="form-input" [(ngModel)]="form.primaryField"
+                                                            (ngModelChange)="onMapFieldChange()" name="primaryField">
+                                                            <option [value]="undefined">No Primary Field</option>
+                                                            <option *ngFor="let field of getDropdownFields()"
+                                                                [value]="field.name">
+                                                                {{ field.title }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="config-inline-item"
+                                                    *ngIf="form.primaryField && getDropdownFields(form.primaryField).length > 0">
+                                                    <div class="config-inline-label">
+                                                        <strong>Variant Field</strong>
+                                                        <p class="field-hint">Select a second dropdown field for
+                                                            additional
+                                                            symbology variation.</p>
+                                                    </div>
+                                                    <div class="config-inline-control">
+                                                        <select class="form-input" [(ngModel)]="form.variantField"
+                                                            (ngModelChange)="onMapFieldChange()" name="variantField">
+                                                            <option [value]="undefined">No Variant Field</option>
+                                                            <option
+                                                                *ngFor="let field of getDropdownFields(form.primaryField)"
+                                                                [value]="field.name">
+                                                                {{ field.title }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Primary Field Choices Symbology -->
+                                    <div class="primary-choices-section"
+                                        *ngIf="form.primaryField && getPrimaryFieldChoices().length > 0">
+                                        <div class="choices-list">
+                                            <div class="choice-symbology"
+                                                *ngFor="let choice of getPrimaryFieldChoices()">
+                                                <div class="choice-header">
+                                                    <strong>{{ choice.title }}</strong>
+                                                </div>
+                                                <div class="symbology-variants-horizontal">
+                                                    <div class="symbology-variant-item">
+                                                        <div class="symbology-display-card">
+                                                            <div class="symbology-visual">
+                                                                <div class="icon-preview"
+                                                                    *ngIf="getIconUrl(choice.title)">
+                                                                    <img [src]="getIconUrl(choice.title)" alt="icon" />
+                                                                </div>
+                                                                <div class="icon-preview"
+                                                                    *ngIf="!getIconUrl(choice.title)">
+                                                                    <i class="fa fa-map-marker"
+                                                                        [style.color]="form.color"></i>
+                                                                </div>
+                                                                <div class="color-swatches">
+                                                                    <div class="color-swatch line-color"
+                                                                        [style.color]="getLineColor(choice.title)"
+                                                                        matTooltip="Line Color"
+                                                                        matTooltipPosition="above"></div>
+                                                                    <div class="color-swatch fill-color"
+                                                                        [style.background-color]="getFillColor(choice.title)"
+                                                                        matTooltip="Fill Color"
+                                                                        matTooltipPosition="above"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="symbology-label-section">
+                                                                <span class="symbology-label">Default</span>
+                                                                <span class="symbology-detail">{{ choice.title }}</span>
+                                                            </div>
+                                                            <button class="edit-symbology-button"
+                                                                (click)="editSymbology(choice.title)"
+                                                                title="Edit symbology">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="symbology-variant-item"
+                                                        *ngFor="let variant of getVariantFieldChoices()">
+                                                        <div class="symbology-display-card">
+                                                            <div class="symbology-visual">
+                                                                <div class="icon-preview"
+                                                                    *ngIf="getIconUrl(choice.title, variant.title)">
+                                                                    <img [src]="getIconUrl(choice.title, variant.title)"
+                                                                        alt="icon" />
+                                                                </div>
+                                                                <div class="icon-preview"
+                                                                    *ngIf="!getIconUrl(choice.title, variant.title)">
+                                                                    <i class="fa fa-map-marker"
+                                                                        [style.color]="form.color"></i>
+                                                                </div>
+                                                                <div class="color-swatches">
+                                                                    <div class="color-swatch line-color"
+                                                                        [style.color]="getLineColor(choice.title, variant.title)"
+                                                                        matTooltip="Line Color"
+                                                                        matTooltipPosition="above"></div>
+                                                                    <div class="color-swatch fill-color"
+                                                                        [style.background-color]="getFillColor(choice.title, variant.title)"
+                                                                        matTooltip="Fill Color"
+                                                                        matTooltipPosition="above"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="symbology-label-section">
+                                                                <span class="symbology-label">{{ variant.title }}</span>
+                                                                <span class="symbology-detail">{{ choice.title }} + {{
+                                                                    variant.title }}</span>
+                                                            </div>
+                                                            <button class="edit-symbology-button"
+                                                                (click)="editSymbology(choice.title, variant.title)"
+                                                                title="Edit symbology">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Save Button -->
+                                    <div class="section-save-actions">
+                                        <button class="action-button btn-primary" (click)="saveMap()"
+                                            [disabled]="!mapChanged || savingMap">
+                                            <i class="fa" [ngClass]="savingMap ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                                            {{ savingMap ? 'Saving...' : 'Save Map Configuration' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feeds Section Card -->
+                        <div class="configuration-card">
+                            <div class="section-content">
+                                <div class="section-header" (click)="toggleFeedSection()" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                                        <div class="section-icon-wrapper feed-color">
+                                            <i class="fa fa-list-ul"></i>
+                                        </div>
+                                        <h3 class="section-title">Observation Feed Configuration</h3>
+                                    </div>
+                                    <button class="icon-button-subtle" type="button">
+                                        <i class="fa"
+                                            [ngClass]="showFeedSection ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                    </button>
+                                </div>
+                                <div *ngIf="showFeedSection">
+                                    <p class="section-description">Customize what users see in the consolidated
+                                        observation
+                                        feed by selecting
+                                        primary and secondary fields.</p>
+
+                                    <!-- Feed Configuration with Inline Edits -->
+                                    <div class="feed-config-inline">
+                                        <div class="config-inline-item">
+                                            <div class="config-inline-label">
+                                                <strong>Primary Field</strong>
+                                                <p class="field-hint">This field will be displayed as the primary
+                                                    information in the observation feed.</p>
+                                            </div>
+                                            <div class="config-inline-control">
+                                                <select class="form-input" [(ngModel)]="form.primaryFeedField"
+                                                    (ngModelChange)="onFeedFieldChange()" name="primaryFeedField">
+                                                    <option [value]="null">No Primary Field</option>
+                                                    <option *ngFor="let field of getActiveFields()"
+                                                        [value]="field.name">
+                                                        {{ field.title }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="config-inline-item">
+                                            <div class="config-inline-label">
+                                                <strong>Secondary Field</strong>
+                                                <p class="field-hint">This field will be displayed as secondary
+                                                    information
+                                                    in the observation feed.</p>
+                                            </div>
+                                            <div class="config-inline-control">
+                                                <select class="form-input" [(ngModel)]="form.secondaryFeedField"
+                                                    (ngModelChange)="onFeedFieldChange()" name="secondaryFeedField">
+                                                    <option [value]="null">No Secondary Field</option>
+                                                    <option *ngFor="let field of getActiveFields()"
+                                                        [value]="field.name">
+                                                        {{ field.title }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sample Observation Feed -->
+                                    <div class="feed-samples-section" *ngIf="observations.length > 0">
+                                        <h4 class="subsection-title">Sample Observation Feed</h4>
+                                        <p class="field-hint">Preview how observations will appear in the feed based on
+                                            your
+                                            configuration.</p>
+                                        <div class="observation-feed-preview">
+                                            <mat-card class="observation-list-item"
+                                                *ngFor="let observation of observations">
+                                                <div class="item">
+                                                    <div class="item-header">
+                                                        <div class="item-header-content">
+                                                            <div class="item-overline">
+                                                                <div>
+                                                                    <span>{{ observation.user?.displayName ||
+                                                                        observation.user?.username || 'Unknown User'
+                                                                        }}</span>
+                                                                    <span>·</span>
+                                                                    <span>{{ observation.properties?.timestamp |
+                                                                        date:'short' }}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div
+                                                                *ngIf="form.primaryFeedField && observation.properties?.forms[0]?.[form.primaryFeedField]">
+                                                                <div class="item-header-text">
+                                                                    <span>{{
+                                                                        observation.properties?.forms[0]?.[form.primaryFeedField]
+                                                                        }}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div
+                                                                *ngIf="form.secondaryFeedField && observation.properties?.forms[0]?.[form.secondaryFeedField]">
+                                                                <div class="item-subhead">
+                                                                    <span>{{
+                                                                        observation.properties?.forms[0]?.[form.secondaryFeedField]
+                                                                        }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="item-thumbnail">
+                                                            <img [src]="observation.style?.iconUrl" alt="icon"
+                                                                *ngIf="observation.style?.iconUrl" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <mat-card-footer>
+                                                    <div class="actions">
+                                                        <div class="action-buttons">
+                                                            <button mat-button color="primary"
+                                                                class="actions__location-button">
+                                                                <mat-icon
+                                                                    class="actions__location-icon">my_location</mat-icon>
+                                                                {{ observation.geometry.coordinates[1].toFixed(5) }}, {{
+                                                                observation.geometry.coordinates[0].toFixed(5) }}
+                                                            </button>
+                                                        </div>
+
+                                                        <div class="actions-icons">
+                                                            <div>
+                                                                <button mat-icon-button class="actions--inactive">
+                                                                    <mat-icon>outlined_flag</mat-icon>
+                                                                </button>
+                                                            </div>
+
+                                                            <div class="actions__favorite">
+                                                                <button mat-icon-button class="actions--inactive">
+                                                                    <mat-icon>favorite_border</mat-icon>
+                                                                </button>
+                                                            </div>
+
+                                                            <a mat-icon-button class="actions--inactive">
+                                                                <mat-icon>save_alt</mat-icon>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </mat-card-footer>
+                                            </mat-card>
+                                        </div>
+                                    </div>
+
+                                    <!-- Save Button -->
+                                    <div class="section-save-actions">
+                                        <button class="action-button btn-primary" (click)="saveFeeds()"
+                                            [disabled]="!feedsChanged || savingFeeds">
+                                            <i class="fa"
+                                                [ngClass]="savingFeeds ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                                            {{ savingFeeds ? 'Saving...' : 'Save Feed Configuration' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

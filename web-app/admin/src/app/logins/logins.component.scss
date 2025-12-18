@@ -302,6 +302,11 @@
     height: 44px;
   }
 
+  tfoot {
+    position: relative;
+    bottom: -22px;
+  }
+
   tbody tr:first-of-type td {
     padding-top: 10px;
   }

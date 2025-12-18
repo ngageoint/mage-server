@@ -1,5 +1,8 @@
+@import '../event-styles';
+
 ::ng-deep .admin-main-content {
   min-width: 520px;
+
   &:has(admin-users) {
     height: 92vh;
     overflow-y: hidden;
@@ -9,6 +12,7 @@
       overflow-y: scroll;
     }
   }
+
   admin-users {
     .container {
       height: 90vh;
@@ -110,6 +114,7 @@ $max-height: 72.8vh;
     }
   }
 }
+
 .table-wrapper {
   border-radius: 12px;
   background: #fff;
@@ -144,11 +149,17 @@ $max-height: 72.8vh;
   }
 }
 
-.table-scroll {
+.no-event {
+  align-content: center;
+}
+
+.table-scroll, .no-event {
   height: 62.2vh;
+
   @media (max-width: 768px) {
     height: 60.2vh;
   }
+
   overflow-y: auto;
   max-height: 100%;
 
@@ -171,6 +182,7 @@ $max-height: 72.8vh;
   @media (max-height: 700px) {
     height: 34vh;
   }
+
   @media (max-height: 600px) {
     height: 142.5px;
   }
@@ -381,6 +393,7 @@ $max-height: 72.8vh;
 
 .button-group {
   margin-top: -20px;
+
   button {
     height: 43px;
     white-space: nowrap;
@@ -407,6 +420,7 @@ $max-height: 72.8vh;
     ::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
       padding: 10px;
     }
+
     ::ng-deep .mat-form-field-infix {
       padding: 10px;
     }
@@ -416,6 +430,7 @@ $max-height: 72.8vh;
       left: -1px;
     }
   }
+
   ::ng-deep input.search-input.ng-untouched.ng-pristine.ng-valid,
   ::ng-deep input.search-input.ng-valid.ng-dirty.ng-touched,
   ::ng-deep input.search-input.ng-valid.ng-dirty.ng-untouched {
@@ -429,7 +444,7 @@ $max-height: 72.8vh;
   gap: 25px;
 }
 
-.align-items-center{
+.align-items-center {
   align-items: center !important;
 }
 
@@ -442,7 +457,7 @@ $max-height: 72.8vh;
   overflow: hidden;
 }
 
-::ng-deep .mat-tooltip-event-desc{
+::ng-deep .mat-tooltip-event-desc {
   position: relative;
   left: 0 !important;
   font-size: 20px;

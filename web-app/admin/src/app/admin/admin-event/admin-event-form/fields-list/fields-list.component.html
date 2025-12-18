@@ -1,0 +1,105 @@
+<div *ngIf="showDetailedView" class="fields-list-detailed">
+    <mage-draggable-list [items]="getActiveFields()" [enableDragDrop]="true"
+        [emptyMessage]="'No fields have been added yet.'" [emptyIcon]="'fa-file-text fa-3x'"
+        [trackByFunction]="trackByFieldId" (itemsChange)="onItemsReordered($event)">
+
+        <ng-template #itemTemplate let-field>
+            <div class="field-content-detailed">
+                <div class="field-header">
+                    <h4 class="field-title">{{ field.title || 'No title set' }}</h4>
+                </div>
+                <div class="field-details">
+                    <div class="field-row">
+                        <span class="field-label">Type:</span>
+                        <span class="field-value">{{ getFieldTypeLabel(field.type, field) }}</span>
+                        <span class="field-label" *ngIf="field.required" style="margin-left: 1rem;">Required:</span>
+                        <span class="field-value" *ngIf="field.required">Yes</span>
+                    </div>
+                    <div class="field-row"
+                        *ngIf="field.value !== undefined && field.value !== null && field.value !== ''">
+                        <span class="field-label">Default:</span>
+                        <span class="field-value">{{ field.type === 'checkbox' ? (field.value ? 'Checked' :
+                            'Unchecked') : field.value }}</span>
+                    </div>
+                    <div class="field-row"
+                        *ngIf="field.type === 'numberfield' && (field.min !== undefined || field.max !== undefined)">
+                        <span class="field-label">Range:</span>
+                        <span class="field-value">
+                            {{ field.min !== undefined ? field.min : '−∞' }} to {{ field.max !== undefined ? field.max :
+                            '∞' }}
+                        </span>
+                    </div>
+                    <div class="field-row"
+                        *ngIf="field.type === 'attachment' && (field.min !== undefined || field.max !== undefined)">
+                        <span class="field-label">Attachment Count:</span>
+                        <span class="field-value">
+                            {{ field.min !== undefined ? field.min : '0' }} to {{ field.max !== undefined ? field.max :
+                            '∞' }}
+                        </span>
+                    </div>
+                    <div class="field-row"
+                        *ngIf="field.allowedAttachmentTypes && field.allowedAttachmentTypes.length > 0">
+                        <span class="field-label">Allowed Types:</span>
+                        <span class="field-value">{{ getAttachmentTypesDisplay(field) }}</span>
+                    </div>
+                    <div class="field-row" *ngIf="showAddOptions(field) && field.choices && field.choices.length > 0">
+                        <span class="field-label">Options:</span>
+                        <span class="field-value">{{ field.choices.length }} option{{ field.choices.length !== 1 ? 's' :
+                            '' }}</span>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template #itemActionsTemplate let-field>
+            <button mat-icon-button (click)="$event.stopPropagation(); editField(field)" matTooltip="Edit field"
+                matTooltipPosition="above">
+                <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)" matTooltipPosition="above">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </ng-template>
+    </mage-draggable-list>
+
+    <div class="section-save-actions">
+        <button type="button" class="action-button btn-primary" (click)="addField()">
+            <i class="fa fa-plus"></i>
+            Add Field
+        </button>
+    </div>
+</div>
+
+<div *ngIf="!showDetailedView" class="fields-list-compact">
+    <mage-draggable-list [items]="getActiveFields()" [enableDragDrop]="true" [emptyMessage]="'No fields added yet'"
+        [emptyIcon]="'fa-inbox'" [trackByFunction]="trackByFieldId" (itemsChange)="onItemsReordered($event)">
+
+        <ng-template #itemTemplate let-field>
+            <div class="field-content-compact">
+                <div class="field-info">
+                    <div class="field-title">{{ field.title }}</div>
+                    <div class="field-type">{{ getFieldTypeLabel(field.type, field) }}
+                        <span *ngIf="field.required" class="required-badge">Required</span>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template #itemActionsTemplate let-field>
+            <button mat-icon-button (click)="$event.stopPropagation(); editField(field)" matTooltip="Edit field"
+                matTooltipPosition="above">
+                <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="$event.stopPropagation(); removeField(field)" matTooltipPosition="above">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </ng-template>
+    </mage-draggable-list>
+
+    <div class="section-save-actions">
+        <button type="button" class="action-button btn-primary" (click)="addField()">
+            <i class="fa fa-plus"></i>
+            Add Field
+        </button>
+    </div>
+</div>

@@ -1,0 +1,159 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="container bottom-gap-l" *ngIf="device">
+  <div class="page-header">
+    <div class="header-title-section">
+      <div class="page-title-with-icon">
+        <i class="fa device-icon" [ngClass]="iconClass(device)"></i>
+        <h2 class="page-title">{{ device.uid || 'Device' }}</h2>
+      </div>
+    </div>
+
+    <div class="header-actions" *ngIf="hasUpdatePermission">
+      <button
+        class="action-button"
+        [ngClass]="editingDetails ? 'btn-primary' : ''"
+        (click)="toggleEditDetails()"
+      >
+        <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
+        {{ editingDetails ? 'Cancel' : 'Edit Device' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="details-section">
+    <div class="details-card">
+      <div class="details-form">
+        <div class="form-field">
+          <label class="field-label">Point of Contact:</label>
+          <div class="field-content">
+            <span *ngIf="!editingDetails" class="field-value">
+              {{ currentUserDisplayName || '—' }}
+            </span>
+
+            <div *ngIf="editingDetails">
+              <div class="field-value current-user muted">
+                Current User: {{ currentUserDisplayName || '—' }}
+              </div>
+
+              <user-search-box
+                placeholder="Pick a contact user..."
+                (userSelected)="onUserSelected($event)"
+              ></user-search-box>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Description:</label>
+          <div class="field-content">
+            <span *ngIf="!editingDetails" class="field-value">{{
+              device.description
+            }}</span>
+            <textarea
+              *ngIf="editingDetails"
+              class="form-input"
+              rows="3"
+              [(ngModel)]="deviceEditForm.description"
+              [disabled]="saving"
+              placeholder="Device description"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">User Agent:</label>
+          <div class="field-content">
+            <span class="field-value">{{ device.userAgent || '—' }}</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Device ID:</label>
+          <div class="field-content">
+            <span class="field-value">{{ device.uid }}</span>
+          </div>
+        </div>
+
+        <div class="form-actions" *ngIf="editingDetails">
+          <button
+            class="action-button btn-primary"
+            (click)="saveDeviceDetails()"
+            [disabled]="saving"
+          >
+            <i class="fa fa-save"></i> Save
+          </button>
+          <button
+            class="action-button"
+            (click)="cancelEditDetails()"
+            [disabled]="saving"
+          >
+            <i class="fa fa-times"></i> Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-cards">
+      <div
+        class="info-zone-card"
+        *ngIf="!device.registered && hasUpdatePermission"
+      >
+        <h3 class="info-zone-title">Register Device</h3>
+        <p class="info-zone-description">
+          Registering will allow device to access MAGE data. The device can be
+          deregistered at any time.
+        </p>
+        <button
+          class="action-button btn-success"
+          (click)="registerDevice(device)"
+        >
+          <i class="fa fa-play-circle"></i> Register
+        </button>
+      </div>
+
+      <div
+        class="warning-zone-card"
+        *ngIf="device.registered && hasUpdatePermission"
+      >
+        <h3 class="warning-zone-title">Unregister Device</h3>
+        <p class="warning-zone-description">
+          Unregistering will deny device from accessing MAGE data. All device
+          information will be retained.
+        </p>
+        <button
+          class="action-button btn-warning"
+          (click)="unregisterDevice(device)"
+        >
+          <i class="fa fa-check-circle"></i> Unregister
+        </button>
+      </div>
+
+      <div class="danger-zone-card" *ngIf="hasDeletePermission">
+        <h3 class="danger-zone-title">Delete Device</h3>
+        <p class="danger-zone-description">
+          Deleting a device will remove all device information. This cannot be
+          undone.
+        </p>
+        <button
+          class="action-button btn-danger"
+          (click)="confirmDeleteDevice()"
+        >
+          <i class="fa fa-trash-o"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="section-card">
+    <div class="table-wrapper mat-elevation-z2">
+      <mage-logins [deviceId]="device?.id"></mage-logins>
+    </div>
+  </div>
+</div>

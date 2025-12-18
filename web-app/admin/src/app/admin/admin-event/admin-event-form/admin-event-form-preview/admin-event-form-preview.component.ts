@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview-dialog.component';
+import { AdminEventFormPreviewDialogComponent } from './form-preview-dialog/admin-event-form-preview-dialog.component';
 
 @Component({
   selector: 'admin-event-form-preview',

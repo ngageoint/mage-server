@@ -42,7 +42,7 @@ export class DeviceDashboardComponent implements OnInit {
   deviceStatusFilter: 'all' | 'registered' | 'unregistered' = 'all';
 
   breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Devices', iconClass: 'fa fa-calendar' }
+    { title: 'Devices', iconClass: 'fa fa-mobile' }
   ];
 
   constructor(
@@ -163,5 +163,25 @@ export class DeviceDashboardComponent implements OnInit {
   private updateResponsiveLayout(): void {
     this.numChars = Math.ceil(window.innerWidth / 8.5);
     this.toolTipWidth = `${window.innerWidth * 0.75}px`;
+  }
+
+  iconClass(device: Device): string {
+    if (!device) return 'fa fa-mobile admin-generic-icon';
+  
+    const userAgent = (device.userAgent || '').toLowerCase();
+  
+    if (device.appVersion === 'Web Client') {
+      return 'fa fa-desktop admin-desktop-icon';
+    }
+  
+    if (userAgent.includes('android')) {
+      return 'fa fa-android admin-android-icon';
+    }
+  
+    if (userAgent.includes('ios')) {
+      return 'fa fa-apple admin-apple-icon';
+    }
+  
+    return 'fa fa-mobile admin-generic-icon';
   }
 }

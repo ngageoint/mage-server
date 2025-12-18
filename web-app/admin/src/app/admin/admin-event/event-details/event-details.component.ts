@@ -1,11 +1,9 @@
 import { Component, OnInit, OnDestroy, Inject, ViewChild } from '@angular/core';
-import { trigger, transition, style, animate, query } from '@angular/animations';
 import { StateService } from '@uirouter/angular';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSelectChange } from '@angular/material/select';
 import { MatTableDataSource } from '@angular/material/table';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
 import { NgForm } from '@angular/forms';
 import { Event as MageEvent, Layer } from 'src/app/filter/filter.types';
@@ -70,7 +68,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   formCreateOpen = false;
   previewForm: any = null;
   restrictionsError: any = null;
-  animatingFormId: number | null = null;
   formsAnimationState = 0;
 
   loadingMembers = true;
@@ -82,6 +79,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   membersDataSource = new MatTableDataSource<MageUser>();
   membersDisplayedColumns = ['content'];
   pageSizeOptions = [5, 10, 25];
+  pendingRoleChanges = new Map<string, string>();
 
   loadingTeams = true;
   teamsPageIndex = 0;
@@ -484,8 +482,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           if (this.restrictionsForm) {
             this.restrictionsForm.form.markAsPristine();
           }
-
-          console.log('Form restrictions saved successfully');
         },
         error: (error) => {
           console.error('Error saving form restrictions:', error);
@@ -514,106 +510,21 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result?.id) {
+        // Form was successfully created with fields, navigate to edit it
         this.stateService.go('admin.formEdit', { eventId: this.event?.id, formId: result.id });
-      } else if (result) {
-        this.stateService.go('admin.fieldsCreate', { eventId: this.event?.id, form: result });
       }
     });
   }
 
   /**
-   * Checks if a form can be moved up in the filtered list.
+   * Handles reordered forms from the draggable list component.
    */
-  canMoveFormUp(form: any): boolean {
-    if (!this.event?.forms) return false;
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-    return filteredIndex > 0;
-  }
-
-  /**
-   * Checks if a form can be moved down in the filtered list.
-   */
-  canMoveFormDown(form: any): boolean {
-    if (!this.event?.forms) return false;
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-    return filteredIndex >= 0 && filteredIndex < filtered.length - 1;
-  }
-
-  /**
-   * Moves form up in display order with animation.
-   */
-  moveFormUp($event: MouseEvent, form: any): void {
-    $event.stopPropagation();
+  onFormsReordered(reorderedForms: any[]): void {
     if (!this.event?.forms) return;
 
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-
-    if (filteredIndex > 0) {
-      const previousForm = filtered[filteredIndex - 1];
-
-      const forms = [...this.event.forms];
-      const currentIndex = forms.indexOf(form);
-      const targetIndex = forms.indexOf(previousForm);
-
-      this.animatingFormId = form.id;
-
-      [forms[targetIndex], forms[currentIndex]] = [forms[currentIndex], forms[targetIndex]];
-      this.updateFormsOrder(forms);
-
-      setTimeout(() => {
-        this.animatingFormId = null;
-      }, 400);
-    }
-  }
-
-  /**
-   * Moves form down in display order with animation.
-   */
-  moveFormDown($event: MouseEvent, form: any): void {
-    $event.stopPropagation();
-    if (!this.event?.forms) return;
-
-    const filtered = this.filteredForms;
-    const filteredIndex = filtered.indexOf(form);
-
-    if (filteredIndex >= 0 && filteredIndex < filtered.length - 1) {
-      const nextForm = filtered[filteredIndex + 1];
-
-      const forms = [...this.event.forms];
-      const currentIndex = forms.indexOf(form);
-      const targetIndex = forms.indexOf(nextForm);
-
-      this.animatingFormId = form.id;
-
-      [forms[currentIndex], forms[targetIndex]] = [forms[targetIndex], forms[currentIndex]];
-      this.updateFormsOrder(forms);
-
-      setTimeout(() => {
-        this.animatingFormId = null;
-      }, 400);
-    }
-  }
-
-  /**
-   * Handles drag-and-drop form reordering.
-   */
-  onFormDrop(event: CdkDragDrop<any[]>): void {
-    if (!this.event?.forms) return;
-
-    const filtered = this.filteredForms;
-
-    const movedForm = filtered[event.previousIndex];
-    const targetForm = filtered[event.currentIndex];
-
-    const forms = [...this.event.forms];
-    const currentIndex = forms.indexOf(movedForm);
-    const newIndex = forms.indexOf(targetForm);
-
-    moveItemInArray(forms, currentIndex, newIndex);
-    this.updateFormsOrder(forms);
+    // Update the full forms array to match the new order
+    this.event.forms = reorderedForms;
+    this.updateFormsOrder(reorderedForms);
   }
 
   /**
@@ -683,11 +594,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Gets user's role in the event team.
    */
   getUserRole(user: MageUser): string {
-    if (!this.eventTeam?.acl) {
-      return 'GUEST';
-    }
-    const userAcl = this.eventTeam.acl[user.id];
-    return userAcl?.role || 'GUEST';
+    if (!this.eventTeam?.acl) return 'GUEST';
+
+    const pendingRole = this.pendingRoleChanges.get(String(user.id));
+    if (pendingRole) return pendingRole;
+
+    return this.eventTeam.acl[user.id]?.role || 'GUEST';
   }
 
   /**
@@ -702,29 +614,8 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Updates a user's role in the event team.
    */
   updateUserRole(user: MageUser, event: MatSelectChange): void {
-    if (!this.eventTeam?.id) {
-      console.error('Event team not found');
-      return;
-    }
-
-    const newRole = event.value;
-
-    this.teamsService.updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (updatedTeam: Team) => {
-          this.eventTeam = updatedTeam;
-          const userIndex = this.membersPage.items.findIndex(u => u.id === user.id);
-          if (userIndex !== -1) {
-            const updatedUser = { ...this.membersPage.items[userIndex] };
-            this.membersPage.items[userIndex] = updatedUser;
-            this.membersDataSource.data = [...this.membersPage.items];
-          }
-        },
-        error: (error) => {
-          console.error('Error updating user role:', error);
-        }
-      });
+    this.pendingRoleChanges.set(String(user.id), event.value);
+    this.membersDataSource.data = [...this.membersDataSource.data];
   }
 
   /**
@@ -824,7 +715,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updated) => {
           this.event = updated;
-          console.log('Event marked as complete:', updated);
         },
         error: (error) => {
           console.error('Error completing event:', error);
@@ -942,8 +832,47 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
    * Toggles member edit mode and updates action buttons.
    */
   toggleEditMembers(): void {
+    if (this.editMembers) {
+      this.applyPendingRoleChanges();
+    } else {
+      this.pendingRoleChanges.clear();
+    }
     this.editMembers = !this.editMembers;
     this.updateActionButtons();
+  }
+
+  /**
+   * Applies all pending role changes to the backend.
+   */
+  private applyPendingRoleChanges(): void {
+    if (!this.eventTeam?.id || this.pendingRoleChanges.size === 0) {
+      this.pendingRoleChanges.clear();
+      return;
+    }
+
+    const updateObservables: Observable<Team>[] = [];
+    this.pendingRoleChanges.forEach((newRole, userId) => {
+      updateObservables.push(
+        this.teamsService.updateUserRole(String(this.eventTeam!.id), userId, newRole)
+      );
+    });
+
+    forkJoin(updateObservables)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedTeams: Team[]) => {
+          if (updatedTeams.length > 0) {
+            this.eventTeam = updatedTeams[updatedTeams.length - 1];
+          }
+          this.pendingRoleChanges.clear();
+          this.getMembersPage();
+        },
+        error: (error) => {
+          console.error('Error updating user roles:', error);
+          this.pendingRoleChanges.clear();
+          this.getMembersPage();
+        }
+      });
   }
 
   /**

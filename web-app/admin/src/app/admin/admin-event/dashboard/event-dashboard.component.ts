@@ -3,7 +3,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
 import { StateService } from '@uirouter/angular';
 import {
-  LocalStorageService,
   UserService
 } from 'admin/src/app/upgrade/ajs-upgraded-providers';
 import {
@@ -47,11 +46,10 @@ export class EventDashboardComponent implements OnInit {
 
   constructor(
     private modal: MatDialog,
-    private localStorageService: LocalStorageService,
     private stateService: StateService,
     private eventService: EventsService,
     @Inject(UserService) private userService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initPermissions();
@@ -78,12 +76,6 @@ export class EventDashboardComponent implements OnInit {
     });
   }
 
-  /** Apply search term filter */
-  private applyFilters(): void {
-    this.filteredEvents = this.events.items;
-    this.totalEvents = this.events.totalCount ?? 0;
-  }  
-
   /** Handle search term change */
   onSearchTermChanged(term: string): void {
     this.eventSearch = term;
@@ -93,18 +85,18 @@ export class EventDashboardComponent implements OnInit {
       page: 0
     };
     this.refreshEvents();
-  }  
+  }
 
   /** Clear search */
   onSearchCleared(): void {
     this.eventSearch = '';
-    this.searchOptions = { 
-      ...this.searchOptions, 
-      term: '', 
-      page: 0 
+    this.searchOptions = {
+      ...this.searchOptions,
+      term: '',
+      page: 0
     };
     this.refreshEvents();
-  }  
+  }
 
   /** Reset all filters and pagination */
   reset(): void {
@@ -141,7 +133,9 @@ export class EventDashboardComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((newEvent) => {
-      if (newEvent) this.refreshEvents();
+      if (newEvent) {
+        this.stateService.go('admin.event', { eventId: newEvent.id });
+      }
     });
   }
 

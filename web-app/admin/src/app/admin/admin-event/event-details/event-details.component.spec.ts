@@ -455,22 +455,27 @@ describe('EventDetailsComponent', () => {
     it('should update user role', () => {
       const user = { id: '1', username: 'user1', displayName: 'User One' } as any;
       const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
-      teamsService.updateUserRole.and.returnValue(of({ id: '1' } as any));
+      component.membersDataSource.data = [user];
 
       component.updateUserRole(user, roleEvent);
 
-      expect(teamsService.updateUserRole).toHaveBeenCalledWith('1', '1', 'MANAGER');
+      expect(component['pendingRoleChanges'].get('1')).toBe('MANAGER');
+      expect(component.membersDataSource.data.length).toBe(1);
     });
 
-    it('should handle update role error', () => {
-      component.eventTeam = null;
-      const user = { id: '1', username: 'user1' } as any;
-      const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
-      spyOn(console, 'error');
+    it('should store multiple pending role changes', () => {
+      const user1 = { id: '1', username: 'user1' } as any;
+      const user2 = { id: '2', username: 'user2' } as any;
+      const roleEvent1 = { source: null, value: 'MANAGER' } as MatSelectChange;
+      const roleEvent2 = { source: null, value: 'OWNER' } as MatSelectChange;
+      component.membersDataSource.data = [user1, user2];
 
-      component.updateUserRole(user, roleEvent);
+      component.updateUserRole(user1, roleEvent1);
+      component.updateUserRole(user2, roleEvent2);
 
-      expect(console.error).toHaveBeenCalledWith('Event team not found');
+      expect(component['pendingRoleChanges'].get('1')).toBe('MANAGER');
+      expect(component['pendingRoleChanges'].get('2')).toBe('OWNER');
+      expect(component['pendingRoleChanges'].size).toBe(2);
     });
   });
 
@@ -962,47 +967,24 @@ describe('EventDetailsComponent', () => {
       expect(dialog.open).toHaveBeenCalled();
     });
 
-    it('should move form up', () => {
+    it('should handle forms reordered', () => {
       eventsService.updateEvent.and.returnValue(of(component.event as any));
-      const form = component.event!.forms![1];
-      const event = new MouseEvent('click');
+      const reorderedForms = [
+        { id: 2, name: 'Form 2', archived: false },
+        { id: 1, name: 'Form 1', archived: false }
+      ];
 
-      component.moveFormUp(event, form);
+      component.onFormsReordered(reorderedForms);
 
       expect(eventsService.updateEvent).toHaveBeenCalled();
-      expect(component.animatingFormId).toBe(form.id);
+      expect(component.event!.forms![0].id).toBe(2);
+      expect(component.event!.forms![1].id).toBe(1);
     });
 
-    it('should move form down', () => {
-      eventsService.updateEvent.and.returnValue(of(component.event as any));
-      const form = component.event!.forms![0];
-      const event = new MouseEvent('click');
-
-      component.moveFormDown(event, form);
-
-      expect(eventsService.updateEvent).toHaveBeenCalled();
-      expect(component.animatingFormId).toBe(form.id);
-    });
-
-    it('should handle form drop', () => {
-      eventsService.updateEvent.and.returnValue(of(component.event as any));
-      const dropEvent = {
-        previousIndex: 0,
-        currentIndex: 1
-      } as any;
-
-      component.onFormDrop(dropEvent);
-
-      expect(eventsService.updateEvent).toHaveBeenCalled();
-    });
-
-    it('should not perform operations without forms', () => {
+    it('should not reorder forms when event has no forms', () => {
       component.event!.forms = undefined;
-      const event = new MouseEvent('click');
 
-      component.moveFormUp(event, { id: 1 });
-      component.moveFormDown(event, { id: 1 });
-      component.onFormDrop({ previousIndex: 0, currentIndex: 1 } as any);
+      component.onFormsReordered([]);
 
       expect(eventsService.updateEvent).not.toHaveBeenCalled();
     });

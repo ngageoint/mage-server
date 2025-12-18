@@ -322,35 +322,30 @@
                         <mat-card-title>Forms</mat-card-title>
                     </mat-card-header>
                     <mat-card-content>
-                        <div class="forms-list" cdkDropList (cdkDropListDropped)="onFormDrop($event)" #formsList>
-                            <div class="form-item" cdkDrag [cdkDragBoundary]="formsList"
-                                [class.form-moving]="animatingFormId === form.id"
-                                *ngFor="let form of filteredForms; trackBy: trackByFormId"
-                                (click)="editForm(event, form)">
-                                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
-                                <mat-icon>description</mat-icon>
+                        <mage-draggable-list [items]="filteredForms" [enableDragDrop]="true"
+                            [emptyMessage]="'No forms have been created yet'" [emptyIcon]="'fa-file-text fa-3x'"
+                            [trackByFunction]="trackByFormId" (itemsChange)="onFormsReordered($event)"
+                            (itemClick)="editForm(event, $event)">
+
+                            <ng-template #itemTemplate let-form>
                                 <div class="form-info">
                                     <div class="form-name">
-                                        {{form.name}}<span *ngIf="form.archived" class="text-danger"> (Archived)</span>
+                                        <mat-icon class="form-icon">description</mat-icon>
+                                        <span>{{form.name}}<span *ngIf="form.archived" class="text-danger">
+                                                (Archived)</span></span>
                                     </div>
                                 </div>
-                                <div class="form-actions">
-                                    <button mat-icon-button (click)="preview($event, form)" matTooltip="Preview Form">
-                                        <mat-icon>visibility</mat-icon>
-                                    </button>
-                                    <button mat-icon-button *ngIf="canMoveFormUp(form)"
-                                        (click)="moveFormUp($event, form)" matTooltip="Move form up">
-                                        <mat-icon>arrow_upward</mat-icon>
-                                    </button>
-                                    <button mat-icon-button *ngIf="canMoveFormDown(form)"
-                                        (click)="moveFormDown($event, form)" matTooltip="Move form down">
-                                        <mat-icon>arrow_downward</mat-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                            </ng-template>
 
-                        <div class="form-actions">
+                            <ng-template #itemActionsTemplate let-form>
+                                <button mat-icon-button (click)="$event.stopPropagation(); preview($event, form)"
+                                    matTooltip="Preview Form">
+                                    <mat-icon>visibility</mat-icon>
+                                </button>
+                            </ng-template>
+                        </mage-draggable-list>
+
+                        <div class="section-save-actions">
                             <button class="action-button" (click)="showArchivedForms = !showArchivedForms">
                                 <i class="fa" [ngClass]="showArchivedForms ? 'fa-eye-slash' : 'fa-eye'"></i>
                                 {{ showArchivedForms ? 'Hide' : 'Show' }} Archived Forms
@@ -363,7 +358,7 @@
                 </mat-card>
 
                 <!-- Form Restrictions Section -->
-                <mat-card class="top-gap-l">
+                <mat-card class="top-gap-l" *ngIf="nonArchivedForms.length > 0">
                     <mat-card-header>
                         <mat-card-title>Form Restrictions</mat-card-title>
                     </mat-card-header>
@@ -421,7 +416,7 @@
                                 </ul>
                             </div>
 
-                            <div class="form-actions">
+                            <div class="section-save-actions">
                                 <button class="action-button btn-primary" (click)="saveFormRestrictions()"
                                     [disabled]="!restrictions.dirty">
                                     <i class="fa fa-save"></i> Save Restrictions

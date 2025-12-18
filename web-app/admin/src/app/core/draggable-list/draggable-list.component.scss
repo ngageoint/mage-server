@@ -1,0 +1,152 @@
+.draggable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: box-shadow 0.2s, background-color 0.2s;
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background-color: #fafafa;
+    }
+}
+
+.drag-handle {
+    color: #999;
+    cursor: grab;
+    flex-shrink: 0;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #666;
+    border-radius: 4px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        color: #333;
+    }
+
+    &.delete-button {
+        color: #f44336;
+
+        &:hover {
+            color: #d32f2f;
+        }
+    }
+
+    i {
+        font-size: 1.125rem;
+    }
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    background-color: #fafafa;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    text-align: center;
+
+    i {
+        font-size: 3rem;
+        color: #bdbdbd;
+        margin-bottom: 1rem;
+    }
+
+    p {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #757575;
+    }
+}
+
+// CDK Drag & Drop styles
+.cdk-drag-preview {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px -3px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
+
+    // Preserve button styling in drag preview
+    .item-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .icon-button {
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        color: #666;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &.delete-button {
+            color: #f44336;
+        }
+
+        i {
+            font-size: 1.125rem;
+        }
+    }
+}
+
+.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.draggable-list.cdk-drop-list-dragging .list-item:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.4;
+}

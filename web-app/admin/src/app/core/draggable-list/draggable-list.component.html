@@ -1,0 +1,27 @@
+<div class="draggable-list" *ngIf="items.length > 0" [cdkDropListDisabled]="!enableDragDrop" cdkDropList
+    (cdkDropListDropped)="onDrop($event)">
+    <div class="list-item" [cdkDragDisabled]="!enableDragDrop" cdkDrag
+        *ngFor="let item of items; trackBy: trackByIndex; let i = index" (click)="onItemClick(item)">
+        <mat-icon *ngIf="enableDragDrop" cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+        <div class="item-content">
+            <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: item, index: i }"></ng-container>
+        </div>
+        <div class="item-actions">
+            <ng-container
+                *ngTemplateOutlet="itemActionsTemplate; context: { $implicit: item, index: i }"></ng-container>
+            <button *ngIf="canMoveUp(i)" class="icon-button" (click)="$event.stopPropagation(); moveUp(i)"
+                matTooltip="Move up" matTooltipPosition="above">
+                <i class="fa fa-arrow-up"></i>
+            </button>
+            <button *ngIf="canMoveDown(i)" class="icon-button" (click)="$event.stopPropagation(); moveDown(i)"
+                matTooltip="Move down" matTooltipPosition="above">
+                <i class="fa fa-arrow-down"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="empty-state" *ngIf="items.length === 0">
+    <i class="fa {{ emptyIcon }}"></i>
+    <p>{{ emptyMessage }}</p>
+</div>

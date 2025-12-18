@@ -144,7 +144,11 @@ $max-height: 72.8vh;
   }
 }
 
-.table-scroll {
+.no-event {
+  align-content: center;
+}
+
+.table-scroll, .no-event {
   height: 62.2vh;
   @media (max-width: 768px) {
     height: 60.2vh;
@@ -455,4 +459,14 @@ $max-height: 72.8vh;
 
 .w-90 {
   width: 90% !important;
+}
+
+.icon {
+  font-size: 1.25rem;
+  margin-left: 10px;
+  width: 20px;
+}
+
+.mb-10px{
+  margin-bottom: 10px;
 }

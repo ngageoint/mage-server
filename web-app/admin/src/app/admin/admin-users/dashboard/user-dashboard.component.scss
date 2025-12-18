@@ -144,7 +144,11 @@ $max-height: 72.8vh;
   }
 }
 
-.table-scroll {
+.no-event {
+  align-content: center;
+}
+
+.table-scroll, .no-event {
   height: 62.2vh;
   @media (max-width: 768px) {
     height: 60.2vh;

@@ -175,7 +175,15 @@ export class EventsService {
         return this.http.delete<Event>(`/api/events/${eventId}/layers/${layerId}`);
     }
 
-    createForm(eventId: string, formData: FormData): Observable<any> {
+    createForm(eventId: string, formData: any): Observable<any> {
         return this.http.post(`/api/events/${eventId}/forms`, formData);
+    }
+
+    updateForm(eventId: string, formId: string, formData: any): Observable<any> {
+        return this.http.put(`/api/events/${eventId}/forms/${formId}`, formData);
+    }
+
+    deleteForm(eventId: string, formId: string): Observable<void> {
+        return this.http.delete<void>(`/api/events/${eventId}/forms/${formId}`);
     }
 }

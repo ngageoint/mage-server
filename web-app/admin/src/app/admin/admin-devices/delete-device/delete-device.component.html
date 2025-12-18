@@ -1,0 +1,27 @@
+<div class="dialog-modal">
+    <div class="dialog-header">
+        <div class="warning-icon">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <div class="header-content">
+            <h2 class="dialog-title">Delete Device</h2>
+            <p class="dialog-subtitle">This action cannot be undone</p>
+        </div>
+    </div>
+
+    <div class="dialog-content">
+        <div class="warning-message">
+            <p>Device <strong>"{{ data.device?.uid }}"</strong> will be permanently deleted,
+                including associated location data.</p>
+            <p>This cannot be undone. Are you sure you want to proceed?</p>
+        </div>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="action-button" (click)="cancel()">Cancel</button>
+        <button class="action-button btn-danger" (click)="confirmDelete()">
+            <i class="fa fa-trash"></i>
+            Delete Device
+        </button>
+    </div>
+</div>

@@ -9,7 +9,8 @@
             <span>{{ errorMessage }}</span>
         </div>
 
-        <form [formGroup]="formGroup" class="form-create">
+        <!-- Step 1: Form Details -->
+        <form [formGroup]="formGroup" class="form-create" *ngIf="currentStep === 1">
             <div class="form-field">
                 <label class="field-label">Name <span class="required">*</span></label>
                 <input type="text" class="form-input" formControlName="name" placeholder="Form name"
@@ -58,13 +59,40 @@
                 </div>
             </div>
         </form>
+
+        <!-- Step 2: Add Fields -->
+        <div class="fields-step" *ngIf="currentStep === 2">
+            <div class="step-description">
+                <p>Add at least one field to your form. Fields define what information users can enter when creating an
+                    observation.</p>
+            </div>
+
+            <!-- Use the fields-list component -->
+            <mage-fields-list [fields]="createdFields" [fieldTypes]="fieldTypes"
+                [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="createdUserFields"
+                [showDetailedView]="false" (fieldsChange)="onFieldsChange($event)">
+            </mage-fields-list>
+        </div>
     </div>
 
     <div class="dialog-actions">
-        <button class="action-button" (click)="cancel()">Cancel</button>
-        <button class="action-button btn-primary" (click)="save()" [disabled]="formGroup.invalid">
-            <i class="fa fa-plus"></i>
+        <button class="action-button" (click)="cancel()" [disabled]="saving">Cancel</button>
+        <button class="action-button" *ngIf="currentStep === 2 && !saving" (click)="back()">
+            Back
+        </button>
+        <button class="action-button btn-primary" *ngIf="currentStep === 1 && !saving" (click)="next()"
+            [disabled]="formGroup.invalid">
+            {{ selectedFile ? 'Create Form' : 'Next: Add Fields' }}
+        </button>
+        <button class="action-button btn-primary" *ngIf="currentStep === 1 && saving" disabled>
+            Creating...
+        </button>
+        <button class="action-button btn-primary" *ngIf="currentStep === 2 && !saving" (click)="save()"
+            [disabled]="createdFields.length === 0">
             Create Form
+        </button>
+        <button class="action-button btn-primary" *ngIf="currentStep === 2 && saving" disabled>
+            Creating...
         </button>
     </div>
 </div>

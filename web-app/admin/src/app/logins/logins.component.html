@@ -48,7 +48,7 @@
           </div>
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" *ngIf="!deviceId">
         <label class="filter-label">Device:</label>
         <div class="input-with-clear">
           <input
@@ -156,7 +156,7 @@
           <button
             mat-button
             (click)="pageLogin(loginPage?.prev)"
-            [disabled]="!showPrevious"
+            [disabled]="!hasPrev"
           >
             ← Previous
           </button>
@@ -166,7 +166,7 @@
           <button
             mat-button
             (click)="pageLogin(loginPage?.next)"
-            [disabled]="!showNext"
+            [disabled]="!hasNext"
           >
             Next →
           </button>
