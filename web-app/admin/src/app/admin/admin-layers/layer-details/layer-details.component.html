@@ -29,8 +29,8 @@
         </div>
     </div>
 
-    <div class="details-section">
-        <div class="details-card">
+    <div class="details-section" [class.full-width]="editingDetails">
+        <div class="details-card" [class.full-width]="editingDetails">
             <div class="details-form">
                 <div class="form-field">
                     <label class="field-label">Name:</label>
@@ -59,17 +59,18 @@
                 </div>
 
                 <div class="form-field" *ngIf="layer.type === 'Imagery'">
-                    <span class="field-label">Base Layer</span>
                     <div class="field-content">
+                        <span *ngIf="!editingDetails" class="field-label">Base Layer</span>
                         <span *ngIf="!editingDetails" class="field-value">{{ layer.base }}</span>
-                        <label *ngIf="editingDetails" class="checkbox-label">
-                            <input type="checkbox" [(ngModel)]="layerEditForm.base" />
-                            <span>Use as base layer</span>
+                        <label *ngIf="editingDetails" class="checkbox-label"
+                            style="display: flex; align-items: center;">
+                            <input type="checkbox" [(ngModel)]="layerEditForm.base" style="margin-right: 8px;" />
+                            <span class="field-label" style="margin: 0;">Base Layer</span>
                         </label>
                     </div>
                 </div>
 
-                <div class="form-field" *ngIf="layer.type === 'Imagery'">
+                <div class="form-field" *ngIf="layer.type === 'Imagery' && !editingDetails">
                     <span class="field-label">Format</span>
                     <div class="field-content">
                         <span class="field-value">{{ layer.format }}</span>
@@ -137,7 +138,7 @@
             </div>
         </div>
 
-        <div *ngIf="hasLayerDeletePermission" class="danger-zone-card">
+        <div *ngIf="hasLayerDeletePermission && !editingDetails" class="danger-zone-card">
             <h3 class="danger-zone-title">Delete Layer</h3>
             <p class="danger-zone-description">
                 Deleting a layer will remove all information. This cannot be undone,

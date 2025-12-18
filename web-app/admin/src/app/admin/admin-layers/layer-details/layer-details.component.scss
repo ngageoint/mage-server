@@ -60,6 +60,10 @@
     gap: 2rem;
     margin-bottom: 3rem;
 
+    &.full-width {
+        grid-template-columns: 1fr;
+    }
+
     @media (max-width: 768px) {
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -72,6 +76,10 @@
     border: 1px solid #e5e7eb;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 2rem;
+
+    &.full-width {
+        max-width: 100%;
+    }
 }
 
 .details-form {
@@ -966,7 +974,7 @@
         }
     }
 }
-// WMS editing styles
+
 .wms-edit-section {
     margin-top: 1rem;
     padding: 1rem;

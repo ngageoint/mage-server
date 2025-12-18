@@ -60,12 +60,12 @@
 }
 
 .action-button {
-    padding: 0.6rem 1.2rem;
+    padding: 0.5rem 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
     color: #333;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -268,14 +268,25 @@
     margin-top: 0.5rem;
 }
 
+.capabilities-document-content {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 .capabilities-document-content pre {
     margin: 0;
-    max-height: 400px;
-    overflow: auto;
     font-size: 0.8rem;
     background-color: #fff;
     padding: 1rem;
     border-radius: 4px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .preview-map-modal {
