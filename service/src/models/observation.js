@@ -370,12 +370,16 @@ exports.updateObservation = function (event, observationId, update, callback) {
       observation.type = update.type;
       observation.geometry = update.geometry;
       observation.properties = update.properties;
+
+      // **Attachments added here**
       observation.attachments = observation.attachments.concat(addAttachments);
+
+      // **Attachments removed here**
       observation.attachments = observation.attachments.filter(attachment => {
         return !removeAttachments.includes(attachment._id.toString())
       });
-
-      return observation.save();
+      // **MongoDB write happens here**
+      return observation.save(); 
     })
     .then(observation => {
       return observation
@@ -500,30 +504,46 @@ exports.getAttachment = function (event, observationId, attachmentId, callback) 
  * TODO: [OBS-NEXT] this can potentially be deleted if removing the api/attachment module,
  * which is the only reference to this function
  */
+
+// Function to update an existing attachment on an observation
 exports.addAttachment = function (event, observationId, attachmentId, file, callback) {
-  const condition = {
-    _id: observationId,
-    attachments: {
-      '$elemMatch': {
-        _id: attachmentId,
-        contentType: file.mimetype,
-        name: file.originalname
-      }
+
+  // Build the query condition to find the observation document
+  // and the specific attachment within the attachments array
+  const condition = { 
+    _id: observationId,                     // Match the observation by its ID
+    attachments: {                          // Look inside attachments array
+      '$elemMatch': {                       // Match a single attachment with all these properties
+        _id: attachmentId,                  // Attachment ID
+        contentType: file.mimetype,         // MIME type of the file
+        name: file.originalname             // Original file name
+      } 
+    } 
+  };
+
+  // Build the update object: set the attachment's size and relative path
+  const update = { 
+    'attachments.$.size': file.size,        // Update size of the attachment
+    'attachments.$.relativePath': file.relativePath  // Update relative path to the file on disk/S3
+  };
+
+  // Use Mongoose to find the observation and update the attachment atomically
+  observationModel(event).findOneAndUpdate(
+    condition,      // Query to locate the correct document & attachment
+    update,         // Update to apply
+    { new: true },  // Return the updated document
+    function (err, observation) {  // Callback after DB operation
+      if (err || !observation) return callback(err); // If error or not found, return
+
+      // Locate the updated attachment inside the observation object
+      const attachment = observation.attachments.find(att => att._id.toString() === attachmentId);
+
+      // Return the updated attachment to the caller
+      callback(err, attachment);
     }
-  }
-
-  const update = {
-    'attachments.$.size': file.size,
-    'attachments.$.relativePath': file.relativePath
-  }
-
-  observationModel(event).findOneAndUpdate(condition, update, { new: true }, function (err, observation) {
-    if (err || !observation) return callback(err);
-
-    const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
-    callback(err, attachment);
-  });
+  );
 };
+
 
 exports.removeAttachment = function (event, observationId, attachmentId, callback) {
   const update = { $pull: { attachments: { _id: attachmentId } } };

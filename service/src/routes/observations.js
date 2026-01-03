@@ -1,29 +1,35 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+// Utility to check if a file type is allowed for a given form field
 const {
   attachmentTypeIsValidForField,
 } = require("../entities/events/entities.events.forms");
 
 module.exports = function (app, security) {
+  // Import modules used in the routes
   const async = require("async"),
-    api = require("../api"),
-    log = require("winston"),
-    archiver = require("archiver"),
+    api = require("../api"), // API layer that interfaces with models
+    log = require("winston"), // logging
+    archiver = require("archiver"), // for generating ZIP files
     path = require("path"),
-    environment = require("../environment/env"),
-    fs = require("fs-extra"),
-    moment = require("moment"),
-    Team = require("../models/team"),
-    access = require("../access"),
-    { default: turfCentroid } = require("@turf/centroid"),
-    geometryFormat = require("../format/geoJsonFormat"),
-    observationXform = require("../transformers/observation"),
-    FileType = require("file-type"),
-    passport = security.authentication.passport,
+    environment = require("../environment/env"), // configuration paths
+    fs = require("fs-extra"), // filesystem operations
+    moment = require("moment"), // date parsing
+    Team = require("../models/team"), // team model
+    access = require("../access"), // permission helper
+    { default: turfCentroid } = require("@turf/centroid"), // for geo calculations
+    geometryFormat = require("../format/geoJsonFormat"), // parse bbox/geometry query
+    observationXform = require("../transformers/observation"), // transforms DB object to API response
+    FileType = require("file-type"), // detect MIME type of uploaded file
+    passport = security.authentication.passport, // passport auth
     {
       defaultEventPermissionsService: eventPermissions,
-    } = require("../permissions/permissions.events");
+    } = require("../permissions/permissions.events"); // event-specific permissions
 
+  // Whitelist of columns that can be used for sorting queries
   const sortColumnWhitelist = ["lastModified"];
 
+  // Helper to generate transform options for observation responses
   function transformOptions(req) {
     return {
       event: req.event,
@@ -31,24 +37,28 @@ module.exports = function (app, security) {
     };
   }
 
+  /******************************
+   * PERMISSION / ACCESS CHECKS *
+   ******************************/
+
+  // Check if user can read observations
   async function validateObservationReadAccess(req, res, next) {
     if (access.userHasPermission(req.user, "READ_OBSERVATION_ALL")) {
       return next();
     }
     if (access.userHasPermission(req.user, "READ_OBSERVATION_EVENT")) {
-      // Make sure I am part of this event
+      // Must be part of this event to read
       const hasPermission = await eventPermissions.userHasEventPermission(
         req.event,
         req.user.id,
         "read"
       );
-      if (hasPermission) {
-        return next();
-      }
+      if (hasPermission) return next();
     }
-    res.sendStatus(403);
+    res.sendStatus(403); // Forbidden
   }
 
+  // Middleware factory: checks if user can create observation
   function validateObservationCreateAccess(validateObservationId) {
     return function (req, res, next) {
       if (!access.userHasPermission(req.user, "CREATE_OBSERVATION")) {
@@ -56,17 +66,15 @@ module.exports = function (app, security) {
       }
 
       const tasks = [];
+
+      // Optional: validate observation ID in request body
       if (validateObservationId) {
         tasks.push(function (done) {
-          /*
-          TODO: this is validating the id from body document, but should it
-          validate the id from the url path instead? the path id is the one
-          that is passed down to the update operation
-          */
           new api.Observation().validateObservationId(req.param("id"), done);
         });
       }
 
+      // Check if user belongs to a team in this event
       tasks.push(function (done) {
         Team.teamsForUserInEvent(req.user, req.event, function (err, teams) {
           if (err) return next(err);
@@ -87,99 +95,102 @@ module.exports = function (app, security) {
     };
   }
 
+  // Check if user can update observation
   async function validateObservationUpdateAccess(req, res, next) {
     if (access.userHasPermission(req.user, "UPDATE_OBSERVATION_ALL")) {
       return next();
     }
     if (access.userHasPermission(req.user, "UPDATE_OBSERVATION_EVENT")) {
-      // Make sure I am part of this event
+      // Must be part of event
       const hasPermission = await eventPermissions.userHasEventPermission(
         req.event,
         req.user.id,
         "read"
       );
-      if (hasPermission) {
-        return next();
-      }
+      if (hasPermission) return next();
     }
     res.sendStatus(403);
   }
 
+  /****************************
+   * ATTACHMENT VALIDATION *
+   ****************************/
+
+  // Validate uploaded file's type matches form field requirements
   function validateAttachmentFile(req, res, next) {
     FileType.fromFile(req.file.path).then((fileType) => {
       const attachment = req.observation.attachments.find(
         (attachment) => attachment._id.toString() === req.params.attachmentId
       );
+
+      // Find the observation form that owns this attachment
       const observationForm = req.observation.properties.forms.find(
-        (observationForm) => {
-          return (
-            observationForm._id.toString() ===
-            attachment.observationFormId.toString()
-          );
-        }
+        (observationForm) =>
+          observationForm._id.toString() ===
+          attachment.observationFormId.toString()
       );
-      if (!observationForm) {
-        return res.status(400).send("Attachment form not found");
-      }
+      if (!observationForm) return res.status(400).send("Attachment form not found");
+
+      // Find the field definition for this attachment
       const formDefinition = req.event.forms.find(
         (form) => form._id === observationForm.formId
       );
       const fieldDefinition = formDefinition.fields.find(
         (field) => field.name === attachment.fieldName
       );
-      if (!fieldDefinition) {
-        return res.status(400).send("Attachment field not found");
-      }
+      if (!fieldDefinition) return res.status(400).send("Attachment field not found");
+
+      // Ensure MIME type matches allowed types
       if (!attachmentTypeIsValidForField(fieldDefinition, fileType.mime)) {
         return res
           .status(400)
           .send(
-            `Invalid attachment '${
-              attachment.name
-            }', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(
+            `Invalid attachment '${attachment.name}', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(
               " or "
             )}`
           );
       }
+
       next();
     });
   }
 
+  // Middleware factory: check event permissions for a collection
   function authorizeEventAccess(collectionPermission, aclPermission) {
     return async function (req, res, next) {
-      if (access.userHasPermission(req.user, collectionPermission)) {
-        return next();
-      }
+      if (access.userHasPermission(req.user, collectionPermission)) return next();
+
       const hasPermission = await eventPermissions.userHasEventPermission(
         req.event,
         req.user.id,
         aclPermission
       );
-      if (hasPermission) {
-        return next();
-      }
+      if (hasPermission) return next();
+
       res.sendStatus(403);
     };
   }
 
+  // Check if user can delete observation (owns it or has update event perms)
   async function authorizeDeleteAccess(req, res, next) {
-    if (access.userHasPermission(req.user, "UPDATE_EVENT")) {
-      return next();
-    }
-    if (req.user._id.toString() === req.observation.userId.toString()) {
-      return next();
-    }
+    if (access.userHasPermission(req.user, "UPDATE_EVENT")) return next();
+    if (req.user._id.toString() === req.observation.userId.toString()) return next();
+
     const hasPermission = await eventPermissions.userHasEventPermission(
       req.event,
       req.user.id,
       "update"
     );
-    if (hasPermission) {
-      return next();
-    }
+    if (hasPermission) return next();
+
     res.sendStatus(403);
   }
 
+  /*****************************
+   * HELPER FUNCTIONS *
+   *****************************/
+
+  // Fetch the user who submitted the observation
   function getUserForObservation(req, res, next) {
     let userId = req.observation.userId;
     if (!userId) return next();
@@ -192,10 +203,12 @@ module.exports = function (app, security) {
     });
   }
 
+  // Get the icon associated with the observation (primary/secondary fields)
   function getIconForObservation(req, res, next) {
     let form = {};
     let primary;
     let secondary;
+
     if (req.observation.properties.forms.length) {
       let formId = req.observation.properties.forms[0].formId;
       let formDefinitions = req.event.forms.filter(function (form) {
@@ -220,80 +233,68 @@ module.exports = function (app, security) {
     });
   }
 
+  // Parse query parameters for filtering, sorting, etc.
   function parseQueryParams(req, res, next) {
-    // setup defaults
-    const parameters = {
-      filter: {},
-    };
+    const parameters = { filter: {} };
 
+    // fields: optional JSON list of fields to include
     const fields = req.query.fields;
-    if (fields) {
-      parameters.fields = JSON.parse(fields);
-    }
+    if (fields) parameters.fields = JSON.parse(fields);
 
+    // Date filters
     const startDate = req.query.startDate;
-    if (startDate) {
-      parameters.filter.startDate = moment(startDate).utc().toDate();
-    }
+    if (startDate) parameters.filter.startDate = moment(startDate).utc().toDate();
 
     const endDate = req.query.endDate;
-    if (endDate) {
-      parameters.filter.endDate = moment(endDate).utc().toDate();
-    }
+    if (endDate) parameters.filter.endDate = moment(endDate).utc().toDate();
 
     const observationStartDate = req.query.observationStartDate;
-    if (observationStartDate) {
+    if (observationStartDate)
       parameters.filter.observationStartDate = moment(observationStartDate)
         .utc()
         .toDate();
-    }
 
     const observationEndDate = req.query.observationEndDate;
-    if (observationEndDate) {
+    if (observationEndDate)
       parameters.filter.observationEndDate = moment(observationEndDate)
         .utc()
         .toDate();
-    }
 
+    // Spatial filters
     const bbox = req.query.bbox;
-    if (bbox) {
-      parameters.filter.geometries = geometryFormat.parse("bbox", bbox);
-    }
+    if (bbox) parameters.filter.geometries = geometryFormat.parse("bbox", bbox);
 
     const geometry = req.query.geometry;
-    if (geometry) {
-      parameters.filter.geometries = geometryFormat.parse("geometry", geometry);
-    }
+    if (geometry) parameters.filter.geometries = geometryFormat.parse("geometry", geometry);
 
+    // State filters
     const states = req.query.states;
-    if (states) {
-      parameters.filter.states = states.split(",");
-    }
+    if (states) parameters.filter.states = states.split(",");
 
+    // Sorting
     const sort = req.query.sort;
     if (sort) {
       const columns = {};
       let err = null;
       sort.split(",").every(function (column) {
         const sortParams = column.split("+");
-        // Check sort column is in whitelist
+
+        // Only allow whitelisted columns
         if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
           err = `Cannot sort on column '${sortParams[0]}'`;
-          return false; // break
+          return false; // break loop
         }
-        // Order can be nothing (ASC by default) or ASC, DESC
-        let direction = 1; // ASC
-        if (sortParams.length > 1 && sortParams[1] === "DESC") {
-          direction = -1; // DESC
-        }
+
+        let direction = 1; // ASC default
+        if (sortParams.length > 1 && sortParams[1] === "DESC") direction = -1;
         columns[sortParams[0]] = direction;
       });
-      if (err) {
-        return res.status(400).send(err);
-      }
+
+      if (err) return res.status(400).send(err);
       parameters.sort = columns;
     }
 
+    // Populate related objects
     parameters.populate = req.query.populate === "true";
 
     req.parameters = parameters;
@@ -301,6 +302,11 @@ module.exports = function (app, security) {
     next();
   }
 
+  /********************
+   * ROUTES *
+   ********************/
+
+  // Download observation as ZIP (HTML + attachments + icon)
   app.get(
     "/api/events/:eventId/observations/(:observationId).zip",
     passport.authenticate("bearer"),
@@ -340,23 +346,16 @@ module.exports = function (app, security) {
                 environment.iconBaseDirectory,
                 req.observationIcon.relativePath
               );
-              archive.file(iconPath, {
-                name: req.observation._id + "/media/icon.png",
-              });
+              archive.file(iconPath, { name: req.observation._id + "/media/icon.png" });
             }
 
             req.observation.attachments.forEach(function (attachment) {
               archive.file(
-                path.join(
-                  environment.attachmentBaseDirectory,
-                  attachment.relativePath
-                ),
+                path.join(environment.attachmentBaseDirectory, attachment.relativePath),
                 { name: req.observation._id + "/media/" + attachment.name }
               );
             });
-          } else {
-            log.warn(err);
-          }
+          } else log.warn(err);
 
           archive.finalize();
         }
@@ -364,6 +363,7 @@ module.exports = function (app, security) {
     }
   );
 
+  // GET single observation
   app.get(
     "/api/events/:eventId/observations/:observationIdInPath",
     passport.authenticate("bearer"),
@@ -375,22 +375,17 @@ module.exports = function (app, security) {
         req.params.observationIdInPath,
         options,
         function (err, observation) {
-          if (err) {
-            return next(err);
-          }
-          if (!observation) {
-            return res.sendStatus(404);
-          }
-          const response = observationXform.transform(
-            observation,
-            transformOptions(req)
-          );
+          if (err) return next(err);
+          if (!observation) return res.sendStatus(404);
+
+          const response = observationXform.transform(observation, transformOptions(req));
           res.json(response);
         }
       );
     }
   );
 
+  // GET all observations
   app.get(
     "/api/events/:eventId/observations",
     passport.authenticate("bearer"),
@@ -404,59 +399,38 @@ module.exports = function (app, security) {
         populate: req.parameters.populate,
       };
 
-      new api.Observation(req.event).getAll(
-        options,
-        function (err, observations) {
-          if (err) return next(err);
-          res.json(
-            observationXform.transform(observations, transformOptions(req))
-          );
-        }
-      );
+      new api.Observation(req.event).getAll(options, function (err, observations) {
+        if (err) return next(err);
+        res.json(observationXform.transform(observations, transformOptions(req)));
+      });
     }
   );
 
+  // Add observation to favorites
   app.put(
     "/api/events/:eventId/observations/:observationIdInPath/favorite",
     passport.authenticate("bearer"),
-    /*
-    TODO: this is a strange permission check.  this is because the request
-    modifies data, but there is a USER_NO_EDIT_ROLE role that has permission to
-    create observations, but not edit them.  however, simply being an event
-    participant with read access would seem to be enough for permission to
-    favorite an observation, because this does not mutate actual observation
-    form data.
-    */
     validateObservationCreateAccess(false),
     function (req, res, next) {
       new api.Observation(req.event).addFavorite(
         req.params.observationIdInPath,
         req.user,
         function (err, updatedObservation) {
-          if (err) {
-            return next(err);
-          }
-          if (!updatedObservation) {
-            return res
-              .status(404)
-              .send(
-                `Observation with ID ${req.params.observationIdInPath} does not exist`
-              );
-          }
-          const response = observationXform.transform(
-            updatedObservation,
-            transformOptions(req)
-          );
+          if (err) return next(err);
+          if (!updatedObservation)
+            return res.status(404).send(`Observation with ID ${req.params.observationIdInPath} does not exist`);
+
+          const response = observationXform.transform(updatedObservation, transformOptions(req));
           res.json(response);
         }
       );
     }
   );
 
+  // Remove observation from favorites
   app.delete(
     "/api/events/:eventId/observations/:observationIdInPath/favorite",
     passport.authenticate("bearer"),
-    /* TODO: see above note on PUT favorite permission check */
     validateObservationCreateAccess(false),
     function (req, res, next) {
       new api.Observation(req.event).removeFavorite(
@@ -465,24 +439,18 @@ module.exports = function (app, security) {
         function (err, updatedObservation) {
           if (err) return next(err);
           if (!updatedObservation)
-            return res
-              .status(404)
-              .send(
-                "Observation with id " +
-                  req.params.observationIdInPath +
-                  " does not exist"
-              );
+            return res.status(404).send(
+              "Observation with id " + req.params.observationIdInPath + " does not exist"
+            );
 
-          const response = observationXform.transform(
-            updatedObservation,
-            transformOptions(req)
-          );
+          const response = observationXform.transform(updatedObservation, transformOptions(req));
           res.json(response);
         }
       );
     }
   );
 
+  // Mark observation as important
   app.put(
     "/api/events/:eventId/observations/:observationId/important",
     passport.authenticate("bearer"),
@@ -494,83 +462,56 @@ module.exports = function (app, security) {
         description: req.body.description,
       };
 
-      new api.Observation(req.event).addImportant(
-        req.observation._id,
-        important,
-        function (err, updatedObservation) {
-          if (err) return next(err);
-          if (!updatedObservation)
-            return res
-              .status(404)
-              .send("Observation with id " + req.params.id + " does not exist");
+      new api.Observation(req.event).addImportant(req.observation._id, important, function (
+        err,
+        updatedObservation
+      ) {
+        if (err) return next(err);
+        if (!updatedObservation)
+          return res.status(404).send("Observation with id " + req.params.id + " does not exist");
 
-          const response = observationXform.transform(
-            updatedObservation,
-            transformOptions(req)
-          );
-          res.json(response);
-        }
-      );
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
     }
   );
 
+  // Remove observation important flag
   app.delete(
     "/api/events/:eventId/observations/:observationId/important",
     passport.authenticate("bearer"),
     authorizeEventAccess("UPDATE_EVENT", "update"),
     function (req, res, next) {
-      new api.Observation(req.event).removeImportant(
-        req.observation._id,
-        function (err, updatedObservation) {
-          if (err) return next(err);
-          if (!updatedObservation)
-            return res
-              .status(404)
-              .send("Observation with id " + req.params.id + " does not exist");
+      new api.Observation(req.event).removeImportant(req.observation._id, function (err, updatedObservation) {
+        if (err) return next(err);
+        if (!updatedObservation)
+          return res.status(404).send("Observation with id " + req.params.id + " does not exist");
 
-          const response = observationXform.transform(
-            updatedObservation,
-            transformOptions(req)
-          );
-          res.json(response);
-        }
-      );
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
     }
   );
 
+  // Add observation state (active/archive)
   app.post(
     "/api/events/:eventId/observations/:observationId/states",
     passport.authenticate("bearer"),
     authorizeDeleteAccess,
     function (req, res) {
       let state = req.body;
-      if (!state) {
-        return res.send(400);
-      }
-      if (!state.name) {
-        return res.status(400).send("name required");
-      }
-      if (state.name !== "active" && state.name !== "archive") {
-        return res
-          .status(400)
-          .send("state name must be one of 'active', 'complete', 'archive'");
-      }
+      if (!state) return res.send(400);
+      if (!state.name) return res.status(400).send("name required");
+      if (state.name !== "active" && state.name !== "archive")
+        return res.status(400).send("state name must be one of 'active', 'complete', 'archive'");
+
       state = { name: state.name };
-      if (req.user) {
-        state.userId = req.user._id;
-      }
-      new api.Observation(req.event).addState(
-        req.observation._id,
-        state,
-        function (err, state) {
-          if (err) {
-            return res
-              .status(400)
-              .send("state is already " + "'" + state.name + "'");
-          }
-          res.status(201).json(state);
-        }
-      );
+      if (req.user) state.userId = req.user._id;
+
+      new api.Observation(req.event).addState(req.observation._id, state, function (err, state) {
+        if (err) return res.status(400).send("state is already " + "'" + state.name + "'");
+        res.status(201).json(state);
+      });
     }
   );
 };

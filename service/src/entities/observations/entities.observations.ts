@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { UserId } from '../users/entities.users'
 import { BBox, Feature, Geometry } from 'geojson'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'

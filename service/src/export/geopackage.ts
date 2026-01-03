@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 'use strict';
 
 import { RelationType } from '@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType'
