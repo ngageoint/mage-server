@@ -527,7 +527,17 @@ exports.addAttachment = function (event, observationId, attachmentId, file, call
     'attachments.$.relativePath': file.relativePath  // Update relative path to the file on disk/S3
   };
 
-  // Use Mongoose to find the observation and update the attachment atomically
+    // ----------------------------
+    // VIRUS SCAN STEP
+    // ----------------------------
+    // Before saving the attachment reference to the database, scan the file for viruses.
+    // This should happen AFTER the file exists at `file.relativePath` but BEFORE the DB update.
+    // Example placeholder (replace with actual scanner call):
+    // const virusFree = await scanFileForViruses(file.relativePath);
+    // if (!virusFree) return callback(new Error('File failed virus scan'));
+    // ----------------------------
+
+    // Use Mongoose to find the observation and update the attachment atomically
   observationModel(event).findOneAndUpdate(
     condition,      // Query to locate the correct document & attachment
     update,         // Update to apply
