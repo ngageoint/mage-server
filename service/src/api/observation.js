@@ -91,10 +91,10 @@ Observation.prototype.getById = function (observationId, options, callback) {
   }
 
   ObservationModel.getObservationById(
-    this._event,
-    observationId,
-    options,
-    callback
+    this._event,         // Event context
+    observationId,       // ID from route
+    options,             // Fields, filters
+    callback             // Passes result back to route
   );
 };
 

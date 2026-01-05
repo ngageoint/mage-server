@@ -205,7 +205,7 @@ function observationModel(event) {
   const name = event.collectionName;
   let model = models[name];
   if (!model) {
-    // Creates the Model for the Observation Schema
+    // Creates the Model for the Observation Schema (on this event collection)
     model = mongoose.model(name, ObservationSchema, name);
     // TODO: mongoose should be caching these models so this seems unnecessary
     models[name] = model;
@@ -314,7 +314,7 @@ exports.getLatestObservation = function (event, callback) {
 
 exports.getObservationById = function (event, observationId, options, callback) {
   const fields = parseFields(options.fields);
-
+  // ❗ THIS IS THE MONGO NEXUS
   observationModel(event).findById(observationId, fields, callback);
 };
 
