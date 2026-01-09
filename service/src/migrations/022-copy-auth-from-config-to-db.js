@@ -1,5 +1,5 @@
 const config = require('../config.js'),
-  log = require('winston');
+  log = require('../../../mage-server/logger');
 
 exports.id = 'copy-auth-from-config-to-db';
 

@@ -1,4 +1,4 @@
-const log = require('winston')
+const log = require('../../../../mage-server/logger')
   , fs = require('fs').promises
   , path = require('path');
 

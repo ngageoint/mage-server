@@ -5,7 +5,7 @@ const mongoose = require('mongoose')
   , Observation = require('./observation')
   , User = require('./user')
   , Token = require('./token')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , { countAndPage, page } = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser');
 

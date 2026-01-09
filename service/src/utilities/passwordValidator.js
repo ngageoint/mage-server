@@ -1,5 +1,5 @@
 const util = require('util')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , hasher = require('./pbkdf2')();
 
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';

@@ -1,5 +1,5 @@
 const util = require('util')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , cname = require('../cname');
 
 function fieldFilter(field) {

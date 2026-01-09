@@ -9,7 +9,7 @@ import * as User from '../models/user'
 import * as Device from '../models/device'
 import * as json2csv from 'json2csv'
 const mgrs = require('mgrs')
-const log = require('winston')
+const log = require('../../../mage-server/logger')
 const wkx = require('wkx')
 import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
 import stream from 'stream'

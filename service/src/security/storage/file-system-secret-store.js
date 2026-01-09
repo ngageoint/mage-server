@@ -2,7 +2,7 @@
 
 const env = require('../../environment/env')
     , fs = require('fs')
-    , log = require('winston')
+    , log = require('../../../../mage-server/logger')
     , path = require('path')
     , JSONProvider = require('./json-provider');
 

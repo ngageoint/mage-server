@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , config = require('../config.json');
 
 const Schema = mongoose.Schema;

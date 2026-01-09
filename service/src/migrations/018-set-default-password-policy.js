@@ -1,7 +1,7 @@
 "use strict";
 
 const config = require('../config.js'),
-  log = require('winston');
+  log = require('../../../mage-server/logger');
 
 exports.id = 'set-default-password-policy';
 

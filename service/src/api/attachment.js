@@ -1,5 +1,5 @@
 const ObservationModel = require('../models/observation')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , path = require('path')
   , fs = require('fs-extra')
   , environment = require('../environment/env');

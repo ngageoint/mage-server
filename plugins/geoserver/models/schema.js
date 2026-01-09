@@ -1,6 +1,6 @@
 var async = require('async')
   , mongoose = require('mongoose')
-  , log = require('winston');
+  , log = require('../../../mage-server/logger');
 
 var Schema = mongoose.Schema;
 

@@ -1,6 +1,6 @@
 var api = require('../api')
   , Zip = require('adm-zip')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , archiver = require('archiver')
   , walk = require('walk')
   , path = require('path')

@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
   , User = require('./user')
   , api = require('../api')
   , whitelist = require('../utilities/whitelist')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
 const { rolesWithPermission, EventRolePermissions } = require('../entities/events/entities.events');
 
 // Creates a new Mongoose Schema object

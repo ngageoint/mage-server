@@ -1,5 +1,5 @@
 var child = require('child_process')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , config = require('./config.json');
 
 exports.initialize = function(app, callback) {

@@ -1,4 +1,4 @@
-const log = require('winston')
+const log = require('../../../mage-server/logger')
   , Device = require('../models/device');
 
 module.exports = function(provision) {

@@ -1,6 +1,6 @@
 "use strict";
 
-const log = require('winston')
+const log = require('../../../mage-server/logger')
     , SecretStoreService = require('../security/secret-store-service');
 
 exports.id = 'move-security-settings-to-secret-store';

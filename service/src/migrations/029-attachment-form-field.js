@@ -1,6 +1,6 @@
 "use strict";
 
-const log = require('winston')
+const log = require('../../../mage-server/logger')
   , ObjectID = require('mongodb').ObjectID;
 
 exports.id = 'attachment-form-field';

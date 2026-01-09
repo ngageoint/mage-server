@@ -1,6 +1,6 @@
 const mongoose = require('mongoose'),
   env = require('../environment/env'),
-  log = require('winston');
+  log = require('../../../mage-server/logger');
 
 const mongo = env.mongo;
 const connectRetryDelay = mongo.connectRetryDelay;

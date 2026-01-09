@@ -1,6 +1,6 @@
 "use strict";
 
-const log = require('winston');
+const log = require('../../../mage-server/logger');
 
 exports.id = 'move-user-authentication';
 

@@ -1,5 +1,5 @@
 var async = require('async')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , api = require('../../../api')
   , GeoServerObservation = require('../geoserver/observation')
   , GeoServerLocation = require('../geoserver/location')

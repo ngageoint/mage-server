@@ -1,7 +1,7 @@
 const mongodb = require('mongodb')
   , path = require('path')
   , cfenv = require('cfenv')
-  , log = require('winston');
+  , log = require('../../../mage-server/logger');
 
 if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
   // bit of whitebox to cfenv lib here, because it provides no

@@ -1,6 +1,6 @@
 'use strict';
 
-const log = require('winston')
+const log = require('../../../mage-server/logger')
 import async from 'async'
 import archiver from 'archiver'
 import stream from 'stream'

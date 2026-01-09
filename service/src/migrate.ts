@@ -3,7 +3,7 @@ import path from 'path'
 import * as migrations from '@ngageoint/mongodb-migrations'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const log = require('winston')
+const log = require('../../mage-server/logger')
 
 export const migrationCollection = 'migrations'
 

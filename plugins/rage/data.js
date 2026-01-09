@@ -1,5 +1,5 @@
 var config = require('./config.json')
-  , log = require('winston')
+, log = require('../../../mage-server/logger')
   , querystring = require('querystring')
   , os = require('os')
   , path = require('path')

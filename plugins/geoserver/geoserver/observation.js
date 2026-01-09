@@ -1,7 +1,7 @@
 const async = require('async')
   , request = require('request')
   , util = require('util')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , geoserverConfig = require('../config').geoserver
   , mapper = require('./attributeMapper')
   , SchemaModel = require('../models/schema');

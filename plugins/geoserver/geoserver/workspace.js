@@ -1,6 +1,6 @@
 var request = require('request')
   , util = require('util')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , geoserverConfig = require('../config').geoserver;
 
 var geoserverRequest = request.defaults({

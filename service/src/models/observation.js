@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
-  , log = require('winston');
+  , log = require('../../../mage-server/logger');
 
 const Schema = mongoose.Schema;
 

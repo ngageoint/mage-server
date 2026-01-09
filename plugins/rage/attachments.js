@@ -1,5 +1,5 @@
 var config = require('./config.js')
-  , log = require('winston')
+, log = require('../../../mage-server/logger')
   , environment = require('../environment/env')
   , async = require('async')
   , request = require('request')

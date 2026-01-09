@@ -1,5 +1,5 @@
 const OpenIdConnectStrategy = require('passport-openidconnect').Strategy
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , User = require('../models/user')
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion

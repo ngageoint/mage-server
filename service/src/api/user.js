@@ -1,5 +1,5 @@
 const UserModel = require('../models/user')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , TokenModel = require('../models/token')
   , LoginModel = require('../models/login')
   , DeviceModel = require('../models/device')

@@ -1,6 +1,6 @@
 const IconModel = require('../models/icon')
   , mongoose = require('mongoose')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , path = require('path')
   , fs = require('fs-extra')
   , os = require('os')

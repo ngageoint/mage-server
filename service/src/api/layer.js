@@ -1,6 +1,6 @@
 const fs = require('fs-extra')
   , path = require('path')
-  , log = require('winston')
+  , log = require('../../../mage-server/logger')
   , environment = require('../environment/env')
   , LayerModel = require('../models/layer')
   , CounterModel = require('../models/counter');

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose'),
   Event = require('./event'),
-  log = require('winston');
+  log = require('../../../mage-server/logger');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;

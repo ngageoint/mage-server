@@ -1,4 +1,4 @@
-const log = require('winston');
+const log = require('../../../mage-server/logger');
 const Device = require('../models/device');
 const access = require('../access');
 const pageInfoTransformer = require('../transformers/pageinfo.js');

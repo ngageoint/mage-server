@@ -1,4 +1,4 @@
-const log = require('winston');
+const log = require('../../../mage-server/logger');
 
 exports.id = 'move-local-auth-from-settings';
 
