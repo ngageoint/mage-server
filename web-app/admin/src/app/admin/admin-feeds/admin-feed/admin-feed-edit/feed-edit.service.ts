@@ -131,7 +131,6 @@ export class FeedEditService {
       fetchParameters: null,
       feedMetaData: null,
       preview: null
-      // TODO: handle topic icon properly
     }
     return patch
   }
@@ -187,6 +186,15 @@ export class FeedEditService {
     return this.feedService.createFeed(service.id, topic.id, post).pipe(resetOnSuccess)
   }
 
+  deleteFeed(feedId: string): Observable<any> {
+    return this.feedService.deleteFeed(feedId).pipe(
+      tap(() => {
+        // Reset the state after deletion
+        this.resetState();
+      })
+    );
+  }
+
   private resetState(): void {
     this.patchState(freshEditState())
   }
@@ -207,11 +215,8 @@ export class FeedEditService {
   }
 
   private fetchNewPreview(opts?: FeedPreviewOptions): void {
-    // TODO: add busy flag to indicate loading
-    // TODO: cancel outstanding preview fetch
     const feed = feedPostFromEditState(this.currentState)
     const { service, topic, ...feedSpec } = feed
-    // TODO: handle errors
     this.feedService.previewFeed(service, topic, feedSpec, opts || { skipContentFetch: false }).subscribe({
       next: preview => {
         const currentPreview = this.currentState.preview

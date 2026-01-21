@@ -8,7 +8,7 @@ import { AttachmentStoreToken, ObservationRepositoryToken } from '@ngageoint/mag
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
 import express from 'express'
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
 const logPrefix = '[mage.sftp]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -48,7 +48,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
     getDbConnection: MongooseDbConnectionToken
   },
   init: async (services): Promise<WebRoutesHooks> => {
-    console.info('intializing sftp plugin')
+    console.info('initializing sftp plugin')
 
     const { getDbConnection } = services
     const dbConnection: mongoose.Connection = await getDbConnection();
@@ -74,10 +74,11 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
               next()
             })
+
           routes.route('/configuration')
             .get(async (_req, res, _next) => {
-              const config = await controller.getConfiguration();
-              res.json(config);
+              const config = await controller.getConfiguration()
+              res.json(config)
             })
             .post(async (req, res, _next) => {
               await controller.stop()
