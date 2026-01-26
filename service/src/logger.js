@@ -1,23 +1,43 @@
-var winston = require('winston');
+// service/src/logger.js
+const winston = require('winston');
 
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {
-  timestamp: true,
-  level: 'debug',
-  colorize: true
-});
+// extract the format helpers correctly
+const { combine, timestamp, errors, splat, printf, colorize } = winston.format;
 
-var mongooseLogger = winston.loggers.add('mongoose', {
-  transports: [
-    new (winston.transports.Console)({
-      level: 'mongoose',
-      timestamp: true,
-      colorize: true
+// centralized logger
+const log = winston.createLogger({
+  level: 'info',
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    errors({ stack: true }),
+    splat(),
+    printf(({ timestamp, level, message, ...meta }) => {
+      const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
+      return `${timestamp} [${level.toUpperCase()}] ${message} ${metaString}`;
     })
-  ]
+  ),
+  transports: [new winston.transports.Console()],
 });
 
-winston.addColors({ mongoose: 'cyan' });
-mongooseLogger.setLevels({ mongoose: 0 });
+// create a dedicated logger for mongoose
+const mongooseLogger = winston.createLogger({
+  level: 'debug',
+  format: combine(
+    colorize({ all: true }),
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    printf(({ timestamp, level, message, ...meta }) => {
+      const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
+      return `${timestamp} [MONGOOSE:${level}] ${message} ${metaString}`;
+    })
+  ),
+  transports: [new winston.transports.Console()],
+});
 
-module.exports = winston;
+// export both
+module.exports = {
+  info: (msg, meta) => log.info(msg, meta),
+  warn: (msg, meta) => log.warn(msg, meta),
+  error: (msg, meta) => log.error(msg, meta),
+  debug: (msg, meta) => log.debug(msg, meta),
+  mongooseLogger, // use this in adapters/db files
+};

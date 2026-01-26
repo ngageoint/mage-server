@@ -1,5 +1,5 @@
 import environment from './environment/env'
-import log from './logger'
+import log, { mongooseLogger } from './logger'
 import { InjectableServices, integratePluginHooks } from './main.impl/main.impl.plugins'
 import httpLib from 'http'
 import fs from 'fs-extra'
@@ -103,13 +103,13 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     return service as MageService
   }
 
-  const mongooseLogger = log.loggers.get('mongoose')
   mongoose.set('debug', function (collection: any, method: any, ...methodArgs: any[]) {
     const formatter = (arg: any): string => {
-      return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ');
+      return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ')
     }
-    mongooseLogger.log('mongoose', `${collection}.${method}` + `(${methodArgs.map(formatter).join(', ')})`)
+    mongooseLogger.debug(`${collection}.${method}(${methodArgs.map(formatter).join(', ')})`)
   })
+  
 
   mongoose.Error.messages.general.required = "{PATH} is required."
 

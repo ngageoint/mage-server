@@ -1,40 +1,46 @@
-var config = require('./config.json')
-  , async = require('async')
-  , request = require('request')
-  , log = require('../../logger')
-  , fs = require('fs-extra')
-  , mongoose = require('mongoose')
-  , moment = require('moment')
-  , ArcGIS = require('terraformer-arcgis-parser')
-  , Event = require('../../models/event')
-  , Observation = require('../../models/observation');
+// plugins/epic/observations.js
+const config = require('./config.json');
+const async = require('async');
+const request = require('request');
+const log = require('../../logger'); // centralized logger
+const fs = require('fs-extra');
+const mongoose = require('mongoose');
+const moment = require('moment');
+const ArcGIS = require('terraformer-arcgis-parser');
+const Event = require('../../models/event');
+const Observation = require('../../models/observation');
+const { mongooseLogger } = require('../../logger');
 
 // setup mongoose to talk to mongodb
-var mongodbConfig = config.mongodb;
-mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
-  if (err) {
-    log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
-    throw err;
+const mongodbConfig = config.mongodb;
+mongoose.connect(
+  mongodbConfig.url,
+  { server: { poolSize: mongodbConfig.poolSize } },
+  function(err) {
+    if (err) {
+      log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
+      throw err;
+    }
   }
-});
+);
 
-var mongooseLogger = log.loggers.get('mongoose');
 mongoose.set('debug', function(collection, method, query, doc, options) {
-  mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
+  mongooseLogger.debug("%s.%s(%j, %j, %j)", collection, method, query, doc, options);
 });
 
-var timeout = config.esri.observations.interval * 1000;
-var url = [url.host, url.site, url.restServices, url.folder, url.serviceName, url.serviceType, url.layerId].join("/");
-var fields = config.esri.observations.fields;
+const timeout = config.esri.observations.interval * 1000;
+const url = [url.host, url.site, url.restServices, url.folder, url.serviceName, url.serviceType, url.layerId].join("/");
+const fields = config.esri.observations.fields;
 
-var defaultType = "UNKNOWN";
-var types = {};
+const defaultType = "UNKNOWN";
+const types = {};
+
 function getTypes(done) {
   log.info('getting esri types');
 
-  request.post({url: url + "?f=json"}, function(err, res, body) {
+  request.post({ url: url + "?f=json" }, function(err, res, body) {
     if (err) return done(err);
-    var json = JSON.parse(body);
+    const json = JSON.parse(body);
 
     if (res.statusCode !== 200) return done(new Error('Error getting ESRI types ' + res.statusCode));
 
@@ -48,7 +54,7 @@ function getTypes(done) {
   });
 }
 
-var events;
+let events;
 function getEvents(done) {
   Event.getEvents(function(err, allEvents) {
     events = allEvents;
@@ -58,40 +64,39 @@ function getEvents(done) {
 
 function transform(field, value) {
   switch (field.type) {
-  case "Date":
-    return moment(value).valueOf();
-  case "String":
-    return value + '';
-  case "Type":
-    var type = types[value];
-    type = type ? type.id : defaultType;
-    return type;
-  default:
-    return value;
+    case "Date":
+      return moment(value).valueOf();
+    case "String":
+      return value + '';
+    case "Type":
+      const type = types[value];
+      return type ? type.id : defaultType;
+    default:
+      return value;
   }
 }
 
 function createEsriObservation(event, observation, callback) {
   log.info('creating new observation ' + observation._id);
-  var properties = {};
+  const properties = {};
   fields[event._id.toString()].forEach(function(field) {
-    var value = observation.properties[field.mage];
+    const value = observation.properties[field.mage];
     properties[field.esri] = transform(field, value);
   });
   observation.properties = properties;
 
-  var featureUrl = url + "/addFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(observation)]);
+  const featureUrl = url + "/addFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(observation)]);
   log.info('sending', featureUrl);
-  request.post({url: featureUrl}, function(err, res, body) {
+  request.post({ url: featureUrl }, function(err, res, body) {
     if (err) return callback(err);
 
-    var json = JSON.parse(body);
-    log.info('ESRI attachment add response', json);
+    const json = JSON.parse(body);
+    log.info('ESRI observation add response', json);
 
     if (res.statusCode !== 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
-    var result = json.addResults[0];
+    const result = json.addResults[0];
     if (!result.success) {
-      return callback(new Error('Error sending ESRI json ', result[0].error));
+      return callback(new Error('Error sending ESRI json ' + JSON.stringify(result.error)));
     }
 
     callback(null, result.objectId);
@@ -100,27 +105,27 @@ function createEsriObservation(event, observation, callback) {
 
 function updateEsriObservation(event, observation, callback) {
   log.info('updating observation ' + observation._id);
-  var properties = {};
+  const properties = {};
   fields[event._id.toString()].forEach(function(field) {
-    var value = observation.properties[field.mage];
+    const value = observation.properties[field.mage];
     properties[field.esri] = transform(field, value);
   });
   observation.properties = properties;
   observation.properties.OBJECTID = observation.esriId;
 
-  var featureUrl = url + "/updateFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(observation)]);
+  const featureUrl = url + "/updateFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(observation)]);
   log.info('sending', featureUrl);
-  request.post({url: featureUrl}, function(err, res, body) {
+  request.post({ url: featureUrl }, function(err, res, body) {
     if (err) return callback(err);
 
-    var json = JSON.parse(body);
-    log.info('ESRI attachment update response', json);
+    const json = JSON.parse(body);
+    log.info('ESRI observation update response', json);
 
     if (res.statusCode !== 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
-    var result = json.updateResults[0];
+    const result = json.updateResults[0];
     if (!result.success) {
       log.error('error updating observation', JSON.stringify(result.error));
-      return callback(new Error('Error sending ESRI json ', result.error));
+      return callback(new Error('Error sending ESRI json ' + JSON.stringify(result.error)));
     }
 
     callback(null, result.objectId);
@@ -132,46 +137,47 @@ function pushObservations(done) {
     lastObservationTimes = lastObservationTimes || {};
     log.info('last observation times', lastObservationTimes);
 
-    async.each(events,
+    async.each(
+      events,
       function(event, done) {
         log.info('pushing observations for event ' + event.name);
 
-        var filter = {};
-
-        var lastTime = lastObservationTimes[event.collectionName];
+        const filter = {};
+        const lastTime = lastObservationTimes[event.collectionName];
         if (lastTime) {
-          filter.startDate = moment(lastTime).add('milliseconds', 1).toDate();
+          filter.startDate = moment(lastTime).add(1, 'milliseconds').toDate();
         }
 
-        Observation.getObservations(event, {filter: filter, sort: {lastModified: 1}}, function(err, observations) {
+        Observation.getObservations(event, { filter, sort: { lastModified: 1 } }, function(err, observations) {
           if (!observations) return done(new Error("Error getting observations from mage"));
 
-          // all these observations are new or updated and need to be pushed to ESRI server
           log.info('pushing ' + observations.length + ' to esri server');
-          async.each(observations, function(observation, done) {
-            if (observation.esriId) {
-              updateEsriObservation(event, observation, function(err) {
-                if (err) log.error('error updating esri observation', err);
-                done();
-              });
-            } else {
-              createEsriObservation(event, observation, function(err, objectId) {
-                if (err) {
-                  log.error('error creating esri attachment', err);
-                  return done();
-                }
+          async.each(
+            observations,
+            function(observation, done) {
+              if (observation.esriId) {
+                updateEsriObservation(event, observation, function(err) {
+                  if (err) log.error('error updating esri observation', err);
+                  done();
+                });
+              } else {
+                createEsriObservation(event, observation, function(err, objectId) {
+                  if (err) {
+                    log.error('error creating esri observation', err);
+                    return done();
+                  }
 
-                Observation.observationModel(event).findByIdAndUpdate(observation._id, {esriId: objectId}, {new: true}, done);
-              });
+                  Observation.observationModel(event).findByIdAndUpdate(observation._id, { esriId: objectId }, { new: true }, done);
+                });
+              }
+            },
+            function(err) {
+              if (observations.length > 0) {
+                lastObservationTimes[event.collectionName] = observations[observations.length - 1].lastModified;
+              }
+              done(err);
             }
-          },
-          function(err) {
-            if (observations.length > 0) {
-              lastObservationTimes[event.collectionName] = observations[observations.length - 1].lastModified;
-            }
-
-            done(err);
-          });
+          );
         });
       },
       function(err) {
@@ -187,17 +193,15 @@ function pushObservations(done) {
 function push() {
   log.info('pushing data to esri server ' + moment().toISOString());
 
-  async.series({
-    types: getTypes,
-    events: getEvents,
-    observations: pushObservations
-  },
-  function(err) {
-    if (err) log.error('Error pushing observations to esri server', err);
+  async.series(
+    { types: getTypes, events: getEvents, observations: pushObservations },
+    function(err) {
+      if (err) log.error('Error pushing observations to esri server', err);
 
-    log.info('finished pushing all data to esri server ' + moment().toISOString());
-    setTimeout(push, timeout);
-  });
+      log.info('finished pushing all data to esri server ' + moment().toISOString());
+      setTimeout(push, timeout);
+    }
+  );
 }
 
 push();

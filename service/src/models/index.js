@@ -1,4 +1,4 @@
-const log = require('winston');
+const log = require('../logger'); 
 const { modulesPathsInDir } = require('../utilities/loader');
 
 module.exports.initializeModels = function () {

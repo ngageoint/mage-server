@@ -52,5 +52,6 @@
   "dependencies": {
     "p-limit": "^7.1.1",
     "ui-select": "^0.19.8"
+    "winston": "^3.19.0"
   }
 }
