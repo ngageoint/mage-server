@@ -401,7 +401,14 @@ exports.getEvents = async function (options, callback) {
 
   const totalCount = await Event.countDocuments(query).exec();
 
-  Event.find(query, projection, (err, events) => {
+  let findQuery = Event.find(query, projection)
+    .sort({ name: 1, _id: 1 });
+
+  if (options.limit != null) {
+    findQuery = findQuery.limit(options.limit).skip(options.start * options.limit || 0);
+  }
+
+  findQuery.exec((err, events) => {
     if (err) return callback(err);
 
     if (options.populate) {
@@ -411,10 +418,7 @@ exports.getEvents = async function (options, callback) {
     } else {
       callback(null, events, totalCount);
     }
-  })
-    .sort({ name: 1, _id: 1 })
-    .limit(options.limit || 1000)
-    .skip(options.start * options.limit || 0);
+  });
 };
 
 exports.getById = function (id, options, callback) {
