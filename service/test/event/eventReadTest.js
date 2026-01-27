@@ -74,15 +74,23 @@ describe("event read tests", function () {
       name: 'Mock Event'
     });
 
-    const findStub = sinon.mock(EventModel)
-      .expects('find')
-      .callsFake((query, projection, callback) => {
-        expect(query).to.have.property('complete');
-        expect(query.complete).to.deep.equal({ $ne: true });
+    const chain = {
+      sort: function () { return chain; },
+      limit: function () { return chain; },
+      skip: function () { return chain; },
+      exec: function (cb) {
+        cb(null, [mockEvent]);
+      }
+    };
+    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection) => {
+      expect(query).to.have.property('complete');
+      expect(query.complete).to.deep.equal({ $ne: true });
+      return chain;
+    });
 
-        if (callback) callback(null, [mockEvent]);
-        return null;
-      });
+    sinon.stub(EventModel, 'countDocuments').returns({
+      exec: sinon.stub().resolves(1)
+    });
 
     request(app)
       .get('/api/events')
@@ -107,8 +115,15 @@ describe("event read tests", function () {
     });
     mockEvent1.acl[userId] = 'GUEST';
 
-    const chain = { sort: () => chain, limit: () => chain, skip: () => chain };
-    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection, callback) => {
+    const chain = {
+      sort: () => chain,
+      limit: () => chain,
+      skip: () => chain,
+      exec: (cb) => {
+        cb(null, [mockEvent1]);
+      }
+    };
+    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection) => {
       expect(query).to.have.property('$and');
       expect(query.$and).to.be.an('array').with.length.greaterThan(0);
 
@@ -135,7 +150,6 @@ describe("event read tests", function () {
       expect(allowedRoles).to.not.include('NONE');
       expect(allowedRoles).to.not.include('ADMIN');
 
-      setImmediate(() => callback(null, [mockEvent1]));
       return chain;
     });
 
@@ -173,8 +187,15 @@ describe("event read tests", function () {
       }
     });
 
-    const chain = { sort: () => chain, limit: () => chain, skip: () => chain };
-    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection, callback) => {
+    const chain = {
+      sort: () => chain,
+      limit: () => chain,
+      skip: () => chain,
+      exec: (cb) => {
+        cb(null, [mockEvent1]);
+      }
+    };
+    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection) => {
       expect(query).to.have.property('$and');
       expect(query.$and).to.be.an('array').with.length.greaterThan(0);
 
@@ -188,7 +209,6 @@ describe("event read tests", function () {
       expect(query).to.have.property('complete');
       expect(query.complete).to.deep.equal({ $ne: true });
 
-      setImmediate(() => callback(null, [mockEvent1]));
       return chain;
     });
 
@@ -220,8 +240,15 @@ describe("event read tests", function () {
       acl: {}
     });
 
-    const chain2 = { sort: () => chain2, limit: () => chain2, skip: () => chain2 };
-    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection, callback) => {
+    const chain2 = {
+      sort: () => chain2,
+      limit: () => chain2,
+      skip: () => chain2,
+      exec: (cb) => {
+        cb(null, []);
+      }
+    };
+    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection) => {
       expect(query).to.have.property('$and');
       expect(query.$and).to.be.an('array').with.length.greaterThan(0);
 
@@ -236,7 +263,6 @@ describe("event read tests", function () {
       );
       expect(accessClause).to.exist;
 
-      setImmediate(() => callback(null, []));
       return chain2;
     });
 
@@ -267,11 +293,16 @@ describe("event read tests", function () {
       name: 'Mock Event'
     });
 
-    const chain3 = { sort: () => chain3, limit: () => chain3, skip: () => chain3 };
-    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection, callback) => {
+    const chain3 = {
+      sort: () => chain3,
+      limit: () => chain3,
+      skip: () => chain3,
+      exec: (cb) => {
+        cb(null, [mockEvent]);
+      }
+    };
+    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection) => {
       expect(query).to.have.property('complete', true);
-
-      setImmediate(() => callback(null, [mockEvent]));
       return chain3;
     });
 
@@ -302,11 +333,16 @@ describe("event read tests", function () {
       name: 'Mock Event'
     });
 
-    const chain4 = { sort: () => chain4, limit: () => chain4, skip: () => chain4 };
-    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection, callback) => {
+    const chain4 = {
+      sort: () => chain4,
+      limit: () => chain4,
+      skip: () => chain4,
+      exec: (cb) => {
+        cb(null, [mockEvent]);
+      }
+    };
+    const findStub = sinon.stub(EventModel, 'find').callsFake((query, projection) => {
       expect(query).to.not.have.property('complete');
-
-      setImmediate(() => callback(null, [mockEvent]));
       return chain4;
     });
 
