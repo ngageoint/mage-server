@@ -76,6 +76,7 @@ describe("event read tests", function () {
 
     const chain = {
       sort: function () { return chain; },
+      collation: function () { return chain; },
       limit: function () { return chain; },
       skip: function () { return chain; },
       exec: function (cb) {
@@ -117,6 +118,7 @@ describe("event read tests", function () {
 
     const chain = {
       sort: () => chain,
+      collation: () => chain,
       limit: () => chain,
       skip: () => chain,
       exec: (cb) => {
@@ -189,6 +191,7 @@ describe("event read tests", function () {
 
     const chain = {
       sort: () => chain,
+      collation: () => chain,
       limit: () => chain,
       skip: () => chain,
       exec: (cb) => {
@@ -242,6 +245,7 @@ describe("event read tests", function () {
 
     const chain2 = {
       sort: () => chain2,
+      collation: () => chain2,
       limit: () => chain2,
       skip: () => chain2,
       exec: (cb) => {
@@ -295,6 +299,7 @@ describe("event read tests", function () {
 
     const chain3 = {
       sort: () => chain3,
+      collation: () => chain3,
       limit: () => chain3,
       skip: () => chain3,
       exec: (cb) => {
@@ -335,6 +340,7 @@ describe("event read tests", function () {
 
     const chain4 = {
       sort: () => chain4,
+      collation: () => chain4,
       limit: () => chain4,
       skip: () => chain4,
       exec: (cb) => {

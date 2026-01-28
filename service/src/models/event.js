@@ -402,7 +402,8 @@ exports.getEvents = async function (options, callback) {
   const totalCount = await Event.countDocuments(query).exec();
 
   let findQuery = Event.find(query, projection)
-    .sort({ name: 1, _id: 1 });
+    .sort({ name: 1, _id: 1 })
+    .collation({ locale: 'en', strength: 2 });
 
   if (options.limit != null) {
     findQuery = findQuery.limit(options.limit).skip(options.start * options.limit || 0);
