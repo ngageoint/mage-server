@@ -52,6 +52,7 @@
   "dependencies": {
     "p-limit": "^7.1.1",
     "ui-select": "^0.19.8"
+    "systemjs": "^6.15.1"
     "winston": "^3.19.0"
   }
 }
