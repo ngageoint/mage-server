@@ -403,7 +403,7 @@ exports.getEvents = async function (options, callback) {
 
   let findQuery = Event.find(query, projection)
     .sort({ name: 1, _id: 1 })
-    .collation({ locale: 'en', strength: 2 });
+    .collation({ locale: 'en', strength: 2, numericOrdering: true });
 
   if (options.limit != null) {
     findQuery = findQuery.limit(options.limit).skip(options.start * options.limit || 0);
