@@ -1,10 +1,13 @@
 services:
 
   mage-db:
-    image: bitnami/mongodb:6.0.13
+    image: mongodb/mongodb-community-server:6.0-ubi9
     volumes:
-      - ./database/data:/bitnami/mongodb
-      - ./database/log:/opt/bitnami/mongodb/logs
+      - ./database/data:/data/db
+      - ./database/log:/var/log/mongodb
+      # If you'd rather use a Docker volume than a bind mount, use a volume configuration
+      # like this instead:
+      # - mongo-data:/data/db
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     # ports:
@@ -22,6 +25,9 @@ services:
     platform: linux/amd64
     volumes:
       - ./server/resources:/var/lib/mage
+      # If you'd rather use a Docker volume than a bind mount, use a volume configuration
+      # like this instead:
+      # - server-resources:/var/lib/mage
     # Comment the ports block to disallow connections directly to the node
     # server when running the mage-web-proxy below.
     ports:
@@ -52,3 +58,8 @@ services:
 networks:
   mage.net:
     driver: bridge
+
+# Uncomment this section to use Docker volumes instead of bind mounts for data directories:
+# volumes:
+#   "mongo-data":
+#   "server-resources":
