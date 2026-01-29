@@ -11,8 +11,28 @@ import fs from 'fs';
 import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
+import { error } from 'console';
 
 const { name: packageName } = require('../../package.json')
+
+/**
+ * Represents the result of a connection test
+ */
+export interface ConnectionTestResult {
+  success: boolean
+  message: string
+  timestamp?: Date
+}
+
+/**
+ * Represents the current status of the plugin
+ */
+export interface PluginStatus {
+  connected: boolean
+  lastError?: string
+  lastSync?: Date
+  lastConnectionAttempt?: Date
+}
 
 /**
  * Class used to process observations for SFTP
@@ -28,6 +48,16 @@ export class SftpController {
    * The next timeout, use this to cancel the next one if the processor is stopped.
    */
   private nextTimeout: NodeJS.Timeout | undefined;
+
+  /**
+   * Plugin status tracking
+   */
+  private status: PluginStatus = {
+    connected: false,
+    lastError: undefined,
+    lastSync: undefined,
+    lastConnectionAttempt: undefined
+  };
 
   /**
    * Used to get all the active events.
@@ -148,20 +178,35 @@ export class SftpController {
    */
   async start() {
     this.configuration = await this.getConfiguration()
-    if (!this.configuration.enabled) { return }
+    if (!this.configuration.enabled) {
+      this.status.connected = false
+      this.status.lastError = undefined
+      return
+    }
+
+    this.status.lastConnectionAttempt = new Date()
 
     try {
       const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string;
+      if (!sftpKeyFilename) {
+        throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set')
+      }
       const sftpKeyFile = fs.readFileSync(sftpKeyFilename);
       await this.sftpClient.connect({
         host: this.configuration.sftpClient.host,
+        port: this.configuration.sftpClient.port,
         username: this.configuration.sftpClient.username,
         privateKey: sftpKeyFile
       });
       this.isRunning = true;
+      this.status.connected = true;
+      this.status.lastError = undefined;
       await this.processAndScheduleNext()
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e)
       this.console.error("error connecting to sftp endpoint", e)
+      this.status.connected = false
+      this.status.lastError = `Connection failed: ${errorMessage}`
     }
   }
 
@@ -171,8 +216,104 @@ export class SftpController {
   async stop() {
     this.configuration = null
     this.isRunning = false
-    await this.sftpClient.end()
+    this.status.connected = false
+    try {
+      await this.sftpClient.end()
+    } catch (e) {
+      this.console.error("error disconnecting sftp client", e)
+    }
     clearTimeout(this.nextTimeout)
+  }
+
+  /**
+   * Gets the current plugin status
+   * @returns The current status including connection state and any errors
+   */
+  public getStatus(): PluginStatus {
+    return { ...this.status }
+  }
+
+  /**
+   * Tests the connection to an SFTP server with the given configuration
+   * @param config The SFTP client configuration to test
+   * @returns A result object indicating success or failure with a message
+   */
+  public async testConnection(config?: Partial<SFTPPluginConfig>): Promise<ConnectionTestResult> {
+    const testClient = new SFTPClient()
+    const timestamp = new Date()
+
+    try {
+      const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string
+      if (!sftpKeyFilename) {
+        return {
+          success: false,
+          message: 'MAGE_SFTP_KEY_FILE environment variable is not set. Please configure the server with a valid SFTP private key file path.',
+          timestamp
+        }
+      }
+
+      let sftpKeyFile: Buffer
+      try {
+        sftpKeyFile = fs.readFileSync(sftpKeyFilename)
+      } catch (e) {
+        return {
+          success: false,
+          message: `Failed to read SFTP key file at "${sftpKeyFilename}": ${e instanceof Error ? e.message : String(e)}`,
+          timestamp
+        }
+      }
+
+      const currentConfig = this.configuration || await this.getConfiguration()
+      const sftpConfig = config?.sftpClient || currentConfig.sftpClient
+
+      if (!sftpConfig.host) {
+        return {
+          success: false,
+          message: 'SFTP host is not configured',
+          timestamp
+        }
+      }
+
+      await testClient.connect({
+        host: sftpConfig.host,
+        port: sftpConfig.port || 22,
+        username: sftpConfig.username,
+        privateKey: sftpKeyFile
+      })
+
+      try {
+        await testClient.list(sftpConfig.path || '/')
+      } catch (pathError) {
+        await testClient.end()
+        return {
+          success: false,
+          message: `Connected to SFTP server, but cannot access path "${sftpConfig.path}": ${pathError instanceof Error ? pathError.message : String(pathError)}`,
+          timestamp
+        }
+      }
+
+      await testClient.end()
+
+      return {
+        success: true,
+        message: `Successfully connected to ${sftpConfig.host}:${sftpConfig.port} and verified access to path "${sftpConfig.path}"`,
+        timestamp
+      }
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e)
+      this.console.error('Connection test failed:', e)
+
+      return {
+        success: false,
+        message: errorMessage,
+        timestamp
+      }
+    } finally {
+      try {
+        await testClient.end()
+      } catch {
+      }
+    }
   }
 
   /**
@@ -189,8 +330,12 @@ export class SftpController {
           const event = new MageEvent(attrs)
           await this.processEvent(event, configuration)
         }
+        this.status.lastSync = new Date()
+        this.status.lastError = undefined
       } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : String(e)
         this.console.error('sftp error', e)
+        this.status.lastError = `Sync error: ${errorMessage}`
       }
 
       this.scheduleNext(configuration.interval);

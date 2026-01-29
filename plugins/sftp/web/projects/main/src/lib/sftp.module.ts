@@ -15,6 +15,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table'
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { HttpClientModule } from '@angular/common/http'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConfigurationComponent } from './configuration/configuration.component';
@@ -38,6 +39,7 @@ import { ConfigurationComponent } from './configuration/configuration.component'
     MatInputModule,
     MatListModule,
     MatSelectModule,
+    MatSnackBarModule,
     MatTableModule,
     MatRadioModule,
     MatSlideToggleModule,

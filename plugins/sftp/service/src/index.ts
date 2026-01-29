@@ -80,14 +80,63 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               res.json(config);
             })
             .post(async (req, res, _next) => {
-              await controller.stop()
+              try {
+                await controller.stop()
 
-              const configuration = req.body as SFTPPluginConfig
-              await controller.updateConfiguration(configuration)
+                const configuration = req.body as SFTPPluginConfig
+                await controller.updateConfiguration(configuration)
 
-              await controller.start()
+                await controller.start()
 
-              res.status(200)
+                const status = controller.getStatus()
+                if (status.lastError) {
+                  res.status(200).json({
+                    success: false,
+                    message: status.lastError,
+                    configuration
+                  })
+                } else {
+                  res.status(200).json({
+                    success: true,
+                    message: 'Configuration saved successfully',
+                    configuration
+                  })
+                }
+              } catch (error) {
+                console.error('Error updating configuration:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Failed to save configuration'
+                })
+              }
+            })
+
+          routes.route('/test-connection')
+            .post(async (req, res, _next) => {
+              try {
+                const result = await controller.testConnection(req.body)
+                res.json(result)
+              } catch (error) {
+                console.error('Error testing connection:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Connection test failed'
+                })
+              }
+            })
+
+          routes.route('/status')
+            .get(async (_req, res, _next) => {
+              try {
+                const status = controller.getStatus()
+                res.json(status)
+              } catch (error) {
+                console.error('Error getting status:', error)
+                res.status(500).json({
+                  connected: false,
+                  lastError: error instanceof Error ? error.message : 'Failed to get status'
+                })
+              }
             })
 
           return routes

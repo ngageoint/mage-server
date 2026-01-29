@@ -1,4 +1,21 @@
 <div class="plugin">
+  <div *ngIf="loadError" class="error-banner">
+    <mat-icon>error</mat-icon>
+    <span>{{loadError}}</span>
+  </div>
+
+  <div *ngIf="configuration.enabled" class="status-banner" [class.connected]="status.connected"
+    [class.disconnected]="!status.connected">
+    <mat-icon>{{status.connected ? 'cloud_done' : 'cloud_off'}}</mat-icon>
+    <div class="status-info">
+      <span class="status-text">
+        {{status.connected ? 'Connected to SFTP server' : 'Not connected to SFTP server'}}
+      </span>
+      <span *ngIf="status.lastError" class="status-error">{{status.lastError}}</span>
+      <span *ngIf="status.lastSync" class="status-detail">Last sync: {{status.lastSync | date:'medium'}}</span>
+    </div>
+  </div>
+
   <div class="configuration">
     <div class="card">
       <div class="card__header">
@@ -83,6 +100,13 @@
         </div>
         <div class="form-field-container">
           <mat-form-field appearance="fill">
+            <mat-label>SFTP Port</mat-label>
+            <input matInput type="number" [(ngModel)]="configuration.sftpClient.port" required>
+            <mat-hint>Port of SFTP server. Default is 22.</mat-hint>
+          </mat-form-field>
+        </div>
+        <div class="form-field-container">
+          <mat-form-field appearance="fill">
             <mat-label>SFTP Path</mat-label>
             <input matInput type="text" [(ngModel)]="configuration.sftpClient.path" required>
             <mat-hint>Path to remote file.</mat-hint>
@@ -95,11 +119,28 @@
             <mat-hint>Username for authentication.</mat-hint>
           </mat-form-field>
         </div>
+
+        <div *ngIf="lastTestResult" class="test-result" [class.success]="lastTestResult.success"
+          [class.error]="!lastTestResult.success">
+          <mat-icon>{{lastTestResult.success ? 'check_circle' : 'error'}}</mat-icon>
+          <span>{{lastTestResult.message}}</span>
+        </div>
+
+        <div class="form-field-container">
+          <button mat-stroked-button color="primary" (click)="testConnection()"
+            [disabled]="isTesting || !configuration.sftpClient.host">
+            <mat-spinner *ngIf="isTesting" diameter="20" class="button-spinner"></mat-spinner>
+            <mat-icon *ngIf="!isTesting">wifi_tethering</mat-icon>
+            {{isTesting ? 'Testing...' : 'Test Connection'}}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <button mat-flat-button color="primary" (click)="save()">
-    <mat-icon>save</mat-icon> Save Configuration
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="isSaving || !hasUnsavedChanges">
+    <mat-spinner *ngIf="isSaving" diameter="20" class="button-spinner"></mat-spinner>
+    <mat-icon *ngIf="!isSaving">save</mat-icon>
+    {{isSaving ? 'Saving...' : 'Save Configuration'}}
   </button>
 </div>

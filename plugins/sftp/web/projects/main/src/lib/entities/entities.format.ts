@@ -12,6 +12,25 @@ export enum TriggerRule {
   CreateAndUpdate = "CreateAndUpdate"
 }
 
+/**
+ * Represents the result of a connection test to the SFTP server
+ */
+export interface ConnectionTestResult {
+  success: boolean
+  message: string
+  timestamp?: Date
+}
+
+/**
+ * Represents the current status of the SFTP plugin
+ */
+export interface PluginStatus {
+  connected: boolean
+  lastError?: string
+  lastSync?: Date
+  lastConnectionAttempt?: Date
+}
+
 export type MageEventId = number
 
 /**
@@ -62,6 +81,7 @@ export interface SFTPPluginConfig {
    */
   sftpClient: {
     host: string,
+    port: number,
     path: string,
     username: string
   }
