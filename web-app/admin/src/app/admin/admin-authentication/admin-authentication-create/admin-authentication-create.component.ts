@@ -4,7 +4,7 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import {
@@ -73,7 +73,7 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
-    @Inject(AuthenticationConfigurationService)
+    private route: ActivatedRoute,
     private readonly authenticationConfigurationService: AuthenticationConfigurationService
   ) {
     this.form = this.fb.group({
@@ -187,7 +187,7 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.router.navigateByUrl('../../security');
+          this.router.navigate(['../../security'], { relativeTo: this.route });
         },
         error: () => {
           this.snackBar.open(
@@ -195,7 +195,7 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
             undefined,
             { duration: 2000 }
           );
-          this.router.navigateByUrl('../../security');
+          this.router.navigate(['../../security'], { relativeTo: this.route });
         }
       });
   }

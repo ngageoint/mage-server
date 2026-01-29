@@ -14,12 +14,16 @@ import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../team';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
 import { PageEvent } from '@angular/material/paginator';
+import { AdminUserService } from '../../services/admin-user.service';
+import { AdminToastService } from '../../services/admin-toast.service';
 
 describe('TeamDashboardComponent', () => {
   let component: TeamDashboardComponent;
   let fixture: ComponentFixture<TeamDashboardComponent>;
   let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
+  let mockUserService: any;
+  let toastSpy: jasmine.SpyObj<AdminToastService>;
 
   const mockTeams: Team[] = [
     {
@@ -59,13 +63,20 @@ describe('TeamDashboardComponent', () => {
   beforeEach(waitForAsync(() => {
     mockTeamsService = jasmine.createSpyObj('AdminTeamsService', ['getTeams']);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
+    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
+
+    mockUserService = {
+      myself$: of({ role: { permissions: ['CREATE_TEAM'] } })
+    };
 
     TestBed.configureTestingModule({
       declarations: [TeamDashboardComponent],
       imports: [NoopAnimationsModule],
       providers: [
         { provide: AdminTeamsService, useValue: mockTeamsService },
-        { provide: MatDialog, useValue: mockDialog }
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: AdminUserService, useValue: mockUserService },
+        { provide: AdminToastService, useValue: toastSpy }
       ]
     })
       .overrideTemplate(TeamDashboardComponent, '')
@@ -158,6 +169,8 @@ describe('TeamDashboardComponent', () => {
   });
 
   it('should open new team dialog', () => {
+    component.hasTeamCreatePermission = true;
+
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
     dialogRefSpy.afterClosed.and.returnValue(of(null));
     mockDialog.open.and.returnValue(dialogRefSpy);
@@ -165,28 +178,45 @@ describe('TeamDashboardComponent', () => {
     component.createTeam();
 
     expect(mockDialog.open).toHaveBeenCalledWith(CreateTeamDialogComponent, {
+      width: '80%',
       data: { team: {} }
     });
   });
+  
+  it('should refresh teams after creating new team', fakeAsync(() => {
+    component.hasTeamCreatePermission = true;
 
-  it('should refresh teams after creating new team', () => {
     mockTeamsService.getTeams.calls.reset();
+    toastSpy.show.calls.reset();
 
     const createdTeam = {
       id: '4',
       name: 'New Team',
       description: 'New team description'
     } as any;
+
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
     dialogRefSpy.afterClosed.and.returnValue(of(createdTeam));
     mockDialog.open.and.returnValue(dialogRefSpy);
 
     component.createTeam();
+    tick();
+
+    expect(mockDialog.open).toHaveBeenCalledWith(CreateTeamDialogComponent, {
+      width: '80%',
+      data: { team: {} }
+    });
+
+    expect(toastSpy.show).toHaveBeenCalledWith(
+      'Team Created',
+      ['../teams', createdTeam.id],
+      'Go to Team'
+    );
 
     expect(mockTeamsService.getTeams).toHaveBeenCalled();
-  });
+  }));
 
-  it('should not refresh teams if dialog is cancelled', () => {
+  it('should not refresh teams if dialog is cancelled', fakeAsync(() => {
     mockTeamsService.getTeams.calls.reset();
 
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
@@ -194,9 +224,11 @@ describe('TeamDashboardComponent', () => {
     mockDialog.open.and.returnValue(dialogRefSpy);
 
     component.createTeam();
+    tick();
 
+    expect(toastSpy.show).not.toHaveBeenCalled();
     expect(mockTeamsService.getTeams).not.toHaveBeenCalled();
-  });
+  }));
 
   it('should handle empty teams response by leaving defaults unchanged', () => {
     mockTeamsService.getTeams.and.returnValue(of([]));
@@ -212,9 +244,9 @@ describe('TeamDashboardComponent', () => {
     const destroy$ = (component as any).destroy$;
     const nextSpy = spyOn(destroy$, 'next').and.callThrough();
     const completeSpy = spyOn(destroy$, 'complete').and.callThrough();
-  
+
     component.ngOnDestroy();
-  
+
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
   });

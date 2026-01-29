@@ -1,30 +1,36 @@
-var async = require('async')
-  , log = require('../../logger')
-  , request = require('request')
-  , mongoose = require('mongoose')
-  , moment = require('moment')
-  , config = require('./config.json')
-  , data = require('./data')
-  , attachments = require('./attachments');
+const async = require('async');
+const log = require('../../logger'); // centralized logger
+const request = require('request');
+const mongoose = require('mongoose');
+const moment = require('moment');
+const config = require('./config.json');
+const data = require('./data');
+const attachments = require('./attachments');
 
 // setup mongoose to talk to mongodb
-var mongodbConfig = config.mongodb;
-mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
-  if (err) {
-    log.info('Error connecting to mongo database, please make sure mongodbConfig is running...');
-    throw err;
+const mongodbConfig = config.mongodb;
+mongoose.connect(
+  mongodbConfig.url,
+  { server: { poolSize: mongodbConfig.poolSize } },
+  function(err) {
+    if (err) {
+      log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
+      throw err;
+    }
   }
-});
+);
 
-var mongooseLogger = log.loggers.get('mongoose');
+// 🔹 FIXED: use your new mongooseLogger
+const { mongooseLogger } = require('../../logger');
+
 mongoose.set('debug', function(collection, method, query, doc, options) {
-  mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
+  mongooseLogger.debug("%s.%s(%j, %j, %j)", collection, method, query, doc, options);
 });
 
 function getToken(done) {
   log.info('getting token');
 
-  var options = {
+  const options = {
     url: config.url + '/api/login',
     json: {
       username: config.credentials.username,
@@ -35,7 +41,7 @@ function getToken(done) {
 
   request.post(options, function(err, res, body) {
     if (err) return done(err);
-    if (res.statusCode !== 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error hitting login api, response code: ' + res.statusCode));
     done(null, body.token);
   });
 }
@@ -46,15 +52,11 @@ function sync() {
   getToken(function(err, token) {
     if (err) log.error('error getting token', err);
 
-    var series = [];
+    let series = [];
     if (token) {
       series = [
-        function(done) {
-          data.sync(token, done);
-        },
-        function(done) {
-          attachments.sync(token, done);
-        }
+        function(done) { data.sync(token, done); },
+        function(done) { attachments.sync(token, done); }
       ];
     }
 

@@ -468,3 +468,30 @@ $max-height: 72.8vh;
   color: inherit;
   text-decoration: none;
 }
+
+.pagination {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.pagination ::ng-deep .mat-paginator,
+.pagination ::ng-deep .mat-mdc-paginator {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.pagination ::ng-deep .mat-paginator .mat-icon-button:not([disabled]),
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.pagination ::ng-deep .mat-paginator .mat-icon-button:not([disabled]) .mat-icon,
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) .mat-icon {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) svg,
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) svg path {
+  fill: currentColor !important;
+  opacity: 1 !important;
+}

@@ -1,6 +1,6 @@
 {
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "lib", "dist", "**/*.spec.ts", "**/*.test.ts"],
+  "include": ["src/**/*.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],
+  "exclude": ["node_modules", "lib", "dist"],
   "compilerOptions": {
     "strict": true,
     "outDir": "lib",
@@ -11,7 +11,7 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": ".",
-    "types": ["node"],
+    "types": ["jasmine", "node"],
     "skipLibCheck": true
   }
 }

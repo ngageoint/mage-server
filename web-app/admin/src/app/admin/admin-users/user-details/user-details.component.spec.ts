@@ -288,7 +288,7 @@ describe('UserDetailsComponent', () => {
     expect(component.loginPage).toBeTruthy();
     expect(component.showNext).toBeTrue();
   }));
-
+  
   it('should open confirm dialog and delete user on confirm', fakeAsync(() => {
     component.user = { ...mockUser };
 
@@ -299,7 +299,13 @@ describe('UserDetailsComponent', () => {
     expect(mockUserService.deleteUser as jasmine.Spy).toHaveBeenCalledWith(
       'test-user-id'
     );
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/admin/users']);
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(
+      ['../../users'],
+      jasmine.objectContaining({
+        relativeTo: jasmine.any(Object)
+      })
+    );
   }));
 
   it('should compute authenticated user icon/avatar URLs', () => {

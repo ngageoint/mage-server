@@ -48,7 +48,7 @@ import { RouterModule } from '@angular/router';
     MatProgressBarModule,
     MatOptionModule,
     AdminBreadcrumbModule,
-    RouterModule
+    RouterModule,
   ],
   declarations: [
     UserDashboardComponent,

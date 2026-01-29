@@ -162,11 +162,11 @@ export class FormDetailsComponent implements OnInit {
           {
             title: 'Events',
             iconClass: 'fa fa-calendar',
-            route: ['../']
+            route: ['../../../']
           },
           {
             title: event.name,
-            route: ['../../', String(event?.id ?? '')]
+            route: ['../../../', String(event?.id ?? '')]
           },
           {
             title: this.formId ? 'Edit Form' : 'New Form'

@@ -1,4 +1,4 @@
-const log = require('winston')
+const log = require('../logger')
   , moment = require('moment')
   , LocalStrategy = require('passport-local').Strategy
   , TokenAssertion = require('./verification').TokenAssertion

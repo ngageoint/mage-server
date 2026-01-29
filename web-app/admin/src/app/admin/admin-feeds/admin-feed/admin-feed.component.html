@@ -1,5 +1,5 @@
-<div class="page" *ngIf="feedLoaded | async; else loading">
   <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+<div class="page" *ngIf="feedLoaded | async; else loading">
 
   <div class="heading">
     <div class="heading__content">
@@ -15,7 +15,7 @@
         mat-button
         color="primary"
         class="heading__action"
-        [routerLink]="['../feeds', 'edit', feed?.id]"
+        [routerLink]="['../../feeds', feed?.id, 'edit']"
       >
         <mat-icon>edit</mat-icon>Edit
       </button>

@@ -2,15 +2,20 @@ import {
   ComponentFixture,
   TestBed,
   fakeAsync,
-  flushMicrotasks
+  tick,
+  discardPeriodicTasks
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { of } from 'rxjs';
+
 import { UserSearchBoxComponent } from './user-search-box.component';
 import { UserPagingService } from '../../../services/user-paging.service';
 
 describe('UserSearchBoxComponent', () => {
   let component: UserSearchBoxComponent;
   let fixture: ComponentFixture<UserSearchBoxComponent>;
+
+  const DEBOUNCE_MS = 300;
 
   const mockUsers = [
     { id: '1', displayName: 'Alice Adams' } as any,
@@ -21,11 +26,18 @@ describe('UserSearchBoxComponent', () => {
     constructDefault: jasmine
       .createSpy('constructDefault')
       .and.returnValue({ all: {} }),
-    refresh: jasmine.createSpy('refresh').and.returnValue(Promise.resolve()),
+
+    // IMPORTANT: must be an Observable because component calls .pipe(...)
+    refresh: jasmine.createSpy('refresh').and.returnValue(of(undefined)),
+
+    // IMPORTANT: must be an Observable because component likely subscribes
     search: jasmine
       .createSpy('search')
-      .and.returnValue(Promise.resolve(mockUsers))
-  };
+      .and.callFake((_state: any, term: string) => {
+        if (!term) return of([]);
+        return of(mockUsers);
+      })
+  } as any;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -33,13 +45,18 @@ describe('UserSearchBoxComponent', () => {
       declarations: [UserSearchBoxComponent],
       providers: [{ provide: UserPagingService, useValue: mockUserPaging }]
     }).compileComponents();
-  
+
     fixture = TestBed.createComponent(UserSearchBoxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  
+
     mockUserPaging.search.calls.reset();
-  });  
+  });
+
+  afterEach(() => {
+    // Helps clear subscriptions/timers created by component streams
+    fixture.destroy();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -49,24 +66,36 @@ describe('UserSearchBoxComponent', () => {
 
   it('should call search and update results when user types', fakeAsync(() => {
     component.onUserInput('al');
-    flushMicrotasks();
+
+    tick(DEBOUNCE_MS);
+    fixture.detectChanges();
 
     expect(mockUserPaging.search).toHaveBeenCalledWith(
       component.userStateAndData[component.userState],
       'al'
     );
+
     expect(component.searchResults.length).toBe(2);
     expect(component.searchResults[0].displayName).toBe('Alice Adams');
+
+    // If component uses any periodic timer internally, clear it
+    discardPeriodicTasks();
   }));
 
   it('should clear results when input is empty', fakeAsync(() => {
     component.searchResults = [...mockUsers];
 
     component.onUserInput('');
-    flushMicrotasks();
+
+    // even if debounce exists, empty-input path usually clears immediately;
+    // but ticking 0 is harmless and drains queued timers.
+    tick(0);
+    fixture.detectChanges();
 
     expect(component.searchResults.length).toBe(0);
     expect(mockUserPaging.search).not.toHaveBeenCalled();
+
+    discardPeriodicTasks();
   }));
 
   it('should emit selected user and update text', () => {
@@ -98,11 +127,16 @@ describe('UserSearchBoxComponent', () => {
       id: String(i),
       displayName: `User ${i}`
     })) as any[];
-    mockUserPaging.search.and.returnValue(Promise.resolve(many));
+
+    mockUserPaging.search.and.returnValue(of(many));
 
     component.onUserInput('u');
-    flushMicrotasks();
+
+    tick(DEBOUNCE_MS);
+    fixture.detectChanges();
 
     expect(component.searchResults.length).toBe(10);
+
+    discardPeriodicTasks();
   }));
 });

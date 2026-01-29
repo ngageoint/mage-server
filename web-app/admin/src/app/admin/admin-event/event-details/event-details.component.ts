@@ -166,7 +166,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     if (!eventId) {
       console.error('Missing eventId route param');
-      this.router.navigateByUrl('../events');
+      this.router.navigate(['../../events'], { relativeTo: this.route });
       return;
     }
 
@@ -446,10 +446,10 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result?.id && this.event?.id) {
-        this.router.navigate(['/admin/event', this.event.id, 'forms', result.id, 'edit']);
+        this.router.navigate(['../../events', this.event.id, 'forms', result.id], { relativeTo: this.route });
       }
     });
-  }
+  }x  
 
   onFormsReordered(reorderedForms: any[]): void {
     if (!this.event?.forms) return;
@@ -594,7 +594,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.router.navigateByUrl('../events');
+        this.router.navigate(['../../events'], { relativeTo: this.route });
       }
     });
   }

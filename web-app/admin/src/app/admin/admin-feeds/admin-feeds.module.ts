@@ -66,7 +66,6 @@ import { RouterModule } from '@angular/router';
     AdminBreadcrumbModule,
     MatAutocompleteModule,
     MatTabsModule,
-    MatSnackBarModule,
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
@@ -92,7 +91,8 @@ import { RouterModule } from '@angular/router';
     FeedItemSummaryModule,
     JsonSchemaModule,
     StaticIconModule,
-    RouterModule
+    RouterModule,
+    MatSnackBarModule
   ],
   exports: [
     AdminFeedsComponent,

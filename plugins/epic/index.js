@@ -1,6 +1,9 @@
-var child = require('child_process')
-  , config = require('./config.json')
-  , log = require('winston');
+const child = require('child_process');
+
+const config = require('./config.json');
+
+// Import centralized logger instead of using Winston directly
+const log = require('../logger'); // <-- updated path relative to this file
 
 exports.initialize = function(app, callback) {
   if (!config.enable) {
@@ -8,37 +11,37 @@ exports.initialize = function(app, callback) {
   }
 
   log.info('activating epic plugin');
+
   startObservations();
   startAttachments();
 
-  // nothing async happening in setup
   setImmediate(function() {
     callback();
   });
 };
 
 function startObservations() {
-  var observations = config.esri.observations;
+  const observations = config.esri.observations;
+
   if (observations.enable) {
-    // start observations worker
-    var observationsWorker = child.fork(__dirname + '/observations');
+    const observationsWorker = child.fork(__dirname + '/observations');
 
     observationsWorker.on('error', function(err) {
       log.error('***************** epic observation error ******************************', err);
-      observationsWorker.kill();
-      startObservations();
+      observationsWorker.kill();     // kill the worker if error occurs
+      startObservations();           // restart the worker
     });
 
     observationsWorker.on('exit', function(exitCode) {
-      log.warn('***************** epic observation  exit, code ************************', exitCode);
+      log.warn('***************** epic observation exit, code ************************', exitCode);
       if (exitCode !== 0) {
-        observationsWorker.kill();
-        startObservations();
+        observationsWorker.kill();   // kill if it exited unexpectedly
+        startObservations();         // restart the worker
       }
     });
 
     observationsWorker.on('uncaughtException', function(err) {
-      log.error('*****************  Observation worker uncaught exception: ***************** ' + err);
+      log.error('***************** Observation worker uncaught exception: ***************** ' + err);
     });
 
     process.on('exit', function(err) {
@@ -49,26 +52,26 @@ function startObservations() {
 }
 
 function startAttachments() {
-  var attachments = config.esri.attachments;
+  const attachments = config.esri.attachments;
+
   if (attachments.enable) {
-    // start attachments worker
-    var attachmentsWorker = child.fork(__dirname + '/attachments');
+    const attachmentsWorker = child.fork(__dirname + '/attachments');
 
     attachmentsWorker.on('error', function(err) {
       log.error('epic attachment error', err);
-      attachmentsWorker.kill();
+      attachmentsWorker.kill(); // kill the worker on error
     });
 
     attachmentsWorker.on('exit', function(exitCode) {
-      log.warn('epic attachment  exit, code', exitCode);
+      log.warn('epic attachment exit, code', exitCode);
       if (exitCode !== 0) {
-        attachmentsWorker.kill();
-        startAttachments();
+        attachmentsWorker.kill(); // kill if exited unexpectedly
+        startAttachments();       // restart worker
       }
     });
 
-    attachmentsWorker.on('uncaughtException', function (err) {
-      log.error('*****************  Attachment worker uncaught exception: ***************** ' + err);
+    attachmentsWorker.on('uncaughtException', function(err) {
+      log.error('***************** Attachment worker uncaught exception: ***************** ' + err);
     });
 
     process.on('exit', function() {

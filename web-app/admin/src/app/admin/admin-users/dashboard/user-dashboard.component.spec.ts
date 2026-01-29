@@ -21,6 +21,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { AdminUserService } from '../../services/admin-user.service';
+import { AdminToastService } from '../../services/admin-toast.service';
 
 describe('UserDashboardComponent', () => {
   let component: UserDashboardComponent;
@@ -77,6 +78,7 @@ describe('UserDashboardComponent', () => {
   let userServiceSpy: jasmine.SpyObj<AdminUserService>;
   let pagingServiceSpy: jasmine.SpyObj<UserPagingService>;
   let teamsServiceSpy: jasmine.SpyObj<AdminTeamsService>;
+  let toastSpy: jasmine.SpyObj<AdminToastService>;
   let myself$: BehaviorSubject<any>;
 
   beforeEach(async () => {
@@ -84,6 +86,8 @@ describe('UserDashboardComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']);
     localStorageSpy = jasmine.createSpyObj('LocalStorageService', ['getToken']);
     localStorageSpy.getToken.and.returnValue('token123');
+
+    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
     myself$ = new BehaviorSubject<any>({
       role: { permissions: ['CREATE_USER', 'UPDATE_USER', 'DELETE_USER'] }
@@ -98,7 +102,7 @@ describe('UserDashboardComponent', () => {
     userServiceSpy.getRoles.and.returnValue(
       of([{ id: '1', name: 'Admin', permissions: [] } as any])
     );
-    userServiceSpy.createUser.and.returnValue(of({} as any));
+    userServiceSpy.createUser.and.returnValue(of({ id: 'created-id' } as any));
 
     pagingServiceSpy = jasmine.createSpyObj<UserPagingService>(
       'UserPagingService',
@@ -146,7 +150,8 @@ describe('UserDashboardComponent', () => {
         { provide: LocalStorageService, useValue: localStorageSpy },
         { provide: AdminUserService, useValue: userServiceSpy },
         { provide: UserPagingService, useValue: pagingServiceSpy },
-        { provide: AdminTeamsService, useValue: teamsServiceSpy }
+        { provide: AdminTeamsService, useValue: teamsServiceSpy },
+        { provide: AdminToastService, useValue: toastSpy }
       ]
     }).compileComponents();
 
@@ -292,6 +297,7 @@ describe('UserDashboardComponent', () => {
     expect(dialogSpy.open).toHaveBeenCalled();
     expect(userServiceSpy.createUser).toHaveBeenCalled();
     expect(refreshSpy).toHaveBeenCalled();
+    expect(toastSpy.show).toHaveBeenCalled();
   }));
 
   it('should not call createUser when modal is not confirmed', fakeAsync(() => {
@@ -306,6 +312,7 @@ describe('UserDashboardComponent', () => {
     tick();
 
     expect(userServiceSpy.createUser).not.toHaveBeenCalled();
+    expect(toastSpy.show).not.toHaveBeenCalled();
   }));
 
   it('should compute success and failure percent safely', () => {

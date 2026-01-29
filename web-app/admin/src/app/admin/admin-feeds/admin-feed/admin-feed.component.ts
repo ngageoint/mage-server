@@ -51,11 +51,11 @@ export class AdminFeedComponent implements OnInit {
     {
       title: 'Feeds',
       icon: 'rss_feed',
-      route: ['../feeds']
+      route: ['../../feeds']
     }
   ];
 
-  feedsRoute: any[] = ['../feeds'];
+  feedsRoute: any[] = ['../../feeds'];
   feedEditRoute: any[] | null = null;
 
   feedId: string | null = null;
@@ -139,11 +139,10 @@ export class AdminFeedComponent implements OnInit {
         {
           title: 'Feeds',
           icon: 'rss_feed',
-          route: ['../feeds']
+          route: ['../../feeds']
         },
         {
           title: this.feed.title,
-          route: ['../feed', this.feed.id]
         }
       ];
 
@@ -304,7 +303,7 @@ export class AdminFeedComponent implements OnInit {
       .subscribe((result) => {
         if (result === true) {
           this.feedService.deleteFeed(this.feed).subscribe(() => {
-            this.router.navigate(['../feeds'], { relativeTo: this.route });
+            this.router.navigate(['../../feeds'], { relativeTo: this.route });
           });
         }
       });

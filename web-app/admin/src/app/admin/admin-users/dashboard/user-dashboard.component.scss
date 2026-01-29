@@ -1,5 +1,6 @@
 ::ng-deep .admin-main-content {
   min-width: 520px;
+
   &:has(admin-users) {
     height: 92vh;
     overflow-y: hidden;
@@ -9,6 +10,7 @@
       overflow-y: scroll;
     }
   }
+
   admin-users {
     .container {
       height: 90vh;
@@ -80,36 +82,119 @@ $max-height: 72.8vh;
 }
 
 .integrated-navbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-areas: 'filters buttons';
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
   padding: 1rem 1.5rem;
   border-bottom: 2px solid #e5e7eb;
-  height: 85px;
+  height: auto;
+  min-height: 85px;
+}
 
-  mage-card-navbar {
-    flex: 1;
-    margin-right: 1rem;
-    min-width: 200px;
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    margin-bottom: 0;
-  }
+.integrated-navbar.d-flex {
+  display: grid !important;
+}
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
+.filters {
+  grid-area: filters;
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) max-content;
+  align-items: center !important;
+  gap: 0.75rem 1rem;
+  margin-top: 0;
+  width: 100%;
+}
+
+.filters mage-card-navbar {
+  min-width: 220px;
+  width: 100%;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.button-group {
+  grid-area: buttons;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 0.75rem 1rem;
+  margin-top: 0;
+  justify-content: end;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-left: 20px;
+  padding-right: 20px;
+}
+
+.button-group button {
+  height: 43px;
+  white-space: nowrap;
+}
+
+:host {
+  .status-filter {
+    width: 160px;
     margin: 0;
-    padding: 5px;
+    justify-self: end;
+    font-size: 14px;
 
-    .button-group {
-      width: auto;
-      margin: 0 auto;
+    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+      padding: 10px;
+    }
+
+    ::ng-deep .mat-form-field-infix {
+      padding: 10px;
+    }
+
+    ::ng-deep .mat-form-field-label-wrapper {
+      top: -12px;
+      left: -1px;
     }
   }
+
+  ::ng-deep input.search-input.ng-untouched.ng-pristine.ng-valid,
+  ::ng-deep input.search-input.ng-valid.ng-dirty.ng-touched,
+  ::ng-deep input.search-input.ng-valid.ng-dirty.ng-untouched {
+    height: 43px;
+    margin-top: 0;
+  }
 }
+
+@media (max-width: 980px) {
+  .integrated-navbar {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'filters'
+      'buttons';
+    align-items: stretch;
+  }
+
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  :host .status-filter {
+    width: 100%;
+  }
+
+  .button-group {
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    justify-content: stretch;
+  }
+
+  .button-group button:first-child {
+    justify-self: start;
+  }
+
+  .button-group button:last-child {
+    justify-self: end;
+  }
+}
+
 .table-wrapper {
   border-radius: 12px;
   background: #fff;
@@ -148,11 +233,14 @@ $max-height: 72.8vh;
   align-content: center;
 }
 
-.table-scroll, .no-event {
+.table-scroll,
+.no-event {
   height: 62.2vh;
+
   @media (max-width: 768px) {
     height: 60.2vh;
   }
+
   overflow-y: auto;
   max-height: 100%;
 
@@ -175,6 +263,7 @@ $max-height: 72.8vh;
   @media (max-height: 700px) {
     height: 34vh;
   }
+
   @media (max-height: 600px) {
     height: 142.5px;
   }
@@ -329,14 +418,6 @@ $max-height: 72.8vh;
   border: 1px solid #f5c2c7;
   padding: 1rem;
   border-radius: 4px;
-}
-
-.bulk-error-summary {
-  margin-top: 2rem;
-  background-color: #fff3f3;
-  border: 1px solid #f5c2c7;
-  padding: 1rem;
-  border-radius: 4px;
   max-width: 100%;
 
   .error-table-wrapper {
@@ -383,57 +464,12 @@ $max-height: 72.8vh;
   color: #666;
 }
 
-.button-group {
-  margin-top: -20px;
-  button {
-    height: 43px;
-    white-space: nowrap;
-  }
-
-  button:not(:last-child) {
-    margin-right: 40px;
-  }
-}
-
-.filters {
-  margin-top: -10px;
-  align-items: center !important;
-  display: flex !important;
-}
-
-:host {
-  .status-filter {
-    width: 150px;
-    margin-left: 1rem;
-    margin-top: 10px;
-    font-size: 14px;
-
-    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
-      padding: 10px;
-    }
-    ::ng-deep .mat-form-field-infix {
-      padding: 10px;
-    }
-
-    ::ng-deep .mat-form-field-label-wrapper {
-      top: -12px;
-      left: -1px;
-    }
-  }
-  ::ng-deep input.search-input.ng-untouched.ng-pristine.ng-valid,
-  ::ng-deep input.search-input.ng-valid.ng-dirty.ng-touched,
-  ::ng-deep input.search-input.ng-valid.ng-dirty.ng-untouched {
-    height: 43px;
-    margin-top: -10px;
-  }
-}
-
 .d-flex {
   display: flex;
   gap: 25px;
 }
 
-.align-items-center{
+.align-items-center {
   align-items: center !important;
 }
 
@@ -446,7 +482,7 @@ $max-height: 72.8vh;
   overflow: hidden;
 }
 
-::ng-deep .mat-tooltip-event-desc{
+::ng-deep .mat-tooltip-event-desc {
   position: relative;
   left: 0 !important;
   font-size: 20px;
@@ -459,4 +495,31 @@ $max-height: 72.8vh;
 
 .w-90 {
   width: 90% !important;
+}
+
+.pagination {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.pagination ::ng-deep .mat-paginator,
+.pagination ::ng-deep .mat-mdc-paginator {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.pagination ::ng-deep .mat-paginator .mat-icon-button:not([disabled]),
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.pagination ::ng-deep .mat-paginator .mat-icon-button:not([disabled]) .mat-icon,
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) .mat-icon {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) svg,
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) svg path {
+  fill: currentColor !important;
+  opacity: 1 !important;
 }

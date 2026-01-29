@@ -30,7 +30,7 @@ export class AdminGuard implements CanActivate {
     return this.userService.getMyself().pipe(
       map((myself: User | null) => {
         if (!myself) {
-          return this.router.createUrlTree(['/']);
+          return this.router.createUrlTree(['/landing']);
         }
 
         const roleName = (myself as any).role?.name;
@@ -39,9 +39,9 @@ export class AdminGuard implements CanActivate {
           roleName === 'ADMIN_ROLE' ||
           roleName === 'EVENT_MANAGER_ROLE';
 
-        return isAdmin ? true : this.router.createUrlTree(['/']);
+        return isAdmin ? true : this.router.createUrlTree(['/landing']);
       }),
-      catchError(() => of(this.router.createUrlTree(['/'])))
+      catchError(() => of(this.router.createUrlTree(['/landing'])))
     );
   }
 }

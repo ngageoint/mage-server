@@ -1,9 +1,7 @@
-
 import path from 'path'
 import * as migrations from '@ngageoint/mongodb-migrations'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const log = require('winston')
+import log from './logger'
 
 export const migrationCollection = 'migrations'
 
@@ -65,5 +63,3 @@ export async function runDatabaseMigrations(mongoUrl: string, mongoOptions?: mig
     process.exit(1)
   }
 }
-
-

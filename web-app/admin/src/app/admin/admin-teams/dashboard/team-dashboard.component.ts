@@ -139,6 +139,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
     if (!this.hasTeamCreatePermission) return;
 
     const dialogRef = this.modal.open(CreateTeamDialogComponent, {
+      width: '80%',
       data: { team: {} }
     });
 

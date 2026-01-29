@@ -5,7 +5,7 @@ import {
   HttpRequest,
   HttpEvent
 } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
@@ -23,6 +23,7 @@ export class AdminUserService {
   constructor(
     private http: HttpClient,
     private router: Router,
+    private route: ActivatedRoute,
     private localStorage: LocalStorageService
   ) {}
 
@@ -68,7 +69,6 @@ export class AdminUserService {
     return this.http.post<void>('/api/logout', {}).pipe(
       tap(() => {
         this.clearUser();
-        this.router.navigate(['/landing']);
       })
     );
   }
@@ -76,9 +76,9 @@ export class AdminUserService {
   getMyself(): Observable<any> {
     return this.http.get<any>('/api/users/myself').pipe(
       tap((user) => this.setUser(user)),
-      catchError(() => of({}))
+      catchError(() => of(null))
     );
-  }
+  }  
 
   checkLoggedInUser(): Observable<any> {
     return this.getMyself();
@@ -177,7 +177,7 @@ export class AdminUserService {
     this.myselfSubject.next(null);
     this.isAdminSubject.next(false);
     this.localStorage.removeToken();
-  }
+  }  
 
   private saveUser(
     url: string,

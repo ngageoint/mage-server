@@ -1,6 +1,6 @@
 'use strict';
 
-const log = require('winston')
+const log = require('../logger')
   , AsyncLock = require('async-lock')
   , access = require('../access')
   , Authentication = require('../models/authentication')

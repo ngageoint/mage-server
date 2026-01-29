@@ -179,10 +179,14 @@ describe('AdminServiceComponent', () => {
     expect(component.feeds.length).toBe(2);
 
     expect(component.breadcrumbs.length).toBe(2);
-    expect(component.breadcrumbs[1]).toEqual({
-      title: 'Service title',
-      route: ['../service', 'serviceid1234']
-    });
+    expect(component.breadcrumbs[1].title).toBe('Service title');
+
+    expect(component.breadcrumbs[1] as any).toEqual(
+      jasmine.objectContaining({
+        title: 'Service title'
+      })
+    );
+    expect((component.breadcrumbs[1] as any).route).toBeUndefined();
   }));
 
   it('should wrap non-object serviceType configSchema and service.config', fakeAsync(() => {

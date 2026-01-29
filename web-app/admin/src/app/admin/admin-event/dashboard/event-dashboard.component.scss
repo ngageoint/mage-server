@@ -1,5 +1,3 @@
-@import '../event-styles';
-
 ::ng-deep .admin-main-content {
   min-width: 520px;
 
@@ -20,28 +18,212 @@
   }
 }
 
+$min-height: 40.8vh;
+$max-height: 72.8vh;
+
 .container.bottom-gap-l {
   margin-bottom: 2rem;
 }
 
+.admin-nav-gap {
+  margin-top: -15px;
+  margin-bottom: -15px;
+
+  .breadcrumbs-toolbar {
+    min-height: 36px !important;
+    height: 36px;
+    background-color: #f0f0f0;
+    color: #555;
+    font-size: 13px;
+    padding: 0 16px;
+    border-radius: 4px;
+
+    mat-icon {
+      font-size: 18px;
+      margin-right: 4px;
+      vertical-align: middle;
+      color: #777;
+    }
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+}
+
+.page-header {
+  margin-bottom: 20px;
+  margin-top: 5px;
+  padding: 0;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+}
+
+.btn-primary {
+  background-color: #1e88e5;
+  color: #fff;
+}
+
+.integrated-navbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-areas: 'filters buttons';
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  height: auto;
+  min-height: 85px;
+}
+
+.integrated-navbar.d-flex {
+  display: grid !important;
+}
+
+.filters {
+  grid-area: filters;
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) max-content;
+  align-items: center !important;
+  gap: 0.75rem 1rem;
+  margin-top: 0;
+  width: 100%;
+}
+
+.filters mage-card-navbar {
+  min-width: 220px;
+  width: 100%;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.button-group {
+  grid-area: buttons;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 0.75rem 1rem;
+  margin-top: 0;
+  justify-content: end;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-left: 20px;
+  padding-right: 20px;
+}
+
+.button-group button {
+  height: 43px;
+  white-space: nowrap;
+}
+
+:host {
+  .status-filter {
+    width: 160px;
+    margin: 0;
+    justify-self: end;
+    font-size: 14px;
+
+    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+      padding: 10px;
+    }
+
+    ::ng-deep .mat-form-field-infix {
+      padding: 10px;
+    }
+
+    ::ng-deep .mat-form-field-label-wrapper {
+      top: -12px;
+      left: -1px;
+    }
+  }
+
+  ::ng-deep input.search-input.ng-untouched.ng-pristine.ng-valid,
+  ::ng-deep input.search-input.ng-valid.ng-dirty.ng-touched,
+  ::ng-deep input.search-input.ng-valid.ng-dirty.ng-untouched {
+    height: 43px;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .integrated-navbar {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'filters'
+      'buttons';
+    align-items: stretch;
+  }
+
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  :host .status-filter {
+    width: 100%;
+  }
+
+  .button-group {
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    justify-content: stretch;
+  }
+
+  .button-group button:first-child {
+    justify-self: start;
+  }
+
+  .button-group button:last-child {
+    justify-self: end;
+  }
+}
+
 .table-wrapper {
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   height: 75vh;
+  overflow: hidden;
 
   @media (max-height: 1100px) {
     height: 73vh;
   }
+
   @media (max-height: 1000px) {
     height: 71vh;
   }
+
   @media (max-height: 900px) {
     height: 69vh;
   }
+
   @media (max-height: 800px) {
     height: 64vh;
   }
+
   @media (max-height: 700px) {
     height: 57vh;
   }
+
   @media (max-height: 600px) {
     height: 285px;
   }
@@ -65,18 +247,23 @@
   @media (max-height: 1100px) {
     height: 59vh;
   }
+
   @media (max-height: 1000px) {
     height: 55vh;
   }
+
   @media (max-height: 900px) {
     height: 52vh;
   }
+
   @media (max-height: 800px) {
     height: 44vh;
   }
+
   @media (max-height: 700px) {
     height: 34vh;
   }
+
   @media (max-height: 600px) {
     height: 142.5px;
   }
@@ -110,19 +297,23 @@
     @media (max-height: 768px) {
       height: 3.2rem;
     }
+
     @media (max-height: 600px) {
       height: 3rem;
       padding: 0.4rem;
     }
+
     @media (max-height: 480px) {
       height: 2.8rem;
       padding: 0.3rem;
       font-size: 0.85rem;
     }
+
     @media (max-height: 400px) {
       height: 2.5rem;
       font-size: 0.75rem;
     }
+
     @media (max-height: 350px) {
       height: 2.3rem;
       font-size: 0.7rem;
@@ -130,23 +321,180 @@
   }
 }
 
-.button-group {
-  margin-top: -20px;
+.pagination {
+  display: contents;
+}
 
-  button {
-    height: 43px;
-    white-space: nowrap;
+.mat-column-actions {
+  text-align: right;
+
+  .mat-cell,
+  .mat-header-cell {
+    justify-content: flex-end;
+    text-align: right;
   }
 
-  button:not(:last-child) {
-    margin-right: 40px;
+  .d-flex {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
   }
 }
 
-.filters {
-  margin-top: -10px;
+.bulk-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.bulk-progress-content {
+  width: 60%;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.bulk-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.bulk-progress-success {
+  background-color: #4caf50;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.bulk-progress-failure {
+  background-color: #f44336;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.bulk-progress-text {
+  margin-top: 1rem;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.bulk-progress-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  border: 1px solid #ffeeba;
+  font-size: 14px;
+  text-align: center;
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.bulk-error-summary {
+  margin-top: 2rem;
+  background-color: #fff3f3;
+  border: 1px solid #f5c2c7;
+  padding: 1rem;
+  border-radius: 4px;
+  max-width: 100%;
+
+  .error-table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    margin-top: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    table.error-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+
+      thead {
+        th {
+          background-color: #f8d7da;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+          padding: 8px;
+          border: 1px solid #ccc;
+          font-size: 14px;
+          white-space: nowrap;
+        }
+      }
+
+      tbody {
+        td {
+          padding: 8px;
+          border: 1px solid #ccc;
+          font-size: 14px;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+}
+
+.finalizing-text {
+  margin-top: 1rem;
+  font-style: italic;
+  color: #666;
+}
+
+.d-flex {
+  display: flex;
+  gap: 25px;
+}
+
+.align-items-center {
   align-items: center !important;
-  display: flex !important;
+}
+
+.icon {
+  font-size: 25px;
+}
+
+.ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+::ng-deep .mat-tooltip-event-desc {
+  position: relative;
+  left: 0 !important;
+  font-size: 20px;
+  min-width: 75vw;
+}
+
+.w-100 {
+  width: 100% !important;
+}
+
+.w-90 {
+  width: 90% !important;
 }
 
 :host {
@@ -181,3 +529,29 @@
   text-decoration: none;
 }
 
+.pagination {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.pagination ::ng-deep .mat-paginator,
+.pagination ::ng-deep .mat-mdc-paginator {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.pagination ::ng-deep .mat-paginator .mat-icon-button:not([disabled]),
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.pagination ::ng-deep .mat-paginator .mat-icon-button:not([disabled]) .mat-icon,
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) .mat-icon {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) svg,
+.pagination ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button:not([disabled]) svg path {
+  fill: currentColor !important;
+  opacity: 1 !important;
+}

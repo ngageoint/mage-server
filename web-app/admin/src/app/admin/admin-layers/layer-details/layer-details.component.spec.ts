@@ -143,7 +143,10 @@ describe('LayerDetailsComponent', () => {
 
   describe('ngOnInit', () => {
     it('should call updateActionButtons via permissions subscription', () => {
-      const spy = spyOn<any>(component, 'updateActionButtons').and.callThrough();
+      const spy = spyOn<any>(
+        component,
+        'updateActionButtons'
+      ).and.callThrough();
 
       component.ngOnInit();
 
@@ -308,7 +311,9 @@ describe('LayerDetailsComponent', () => {
 
     it('should handle error loading events', () => {
       (mockEventsService.getEvents as jasmine.Spy).and.returnValue(
-        new Observable((observer) => observer.error({ message: 'Failed to load' }))
+        new Observable((observer) =>
+          observer.error({ message: 'Failed to load' })
+        )
       );
 
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
@@ -401,7 +406,9 @@ describe('LayerDetailsComponent', () => {
       const selectedEvent = { id: 456, name: 'Selected Event' };
 
       (mockEventsService.addLayerToEvent as jasmine.Spy).and.returnValue(
-        new Observable((observer) => observer.error({ message: 'Failed to add' }))
+        new Observable((observer) =>
+          observer.error({ message: 'Failed to add' })
+        )
       );
 
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
@@ -611,24 +618,13 @@ describe('LayerDetailsComponent', () => {
     });
   });
 
-  describe('editLayer', () => {
-    it('should navigate to edit route', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
-      spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
-
-      component.editLayer();
-
-      expect(router.navigate).toHaveBeenCalledWith(
-        ['../layers', 1, 'edit'],
-        jasmine.objectContaining({ relativeTo: jasmine.any(Object) })
-      );
-    });
-  });
-
   describe('deleteLayer', () => {
     it('should open delete confirmation dialog', () => {
       component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
-      const dialogSpy = spyOn((component as any).dialog, 'open').and.returnValue({
+      const dialogSpy = spyOn(
+        (component as any).dialog,
+        'open'
+      ).and.returnValue({
         afterClosed: () => of(false)
       } as any);
 
@@ -639,6 +635,7 @@ describe('LayerDetailsComponent', () => {
 
     it('should navigate to layers list when delete confirmed', () => {
       component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
       spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
@@ -653,8 +650,9 @@ describe('LayerDetailsComponent', () => {
         'Close',
         { duration: 3000 }
       );
+
       expect(router.navigate).toHaveBeenCalledWith(
-        ['../layers'],
+        ['../../layers'],
         jasmine.objectContaining({ relativeTo: jasmine.any(Object) })
       );
     });
@@ -694,7 +692,10 @@ describe('LayerDetailsComponent', () => {
         file: { name: 'test.kml' }
       } as any;
 
-      const createElementSpy = spyOn(document, 'createElement').and.callThrough();
+      const createElementSpy = spyOn(
+        document,
+        'createElement'
+      ).and.callThrough();
       const appendChildSpy = spyOn(document.body, 'appendChild').and.stub();
       const removeChildSpy = spyOn(document.body, 'removeChild').and.stub();
       const clickSpy = spyOn(HTMLAnchorElement.prototype, 'click').and.stub();
@@ -875,23 +876,25 @@ describe('LayerDetailsComponent', () => {
           state: 'available'
         } as any)
       );
-    
+
       const urlSpy = spyOn<any>(component, 'updateUrlLayers').and.callThrough();
-    
+
       (component as any).checkLayerProcessingStatus();
-    
+
       tick(0);
-    
+
       expect(mockLayersService.getLayerById).toHaveBeenCalledWith('1');
       expect(urlSpy).toHaveBeenCalled();
-    
+
       tick(5000);
-    
-      expect((mockLayersService.getLayerById as jasmine.Spy).calls.count()).toBeGreaterThanOrEqual(2);
-    
+
+      expect(
+        (mockLayersService.getLayerById as jasmine.Spy).calls.count()
+      ).toBeGreaterThanOrEqual(2);
+
       discardPeriodicTasks();
     }));
-    
+
     it('checkLayerProcessingStatus should not schedule another check if layer is available', fakeAsync(() => {
       (mockLayersService.getLayerById as jasmine.Spy).and.returnValue(
         of({

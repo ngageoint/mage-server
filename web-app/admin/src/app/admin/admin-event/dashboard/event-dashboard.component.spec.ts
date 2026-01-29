@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 import { EventDashboardComponent } from './event-dashboard.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { AdminUserService } from '../../services/admin-user.service';
+import { AdminToastService } from '../../services/admin-toast.service';
 
 const mockEventsResponse = {
   totalCount: 2,
@@ -66,12 +67,14 @@ describe('EventDashboardComponent', () => {
   let userServiceSpy: jasmine.SpyObj<AdminUserService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let toastSpy: jasmine.SpyObj<AdminToastService>;
 
   beforeEach(async () => {
     eventServiceSpy = jasmine.createSpyObj('AdminEventsService', ['getEvents']);
     userServiceSpy = jasmine.createSpyObj('AdminUserService', ['getMyself']);
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
     await TestBed.configureTestingModule({
       declarations: [EventDashboardComponent],
@@ -89,7 +92,8 @@ describe('EventDashboardComponent', () => {
         { provide: AdminEventsService, useValue: eventServiceSpy },
         { provide: AdminUserService, useValue: userServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: AdminToastService, useValue: toastSpy }
       ]
     }).compileComponents();
 
@@ -213,21 +217,24 @@ describe('EventDashboardComponent', () => {
     expect(eventServiceSpy.getEvents).toHaveBeenCalled();
   }));
 
-  it('should open create event dialog and navigate on close when event has id', fakeAsync(() => {
+  it('should open create event dialog and call toast + refresh on close when event has id', fakeAsync(() => {
     const dialogRefMock = {
       afterClosed: () => of({ id: 123 } as any)
     };
 
     dialogSpy.open.and.returnValue(dialogRefMock as any);
+    eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse as any));
 
     component.createEvent();
     tick();
 
     expect(dialogSpy.open).toHaveBeenCalled();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/admin/event', 123]);
+    expect(toastSpy.show).toHaveBeenCalled();
+    expect(eventServiceSpy.getEvents).toHaveBeenCalled();
+    expect(routerSpy.navigate).not.toHaveBeenCalled();
   }));
 
-  it('should not navigate if dialog closes without event id', fakeAsync(() => {
+  it('should not toast or refresh if dialog closes without event id', fakeAsync(() => {
     const dialogRefMock = {
       afterClosed: () => of(undefined)
     };
@@ -237,6 +244,8 @@ describe('EventDashboardComponent', () => {
     component.createEvent();
     tick();
 
+    expect(toastSpy.show).not.toHaveBeenCalled();
+    expect(eventServiceSpy.getEvents).not.toHaveBeenCalled();
     expect(routerSpy.navigate).not.toHaveBeenCalled();
   }));
 

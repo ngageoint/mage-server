@@ -86,8 +86,6 @@ const routes: Routes = [
           { path: ':pluginId', component: PluginHostComponent }
         ]
       },
-
-      { path: '**', redirectTo: 'dashboard' }
     ]
   }
 ];

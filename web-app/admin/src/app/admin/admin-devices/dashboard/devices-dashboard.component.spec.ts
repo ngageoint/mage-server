@@ -22,6 +22,7 @@ import {
 } from '../../services/admin-device.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { Device } from '../../../../@types/dashboard/devices-dashboard';
+import { AdminToastService } from '../../services/admin-toast.service';
 
 const mockDevices: Device[] = [
   {
@@ -59,15 +60,17 @@ describe('DeviceDashboardComponent', () => {
   let deviceServiceSpy: jasmine.SpyObj<AdminDeviceService>;
   let userServiceSpy: Partial<AdminUserService> & any;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let toastSpy: jasmine.SpyObj<AdminToastService>;
 
   beforeEach(async () => {
     deviceServiceSpy = jasmine.createSpyObj('AdminDeviceService', [
       'getDevices'
     ]);
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
     userServiceSpy = {
-      myself$: of({ role: { permissions: ['CREATE_USER'] } })
+      myself$: of({ role: { permissions: ['CREATE_DEVICE'] } })
     };
 
     await TestBed.configureTestingModule({
@@ -86,7 +89,8 @@ describe('DeviceDashboardComponent', () => {
       providers: [
         { provide: AdminDeviceService, useValue: deviceServiceSpy },
         { provide: AdminUserService, useValue: userServiceSpy },
-        { provide: MatDialog, useValue: dialogSpy }
+        { provide: MatDialog, useValue: dialogSpy },
+        { provide: AdminToastService, useValue: toastSpy }
       ]
     }).compileComponents();
 
@@ -138,9 +142,9 @@ describe('DeviceDashboardComponent', () => {
       component.searchOptions
     );
     expect(component.filteredDevices.length).toBe(1);
-    expect(component.filteredDevices.length).toBe(1);
+
     const [first] = component.filteredDevices;
-    expect((first.user?.displayName || "")).toBe('Lily Hoshikawa');
+    expect(first.user?.displayName || '').toBe('Lily Hoshikawa');
   }));
 
   it('should clear search and refresh devices', fakeAsync(() => {
@@ -192,7 +196,7 @@ describe('DeviceDashboardComponent', () => {
 
   it('should open create device modal and refresh on close', fakeAsync(() => {
     const dialogRefMock = {
-      afterClosed: () => of(true)
+      afterClosed: () => of({ id: '3' } as any)
     };
 
     dialogSpy.open.and.returnValue(dialogRefMock as any);
@@ -202,6 +206,7 @@ describe('DeviceDashboardComponent', () => {
     tick();
 
     expect(dialogSpy.open).toHaveBeenCalled();
+    expect(toastSpy.show).toHaveBeenCalled();
     expect(deviceServiceSpy.getDevices).toHaveBeenCalled();
   }));
 });

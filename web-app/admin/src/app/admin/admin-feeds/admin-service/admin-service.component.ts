@@ -23,7 +23,7 @@ export class AdminServiceComponent implements OnInit {
     {
       title: 'Feeds',
       icon: 'rss_feed',
-      route: ['../feeds']
+      route: ['../../feeds']
     }
   ];
 
@@ -79,7 +79,6 @@ export class AdminServiceComponent implements OnInit {
 
       this.breadcrumbs.push({
         title: this.service.title,
-        route: ['../service', this.service.id]
       });
 
       const serviceType: ServiceType = this.service.serviceType as ServiceType;

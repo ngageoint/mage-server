@@ -36,18 +36,17 @@ export class AdminNavigationComponent implements OnInit, OnDestroy {
 
     this.token = this.localStorageService.getToken();
 
-    this.userService.myself$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((u) => {
-        this.myself = u;
-        this.token = this.localStorageService.getToken();
-      });
+    this.userService.myself$.pipe(takeUntil(this.destroy$)).subscribe((u) => {
+      this.myself = u;
+      this.token = this.localStorageService.getToken();
+    });
 
     this.userService.isAdmin$
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAdmin) => (this.amAdmin = isAdmin));
 
-    this.userService.checkLoggedInUser()
+    this.userService
+      .checkLoggedInUser()
       .pipe(takeUntil(this.destroy$))
       .subscribe();
   }
@@ -58,6 +57,8 @@ export class AdminNavigationComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.userService.logout().subscribe();
+    this.userService.logout().subscribe(() => {
+      window.location.href = '/#/landing';
+    });
   }
 }

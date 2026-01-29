@@ -614,7 +614,7 @@ module.exports = function (app, security) {
         log.info('logout w/ user', req.user._id.toString());
         new api.User().logout(req.token, function (err) {
           if (err) return next(err);
-          res.status(200).send('successfully logged out');
+          res.status(200).json({ success: true });
         });
       } else {
         // call to logout with an invalid token, nothing to do

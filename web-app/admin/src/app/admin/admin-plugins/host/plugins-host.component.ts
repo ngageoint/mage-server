@@ -65,7 +65,7 @@ export class PluginHostComponent implements OnInit, OnDestroy {
           this.breadcrumbs = [
             {
               title: tab?.title ?? pluginId,
-              iconClass: tab?.icon?.className ?? 'fa fa-puzzle-piece'
+              iconClass: tab?.icon?.className ?? 'fa fa-plug'
             }
           ];
 

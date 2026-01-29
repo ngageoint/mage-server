@@ -17,7 +17,6 @@ export class AdminFeedsComponent implements OnInit {
   breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Feeds',
     icon: 'rss_feed',
-    route: ['../feeds']
   }]
 
   services: Service[] = []

@@ -49,7 +49,9 @@ describe('AdminMapComponent', () => {
         NoopAnimationsModule
       ],
       declarations: [AdminMapComponent, TestHostComponent],
-      providers: [{ provide: MapSettingsService, useValue: mockMapSettingsService }]
+      providers: [
+        { provide: MapSettingsService, useValue: mockMapSettingsService }
+      ]
     }).compileComponents();
   });
 
@@ -68,10 +70,14 @@ describe('AdminMapComponent', () => {
     component.webSearchType = 'NOMINATIM';
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
 
-    const inputs = fixture.debugElement.queryAll(
-      By.css('input[matinput], input[matInput]')
+    const webNominatimInput = fixture.debugElement.query(
+      By.css(
+        'input.form-input[placeholder="https://nominatim.openstreetmap.org"]'
+      )
     );
-    expect(inputs.length).toBeGreaterThan(0);
+
+    expect(webNominatimInput).toBeTruthy();
   });
 });

@@ -462,12 +462,6 @@ export class LayerDetailsComponent implements OnInit {
     this.layerEditForm.description = this.layer.description || '';
   }
 
-  editLayer(): void {
-    if (!this.layer?.id) return;
-
-    this.router.navigate(['../layers', this.layer.id, 'edit'], { relativeTo: this.route });
-  }
-
   deleteLayer(): void {
     if (!this.layer) return;
 
@@ -479,7 +473,7 @@ export class LayerDetailsComponent implements OnInit {
       if (result) {
         this.snackBar.open('Layer deleted successfully', 'Close', { duration: 3000 });
 
-        this.router.navigate(['../layers'], { relativeTo: this.route });
+        this.router.navigate(['../../layers'], { relativeTo: this.route });
       }
     });
   }

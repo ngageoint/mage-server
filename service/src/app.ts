@@ -180,7 +180,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     return service as MageService;
   }
 
-  const mongooseLogger = log.loggers.get('mongoose');
+  const mongooseLogger = log.mongooseLogger;
+
   mongoose.set('debug', function(
     collection: any,
     method: any,
@@ -192,9 +193,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
         .replace(/\n/g, '')
         .replace(/\s{2,}/g, ' ');
     };
-    mongooseLogger.log(
-      'mongoose',
-      `${collection}.${method}` + `(${methodArgs.map(formatter).join(', ')})`
+
+    mongooseLogger.debug(
+      `${collection}.${method}(${methodArgs.map(formatter).join(', ')})`
     );
   });
 
@@ -229,6 +230,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     appLayer,
     config.plugins?.webUIPlugins || []
   );
+
   const routesForPluginId: { [pluginId: string]: WebRoutesHooks } = {};
   const collectPluginRoutesToSort = (
     pluginId: string,
@@ -236,6 +238,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   ): void => {
     routesForPluginId[pluginId] = initPluginRoutes;
   };
+
   const globalScopeServices = new Map<InjectionToken<any>, any>([
     [FeedServiceTypeRepositoryToken, repos.feeds.serviceTypeRepo],
     [FeedServiceRepositoryToken, repos.feeds.serviceRepo],
@@ -249,9 +252,11 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     [FeedsAppServiceTokens.UpdateFeed, appLayer.feeds.updateFeed],
     [FeedsAppServiceTokens.DeleteFeed, appLayer.feeds.deleteFeed]
   ]);
+
   for (const pluginId of config.plugins?.servicePlugins || []) {
     console.info(`loading plugin ${pluginId}...`);
     const pluginScopeServices = new Map<InjectionToken<any>, any>();
+
     const injectService: InjectableServices = <Service>(
       token: InjectionToken<Service>
     ) => {
@@ -268,6 +273,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
       }
       return globalScopeServices.get(token);
     };
+
     try {
       /*
       TODO: may need to switch to require.resolve() or custom api to load
@@ -286,9 +292,11 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
       console.error(`error loading plugin ${pluginId}`, err);
     }
   }
+
   const pluginRoutePathsDescending = Object.keys(routesForPluginId)
     .sort()
     .reverse();
+
   for (const pluginId of pluginRoutePathsDescending) {
     addPluginRoutes(pluginId, routesForPluginId[pluginId]);
   }
@@ -313,6 +321,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
       return this;
     }
   };
+
   return service;
 };
 
@@ -377,6 +386,7 @@ type AppLayer = {
 
 async function initDatabase(): Promise<DatabaseLayer> {
   const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo;
+
   const conn = await waitForDefaultMongooseConnection(
     mongoose,
     uri,
@@ -384,6 +394,7 @@ async function initDatabase(): Promise<DatabaseLayer> {
     connectRetryDelay,
     options
   ).then(() => mongoose.connection);
+
   const PluginConnectionFactory = function PluginConnectionFactory(
     pluginId: string
   ): GetDbConnection {
@@ -399,6 +410,7 @@ async function initDatabase(): Promise<DatabaseLayer> {
       bufferCommands: false,
       autoIndex: false
     };
+
     return () => {
       console.info(`get db connection for plugin ${pluginId}`);
       return waitForDefaultMongooseConnection(
@@ -410,12 +422,24 @@ async function initDatabase(): Promise<DatabaseLayer> {
       ).then(() => pluginMongoose.connection);
     };
   };
+
   // TODO: transition legacy model initialization
   // TODO: inject connection to migrations
   // TODO: explore performing migrations without mongoose models because current models may not be compatible with past migrations
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('./models').initializeModels();
+
   const migrate = await import('./migrate');
   await migrate.runDatabaseMigrations(uri, options);
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const eventModel = require('./models/event').Model;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const userModel = require('./models/user').Model;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const settingModel = require('./models/setting').Model;
+
   return {
     conn,
     connectionFactoryForPlugin: PluginConnectionFactory,
@@ -425,16 +449,16 @@ async function initDatabase(): Promise<DatabaseLayer> {
       feed: FeedModel(conn)
     },
     events: {
-      event: require('./models/event').Model
+      event: eventModel
     },
     icons: {
       staticIcon: StaticIconModel(conn)
     },
     users: {
-      user: require('./models/user').Model
+      user: userModel
     },
     settings: {
-      setting: require('./models/setting').Model
+      setting: settingModel
     }
   };
 }
@@ -466,7 +490,8 @@ type Repositories = {
 
 // TODO: the real thing
 const jsonSchemaService: JsonSchemaService = {
-  async validateSchema(schema: JSONSchema4): Promise<JsonValidator> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async validateSchema(_schema: JSONSchema4): Promise<JsonValidator> {
     return {
       validate: async () => null
     };
@@ -475,7 +500,7 @@ const jsonSchemaService: JsonSchemaService = {
 
 const DomainEvents = new EventEmitter({ captureRejections: true }).on(
   'error',
-  err => {
+  (err: unknown) => {
     console.error('uncaught error in domain event handler:', err);
   }
 );
@@ -507,9 +532,11 @@ async function initRepositories(
     environment.attachmentBaseDirectory
   );
   const systemInfoService = new EnvironmentServiceImpl(models.conn);
+
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore;
   }
+
   return {
     feeds: {
       serviceTypeRepo,
@@ -547,6 +574,7 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const users = await initUsersAppLayer(repos);
   const systemInfo = initSystemInfoAppLayer(repos);
   const settings = await initSettingsAppLayer(repos);
+
   return {
     events,
     observations,
@@ -576,6 +604,7 @@ async function initEventsAppLayer(
     repos.events.eventRepo,
     eventPermissions.defaultEventPermissionsService
   );
+
   return {
     addFeedToEvent: eventsImpl.AddFeedToEvent(
       eventPermissions.defaultEventPermissionsService,
@@ -605,13 +634,16 @@ async function initObservationsAppLayer(
 ): Promise<AppLayer['observations']> {
   const eventPermissions = await import('./permissions/permissions.events');
   const obsPermissions = await import('./permissions/permissions.observations');
-  const obsPermissionsService = new obsPermissions.ObservationPermissionsServiceImpl(
-    eventPermissions.defaultEventPermissionsService
-  );
+  const obsPermissionsService =
+    new obsPermissions.ObservationPermissionsServiceImpl(
+      eventPermissions.defaultEventPermissionsService
+    );
+
   observationsImpl.registerDeleteRemovedAttachmentsHandler(
     DomainEvents,
     repos.observations.attachmentStore
   );
+
   return {
     allocateObservationId: observationsImpl.AllocateObservationId(
       obsPermissionsService
@@ -635,10 +667,7 @@ function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
   const permissions = new RoleBasedStaticIconPermissionService();
   return {
     getIcon: GetStaticIcon(permissions, repos.icons.staticIconRepo),
-    getIconContent: GetStaticIconContent(
-      permissions,
-      repos.icons.staticIconRepo
-    ),
+    getIconContent: GetStaticIconContent(permissions, repos.icons.staticIconRepo),
     listIcons: ListStaticIcons(permissions)
   };
 }
@@ -646,6 +675,7 @@ function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
 function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
   const { serviceTypeRepo, serviceRepo, feedRepo } = repos.feeds;
   const permissionService = new PreFetchedUserRoleFeedsPermissionService();
+
   const listServiceTypes = feedsImpl.ListFeedServiceTypes(
     permissionService,
     serviceTypeRepo
@@ -719,6 +749,7 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
     feedRepo,
     repos.events.eventRepo
   );
+
   return {
     jsonSchemaService,
     permissionService,
@@ -759,14 +790,8 @@ async function initSettingsAppLayer(
   repos: Repositories
 ): Promise<AppLayer['settings']> {
   const mapPermissions = new RoleBasedMapPermissionService();
-  const getMapSettings = FetchMapSettings(
-    repos.settings.settingRepo,
-    mapPermissions
-  );
-  const updateMapSettings = UpdateMapSettings(
-    repos.settings.settingRepo,
-    mapPermissions
-  );
+  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions);
+  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions);
   return {
     getMapSettings,
     updateMapSettings
@@ -791,6 +816,7 @@ async function initWebLayer(
   const webLayer = await import('./express');
   const webController = webLayer.app;
   const webAuth = webLayer.auth;
+
   const appRequestFactory: WebAppRequestFactory = <Params>(
     req: express.Request,
     params: Params
@@ -799,28 +825,28 @@ async function initWebLayer(
       ...params,
       context: {
         ...baseAppRequestContext(req),
-        event: req.event || req.eventEntity
+        event: (req as any).event || (req as any).eventEntity
       }
     };
   };
+
   const bearerAuth = webAuth.passport.authenticate('bearer');
 
   const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory);
   webController.use('/api/settings', [bearerAuth, settingsRoutes]);
 
   const usersRoutes = UsersRoutes(app.users, appRequestFactory);
-  /*
-  TODO: cannot mount at /api/users/search because the /api/users/:userId route
-  comes first and catches the request.  when old routes move to new sub-router,
-  ensure this and the web client changes appropriately
-  */
   webController.use('/api/next-users', [bearerAuth, usersRoutes]);
+
   const feedsRoutes = FeedsRoutes(app.feeds, appRequestFactory);
   webController.use('/api/feeds', [bearerAuth, feedsRoutes]);
+
   const iconsRoutes = StaticIconRoutes(app.icons, appRequestFactory);
   webController.use('/api/icons', [bearerAuth, iconsRoutes]);
+
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory);
   webController.use('/api', [systemInfoRoutes]);
+
   const observationRequestFactory: ObservationWebAppRequestFactory = <
     Params extends object | undefined
   >(
@@ -830,45 +856,36 @@ async function initWebLayer(
     const context: observationsApi.ObservationRequestContext = {
       ...baseAppRequestContext(req),
       mageEvent: req[observationEventScopeKey]!.mageEvent,
-      userId: req.user.id,
-      deviceId: req.provisionedDeviceId,
-      observationRepository: req[observationEventScopeKey]!
-        .observationRepository
+      userId: (req.user as any).id,
+      deviceId: (req as any).provisionedDeviceId,
+      observationRepository: req[observationEventScopeKey]!.observationRepository
     };
     return { ...params, context };
   };
+
   const observationsRoutes = ObservationRoutes(
     app.observations,
     repos.observations.attachmentStore,
     observationRequestFactory
   );
+
   webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
     bearerAuth,
-    ensureObservationEventScope(
-      repos.events.eventRepo,
-      repos.observations.obsRepoFactory
-    ),
+    ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),
     observationsRoutes
   ]);
+
   const eventFeedsRoutes = EventFeedsRoutes(
     { ...app.events, eventRepo: repos.events.eventRepo },
     appRequestFactory
   );
   webController.use('/api/events', [bearerAuth, eventFeedsRoutes]);
 
-  /*
-  no /api prefix here, because this is not really part of the service api. the
-  only reason this is here is because there is currently no clean way to apply
-  authentication outside of this service main module. an ideal clean
-  architecture would decouple the authentication services from this service
-  module and its express/passport middleware, but that will require a larger
-  effort to refactor.
-  */
   const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
     req,
     _res,
     next
-  ) => {
+  ): void => {
     const token =
       typeof req.query.access_token === 'string'
         ? req.query.access_token
@@ -883,12 +900,12 @@ async function initWebLayer(
 
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 
-  const uiPluginsAuth: express.RequestHandler = (req, res, next) => {
+  const uiPluginsAuth: express.RequestHandler = (req, res, next): void => {
     if (req.user) {
-      return next();
+      next();
+      return;
     }
-
-    return bearerAuth(req, res, next);
+    bearerAuth(req, res, next);
   };
 
   webController.use('/ui_plugins', [
@@ -897,28 +914,20 @@ async function initWebLayer(
     webUiPluginRoutes
   ]);
 
-  /*
-   TODO: maybe a better approach would be to setup a global root middleware
-   that creates the app request context for every incoming http request and
-   sets a property on the express/node http request object
-   */
   const pluginAppRequestContext: GetAppRequestContext = (
     req: express.Request
-  ) => {
+  ): AppRequestContext<UserExpanded> => {
     return {
       requestToken: Symbol(),
-      requestingPrincipal() {
-        /*
-        TODO: this should ideally change so that the existing passport login
-        middleware applies the entity form of a user on the request rather than
-        the mongoose document instance
-        */
+      requestingPrincipal(): UserExpanded {
         return {
-          ...req.user.toJSON(),
-          id: req.user._id.toHexString()
+          ...(req.user as any).toJSON(),
+          id: (req.user as any)._id.toHexString()
         } as UserExpanded;
       },
-      locale() {
+      locale(): Readonly<{
+        languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
+      }> {
         return Object.freeze({
           languagePreferences: parseAcceptLanguageHeader(
             req.headers['accept-language']
@@ -926,17 +935,17 @@ async function initWebLayer(
         });
       }
     };
-  };
+  };  
+
   try {
-    const webappPackagePath = require.resolve(
-      '@ngageoint/mage.web-app/package.json'
-    );
+    const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
     const webAppPath = path.dirname(webappPackagePath);
     webController.use(express.static(path.join(webAppPath, 'app')));
     webController.use('/admin', express.static(path.join(webAppPath, 'admin')));
   } catch (err) {
     console.warn('failed to load mage web app package', err);
   }
+
   return {
     webController,
     addPluginRoutes: (
@@ -944,16 +953,12 @@ async function initWebLayer(
       initPluginRoutes: WebRoutesHooks
     ): void => {
       if (initPluginRoutes.webRoutes.public) {
-        const routes = initPluginRoutes.webRoutes.public(
-          pluginAppRequestContext
-        );
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext);
         webController.use(`/plugins/${pluginId}`, [routes]);
       }
 
       if (initPluginRoutes.webRoutes.protected) {
-        const routes = initPluginRoutes.webRoutes.protected(
-          pluginAppRequestContext
-        );
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext);
         webController.use(`/plugins/${pluginId}`, [bearerAuth, routes]);
       }
     }
@@ -965,10 +970,12 @@ function baseAppRequestContext(
 ): AppRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),
-    requestingPrincipal() {
+    requestingPrincipal(): UserWithRole {
       return req.user as UserWithRole;
     },
-    locale() {
+    locale(): Readonly<{
+      languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
+    }> {
       return Object.freeze({
         languagePreferences: parseAcceptLanguageHeader(
           req.headers['accept-language']
@@ -981,22 +988,25 @@ function baseAppRequestContext(
 function ensureObservationEventScope(
   eventRepo: MageEventRepository,
   createObsRepo: ObservationRepositoryForEvent
-) {
+): express.RequestHandler {
   return async (
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
-  ) => {
+  ): Promise<void> => {
     const eventIdFromPath = req.params[observationEventScopeKey];
     const eventId: MageEventId = parseInt(eventIdFromPath);
     const mageEvent = Number.isInteger(eventId)
       ? await eventRepo.findById(eventId)
       : null;
+
     if (mageEvent) {
       const observationRepository = await createObsRepo(mageEvent.id);
       req[observationEventScopeKey] = { mageEvent, observationRepository };
-      return next();
+      next();
+      return;
     }
+
     res.status(404).json(`event not found: ${eventIdFromPath}`);
   };
 }

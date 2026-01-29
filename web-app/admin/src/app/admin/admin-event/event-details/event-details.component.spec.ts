@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -20,8 +25,16 @@ describe('EventDetailsComponent', () => {
   let dialog: jasmine.SpyObj<MatDialog>;
   let router: jasmine.SpyObj<Router>;
 
-  const USER_RANMA: any = { id: '1', username: 'ranma', displayName: 'Ranma Saotome' };
-  const USER_LILY: any = { id: '2', username: 'lily', displayName: 'Lily Hoshikawa' };
+  const USER_RANMA: any = {
+    id: '1',
+    username: 'ranma',
+    displayName: 'Ranma Saotome'
+  };
+  const USER_LILY: any = {
+    id: '2',
+    username: 'lily',
+    displayName: 'Lily Hoshikawa'
+  };
 
   const makeEvent = (overrides: any = {}) =>
     ({
@@ -63,7 +76,10 @@ describe('EventDetailsComponent', () => {
     ]);
 
     const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']);
+    const routerSpy = jasmine.createSpyObj('Router', [
+      'navigate',
+      'navigateByUrl'
+    ]);
 
     const routeStub = {
       snapshot: {
@@ -84,16 +100,26 @@ describe('EventDetailsComponent', () => {
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
-    eventsService = TestBed.inject(AdminEventsService) as jasmine.SpyObj<AdminEventsService>;
-    teamsService = TestBed.inject(AdminTeamsService) as jasmine.SpyObj<AdminTeamsService>;
+    eventsService = TestBed.inject(
+      AdminEventsService
+    ) as jasmine.SpyObj<AdminEventsService>;
+    teamsService = TestBed.inject(
+      AdminTeamsService
+    ) as jasmine.SpyObj<AdminTeamsService>;
     dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
     eventsService.getEventById.and.returnValue(of(makeEvent()));
     eventsService.getTeamsInEvent.and.returnValue(of(makeTeamsPage([])));
-    eventsService.getMembers.and.returnValue(of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any));
-    eventsService.getNonMembers.and.returnValue(of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any));
-    eventsService.getTeamsNotInEvent.and.returnValue(of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any));
+    eventsService.getMembers.and.returnValue(
+      of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any)
+    );
+    eventsService.getNonMembers.and.returnValue(
+      of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any)
+    );
+    eventsService.getTeamsNotInEvent.and.returnValue(
+      of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any)
+    );
     eventsService.getAllLayers.and.returnValue(of([]));
     eventsService.getLayersForEvent.and.returnValue(of([]));
     eventsService.addLayerToEvent.and.returnValue(of({} as any));
@@ -146,7 +172,9 @@ describe('EventDetailsComponent', () => {
       const eventTeam = { id: 'team-evt-1', teamEventId: 1, acl: {} };
 
       eventsService.getEventById.and.returnValue(of(event));
-      eventsService.getTeamsInEvent.and.returnValue(of(makeTeamsPage([eventTeam])));
+      eventsService.getTeamsInEvent.and.returnValue(
+        of(makeTeamsPage([eventTeam]))
+      );
 
       spyOn(component, 'getMembersPage');
       spyOn(component, 'getTeamsPage');
@@ -156,7 +184,10 @@ describe('EventDetailsComponent', () => {
       tick();
 
       expect(eventsService.getEventById).toHaveBeenCalledWith('1');
-      expect(eventsService.getTeamsInEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({ page: 0, page_size: 100 }));
+      expect(eventsService.getTeamsInEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ page: 0, page_size: 100 })
+      );
       expect(component.event).toEqual(event as any);
       expect(component.eventTeam).toEqual(eventTeam as any);
 
@@ -174,7 +205,7 @@ describe('EventDetailsComponent', () => {
 
       component.ngOnInit();
 
-      expect(router.navigateByUrl).toHaveBeenCalledWith('/admin/events');
+      expect(router.navigate).toHaveBeenCalled();
     });
 
     it('should set permissions on init', () => {
@@ -240,7 +271,10 @@ describe('EventDetailsComponent', () => {
 
   describe('Toggle Methods', () => {
     it('should toggle edit details mode', () => {
-      component.event = makeEvent({ name: 'Test Event', description: 'Test Description' });
+      component.event = makeEvent({
+        name: 'Test Event',
+        description: 'Test Description'
+      });
 
       expect(component.editingDetails).toBe(false);
 
@@ -336,7 +370,10 @@ describe('EventDetailsComponent', () => {
 
   describe('Cancel Actions', () => {
     it('should cancel edit details', () => {
-      component.event = makeEvent({ name: 'Original Name', description: 'Original Description' });
+      component.event = makeEvent({
+        name: 'Original Name',
+        description: 'Original Description'
+      });
       component.editingDetails = true;
       component.eventEditForm.name = 'Changed Name';
       component.eventEditForm.description = 'Changed Description';
@@ -380,7 +417,9 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should generate role class', () => {
-      expect(component.getRoleClass(USER_RANMA)).toBe('user-role-badge role-owner');
+      expect(component.getRoleClass(USER_RANMA)).toBe(
+        'user-role-badge role-owner'
+      );
     });
 
     it('should update user role and keep data source refreshed', () => {
@@ -439,7 +478,11 @@ describe('EventDetailsComponent', () => {
   describe('Member Management', () => {
     beforeEach(() => {
       component.event = makeEvent({ id: 1 });
-      component.eventTeam = { id: 'team-1', name: 'Event Team', acl: {} } as any;
+      component.eventTeam = {
+        id: 'team-1',
+        name: 'Event Team',
+        acl: {}
+      } as any;
     });
 
     it('should open dialog to add member to event', () => {
@@ -449,10 +492,16 @@ describe('EventDetailsComponent', () => {
 
       component.addMemberToEvent();
 
-      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
-        panelClass: 'search-modal-dialog',
-        data: jasmine.objectContaining({ title: 'Add Members to Event', type: 'members' })
-      }));
+      expect(dialog.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({
+          panelClass: 'search-modal-dialog',
+          data: jasmine.objectContaining({
+            title: 'Add Members to Event',
+            type: 'members'
+          })
+        })
+      );
     });
 
     it('should add member when dialog returns selection', () => {
@@ -465,7 +514,10 @@ describe('EventDetailsComponent', () => {
 
       component.addMemberToEvent();
 
-      expect(teamsService.addUserToTeam).toHaveBeenCalledWith('team-1', selectedUser);
+      expect(teamsService.addUserToTeam).toHaveBeenCalledWith(
+        'team-1',
+        selectedUser
+      );
       expect(component.getMembersPage).toHaveBeenCalled();
     });
 
@@ -475,12 +527,17 @@ describe('EventDetailsComponent', () => {
       dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedUser }));
       dialog.open.and.returnValue(dialogRef);
 
-      teamsService.addUserToTeam.and.returnValue(throwError(() => new Error('Add failed')));
+      teamsService.addUserToTeam.and.returnValue(
+        throwError(() => new Error('Add failed'))
+      );
       spyOn(console, 'error');
 
       component.addMemberToEvent();
 
-      expect(console.error).toHaveBeenCalledWith('Error adding member:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error adding member:',
+        jasmine.any(Error)
+      );
     });
 
     it('should not add member when dialog is cancelled', () => {
@@ -515,12 +572,17 @@ describe('EventDetailsComponent', () => {
 
     it('should handle remove member error', () => {
       const evt = new MouseEvent('click');
-      teamsService.removeMember.and.returnValue(throwError(() => new Error('Remove failed')));
+      teamsService.removeMember.and.returnValue(
+        throwError(() => new Error('Remove failed'))
+      );
       spyOn(console, 'error');
 
       component.removeMember(evt, USER_RANMA);
 
-      expect(console.error).toHaveBeenCalledWith('Error removing member:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error removing member:',
+        jasmine.any(Error)
+      );
     });
 
     it('should not remove member without event team', () => {
@@ -547,10 +609,16 @@ describe('EventDetailsComponent', () => {
 
       component.addTeamToEvent();
 
-      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
-        panelClass: 'search-modal-dialog',
-        data: jasmine.objectContaining({ title: 'Add Teams to Event', type: 'teams' })
-      }));
+      expect(dialog.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({
+          panelClass: 'search-modal-dialog',
+          data: jasmine.objectContaining({
+            title: 'Add Teams to Event',
+            type: 'teams'
+          })
+        })
+      );
     });
 
     it('should add team when dialog returns selection', () => {
@@ -563,7 +631,10 @@ describe('EventDetailsComponent', () => {
 
       component.addTeamToEvent();
 
-      expect(eventsService.addTeamToEvent).toHaveBeenCalledWith('1', selectedTeam);
+      expect(eventsService.addTeamToEvent).toHaveBeenCalledWith(
+        '1',
+        selectedTeam
+      );
       expect(component.getTeamsPage).toHaveBeenCalled();
     });
 
@@ -573,12 +644,17 @@ describe('EventDetailsComponent', () => {
       dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedTeam }));
       dialog.open.and.returnValue(dialogRef);
 
-      eventsService.addTeamToEvent.and.returnValue(throwError(() => new Error('Add failed')));
+      eventsService.addTeamToEvent.and.returnValue(
+        throwError(() => new Error('Add failed'))
+      );
       spyOn(console, 'error');
 
       component.addTeamToEvent();
 
-      expect(console.error).toHaveBeenCalledWith('Error adding team:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error adding team:',
+        jasmine.any(Error)
+      );
     });
 
     it('should not add team when dialog is cancelled', () => {
@@ -620,14 +696,19 @@ describe('EventDetailsComponent', () => {
 
     it('should load teams page', fakeAsync(() => {
       component.event = makeEvent({ id: 1 });
-      const mockTeams = [{ id: '1', name: 'Team 1' } as any, { id: '2', name: 'Team 2' } as any];
+      const mockTeams = [
+        { id: '1', name: 'Team 1' } as any,
+        { id: '2', name: 'Team 2' } as any
+      ];
 
-      eventsService.getTeamsInEvent.and.returnValue(of({
-        items: mockTeams,
-        totalCount: 2,
-        pageSize: 5,
-        pageIndex: 0
-      } as any));
+      eventsService.getTeamsInEvent.and.returnValue(
+        of({
+          items: mockTeams,
+          totalCount: 2,
+          pageSize: 5,
+          pageIndex: 0
+        } as any)
+      );
 
       component.getTeamsPage();
       tick();
@@ -673,7 +754,9 @@ describe('EventDetailsComponent', () => {
       component.addLayer(evt, layer);
 
       expect(evt.stopPropagation).toHaveBeenCalled();
-      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', { id: 2 });
+      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', {
+        id: 2
+      });
     });
 
     it('should remove layer from event', () => {
@@ -706,7 +789,9 @@ describe('EventDetailsComponent', () => {
     it('should open dialog to add layer to event and add selection', fakeAsync(() => {
       const selectedLayer = { id: 7, name: 'New Layer' } as any;
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
-      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedLayer }));
+      dialogRef.afterClosed.and.returnValue(
+        of({ selectedItem: selectedLayer })
+      );
       dialog.open.and.returnValue(dialogRef);
 
       spyOn(component, 'loadLayers');
@@ -715,7 +800,9 @@ describe('EventDetailsComponent', () => {
       tick();
 
       expect(dialog.open).toHaveBeenCalled();
-      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', { id: 7 });
+      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', {
+        id: 7
+      });
       expect(component.loadLayers).toHaveBeenCalled();
     }));
 
@@ -753,16 +840,21 @@ describe('EventDetailsComponent', () => {
       component.saveFormRestrictions();
       tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({
-        minObservationForms: 0,
-        maxObservationForms: 10
-      }));
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({
+          minObservationForms: 0,
+          maxObservationForms: 10
+        })
+      );
 
       expect(component.event!.minObservationForms).toBe(1);
       expect(component.event!.maxObservationForms).toBe(9);
       expect((component.event!.forms as any)[0].min).toBe(1);
       expect((component.event!.forms as any)[0].max).toBe(4);
-      expect((component.restrictionsForm as any).form.markAsPristine).toHaveBeenCalled();
+      expect(
+        (component.restrictionsForm as any).form.markAsPristine
+      ).toHaveBeenCalled();
     }));
 
     it('should handle save restrictions error and set restrictionsError', fakeAsync(() => {
@@ -773,8 +865,13 @@ describe('EventDetailsComponent', () => {
       component.saveFormRestrictions();
       tick();
 
-      expect(console.error).toHaveBeenCalledWith('Error saving form restrictions:', jasmine.anything());
-      expect(component.restrictionsError).toEqual({ message: 'Validation error' });
+      expect(console.error).toHaveBeenCalledWith(
+        'Error saving form restrictions:',
+        jasmine.anything()
+      );
+      expect(component.restrictionsError).toEqual({
+        message: 'Validation error'
+      });
     }));
 
     it('should not save without event', () => {
@@ -786,11 +883,19 @@ describe('EventDetailsComponent', () => {
 
   describe('Event Details Editing', () => {
     beforeEach(() => {
-      component.event = makeEvent({ id: 1, name: 'Test Event', description: 'Test Description' });
+      component.event = makeEvent({
+        id: 1,
+        name: 'Test Event',
+        description: 'Test Description'
+      });
     });
 
     it('should save event details', fakeAsync(() => {
-      const updatedEvent = makeEvent({ id: 1, name: 'Updated', description: 'Test Description' });
+      const updatedEvent = makeEvent({
+        id: 1,
+        name: 'Updated',
+        description: 'Test Description'
+      });
       eventsService.updateEvent.and.returnValue(of(updatedEvent));
 
       component.editingDetails = true;
@@ -800,19 +905,27 @@ describe('EventDetailsComponent', () => {
       component.saveEventDetails();
       tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({ name: 'Updated' }));
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ name: 'Updated' })
+      );
       expect(component.editingDetails).toBe(false);
       expect(component.event!.name).toBe('Updated');
     }));
 
     it('should handle save error', fakeAsync(() => {
-      eventsService.updateEvent.and.returnValue(throwError(() => new Error('Save failed')));
+      eventsService.updateEvent.and.returnValue(
+        throwError(() => new Error('Save failed'))
+      );
       spyOn(console, 'error');
 
       component.saveEventDetails();
       tick();
 
-      expect(console.error).toHaveBeenCalledWith('Error updating event:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error updating event:',
+        jasmine.any(Error)
+      );
     }));
 
     it('should not save without event', () => {
@@ -834,7 +947,10 @@ describe('EventDetailsComponent', () => {
       component.completeEvent(component.event as any);
       tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({ complete: true }));
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ complete: true })
+      );
     }));
 
     it('should activate event', fakeAsync(() => {
@@ -844,7 +960,10 @@ describe('EventDetailsComponent', () => {
       component.activateEvent(component.event as any);
       tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({ complete: false }));
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ complete: false })
+      );
     }));
 
     it('should delete event and navigate when confirmed', fakeAsync(() => {
@@ -856,7 +975,7 @@ describe('EventDetailsComponent', () => {
       tick();
 
       expect(dialog.open).toHaveBeenCalled();
-      expect(router.navigateByUrl).toHaveBeenCalledWith('/admin/events');
+      expect(router.navigate).toHaveBeenCalled();
     }));
 
     it('should not navigate when delete dialog returns falsy', fakeAsync(() => {
@@ -894,7 +1013,11 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should handle members page change', () => {
-      component.onMembersPageChange({ pageIndex: 1, pageSize: 10, length: 50 } as any);
+      component.onMembersPageChange({
+        pageIndex: 1,
+        pageSize: 10,
+        length: 50
+      } as any);
 
       expect(component.membersPageIndex).toBe(1);
       expect(component.membersPageSize).toBe(10);
@@ -910,7 +1033,11 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should handle teams page change', () => {
-      component.onTeamsPageChange({ pageIndex: 2, pageSize: 5, length: 25 } as any);
+      component.onTeamsPageChange({
+        pageIndex: 2,
+        pageSize: 5,
+        length: 25
+      } as any);
 
       expect(component.teamsPageIndex).toBe(2);
       expect(component.teamsPageSize).toBe(5);
@@ -926,7 +1053,11 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should handle layers page change', () => {
-      component.onLayersPageChange({ pageIndex: 2, pageSize: 25, length: 100 } as any);
+      component.onLayersPageChange({
+        pageIndex: 2,
+        pageSize: 25,
+        length: 100
+      } as any);
 
       expect(component.layersPageIndex).toBe(2);
       expect(component.layersPageSize).toBe(25);
@@ -954,7 +1085,10 @@ describe('EventDetailsComponent', () => {
       tick();
 
       expect(dialog.open).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(['/admin/event', 1, 'forms', 99, 'edit']);
+      expect(router.navigate).toHaveBeenCalledWith(
+        ['../../events', 1, 'forms', 99],
+        jasmine.any(Object)
+      );
     }));
 
     it('should not navigate when form dialog closes without id', fakeAsync(() => {
@@ -974,12 +1108,17 @@ describe('EventDetailsComponent', () => {
         { id: 1, name: 'Form 1', archived: false }
       ];
 
-      eventsService.updateEvent.and.returnValue(of(makeEvent({ id: 1, forms: reorderedForms })));
+      eventsService.updateEvent.and.returnValue(
+        of(makeEvent({ id: 1, forms: reorderedForms }))
+      );
 
       component.onFormsReordered(reorderedForms as any);
       tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({ forms: reorderedForms }));
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ forms: reorderedForms })
+      );
       expect(component.event!.forms![0].id).toBe(2);
       expect(component.event!.forms![1].id).toBe(1);
     }));

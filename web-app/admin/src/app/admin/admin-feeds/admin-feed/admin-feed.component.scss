@@ -2,7 +2,7 @@
 @import "variables.scss";
 
 .page {
-  position: absolute;
+  position: relative;
   top: 0;
   bottom: 0;
   right: 0;
@@ -88,10 +88,6 @@
 
 .content__card {
   width: 100%;
-}
-
-.content__events {
-
 }
 
 mat-card-header {

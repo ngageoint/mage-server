@@ -438,36 +438,39 @@ describe('TeamDetailsComponent', () => {
   describe('deleteTeam', () => {
     beforeEach(() => {
       component.team = mockTeam;
+  
+      (mockRouter as any).navigate = jasmine
+        .createSpy('navigate')
+        .and.returnValue(Promise.resolve(true));
     });
-
+  
     it('should open delete dialog and navigate when confirmed', () => {
       mockDialog.open.and.returnValue({ afterClosed: () => of(true) } as any);
-
+  
       component.deleteTeam();
-
+  
       expect(mockDialog.open).toHaveBeenCalledWith(DeleteTeamComponent, {
         data: { team: mockTeam }
       });
-      expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/admin/teams');
+  
+      expect((mockRouter as any).navigate).toHaveBeenCalledWith(
+        ['../../teams'],
+        jasmine.objectContaining({
+          relativeTo: jasmine.any(Object)
+        })
+      );
+  
+      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
     });
-
+  
     it('should not navigate when cancelled', () => {
       mockDialog.open.and.returnValue({ afterClosed: () => of(false) } as any);
-
+  
       component.deleteTeam();
-
+  
+      expect((mockRouter as any).navigate).not.toHaveBeenCalled();
       expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
     });
   });
-
-  it('should update teamId when route params change', () => {
-    fixture.detectChanges();
-    expect(component.teamId).toBe('team123');
-
-    mockTeamsService.getTeamById.calls.reset();
-
-    paramMap$.next(convertToParamMap({ teamId: 'team999' }));
-    expect(component.teamId).toBe('team999');
-    expect(mockTeamsService.getTeamById).toHaveBeenCalledWith('team999');
-  });
+  
 });

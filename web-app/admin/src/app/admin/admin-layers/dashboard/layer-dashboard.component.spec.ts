@@ -1,13 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { PageEvent } from '@angular/material/paginator';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 
 import { LayerDashboardComponent } from './layer-dashboard.component';
 import { LayersService, Layer } from '../layers.service';
 import { AdminUserService } from '../../services/admin-user.service';
+import { AdminToastService } from '../../services/admin-toast.service';
 
 describe('LayerDashboardComponent', () => {
   let component: LayerDashboardComponent;
@@ -16,6 +17,7 @@ describe('LayerDashboardComponent', () => {
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockUserService: { getMyself: jasmine.Spy };
   let router: Router;
+  let toastSpy: jasmine.SpyObj<AdminToastService>;
 
   const mockLayers: Layer[] = [
     {
@@ -49,6 +51,8 @@ describe('LayerDashboardComponent', () => {
       'deleteLayer'
     ]);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
+    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
+
     mockUserService = {
       getMyself: jasmine.createSpy('getMyself')
     };
@@ -66,7 +70,8 @@ describe('LayerDashboardComponent', () => {
       providers: [
         { provide: LayersService, useValue: mockLayersService },
         { provide: MatDialog, useValue: mockDialog },
-        { provide: AdminUserService, useValue: mockUserService }
+        { provide: AdminUserService, useValue: mockUserService },
+        { provide: AdminToastService, useValue: toastSpy }
       ]
     }).compileComponents();
 
@@ -369,7 +374,7 @@ describe('LayerDashboardComponent', () => {
       expect(mockDialog.open).toHaveBeenCalled();
     });
 
-    it('should refresh and navigate after creating layer', () => {
+    it('should refresh and toast after creating layer', () => {
       const newLayer: Layer = {
         id: 5,
         name: 'New Layer',
@@ -381,44 +386,38 @@ describe('LayerDashboardComponent', () => {
       };
       mockDialog.open.and.returnValue(mockDialogRef as any);
       spyOn(component, 'refreshLayers');
-      spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
       component.newLayer();
 
+      expect(toastSpy.show).toHaveBeenCalled();
       expect(component.refreshLayers).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(
-        ['../layers', 5],
-        jasmine.objectContaining({ relativeTo: jasmine.any(Object) })
-      );
     });
 
-    it('should not navigate if dialog is cancelled', () => {
+    it('should not toast if dialog is cancelled', () => {
       const mockDialogRef = {
         afterClosed: () => of(null)
       };
       mockDialog.open.and.returnValue(mockDialogRef as any);
       spyOn(component, 'refreshLayers');
-      spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
       component.newLayer();
 
+      expect(toastSpy.show).not.toHaveBeenCalled();
       expect(component.refreshLayers).not.toHaveBeenCalled();
-      expect(router.navigate).not.toHaveBeenCalled();
     });
 
-    it('should not navigate if dialog returns a layer without id', () => {
+    it('should not toast if dialog returns a layer without id', () => {
       const mockDialogRef = {
         afterClosed: () =>
           of({ name: 'No Id', type: 'Imagery', state: 'available' } as Layer)
       };
       mockDialog.open.and.returnValue(mockDialogRef as any);
       spyOn(component, 'refreshLayers');
-      spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
       component.newLayer();
 
+      expect(toastSpy.show).not.toHaveBeenCalled();
       expect(component.refreshLayers).not.toHaveBeenCalled();
-      expect(router.navigate).not.toHaveBeenCalled();
     });
   });
 

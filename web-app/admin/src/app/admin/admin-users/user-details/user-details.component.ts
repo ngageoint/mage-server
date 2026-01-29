@@ -462,10 +462,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     return (device as any).iconClass;
   }
 
-  editUserNavigate(user: User): void {
-    this.router.navigate(['/admin/users', user.id]);
-  }
-
   toggleEditUser(): void {
     if (this.isEditingUser) {
       this.cancelEdit();
@@ -835,7 +831,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       .deleteUser(user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => this.router.navigate(['/admin/users']),
+        next: () => this.router.navigate(['../../users'], { relativeTo: this.route }),
         error: (err) => console.error('Failed to delete user:', err)
       });
   }

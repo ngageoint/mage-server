@@ -230,15 +230,18 @@ describe('AdminFeedComponent', () => {
 
   it('deleteFeed should delete and navigate back to feeds when dialog returns true', () => {
     component.feed = mockFeed;
-
+  
     dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
-
+  
     component.deleteFeed();
-
+  
     expect(dialogSpy.open).toHaveBeenCalled();
     expect(feedServiceSpy.deleteFeed).toHaveBeenCalledWith(mockFeed);
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['../feeds'], {
-      relativeTo: routeStub as any
-    });
+  
+    expect(routerSpy.navigate).toHaveBeenCalledWith(
+      ['../../feeds'],
+      jasmine.objectContaining({ relativeTo: jasmine.any(Object) })
+    );
   });
+  
 });

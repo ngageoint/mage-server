@@ -161,6 +161,7 @@ export class LayerDashboardComponent implements OnInit {
 
   newLayer(): void {
     const dialogRef = this.modal.open(CreateLayerDialogComponent, {
+      width: '80%',
       data: { layer: {} }
     });
 
