@@ -19,6 +19,8 @@ class ExportTask {
         this.exportDirectory = exportDirectory;
         this.exportTtl = exportTtl;
         this.exportResource = exportResource;
+        this.exportSweepInterval = exportSweepInterval || 60;
+
     }
 
     initialize() {
