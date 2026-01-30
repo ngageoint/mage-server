@@ -1,77 +1,58 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-// FIXED LOGGER IMPORT
-const log = require('../../logger');  // <- THIS IS FIXED
+const log = require('../../logger'); // fixed path for CI
 const fs = require('fs').promises;
 const path = require('path');
 
 class ExportTask {
-    constructor({ exportDirectory, exportTtl }, exportResource) {
+    constructor({ exportDirectory, exportTtl, exportSweepInterval = 60 }, exportResource) {
         this.exportDirectory = exportDirectory;
         this.exportTtl = exportTtl;
+        this.exportSweepInterval = exportSweepInterval; // default 60 seconds
         this.exportResource = exportResource;
-        this.exportSweepInterval = exportSweepInterval || 60;
-
     }
 
-    initialize() {
-        return __awaiter(this, void 0, void 0, function* () {
-            log.info(`export-file-sweeper: Initializing job to check ${this.exportDirectory} for expired export files every ${this.exportSweepInterval} seconds.`);
-            log.debug('Creating export directory ' + this.exportDirectory);
-            yield fs.mkdir(this.exportDirectory, { recursive: true });
+    async initialize() {
+        log.info(`export-file-sweeper: Initializing job to check ${this.exportDirectory} for expired export files every ${this.exportSweepInterval} seconds.`);
+        log.debug('Creating export directory ' + this.exportDirectory);
+        await fs.mkdir(this.exportDirectory, { recursive: true });
 
-            // Server restarted, update previously running exports to Failed
-            const exports = yield this.exportResource.getExports();
-            for (const exp of exports) {
-                if (exp.status === this.exportResource.ExportStatus.Running) {
-                    log.info('Updating status of ' + exp.physicalPath + ' to failed');
-                    exp.status = this.exportResource.ExportStatus.Failed;
-                    yield this.exportResource.updateExport(exp);
+        // Update previously running exports to Failed
+        const exports = await this.exportResource.getExports();
+        for (const exp of exports) {
+            if (exp.status === this.exportResource.ExportStatus.Running) {
+                log.info('Updating status of ' + exp.physicalPath + ' to failed');
+                exp.status = this.exportResource.ExportStatus.Failed;
+                await this.exportResource.updateExport(exp);
+            }
+        }
+    }
+
+    async doTask() {
+        log.info('export-file-sweeper: Sweeping directory ' + this.exportDirectory);
+        try {
+            const files = await fs.readdir(this.exportDirectory);
+            for (const file of files) {
+                try {
+                    await this.validateExportFile(path.join(this.exportDirectory, file));
+                } catch (err) {
+                    log.error('Error validating export file', err);
                 }
             }
-            return Promise.resolve();
-        });
+        } catch (err) {
+            log.error('Cannot read export directory', err);
+        }
     }
 
-    doTask() {
-        return __awaiter(this, void 0, void 0, function* () {
-            log.info('export-file-sweeper: Sweeping directory ' + this.exportDirectory);
-            try {
-                const files = yield fs.readdir(this.exportDirectory);
-                for (let i = 0; i < files.length; i++) {
-                    try {
-                        yield this.validateExportFile(path.join(this.exportDirectory, files[i]));
-                    } catch (err) {
-                        log.error('Error validating export file', err);
-                    }
-                }
-            } catch (err) {
-                log.error('Cannot read export directory', err);
-            }
-        });
-    }
-
-    validateExportFile(file) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const stats = yield fs.lstat(file);
-            log.debug('export-file-sweeper: Checking export file ' + file);
-            if (stats.birthtimeMs + (this.exportTtl * 1000) < Date.now()) {
-                log.info('export-file-sweeper: ' + file + ' has expired, and will be deleted');
-                yield fs.unlink(file);
-                log.info('export-file-sweeper: Successfully removed ' + file);
-            } else {
-                log.debug('export-file-sweeper: ' + file + ' has not expired, and does not need to be deleted');
-            }
-        });
+    async validateExportFile(file) {
+        const stats = await fs.lstat(file);
+        log.debug('export-file-sweeper: Checking export file ' + file);
+        if (stats.birthtimeMs + (this.exportTtl * 1000) < Date.now()) {
+            log.info('export-file-sweeper: ' + file + ' has expired, and will be deleted');
+            await fs.unlink(file);
+            log.info('export-file-sweeper: Successfully removed ' + file);
+        } else {
+            log.debug('export-file-sweeper: ' + file + ' has not expired, and does not need to be deleted');
+        }
     }
 }
 
