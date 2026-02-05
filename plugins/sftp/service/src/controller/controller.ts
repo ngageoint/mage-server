@@ -422,20 +422,22 @@ export class SftpController {
 
     if (result instanceof ArchiveResult) {
       if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
-        this.console.log(`posting status of success`)
         try {
-          const stream = new PassThrough()
-          result.archive.pipe(stream)
-          // TODO: This will fail if the observation has a .mov file
-          await result.archive.finalize()
           const teams = await this.teamRepository.findTeamsByUserId(observation.userId);
           // Filter out events from the teams response (bug) and teams that are not in the event
           const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
           const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
           const user = await this.userRepository.findById(observation.userId || '')
           const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
-          this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
-          await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
+
+          const stream = new PassThrough()
+          result.archive.pipe(stream)
+
+          const uploadPromise = this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
+          const finalizePromise = result.archive.finalize()
+
+          await Promise.all([uploadPromise, finalizePromise])
+
           await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
         } catch (error) {
           this.console.error(`error uploading observation ${observation.id}`, error)
