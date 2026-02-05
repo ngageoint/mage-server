@@ -282,6 +282,7 @@ export class LayerDetailsComponent implements OnInit {
     if (!this.layer?.id) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Events to Layer',
@@ -466,6 +467,7 @@ export class LayerDetailsComponent implements OnInit {
     if (!this.layer) return;
 
     const dialogRef = this.dialog.open(DeleteLayerComponent, {
+      width: '600px',
       data: { layer: this.layer }
     });
 

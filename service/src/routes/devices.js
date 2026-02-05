@@ -332,7 +332,7 @@ DeviceResource.prototype.parseDeviceParams = function(req, res, next) {
   };
 
   if (req.param('registered') !== undefined) {
-    req.newDevice.registered = req.param('registered') === 'true';
+    req.newDevice.registered = req.param('registered') === true;
   }
 
   next();

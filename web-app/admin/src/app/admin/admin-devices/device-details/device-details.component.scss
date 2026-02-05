@@ -143,7 +143,10 @@
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
 
   .danger-zone-title {
     font-size: 1.125rem;
@@ -157,6 +160,11 @@
     color: #7f1d1d;
     margin: 0 0 1.5rem 0;
     line-height: 1.5;
+  }
+
+  .action-button.btn-danger {
+    align-self: flex-end;
+    margin-top: auto;
   }
 }
 

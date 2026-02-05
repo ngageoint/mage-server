@@ -50,7 +50,7 @@ export class AuthBufferInterceptor implements HttpInterceptor {
             this.apiService.getApi().subscribe({
               next: (api) => {
                 const ref = this.dialog.open(SigninModalComponent, {
-                  width: '400px',
+                  width: '600px',
                   disableClose: true,
                   autoFocus: false,
                   data: { api }

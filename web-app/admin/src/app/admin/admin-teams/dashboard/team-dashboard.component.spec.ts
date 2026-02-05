@@ -178,7 +178,7 @@ describe('TeamDashboardComponent', () => {
     component.createTeam();
 
     expect(mockDialog.open).toHaveBeenCalledWith(CreateTeamDialogComponent, {
-      width: '80%',
+      width: '600px',
       data: { team: {} }
     });
   });
@@ -203,7 +203,7 @@ describe('TeamDashboardComponent', () => {
     tick();
 
     expect(mockDialog.open).toHaveBeenCalledWith(CreateTeamDialogComponent, {
-      width: '80%',
+      width: '600px',
       data: { team: {} }
     });
 

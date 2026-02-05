@@ -142,7 +142,7 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
 
   createDevice(): void {
     const dialogRef = this.modal.open(CreateDeviceDialogComponent, {
-      width: '80%',
+      width: "600px",
       data: { device: { uid: '', description: '', user: { id: '' } } }
     });
 

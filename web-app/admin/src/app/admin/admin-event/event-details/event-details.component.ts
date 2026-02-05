@@ -589,6 +589,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     if (!this.event) return;
 
     const dialogRef = this.dialog.open(DeleteEventComponent, {
+      width: '600px',
       data: { event: this.event }
     });
 
@@ -693,6 +694,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Members to Event',
@@ -743,6 +745,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     if (!this.event?.id) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Teams to Event',
@@ -788,6 +791,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     if (!this.event?.id) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Layers to Event',

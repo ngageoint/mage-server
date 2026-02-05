@@ -61,25 +61,47 @@ export class DeviceDetailsComponent implements OnInit {
     this.hasDeletePermission =
       this.adminUserService.hasPermission('DELETE_DEVICE');
 
+    this.loadDevice(deviceId);
+  }
+
+  private loadDevice(deviceId: string): void {
     this.deviceService.getDeviceById(deviceId).subscribe({
       next: (device: Device) => {
-        this.device = device;
-        this.breadcrumbs = [
-          {
-            title: 'Devices',
-            iconClass: 'fa fa-mobile',
-            route: ['../']
-          },
-          { title: device?.uid || 'Device' }
-        ];
-
-        this.currentUserDisplayName = device?.user?.displayName || null;
-        this.selectedUserDisplayName = null;
-
-        this.resetEditForm();
+        this.applyDevice(device);
       },
       error: () => {
         this.error = 'Failed to load device';
+      }
+    });
+  }
+
+  private applyDevice(device: Device): void {
+    this.device = device;
+    this.breadcrumbs = [
+      {
+        title: 'Devices',
+        iconClass: 'fa fa-mobile',
+        route: ['../']
+      },
+      { title: device?.uid || 'Device' }
+    ];
+
+    this.currentUserDisplayName = device?.user?.displayName || null;
+    this.selectedUserDisplayName = null;
+
+    this.resetEditForm();
+  }
+
+  private reloadDevice(): void {
+    if (!this.device?.id) return;
+
+    const deviceId = this.device.id;
+    this.deviceService.getDeviceById(deviceId).subscribe({
+      next: (d: Device) => {
+        this.applyDevice(d);
+      },
+      error: () => {
+        this.error = 'Failed to reload device';
       }
     });
   }
@@ -119,7 +141,7 @@ export class DeviceDetailsComponent implements OnInit {
   }
 
   saveDeviceDetails(): void {
-    if (!this.device?.id) return;
+    if (!this.device?.id || this.saving) return;
 
     const deviceId = this.device.id;
 
@@ -134,21 +156,11 @@ export class DeviceDetailsComponent implements OnInit {
         : null
     };
 
-    this.deviceService.updateDevice(this.device.id, payload).subscribe({
+    this.deviceService.updateDevice(deviceId, payload).subscribe({
       next: () => {
         this.editingDetails = false;
         this.saving = false;
-
-        this.deviceService.getDeviceById(deviceId).subscribe({
-          next: (d) => {
-            this.device = d;
-            this.currentUserDisplayName = d?.user?.displayName || null;
-            this.resetEditForm();
-          },
-          error: () => {
-            this.error = 'Failed to reload device';
-          }
-        });
+        this.reloadDevice();
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to update device';
@@ -158,25 +170,52 @@ export class DeviceDetailsComponent implements OnInit {
   }
 
   registerDevice(device: Device): void {
-    if (!device.id) return;
+    if (!device?.id || this.saving) return;
 
-    this.deviceService
-      .updateDevice(device.id, { registered: true })
-      .subscribe();
+    this.saving = true;
+    this.error = null;
+
+    this.deviceService.updateDevice(device.id, { registered: true }).subscribe({
+      next: (updated) => {
+
+        if (updated) this.applyDevice(updated);
+
+        this.saving = false;
+        this.reloadDevice();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to register device';
+        this.saving = false;
+      }
+    });
   }
 
   unregisterDevice(device: Device): void {
-    if (!device.id) return;
+    if (!device?.id || this.saving) return;
 
-    this.deviceService
-      .updateDevice(device.id, { registered: false })
-      .subscribe();
+    this.saving = true;
+    this.error = null;
+
+    this.deviceService.updateDevice(device.id, { registered: false }).subscribe({
+      next: (updated) => {
+
+        if (updated) this.applyDevice(updated);
+
+        this.saving = false;
+        this.reloadDevice();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to unregister device';
+        this.saving = false;
+      }
+    });
   }
 
   confirmDeleteDevice(): void {
     if (!this.device) return;
 
     const dialogRef = this.dialog.open(DeleteDeviceComponent, {
+      width: '600px',
       data: { device: this.device }
     });
 
@@ -188,12 +227,19 @@ export class DeviceDetailsComponent implements OnInit {
   }
 
   private deleteDevice(): void {
-    if (!this.device?.id) return;
+    if (!this.device?.id || this.saving) return;
+
+    this.saving = true;
+    this.error = null;
 
     this.deviceService.deleteDevice(this.device.id).subscribe({
-      next: () => this.router.navigate(['/../../devices'], { relativeTo: this.route }),
+      next: () => {
+        this.saving = false;
+        this.router.navigate(['/../../devices'], { relativeTo: this.route });
+      },
       error: () => {
         this.error = 'Failed to delete device';
+        this.saving = false;
       }
     });
   }

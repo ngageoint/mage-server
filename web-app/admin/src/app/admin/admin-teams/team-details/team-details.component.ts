@@ -277,6 +277,7 @@ export class TeamDetailsComponent implements OnInit {
     if (!teamId) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Members to Team',
@@ -372,6 +373,7 @@ export class TeamDetailsComponent implements OnInit {
     if (!this.team?.id) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Events to Team',
@@ -430,6 +432,7 @@ export class TeamDetailsComponent implements OnInit {
     if (!this.team) return;
 
     const dialogRef = this.dialog.open(DeleteTeamComponent, {
+      width: '600px',
       data: { team: this.team }
     });
 

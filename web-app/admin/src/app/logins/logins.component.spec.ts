@@ -145,16 +145,21 @@ describe('LoginsComponent', () => {
 
   it('hasNext should be false for invalid next links and true for valid link', async () => {
     await createComponent();
-
+  
     component.loginPage = { logins: [], next: 'null', prev: null } as any;
     expect(component.hasNext).toBe(false);
-
+  
     component.loginPage = { logins: [], next: '   ', prev: null } as any;
     expect(component.hasNext).toBe(false);
-
-    component.loginPage = { logins: [], next: 'http://next', prev: null } as any;
+  
+    component.loginPage = {
+      logins: [{ id: 'a' }],
+      next: 'http://next?start=25&limit=25',
+      prev: null
+    } as any;
     expect(component.hasNext).toBe(true);
   });
+  
 
   it('hasPrev should be false when firstLogin missing, no logins, or invalid prev; true when conditions met', async () => {
     await createComponent();

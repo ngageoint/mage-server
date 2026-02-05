@@ -131,6 +131,7 @@ export class EventDashboardComponent implements OnInit {
 
   createEvent(): void {
     const dialogRef = this.modal.open(CreateEventDialogComponent, {
+      width: "600px",
       data: { team: {} }
     });
 
