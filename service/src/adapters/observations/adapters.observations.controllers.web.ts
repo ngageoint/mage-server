@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
 import { AttachmentStore, EventScopedObservationRepository, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
@@ -89,6 +90,18 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
               stream.resume()
               return afterUploadStream(sendInvalidRequestStructure)
             }
+
+            // -------------------------------
+            // PLAN FOR PRE-DISK CLAMAV SCAN
+            // -------------------------------
+            // 1. 'stream' is the first point we have the uploaded file bytes (BLOB in memory)
+            // 2. Before writing anything to disk ($MAGE_ATTACHMENT_DIR), pipe 'stream' through ClamAV
+            // 3. Fail fast if ClamAV detects infection: reject request, do NOT persist bytes or metadata
+            // 4. Only after ClamAV scan passes, pass the clean stream to storeAttachmentContent()
+            // 5. storeAttachmentContent() will handle fs.move() to pod filesystem and Mongo metadata commit
+            // 6. This ensures pre-disk scanning invariant: Busboy stream → ClamAV → clean stream → storage
+            // -------------------------------
+
             const content: ExoIncomingAttachmentContent = {
               bytes: stream,
               mediaType: info.mimeType,
@@ -117,7 +130,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
             */
             stream.resume()
           })
-          .on('field', (fieldName, content, info) => {
+          .on('field', (fieldName) => {
             console.error(`unexpected field ${fieldName} uploading attachment ${attachmentId} on observation ${observationId}`)
             afterUploadStream(sendInvalidRequestStructure)
           })
@@ -164,7 +177,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       }
       return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
     })
-    .delete(async (req, res, next) => {
+    .delete(async (req, res) => {
       // TODO: this should go away when ios app is fixed to stop sending delete requests
       res.sendStatus(204)
     })
