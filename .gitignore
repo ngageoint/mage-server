@@ -22,3 +22,4 @@ scratch/
 # this line must be last
 !.gitkeep
 .angular
+.DS_STORE
