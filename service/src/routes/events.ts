@@ -215,7 +215,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       if (req.parameters!.userId) {
         filter.userId = req.parameters!.userId
       }
-      const pageSize = parseInt(String(req.query.page_size)) || parseInt(String(req.query.limit)) || 20
+      const pageSize = parseInt(String(req.query.page_size)) || parseInt(String(req.query.limit))
       const page = parseInt(String(req.query.page)) || parseInt(String(req.query.start)) || 0
       EventModel.getEvents({ access: req.access, filter: filter, populate: req.parameters!.populate, projection: req.parameters!.projection, limit: pageSize, start: page }, (err, events, totalCount) => {
         if (err) {
