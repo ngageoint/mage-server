@@ -1,4 +1,4 @@
-const log = require('../logger')
+const log = require('../../logger')
   , fs = require('fs').promises
   , path = require('path');
 

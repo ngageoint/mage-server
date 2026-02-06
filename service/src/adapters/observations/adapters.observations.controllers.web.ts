@@ -89,14 +89,28 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
               stream.resume()
               return afterUploadStream(sendInvalidRequestStructure)
             }
+
+            // -------------------------------
+            // PLAN FOR PRE-DISK CLAMAV SCAN
+            // -------------------------------
+            // 1. 'stream' is the first point we have the uploaded file bytes (BLOB in memory)
+            // 2. Before writing anything to disk ($MAGE_ATTACHMENT_DIR), pipe 'stream' through ClamAV
+            // 3. Fail fast if ClamAV detects infection: reject request, do NOT persist bytes or metadata
+            // 4. Only after ClamAV scan passes, pass the clean stream to storeAttachmentContent()
+            // 5. storeAttachmentContent() will handle fs.move() to pod filesystem and Mongo metadata commit
+            // 6. This ensures pre-disk scanning invariant: Busboy stream → ClamAV → clean stream → storage
+            // -------------------------------
+
             const content: ExoIncomingAttachmentContent = {
-              bytes: stream,
+              bytes: stream,   // <-- FIRST bytes exist here
               mediaType: info.mimeType,
               name: info.filename,
             }
+
             const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
             const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
             const appRes = await app.storeAttachmentContent(appReq)
+
             if (appRes.success) {
               const obs = appRes.success
               const attachment = obs.attachments.find(x => x.id === appReq.attachmentId)!
@@ -111,6 +125,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
             else {
               afterUploadStream(sendInvalidRequestStructure)
             }
+
             /*
             per busboy docs, drain the stream and ignore the contents; necessary
             for the busboy stream to terminate properly
