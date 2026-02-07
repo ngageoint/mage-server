@@ -7,6 +7,7 @@ import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
 import { invalidInput } from '../../app.api/app.api.errors'
 import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
+import { scanAttachmentWithClamAV } from './adapters.attachments.clamav'
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -21,18 +22,15 @@ export interface ObservationAppLayer {
   readAttachmentContent: ReadAttachmentContent
 }
 
-export interface ObservationWebAppRequestFactory {
-  <Params extends object>(req: express.Request, params?: Params): Params & ObservationRequest<unknown>
-}
-
-export interface EnsureEventScope {
-  (eventId: MageEventId): Promise<null | { mageEvent: MageEvent, observationRepository: EventScopedObservationRepository }>
-}
-
+export type ObservationWebAppRequestFactory = <Params extends object>(req: express.Request, params?: Params) => Params & ObservationRequest<unknown>
+export type EnsureEventScope = (eventId: MageEventId) => Promise<null | { mageEvent: MageEvent, observationRepository: EventScopedObservationRepository }>
 export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: AttachmentStore, createAppRequest: ObservationWebAppRequestFactory): express.Router {
 
   const routes = express.Router().use(express.json())
 
+  // --------------------------------------
+  // Allocate Observation ID
+  // --------------------------------------
   routes.route('/id')
     .post(async (req, res, next) => {
       const appReq = createAppRequest(req)
@@ -40,7 +38,6 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       const id = appRes.success
       const path = `${req.baseUrl}/${id}`
       if (id) {
-        // TODO: add location header? kind of a gray area restfully speaking
         return res.status(201).location(path).json({
           id,
           eventId: appReq.context.mageEvent.id,
@@ -50,45 +47,37 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       next(appRes.error)
     })
 
+  // --------------------------------------
+  // Attachment upload / download / delete
+  // --------------------------------------
   routes.route('/:observationId/attachments/:attachmentId')
     .put(
+      // 1️⃣ Init Busboy for multipart upload
       (req, res, next) => {
-        /*
-        encapsulate the busboy init in a middleware so the request can
-        fail-fast when busboy throws a validation error
-        */
         try {
           req.attachmentUpload = busboy({
             headers: req.headers,
             limits: { files: 1, fields: 0 }
           })
-        }
-        catch (err) {
-          console.error('error initializing attachment upload\n', req.params, '\nheaders:\n', req.headers, '\n', err)
+        } catch (err) {
+          console.error('Error initializing attachment upload\n', req.params, '\nheaders:\n', req.headers, '\n', err)
           return res.status(400).json({ message: err instanceof Error ? err.message : String(err) })
         }
         next()
       },
+      // 2️⃣ Handle Busboy streams
       async (req, res, next) => {
-        const afterUploadStreamEvent = 'afterUploadStream'
-        const sendInvalidRequestStructure = () => next(invalidInput(`request must contain only one file part named 'attachment'`))
-        const afterUploadStream = (finishResponse: () => void) => {
-          if (req.attachmentUpload?.listenerCount(afterUploadStreamEvent)) {
-            return
-          }
-          if (req.attachmentUpload?.writable) {
-            return void(req.attachmentUpload.on(afterUploadStreamEvent, finishResponse))
-          }
-          finishResponse()
-        }
         const { observationId, attachmentId } = req.params
+        const sendInvalidRequestStructure = () => next(invalidInput(`request must contain only one file part named 'attachment'`))
+
         req.pipe(req.attachmentUpload!
           .on('file', async (fieldName, stream, info) => {
+            console.log('Received file', fieldName, info)
+
             if (fieldName !== 'attachment') {
-              // per busboy docs, drain the file stream and move on
-              console.error(`unexpected file entry '${fieldName}' uploading attachment ${attachmentId} on observation ${observationId}`)
+              console.error(`Unexpected file entry '${fieldName}' uploading attachment ${attachmentId} on observation ${observationId}`)
               stream.resume()
-              return afterUploadStream(sendInvalidRequestStructure)
+              return sendInvalidRequestStructure()
             }
 
             // -------------------------------
@@ -102,50 +91,40 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
             // 6. This ensures pre-disk scanning invariant: Busboy stream → ClamAV → clean stream → storage
             // -------------------------------
 
-            const content: ExoIncomingAttachmentContent = {
-              bytes: stream,
-              mediaType: info.mimeType,
-              name: info.filename,
+            try {
+              const cleanStream = await scanAttachmentWithClamAV(stream)
+
+              const content: ExoIncomingAttachmentContent = {
+                bytes: cleanStream,
+                mediaType: info.mimeType,
+                name: info.filename,
+              }
+              const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
+              const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
+              const appRes = await app.storeAttachmentContent(appReq)
+
+              if (appRes.success) {
+                const obs = appRes.success
+                const attachment = obs.attachments.find(x => x.id === appReq.attachmentId)!
+                const attachmentJson = jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`)
+                console.info(`Successfully stored attachment ${attachmentId} on observation ${observationId}`)
+                return res.json(attachmentJson)
+              }
+
+              if (appRes.error) return next(appRes.error)
+              sendInvalidRequestStructure()
+            } catch (err) {
+              console.error('Error processing attachment upload:', err)
+              return next(err)
             }
-            const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
-            const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
-            const appRes = await app.storeAttachmentContent(appReq)
-            if (appRes.success) {
-              const obs = appRes.success
-              const attachment = obs.attachments.find(x => x.id === appReq.attachmentId)!
-              const attachmentJson = jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`)
-              console.info(`successfully stored attachment ${attachmentId} on observation ${observationId}`)
-              return void(afterUploadStream(() => res.json(attachmentJson)))
-            }
-            if (appRes.error) {
-              const error = appRes.error
-              afterUploadStream(() => next(error))
-            }
-            else {
-              afterUploadStream(sendInvalidRequestStructure)
-            }
-            /*
-            per busboy docs, drain the stream and ignore the contents; necessary
-            for the busboy stream to terminate properly
-            */
-            stream.resume()
           })
           .on('field', (fieldName) => {
-            console.error(`unexpected field ${fieldName} uploading attachment ${attachmentId} on observation ${observationId}`)
-            afterUploadStream(sendInvalidRequestStructure)
+            console.error(`Unexpected field ${fieldName} uploading attachment ${attachmentId}`)
+            sendInvalidRequestStructure()
           })
-          .on('filesLimit', () => {
-            console.error(`too many file parts in upload request for attachment ${attachmentId} on observation ${observationId}`)
-            afterUploadStream(sendInvalidRequestStructure)
-          })
-          .on('fieldsLimit', () => {
-            console.error(`too many field parts in upload request for attachment ${attachmentId} on observation ${observationId}`)
-            afterUploadStream(sendInvalidRequestStructure)
-          })
-          .on('close', () => {
-            req.attachmentUpload?.emit(afterUploadStreamEvent)
-            req.attachmentUpload?.removeAllListeners()
-          })
+          .on('filesLimit', () => sendInvalidRequestStructure())
+          .on('fieldsLimit', () => sendInvalidRequestStructure())
+          .on('close', () => req.attachmentUpload?.removeAllListeners())
         )
       }
     )
@@ -178,10 +157,12 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
     })
     .delete(async (req, res) => {
-      // TODO: this should go away when ios app is fixed to stop sending delete requests
       res.sendStatus(204)
     })
 
+  // --------------------------------------
+  // Update Observation
+  // --------------------------------------
   routes.route('/:observationId')
     .put(async (req, res, next) => {
       const body = req.body
