@@ -26,21 +26,12 @@ import busboy from 'busboy'
 import { invalidInput } from '../../app.api/app.api.errors'
 import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
 
+
 declare module 'express-serve-static-core' {
   interface Request {
-    attachmentUpload: busboy.Busboy | null
+    attachmentUpload?: busboy.Busboy
   }
 }
-
-// -------------------------------
-// PLAN FOR PRE-DISK CLAMAV SCAN
-// -------------------------------
-// 1. 'stream' is the first point we have the uploaded file bytes (BLOB in memory or pipe)
-// 2. Pipe 'stream' through ClamAV before writing anything to disk
-// 3. Fail fast if ClamAV detects infection: reject request, do NOT persist bytes or metadata
-// 4. Only after ClamAV scan passes, pass the clean stream to storeAttachmentContent()
-// 5. storeAttachmentContent() handles fs.move() and Mongo metadata commit
-// -------------------------------
 
 export interface ObservationAppLayer {
   allocateObservationId: AllocateObservationId
@@ -63,8 +54,7 @@ export function ObservationRoutes(
   createAppRequest: ObservationWebAppRequestFactory
 ): express.Router {
   console.error('🔥 ObservationRoutes() invoked')
-  const routes = express.Router();
-
+  const routes = express.Router()
 
   // --------------------------------------
   // Allocate Observation ID
@@ -89,117 +79,76 @@ export function ObservationRoutes(
   // --------------------------------------
   routes
     .route('/:observationId/attachments/:attachmentId')
-    .put(
-      (req, res, next) => {
-        req.attachmentUpload = null
-        console.error('🔥 PUT attachment route HIT', {
-          url: req.originalUrl,
-          method: req.method,
-          headers: !!req.headers,
+    .put(async (req, res, next) => {
+      console.error('🔥 PUT attachment route HIT', {
+        url: req.originalUrl,
+        method: req.method,
+        headers: !!req.headers
+      })
+
+      try {
+        const bb = busboy({ headers: req.headers, limits: { files: 1, fields: 0 } })
+        let handled = false
+
+        bb.on('file', async (fieldName, fileStream, info) => {
+          if (handled) return fileStream.resume()
+          handled = true
+
+          if (fieldName !== 'attachment') {
+            fileStream.resume()
+            return next(invalidInput(`request must contain only one file part named 'attachment'`))
+          }
+
+          try {
+            console.log('>>> CLAMAV SCAN STARTED <<<', info.filename)
+            const cleanStream: Readable = await scanAttachmentWithClamAV(fileStream)
+            console.log('>>> CLAMAV SCAN CLEAN <<<', info.filename)
+
+            const { observationId, attachmentId } = req.params
+            const content: ExoIncomingAttachmentContent = {
+              bytes: cleanStream,
+              mediaType: info.mimeType,
+              name: info.filename
+            }
+
+            const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = {
+              observationId,
+              attachmentId,
+              content
+            }
+            const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
+            const appRes = await app.storeAttachmentContent(appReq)
+
+            if (appRes.success) {
+              const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
+              const attachmentJson = jsonForAttachment(
+                attachment,
+                `${qualifiedBaseUrl(req)}/${observationId}`
+              )
+              console.info(
+                `✅ Successfully stored attachment '${info.filename}' on observation '${observationId}'`
+              )
+              return res.json(attachmentJson)
+            }
+
+            if (appRes.error) return next(appRes.error)
+            next(invalidInput('Attachment could not be stored'))
+          } catch (err) {
+            console.error(`Error during ClamAV scan for '${info.filename}':`, err)
+            return next(err)
+          }
         })
-        next()
-      },
-      // Init Busboy
-      (req, res, next) => {
-        try {
-          req.attachmentUpload = busboy({
-            headers: req.headers,
-            limits: { files: 1, fields: 0 }
-          })
 
-          req.attachmentUpload.on('error', err => {
-            console.error('BUSBOY ERROR', err)
-          })
-  
-          req.attachmentUpload.on('finish', () => {
-            console.error('BUSBOY FINISH')
-          })
-  
-          req.attachmentUpload.on('close', () => {
-            console.error('BUSBOY CLOSE')
-          })
+        bb.on('field', () => next(invalidInput(`unexpected form field`)))
+        bb.on('filesLimit', () => next(invalidInput(`too many files`)))
+        bb.on('fieldsLimit', () => next(invalidInput(`too many fields`)))
+        bb.on('error', (err) => next(err))
 
-        } catch (err) {
-          console.error('Error initializing attachment upload', err)
-          return res
-            .status(400)
-            .json({ message: err instanceof Error ? err.message : String(err) })
-        }
-        next()
-      },
-      // Handle Busboy streams with ClamAV scan
-      async (req, res, next) => {
-        const { observationId, attachmentId } = req.params
-        const sendInvalidRequestStructure = () =>
-          next(invalidInput(`request must contain only one file part named 'attachment'`))
-
-        console.error('🔥 piping request into busboy')
-
-        if (!req.attachmentUpload) {
-          console.error('🔥 attachmentUpload missing before pipe')
-          return next(new Error('Attachment upload not initialized'))
-        }
-        req.pipe(
-          req.attachmentUpload!
-            .on('file', async (fieldName, fileStream, info) => {
-              console.error('🔥 BUSBOY FILE EVENT FIRED', fieldName)
-        
-              if (fieldName !== 'attachment') {
-                console.error(`Unexpected file entry '${fieldName}'`)
-                fileStream.resume()
-                return sendInvalidRequestStructure()
-              }
-        
-              try {
-                console.log('>>> CLAMAV SCAN STARTED <<<', info.filename)
-        
-                // --- PRE-DISK CLAMAV SCAN ---
-                const cleanStream: Readable = await scanAttachmentWithClamAV(fileStream)
-        
-                console.log('>>> CLAMAV SCAN CLEAN <<<', info.filename)
-        
-                // --- STORE CLEAN FILE ---
-                const content: ExoIncomingAttachmentContent = {
-                  bytes: cleanStream,
-                  mediaType: info.mimeType,
-                  name: info.filename
-                }
-        
-                const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = {
-                  observationId,
-                  attachmentId,
-                  content
-                }
-                const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
-                const appRes = await app.storeAttachmentContent(appReq)
-        
-                if (appRes.success) {
-                  const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
-                  const attachmentJson = jsonForAttachment(
-                    attachment,
-                    `${qualifiedBaseUrl(req)}/${observationId}`
-                  )
-                  console.info(
-                    `✅ Successfully stored attachment '${info.filename}' on observation '${observationId}'`
-                  )
-                  return res.json(attachmentJson)
-                }
-        
-                if (appRes.error) return next(appRes.error)
-                sendInvalidRequestStructure()
-              } catch (err) {
-                console.error(`Error during ClamAV scan for '${info.filename}':`, err)
-                // Fail fast: reject request, no disk write, no Mongo commit
-                return next(err)
-              }
-            })
-            .on('field', () => sendInvalidRequestStructure())
-            .on('filesLimit', () => sendInvalidRequestStructure())
-            .on('fieldsLimit', () => sendInvalidRequestStructure())
-            .on('close', () => req.attachmentUpload?.removeAllListeners())
-        )        
+        req.pipe(bb)
+      } catch (err) {
+        next(err)
       }
-    )
+    })
     .get(async (req, res, next) => {
       const minDimension = parseInt(String(req.query.size), 10) || undefined
       const contentRange = req.headers.range
