@@ -8,7 +8,6 @@ const CLAMAV_TIMEOUT_MS = 60_000
 export async function scanAttachmentWithClamAV(
   inputStream: Readable
 ): Promise<Readable> {
-  console.log('>>> CLAMAV SCAN STARTED <<<')
 
   return new Promise((resolve, reject) => {
     let settled = false
@@ -38,7 +37,6 @@ export async function scanAttachmentWithClamAV(
     let clamReady = false
 
     clam.on('connect', () => {
-      console.log('✅ Connected to ClamAV server')
       clamReady = true
       clam.write('zINSTREAM\0')
 
@@ -97,7 +95,6 @@ export async function scanAttachmentWithClamAV(
       if (settled) return
 
       if (response.includes('OK')) {
-        console.log('>>> CLAMAV SCAN CLEAN <<<')
         settled = true
         tee.pipe(gatedStream)
         gatedStream.resume()

@@ -53,7 +53,6 @@ export function ObservationRoutes(
   attachmentStore: AttachmentStore,
   createAppRequest: ObservationWebAppRequestFactory
 ): express.Router {
-  console.error('🔥 ObservationRoutes() invoked')
   const routes = express.Router()
 
   // --------------------------------------
@@ -80,12 +79,6 @@ export function ObservationRoutes(
   routes
     .route('/:observationId/attachments/:attachmentId')
     .put(async (req, res, next) => {
-      console.error('🔥 PUT attachment route HIT', {
-        url: req.originalUrl,
-        method: req.method,
-        headers: !!req.headers
-      })
-
       try {
         const bb = busboy({ headers: req.headers, limits: { files: 1, fields: 0 } })
         let handled = false
@@ -100,10 +93,7 @@ export function ObservationRoutes(
           }
 
           try {
-            console.log('>>> CLAMAV SCAN STARTED <<<', info.filename)
             const cleanStream: Readable = await scanAttachmentWithClamAV(fileStream)
-            console.log('>>> CLAMAV SCAN CLEAN <<<', info.filename)
-
             const { observationId, attachmentId } = req.params
             const content: ExoIncomingAttachmentContent = {
               bytes: cleanStream,
@@ -125,16 +115,12 @@ export function ObservationRoutes(
                 attachment,
                 `${qualifiedBaseUrl(req)}/${observationId}`
               )
-              console.info(
-                `✅ Successfully stored attachment '${info.filename}' on observation '${observationId}'`
-              )
               return res.json(attachmentJson)
             }
 
             if (appRes.error) return next(appRes.error)
             next(invalidInput('Attachment could not be stored'))
           } catch (err) {
-            console.error(`Error during ClamAV scan for '${info.filename}':`, err)
             return next(err)
           }
         })
@@ -150,7 +136,10 @@ export function ObservationRoutes(
       }
     })
     .get(async (req, res, next) => {
-      const minDimension = parseInt(String(req.query.size), 10) || undefined
+      const sizeParam = req.query.size;
+      const minDimension =
+        typeof sizeParam === 'string' ? parseInt(sizeParam, 10) : undefined;
+      
       const contentRange = req.headers.range
         ? req.headers.range
             .replace(/bytes=/i, '')
