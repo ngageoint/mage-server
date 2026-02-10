@@ -9,17 +9,21 @@ export enum SftpStatus {
 }
 
 const SftpObservationsSchema = new mongoose.Schema({
-  eventId: { type: Number, required: true, unique: true },
+  eventId: { type: Number, required: true },
   observationId: { type: String, required: true },
-  status: { type: String, enum: Object.values(SftpStatus), required: true }
+  status: { type: String, enum: Object.values(SftpStatus), required: true },
+  lastObservationModified: { type: Date, required: false }
 }, {
   timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
+
+SftpObservationsSchema.index({ eventId: 1, observationId: 1 }, { unique: true });
 
 export interface SftpAttrs {
   eventId: MageEventId,
   observationId: ObservationId,
   status: SftpStatus,
+  lastObservationModified?: Date,
   createdAt: number,
   updatedAt: number
 }
@@ -36,8 +40,10 @@ export interface SftpObservationRepository {
   findAll(eventId: MageEventId): Promise<SftpAttrs[]>
   findAllByStatus(eventId: MageEventId, status: SftpStatus[]): Promise<SftpAttrs[]>
   findLatest(eventId: MageEventId): Promise<SftpAttrs | null>
+  findLatestSyncedObservationTime(eventId: MageEventId): Promise<Date | null>
   isProcessed(eventId: MageEventId, observationId: ObservationId): Promise<Boolean>
-  postStatus(eventId: MageEventId, observationId: ObservationId, status: SftpStatus): Promise<SftpAttrs | null>
+  isSyncedAtLastModified(eventId: MageEventId, observationId: ObservationId, lastModified: Date): Promise<boolean>
+  postStatus(eventId: MageEventId, observationId: ObservationId, status: SftpStatus, lastObservationModified?: Date): Promise<SftpAttrs | null>
 }
 
 export class MongooseSftpObservationRepository implements SftpObservationRepository {
@@ -62,13 +68,38 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
     return document ? (document.toJSON() as SftpAttrs) : null
   }
 
+  async findLatestSyncedObservationTime(eventId: MageEventId): Promise<Date | null> {
+    const document = await this.model.findOne(
+      { eventId: eventId, status: SftpStatus.SUCCESS, lastObservationModified: { $ne: null } },
+      {},
+      { sort: { lastObservationModified: -1 }, limit: 1 }
+    )
+    if (!document) return null
+    const attrs = document.toJSON() as SftpAttrs
+    return attrs.lastObservationModified ? new Date(attrs.lastObservationModified) : null
+  }
+
   async isProcessed(eventId: number, observationId: string): Promise<Boolean> {
     const document = await this.model.findOne({ eventId: eventId, observationId: observationId, status: SftpStatus.SUCCESS }, { limit: 1 })
     return document !== null
   }
 
-  async postStatus(eventId: number, observationId: string, status: SftpStatus): Promise<SftpAttrs | null> {
-    const document = await this.model.findOneAndUpdate({ eventId: eventId, observationId: observationId }, { eventId: eventId, observationId: observationId, status: status }, { upsert: true })
+  async isSyncedAtLastModified(eventId: MageEventId, observationId: ObservationId, lastModified: Date): Promise<boolean> {
+    const document = await this.model.findOne({
+      eventId: eventId,
+      observationId: observationId,
+      status: SftpStatus.SUCCESS,
+      lastObservationModified: { $gte: lastModified }
+    })
+    return document !== null
+  }
+
+  async postStatus(eventId: number, observationId: string, status: SftpStatus, lastObservationModified?: Date): Promise<SftpAttrs | null> {
+    const update: any = { eventId: eventId, observationId: observationId, status: status }
+    if (lastObservationModified) {
+      update.lastObservationModified = lastObservationModified
+    }
+    const document = await this.model.findOneAndUpdate({ eventId: eventId, observationId: observationId }, update, { upsert: true })
     return document ? (document.toJSON() as SftpAttrs) : null
   }
 
