@@ -117,7 +117,6 @@ describe('automated processing', () => {
 
     stateRepository = new TestPluginStateRepository()
     clock = jasmine.clock().install()
-    process.env['MAGE_SFTP_KEY_FILE'] = '/tmp/mock_sftp_key'
     spyOn(fs, 'readFileSync').and.returnValue(Buffer.from('mock ssh key content'))
 
     // Create a spy on the SFTPClient constructor
@@ -136,7 +135,6 @@ describe('automated processing', () => {
 
   afterEach(() => {
     clock.uninstall()
-    delete process.env['MAGE_SFTP_KEY_FILE']
   })
 
   it('waits for the current processing interval to finish then stops', async () => {
@@ -197,7 +195,7 @@ describe('automated processing', () => {
     userRepository.findById.and.resolveTo(null)
 
     const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.resolveTo([])
-    const findLatestSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
 
     spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
 
@@ -245,13 +243,18 @@ describe('automated processing', () => {
     const userRepository = jasmine.createSpyObj<UserRepository>('userRepo', ['findById'])
     userRepository.findById.and.resolveTo(null)
 
-    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.resolveTo([{
-      eventId: event1.id,
-      observationId: observation.id,
-      status: SftpStatus.PENDING,
-      createdAt: 1,
-      updatedAt: 1
-    }])
+    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.callFake(async (_eventId: number, statuses: SftpStatus[]) => {
+      if (statuses.includes(SftpStatus.PENDING)) {
+        return [{
+          eventId: event1.id,
+          observationId: observation.id,
+          status: SftpStatus.PENDING,
+          createdAt: 1,
+          updatedAt: 1
+        }]
+      }
+      return []
+    })
     const postStatusSpy = spyOn(MongooseSftpObservationRepository.prototype, 'postStatus').and.resolveTo({
       eventId: event1.id,
       observationId: observation.id,
@@ -259,7 +262,8 @@ describe('automated processing', () => {
       createdAt: 1,
       updatedAt: 1
     })
-    spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'isSyncedAtLastModified').and.resolveTo(true)
 
     spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
 
@@ -285,7 +289,7 @@ describe('automated processing', () => {
     expect(findAllSpy).toHaveBeenCalledTimes(1)
     expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
-    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
   })
 
   it('processes pending observations with success before attachment timeout', async () => {
@@ -311,13 +315,18 @@ describe('automated processing', () => {
     const userRepository = jasmine.createSpyObj<UserRepository>('userRepo', ['findById'])
     userRepository.findById.and.resolveTo(null)
 
-    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.resolveTo([{
-      eventId: event1.id,
-      observationId: observation.id,
-      status: SftpStatus.PENDING,
-      createdAt: 1,
-      updatedAt: 1
-    }])
+    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.callFake(async (_eventId: number, statuses: SftpStatus[]) => {
+      if (statuses.includes(SftpStatus.PENDING)) {
+        return [{
+          eventId: event1.id,
+          observationId: observation.id,
+          status: SftpStatus.PENDING,
+          createdAt: 1,
+          updatedAt: 1
+        }]
+      }
+      return []
+    })
     const postStatusSpy = spyOn(MongooseSftpObservationRepository.prototype, 'postStatus').and.resolveTo({
       eventId: event1.id,
       observationId: observation.id,
@@ -325,7 +334,8 @@ describe('automated processing', () => {
       createdAt: 1,
       updatedAt: 1
     })
-    spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'isSyncedAtLastModified').and.resolveTo(true)
 
     spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
 
@@ -351,7 +361,7 @@ describe('automated processing', () => {
     expect(findAllSpy).toHaveBeenCalledTimes(1)
     expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
-    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
   })
 
   it('processes pending observations after attachment timeout', async () => {
@@ -374,13 +384,18 @@ describe('automated processing', () => {
     const userRepository = jasmine.createSpyObj<UserRepository>('userRepo', ['findById'])
     userRepository.findById.and.resolveTo(null)
 
-    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.resolveTo([{
-      eventId: event1.id,
-      observationId: observation.id,
-      status: SftpStatus.PENDING,
-      createdAt: 1,
-      updatedAt: 1
-    }])
+    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.callFake(async (_eventId: number, statuses: SftpStatus[]) => {
+      if (statuses.includes(SftpStatus.PENDING)) {
+        return [{
+          eventId: event1.id,
+          observationId: observation.id,
+          status: SftpStatus.PENDING,
+          createdAt: 1,
+          updatedAt: 1
+        }]
+      }
+      return []
+    })
     const postStatusSpy = spyOn(MongooseSftpObservationRepository.prototype, 'postStatus').and.resolveTo({
       eventId: event1.id,
       observationId: observation.id,
@@ -388,7 +403,8 @@ describe('automated processing', () => {
       createdAt: 1,
       updatedAt: 1
     })
-    spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'isSyncedAtLastModified').and.resolveTo(true)
 
     spyOn(ArchiverFactory.prototype, 'createArchiver').and.returnValue(newArchiver(ArchiveStatus.Incomplete))
 
@@ -414,7 +430,7 @@ describe('automated processing', () => {
     expect(findAllSpy).toHaveBeenCalledTimes(1)
     expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
-    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
   })
 
   it('processes new observations w/ create trigger', async () => {
@@ -445,7 +461,7 @@ describe('automated processing', () => {
       createdAt: 1,
       updatedAt: 1
     })
-    spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
     spyOn(MongooseSftpObservationRepository.prototype, 'isProcessed').and.resolveTo(false)
 
     spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
@@ -474,7 +490,7 @@ describe('automated processing', () => {
     expect(findAllSpy).toHaveBeenCalledTimes(1)
     expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
-    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
     expect(archiverSpy.createArchive).toHaveBeenCalled()
   })
 
@@ -506,8 +522,9 @@ describe('automated processing', () => {
       createdAt: 1,
       updatedAt: 1
     })
-    spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
     spyOn(MongooseSftpObservationRepository.prototype, 'isProcessed').and.resolveTo(false)
+    spyOn(MongooseSftpObservationRepository.prototype, 'isSyncedAtLastModified').and.resolveTo(false)
 
     spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
 
@@ -535,7 +552,7 @@ describe('automated processing', () => {
     expect(findAllSpy).toHaveBeenCalledTimes(1)
     expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
-    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS)
+    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
     expect(archiverSpy.createArchive).toHaveBeenCalled()
   })
 
@@ -567,7 +584,7 @@ describe('automated processing', () => {
       createdAt: 1,
       updatedAt: 1
     })
-    spyOn(MongooseSftpObservationRepository.prototype, 'findLatest').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
     spyOn(MongooseSftpObservationRepository.prototype, 'isProcessed').and.resolveTo(true)
 
     spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
@@ -595,6 +612,130 @@ describe('automated processing', () => {
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
     expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(postStatusSpy).toHaveBeenCalledTimes(0)
+    expect(archiverSpy.createArchive).toHaveBeenCalledTimes(0)
+  })
+
+  it('re-syncs observations updated since last sync w/ create/update trigger', async () => {
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
+
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+
+    const originalModified = new Date(1000)
+    const updatedModified = new Date(2000)
+    const observation = newObservation(event1, updatedModified)
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    // The observation shows up in findLastModifiedAfter because its lastModified > the synced time
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 1,
+      pageSize: 10,
+      pageIndex: 0,
+      items: [observation]
+    })
+
+    const userRepository = jasmine.createSpyObj<UserRepository>('userRepo', ['findById'])
+    userRepository.findById.and.resolveTo(null)
+
+    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.resolveTo([])
+    const postStatusSpy = spyOn(MongooseSftpObservationRepository.prototype, 'postStatus').and.resolveTo({
+      eventId: event1.id,
+      observationId: observation.id,
+      status: SftpStatus.SUCCESS,
+      createdAt: 1,
+      updatedAt: 1
+    })
+    // The high-water mark is the original synced time
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(originalModified)
+    // isSyncedAtLastModified returns false because the observation was updated after the last sync
+    const isSyncedSpy = spyOn(MongooseSftpObservationRepository.prototype, 'isSyncedAtLastModified').and.resolveTo(false)
+
+    spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
+
+    const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
+    archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
+    spyOn(ArchiverFactory.prototype, 'createArchiver').and.returnValue(archiverSpy)
+
+    const controller = new SftpController(
+      console,
+      {
+        stateRepository,
+        eventRepository,
+        observationRepository,
+        userRepository,
+        attachmentStore
+      },
+      dbConnection
+    )
+
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
+
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(findAllSpy).toHaveBeenCalledTimes(1)
+    expect(isSyncedSpy).toHaveBeenCalledTimes(1)
+    expect(postStatusSpy).toHaveBeenCalledTimes(1)
+    expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, updatedModified)
+    expect(archiverSpy.createArchive).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not re-sync observations that have not changed since last sync', async () => {
+    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    const clockTickMillis = stateRepository.state.interval * 1000 + 1
+
+    const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
+    eventRepository.findActiveEvents.and.resolveTo([copyMageEventAttrs(event1)])
+
+    const syncedModified = new Date(1000)
+    const observation = newObservation(event1, syncedModified)
+
+    eventObservationRepositories.get(event1.id)?.findById.and.resolveTo(Observation.evaluate(observation, event1))
+    // The observation appears in findLastModifiedAfter (e.g. queryTime was 0)
+    // but it has already been synced at this lastModified
+    eventObservationRepositories.get(event1.id)?.findLastModifiedAfter.and.resolveTo({
+      totalCount: 1,
+      pageSize: 10,
+      pageIndex: 0,
+      items: [observation]
+    })
+
+    const userRepository = jasmine.createSpyObj<UserRepository>('userRepo', ['findById'])
+    userRepository.findById.and.resolveTo(null)
+
+    const findAllSpy = spyOn(MongooseSftpObservationRepository.prototype, 'findAllByStatus').and.resolveTo([])
+    const postStatusSpy = spyOn(MongooseSftpObservationRepository.prototype, 'postStatus').and.resolveTo(null)
+    spyOn(MongooseSftpObservationRepository.prototype, 'findLatestSyncedObservationTime').and.resolveTo(null)
+    // isSyncedAtLastModified returns true — already synced at this version
+    const isSyncedSpy = spyOn(MongooseSftpObservationRepository.prototype, 'isSyncedAtLastModified').and.resolveTo(true)
+
+    spyOn(MongooseTeamsRepository.prototype, 'findTeamsByUserId').and.resolveTo([])
+
+    const archiverSpy = jasmine.createSpyObj<ObservationArchiver>('archiver', ['createArchive'])
+    archiverSpy.createArchive.and.resolveTo(ArchiveResult.complete(archiver('zip')))
+    spyOn(ArchiverFactory.prototype, 'createArchiver').and.returnValue(archiverSpy)
+
+    const controller = new SftpController(
+      console,
+      {
+        stateRepository,
+        eventRepository,
+        observationRepository,
+        userRepository,
+        attachmentStore
+      },
+      dbConnection
+    )
+
+    await controller.start()
+    clock.tick(clockTickMillis)
+    await controller.stop()
+
+    expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
+    expect(findAllSpy).toHaveBeenCalledTimes(1)
+    expect(isSyncedSpy).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledTimes(0)
     expect(archiverSpy.createArchive).toHaveBeenCalledTimes(0)
   })

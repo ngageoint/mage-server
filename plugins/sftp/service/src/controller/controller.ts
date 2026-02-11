@@ -364,50 +364,50 @@ export class SftpController {
       }
     }
 
-    const latest: SftpAttrs | null = await this.sftpObservationRepository.findLatest(event.id)
-    let queryTime: number = 0
-    if (latest !== null) {
-      const observation = await observationRepository.findById(latest.observationId)
-      if (observation !== null) {
-        queryTime = observation.lastModified.getTime() + 1
-      }
-    }
+    const latestSyncedTime = await this.sftpObservationRepository.findLatestSyncedObservationTime(event.id)
+    let queryTime: number = latestSyncedTime ? latestSyncedTime.getTime() : 0
 
     const page: PagingParameters = {
       pageSize: configuration.pageSize,
       pageIndex: 0
     }
 
-    this.console.debug('fetching new observations for event ' + event.name);
+    this.console.debug('fetching observations modified after ' + new Date(queryTime).toISOString() + ' for event ' + event.name);
     let { items: observations } = await observationRepository.findLastModifiedAfter(queryTime, page);
-    observations = await this.applyTriggerRule(event, observations, configuration.initiation.rule)
+    observations = await this.filterObservationsToSync(event, observations, configuration.initiation.rule)
 
     if (observations.length) {
       for (const observationAttrs of observations) {
         const observation = Observation.evaluate(observationAttrs, event)
         await this.sftpObservation(observation, event, configuration.archiveFormat, configuration.sftpClient.path, configuration.initiation.timeout)
       }
-
-      page.pageIndex = ++page.pageIndex
     } else {
-      this.console.debug('no new observations')
+      this.console.debug('no new or updated observations for event ' + event.name)
     }
   }
 
-  private async applyTriggerRule(event: MageEvent, observations: ObservationAttrs[], rule: TriggerRule): Promise<ObservationAttrs[]> {
-    if (rule === TriggerRule.Create) {
-      const filtered: ObservationAttrs[] = []
-      for (const observation of observations) {
+  /**
+   * Filters observations to determine which ones actually need syncing.
+   * - Create rule: only sync observations that have never been successfully synced.
+   * - CreateAndUpdate rule: sync observations that are either new or have been
+   *   modified since their last successful sync (lastModified > stored lastObservationModified).
+   */
+  private async filterObservationsToSync(event: MageEvent, observations: ObservationAttrs[], rule: TriggerRule): Promise<ObservationAttrs[]> {
+    const filtered: ObservationAttrs[] = []
+    for (const observation of observations) {
+      if (rule === TriggerRule.Create) {
         const isProcessed = await this.sftpObservationRepository.isProcessed(event.id, observation.id)
         if (!isProcessed) {
           filtered.push(observation)
         }
+      } else {
+        const isSynced = await this.sftpObservationRepository.isSyncedAtLastModified(event.id, observation.id, observation.lastModified)
+        if (!isSynced) {
+          filtered.push(observation)
+        }
       }
-
-      return filtered
-    } else {
-      return observations
     }
+    return filtered
   }
 
   private async sftpObservation(
@@ -429,20 +429,20 @@ export class SftpController {
           // TODO: This will fail if the observation has a .mov file
           await result.archive.finalize()
           const teams = await this.teamRepository.findTeamsByUserId(observation.userId);
-          // Filter out events from the teams response (bug) and teams that are not in the event
+          // Filter out events from the teams response and teams that are not in the event
           const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
           const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
           const user = await this.userRepository.findById(observation.userId || '')
           const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
           this.console.info(`Adding sftp observation ${observation.id} to ${sftpPath}/${filename}.zip`)
           await this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
-          await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
+          await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
         } catch (error) {
           this.console.error(`error uploading observation ${observation.id}`, error)
         }
       } else {
         this.console.info(`pending observation ${observation.id}`)
-        await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING)
+        await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING, observation.lastModified)
       }
     } else {
       this.console.info(`error observation ${observation.id}`, result)
