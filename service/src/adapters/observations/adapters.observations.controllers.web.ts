@@ -98,40 +98,37 @@ export function ObservationRoutes(
           }
 
           try {
-            // -----------------------------
-            // FIX: Guarantee file has bytes and handle viruses
-            // -----------------------------
-            // Step 1: fully buffer the uploaded file
+            // buffer the uploaded file
             const originalChunks: Buffer[] = []
             for await (const chunk of fileStream) {
               originalChunks.push(chunk as Buffer)
             }
             const originalBuffer = Buffer.concat(originalChunks)
 
-            // Step 2: scan with ClamAV
+            // scan with ClamAV
             const passThrough = Readable.from(originalBuffer)
             let scannedStream: Readable
             try {
               scannedStream = await scanAttachmentWithClamAV(passThrough)
             } catch (err) {
-              console.log('❌ [DEBUG] ClamAV rejected file:', err)
+              console.warn('[DEBUG] ClamAV rejected file:', err)
               return next(invalidInput('Uploaded file contains a virus and cannot be stored.'))
             }
 
-            // Step 2b: also handle any emitted errors on scanned stream
+            // handle any emitted errors on scanned stream
             scannedStream.on('error', (err) => {
-              console.log('❌ [DEBUG] Error emitted from scanned stream:', err)
+              console.warn('[DEBUG] Error emitted from scanned stream:', err)
               return next(invalidInput('Uploaded file contains a virus or could not be scanned.'))
             })
 
-            // Step 3: buffer scanned output
+            // buffer scanned output
             const scannedChunks: Buffer[] = []
             for await (const chunk of scannedStream) {
               scannedChunks.push(chunk as Buffer)
             }
             let finalBuffer = Buffer.concat(scannedChunks)
 
-            // Step 4: fallback if scanned result is empty
+            // fallback if scanned result is empty
             if (finalBuffer.length === 0) {
               finalBuffer = originalBuffer
             }
