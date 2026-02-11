@@ -29,7 +29,7 @@ export async function scanAttachmentWithClamAV(
       reject(err)
     }
 
-    // Pipe input into tee
+    // pipe input into tee
     inputStream.pipe(tee)
     inputStream.on('error', (err) => fail(new Error(`Input stream error: ${err.message}`)))
     tee.on('error', (err) => fail(new Error(`Tee stream error: ${err.message}`)))
@@ -40,7 +40,7 @@ export async function scanAttachmentWithClamAV(
       clamReady = true
       clam.write('zINSTREAM\0')
 
-      // Flush queued chunks
+      // flush queued chunks
       for (const chunk of writeQueue) {
         const size = Buffer.alloc(4)
         size.writeUInt32BE(chunk.length, 0)
@@ -52,7 +52,7 @@ export async function scanAttachmentWithClamAV(
 
     clam.on('error', (err) => fail(new Error(`Failed to connect to ClamAV: ${err.message}`)))
 
-    // Send chunks to ClamAV
+    // send chunks to ClamAV
     tee.on('data', (chunk: Buffer) => {
       if (settled) return
       if (clamReady) {
@@ -86,7 +86,7 @@ export async function scanAttachmentWithClamAV(
       }
     })
 
-    // Collect ClamAV response
+    // collect ClamAV response
     let response = ''
     clam.on('data', (chunk) => {
       const chunkStr = chunk.toString()
@@ -113,7 +113,7 @@ export async function scanAttachmentWithClamAV(
       fail(new Error(`ClamAV scan failed: ${response.trim()}`))
     })
 
-    // Timeout
+    // timeout
     const timeout = setTimeout(() => fail(new Error('ClamAV scan timed out')), CLAMAV_TIMEOUT_MS)
     const clearTimers = (): void => clearTimeout(timeout)
     clam.on('end', clearTimers)
