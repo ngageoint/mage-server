@@ -17,11 +17,14 @@ export async function scanAttachmentWithClamAV(
     const gatedStream = new PassThrough()
     gatedStream.pause()
 
+    console.log('🔹 [CLAMAV] Starting scan stream setup')
+
     const clam = net.createConnection({ host: CLAMAV_HOST, port: CLAMAV_PORT })
 
     const fail = (err: Error): void => {
       if (settled) return
       settled = true
+      console.log('❌ [CLAMAV] Scan failed:', err.message)
       inputStream.destroy(err)
       tee.destroy(err)
       gatedStream.destroy(err)
@@ -31,13 +34,14 @@ export async function scanAttachmentWithClamAV(
 
     // Pipe input into tee
     inputStream.pipe(tee)
-    inputStream.on('error', fail)
-    tee.on('error', fail)
+    inputStream.on('error', (err) => fail(new Error(`Input stream error: ${err.message}`)))
+    tee.on('error', (err) => fail(new Error(`Tee stream error: ${err.message}`)))
 
     let clamReady = false
 
     clam.on('connect', () => {
       clamReady = true
+      console.log(`🟢 [CLAMAV] Connected to ClamAV at ${CLAMAV_HOST}:${CLAMAV_PORT}`)
       clam.write('zINSTREAM\0')
 
       // Flush queued chunks
@@ -46,6 +50,7 @@ export async function scanAttachmentWithClamAV(
         size.writeUInt32BE(chunk.length, 0)
         clam.write(size)
         clam.write(chunk)
+        console.log('🔹 [CLAMAV] Flushed queued chunk of size', chunk.length)
       }
       writeQueue.length = 0
     })
@@ -60,21 +65,23 @@ export async function scanAttachmentWithClamAV(
         size.writeUInt32BE(chunk.length, 0)
         clam.write(size)
         clam.write(chunk)
+        console.log('🔹 [CLAMAV] Sent chunk of size', chunk.length)
       } else {
         writeQueue.push(chunk)
+        console.log('⚠️ [CLAMAV] Chunk queued, clam not ready yet, size', chunk.length)
       }
     })
 
     // Only end ClamAV after all data sent
     tee.on('end', () => {
       if (settled) return
+      console.log('🔹 [CLAMAV] Input stream ended, finalizing scan...')
       if (clamReady) {
         const zero = Buffer.alloc(4)
         zero.writeUInt32BE(0, 0)
         clam.write(zero)
         clam.end()
       } else {
-        // Wait for socket ready, then end
         const checkReady = setInterval(() => {
           if (clamReady) {
             clearInterval(checkReady)
@@ -89,13 +96,20 @@ export async function scanAttachmentWithClamAV(
 
     // Collect ClamAV response
     let response = ''
-    clam.on('data', (chunk) => (response += chunk.toString()))
+    clam.on('data', (chunk) => {
+      const chunkStr = chunk.toString()
+      response += chunkStr
+      console.log('🔹 [CLAMAV] Received response chunk:', chunkStr.trim())
+    })
 
     clam.on('end', () => {
       if (settled) return
 
+      console.log('🔹 [CLAMAV] ClamAV connection ended, full response:', response.trim())
+
       if (response.includes('OK')) {
         settled = true
+        console.log('🟢 [CLAMAV] Scan passed, file is clean')
         tee.pipe(gatedStream)
         gatedStream.resume()
         resolve(gatedStream)
@@ -115,5 +129,7 @@ export async function scanAttachmentWithClamAV(
     const clearTimers = (): void => clearTimeout(timeout)
     clam.on('end', clearTimers)
     clam.on('error', clearTimers)
+
+    console.log('🔹 [CLAMAV] Scan setup complete, streaming started')
   })
 }
