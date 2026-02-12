@@ -9,7 +9,7 @@ export enum SftpStatus {
 }
 
 const SftpObservationsSchema = new mongoose.Schema({
-  eventId: { type: Number, required: true, unique: true },
+  eventId: { type: Number, required: true },
   observationId: { type: String, required: true },
   status: { type: String, enum: Object.values(SftpStatus), required: true },
   lastObservationModified: { type: Date, required: false }
