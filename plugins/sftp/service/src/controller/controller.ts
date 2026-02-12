@@ -8,10 +8,9 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import fs from 'fs';
-import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
+import { SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
-import { error } from 'console';
 
 const { name: packageName } = require('../../package.json')
 
@@ -323,7 +322,6 @@ export class SftpController {
     const configuration = await this.getConfiguration();
     if (this.isRunning) {
       try {
-        this.console.info('processing new observations');
         const events = await this.eventRepository.findActiveEvents();
 
         for (const attrs of events) {
@@ -442,7 +440,7 @@ export class SftpController {
         }
       } else {
         this.console.info(`pending observation ${observation.id}`)
-        await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING, observation.lastModified)
+        await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING)
       }
     } else {
       this.console.info(`error observation ${observation.id}`, result)

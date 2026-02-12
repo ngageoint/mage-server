@@ -436,7 +436,15 @@ describe('automated processing', () => {
   })
 
   it('processes new observations w/ create trigger', async () => {
-    stateRepository.state = { ...defaultSFTPPluginConfig, interval: 10, enabled: true }
+    stateRepository.state = {
+      ...defaultSFTPPluginConfig,
+      interval: 10,
+      enabled: true,
+      initiation: {
+        ...defaultSFTPPluginConfig.initiation,
+        rule: TriggerRule.Create
+      }
+    }
     const clockTickMillis = stateRepository.state.interval * 1000 + 1
 
     const eventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepository', ['findActiveEvents'])
