@@ -65,16 +65,16 @@ export class FieldDialogComponent {
         }
 
         if (this.field.type === 'attachment') {
-            if (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0) {
-                this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
+            if (!this.field.allowedAttachmentTypes) {
+                this.field.allowedAttachmentTypes = [];
             }
         }
     }
 
     onFieldTypeChange(newType: string): void {
         if (newType === 'attachment') {
-            if (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0) {
-                this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
+            if (!this.field.allowedAttachmentTypes) {
+                this.field.allowedAttachmentTypes = [];
             }
         }
     }
@@ -106,10 +106,12 @@ export class FieldDialogComponent {
         if (this.isFieldNameDuplicate()) {
             return false;
         }
-        if (this.field.type === 'attachment') {
-            return this.field.allowedAttachmentTypes && this.field.allowedAttachmentTypes.length > 0;
-        }
         return true;
+    }
+
+    hasNoAttachmentTypes(): boolean {
+        return this.field.type === 'attachment' &&
+            (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0);
     }
 
     onSave(): void {

@@ -139,7 +139,7 @@ export class FormDetailsComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private localStorageService: LocalStorageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.token = this.localStorageService.getToken() ?? null;
@@ -338,10 +338,10 @@ export class FormDetailsComponent implements OnInit {
 
     const saveObservable = this.form.id
       ? this.eventsService.updateForm(
-          this.event.id.toString(),
-          this.form.id.toString(),
-          payload
-        )
+        this.event.id.toString(),
+        this.form.id.toString(),
+        payload
+      )
       : this.eventsService.createForm(this.event.id.toString(), payload);
 
     saveObservable.subscribe({
@@ -697,7 +697,7 @@ export class FormDetailsComponent implements OnInit {
       !field.allowedAttachmentTypes ||
       field.allowedAttachmentTypes.length === 0
     ) {
-      return '';
+      return 'All file types';
     }
     return field.allowedAttachmentTypes
       .map((typeName) => {
@@ -1039,9 +1039,8 @@ export class FormDetailsComponent implements OnInit {
       const formData = new FormData();
       formData.append('icon', file);
 
-      let url = `/api/events/${this.event.id}/icons/${
-        this.form.id
-      }/${encodeURIComponent(primary)}`;
+      let url = `/api/events/${this.event.id}/icons/${this.form.id
+        }/${encodeURIComponent(primary)}`;
       if (variant) {
         url += `/${encodeURIComponent(variant)}`;
       }
@@ -1098,14 +1097,14 @@ export class FormDetailsComponent implements OnInit {
     try {
       const eventId = this.eventId;
       const token = this.localStorageService.getToken() ?? null;
-  
+
       if (!eventId || !token) {
         this.observations = [];
         return;
       }
-  
+
       const myself = await firstValueFrom(this.adminUserService.getMyself());
-  
+
       this.observations = ObservationFeedHelper.generateSampleObservations(
         this.form,
         Number(this.form.id),
@@ -1118,5 +1117,5 @@ export class FormDetailsComponent implements OnInit {
       this.observations = [];
     }
   }
-  
+
 }

@@ -71,9 +71,9 @@
 
             <div class="config-inline-item">
                 <div class="config-inline-label">
-                    <strong>Allowed Attachment Types *</strong>
-                    <p class="field-hint">Select which types of attachments users can upload. At least one type must be
-                        selected.</p>
+                    <strong>Allowed Attachment Types</strong>
+                    <p class="field-hint">Limit which types of attachments users can upload. If none are selected, all
+                        file types will be allowed.</p>
                 </div>
                 <div class="config-inline-control">
                     <div class="checkbox-group">
@@ -83,6 +83,10 @@
                             <span>{{ type.title }}</span>
                         </label>
                     </div>
+                    <p class="field-warning" *ngIf="hasNoAttachmentTypes()">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        Warning: If no types are selected, users will be able to upload any file type.
+                    </p>
                 </div>
             </div>
         </div>
