@@ -29,7 +29,7 @@ export async function scanAttachmentWithClamAV(
       reject(err)
     }
 
-    // pipe input into tee
+    // pipe input to tee
     inputStream.pipe(tee)
     inputStream.on('error', (err) => fail(new Error(`Input stream error: ${err.message}`)))
     tee.on('error', (err) => fail(new Error(`Tee stream error: ${err.message}`)))
@@ -40,7 +40,7 @@ export async function scanAttachmentWithClamAV(
       clamReady = true
       clam.write('zINSTREAM\0')
 
-      // flush queued chunks
+      // flush chunks
       for (const chunk of writeQueue) {
         const size = Buffer.alloc(4)
         size.writeUInt32BE(chunk.length, 0)
@@ -65,7 +65,7 @@ export async function scanAttachmentWithClamAV(
       }
     })
 
-    // Only end ClamAV after all data sent
+    // end ClamAV after all data sent
     tee.on('end', () => {
       if (settled) return
       if (clamReady) {
@@ -86,7 +86,7 @@ export async function scanAttachmentWithClamAV(
       }
     })
 
-    // collect ClamAV response
+    // ClamAV response
     let response = ''
     clam.on('data', (chunk) => {
       const chunkStr = chunk.toString()
@@ -95,24 +95,31 @@ export async function scanAttachmentWithClamAV(
 
     clam.on('end', () => {
       if (settled) return
-
-
+    
+      settled = true // avoid double handling
+    
       if (response.includes('OK')) {
-        settled = true
         tee.pipe(gatedStream)
         gatedStream.resume()
         resolve(gatedStream)
         return
       }
-
+    
       if (response.includes('FOUND')) {
-        fail(new Error('ClamAV detected a virus in uploaded file'))
+        const virusErr = new Error('ClamAV detected a virus in uploaded file')
+        // reject gracefully
+        gatedStream.destroy(virusErr)
+        tee.destroy(virusErr)
+        reject(virusErr)
         return
       }
-
-      fail(new Error(`ClamAV scan failed: ${response.trim()}`))
+    
+      const unknownErr = new Error(`ClamAV scan failed: ${response.trim()}`)
+      gatedStream.destroy(unknownErr)
+      tee.destroy(unknownErr)
+      reject(unknownErr)
     })
-
+    
     // timeout
     const timeout = setTimeout(() => fail(new Error('ClamAV scan timed out')), CLAMAV_TIMEOUT_MS)
     const clearTimers = (): void => clearTimeout(timeout)
