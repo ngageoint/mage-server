@@ -17,6 +17,14 @@ export async function scanAttachmentWithClamAV(
     const gatedStream = new PassThrough()
     gatedStream.pause()
 
+    // Prevent unhandled 'error' events on the gated stream
+    gatedStream.on('error', (err) => {
+      if (!settled) {
+        settled = true
+        reject(err)
+      }
+    })
+
     const clam = net.createConnection({ host: CLAMAV_HOST, port: CLAMAV_PORT })
 
     const fail = (err: Error): void => {
@@ -40,7 +48,7 @@ export async function scanAttachmentWithClamAV(
       clamReady = true
       clam.write('zINSTREAM\0')
 
-      // flush chunks
+      // flush queued chunks
       for (const chunk of writeQueue) {
         const size = Buffer.alloc(4)
         size.writeUInt32BE(chunk.length, 0)
@@ -68,19 +76,18 @@ export async function scanAttachmentWithClamAV(
     // end ClamAV after all data sent
     tee.on('end', () => {
       if (settled) return
-      if (clamReady) {
+      const sendEnd = (): void => {
         const zero = Buffer.alloc(4)
         zero.writeUInt32BE(0, 0)
         clam.write(zero)
         clam.end()
-      } else {
-        const checkReady = setInterval(() => {
+      }
+      if (clamReady) sendEnd()
+      else {
+        const interval = setInterval(() => {
           if (clamReady) {
-            clearInterval(checkReady)
-            const zero = Buffer.alloc(4)
-            zero.writeUInt32BE(0, 0)
-            clam.write(zero)
-            clam.end()
+            clearInterval(interval)
+            sendEnd()
           }
         }, 10)
       }
@@ -89,42 +96,38 @@ export async function scanAttachmentWithClamAV(
     // ClamAV response
     let response = ''
     clam.on('data', (chunk) => {
-      const chunkStr = chunk.toString()
-      response += chunkStr
+      response += chunk.toString()
     })
 
     clam.on('end', () => {
       if (settled) return
-    
-      settled = true // avoid double handling
-    
+      settled = true
+
       if (response.includes('OK')) {
         tee.pipe(gatedStream)
         gatedStream.resume()
         resolve(gatedStream)
         return
       }
-    
+
       if (response.includes('FOUND')) {
         const virusErr = new Error('ClamAV detected a virus in uploaded file')
-        // reject gracefully
-        gatedStream.destroy(virusErr)
-        tee.destroy(virusErr)
-        reject(virusErr)
-        return
+        // destroy streams quietly without emitting 'error'
+        gatedStream.destroy()
+        tee.destroy()
+        return reject(virusErr)
       }
-    
+
       const unknownErr = new Error(`ClamAV scan failed: ${response.trim()}`)
-      gatedStream.destroy(unknownErr)
-      tee.destroy(unknownErr)
+      gatedStream.destroy()
+      tee.destroy()
       reject(unknownErr)
     })
-    
+
     // timeout
     const timeout = setTimeout(() => fail(new Error('ClamAV scan timed out')), CLAMAV_TIMEOUT_MS)
     const clearTimers = (): void => clearTimeout(timeout)
     clam.on('end', clearTimers)
     clam.on('error', clearTimers)
-
   })
 }

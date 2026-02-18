@@ -80,130 +80,89 @@ export function ObservationRoutes(
   // Attachment upload / download / delete
   // --------------------------------------
   routes
-  .route('/:observationId/attachments/:attachmentId')
-  .put(async (req, res, next) => {
-    try {
-      console.log('[DEBUG] PUT /attachments handler invoked')
-      const bb = busboy({ headers: req.headers, limits: { files: 1, fields: 0 } })
-      let handled = false
+    .route('/:observationId/attachments/:attachmentId')
+    .put(async (req, res, next) => {
+      try {
+        const bb = busboy({ headers: req.headers, limits: { files: 1, fields: 0 } })
+        let handled = false
 
-      bb.on('file', async (fieldName, fileStream, info) => {
-        console.log(`[DEBUG] file event received: fieldName=${fieldName}, filename=${info.filename}, mimeType=${info.mimeType}`)
-        if (handled) {
-          console.log('[DEBUG] already handled a file, skipping this one')
-          return fileStream.resume()
-        }
-        handled = true
+        bb.on('file', async (fieldName, fileStream, info) => {
+          if (handled) return fileStream.resume()
+          handled = true
 
-        if (fieldName !== 'attachment') {
-          console.log('[DEBUG] invalid fieldName, expected "attachment"')
-          fileStream.resume()
-          return next(invalidInput(`request must contain only one file part named 'attachment'`))
-        }
-
-        try {
-          // buffer the uploaded file
-          const originalChunks: Buffer[] = []
-          for await (const chunk of fileStream) {
-            console.log(`[DEBUG] buffering chunk: ${chunk.length} bytes`)
-            originalChunks.push(chunk as Buffer)
+          if (fieldName !== 'attachment') {
+            fileStream.resume()
+            return next(invalidInput(`request must contain only one file part named 'attachment'`))
           }
-          const originalBuffer = Buffer.concat(originalChunks)
-          console.log(`[DEBUG] total original buffer length: ${originalBuffer.length}`)
 
-          // scan with ClamAV
-          const passThrough = Readable.from(originalBuffer)
-          let scannedStream: Readable
           try {
-            console.log('[DEBUG] sending file to ClamAV for scanning...')
-            scannedStream = await scanAttachmentWithClamAV(passThrough)
-            console.log('[DEBUG] ClamAV scan completed successfully')
+            // buffer the uploaded file
+            const originalChunks: Buffer[] = []
+            for await (const chunk of fileStream) {
+              originalChunks.push(chunk as Buffer)
+            }
+            const originalBuffer = Buffer.concat(originalChunks)
+
+            // scan with ClamAV (wrap buffer in Readable)
+            let scannedStream: Readable
+            try {
+              scannedStream = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
+            } catch {
+              // virus detected or ClamAV failed
+              return next(
+                invalidInput('Uploaded file contains a virus and cannot be stored.')
+              )
+            }
+
+            // buffer scanned output
+            const scannedChunks: Buffer[] = []
+            for await (const chunk of scannedStream) {
+              scannedChunks.push(chunk as Buffer)
+            }
+            let finalBuffer = Buffer.concat(scannedChunks)
+            if (finalBuffer.length === 0) finalBuffer = originalBuffer
+
+            const { observationId, attachmentId } = req.params
+            const content: ExoIncomingAttachmentContent = {
+              bytes: Readable.from(finalBuffer),
+              mediaType: info.mimeType,
+              name: info.filename
+            }
+
+            const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = {
+              observationId,
+              attachmentId,
+              content
+            }
+            const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
+            const appRes = await app.storeAttachmentContent(appReq)
+
+            if (appRes.success) {
+              const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
+              const attachmentJson = jsonForAttachment(
+                attachment,
+                `${qualifiedBaseUrl(req)}/${observationId}`
+              )
+              return res.json(attachmentJson)
+            }
+
+            if (appRes.error) return next(appRes.error)
+            next(invalidInput('Attachment could not be stored'))
           } catch (err) {
-            console.warn('[DEBUG] ClamAV rejected file:', err)
-            return next(invalidInput('Uploaded file contains a virus and cannot be stored.'))
+            next(err)
           }
+        })
 
-          scannedStream.on('error', (err) => {
-            console.warn('[DEBUG] Error emitted from scanned stream:', err)
-            return next(invalidInput('Uploaded file contains a virus or could not be scanned.'))
-          })
+        bb.on('field', (name) => next(invalidInput(`unexpected form field: ${name}`)))
+        bb.on('filesLimit', () => next(invalidInput(`too many files`)))
+        bb.on('fieldsLimit', () => next(invalidInput(`too many fields`)))
+        bb.on('error', (err) => next(err))
 
-          // buffer scanned output
-          const scannedChunks: Buffer[] = []
-          for await (const chunk of scannedStream) {
-            console.log(`[DEBUG] buffering scanned chunk: ${chunk.length} bytes`)
-            scannedChunks.push(chunk as Buffer)
-          }
-          let finalBuffer = Buffer.concat(scannedChunks)
-          console.log(`[DEBUG] final buffer length after scanning: ${finalBuffer.length}`)
-
-          if (finalBuffer.length === 0) {
-            console.log('[DEBUG] scanned buffer empty, falling back to original buffer')
-            finalBuffer = originalBuffer
-          }
-
-          const { observationId, attachmentId } = req.params
-          const content: ExoIncomingAttachmentContent = {
-            bytes: Readable.from(finalBuffer),
-            mediaType: info.mimeType,
-            name: info.filename
-          }
-
-          console.log(`[DEBUG] storing attachment: observationId=${observationId}, attachmentId=${attachmentId}`)
-          const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = {
-            observationId,
-            attachmentId,
-            content
-          }
-          const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
-          const appRes = await app.storeAttachmentContent(appReq)
-
-          if (appRes.success) {
-            console.log('[DEBUG] attachment stored successfully')
-            const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
-            const attachmentJson = jsonForAttachment(
-              attachment,
-              `${qualifiedBaseUrl(req)}/${observationId}`
-            )
-            return res.json(attachmentJson)
-          }
-
-          if (appRes.error) {
-            console.log('[DEBUG] storeAttachmentContent returned error:', appRes.error)
-            return next(appRes.error)
-          }
-
-          next(invalidInput('Attachment could not be stored'))
-        } catch (err) {
-          console.error('[DEBUG] unexpected error in file handling:', err)
-          return next(err)
-        }
-      })
-
-      bb.on('field', (name) => {
-        console.log(`[DEBUG] unexpected form field received: ${name}`)
-        return next(invalidInput(`unexpected form field: ${name}`))
-      })
-      bb.on('filesLimit', () => {
-        console.log('[DEBUG] files limit exceeded')
-        return next(invalidInput(`too many files`))
-      })
-      bb.on('fieldsLimit', () => {
-        console.log('[DEBUG] fields limit exceeded')
-        return next(invalidInput(`too many fields`))
-      })
-      bb.on('error', (err) => {
-        console.error('[DEBUG] busboy error:', err)
-        return next(err)
-      })
-
-      req.pipe(bb)
-    } catch (err) {
-      console.error('[DEBUG] unexpected error in PUT handler:', err)
-      return next(err)
-    }
-  })
-
+        req.pipe(bb)
+      } catch (err) {
+        next(err)
+      }
+    })
     .get(async (req, res, next) => {
       try {
         const sizeParam = req.query.size
@@ -215,7 +174,7 @@ export function ObservationRoutes(
               .replace(/bytes=/i, '')
               .split('-')
               .map(x => parseInt(x, 10))
-              .filter(x => typeof x === 'number' && !Number.isNaN(x))
+              .filter(x => !Number.isNaN(x))
           : []
 
         const appReq: ReadAttachmentContentRequest = createAppRequest(req, {
@@ -226,19 +185,13 @@ export function ObservationRoutes(
             contentRange.length === 2 ? { start: contentRange[0], end: contentRange[1] } : undefined
         })
         const appRes = await app.readAttachmentContent(appReq)
-        if (appRes.error) {
-          return next(appRes.error)
-        }
+        if (appRes.error) return next(appRes.error)
 
         const content = appRes.success
-        if (!content) {
-          return res.status(500).json({ message: 'unknown application response' })
-        }
+        if (!content) return res.status(500).json({ message: 'unknown application response' })
 
         const { bytesRange } = content
-        const headers: any = {
-          'content-type': String(content.attachment.contentType)
-        }
+        const headers: any = { 'content-type': String(content.attachment.contentType) }
 
         if (content.attachment.size && content.attachment.size > 0) {
           headers['content-length'] = String(
@@ -276,9 +229,8 @@ export function ObservationRoutes(
           .json({ message: 'Body observation ID does not match path observation ID' })
       }
       const mod = exoObservationModFromJson({ ...body, id: observationId })
-      if (mod instanceof Error) {
-        return next(mod)
-      }
+      if (mod instanceof Error) return next(mod)
+
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
       if (
         Object.prototype.hasOwnProperty.call(body, 'eventId') &&
@@ -306,13 +258,8 @@ export type WebObservation = Omit<ExoObservation, 'attachments' | 'state'> & {
   attachments: WebAttachment[]
 }
 
-export type WebObservationState = ObservationState & {
-  url: string
-}
-
-export type WebAttachment = ExoAttachment & {
-  url?: string
-}
+export type WebObservationState = ObservationState & { url: string }
+export type WebAttachment = ExoAttachment & { url?: string }
 
 export function jsonForObservation(o: ExoObservation, baseUrl: string): WebObservation {
   const obsUrl = `${baseUrl}/${o.id}`
