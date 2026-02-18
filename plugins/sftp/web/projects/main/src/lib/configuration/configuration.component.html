@@ -51,9 +51,9 @@
         </div>
         <div class="form-field-container">
           <mat-form-field appearance="fill">
-            <mat-label>Observation Create Timeout</mat-label>
+            <mat-label>Observation Create Timeout (minutes)</mat-label>
             <input matInput type="number" [(ngModel)]="configuration.initiation.timeout" required>
-            <mat-hint>Time in minutes to wait for attachments before observation SFTP.</mat-hint>
+            <mat-hint>Time to wait for attachments before uploading observation to SFTP.</mat-hint>
           </mat-form-field>
         </div>
         <div class="radio-group-container">
@@ -68,14 +68,14 @@
         </div>
         <div class="form-field-container">
           <mat-form-field appearance="fill">
-            <mat-label>Poll Interval</mat-label>
+            <mat-label>Poll Interval (seconds)</mat-label>
             <input matInput type="number" [(ngModel)]="configuration.interval" required>
             <mat-hint>Interval plugin will poll when looking for observation changes.</mat-hint>
           </mat-form-field>
         </div>
         <div class="form-field-container">
           <mat-form-field appearance="fill">
-            <mat-label>Page Size</mat-label>
+            <mat-label>Page Size (observations)</mat-label>
             <input matInput type="number" [(ngModel)]="configuration.pageSize" required>
             <mat-hint>Page size used when querying observations, smaller page size will reduce memory footprint on
               server.
