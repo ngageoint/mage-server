@@ -62,7 +62,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onFilterChanged(filter: any) {
-    this.event = filter.event?.added?.length ? filter.event.added[0] : null
+    if (filter.event?.added?.length) {
+      this.event = filter.event.added[0]
+    } else if (filter.event?.removed?.length) {
+      this.event = null
+    }
   }
 
   onAddObservation($event) {

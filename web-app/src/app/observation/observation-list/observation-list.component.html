@@ -6,9 +6,12 @@
   <div class="actions">
     <mat-chip-list selectable="true">
       <mat-chip color="primary" [selected]="filter === 'all'" (click)="filterChanged('all')">All</mat-chip>
-      <mat-chip color="primary" [selected]="filter === 'favorite'" (click)="filterChanged('favorite')">Favorites</mat-chip>
-      <mat-chip color="primary" [selected]="filter === 'important'" (click)="filterChanged('important')">Important</mat-chip>
-      <mat-chip color="primary" [selected]="filter === 'attachments'" (click)="filterChanged('attachments')">Attachments</mat-chip>
+      <mat-chip color="primary" [selected]="filter === 'favorite'"
+        (click)="filterChanged('favorite')">Favorites</mat-chip>
+      <mat-chip color="primary" [selected]="filter === 'important'"
+        (click)="filterChanged('important')">Important</mat-chip>
+      <mat-chip color="primary" [selected]="filter === 'attachments'"
+        (click)="filterChanged('attachments')">Attachments</mat-chip>
     </mat-chip-list>
   </div>
 
@@ -27,7 +30,7 @@
     <div *ngIf="loaded; else mask">
       <ng-container *ngFor="let observation of observationPages[currentObservationPage]; trackBy: trackByObservationId">
         <div class="feed-observation">
-          <observation-list-item [observation]="observation" [event]="event" [form]=[event?.form]></observation-list-item>
+          <observation-list-item [observation]="observation" [event]="event"></observation-list-item>
         </div>
       </ng-container>
     </div>

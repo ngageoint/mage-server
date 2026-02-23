@@ -727,7 +727,7 @@ export class EventService {
     });
 
     // remaining elements were not pulled from the server, hence we should remove them
-    removed.push(Object.values(filteredObservationsById));
+    removed.push(...Object.values(filteredObservationsById));
 
     this.eventsById[event.id].observationsById = _.keyBy(observations, "id");
     this.eventsById[event.id].filteredObservationsById = observationsById;
