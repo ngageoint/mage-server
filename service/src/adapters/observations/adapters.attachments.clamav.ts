@@ -5,9 +5,6 @@ const CLAMAV_HOST = process.env.CLAMAV_HOST || 'localhost'
 const CLAMAV_PORT = Number(process.env.CLAMAV_PORT) || 3310
 const CLAMAV_TIMEOUT_MS = 60_000
 
-// LOG: CLAMAV host and port
-console.log(`[CLAMAV] Using host: ${CLAMAV_HOST}, port: ${CLAMAV_PORT}`)
-
 export async function scanAttachmentWithClamAV(
   inputStream: Readable
 ): Promise<Readable> {
@@ -49,7 +46,6 @@ export async function scanAttachmentWithClamAV(
 
     clam.on('connect', () => {
       clamReady = true
-      console.log('[CLAMAV] Connection established, ready to stream data')
 
       clam.write('zINSTREAM\0')
 
@@ -59,7 +55,6 @@ export async function scanAttachmentWithClamAV(
         size.writeUInt32BE(chunk.length, 0)
         clam.write(size)
         clam.write(chunk)
-        console.log(`[CLAMAV] Queued chunk sent, size: ${chunk.length}`)
       }
       writeQueue.length = 0
     })
@@ -74,10 +69,8 @@ export async function scanAttachmentWithClamAV(
         size.writeUInt32BE(chunk.length, 0)
         clam.write(size)
         clam.write(chunk)
-        console.log(`[CLAMAV] Chunk sent, size: ${chunk.length}`)
       } else {
         writeQueue.push(chunk)
-        console.log(`[CLAMAV] Chunk queued, size: ${chunk.length}`)
       }
     })
 
@@ -112,7 +105,6 @@ export async function scanAttachmentWithClamAV(
       settled = true
 
       if (response.includes('OK')) {
-        console.log('[CLAMAV] Scan result: OK, file is clean')
         tee.pipe(gatedStream)
         gatedStream.resume()
         resolve(gatedStream)
@@ -120,7 +112,6 @@ export async function scanAttachmentWithClamAV(
       }
 
       if (response.includes('FOUND')) {
-        console.log('[CLAMAV] Scan result: VIRUS FOUND')
         const virusErr = new Error('ClamAV detected a virus in uploaded file')
         gatedStream.destroy()
         tee.destroy()
@@ -128,7 +119,6 @@ export async function scanAttachmentWithClamAV(
       }
 
       const unknownErr = new Error(`ClamAV scan failed: ${response.trim()}`)
-      console.log('[CLAMAV] Scan result: UNKNOWN ERROR')
       gatedStream.destroy()
       tee.destroy()
       reject(unknownErr)
