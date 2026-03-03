@@ -103,25 +103,30 @@ export function ObservationRoutes(
             }
             const originalBuffer = Buffer.concat(originalChunks)
 
-            // scan with ClamAV (wrap buffer in Readable)
-            let scannedStream: Readable
-            try {
-              scannedStream = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
-            } catch {
-              // virus detected or ClamAV failed
-              return next(
-                invalidInput('Uploaded file contains a virus and cannot be stored.')
-              )
-            }
+            let finalBuffer = originalBuffer
 
-            // buffer scanned output
-            const scannedChunks: Buffer[] = []
-            for await (const chunk of scannedStream) {
-              scannedChunks.push(chunk as Buffer)
+            // Only scan if ClamAV is configured
+            if (process.env.CLAM_AV_URL) {
+              try {
+                const scannedStream = await scanAttachmentWithClamAV(
+                  Readable.from(originalBuffer)
+                )
+            
+                const scannedChunks: Buffer[] = []
+                for await (const chunk of scannedStream) {
+                  scannedChunks.push(chunk as Buffer)
+                }
+            
+                const scannedBuffer = Buffer.concat(scannedChunks)
+                if (scannedBuffer.length > 0) {
+                  finalBuffer = scannedBuffer
+                }
+              } catch {
+                return next(
+                  invalidInput('Uploaded file contains a virus and cannot be stored.')
+                )
+              }
             }
-            let finalBuffer = Buffer.concat(scannedChunks)
-            if (finalBuffer.length === 0) finalBuffer = originalBuffer
-
             const { observationId, attachmentId } = req.params
             const content: ExoIncomingAttachmentContent = {
               bytes: Readable.from(finalBuffer),
