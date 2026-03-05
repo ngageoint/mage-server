@@ -6,7 +6,7 @@ const CLAMAV_PORT = Number(process.env.CLAMAV_PORT) || 3310
 const CLAMAV_TIMEOUT_MS = 60_000
 
 export type AttachmentScanResult = {
-  status: 'success' | 'failed'
+  status: 'clean' | 'infected' | 'scan_error'
   stream?: Readable
   error?: string
 }
@@ -110,28 +110,40 @@ export async function scanAttachmentWithClamAV(
       if (settled) return
       settled = true
 
+      // ----------------------
+      // CLEAN FILE
+      // ----------------------
       if (response.includes('OK')) {
         tee.pipe(gatedStream)
         gatedStream.resume()
+
         return resolve({
-          status: 'success',
+          status: 'clean',
           stream: gatedStream
         })
       }
 
+      // ----------------------
+      // VIRUS FOUND
+      // ----------------------
       if (response.includes('FOUND')) {
         gatedStream.destroy()
         tee.destroy()
+
         return resolve({
-          status: 'failed',
+          status: 'infected',
           error: 'ClamAV detected a virus in uploaded file'
         })
       }
 
+      // ----------------------
+      // UNKNOWN SCAN ERROR
+      // ----------------------
       gatedStream.destroy()
       tee.destroy()
+
       return resolve({
-        status: 'failed',
+        status: 'scan_error',
         error: `ClamAV scan failed: ${response.trim()}`
       })
     })

@@ -138,9 +138,14 @@ export function ObservationRoutes(
                 console.log(`[DEBUG] ClamAV scan result: ${scannedResult.status}`, scannedResult.error || '')
 
                 // ----------------------
+                // Verification hook: log pre-disk invariant
+                // ----------------------
+                console.log(`[VERIFY] Pre-disk invariant: file must be clean before storage`)
+
+                // ----------------------
                 // If scan succeeded, read from the gated stream
                 // ----------------------
-                if (scannedResult.status === 'success' && scannedResult.stream) {
+                if (scannedResult.status === 'clean' && scannedResult.stream){
                   const scannedChunks: Buffer[] = []
                   for await (const chunk of scannedResult.stream) {
                     scannedChunks.push(chunk as Buffer)
@@ -150,11 +155,12 @@ export function ObservationRoutes(
                   if (scannedBuffer.length > 0) {
                     finalBuffer = scannedBuffer
                   }
+                  console.log('[VERIFY] Scan clean: proceeding to storage')
                 } else {
                   // ----------------------
                   // Handle failed scan: return proper API error
                   // ----------------------
-                  console.log('[WARN] ClamAV scan failed, rejecting upload')
+                  console.log('[WARN] Attachment rejected by ClamAV scan')
                   return next(
                     invalidInput(
                       scannedResult.error || 'Uploaded file contains a virus and cannot be stored.'
@@ -224,9 +230,6 @@ export function ObservationRoutes(
     })
     .get(async (req, res, next) => {
       try {
-        // ----------------------
-        // Handle range queries and image resizing (minDimension)
-        // ----------------------
         const sizeParam = req.query.size
         const minDimension =
           typeof sizeParam === 'string' ? parseInt(sizeParam, 10) : undefined
@@ -275,9 +278,6 @@ export function ObservationRoutes(
       }
     })
     .delete(async (req, res) => {
-      // ----------------------
-      // Delete attachment route (204 No Content)
-      // ----------------------
       res.sendStatus(204)
     })
 
@@ -289,20 +289,17 @@ export function ObservationRoutes(
       const body = req.body
       const observationId = req.params.observationId
 
-      // Ensure path ID matches body ID
       if (Object.prototype.hasOwnProperty.call(body, 'id') && body.id !== observationId) {
         return res
           .status(400)
           .json({ message: 'Body observation ID does not match path observation ID' })
       }
 
-      // Parse observation modification
       const mod = exoObservationModFromJson({ ...body, id: observationId })
       if (mod instanceof Error) return next(mod)
 
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
 
-      // Ensure body event ID matches path event ID
       if (
         Object.prototype.hasOwnProperty.call(body, 'eventId') &&
         body.eventId !== appReq.context.mageEvent.id
@@ -318,9 +315,6 @@ export function ObservationRoutes(
     }
   })
 
-  // --------------------------------------
-  // Apply global error handler
-  // --------------------------------------
   return routes.use(compatibilityMageAppErrorHandler)
 }
 
