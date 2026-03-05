@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+
+// ----------------------
+// Imports
+// ----------------------
 import { scanAttachmentWithClamAV } from './adapters.attachments.clamav'
 import { Readable } from 'stream'
 import express from 'express'
@@ -26,12 +30,18 @@ import busboy from 'busboy'
 import { invalidInput } from '../../app.api/app.api.errors'
 import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
 
+// ----------------------
+// Extend Express Request
+// ----------------------
 declare module 'express-serve-static-core' {
   interface Request {
     attachmentUpload?: busboy.Busboy
   }
 }
 
+// ----------------------
+// App Layer Interfaces
+// ----------------------
 export interface ObservationAppLayer {
   allocateObservationId: AllocateObservationId
   saveObservation: SaveObservation
@@ -39,14 +49,20 @@ export interface ObservationAppLayer {
   readAttachmentContent: ReadAttachmentContent
 }
 
+// Factory type for creating app-layer request objects
 export type ObservationWebAppRequestFactory = <Params extends object>(
   req: express.Request,
   params?: Params
 ) => Params & ObservationRequest<unknown>
+
+// Helper type to ensure an event scope exists for this request
 export type EnsureEventScope = (
   eventId: MageEventId
 ) => Promise<null | { mageEvent: MageEvent; observationRepository: EventScopedObservationRepository }>
 
+// ----------------------
+// Main Router
+// ----------------------
 export function ObservationRoutes(
   app: ObservationAppLayer,
   attachmentStore: AttachmentStore,
@@ -55,7 +71,7 @@ export function ObservationRoutes(
   const routes = express.Router()
 
   // --------------------------------------
-  // Allocate Observation ID
+  // Allocate Observation ID route
   // --------------------------------------
   routes.route('/id').post(async (req, res, next) => {
     try {
@@ -83,6 +99,7 @@ export function ObservationRoutes(
     .route('/:observationId/attachments/:attachmentId')
     .put(async (req, res, next) => {
       try {
+        // Initialize Busboy to handle multipart/form-data file upload
         const bb = busboy({ headers: req.headers, limits: { files: 1, fields: 0 } })
         let handled = false
 
@@ -96,37 +113,66 @@ export function ObservationRoutes(
           }
 
           try {
-            // buffer the uploaded file
+            // ----------------------
+            // Buffer the uploaded file into memory
+            // ----------------------
             const originalChunks: Buffer[] = []
             for await (const chunk of fileStream) {
               originalChunks.push(chunk as Buffer)
             }
             const originalBuffer = Buffer.concat(originalChunks)
+            console.log(`[DEBUG] Original uploaded file: ${info.filename}, size=${originalBuffer.length} bytes`)
 
             let finalBuffer = originalBuffer
 
+            // ----------------------
             // Only scan if ClamAV is configured
+            // ----------------------
             if (process.env.CLAM_AV_URL) {
               try {
-                const scannedStream = await scanAttachmentWithClamAV(
+                console.log('[DEBUG] Running ClamAV scan on uploaded attachment')
+                const scannedResult = await scanAttachmentWithClamAV(
                   Readable.from(originalBuffer)
                 )
-            
-                const scannedChunks: Buffer[] = []
-                for await (const chunk of scannedStream) {
-                  scannedChunks.push(chunk as Buffer)
+
+                console.log(`[DEBUG] ClamAV scan result: ${scannedResult.status}`, scannedResult.error || '')
+
+                // ----------------------
+                // If scan succeeded, read from the gated stream
+                // ----------------------
+                if (scannedResult.status === 'success' && scannedResult.stream) {
+                  const scannedChunks: Buffer[] = []
+                  for await (const chunk of scannedResult.stream) {
+                    scannedChunks.push(chunk as Buffer)
+                  }
+                  const scannedBuffer = Buffer.concat(scannedChunks)
+                  console.log(`[DEBUG] Scanned buffer length: ${scannedBuffer.length}`)
+                  if (scannedBuffer.length > 0) {
+                    finalBuffer = scannedBuffer
+                  }
+                } else {
+                  // ----------------------
+                  // Handle failed scan: return proper API error
+                  // ----------------------
+                  console.log('[WARN] ClamAV scan failed, rejecting upload')
+                  return next(
+                    invalidInput(
+                      scannedResult.error || 'Uploaded file contains a virus and cannot be stored.'
+                    )
+                  )
                 }
-            
-                const scannedBuffer = Buffer.concat(scannedChunks)
-                if (scannedBuffer.length > 0) {
-                  finalBuffer = scannedBuffer
-                }
-              } catch {
+              } catch (err) {
+                // Catch unexpected errors in the scanning process
+                console.error('[ERROR] Unexpected ClamAV scan error:', err)
                 return next(
-                  invalidInput('Uploaded file contains a virus and cannot be stored.')
+                  invalidInput('Error occurred during attachment scan. Upload aborted.')
                 )
               }
             }
+
+            // ----------------------
+            // Prepare content object to store attachment
+            // ----------------------
             const { observationId, attachmentId } = req.params
             const content: ExoIncomingAttachmentContent = {
               bytes: Readable.from(finalBuffer),
@@ -142,12 +188,16 @@ export function ObservationRoutes(
             const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
             const appRes = await app.storeAttachmentContent(appReq)
 
+            // ----------------------
+            // Return JSON for the newly stored attachment
+            // ----------------------
             if (appRes.success) {
               const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
               const attachmentJson = jsonForAttachment(
                 attachment,
                 `${qualifiedBaseUrl(req)}/${observationId}`
               )
+              console.log('[DEBUG] Attachment stored successfully:', attachmentJson)
               return res.json(attachmentJson)
             }
 
@@ -158,11 +208,15 @@ export function ObservationRoutes(
           }
         })
 
+        // ----------------------
+        // Handle unexpected form fields or limits
+        // ----------------------
         bb.on('field', (name) => next(invalidInput(`unexpected form field: ${name}`)))
         bb.on('filesLimit', () => next(invalidInput(`too many files`)))
         bb.on('fieldsLimit', () => next(invalidInput(`too many fields`)))
         bb.on('error', (err) => next(err))
 
+        // Pipe request stream into Busboy
         req.pipe(bb)
       } catch (err) {
         next(err)
@@ -170,6 +224,9 @@ export function ObservationRoutes(
     })
     .get(async (req, res, next) => {
       try {
+        // ----------------------
+        // Handle range queries and image resizing (minDimension)
+        // ----------------------
         const sizeParam = req.query.size
         const minDimension =
           typeof sizeParam === 'string' ? parseInt(sizeParam, 10) : undefined
@@ -218,6 +275,9 @@ export function ObservationRoutes(
       }
     })
     .delete(async (req, res) => {
+      // ----------------------
+      // Delete attachment route (204 No Content)
+      // ----------------------
       res.sendStatus(204)
     })
 
@@ -228,21 +288,28 @@ export function ObservationRoutes(
     try {
       const body = req.body
       const observationId = req.params.observationId
+
+      // Ensure path ID matches body ID
       if (Object.prototype.hasOwnProperty.call(body, 'id') && body.id !== observationId) {
         return res
           .status(400)
           .json({ message: 'Body observation ID does not match path observation ID' })
       }
+
+      // Parse observation modification
       const mod = exoObservationModFromJson({ ...body, id: observationId })
       if (mod instanceof Error) return next(mod)
 
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
+
+      // Ensure body event ID matches path event ID
       if (
         Object.prototype.hasOwnProperty.call(body, 'eventId') &&
         body.eventId !== appReq.context.mageEvent.id
       ) {
         return res.status(400).json({ message: 'Body event ID does not match path event ID' })
       }
+
       const appRes = await app.saveObservation(appReq)
       if (appRes.success) return res.json(jsonForObservation(appRes.success, qualifiedBaseUrl(req)))
       next(appRes.error)
@@ -251,11 +318,14 @@ export function ObservationRoutes(
     }
   })
 
+  // --------------------------------------
+  // Apply global error handler
+  // --------------------------------------
   return routes.use(compatibilityMageAppErrorHandler)
 }
 
 // ----------------------
-// JSON serialization
+// JSON serialization helpers
 // ----------------------
 export type WebObservation = Omit<ExoObservation, 'attachments' | 'state'> & {
   url: string
@@ -280,6 +350,9 @@ export function jsonForAttachment(a: ExoAttachment, observationUrl: string): Web
   return { ...a, url: a.contentStored ? `${observationUrl}/attachments/${a.id}` : void 0 }
 }
 
+// ----------------------
+// Helper: construct base URL
+// ----------------------
 function qualifiedBaseUrl(req: express.Request): string {
   return req.getRoot() + req.baseUrl
 }
