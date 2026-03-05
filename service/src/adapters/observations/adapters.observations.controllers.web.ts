@@ -129,51 +129,48 @@ export function ObservationRoutes(
             // Only scan if ClamAV is configured
             // ----------------------
             if (process.env.CLAM_AV_URL) {
-              try {
-                console.log('[DEBUG] Running ClamAV scan on uploaded attachment')
-                const scannedResult = await scanAttachmentWithClamAV(
-                  Readable.from(originalBuffer)
-                )
-
-                console.log(`[DEBUG] ClamAV scan result: ${scannedResult.status}`, scannedResult.error || '')
-
-                // ----------------------
-                // Verification hook: log pre-disk invariant
-                // ----------------------
-                console.log(`[VERIFY] Pre-disk invariant: file must be clean before storage`)
-
-                // ----------------------
-                // If scan succeeded, read from the gated stream
-                // ----------------------
-                if (scannedResult.status === 'clean' && scannedResult.stream){
-                  const scannedChunks: Buffer[] = []
-                  for await (const chunk of scannedResult.stream) {
-                    scannedChunks.push(chunk as Buffer)
+              const maxRetries = 3
+              let attempt = 0
+              let scanSuccess = false
+              let scanErrorMsg = ''
+              let scannedBuffer: Buffer | null = null
+            
+              while (attempt < maxRetries && !scanSuccess) {
+                attempt++
+                try {
+                  console.log(`[DEBUG] ClamAV scan attempt ${attempt}`)
+                  const scannedResult = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
+                  console.log(`[DEBUG] ClamAV scan result: ${scannedResult.status}`, scannedResult.error || '')
+            
+                  if (scannedResult.status === 'clean' && scannedResult.stream) {
+                    const chunks: Buffer[] = []
+                    for await (const chunk of scannedResult.stream) {
+                      chunks.push(chunk as Buffer)
+                    }
+                    scannedBuffer = Buffer.concat(chunks)
+                    scanSuccess = true
+                    console.log('[VERIFY] Scan clean: proceeding to storage')
+                  } else {
+                    scanErrorMsg = scannedResult.error || 'File rejected by ClamAV'
+                    scanSuccess = false
                   }
-                  const scannedBuffer = Buffer.concat(scannedChunks)
-                  console.log(`[DEBUG] Scanned buffer length: ${scannedBuffer.length}`)
-                  if (scannedBuffer.length > 0) {
-                    finalBuffer = scannedBuffer
-                  }
-                  console.log('[VERIFY] Scan clean: proceeding to storage')
-                } else {
-                  // ----------------------
-                  // Handle failed scan: return proper API error
-                  // ----------------------
-                  console.log('[WARN] Attachment rejected by ClamAV scan')
-                  return next(
-                    invalidInput(
-                      scannedResult.error || 'Uploaded file contains a virus and cannot be stored.'
-                    )
-                  )
+                } catch (err) {
+                  console.error(`[WARN] ClamAV scan attempt ${attempt} failed:`, err)
+                  scanErrorMsg = 'Virus scanning server unavailable'
                 }
-              } catch (err) {
-                // Catch unexpected errors in the scanning process
-                console.error('[ERROR] Unexpected ClamAV scan error:', err)
-                return next(
-                  invalidInput('Error occurred during attachment scan. Upload aborted.')
-                )
+            
+                if (!scanSuccess && attempt < maxRetries) {
+                  console.log(`[DEBUG] Retrying ClamAV scan in 500ms...`)
+                  await new Promise(r => setTimeout(r, 500))
+                }
               }
+            
+              if (!scanSuccess) {
+                console.log('[ERROR] All ClamAV scan attempts failed')
+                return next(invalidInput(scanErrorMsg))
+              }
+            
+              if (scannedBuffer) finalBuffer = scannedBuffer
             }
 
             // ----------------------
