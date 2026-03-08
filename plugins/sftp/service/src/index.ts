@@ -139,6 +139,17 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
             })
 
+          routes.route('/events')
+            .get(async (_req, res, _next) => {
+              try {
+                const events = await controller.getActiveEvents()
+                res.json(events)
+              } catch (error) {
+                console.error('Error getting events:', error)
+                res.status(500).json([])
+              }
+            })
+
           return routes
         }
       }

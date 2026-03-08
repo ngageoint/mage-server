@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
-import { SFTPPluginConfig, ConnectionTestResult, PluginStatus } from '../entities/entities.format';
+import { SFTPPluginConfig, ConnectionTestResult, PluginStatus, MageEventSummary } from '../entities/entities.format';
 
 export const baseUrl = '/plugins/@ngageoint/mage.sftp.service'
 
@@ -16,6 +16,7 @@ export interface ConfigurationApi {
   updateConfiguration(request: SFTPPluginConfig): Observable<ConfigurationResponse>
   testConnection(config?: Partial<SFTPPluginConfig>): Observable<ConnectionTestResult>
   getStatus(): Observable<PluginStatus>
+  getEvents(): Observable<MageEventSummary[]>
 }
 
 @Injectable({
@@ -61,6 +62,15 @@ export class ConfigurationService implements ConfigurationApi {
           connected: false,
           lastError: error.error?.message || error.message || 'Failed to get status'
         })
+      })
+    );
+  }
+
+  getEvents(): Observable<MageEventSummary[]> {
+    return this.http.get<MageEventSummary[]>(`${baseUrl}/events`).pipe(
+      catchError(error => {
+        console.error('Failed to fetch events:', error)
+        return of([])
       })
     );
   }
