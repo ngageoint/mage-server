@@ -80,6 +80,7 @@ export function ObservationRoutes(
       const id = appRes.success
       const path = `${req.baseUrl}/${id}`
       if (id) {
+        console.debug('[ObservationRoutes] Allocated observation ID:', id)
         return res.status(201).location(path).json({
           id,
           eventId: appReq.context.mageEvent.id,
@@ -99,138 +100,134 @@ export function ObservationRoutes(
     .route('/:observationId/attachments/:attachmentId')
     .put(async (req, res, next) => {
       try {
-        // Initialize Busboy to handle multipart/form-data file upload
+        console.debug('[ObservationRoutes] Upload PUT called')
         const bb = busboy({ headers: req.headers, limits: { files: 1, fields: 0 } })
-        let handled = false
+        let uploadError: any = null
+        let attachmentJson: any = null
+        let resultSent = false
+        let filePromise: Promise<void> | null = null
 
-        bb.on('file', async (fieldName, fileStream, info) => {
-          if (handled) return fileStream.resume()
-          handled = true
-
-          if (fieldName !== 'attachment') {
-            fileStream.resume()
-            return next(invalidInput(`request must contain only one file part named 'attachment'`))
-          }
-
-          try {
-            // ----------------------
-            // Buffer the uploaded file into memory
-            // ----------------------
-            const originalChunks: Buffer[] = []
-            for await (const chunk of fileStream) {
-              originalChunks.push(chunk as Buffer)
+        bb.on('file', (fieldName, fileStream, info) => {
+          console.debug('[ObservationRoutes] Busboy file event for field:', fieldName)
+          filePromise = (async () => {
+            if (fieldName !== 'attachment') {
+              console.debug('[ObservationRoutes] Invalid field name:', fieldName)
+              fileStream.resume()
+              uploadError = invalidInput(`request must contain only one file part named 'attachment'`)
+              return
             }
-            const originalBuffer = Buffer.concat(originalChunks)
-            console.log(`[DEBUG] Original uploaded file: ${info.filename}, size=${originalBuffer.length} bytes`)
 
-            let finalBuffer = originalBuffer
+            try {
+              const chunks: Buffer[] = []
+              for await (const chunk of fileStream) chunks.push(chunk as Buffer)
+              const originalBuffer = Buffer.concat(chunks)
+              console.debug('[ObservationRoutes] File buffered:', info.filename, 'size:', originalBuffer.length)
+              let finalBuffer = originalBuffer
 
-            // ----------------------
-            // Only scan if ClamAV is configured
-            // ----------------------
-            if (process.env.CLAM_AV_URL) {
-              const maxRetries = 3
-              let attempt = 0
-              let scanSuccess = false
-              let scanErrorMsg = ''
-              let scannedBuffer: Buffer | null = null
-            
-              while (attempt < maxRetries && !scanSuccess) {
-                attempt++
-                try {
-                  console.log(`[DEBUG] ClamAV scan attempt ${attempt}`)
-                  const scannedResult = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
-                  console.log(`[DEBUG] ClamAV scan result: ${scannedResult.status}`, scannedResult.error || '')
-            
-                  if (scannedResult.status === 'clean' && scannedResult.stream) {
-                    const chunks: Buffer[] = []
-                    for await (const chunk of scannedResult.stream) {
-                      chunks.push(chunk as Buffer)
+              // ClamAV scan
+              if (process.env.CLAM_AV_URL) {
+                const maxRetries = 3
+                let attempt = 0
+                let scanSuccess = false
+                let scanErrorMsg = ''
+                let scannedBuffer: Buffer | null = null
+
+                while (attempt < maxRetries && !scanSuccess) {
+                  attempt++
+                  console.debug(`[ObservationRoutes] ClamAV scan attempt ${attempt} for ${info.filename}`)
+                  try {
+                    const scannedResult = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
+                    if (scannedResult.status === 'clean' && scannedResult.stream) {
+                      const scannedChunks: Buffer[] = []
+                      for await (const chunk of scannedResult.stream) scannedChunks.push(chunk as Buffer)
+                      scannedBuffer = Buffer.concat(scannedChunks)
+                      scanSuccess = true
+                      console.debug(`[ObservationRoutes] ClamAV clean for ${info.filename}`)
+                    } else {
+                      scanErrorMsg = scannedResult.error || 'File rejected by ClamAV'
+                      console.debug(`[ObservationRoutes] ClamAV rejected file:`, scanErrorMsg)
                     }
-                    scannedBuffer = Buffer.concat(chunks)
-                    scanSuccess = true
-                    console.log('[VERIFY] Scan clean: proceeding to storage')
-                  } else {
-                    scanErrorMsg = scannedResult.error || 'File rejected by ClamAV'
-                    scanSuccess = false
+                  } catch (err) {
+                    scanErrorMsg = 'Virus scanning server unavailable'
+                    console.debug(`[ObservationRoutes] ClamAV error:`, err)
                   }
-                } catch (err) {
-                  console.error(`[WARN] ClamAV scan attempt ${attempt} failed:`, err)
-                  scanErrorMsg = 'Virus scanning server unavailable'
+                  if (!scanSuccess && attempt < maxRetries) await new Promise(r => setTimeout(r, 500))
                 }
-            
-                if (!scanSuccess && attempt < maxRetries) {
-                  console.log(`[DEBUG] Retrying ClamAV scan in 500ms...`)
-                  await new Promise(r => setTimeout(r, 500))
+
+                if (!scanSuccess) {
+                  console.debug(`[ObservationRoutes] Upload rejected by ClamAV for ${info.filename}`)
+                  uploadError = { message: scanErrorMsg, errorCode: 'ClamAVDetectedVirus' }
+                  return
                 }
+
+                if (scannedBuffer) finalBuffer = scannedBuffer
               }
-            
-              if (!scanSuccess) {
-                console.log('[ERROR] All ClamAV scan attempts failed')
-                return next(invalidInput(scanErrorMsg))
+
+              // Store attachment
+              const { observationId, attachmentId } = req.params
+              const content: ExoIncomingAttachmentContent = {
+                bytes: Readable.from(finalBuffer),
+                mediaType: info.mimeType,
+                name: info.filename
               }
-            
-              if (scannedBuffer) finalBuffer = scannedBuffer
-            }
 
-            // ----------------------
-            // Prepare content object to store attachment
-            // ----------------------
-            const { observationId, attachmentId } = req.params
-            const content: ExoIncomingAttachmentContent = {
-              bytes: Readable.from(finalBuffer),
-              mediaType: info.mimeType,
-              name: info.filename
-            }
+              const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
+              const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
+              const appRes = await app.storeAttachmentContent(appReq)
 
-            const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = {
-              observationId,
-              attachmentId,
-              content
+              if (appRes.success) {
+                const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
+                attachmentJson = jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`)
+                console.debug('[ObservationRoutes] Attachment stored successfully:', attachment.id)
+              } else if (appRes.error) {
+                console.debug('[ObservationRoutes] Attachment storage error:', appRes.error)
+                uploadError = appRes.error
+              }
+            } catch (err) {
+              console.debug('[ObservationRoutes] File processing error:', err)
+              uploadError = err
             }
-            const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
-            const appRes = await app.storeAttachmentContent(appReq)
-
-            // ----------------------
-            // Return JSON for the newly stored attachment
-            // ----------------------
-            if (appRes.success) {
-              const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
-              const attachmentJson = jsonForAttachment(
-                attachment,
-                `${qualifiedBaseUrl(req)}/${observationId}`
-              )
-              console.log('[DEBUG] Attachment stored successfully:', attachmentJson)
-              return res.json(attachmentJson)
-            }
-
-            if (appRes.error) return next(appRes.error)
-            next(invalidInput('Attachment could not be stored'))
-          } catch (err) {
-            next(err)
-          }
+          })()
         })
 
-        // ----------------------
-        // Handle unexpected form fields or limits
-        // ----------------------
-        bb.on('field', (name) => next(invalidInput(`unexpected form field: ${name}`)))
-        bb.on('filesLimit', () => next(invalidInput(`too many files`)))
-        bb.on('fieldsLimit', () => next(invalidInput(`too many fields`)))
-        bb.on('error', (err) => next(err))
+        bb.on('field', (name) => {
+          console.debug('[ObservationRoutes] Unexpected form field:', name)
+          uploadError = invalidInput(`unexpected form field: ${name}`)
+        })
+        bb.on('filesLimit', () => { console.debug('[ObservationRoutes] Too many files'); uploadError = invalidInput('too many files') })
+        bb.on('fieldsLimit', () => { console.debug('[ObservationRoutes] Too many fields'); uploadError = invalidInput('too many fields') })
+        bb.on('error', (err) => { console.debug('[ObservationRoutes] Busboy error:', err); uploadError = err })
 
-        // Pipe request stream into Busboy
+        bb.on('finish', async () => {
+          console.debug('[ObservationRoutes] Busboy finished')
+          if (resultSent) return
+          resultSent = true
+
+          if (filePromise) await filePromise
+
+          if (uploadError) {
+            console.debug('[ObservationRoutes] Sending error response')
+            return next(uploadError)
+          }
+          if (attachmentJson) {
+            console.debug('[ObservationRoutes] Sending success response')
+            return res.json(attachmentJson)
+          }
+          console.debug('[ObservationRoutes] No file uploaded')
+          return next(invalidInput('No file uploaded'))
+        })
+
         req.pipe(bb)
       } catch (err) {
+        console.debug('[ObservationRoutes] Outer error:', err)
         next(err)
       }
     })
+    // .get / .delete unchanged (same as your previous version)
     .get(async (req, res, next) => {
       try {
         const sizeParam = req.query.size
-        const minDimension =
-          typeof sizeParam === 'string' ? parseInt(sizeParam, 10) : undefined
-
+        const minDimension = typeof sizeParam === 'string' ? parseInt(sizeParam, 10) : undefined
         const contentRange = req.headers.range
           ? req.headers.range
               .replace(/bytes=/i, '')
@@ -269,12 +266,15 @@ export function ObservationRoutes(
           }`
         }
 
+        console.debug('[ObservationRoutes] Streaming file to client:', req.params.attachmentId)
         return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
       } catch (err) {
+        console.debug('[ObservationRoutes] GET attachment error:', err)
         next(err)
       }
     })
     .delete(async (req, res) => {
+      console.debug('[ObservationRoutes] DELETE attachment:', req.params.attachmentId)
       res.sendStatus(204)
     })
 
