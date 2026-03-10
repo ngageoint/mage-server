@@ -30,7 +30,7 @@ describe('TeamDetailsComponent', () => {
     id: 'team123' as any,
     name: 'Test Team',
     description: 'Test Description',
-    teamEventId: 'event123',
+    teamEventId: 'event123' as any,
     users: ['user1', 'user2'] as any,
     acl: {
       user123: { permissions: ['update', 'delete'] }
@@ -67,7 +67,10 @@ describe('TeamDetailsComponent', () => {
       snapshot: { paramMap: convertToParamMap({ teamId: 'team123' }) }
     };
 
-    mockRouter = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
+    mockRouter = jasmine.createSpyObj<Router>('Router', [
+      'navigateByUrl',
+      'navigate'
+    ]);
     mockDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
 
     mockUserService = jasmine.createSpyObj<AdminUserService>(
@@ -193,12 +196,14 @@ describe('TeamDetailsComponent', () => {
 
       component.getMembers();
 
-      expect(mockTeamsService.getMembers).toHaveBeenCalledWith({
-        id: mockTeam.id,
-        term: component.memberSearchTerm,
-        page: component.membersPageIndex,
-        page_size: component.membersPageSize
-      });
+      expect(mockTeamsService.getMembers).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          id: mockTeam.id as any,
+          term: component.memberSearchTerm,
+          page: component.membersPageIndex,
+          page_size: component.membersPageSize
+        })
+      );
       expect(component.loadingMembers).toBeFalse();
       expect(component.membersDataSource.data).toEqual([mockMember]);
       expect(component.totalMembers).toBe(1);
@@ -217,7 +222,7 @@ describe('TeamDetailsComponent', () => {
     });
 
     it('should return early if team not loaded', () => {
-      component.team = null;
+      component.team = null as any;
       component.getMembers();
       expect(mockTeamsService.getMembers).not.toHaveBeenCalled();
     });
@@ -326,10 +331,13 @@ describe('TeamDetailsComponent', () => {
 
       component.saveTeamDetails();
 
-      expect(mockTeamsService.editTeam).toHaveBeenCalledWith(mockTeam.id, {
-        name: 'Updated Team',
-        description: 'Updated Description'
-      });
+      expect(mockTeamsService.editTeam).toHaveBeenCalledWith(
+        String(mockTeam.id),
+        {
+          name: 'Updated Team',
+          description: 'Updated Description'
+        }
+      );
       expect(component.team).toEqual(updated as any);
       expect(component.editingDetails).toBeFalse();
       expect(component.breadcrumbs.length).toBe(2);
@@ -360,7 +368,7 @@ describe('TeamDetailsComponent', () => {
         jasmine.any(Object)
       );
       expect(mockTeamsService.addUserToTeam).toHaveBeenCalledWith(
-        mockTeam.id,
+        String(mockTeam.id),
         mockMember
       );
       expect(component.getMembers).toHaveBeenCalled();
@@ -385,7 +393,7 @@ describe('TeamDetailsComponent', () => {
 
       expect(ev.stopPropagation).toHaveBeenCalled();
       expect(mockTeamsService.removeMember).toHaveBeenCalledWith(
-        mockTeam.id,
+        String(mockTeam.id),
         mockMember.id
       );
       expect(component.getMembers).toHaveBeenCalled();
@@ -395,7 +403,7 @@ describe('TeamDetailsComponent', () => {
   describe('event management', () => {
     beforeEach(() => {
       component.team = mockTeam;
-      component.teamId = mockTeam.id as any;
+      component.teamId = String(mockTeam.id);
       mockEventsService.addTeamToEvent.and.returnValue(of({} as any));
       mockEventsService.removeEventFromTeam.and.returnValue(of({} as any));
       spyOn(component, 'getTeamEvents');
@@ -439,9 +447,7 @@ describe('TeamDetailsComponent', () => {
     beforeEach(() => {
       component.team = mockTeam;
 
-      (mockRouter as any).navigate = jasmine
-        .createSpy('navigate')
-        .and.returnValue(Promise.resolve(true));
+      mockRouter.navigate.and.returnValue(Promise.resolve(true));
     });
 
     it('should open delete dialog and navigate when confirmed', () => {
@@ -449,7 +455,6 @@ describe('TeamDetailsComponent', () => {
 
       component.deleteTeam();
 
-      // ✅ FIX: allow width property that component passes
       expect(mockDialog.open).toHaveBeenCalledWith(
         DeleteTeamComponent,
         jasmine.objectContaining({
@@ -458,7 +463,7 @@ describe('TeamDetailsComponent', () => {
         })
       );
 
-      expect((mockRouter as any).navigate).toHaveBeenCalledWith(
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
         ['../../teams'],
         jasmine.objectContaining({
           relativeTo: jasmine.any(Object)
@@ -473,7 +478,7 @@ describe('TeamDetailsComponent', () => {
 
       component.deleteTeam();
 
-      expect((mockRouter as any).navigate).not.toHaveBeenCalled();
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
       expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
     });
   });

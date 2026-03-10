@@ -23,27 +23,26 @@ const RoleModel = mongoose.model('Role');
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event')
 
-const svgCaptcha = require('svg-captcha');
+const captchaCanvas = require('captcha-canvas');
 
 require('sinon-mongoose');
 
 let app;
 
 async function captcha() {
-  sinon.stub(svgCaptcha, 'create').returns({
+  sinon.stub(captchaCanvas, 'createCaptchaSync').returns({
     text: 'captcha',
-    data: 'image'
+    image: Buffer.from('image')
   });
 
   let jwt;
   await request(app)
     .post('/api/users/signups')
-    .send({
-      username: 'test',
-    })
+    .send({})
     .expect(200)
     .expect(function (res) {
       jwt = res.body.token;
+      res.body.should.have.property('captcha');
       sinon.restore();
     });
 
@@ -194,14 +193,17 @@ describe("user create tests", function () {
 
   it('should create captcha', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
-
+  
+    sinon.stub(captchaCanvas, 'createCaptchaSync').returns({
+      text: 'captcha',
+      image: Buffer.from('image')
+    });
+  
     request(app)
       .post('/api/users/signups')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .send({
-        username: 'test',
-      })
+      .send({})
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function (res) {
@@ -209,21 +211,11 @@ describe("user create tests", function () {
         res.body.should.have.property('token');
         res.body.should.have.property('captcha');
       })
-      .end(done);
-  });
-
-  it('should fail to create captcha with no username', function (done) {
-    mockTokenWithPermission('NO_PERMISSIONS');
-
-    request(app)
-      .post('/api/users/signups')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-      })
-      .expect(400)
-      .end(done);
-  });
+      .end(function (err) {
+        sinon.restore();
+        done(err);
+      });
+  }); 
 
   it('should create user', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');
@@ -809,6 +801,27 @@ describe("user create tests", function () {
       .expect(403)
       .expect(function (res) {
         res.text.should.equal('Invalid captcha, please try again.');
+      });
+  });
+
+  it('should fail to create user w/o username', async function () {
+    mockTokenWithPermission('NO_PERMISSIONS');
+  
+    let jwt = await captcha();
+  
+    await request(app)
+      .post('/api/users/signups/verifications')
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
+      .send({
+        displayName: 'test',
+        password: 'passwordpassword',
+        passwordconfirm: 'passwordpassword',
+        captchaText: 'captcha'
+      })
+      .expect(400)
+      .expect(function (res) {
+        res.text.should.equal("Invalid user document: missing required parameter 'username'");
       });
   });
 

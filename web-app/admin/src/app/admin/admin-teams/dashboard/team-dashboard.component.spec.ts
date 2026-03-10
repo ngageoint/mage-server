@@ -27,27 +27,27 @@ describe('TeamDashboardComponent', () => {
 
   const mockTeams: Team[] = [
     {
-      id: '1',
+      id: '1' as any,
       name: 'Team Alpha',
       description: 'First team description',
-      teamEventId: '507f1f77bcf86cd799439011',
+      teamEventId: '507f1f77bcf86cd799439011' as any,
       users: [] as any,
       acl: {} as any
     },
     {
-      id: '2',
+      id: '2' as any,
       name: 'Team Beta',
       description:
         'Second team description with much longer text that might wrap',
-      teamEventId: '507f191e810c19729de860ea',
+      teamEventId: '507f191e810c19729de860ea' as any,
       users: [] as any,
       acl: {} as any
     },
     {
-      id: '3',
+      id: '3' as any,
       name: 'Team Gamma',
       description: 'Third team',
-      teamEventId: '507f1f77bcf86cd799439012',
+      teamEventId: '507f1f77bcf86cd799439012' as any,
       users: [] as any,
       acl: {} as any
     }
@@ -182,7 +182,7 @@ describe('TeamDashboardComponent', () => {
       data: { team: {} }
     });
   });
-  
+
   it('should refresh teams after creating new team', fakeAsync(() => {
     component.hasTeamCreatePermission = true;
 
@@ -190,7 +190,7 @@ describe('TeamDashboardComponent', () => {
     toastSpy.show.calls.reset();
 
     const createdTeam = {
-      id: '4',
+      id: '4' as any,
       name: 'New Team',
       description: 'New team description'
     } as any;
