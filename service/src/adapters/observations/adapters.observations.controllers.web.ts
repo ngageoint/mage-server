@@ -79,7 +79,6 @@ export function ObservationRoutes(
       const id = appRes.success
       const path = `${req.baseUrl}/${id}`
       if (id) {
-        console.debug('[ObservationRoutes] Allocated observation ID:', id)
         return res.status(201).location(path).json({
           id,
           eventId: appReq.context.mageEvent.id,
@@ -99,18 +98,15 @@ export function ObservationRoutes(
     .route('/:observationId/attachments/:attachmentId')
     .put(async (req, res, next) => {
       try {
-        console.debug('[ObservationRoutes] Upload PUT called')
         const bb = busboy({ headers: req.headers, limits: { files: 10, fields: 0 } })
         const uploadErrors: any[] = []
         const attachmentsJson: any[] = []
         const filePromises: Promise<void>[] = []
 
         bb.on('file', (fieldName, fileStream, info) => {
-          console.debug('[ObservationRoutes] Busboy file event for field:', fieldName)
         
           const filePromise = (async () => {
             if (fieldName !== 'attachment') {
-              console.debug('[ObservationRoutes] Invalid field name:', fieldName)
               fileStream.resume()
               uploadErrors.push({
                 file: info.filename,
@@ -135,7 +131,6 @@ export function ObservationRoutes(
         
                 while (attempt < maxRetries && !scanSuccess) {
                   attempt++
-                  console.debug(`[ObservationRoutes] ClamAV scan attempt ${attempt} for ${info.filename}`)
                   try {
                     const scannedResult = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
                     if (scannedResult.status === 'clean' && scannedResult.stream) {
@@ -153,7 +148,6 @@ export function ObservationRoutes(
                 }
         
                 if (!scanSuccess) {
-                  console.debug(`[ObservationRoutes] Upload rejected by ClamAV for ${info.filename}`)
                   fileStream.resume()
                   uploadErrors.push({ file: info.filename, error: scanErrorMsg })
                   return
@@ -189,15 +183,13 @@ export function ObservationRoutes(
         })
 
         bb.on('field', (name) => {
-          console.debug('[ObservationRoutes] Unexpected form field:', name)
           uploadErrors.push({ field: name, error: 'Unexpected form field' })
         })
-        bb.on('filesLimit', () => { console.debug('[ObservationRoutes] Too many files'); uploadErrors.push({ error: 'Too many files' }) })
-        bb.on('fieldsLimit', () => { console.debug('[ObservationRoutes] Too many fields'); uploadErrors.push({ error: 'Too many fields' }) })
-        bb.on('error', (err) => { console.debug('[ObservationRoutes] Busboy error:', err); uploadErrors.push({ error: err }) })
+        bb.on('filesLimit', () => { uploadErrors.push({ error: 'Too many files' }) })
+        bb.on('fieldsLimit', () => { uploadErrors.push({ error: 'Too many fields' }) })
+        bb.on('error', (err) => { uploadErrors.push({ error: err }) })
 
         bb.on('finish', async () => {
-          console.debug('[ObservationRoutes] Busboy finished')
           if (filePromises.length > 0) await Promise.all(filePromises)
         
           const statusCode = attachmentsJson.length > 0 ? 200 : 400
@@ -209,7 +201,6 @@ export function ObservationRoutes(
 
         req.pipe(bb)
       } catch (err) {
-        console.debug('[ObservationRoutes] Outer error:', err)
         next(err)
       }
     })
@@ -255,15 +246,12 @@ export function ObservationRoutes(
           }`
         }
 
-        console.debug('[ObservationRoutes] Streaming file to client:', req.params.attachmentId)
         return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
       } catch (err) {
-        console.debug('[ObservationRoutes] GET attachment error:', err)
         next(err)
       }
     })
     .delete(async (req, res) => {
-      console.debug('[ObservationRoutes] DELETE attachment:', req.params.attachmentId)
       res.sendStatus(204)
     })
 
