@@ -88,14 +88,11 @@ export class FieldDialogComponent {
             return false;
         }
 
-        const newFieldName = this.field.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-
         return this.data.existingFields.some(f => {
             if (this.isEditMode && f.id === this.data.existingField?.id) {
                 return false;
             }
-            const existingName = f.name || (f.title || "").toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            return existingName === newFieldName;
+            return f.title === this.field.title;
         });
     }
 
