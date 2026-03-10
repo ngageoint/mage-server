@@ -25,7 +25,7 @@ module.exports = function(app, security) {
     crypto.randomBytes(64).toString('hex'),
     'urn:mage'
   );
-  const { createCaptchaSync } = require('captcha-canvas');
+  const captchaCanvas = require('captcha-canvas');
 
   passport.use(
     'captcha',
@@ -199,7 +199,7 @@ module.exports = function(app, security) {
   // Anyone can create a new user, but the new user will not be active
   app.post('/api/users/signups', validateUsername, function(req, res, next) {
     // Generate captcha
-    const { image, text } = createCaptchaSync(300, 100, {
+    const { image, text } = captchaCanvas.createCaptchaSync(300, 100, {
       captcha: {
         characters: 6,
         size: 46,
