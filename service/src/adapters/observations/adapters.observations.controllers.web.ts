@@ -156,7 +156,8 @@ export function ObservationRoutes(
 
                 if (!scanSuccess) {
                   console.debug(`[ObservationRoutes] Upload rejected by ClamAV for ${info.filename}`)
-                  uploadError = { message: scanErrorMsg, errorCode: 'ClamAVDetectedVirus' }
+                  fileStream.resume() 
+                  uploadError = { message: scanErrorMsg, errorCode: 'ClamAVUnavailable' }
                   return
                 }
 
