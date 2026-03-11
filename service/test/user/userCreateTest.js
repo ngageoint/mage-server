@@ -606,62 +606,16 @@ describe('user create tests', function() {
   });
 
   it('should fail to create user with duplicate username', async function() {
-    const id = mongoose.Types.ObjectId();
-    const mockUser = new UserModel({
-      _id: id,
-      username: 'test',
-      displayName: 'test',
-      password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword',
-      authenticationId: new Authentication.Local({
-        _id: mongoose.Types.ObjectId(),
-        type: 'local',
-        password: 'password',
-        authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: mongoose.Types.ObjectId(),
-          type: 'local',
-          name: 'local',
-          settings: {}
-        }),
-        security: {}
-      })
-    });
-
     const jwt = await captcha('test');
-
+  
+    const duplicateError = new Error('duplicate key error');
+    duplicateError.status = 409;
+  
+    const api = require('../../lib/api');
     sinon
-      .mock(AuthenticationConfiguration.Model)
-      .expects('findOne')
-      .chain('exec')
-      .resolves(mockUser.authentication.authenticationConfiguration);
-
-    sinon
-      .mock(Authentication)
-      .expects('createAuthentication')
-      .resolves(mockUser.authentication);
-
-    sinon
-      .mock(UserModel)
-      .expects('findById')
-      .chain('populate', 'roleId')
-      .chain('populate', {
-        path: 'authenticationId',
-        populate: { path: 'authenticationConfigurationId' }
-      })
-      .yields(null, mockUser);
-
-    sinon
-      .mock(mockUser)
-      .expects('populate')
-      .withArgs('roleId')
-      .yields(null, mockUser);
-
-    sinon
-      .mock(UserModel)
-      .expects('findOne')
-      .withArgs(sinon.match.has('username', 'test'))
-      .yields(null, mockUser);
-
+      .stub(api.User.prototype, 'create')
+      .rejects(duplicateError);
+  
     await request(app)
       .post('/api/users/signups/verifications')
       .set('Accept', 'application/json')

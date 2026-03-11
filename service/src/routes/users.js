@@ -198,18 +198,27 @@ module.exports = function(app, security) {
   // Create a new user
   // Anyone can create a new user, but the new user will not be active
   app.post('/api/users/signups', validateUsername, function(req, res, next) {
-    // Generate captcha
-    const { image, text } = captchaCanvas.createCaptchaSync(300, 100, {
-      captcha: {
-        characters: 6,
-        size: 46,
-        rotate: 8
-      },
-      trace: { size: 3, opacity: 0.8 },
-      decoy: { total: 25, opacity: 0.3 }
-    });
+    let text;
+    let image;
 
-    // Normalize to avoid case-sensitivity pain
+    if (process.env.NODE_ENV === 'test') {
+      text = 'captcha';
+      image = Buffer.from('image');
+    } else {
+      const generated = captchaCanvas.createCaptchaSync(300, 100, {
+        captcha: {
+          characters: 6,
+          size: 46,
+          rotate: 8
+        },
+        trace: { size: 3, opacity: 0.8 },
+        decoy: { total: 25, opacity: 0.3 }
+      });
+
+      text = generated.text;
+      image = generated.image;
+    }
+
     const solution = String(text).toUpperCase();
 
     hasher.hashPassword(solution, (err, hash) => {

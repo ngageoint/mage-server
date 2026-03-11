@@ -28,20 +28,20 @@ describe('BulkUserComponent', () => {
 
   const teams: Team[] = [
     {
-      id: 10 as any,
+      id: 10,
       name: 'Team X',
       description: '',
-      teamEventId: '' as any,
-      users: [] as any,
-      acl: undefined as any
+      teamEventId: '',
+      users: [],
+      acl: undefined
     },
     {
-      id: 11 as any,
+      id: 11,
       name: 'Team Y',
       description: '',
-      teamEventId: '' as any,
-      users: [] as any,
-      acl: undefined as any
+      teamEventId: '',
+      users: [],
+      acl: undefined
     }
   ];
 
@@ -98,9 +98,9 @@ describe('BulkUserComponent', () => {
 
     spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
       const config = cfg as Papa.ParseConfig<string[]>;
-      (config.complete as any)({
-        data: [header, row]
-      } as Papa.ParseResult<string[]>);
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
     const file = new File(['csv'], 'data.csv', { type: 'text/csv' });
@@ -111,7 +111,7 @@ describe('BulkUserComponent', () => {
     expect(component.displayedColumns).toEqual(['team', 'role', ...header]);
     expect(component.users.length).toBe(1);
     expect((component.users[0] as any)['Username']).toBe('user1');
-    expect((component.users[0] as any).team?.id).toBe(11 as any);
+    expect((component.users[0] as any).team?.id).toBe(11);
     expect((component.users[0] as any).role?.id).toBe('1');
     expect(component.unmappedFields.length).toBe(0);
   });
@@ -124,9 +124,9 @@ describe('BulkUserComponent', () => {
 
     spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
       const config = cfg as Papa.ParseConfig<string[]>;
-      (config.complete as any)({
-        data: [header, row]
-      } as Papa.ParseResult<string[]>);
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
     component.onFileChange(makeFileChangeEvent(new File(['x'], 'x.csv')));
@@ -144,9 +144,9 @@ describe('BulkUserComponent', () => {
 
     spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
       const config = cfg as Papa.ParseConfig<string[]>;
-      (config.complete as any)({
-        data: [header, row]
-      } as Papa.ParseResult<string[]>);
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
     component.onFileChange(makeFileChangeEvent(new File(['y'], 'y.csv')));
@@ -180,9 +180,9 @@ describe('BulkUserComponent', () => {
     const parseSpy = spyOn(Papa, 'parse').and.callFake(
       (_: any, cfg: unknown) => {
         const config = cfg as Papa.ParseConfig<string[]>;
-        (config.complete as any)({
-          data: [header, rowA]
-        } as Papa.ParseResult<string[]>);
+        (config.complete as any)({ data: [header, rowA] } as Papa.ParseResult<
+          string[]
+        >);
       }
     );
 
@@ -191,9 +191,9 @@ describe('BulkUserComponent', () => {
 
     parseSpy.and.callFake((_: any, cfg: unknown) => {
       const config = cfg as Papa.ParseConfig<string[]>;
-      (config.complete as any)({
-        data: [header, rowB]
-      } as Papa.ParseResult<string[]>);
+      (config.complete as any)({ data: [header, rowB] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
     component.onFileChange(makeFileChangeEvent(new File(['b'], 'b.csv')));
@@ -218,9 +218,9 @@ describe('BulkUserComponent', () => {
 
     spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
       const config = cfg as Papa.ParseConfig<string[]>;
-      (config.complete as any)({
-        data: [header, row]
-      } as Papa.ParseResult<string[]>);
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
     component.onFileChange(makeFileChangeEvent(new File(['z'], 'z.csv')));
@@ -231,7 +231,7 @@ describe('BulkUserComponent', () => {
       closeSpy.calls.mostRecent().args[0];
 
     expect(selectedRole.id).toBe('1');
-    expect(selectedTeam.id).toBe(10 as any);
+    expect(selectedTeam.id).toBe(10);
     expect(users[0]).toEqual(
       jasmine.objectContaining({
         username: 'user9',
@@ -241,7 +241,7 @@ describe('BulkUserComponent', () => {
         password: 'p9',
         passwordconfirm: 'p9',
         roleId: '1',
-        team: 10 as any,
+        team: 10,
         avatar: null,
         icon: null,
         iconMetadata: null
