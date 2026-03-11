@@ -11,10 +11,10 @@
   width: 100% !important;
 }
 
-.authorization {
+:host ::ng-deep .authorization {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 12px !important; // gives tighter spacing for Access Code modal
   overflow: hidden;
 }
 
