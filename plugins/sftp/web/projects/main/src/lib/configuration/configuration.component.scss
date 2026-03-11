@@ -191,3 +191,68 @@ button {
   align-items: center;
   gap: 8px;
 }
+
+.key-section {
+  margin: 24px 0;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.key-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .key-status-text {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &.configured {
+    color: #2e7d32;
+
+    mat-icon {
+      color: #4caf50;
+    }
+  }
+
+  &.not-configured {
+    color: #e65100;
+
+    mat-icon {
+      color: #ff9800;
+    }
+  }
+}
+
+.key-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.key-input-section {
+  mat-form-field {
+    width: 100%;
+  }
+
+  textarea {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+  }
+}
+
+.key-input-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}

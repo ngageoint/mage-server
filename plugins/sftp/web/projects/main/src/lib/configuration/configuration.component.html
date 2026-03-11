@@ -120,6 +120,41 @@
           </mat-form-field>
         </div>
 
+        <div class="key-section">
+          <div class="key-status" [class.configured]="hasPrivateKey" [class.not-configured]="!hasPrivateKey">
+            <mat-icon>{{hasPrivateKey ? 'vpn_key' : 'key_off'}}</mat-icon>
+            <span class="key-status-text">
+              {{hasPrivateKey ? 'Private key is configured' : 'No private key configured'}}
+            </span>
+          </div>
+
+          <div *ngIf="!showKeyInput" class="key-actions">
+            <button mat-stroked-button color="primary" (click)="toggleKeyInput()">
+              <mat-icon>{{hasPrivateKey ? 'edit' : 'add'}}</mat-icon>
+              {{hasPrivateKey ? 'Replace Private Key' : 'Add Private Key'}}
+            </button>
+          </div>
+
+          <div *ngIf="showKeyInput" class="key-input-section">
+            <mat-form-field appearance="fill">
+              <mat-label>Paste OpenSSH Private Key</mat-label>
+              <textarea matInput [(ngModel)]="privateKeyText" rows="8"
+                placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"></textarea>
+              <mat-hint>Paste your OpenSSH private key (PEM format). The key is stored securely on the server and is
+                never displayed after saving.</mat-hint>
+            </mat-form-field>
+            <div class="key-input-actions">
+              <button mat-flat-button color="primary" (click)="savePrivateKey()"
+                [disabled]="isSavingKey || !privateKeyText.trim()">
+                <mat-spinner *ngIf="isSavingKey" diameter="20" class="button-spinner"></mat-spinner>
+                <mat-icon *ngIf="!isSavingKey">save</mat-icon>
+                {{isSavingKey ? 'Saving...' : 'Save Key'}}
+              </button>
+              <button mat-stroked-button (click)="toggleKeyInput()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
         <div *ngIf="lastTestResult" class="test-result" [class.success]="lastTestResult.success"
           [class.error]="!lastTestResult.success">
           <mat-icon>{{lastTestResult.success ? 'check_circle' : 'error'}}</mat-icon>
@@ -138,9 +173,16 @@
     </div>
   </div>
 
-  <button mat-flat-button color="primary" (click)="save()" [disabled]="isSaving || !hasUnsavedChanges">
-    <mat-spinner *ngIf="isSaving" diameter="20" class="button-spinner"></mat-spinner>
-    <mat-icon *ngIf="!isSaving">save</mat-icon>
-    {{isSaving ? 'Saving...' : 'Save Configuration'}}
-  </button>
+  <div class="bottom-actions">
+    <button mat-flat-button color="primary" (click)="save()" [disabled]="isSaving || !hasUnsavedChanges">
+      <mat-spinner *ngIf="isSaving" diameter="20" class="button-spinner"></mat-spinner>
+      <mat-icon *ngIf="!isSaving">save</mat-icon>
+      {{isSaving ? 'Saving...' : 'Save Configuration'}}
+    </button>
+    <button mat-stroked-button color="warn" (click)="resetToDefaults()" [disabled]="isResetting">
+      <mat-spinner *ngIf="isResetting" diameter="20" class="button-spinner"></mat-spinner>
+      <mat-icon *ngIf="!isResetting">restart_alt</mat-icon>
+      {{isResetting ? 'Resetting...' : 'Reset to Defaults'}}
+    </button>
+  </div>
 </div>

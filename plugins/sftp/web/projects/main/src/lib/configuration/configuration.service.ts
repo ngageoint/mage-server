@@ -11,11 +11,18 @@ export interface ConfigurationResponse {
   configuration?: SFTPPluginConfig
 }
 
+export interface PrivateKeyResponse {
+  success: boolean
+  message: string
+}
+
 export interface ConfigurationApi {
   getConfiguration(): Observable<SFTPPluginConfig>
   updateConfiguration(request: SFTPPluginConfig): Observable<ConfigurationResponse>
   testConnection(config?: Partial<SFTPPluginConfig>): Observable<ConnectionTestResult>
   getStatus(): Observable<PluginStatus>
+  savePrivateKey(privateKey: string): Observable<PrivateKeyResponse>
+  resetConfiguration(): Observable<ConfigurationResponse>
 }
 
 @Injectable({
@@ -60,6 +67,30 @@ export class ConfigurationService implements ConfigurationApi {
         return of({
           connected: false,
           lastError: error.error?.message || error.message || 'Failed to get status'
+        })
+      })
+    );
+  }
+
+  savePrivateKey(privateKey: string): Observable<PrivateKeyResponse> {
+    return this.http.post<PrivateKeyResponse>(`${baseUrl}/private-key`, { privateKey }, {
+      headers: { "Content-Type": "application/json" }
+    }).pipe(
+      catchError(error => {
+        return of({
+          success: false,
+          message: error.error?.message || error.message || 'Failed to save private key'
+        })
+      })
+    );
+  }
+
+  resetConfiguration(): Observable<ConfigurationResponse> {
+    return this.http.post<ConfigurationResponse>(`${baseUrl}/reset`, {}).pipe(
+      catchError(error => {
+        return of({
+          success: false,
+          message: error.error?.message || error.message || 'Failed to reset configuration'
         })
       })
     );

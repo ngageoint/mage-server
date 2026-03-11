@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule, ConnectionTestResult, PluginStatus } from '../entities/entities.format';
 import { ConfigurationService } from './configuration.service';
 import { Subject, interval, takeUntil } from 'rxjs';
+import { ResetConfirmDialogComponent } from './reset-confirm-dialog.component';
 
 @Component({
   selector: 'sftp-configuration',
@@ -59,13 +61,20 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
   lastTestResult: ConnectionTestResult | null = null
   loadError: string | null = null
 
+  hasPrivateKey = false
+  showKeyInput = false
+  privateKeyText = ''
+  isSavingKey = false
+  isResetting = false
+
   get hasUnsavedChanges(): boolean {
     return JSON.stringify(this.configuration) !== this.originalConfiguration
   }
 
   constructor(
     public service: ConfigurationService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {
   }
 
@@ -90,6 +99,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
   loadConfiguration(): void {
     this.service.getConfiguration().subscribe({
       next: (configuration) => {
+        this.hasPrivateKey = !!configuration.hasPrivateKey
         this.configuration = configuration
         this.originalConfiguration = JSON.stringify(configuration)
       },
@@ -180,6 +190,87 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
           panelClass: ['error-snackbar']
         })
       }
+    })
+  }
+
+  toggleKeyInput(): void {
+    this.showKeyInput = !this.showKeyInput
+    if (!this.showKeyInput) {
+      this.privateKeyText = ''
+    }
+  }
+
+  savePrivateKey(): void {
+    if (!this.privateKeyText.trim()) return
+
+    this.isSavingKey = true
+    this.service.savePrivateKey(this.privateKeyText).subscribe({
+      next: (result) => {
+        this.isSavingKey = false
+        if (result.success) {
+          this.hasPrivateKey = true
+          this.showKeyInput = false
+          this.privateKeyText = ''
+          this.snackBar.open('Private key saved successfully', 'Dismiss', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          })
+        } else {
+          this.snackBar.open(result.message || 'Failed to save private key', 'Dismiss', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          })
+        }
+      },
+      error: (error) => {
+        this.isSavingKey = false
+        this.snackBar.open(error.message || 'Failed to save private key', 'Dismiss', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        })
+      }
+    })
+  }
+
+  resetToDefaults(): void {
+    const dialogRef = this.dialog.open(ResetConfirmDialogComponent, {
+      width: '600px'
+    })
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return
+
+      this.isResetting = true
+      this.service.resetConfiguration().subscribe({
+        next: (response) => {
+          this.isResetting = false
+          if (response.success) {
+            if (response.configuration) {
+              this.hasPrivateKey = !!(response.configuration as any).hasPrivateKey
+              this.configuration = response.configuration
+              this.originalConfiguration = JSON.stringify(response.configuration)
+            }
+            this.lastTestResult = null
+            this.loadStatus()
+            this.snackBar.open('Plugin has been reset to default settings', 'Dismiss', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            })
+          } else {
+            this.snackBar.open(response.message || 'Failed to reset plugin', 'Dismiss', {
+              duration: 5000,
+              panelClass: ['error-snackbar']
+            })
+          }
+        },
+        error: (error) => {
+          this.isResetting = false
+          this.snackBar.open(error.message || 'Failed to reset plugin', 'Dismiss', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          })
+        }
+      })
     })
   }
 }
