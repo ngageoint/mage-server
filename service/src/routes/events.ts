@@ -221,20 +221,32 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
-        if (req.query.includePagination) {
-          res.json({
-            pageSize: pageSize,
-            page: page,
-            items: events!.map((event) => {
+
+        const populateTasks = events!.map((event) => {
+          return new Promise<void>((resolve, reject) => {
+            new api.Form(event).populateUserFields((err: any) => {
+              if (err) return reject(err);
+              resolve();
+            });
+          });
+        });
+
+        Promise.all(populateTasks).then(() => {
+          if (req.query.includePagination) {
+            res.json({
+              pageSize: pageSize,
+              page: page,
+              items: events!.map((event) => {
+                return event.toObject({ access: req.access!, projection: req.parameters!.projection });
+              }),
+              totalCount: totalCount
+            })
+          } else {
+            res.json(events!.map((event) => {
               return event.toObject({ access: req.access!, projection: req.parameters!.projection });
-            }),
-            totalCount: totalCount
-          })
-        } else {
-          res.json(events!.map((event) => {
-            return event.toObject({ access: req.access!, projection: req.parameters!.projection });
-          }));
-        }
+            }));
+          }
+        }).catch(next);
       });
     }
   );
@@ -265,7 +277,10 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) return next(err);
         if (!event) return res.sendStatus(404);
 
-        res.json(event.toObject({ access: req.access!, projection: req.parameters!.projection }));
+        new api.Form(event).populateUserFields(function (err: any) {
+          if (err) return next(err);
+          res.json(event.toObject({ access: req.access!, projection: req.parameters!.projection }));
+        });
       });
     }
   );

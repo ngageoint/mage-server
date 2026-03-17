@@ -1164,8 +1164,6 @@ const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRu
   [FormFieldType.Dropdown]: validateRequiredThen(context => fields.select.SelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Email]: validateRequiredThen(context => fields.email.EmailFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Geometry]: validateRequiredThen(context => fields.geometry.GeometryFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  // TODO: no validation at all? legacy validation code did nothing for hidden fields
-  [FormFieldType.Hidden]: context => null,
   [FormFieldType.MultiSelectDropdown]: validateRequiredThen(context => fields.multiselect.MultiSelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Numeric]: validateRequiredThen(context => fields.numeric.NumericFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Password]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),

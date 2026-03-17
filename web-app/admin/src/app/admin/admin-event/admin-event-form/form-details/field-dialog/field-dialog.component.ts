@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Field } from '../../../helpers/observation-feed-helper';
 
 export interface FieldDialogData {
-    fieldTypes: { name: string; title: string; hidden?: boolean }[];
+    fieldTypes: { name: string; title: string }[];
     attachmentAllowedTypes: { name: string; title: string }[];
     isMemberField?: boolean;
     editMode?: boolean;
