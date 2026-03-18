@@ -374,47 +374,55 @@ describe('observation entities', function () {
             },
             {
               id: 6,
-              name: FormFieldType.MultiSelectDropdown,
+              name: FormFieldType.Hidden,
               required: false,
               title: 'Field 6',
+              type: FormFieldType.Hidden,
+              value: 'secret'
+            },
+            {
+              id: 7,
+              name: FormFieldType.MultiSelectDropdown,
+              required: false,
+              title: 'Field 7',
               type: FormFieldType.MultiSelectDropdown,
               choices: [...choices]
             },
             {
-              id: 7,
+              id: 8,
               name: FormFieldType.Numeric,
               required: false,
-              title: 'Field 7',
+              title: 'Field 8',
               type: FormFieldType.Numeric,
               min: Number.MAX_SAFE_INTEGER
             },
             {
-              id: 8,
+              id: 9,
               name: FormFieldType.Password,
               required: false,
-              title: 'Field 8',
+              title: 'Field 9',
               type: FormFieldType.Password,
             },
             {
-              id: 9,
+              id: 10,
               name: FormFieldType.Radio,
               required: false,
-              title: 'Field 9',
+              title: 'Field 10',
               type: FormFieldType.Radio,
               choices: [...choices]
             },
             {
-              id: 10,
+              id: 11,
               name: FormFieldType.Text,
               required: false,
-              title: 'Field 10',
+              title: 'Field 11',
               type: FormFieldType.Text
             },
             {
-              id: 11,
+              id: 12,
               name: FormFieldType.TextArea,
               required: false,
-              title: 'Field 11',
+              title: 'Field 12',
               type: FormFieldType.TextArea
             },
           ],
@@ -435,6 +443,7 @@ describe('observation entities', function () {
           [FormFieldType.Dropdown]: {} as any,
           [FormFieldType.Email]: 'not an email',
           [FormFieldType.Geometry]: 'not a geometry',
+          [FormFieldType.Hidden]: 'whatever',
           [FormFieldType.MultiSelectDropdown]: {} as any,
           [FormFieldType.Numeric]: 0,
           [FormFieldType.Password]: {} as any,
@@ -451,6 +460,7 @@ describe('observation entities', function () {
           [FormFieldType.Dropdown]: choices[1].title,
           [FormFieldType.Email]: 'mage1@test.mage',
           [FormFieldType.Geometry]: { type: 'Point', coordinates: [106, 38] },
+          [FormFieldType.Hidden]: `¯\_(ツ)_/¯`,
           [FormFieldType.MultiSelectDropdown]: [choices[0].title, choices[1].title],
           [FormFieldType.Numeric]: Number.MAX_SAFE_INTEGER,
           [FormFieldType.Password]: `m@g3i5th3b3$t`,
@@ -492,7 +502,8 @@ describe('observation entities', function () {
         expect(invalid.formEntryErrors.length).to.equal(1)
         const formEntryError = new Map(invalid.formEntryErrors).get(0)
         expect(formEntryError).to.exist
-        expect(formEntryError?.fieldErrors).to.have.keys(form.fields.filter(x => x.name !== FormFieldType.Attachment).map(x => x.name))
+        const invalidFieldsExceptHidden = form.fields.filter(x => x.type !== FormFieldType.Hidden).map(x => x.name)
+        expect(formEntryError?.fieldErrors).to.have.keys(invalidFieldsExceptHidden)
 
         observationAttrs.properties.forms = [validFormEntry]
         observationAttrs.attachments = [validAttachment]
@@ -562,47 +573,55 @@ describe('observation entities', function () {
             },
             {
               id: 6,
-              name: FormFieldType.MultiSelectDropdown,
+              name: FormFieldType.Hidden,
               required: true,
               title: 'Field 6',
+              type: FormFieldType.Hidden,
+              value: 'secret'
+            },
+            {
+              id: 7,
+              name: FormFieldType.MultiSelectDropdown,
+              required: true,
+              title: 'Field 7',
               type: FormFieldType.MultiSelectDropdown,
               choices: [...choices]
             },
             {
-              id: 7,
+              id: 8,
               name: FormFieldType.Numeric,
               required: true,
-              title: 'Field 7',
+              title: 'Field 8',
               type: FormFieldType.Numeric,
               min: Number.MAX_SAFE_INTEGER
             },
             {
-              id: 8,
+              id: 9,
               name: FormFieldType.Password,
               required: true,
-              title: 'Field 8',
+              title: 'Field 9',
               type: FormFieldType.Password,
             },
             {
-              id: 9,
+              id: 10,
               name: FormFieldType.Radio,
               required: true,
-              title: 'Field 9',
+              title: 'Field 10',
               type: FormFieldType.Radio,
               choices: [...choices]
             },
             {
-              id: 10,
+              id: 11,
               name: FormFieldType.Text,
               required: true,
-              title: 'Field 10',
+              title: 'Field 11',
               type: FormFieldType.Text
             },
             {
-              id: 11,
+              id: 12,
               name: FormFieldType.TextArea,
               required: true,
-              title: 'Field 11',
+              title: 'Field 12',
               type: FormFieldType.TextArea
             },
           ],
@@ -623,6 +642,7 @@ describe('observation entities', function () {
           [FormFieldType.Dropdown]: null,
           [FormFieldType.Email]: null,
           [FormFieldType.Geometry]: null,
+          [FormFieldType.Hidden]: null,
           [FormFieldType.MultiSelectDropdown]: null,
           [FormFieldType.Numeric]: null,
           [FormFieldType.Password]: null,
@@ -639,6 +659,7 @@ describe('observation entities', function () {
           [FormFieldType.Dropdown]: choices[1].title,
           [FormFieldType.Email]: 'mage1@test.mage',
           [FormFieldType.Geometry]: { type: 'Point', coordinates: [106, 38] },
+          [FormFieldType.Hidden]: `¯\_(ツ)_/¯`,
           [FormFieldType.MultiSelectDropdown]: [choices[0].title, choices[1].title],
           [FormFieldType.Numeric]: Number.MAX_SAFE_INTEGER,
           [FormFieldType.Password]: `m@g3i5th3b3$t`,
@@ -676,7 +697,8 @@ describe('observation entities', function () {
         expect(invalid.formEntryErrors.length).to.equal(1)
         const formEntryError = new Map(invalid.formEntryErrors).get(0)
         expect(formEntryError).to.exist
-        expect(formEntryError?.fieldErrors).to.have.keys(form.fields.filter(x => x.name !== FormFieldType.Attachment).map(x => x.name))
+        const invalidFieldsExceptHidden = form.fields.filter(x => x.type !== FormFieldType.Hidden).map(x => x.name)
+        expect(formEntryError?.fieldErrors).to.have.keys(invalidFieldsExceptHidden)
 
         observationAttrs.properties.forms = [validFormEntry]
         observationAttrs.attachments = [attachment]

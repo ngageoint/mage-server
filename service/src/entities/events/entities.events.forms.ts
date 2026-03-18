@@ -207,6 +207,7 @@ export enum FormFieldType {
   Dropdown = 'dropdown',
   Email = 'email',
   Geometry = 'geometry',
+  Hidden = 'hidden',
   MultiSelectDropdown = 'multiselectdropdown',
   Numeric = 'numberfield',
   Password = 'password',

@@ -390,6 +390,7 @@ export class FeatureServiceAdmin {
 				break;
 			case FormFieldType.Geometry:
 			case FormFieldType.Attachment:
+			case FormFieldType.Hidden:
 			default:
 				break;
 		}

@@ -26,7 +26,7 @@ const FieldSchema = new Schema({
   id: { type: Number, required: true },
   archived: { type: Boolean, required: false },
   title: { type: String, required: true },
-  type: { type: String, required: true, enum: ['attachment', 'textfield', 'numberfield', 'email', 'password', 'radio', 'dropdown', 'multiselectdropdown', 'date', 'geometry', 'textarea', 'checkbox'] },
+  type: { type: String, required: true, enum: ['attachment', 'textfield', 'numberfield', 'email', 'password', 'radio', 'dropdown', 'multiselectdropdown', 'date', 'geometry', 'textarea', 'checkbox', 'hidden'] },
   value: { type: Schema.Types.Mixed, required: false },
   name: { type: String, required: true },
   required: { type: Boolean, required: true },
