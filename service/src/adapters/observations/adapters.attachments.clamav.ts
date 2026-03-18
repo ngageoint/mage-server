@@ -1,157 +1,126 @@
-import { Readable, PassThrough } from 'stream'
-import net from 'net'
+import { Readable, PassThrough } from 'stream';
+import net from 'net';
 
-const CLAMAV_HOST = process.env.CLAMAV_HOST || 'localhost'
-const CLAMAV_PORT = Number(process.env.CLAMAV_PORT) || 3310
-const CLAMAV_TIMEOUT_MS = 60_000
+const CLAMAV_HOST = process.env.CLAMAV_HOST || 'localhost';
+const CLAMAV_PORT = Number(process.env.CLAMAV_PORT) || 3310;
+const CLAMAV_TIMEOUT_MS = 60_000;
 
 export type AttachmentScanResult = {
-  status: 'clean' | 'infected' | 'scan_error'
-  stream?: Readable
-  error?: string
-}
+  status: 'clean' | 'infected' | 'scan_error';
+  error?: string;
+};
 
+// <-- FIXED: Only resolve, never reject, to avoid frontend hang
 export async function scanAttachmentWithClamAV(
   inputStream: Readable
 ): Promise<AttachmentScanResult> {
-
-  return new Promise((resolve, reject) => {
-    let settled = false
-    const writeQueue: Buffer[] = []
-
-    const tee = new PassThrough()
-    const gatedStream = new PassThrough()
-    gatedStream.pause()
-
-    // Prevent unhandled 'error' events on the gated stream
-    gatedStream.on('error', (err) => {
-      if (!settled) {
-        settled = true
-        reject(err)
-      }
-    })
-
-    const clam = net.createConnection({ host: CLAMAV_HOST, port: CLAMAV_PORT })
+  return new Promise((resolve) => {
+    let settled = false;
+    const writeQueue: Buffer[] = [];
+    const tee = new PassThrough();
+    const clam = net.createConnection({ host: CLAMAV_HOST, port: CLAMAV_PORT });
 
     const fail = (err: Error): void => {
-      if (settled) return
-      settled = true
-      inputStream.destroy(err)
-      tee.destroy(err)
-      gatedStream.destroy(err)
-      clam.destroy()
-      reject(err)
-    }
+      if (settled) return;
+      settled = true;
+      console.error('[CLAMAV] Scan failed:', err.message);
+      inputStream.destroy(err);
+      tee.destroy(err);
+      clam.destroy();
+      resolve({ status: 'scan_error', error: err.message });
+    };
 
-    // pipe input to tee
-    inputStream.pipe(tee)
-    inputStream.on('error', (err) => fail(new Error(`Input stream error: ${err.message}`)))
-    tee.on('error', (err) => fail(new Error(`Tee stream error: ${err.message}`)))
+    inputStream.pipe(tee);
+    inputStream.on('error', (err) => fail(new Error(`Input stream error: ${err.message}`)));
+    tee.on('error', (err) => fail(new Error(`Tee stream error: ${err.message}`)));
 
-    let clamReady = false
+    let clamReady = false;
 
     clam.on('connect', () => {
-      clamReady = true
+      clamReady = true;
+      console.log('[CLAMAV] Connected, sending zINSTREAM command');
+      clam.write('zINSTREAM\0');
 
-      clam.write('zINSTREAM\0')
-
-      // flush queued chunks
       for (const chunk of writeQueue) {
-        const size = Buffer.alloc(4)
-        size.writeUInt32BE(chunk.length, 0)
-        clam.write(size)
-        clam.write(chunk)
+        const size = Buffer.alloc(4);
+        size.writeUInt32BE(chunk.length, 0);
+        clam.write(size);
+        clam.write(chunk);
+        console.log(`[CLAMAV] Sent queued chunk of ${chunk.length} bytes`);
       }
-      writeQueue.length = 0
-    })
+      writeQueue.length = 0;
+    });
 
-    clam.on('error', (err) => fail(new Error(`Failed to connect to ClamAV: ${err.message}`)))
+    clam.on('error', (err) => fail(new Error(`Failed to connect to ClamAV: ${err.message}`)));
 
-    // send chunks to ClamAV
     tee.on('data', (chunk: Buffer) => {
-      if (settled) return
+      if (settled) return;
       if (clamReady) {
-        const size = Buffer.alloc(4)
-        size.writeUInt32BE(chunk.length, 0)
-        clam.write(size)
-        clam.write(chunk)
+        const size = Buffer.alloc(4);
+        size.writeUInt32BE(chunk.length, 0);
+        clam.write(size);
+        clam.write(chunk);
+        console.log(`[CLAMAV] Sent chunk of ${chunk.length} bytes`);
       } else {
-        writeQueue.push(chunk)
+        writeQueue.push(chunk);
+        console.log(`[CLAMAV] Queued chunk of ${chunk.length} bytes until connection ready`);
       }
-    })
+    });
 
-    // end ClamAV after all data sent
+    const sendEndMarker = (): void => {
+      if (settled) return;
+      const zero = Buffer.alloc(4);
+      zero.writeUInt32BE(0, 0);
+      clam.write(zero);
+      clam.end();
+      console.log('[CLAMAV] Sent zero-length end marker');
+    };
+
     tee.on('end', () => {
-      if (settled) return
-      const sendEnd = (): void => {
-        const zero = Buffer.alloc(4)
-        zero.writeUInt32BE(0, 0)
-        clam.write(zero)
-        clam.end()
-      }
-      if (clamReady) sendEnd()
+      if (settled) return;
+      if (clamReady) sendEndMarker();
       else {
         const interval = setInterval(() => {
           if (clamReady) {
-            clearInterval(interval)
-            sendEnd()
+            clearInterval(interval);
+            sendEndMarker();
           }
-        }, 10)
+        }, 10);
       }
-    })
+    });
 
-    // ClamAV response
-    let response = ''
+    let response = '';
     clam.on('data', (chunk) => {
-      response += chunk.toString()
-    })
+      response += chunk.toString();
+    });
 
     clam.on('end', () => {
-      if (settled) return
-      settled = true
+      if (settled) return;
+      settled = true;
+      console.log('[CLAMAV] Connection ended, response:', response.trim());
 
-      // ----------------------
-      // CLEAN FILE
-      // ----------------------
       if (response.includes('OK')) {
-        tee.pipe(gatedStream)
-        gatedStream.resume()
-
-        return resolve({
-          status: 'clean',
-          stream: gatedStream
-        })
+        return resolve({ status: 'clean' });
       }
 
-      // ----------------------
-      // VIRUS FOUND
-      // ----------------------
       if (response.includes('FOUND')) {
-        gatedStream.destroy()
-        tee.destroy()
-
+        console.warn('[CLAMAV] Virus detected!');
         return resolve({
           status: 'infected',
-          error: 'ClamAV detected a virus in uploaded file'
-        })
+          error: 'ClamAV detected a virus in uploaded file',
+        });
       }
 
-      // ----------------------
-      // UNKNOWN SCAN ERROR
-      // ----------------------
-      gatedStream.destroy()
-      tee.destroy()
-
+      console.error('[CLAMAV] Unexpected scan response');
       return resolve({
         status: 'scan_error',
-        error: `ClamAV scan failed: ${response.trim()}`
-      })
-    })
+        error: `ClamAV scan failed: ${response.trim()}`,
+      });
+    });
 
-    // timeout
-    const timeout = setTimeout(() => fail(new Error('ClamAV scan timed out')), CLAMAV_TIMEOUT_MS)
-    const clearTimers = (): void => clearTimeout(timeout)
-    clam.on('end', clearTimers)
-    clam.on('error', clearTimers)
-  })
+    const timeout = setTimeout(() => fail(new Error('ClamAV scan timed out')), CLAMAV_TIMEOUT_MS);
+    const clearTimers = (): void => clearTimeout(timeout);
+    clam.on('end', clearTimers);
+    clam.on('error', clearTimers);
+  });
 }

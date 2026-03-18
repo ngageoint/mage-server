@@ -60,6 +60,133 @@ export type EnsureEventScope = (
 ) => Promise<null | { mageEvent: MageEvent; observationRepository: EventScopedObservationRepository }>
 
 // ----------------------
+// Helpers for File Upload
+// ----------------------
+async function readStreamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+  const chunks: Buffer[] = []
+  for await (const chunk of stream) chunks.push(chunk as Buffer)
+  return Buffer.concat(chunks)
+}
+
+async function scanFileIfNeeded(
+  buffer: Buffer,
+  filename: string,
+  req: express.Request,
+  createAppRequest: ObservationWebAppRequestFactory,
+  app: ObservationAppLayer,
+  uploadErrors: any[]
+): Promise<Buffer | null> {
+  if (!process.env.CLAM_AV_URL) return buffer
+
+  try {
+    const result = await scanAttachmentWithClamAV(Readable.from(buffer))
+    console.log(`[CLAMAV] response for ${filename}: ${JSON.stringify(result)}`)
+
+    if (result.status === 'clean') return buffer
+
+    uploadErrors.push({
+      file: filename,
+      error: result.error || 'File rejected by ClamAV'
+    })
+    console.warn(`[CLAMAV] scan failed for ${filename}: ${result.error || result.status}`)
+    return null
+  } catch (err) {
+    uploadErrors.push({
+      file: filename,
+      error: 'Virus scanning server unavailable'
+    })
+    console.error(`[CLAMAV] scanning error for ${filename}:`, err)
+    return null
+  }
+}
+
+async function storeAttachment(
+  buffer: Buffer,
+  info: busboy.FileInfo,
+  req: express.Request,
+  createAppRequest: ObservationWebAppRequestFactory,
+  app: ObservationAppLayer,
+  attachmentsJson: any[],
+  uploadErrors: any[]
+) {
+  const { observationId, attachmentId } = req.params
+  const content: ExoIncomingAttachmentContent = {
+    bytes: Readable.from(buffer),
+    mediaType: info.mimeType,
+    name: info.filename
+  }
+
+  const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
+  const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
+
+  try {
+    const appRes = await app.storeAttachmentContent(appReq)
+    if (appRes.success) {
+      const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
+      attachmentsJson.push(jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`))
+      console.log(`[STORE] Stored attachment: ${info.filename}`)
+    } else if (appRes.error) {
+      uploadErrors.push({ file: info.filename, error: appRes.error })
+      console.warn(`[STORE] Failed to store attachment ${info.filename}: ${appRes.error}`)
+    }
+  } catch (err) {
+    uploadErrors.push({ file: info.filename, error: err instanceof Error ? err.message : String(err) })
+  }
+}
+
+async function handleFileUpload(
+  fieldName: string,
+  fileStream: NodeJS.ReadableStream,
+  info: busboy.FileInfo,
+  req: express.Request,
+  createAppRequest: ObservationWebAppRequestFactory,
+  app: ObservationAppLayer,
+  attachmentsJson: any[],
+  uploadErrors: any[]
+) {
+  try {
+    if (fieldName !== 'attachment') {
+      fileStream.resume()
+      uploadErrors.push({ file: info.filename, error: "request must contain only file parts named 'attachment'" })
+      return
+    }
+
+    const originalBuffer = await readStreamToBuffer(fileStream)
+
+    const finalBuffer = await scanFileIfNeeded(
+      originalBuffer,
+      info.filename,
+      req,
+      createAppRequest,
+      app,
+      uploadErrors
+    )
+
+    if (!finalBuffer) {
+      attachmentsJson.push({
+        name: info.filename,
+        rejected: true,
+        error: uploadErrors.find(e => e.file === info.filename)?.error || 'Rejected by ClamAV'
+      })
+      console.log(`[REJECT] File ${info.filename} rejected by ClamAV, skipping storage`)
+      return
+    }
+
+    await storeAttachment(
+      finalBuffer,
+      info,
+      req,
+      createAppRequest,
+      app,
+      attachmentsJson,
+      uploadErrors
+    )
+  } catch (err) {
+    uploadErrors.push({ file: info.filename, error: err instanceof Error ? err.message : String(err) })
+  }
+}
+
+// ----------------------
 // Main Router
 // ----------------------
 export function ObservationRoutes(
@@ -69,9 +196,7 @@ export function ObservationRoutes(
 ): express.Router {
   const routes = express.Router()
 
-  // --------------------------------------
-  // Allocate Observation ID route
-  // --------------------------------------
+  // Allocate Observation ID
   routes.route('/id').post(async (req, res, next) => {
     try {
       const appReq = createAppRequest(req)
@@ -91,12 +216,10 @@ export function ObservationRoutes(
     }
   })
 
-  // --------------------------------------
-  // Attachment upload / download / delete
-  // --------------------------------------
+  // Attachment Routes
   routes
     .route('/:observationId/attachments/:attachmentId')
-    .put(async (req, res, next) => {
+    .put((req, res, next) => {
       try {
         const bb = busboy({ headers: req.headers, limits: { files: 10, fields: 0 } })
         const uploadErrors: any[] = []
@@ -104,97 +227,25 @@ export function ObservationRoutes(
         const filePromises: Promise<void>[] = []
 
         bb.on('file', (fieldName, fileStream, info) => {
-        
-          const filePromise = (async () => {
-            if (fieldName !== 'attachment') {
-              fileStream.resume()
-              uploadErrors.push({
-                file: info.filename,
-                error: "request must contain only file parts named 'attachment'"
-              })
-              return
-            }
-        
-            try {
-              const chunks: Buffer[] = []
-              for await (const chunk of fileStream) chunks.push(chunk as Buffer)
-              const originalBuffer = Buffer.concat(chunks)
-              let finalBuffer = originalBuffer
-        
-              // ClamAV scan
-              if (process.env.CLAM_AV_URL) {
-                const maxRetries = 3
-                let attempt = 0
-                let scanSuccess = false
-                let scanErrorMsg = ''
-                let scannedBuffer: Buffer | null = null
-        
-                while (attempt < maxRetries && !scanSuccess) {
-                  attempt++
-                  try {
-                    const scannedResult = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
-                    if (scannedResult.status === 'clean' && scannedResult.stream) {
-                      const scannedChunks: Buffer[] = []
-                      for await (const chunk of scannedResult.stream) scannedChunks.push(chunk as Buffer)
-                      scannedBuffer = Buffer.concat(scannedChunks)
-                      scanSuccess = true
-                    } else {
-                      scanErrorMsg = scannedResult.error || 'File rejected by ClamAV'
-                    }
-                  } catch (err) {
-                    scanErrorMsg = 'Virus scanning server unavailable'
-                  }
-                  if (!scanSuccess && attempt < maxRetries) await new Promise(r => setTimeout(r, 500))
-                }
-        
-                if (!scanSuccess) {
-                  fileStream.resume()
-                  uploadErrors.push({ file: info.filename, error: scanErrorMsg })
-                  return
-                }
-        
-                if (scannedBuffer) finalBuffer = scannedBuffer
-              }
-        
-              // Store attachment
-              const { observationId, attachmentId } = req.params
-              const content: ExoIncomingAttachmentContent = {
-                bytes: Readable.from(finalBuffer),
-                mediaType: info.mimeType,
-                name: info.filename
-              }
-        
-              const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
-              const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
-              const appRes = await app.storeAttachmentContent(appReq)
-        
-              if (appRes.success) {
-                const attachment = appRes.success.attachments.find(x => x.id === appReq.attachmentId)!
-                attachmentsJson.push(jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`))
-              } else if (appRes.error) {
-                uploadErrors.push({ file: info.filename, error: appRes.error })
-              }
-            } catch (err) {
-              uploadErrors.push({ file: info.filename, error: err })
-            }
-          })()
-        
-          filePromises.push(filePromise)
+          const p = handleFileUpload(fieldName, fileStream, info, req, createAppRequest, app, attachmentsJson, uploadErrors)
+          filePromises.push(p.catch(err => console.error('[UPLOAD] handleFileUpload error:', err)))
         })
 
-        bb.on('field', (name) => {
-          uploadErrors.push({ field: name, error: 'Unexpected form field' })
-        })
-        bb.on('filesLimit', () => { uploadErrors.push({ error: 'Too many files' }) })
-        bb.on('fieldsLimit', () => { uploadErrors.push({ error: 'Too many fields' }) })
-        bb.on('error', (err) => { uploadErrors.push({ error: err }) })
+        bb.on('field', (name) => uploadErrors.push({ field: name, error: 'Unexpected form field' }))
+        bb.on('filesLimit', () => uploadErrors.push({ error: 'Too many files' }))
+        bb.on('fieldsLimit', () => uploadErrors.push({ error: 'Too many fields' }))
+        bb.on('error', (err) => uploadErrors.push({ error: err instanceof Error ? err.message : String(err) }))
 
         bb.on('finish', async () => {
-          if (filePromises.length > 0) await Promise.all(filePromises)
-        
-          const statusCode = attachmentsJson.length > 0 ? 200 : 400
-          return res.status(statusCode).json({
-            successes: attachmentsJson,
+          try {
+            await Promise.all(filePromises)
+          } catch (err) {
+            console.error('[UPLOAD] Unexpected filePromises error:', err)
+          }
+
+          // Always respond with 200 to avoid front-end hanging
+          return res.status(200).json({
+            successes: attachmentsJson.filter(a => !a.rejected),
             failures: uploadErrors
           })
         })
@@ -220,8 +271,7 @@ export function ObservationRoutes(
           observationId: req.params.observationId,
           attachmentId: req.params.attachmentId,
           minDimension,
-          contentRange:
-            contentRange.length === 2 ? { start: contentRange[0], end: contentRange[1] } : undefined
+          contentRange: contentRange.length === 2 ? { start: contentRange[0], end: contentRange[1] } : undefined
         })
         const appRes = await app.readAttachmentContent(appReq)
         if (appRes.error) return next(appRes.error)
@@ -233,17 +283,11 @@ export function ObservationRoutes(
         const headers: any = { 'content-type': String(content.attachment.contentType) }
 
         if (content.attachment.size && content.attachment.size > 0) {
-          headers['content-length'] = String(
-            bytesRange
-              ? bytesRange.end - bytesRange.start + 1
-              : content.attachment.size
-          )
+          headers['content-length'] = String(bytesRange ? bytesRange.end - bytesRange.start + 1 : content.attachment.size)
         }
 
         if (bytesRange) {
-          headers['content-range'] = `bytes ${bytesRange.start}-${bytesRange.end}/${
-            content.attachment.size || '*'
-          }`
+          headers['content-range'] = `bytes ${bytesRange.start}-${bytesRange.end}/${content.attachment.size || '*'}`
         }
 
         return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
@@ -251,22 +295,16 @@ export function ObservationRoutes(
         next(err)
       }
     })
-    .delete(async (req, res) => {
-      res.sendStatus(204)
-    })
+    .delete(async (req, res) => res.sendStatus(204))
 
-  // --------------------------------------
   // Update Observation
-  // --------------------------------------
   routes.route('/:observationId').put(async (req, res, next) => {
     try {
       const body = req.body
       const observationId = req.params.observationId
 
       if (Object.prototype.hasOwnProperty.call(body, 'id') && body.id !== observationId) {
-        return res
-          .status(400)
-          .json({ message: 'Body observation ID does not match path observation ID' })
+        return res.status(400).json({ message: 'Body observation ID does not match path observation ID' })
       }
 
       const mod = exoObservationModFromJson({ ...body, id: observationId })
@@ -274,10 +312,7 @@ export function ObservationRoutes(
 
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
 
-      if (
-        Object.prototype.hasOwnProperty.call(body, 'eventId') &&
-        body.eventId !== appReq.context.mageEvent.id
-      ) {
+      if (Object.prototype.hasOwnProperty.call(body, 'eventId') && body.eventId !== appReq.context.mageEvent.id) {
         return res.status(400).json({ message: 'Body event ID does not match path event ID' })
       }
 
@@ -318,9 +353,6 @@ export function jsonForAttachment(a: ExoAttachment, observationUrl: string): Web
   return { ...a, url: a.contentStored ? `${observationUrl}/attachments/${a.id}` : void 0 }
 }
 
-// ----------------------
-// Helper: construct base URL
-// ----------------------
 function qualifiedBaseUrl(req: express.Request): string {
   return req.getRoot() + req.baseUrl
 }
