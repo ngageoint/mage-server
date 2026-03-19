@@ -41,163 +41,127 @@ export class AttachUploadComponent implements OnChanges {
   constructor(private changeDetector: ChangeDetectorRef, private attachmentService: AttachmentService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges triggered', changes);
-
-    // Handle attachment changes
+    // Handle attachment previews
     if (changes.attachment && this.attachment) {
-      console.log('Attachment changed:', this.attachment);
-
       if (this.attachment.file.type.match('image')) {
-        console.log('Image file detected');
         this.preview = PreviewType.LOADING;
         this.previewImage(this.attachment)
-          .then(() => { 
-            console.log('Image preview loaded successfully');
-            this.preview = PreviewType.IMAGE; 
-          })
-          .catch(() => {
-            console.error('Image preview failed');
-            this.preview = PreviewType.UNKNOWN;
-          });
+          .then(() => this.preview = PreviewType.IMAGE)
+          .catch(() => this.preview = PreviewType.UNKNOWN);
       } else if (this.attachment.file.type.match('video')) {
-        console.log('Video file detected');
         this.preview = PreviewType.LOADING;
         this.previewVideo(this.attachment)
-          .then(() => { 
-            console.log('Video preview loaded successfully');
-            this.preview = PreviewType.VIDEO; 
-          })
-          .catch(() => {
-            console.error('Video preview failed');
-            this.preview = PreviewType.UNKNOWN;
-          });
+          .then(() => this.preview = PreviewType.VIDEO)
+          .catch(() => this.preview = PreviewType.UNKNOWN);
       } else if (this.attachment.file.type.match('audio')) {
-        console.log('Audio file detected');
         this.preview = PreviewType.AUDIO;
       } else {
-        console.log('Unknown file type detected');
         this.preview = PreviewType.UNKNOWN;
       }
     }
 
-    // Start upload if URL changes
+    // Start upload automatically if URL is set
     if (changes.url && changes.url.currentValue) {
-      console.log('Starting upload for URL:', this.url);
       this.startUpload();
     }
   }
 
   removeAttachment(id: number): void {
-    console.log('Removing attachment with ID:', id);
     this.remove.emit({ id: id });
   }
 
-  // Preview image before upload
+  // Image preview
   previewImage(info: FileUpload): Promise<void> {
-    console.log('Generating image preview for:', info.file.name);
     return new Promise(resolve => {
       const reader = new FileReader();
-
-      reader.onload = (e: Event): void => {
-        const target = e.target as FileReader;
-        info.preview = target.result as string;
-        console.log('Image preview loaded:', info.preview);
+      reader.onload = (e: Event) => {
+        info.preview = (e.target as FileReader).result as string;
         this.changeDetector.detectChanges();
         resolve();
       };
-
       reader.readAsDataURL(info.file);
     });
   }
 
-  // Preview video before upload
+  // Video preview
   previewVideo(info: FileUpload): Promise<void> {
-    console.log('Generating video preview for:', info.file.name);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
-      reader.onload = (): void => {
+      reader.onload = () => {
         const result = reader.result as ArrayBuffer | null;
-        if (result !== null) {
+        if (result) {
           const blob = new Blob([result], { type: info.file.type });
           const url = URL.createObjectURL(blob);
-          const video: HTMLVideoElement = document.createElement('video');
+          const video = document.createElement('video');
 
           video.addEventListener('loadeddata', () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            if (ctx) { 
+            if (ctx) {
               canvas.width = video.videoWidth;
               canvas.height = video.videoHeight;
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const image = canvas.toDataURL();
-              info.preview = image;
+              info.preview = canvas.toDataURL();
               URL.revokeObjectURL(url);
               this.changeDetector.detectChanges();
-              console.log('Video preview loaded:', image);
               resolve();
-            } else {
-              console.error('Failed to get 2d context from canvas');
-              reject();
-            }
+            } else reject();
           });
 
-          video.addEventListener('error', () => {
-            console.error('Video preview failed');
-            this.changeDetector.detectChanges();
-            reject();
-          });
-
+          video.addEventListener('error', () => reject());
           video.preload = 'metadata';
           video.src = url;
           video.muted = true;
           video.play();
-        } else {
-          console.error('Failed to read file as ArrayBuffer');
-          reject();
-        }
+        } else reject();
       };
-
       reader.readAsArrayBuffer(info.file);
     });
   }
 
-  // Start file upload
+  // Start upload and handle ClamAV rejections
   startUpload(): void {
-    console.log('Uploading attachment:', this.attachment);
     if (!this.attachment || !this.url) return;
-
-    this.attachmentService.upload(this.attachment, this.url).subscribe((response: HttpEvent<Object>) => {
-      console.log('Upload response received:', response);
-
-      if (response.type === HttpEventType.Response) {
-        this.attachment.uploading = false;
-        if (response.status === 200) {
-          console.log('Upload successful');
-          this.upload.emit({
-            id: this.attachment.id,
-            response: response as HttpResponseBase, // Handle generic HttpEvent here
-          });
-          alert(`File uploaded successfully: ${this.attachment.name}`);
-        } else {
-          console.error('Upload failed with status:', response.status);
-          this.error.emit({ id: this.attachment.id });
-          alert(`File upload failed: ${this.attachment.name}`);
-        }
-      } else if (response.type === HttpEventType.UploadProgress) {
-        this.attachment.uploading = true;
-        if (response.total) {
+  
+    this.attachmentService.upload(this.attachment, this.url).subscribe({
+      next: (response: HttpEvent<Object>) => {
+        if (response.type === HttpEventType.UploadProgress && response.total) {
+          this.attachment.uploading = true;
           this.attachment.uploadProgress = Math.round(100 * response.loaded / response.total);
-          console.log(`Upload progress: ${this.attachment.uploadProgress}%`);
-        } else {
-          console.warn('Upload progress total is not available');
-          this.attachment.uploadProgress = 0;
         }
+  
+        if (response.type === HttpEventType.Response) {
+          this.attachment.uploading = false;
+  
+          // Cast to HttpResponse<any> to access `body`
+          const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
+          const body = httpResponse.body;
+  
+          // Check for ClamAV rejection
+          if (body?.status === 'infected') {
+            console.error('ClamAV rejected file:', this.attachment.name);
+            this.error.emit({ id: this.attachment.id });
+  
+            // Display rejection alert
+            alert(`File rejected by ClamAV: ${this.attachment.name}`);
+            return; // Prevent success alert if rejected
+          }
+  
+          // Handle successful upload
+          if (httpResponse.status === 200) {
+            this.upload.emit({ id: this.attachment.id, response: httpResponse });
+            alert(`File uploaded successfully: ${this.attachment.name}`);
+          } else {
+            this.error.emit({ id: this.attachment.id });
+            alert(`File upload failed: ${this.attachment.name}`);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Upload error:', err);
+        this.error.emit({ id: this.attachment.id });
+        alert(`Upload failed due to error: ${err.message}`);
       }
-    }, (err) => {
-      console.error('Upload error:', err);
-      this.error.emit({ id: this.attachment.id });
-      alert(`Upload failed due to error: ${err.message}`);
     });
   }
 }
