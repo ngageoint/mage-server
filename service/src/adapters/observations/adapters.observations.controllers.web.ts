@@ -242,11 +242,11 @@ export function ObservationRoutes(
           } catch (err) {
             console.error('[UPLOAD] Unexpected filePromises error:', err)
           }
-
-          // Always respond with 200 to avoid front-end hanging
+          // Success/Failure msg format
           return res.status(200).json({
             successes: attachmentsJson.filter(a => !a.rejected),
-            failures: uploadErrors
+            failures: uploadErrors,
+            message: uploadErrors.length > 0 ? 'Some files failed to upload due to scanning errors.' : 'All files uploaded successfully.'
           })
         })
 

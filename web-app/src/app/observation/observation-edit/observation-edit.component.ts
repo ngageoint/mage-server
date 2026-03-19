@@ -538,11 +538,14 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   private onAttachmentUpload(event: AttachmentUploadEvent): void {
     switch (event.status) {
       case AttachmentUploadStatus.COMPLETE: {
+        // Success message
+        this.snackBar.open('Upload Complete!', null, { duration: 3000 });
+  
         this.eventService.addAttachmentToObservation(
           this.observation,
           event.response
         );
-
+  
         this.uploads = this.uploads.filter(
           (attachment) => attachment.id !== event.upload.attachmentId
         );
@@ -550,12 +553,13 @@ export class ObservationEditComponent implements OnInit, OnChanges {
           this.saving = false;
           this.close.emit(this.observation);
         }
-
+  
         break;
       }
       case AttachmentUploadStatus.ERROR: {
-        this.snackBar.open(event.response?.error, null, { duration: 4000 });
-
+        // Error message
+        this.snackBar.open(`Error: ${event.response?.error}`, null, { duration: 4000 });
+  
         const formArray = this.formGroup
           .get("properties")
           .get("forms") as UntypedFormArray;
@@ -576,7 +580,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
             }
           });
         });
-
+  
         this.saving = false;
         break;
       }
