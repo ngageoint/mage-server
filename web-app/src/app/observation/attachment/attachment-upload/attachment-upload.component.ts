@@ -28,7 +28,7 @@ enum PreviewType {
 export class AttachUploadComponent implements OnChanges {
   @Input() attachment: FileUpload;
   @Input() url: string;
-  @Input() attachments: FileUpload[]; // For multi-file uploads
+  @Input() attachments: FileUpload[]; // for multi-file
 
   @Output() remove = new EventEmitter<{ id: number | string }>();
   @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>();
@@ -124,12 +124,13 @@ export class AttachUploadComponent implements OnChanges {
     });
   }
 
-  // Custom toast
-  private showToast(message: string, type: 'success' | 'error' = 'success') {
+  // Toast handler for multi-line messages
+  private showToast(messages: string[], type: 'success' | 'error' = 'success', offset = 0) {
     const toast = document.createElement('div');
-    toast.innerText = message;
-  
+    toast.innerHTML = messages.join('<br>');
+
     toast.style.position = 'fixed';
+    toast.style.top = `${20 + offset}px`;
     toast.style.right = '20px';
     toast.style.padding = '10px 16px';
     toast.style.borderRadius = '4px';
@@ -137,20 +138,18 @@ export class AttachUploadComponent implements OnChanges {
     toast.style.zIndex = '9999';
     toast.style.fontSize = '14px';
     toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
-  
-    // Position to stack: success on top, errors underneath
-    const existingToasts = Array.from(document.body.querySelectorAll('.toast')) as HTMLDivElement[];
-    toast.classList.add('toast');
-    toast.style.top = `${20 + existingToasts.length * 60}px`; // 60px spacing between toasts
-  
+    toast.style.maxWidth = '300px';
+    toast.style.wordBreak = 'break-word';
+    toast.style.whiteSpace = 'pre-line';
+
     document.body.appendChild(toast);
-  
+
     setTimeout(() => {
       document.body.removeChild(toast);
     }, 5000);
   }
 
-  // Single-file upload
+  // Single file upload
   startUpload(): void {
     if (!this.attachment || !this.url) return;
 
@@ -170,45 +169,47 @@ export class AttachUploadComponent implements OnChanges {
         if (response.type === HttpEventType.Response) {
           const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
           const body = httpResponse.body;
+
           console.log(`[UPLOAD RESPONSE] Response body: ${JSON.stringify(body)}`);
 
           if (body?.failures?.length > 0) {
             const failure = body.failures[0];
             console.error(`[UPLOAD ERROR] File rejected: ${this.attachment.name} - Error: ${failure.error}`);
             console.log(`[UPLOAD ERROR] Failure details:`, failure);
+
             this.error.emit({ id: this.attachment.id });
-            this.showToast(`File rejected: ${this.attachment.name} - ${failure.error}`, 'error');
+            this.showToast([`Failed: ${this.attachment.name} - ${failure.error}`], 'error', 40);
             return;
           }
 
           if (httpResponse.status === 200) {
             console.log(`[UPLOAD SUCCESS] File uploaded successfully: ${this.attachment.name}`);
-            this.showToast(`Upload Success: ${this.attachment.name}`, 'success');
             this.upload.emit({ id: this.attachment.id, response: httpResponse });
+            this.showToast([`Success: ${this.attachment.name}`], 'success', 0);
           } else {
             console.error(`[UPLOAD ERROR] File upload failed: ${this.attachment.name}`);
             this.error.emit({ id: this.attachment.id });
-            this.showToast(`Upload failed: ${this.attachment.name}`, 'error');
+            this.showToast([`Failed: ${this.attachment.name}`], 'error', 40);
           }
         }
       },
       error: (err) => {
         console.error(`[UPLOAD ERROR] Upload error for file: ${this.attachment.name}, Error: ${err.message}`);
         this.error.emit({ id: this.attachment.id });
-        this.showToast(`Upload failed due to error: ${err.message}`, 'error');
+        this.showToast([`Failed: ${this.attachment.name} - ${err.message}`], 'error', 40);
       }
     });
   }
 
-  // Multi-file upload with combined toasts
+  // Multi-file upload
   startMultiUpload(): void {
-    if (!this.attachments || !this.url || this.attachments.length === 0) return;
+    if (!this.attachments || !this.url) return;
 
-    const successes: string[] = [];
-    const failures: string[] = [];
+    const successFiles: string[] = [];
+    const failureFiles: string[] = [];
 
-    this.attachments.forEach((file) => {
-      this.attachmentService.upload(file, this.url).subscribe({
+    this.attachments.forEach(att => {
+      this.attachmentService.upload(att, this.url).subscribe({
         next: (response: HttpEvent<Object>) => {
           if (response.type === HttpEventType.Response) {
             const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
@@ -216,39 +217,31 @@ export class AttachUploadComponent implements OnChanges {
 
             if (body?.failures?.length > 0) {
               const failure = body.failures[0];
-              failures.push(`${file.name} (${failure.error})`);
-              this.error.emit({ id: file.id });
+              failureFiles.push(`${att.name} - ${failure.error}`);
+              this.error.emit({ id: att.id });
             } else if (httpResponse.status === 200) {
-              successes.push(file.name);
-              this.upload.emit({ id: file.id, response: httpResponse });
+              successFiles.push(att.name);
+              this.upload.emit({ id: att.id, response: httpResponse });
             } else {
-              failures.push(`${file.name} (status ${httpResponse.status})`);
-              this.error.emit({ id: file.id });
+              failureFiles.push(att.name);
+              this.error.emit({ id: att.id });
             }
 
-            // After processing last file, show combined toasts
-            if (successes.length + failures.length === this.attachments.length) {
-              if (successes.length > 0) {
-                this.showToast(`Uploaded: ${successes.join(', ')}`, 'success');
-              }
-              if (failures.length > 0) {
-                this.showToast(`Failed: ${failures.join(', ')}`, 'error');
-              }
-            }
+            // Show toasts after processing all files
+            setTimeout(() => {
+              if (successFiles.length > 0) this.showToast(successFiles.map(f => `Success: ${f}`), 'success', 0);
+              if (failureFiles.length > 0) this.showToast(failureFiles.map(f => `Failed: ${f}`), 'error', 40);
+            }, 100); // small delay to batch multiple uploads
           }
         },
         error: (err) => {
-          failures.push(`${file.name} (${err.message})`);
-          this.error.emit({ id: file.id });
+          failureFiles.push(`${att.name} - ${err.message}`);
+          this.error.emit({ id: att.id });
 
-          if (successes.length + failures.length === this.attachments.length) {
-            if (successes.length > 0) {
-              this.showToast(`Uploaded: ${successes.join(', ')}`, 'success');
-            }
-            if (failures.length > 0) {
-              this.showToast(`Failed: ${failures.join(', ')}`, 'error');
-            }
-          }
+          setTimeout(() => {
+            if (successFiles.length > 0) this.showToast(successFiles.map(f => `Success: ${f}`), 'success', 0);
+            if (failureFiles.length > 0) this.showToast(failureFiles.map(f => `Failed: ${f}`), 'error', 40);
+          }, 100);
         }
       });
     });
