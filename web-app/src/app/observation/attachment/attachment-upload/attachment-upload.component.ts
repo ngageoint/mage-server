@@ -123,42 +123,55 @@ export class AttachUploadComponent implements OnChanges {
   startUpload(): void {
     if (!this.attachment || !this.url) return;
   
+    console.log(`[UPLOAD] Starting upload for file: ${this.attachment.name}`);
+    
+    // Log initial attachment details
+    console.log(`[UPLOAD] Attachment details:`, this.attachment);
+  
     this.attachmentService.upload(this.attachment, this.url).subscribe({
       next: (response: HttpEvent<Object>) => {
+        console.log(`[UPLOAD] Response received:`, response);
+  
         if (response.type === HttpEventType.UploadProgress && response.total) {
           this.attachment.uploading = true;
           this.attachment.uploadProgress = Math.round(100 * response.loaded / response.total);
+          console.log(`[UPLOAD PROGRESS] File: ${this.attachment.name}, Progress: ${this.attachment.uploadProgress}%`);
         }
   
         if (response.type === HttpEventType.Response) {
-          this.attachment.uploading = false;
-  
-          // Cast to HttpResponse<any> to access `body`
           const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
           const body = httpResponse.body;
   
-          // Check for ClamAV rejection
-          if (body?.status === 'infected') {
-            console.error('ClamAV rejected file:', this.attachment.name);
-            this.error.emit({ id: this.attachment.id });
+          // Log the full response body to check for any issues
+          console.log(`[UPLOAD RESPONSE] Response body: ${JSON.stringify(body)}`);
   
-            // Display rejection alert
-            alert(`File rejected by ClamAV: ${this.attachment.name}`);
-            return; // Prevent success alert if rejected
+          // Check for failures before proceeding to success check
+          if (body?.failures?.length > 0) {
+            const failure = body.failures[0];  // Assuming the first failure is enough
+            console.error(`[UPLOAD ERROR] File rejected: ${this.attachment.name} - Error: ${failure.error}`);
+            
+            // Log when the failure occurs
+            console.log(`[UPLOAD ERROR] Failure details:`, failure);
+            
+            this.error.emit({ id: this.attachment.id });
+            alert(`File rejected: ${this.attachment.name} - ${failure.error}`);
+            return; // Stop further processing if the file is rejected
           }
   
-          // Handle successful upload
+          // Proceed to success only if no failures
           if (httpResponse.status === 200) {
+            console.log(`[UPLOAD SUCCESS] File uploaded successfully: ${this.attachment.name}`);
             this.upload.emit({ id: this.attachment.id, response: httpResponse });
-            alert(`File uploaded successfully: ${this.attachment.name}`);
           } else {
+            console.error(`[UPLOAD ERROR] File upload failed: ${this.attachment.name}`);
             this.error.emit({ id: this.attachment.id });
-            alert(`File upload failed: ${this.attachment.name}`);
+            alert(`Upload failed: ${this.attachment.name}`);
           }
         }
       },
       error: (err) => {
-        console.error('Upload error:', err);
+        // Log upload errors
+        console.error(`[UPLOAD ERROR] Upload error for file: ${this.attachment.name}, Error: ${err.message}`);
         this.error.emit({ id: this.attachment.id });
         alert(`Upload failed due to error: ${err.message}`);
       }

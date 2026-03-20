@@ -10,7 +10,6 @@ export type AttachmentScanResult = {
   error?: string;
 };
 
-// <-- FIXED: Only resolve, never reject, to avoid frontend hang
 export async function scanAttachmentWithClamAV(
   inputStream: Readable
 ): Promise<AttachmentScanResult> {
@@ -98,11 +97,14 @@ export async function scanAttachmentWithClamAV(
       if (settled) return;
       settled = true;
       console.log('[CLAMAV] Connection ended, response:', response.trim());
-
+    
+      // Log the entire ClamAV response
+      console.log('[CLAMAV] Scan response:', response);
+    
       if (response.includes('OK')) {
         return resolve({ status: 'clean' });
       }
-
+    
       if (response.includes('FOUND')) {
         console.warn('[CLAMAV] Virus detected!');
         return resolve({
@@ -110,7 +112,7 @@ export async function scanAttachmentWithClamAV(
           error: 'ClamAV detected a virus in uploaded file',
         });
       }
-
+    
       console.error('[CLAMAV] Unexpected scan response');
       return resolve({
         status: 'scan_error',
