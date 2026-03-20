@@ -28,6 +28,7 @@ enum PreviewType {
 export class AttachUploadComponent implements OnChanges {
   @Input() attachment: FileUpload;
   @Input() url: string;
+  @Input() attachments: FileUpload[]; // For multi-file uploads
 
   @Output() remove = new EventEmitter<{ id: number | string }>();
   @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>();
@@ -62,7 +63,11 @@ export class AttachUploadComponent implements OnChanges {
 
     // Start upload automatically if URL is set
     if (changes.url && changes.url.currentValue) {
-      this.startUpload();
+      if (this.attachments && this.attachments.length > 1) {
+        this.startMultiUpload();
+      } else {
+        this.startUpload();
+      }
     }
   }
 
@@ -119,62 +124,133 @@ export class AttachUploadComponent implements OnChanges {
     });
   }
 
-  // Start upload and handle ClamAV rejections
+  // Custom toast
+  private showToast(message: string, type: 'success' | 'error' = 'success') {
+    const toast = document.createElement('div');
+    toast.innerText = message;
+  
+    toast.style.position = 'fixed';
+    toast.style.right = '20px';
+    toast.style.padding = '10px 16px';
+    toast.style.borderRadius = '4px';
+    toast.style.color = 'white';
+    toast.style.zIndex = '9999';
+    toast.style.fontSize = '14px';
+    toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
+  
+    // Position to stack: success on top, errors underneath
+    const existingToasts = Array.from(document.body.querySelectorAll('.toast')) as HTMLDivElement[];
+    toast.classList.add('toast');
+    toast.style.top = `${20 + existingToasts.length * 60}px`; // 60px spacing between toasts
+  
+    document.body.appendChild(toast);
+  
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 5000);
+  }
+
+  // Single-file upload
   startUpload(): void {
     if (!this.attachment || !this.url) return;
-  
+
     console.log(`[UPLOAD] Starting upload for file: ${this.attachment.name}`);
-    
-    // Log initial attachment details
     console.log(`[UPLOAD] Attachment details:`, this.attachment);
-  
+
     this.attachmentService.upload(this.attachment, this.url).subscribe({
       next: (response: HttpEvent<Object>) => {
         console.log(`[UPLOAD] Response received:`, response);
-  
+
         if (response.type === HttpEventType.UploadProgress && response.total) {
           this.attachment.uploading = true;
           this.attachment.uploadProgress = Math.round(100 * response.loaded / response.total);
           console.log(`[UPLOAD PROGRESS] File: ${this.attachment.name}, Progress: ${this.attachment.uploadProgress}%`);
         }
-  
+
         if (response.type === HttpEventType.Response) {
           const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
           const body = httpResponse.body;
-  
-          // Log the full response body to check for any issues
           console.log(`[UPLOAD RESPONSE] Response body: ${JSON.stringify(body)}`);
-  
-          // Check for failures before proceeding to success check
+
           if (body?.failures?.length > 0) {
-            const failure = body.failures[0];  // Assuming the first failure is enough
+            const failure = body.failures[0];
             console.error(`[UPLOAD ERROR] File rejected: ${this.attachment.name} - Error: ${failure.error}`);
-            
-            // Log when the failure occurs
             console.log(`[UPLOAD ERROR] Failure details:`, failure);
-            
             this.error.emit({ id: this.attachment.id });
-            alert(`File rejected: ${this.attachment.name} - ${failure.error}`);
-            return; // Stop further processing if the file is rejected
+            this.showToast(`File rejected: ${this.attachment.name} - ${failure.error}`, 'error');
+            return;
           }
-  
-          // Proceed to success only if no failures
+
           if (httpResponse.status === 200) {
             console.log(`[UPLOAD SUCCESS] File uploaded successfully: ${this.attachment.name}`);
+            this.showToast(`Upload Success: ${this.attachment.name}`, 'success');
             this.upload.emit({ id: this.attachment.id, response: httpResponse });
           } else {
             console.error(`[UPLOAD ERROR] File upload failed: ${this.attachment.name}`);
             this.error.emit({ id: this.attachment.id });
-            alert(`Upload failed: ${this.attachment.name}`);
+            this.showToast(`Upload failed: ${this.attachment.name}`, 'error');
           }
         }
       },
       error: (err) => {
-        // Log upload errors
         console.error(`[UPLOAD ERROR] Upload error for file: ${this.attachment.name}, Error: ${err.message}`);
         this.error.emit({ id: this.attachment.id });
-        alert(`Upload failed due to error: ${err.message}`);
+        this.showToast(`Upload failed due to error: ${err.message}`, 'error');
       }
+    });
+  }
+
+  // Multi-file upload with combined toasts
+  startMultiUpload(): void {
+    if (!this.attachments || !this.url || this.attachments.length === 0) return;
+
+    const successes: string[] = [];
+    const failures: string[] = [];
+
+    this.attachments.forEach((file) => {
+      this.attachmentService.upload(file, this.url).subscribe({
+        next: (response: HttpEvent<Object>) => {
+          if (response.type === HttpEventType.Response) {
+            const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
+            const body = httpResponse.body;
+
+            if (body?.failures?.length > 0) {
+              const failure = body.failures[0];
+              failures.push(`${file.name} (${failure.error})`);
+              this.error.emit({ id: file.id });
+            } else if (httpResponse.status === 200) {
+              successes.push(file.name);
+              this.upload.emit({ id: file.id, response: httpResponse });
+            } else {
+              failures.push(`${file.name} (status ${httpResponse.status})`);
+              this.error.emit({ id: file.id });
+            }
+
+            // After processing last file, show combined toasts
+            if (successes.length + failures.length === this.attachments.length) {
+              if (successes.length > 0) {
+                this.showToast(`Uploaded: ${successes.join(', ')}`, 'success');
+              }
+              if (failures.length > 0) {
+                this.showToast(`Failed: ${failures.join(', ')}`, 'error');
+              }
+            }
+          }
+        },
+        error: (err) => {
+          failures.push(`${file.name} (${err.message})`);
+          this.error.emit({ id: file.id });
+
+          if (successes.length + failures.length === this.attachments.length) {
+            if (successes.length > 0) {
+              this.showToast(`Uploaded: ${successes.join(', ')}`, 'success');
+            }
+            if (failures.length > 0) {
+              this.showToast(`Failed: ${failures.join(', ')}`, 'error');
+            }
+          }
+        }
+      });
     });
   }
 }

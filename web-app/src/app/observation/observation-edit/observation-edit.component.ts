@@ -539,7 +539,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     switch (event.status) {
       case AttachmentUploadStatus.COMPLETE: {
         // Success message
-        this.snackBar.open('Upload Complete!', null, { duration: 3000 });
+        // this.snackBar.open('Upload Complete!', null, { duration: 3000 });
   
         this.eventService.addAttachmentToObservation(
           this.observation,
@@ -558,7 +558,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       }
       case AttachmentUploadStatus.ERROR: {
         // Error message
-        this.snackBar.open(`Error: ${event.response?.error}`, null, { duration: 4000 });
+        // this.snackBar.open(`Error: ${event.response?.error}`, null, { duration: 4000 });
   
         const formArray = this.formGroup
           .get("properties")
