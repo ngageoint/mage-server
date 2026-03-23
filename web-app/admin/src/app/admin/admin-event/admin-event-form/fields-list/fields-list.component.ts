@@ -7,7 +7,6 @@ import { FieldDialogComponent, FieldDialogData } from '../form-details/field-dia
 export interface FieldType {
     name: string;
     title: string;
-    hidden?: boolean;
 }
 
 export interface AttachmentType {
