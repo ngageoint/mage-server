@@ -124,14 +124,17 @@ export class AttachUploadComponent implements OnChanges {
     });
   }
 
-  // Toast handler for multi-line messages
-  private showToast(messages: string[], type: 'success' | 'error' = 'success', offset = 0) {
+  // Toast handler: stacks dynamically
+  private showToast(messages: string[], type: 'success' | 'error' = 'success') {
+    const existingToasts = document.querySelectorAll(`.custom-toast.${type}`);
+    const offset = 20 + existingToasts.length * 40; // stack 60px apart
+
     const toast = document.createElement('div');
+    toast.className = `custom-toast ${type}`;
     toast.innerHTML = messages.join('<br>');
 
     toast.style.position = 'fixed';
-    toast.style.top = `${20 + offset}px`;
-    toast.style.right = '20px';
+    toast.style.top = `${offset}px`;
     toast.style.padding = '10px 16px';
     toast.style.borderRadius = '4px';
     toast.style.color = 'white';
@@ -141,6 +144,14 @@ export class AttachUploadComponent implements OnChanges {
     toast.style.maxWidth = '300px';
     toast.style.wordBreak = 'break-word';
     toast.style.whiteSpace = 'pre-line';
+
+    // Positioning: success = right, error = center
+    if (type === 'success') {
+      toast.style.right = '20px';
+    } else {
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+    }
 
     document.body.appendChild(toast);
 
@@ -153,50 +164,36 @@ export class AttachUploadComponent implements OnChanges {
   startUpload(): void {
     if (!this.attachment || !this.url) return;
 
-    console.log(`[UPLOAD] Starting upload for file: ${this.attachment.name}`);
-    console.log(`[UPLOAD] Attachment details:`, this.attachment);
-
     this.attachmentService.upload(this.attachment, this.url).subscribe({
       next: (response: HttpEvent<Object>) => {
-        console.log(`[UPLOAD] Response received:`, response);
-
         if (response.type === HttpEventType.UploadProgress && response.total) {
           this.attachment.uploading = true;
           this.attachment.uploadProgress = Math.round(100 * response.loaded / response.total);
-          console.log(`[UPLOAD PROGRESS] File: ${this.attachment.name}, Progress: ${this.attachment.uploadProgress}%`);
         }
 
         if (response.type === HttpEventType.Response) {
           const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
           const body = httpResponse.body;
 
-          console.log(`[UPLOAD RESPONSE] Response body: ${JSON.stringify(body)}`);
-
           if (body?.failures?.length > 0) {
             const failure = body.failures[0];
-            console.error(`[UPLOAD ERROR] File rejected: ${this.attachment.name} - Error: ${failure.error}`);
-            console.log(`[UPLOAD ERROR] Failure details:`, failure);
-
             this.error.emit({ id: this.attachment.id });
-            this.showToast([`Failed: ${this.attachment.name} - ${failure.error}`], 'error', 40);
+            this.showToast([`Upload Failed: ${this.attachment.name} - ${failure.error}`], 'error');
             return;
           }
 
           if (httpResponse.status === 200) {
-            console.log(`[UPLOAD SUCCESS] File uploaded successfully: ${this.attachment.name}`);
             this.upload.emit({ id: this.attachment.id, response: httpResponse });
-            this.showToast([`Upload Success: ${this.attachment.name}`], 'success', 0);
+            this.showToast([`Upload Success: ${this.attachment.name}`], 'success');
           } else {
-            console.error(`[UPLOAD ERROR] File upload failed: ${this.attachment.name}`);
             this.error.emit({ id: this.attachment.id });
-            this.showToast([`Upload Failed: ${this.attachment.name}`], 'error', 40);
+            this.showToast([`Upload Failed: ${this.attachment.name}`], 'error');
           }
         }
       },
       error: (err) => {
-        console.error(`[UPLOAD ERROR] Upload error for file: ${this.attachment.name}, Error: ${err.message}`);
         this.error.emit({ id: this.attachment.id });
-        this.showToast([`Failed: ${this.attachment.name} - ${err.message}`], 'error', 40);
+        this.showToast([`Upload Failed: ${this.attachment.name} - ${err.message}`], 'error');
       }
     });
   }
@@ -205,37 +202,23 @@ export class AttachUploadComponent implements OnChanges {
   startMultiUpload(): void {
     if (!this.attachments || !this.url) return;
 
-    const successFiles: string[] = [];
-    const failureFiles: string[] = [];
-    let completed = 0;
-
     this.attachments.forEach(att => {
       this.attachmentService.upload(att, this.url).subscribe({
         next: (response: HttpEvent<Object>) => {
           if (response.type === HttpEventType.Response) {
             const body = (response as any).body;
             if (body?.failures?.length) {
-              failureFiles.push(`${att.name} - ${body.failures[0].error}`);
               this.error.emit({ id: att.id });
+              this.showToast([`${att.name} - ${body.failures[0].error}`], 'error');
             } else {
-              successFiles.push(att.name);
               this.upload.emit({ id: att.id, response });
+              this.showToast([`Upload Success: ${att.name}`], 'success');
             }
-          }
-          completed++;
-          if (completed === this.attachments.length) {
-            if (successFiles.length) this.showToast([`Success:\n${successFiles.join('\n')}`], 'success', 0);
-            if (failureFiles.length) this.showToast([`Failed:\n${failureFiles.join('\n')}`], 'error', 40);
           }
         },
         error: (err) => {
-          failureFiles.push(`${att.name} - ${err.message}`);
           this.error.emit({ id: att.id });
-          completed++;
-          if (completed === this.attachments.length) {
-            if (successFiles.length) this.showToast([`Success:\n${successFiles.join('\n')}`], 'success', 0);
-            if (failureFiles.length) this.showToast([`Failed:\n${failureFiles.join('\n')}`], 'error', 40);
-          }
+          this.showToast([`${att.name} - ${err.message}`], 'error');
         }
       });
     });
