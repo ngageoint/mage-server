@@ -185,11 +185,11 @@ export class AttachUploadComponent implements OnChanges {
           if (httpResponse.status === 200) {
             console.log(`[UPLOAD SUCCESS] File uploaded successfully: ${this.attachment.name}`);
             this.upload.emit({ id: this.attachment.id, response: httpResponse });
-            this.showToast([`Success: ${this.attachment.name}`], 'success', 0);
+            this.showToast([`Upload Success: ${this.attachment.name}`], 'success', 0);
           } else {
             console.error(`[UPLOAD ERROR] File upload failed: ${this.attachment.name}`);
             this.error.emit({ id: this.attachment.id });
-            this.showToast([`Failed: ${this.attachment.name}`], 'error', 40);
+            this.showToast([`Upload Failed: ${this.attachment.name}`], 'error', 40);
           }
         }
       },
@@ -207,41 +207,35 @@ export class AttachUploadComponent implements OnChanges {
 
     const successFiles: string[] = [];
     const failureFiles: string[] = [];
+    let completed = 0;
 
     this.attachments.forEach(att => {
       this.attachmentService.upload(att, this.url).subscribe({
         next: (response: HttpEvent<Object>) => {
           if (response.type === HttpEventType.Response) {
-            const httpResponse = response as import('@angular/common/http').HttpResponse<any>;
-            const body = httpResponse.body;
-
-            if (body?.failures?.length > 0) {
-              const failure = body.failures[0];
-              failureFiles.push(`${att.name} - ${failure.error}`);
+            const body = (response as any).body;
+            if (body?.failures?.length) {
+              failureFiles.push(`${att.name} - ${body.failures[0].error}`);
               this.error.emit({ id: att.id });
-            } else if (httpResponse.status === 200) {
-              successFiles.push(att.name);
-              this.upload.emit({ id: att.id, response: httpResponse });
             } else {
-              failureFiles.push(att.name);
-              this.error.emit({ id: att.id });
+              successFiles.push(att.name);
+              this.upload.emit({ id: att.id, response });
             }
-
-            // Show toasts after processing all files
-            setTimeout(() => {
-              if (successFiles.length > 0) this.showToast(successFiles.map(f => `Success: ${f}`), 'success', 0);
-              if (failureFiles.length > 0) this.showToast(failureFiles.map(f => `Failed: ${f}`), 'error', 40);
-            }, 100); // small delay to batch multiple uploads
+          }
+          completed++;
+          if (completed === this.attachments.length) {
+            if (successFiles.length) this.showToast([`Success:\n${successFiles.join('\n')}`], 'success', 0);
+            if (failureFiles.length) this.showToast([`Failed:\n${failureFiles.join('\n')}`], 'error', 40);
           }
         },
         error: (err) => {
           failureFiles.push(`${att.name} - ${err.message}`);
           this.error.emit({ id: att.id });
-
-          setTimeout(() => {
-            if (successFiles.length > 0) this.showToast(successFiles.map(f => `Success: ${f}`), 'success', 0);
-            if (failureFiles.length > 0) this.showToast(failureFiles.map(f => `Failed: ${f}`), 'error', 40);
-          }, 100);
+          completed++;
+          if (completed === this.attachments.length) {
+            if (successFiles.length) this.showToast([`Success:\n${successFiles.join('\n')}`], 'success', 0);
+            if (failureFiles.length) this.showToast([`Failed:\n${failureFiles.join('\n')}`], 'error', 40);
+          }
         }
       });
     });
