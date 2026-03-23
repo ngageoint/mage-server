@@ -109,7 +109,7 @@ export async function scanAttachmentWithClamAV(
         console.warn('[CLAMAV] Virus detected!');
         return resolve({
           status: 'infected',
-          error: 'ClamAV detected a virus in uploaded file',
+          error: 'File failed security scan',
         });
       }
     
