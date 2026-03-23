@@ -151,12 +151,12 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
   testConnection(): void {
     this.isTesting = true
     this.lastTestResult = null
-    
+
     this.service.testConnection({ sftpClient: this.configuration.sftpClient }).subscribe({
       next: (result) => {
         this.isTesting = false
         this.lastTestResult = result
-        
+
         if (result.success) {
           this.snackBar.open('Connection successful!', 'Dismiss', {
             duration: 5000,
