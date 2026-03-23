@@ -119,23 +119,28 @@ export function ObservationRoutes(
               const chunks: Buffer[] = []
               for await (const chunk of fileStream) chunks.push(chunk as Buffer)
               const originalBuffer = Buffer.concat(chunks)
-              let finalBuffer = originalBuffer
+
         
               // ClamAV scan
+              let finalBuffer: Buffer = Buffer.alloc(0)
+
               if (process.env.CLAM_AV_URL) {
                 const maxRetries = 3
                 let attempt = 0
                 let scanSuccess = false
                 let scanErrorMsg = ''
                 let scannedBuffer: Buffer | null = null
-        
+
                 while (attempt < maxRetries && !scanSuccess) {
                   attempt++
                   try {
                     const scannedResult = await scanAttachmentWithClamAV(Readable.from(originalBuffer))
+
                     if (scannedResult.status === 'clean' && scannedResult.stream) {
                       const scannedChunks: Buffer[] = []
-                      for await (const chunk of scannedResult.stream) scannedChunks.push(chunk as Buffer)
+                      for await (const chunk of scannedResult.stream) {
+                        scannedChunks.push(chunk as Buffer)
+                      }
                       scannedBuffer = Buffer.concat(scannedChunks)
                       scanSuccess = true
                     } else {
@@ -144,16 +149,21 @@ export function ObservationRoutes(
                   } catch (err) {
                     scanErrorMsg = 'Virus scanning server unavailable'
                   }
-                  if (!scanSuccess && attempt < maxRetries) await new Promise(r => setTimeout(r, 500))
+
+                  if (!scanSuccess && attempt < maxRetries) {
+                    await new Promise(r => setTimeout(r, 500))
+                  }
                 }
-        
+
                 if (!scanSuccess) {
                   fileStream.resume()
                   uploadErrors.push({ file: info.filename, error: scanErrorMsg })
                   return
                 }
-        
-                if (scannedBuffer) finalBuffer = scannedBuffer
+
+                if (scannedBuffer) {
+                  finalBuffer = scannedBuffer
+                }
               }
         
               // Store attachment
