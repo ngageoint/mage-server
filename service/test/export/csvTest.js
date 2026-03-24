@@ -73,9 +73,9 @@ describe("csv export tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-    .expects('getToken')
-    .withArgs('12345')
-    .yields(null, createToken(userId, [permission]));;
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));;
   }
 
   function parseCSV(buffer) {
@@ -156,9 +156,8 @@ describe("csv export tests", function () {
       .chain('cursor')
       .returns(new TestLocationCursor());
 
-    sinon.mock(Observation)
-      .expects('getObservations')
-      .returns(new TestObservationCursor());
+    sinon.stub(Observation, 'getObservations')
+      .callsFake(() => new TestObservationCursor());
 
     const writable = new TestWritableStream();
     writable.on('finish', async () => {
@@ -209,9 +208,8 @@ describe("csv export tests", function () {
       .chain('cursor')
       .returns(new TestLocationCursor());
 
-    sinon.mock(Observation)
-      .expects('getObservations')
-      .returns(new TestObservationCursor());
+    sinon.stub(Observation, 'getObservations')
+      .callsFake(() => new TestObservationCursor());
 
     const writable = new TestWritableStream();
     writable.on('finish', async () => {
