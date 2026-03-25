@@ -50,7 +50,6 @@ interface FormData {
 interface FieldType {
   name: string;
   title: string;
-  hidden?: boolean;
 }
 
 interface ErrorDialogData {
@@ -107,8 +106,7 @@ export class FormDetailsComponent implements OnInit {
     { name: 'dropdown', title: 'Select' },
     { name: 'geometry', title: 'Location' },
     { name: 'attachment', title: 'Attachment' },
-    { name: 'userDropdown', title: 'User Select' },
-    { name: 'hidden', title: 'Hidden' }
+    { name: 'userDropdown', title: 'User Select' }
   ];
 
   attachmentAllowedTypes = [
