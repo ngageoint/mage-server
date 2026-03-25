@@ -96,10 +96,6 @@ Form.prototype.populateUserFields = function (callback) {
     formsUserFields.forEach(function (userFields) {
       userFields.forEach(function (userField) {
         userField.choices = choices.slice();
-
-        if (!userField.required && userField.type === 'dropdown') {
-          userField.choices.unshift({ id: 0, value: 0, title: "" });
-        }
       });
     });
 

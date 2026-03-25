@@ -49,6 +49,7 @@ export class TokenInterceptorService implements HttpInterceptor {
 
             this.dialog.open(AuthenticationDialogComponent, {
               width: '600px',
+              maxHeight: '90vh',
               disableClose: true,
               autoFocus: false
             }).afterClosed().subscribe(() => {
