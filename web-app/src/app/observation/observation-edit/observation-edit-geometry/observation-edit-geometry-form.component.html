@@ -5,7 +5,10 @@
       <mat-chip color="primary" [selected]="selectedShapeType === 'Point'" (click)="shapeTypeChanged('Point')">Point</mat-chip>
       <mat-chip color="primary" [selected]="selectedShapeType === 'LineString'" (click)="shapeTypeChanged('LineString')">Line</mat-chip>
       <mat-chip color="primary" [selected]="selectedShapeType === 'Polygon'" (click)="shapeTypeChanged('Polygon')">Polygon</mat-chip>
-      <mat-chip color="primary" [selected]="selectedShapeType === undefined" (click)="shapeTypeChanged()">None</mat-chip>
+      <!-- 
+        TODO: When No Geo finally Works, this should be re-enabled
+        <mat-chip color="primary" [selected]="selectedShapeType === undefined" (click)="shapeTypeChanged()">None</mat-chip>
+      -->
     </mat-chip-list>
   </div>
 

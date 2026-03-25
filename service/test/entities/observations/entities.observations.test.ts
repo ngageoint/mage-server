@@ -15,7 +15,7 @@ function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): Observat
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
     lastModified: new Date(Date.now() - 1000 * 60 * 60),
     type: 'Feature',
-    geometry: { type: 'Point', coordinates: [ 100, 40 ] },
+    geometry: { type: 'Point', coordinates: [100, 40] },
     properties: {
       timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2 - 1000 * 60 * 5),
       forms: []
@@ -26,11 +26,11 @@ function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): Observat
   }
 }
 
-describe('observation entities', function() {
+describe('observation entities', function () {
 
   let mageEventAttrs: MageEventAttrs
 
-  beforeEach(function() {
+  beforeEach(function () {
     mageEventAttrs = {
       id: 303,
       name: 'Observation Validation Test',
@@ -51,9 +51,9 @@ describe('observation entities', function() {
     }
   })
 
-  describe('observation validation', function() {
+  describe('observation validation', function () {
 
-    it('fails when the event id does not match the event', function() {
+    it('fails when the event id does not match the event', function () {
 
       const mageEvent = new MageEvent(mageEventAttrs)
       const o: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id + 1)
@@ -65,7 +65,7 @@ describe('observation entities', function() {
       })
     })
 
-    it('fails if the timestamp is invalid', function() {
+    it('fails if the timestamp is invalid', function () {
 
       const o = makeObservationAttrs(mageEventAttrs.id) as any // cheater
       o.properties.timestamp = null
@@ -75,7 +75,7 @@ describe('observation entities', function() {
       expect(invalid.coreAttrsErrors).to.deep.equal({ timestamp: `The observation requires a valid timestamp.` })
     })
 
-    it('fails if the geojson type is not feature', function() {
+    it('fails if the geojson type is not feature', function () {
 
       const mageEvent = new MageEvent(mageEventAttrs)
       const o = makeObservationAttrs(mageEventAttrs.id) as any // cheater
@@ -93,13 +93,13 @@ describe('observation entities', function() {
       expect(invalid.coreAttrsErrors).to.deep.equal({ type: `The observation GeoJSON type must be 'Feature'.` })
     })
 
-    it('fails if the geojson geometry is invalid', function() {
+    it('fails if the geojson geometry is invalid', function () {
 
       const mageEvent = new MageEvent(mageEventAttrs)
       const o = makeObservationAttrs(mageEventAttrs.id)
       o.geometry = {
         type: 'Pointy',
-        coordinates: [ 100, 25 ]
+        coordinates: [100, 25]
       } as any // cheater
       let invalid = validateObservation(o, mageEvent)
 
@@ -108,7 +108,7 @@ describe('observation entities', function() {
 
       o.geometry = {
         type: 'Point',
-        coordinates: [ 181, 0 ]
+        coordinates: [181, 0]
       }
       invalid = validateObservation(o, mageEvent)
 
@@ -116,7 +116,7 @@ describe('observation entities', function() {
       expect(invalid.coreAttrsErrors).to.deep.equal({ geometry: `The observation geometry must be a valid GeoJSON geometry object.` })
     })
 
-    it('fails if there is no forms array', function() {
+    it('fails if there is no forms array', function () {
 
       const o = makeObservationAttrs(mageEventAttrs.id) as any // cheater
       o.properties.forms = null
@@ -126,9 +126,9 @@ describe('observation entities', function() {
       expect(invalid.coreAttrsErrors).to.deep.equal({ forms: 'The observation requires an array of form entries.' })
     })
 
-    describe('validating form entries', function() {
+    describe('validating form entries', function () {
 
-      it('fails when a form entry references an invalid form id', function() {
+      it('fails when a form entry references an invalid form id', function () {
 
         const o = makeObservationAttrs(mageEventAttrs.id)
         o.properties.forms = [
@@ -146,10 +146,10 @@ describe('observation entities', function() {
         expect(entryErr.formEntryId).to.equal('badFormRef')
         expect(entryErr.formEntryPosition).to.equal(0)
         expect(entryErr.formName).to.be.null
-        expect(Array.from(entryErr.entryLevelErrors)).to.have.members([ FormEntryValidationErrorReason.FormRef ])
+        expect(Array.from(entryErr.entryLevelErrors)).to.have.members([FormEntryValidationErrorReason.FormRef])
       })
 
-      it('fails when form entry ids are not unique on the observation', function() {
+      it('fails when form entry ids are not unique on the observation', function () {
 
         const o = makeObservationAttrs(mageEventAttrs.id)
         mageEventAttrs.forms[0].fields = [
@@ -192,16 +192,16 @@ describe('observation entities', function() {
         expect(entryErr.formEntryId).to.equal('dup id')
         expect(entryErr.formEntryPosition).to.equal(1)
         expect(entryErr.formName).to.equal(mageEventAttrs.forms[0].name)
-        expect(Array.from(entryErr.entryLevelErrors)).to.have.lengthOf(1).with.members([ FormEntryValidationErrorReason.DuplicateId ])
+        expect(Array.from(entryErr.entryLevelErrors)).to.have.lengthOf(1).with.members([FormEntryValidationErrorReason.DuplicateId])
         entryErr = errs.get(3)!
         expect(entryErr.fieldErrors.size).to.equal(0)
         expect(entryErr.formEntryId).to.equal('dup id')
         expect(entryErr.formEntryPosition).to.equal(3)
         expect(entryErr.formName).to.equal(mageEventAttrs.forms[0].name)
-        expect(Array.from(entryErr.entryLevelErrors)).to.have.lengthOf(1).with.members([ FormEntryValidationErrorReason.DuplicateId ])
+        expect(Array.from(entryErr.entryLevelErrors)).to.have.lengthOf(1).with.members([FormEntryValidationErrorReason.DuplicateId])
       })
 
-      it('fails with fewer entries than the event requires', function() {
+      it('fails with fewer entries than the event requires', function () {
 
         const o = makeObservationAttrs(mageEventAttrs.id)
         mageEventAttrs.minObservationForms = 1
@@ -212,7 +212,7 @@ describe('observation entities', function() {
         expect(invalid.totalFormCountError?.constraintCount).to.equal(Number(mageEventAttrs.minObservationForms))
       })
 
-      it('fails with more entries than the event allows', function() {
+      it('fails with more entries than the event allows', function () {
 
         mageEventAttrs.maxObservationForms = 1
         const o = makeObservationAttrs(mageEventAttrs.id)
@@ -226,7 +226,7 @@ describe('observation entities', function() {
         expect(invalid.totalFormCountError?.constraintCount).to.equal(Number(mageEventAttrs.maxObservationForms))
       })
 
-      it('fails with fewer entries than the form min constraint', function() {
+      it('fails with fewer entries than the form min constraint', function () {
 
         mageEventAttrs.forms[0].min = 1
         let o = makeObservationAttrs(mageEventAttrs.id)
@@ -240,7 +240,7 @@ describe('observation entities', function() {
 
         mageEventAttrs.forms[0].min = 2
         o = makeObservationAttrs(mageEventAttrs.id)
-        o.properties.forms = [ { id: uniqid(), formId: mageEventAttrs.forms[0].id } ]
+        o.properties.forms = [{ id: uniqid(), formId: mageEventAttrs.forms[0].id }]
         invalid = validateObservation(o, new MageEvent(mageEventAttrs))
 
         expect(invalid.hasErrors).to.equal(true)
@@ -249,7 +249,7 @@ describe('observation entities', function() {
         expect(invalid.formCountErrors[0][1].constraint).to.equal(MinFormsConstraint)
       })
 
-      it('fails with more entries than the form max constraint', function() {
+      it('fails with more entries than the form max constraint', function () {
 
         mageEventAttrs.forms[0].max = 1
         const o = makeObservationAttrs(mageEventAttrs.id)
@@ -265,7 +265,7 @@ describe('observation entities', function() {
         expect(invalid.formCountErrors[0][1].constraint).to.equal(MaxFormsConstraint)
       })
 
-      it('does not enforce the min constraint of an archived form', function() {
+      it('does not enforce the min constraint of an archived form', function () {
 
         mageEventAttrs.minObservationForms = 0
         mageEventAttrs.forms[0].archived = true
@@ -294,7 +294,7 @@ describe('observation entities', function() {
         expect(invalid.formCountErrors[0][1].constraint).to.equal(MinFormsConstraint)
       })
 
-      it('does not enforce the max constraint of an archived form', function() {
+      it('does not enforce the max constraint of an archived form', function () {
 
         mageEventAttrs.minObservationForms = 0
         mageEventAttrs.maxObservationForms = 10
@@ -318,7 +318,7 @@ describe('observation entities', function() {
         expect(invalid.formCountErrors[0][1].constraint).to.equal(MaxFormsConstraint)
       })
 
-      it('validates all the field types', function() {
+      it('validates all the field types', function () {
 
         const choices: FormFieldChoice[] = [
           Object.freeze({ id: 0, title: 'Choice 0', value: 0 }),
@@ -334,7 +334,7 @@ describe('observation entities', function() {
               required: false,
               title: 'Field 1',
               type: FormFieldType.Attachment,
-              allowedAttachmentTypes: [ AttachmentPresentationType.Image ]
+              allowedAttachmentTypes: [AttachmentPresentationType.Image]
             },
             {
               id: 1,
@@ -356,7 +356,7 @@ describe('observation entities', function() {
               required: false,
               title: 'Field 3',
               type: FormFieldType.Dropdown,
-              choices: [ ...choices ]
+              choices: [...choices]
             },
             {
               id: 4,
@@ -386,7 +386,7 @@ describe('observation entities', function() {
               required: false,
               title: 'Field 7',
               type: FormFieldType.MultiSelectDropdown,
-              choices: [ ...choices ]
+              choices: [...choices]
             },
             {
               id: 8,
@@ -409,7 +409,7 @@ describe('observation entities', function() {
               required: false,
               title: 'Field 10',
               type: FormFieldType.Radio,
-              choices: [ ...choices ]
+              choices: [...choices]
             },
             {
               id: 11,
@@ -433,7 +433,7 @@ describe('observation entities', function() {
         }
         mageEventAttrs = {
           ...mageEventAttrs,
-          forms: [ form ]
+          forms: [form]
         }
         const invalidFormEntry: FormEntry = {
           id: 'entry0',
@@ -459,9 +459,9 @@ describe('observation entities', function() {
           [FormFieldType.DateTime]: new Date().toISOString(),
           [FormFieldType.Dropdown]: choices[1].title,
           [FormFieldType.Email]: 'mage1@test.mage',
-          [FormFieldType.Geometry]: { type: 'Point', coordinates: [ 106, 38 ] },
+          [FormFieldType.Geometry]: { type: 'Point', coordinates: [106, 38] },
           [FormFieldType.Hidden]: `¯\_(ツ)_/¯`,
-          [FormFieldType.MultiSelectDropdown]: [ choices[0].title, choices[1].title ],
+          [FormFieldType.MultiSelectDropdown]: [choices[0].title, choices[1].title],
           [FormFieldType.Numeric]: Number.MAX_SAFE_INTEGER,
           [FormFieldType.Password]: `m@g3i5th3b3$t`,
           [FormFieldType.Radio]: choices[2].title,
@@ -492,28 +492,27 @@ describe('observation entities', function() {
         }
 
         expect(Array.from(untestedFieldTypes), `untested field types: ${Array.from(untestedFieldTypes)}`).to.be.empty
-        expect(Array.from(untestedFields), `untested fields: ${Array.from(untestedFields)}`).to.deep.equal([ FormFieldType.Attachment ])
+        expect(Array.from(untestedFields), `untested fields: ${Array.from(untestedFields)}`).to.deep.equal([FormFieldType.Attachment])
 
         const mageEvent = new MageEvent(mageEventAttrs)
-        observationAttrs.properties.forms = [ invalidFormEntry ]
-        observationAttrs.attachments = [ invalidAttachment ]
+        observationAttrs.properties.forms = [invalidFormEntry]
+        observationAttrs.attachments = [invalidAttachment]
         let invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.formEntryErrors.length).to.equal(1)
         const formEntryError = new Map(invalid.formEntryErrors).get(0)
         expect(formEntryError).to.exist
-        // currently, hidden field validation is a no-op
         const invalidFieldsExceptHidden = form.fields.filter(x => x.type !== FormFieldType.Hidden).map(x => x.name)
         expect(formEntryError?.fieldErrors).to.have.keys(invalidFieldsExceptHidden)
 
-        observationAttrs.properties.forms = [ validFormEntry ]
-        observationAttrs.attachments = [ validAttachment ]
+        observationAttrs.properties.forms = [validFormEntry]
+        observationAttrs.attachments = [validAttachment]
         invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.hasErrors).to.be.false
       })
 
-      it('validates required constraint for all field tyoes', function() {
+      it('validates required constraint for all field tyoes', function () {
 
         const choices: FormFieldChoice[] = [
           Object.freeze({ id: 0, title: 'Choice 0', value: 0 }),
@@ -533,7 +532,7 @@ describe('observation entities', function() {
               required: true,
               title: 'Field 1',
               type: FormFieldType.Attachment,
-              allowedAttachmentTypes: [ AttachmentPresentationType.Image ],
+              allowedAttachmentTypes: [AttachmentPresentationType.Image],
               min: 1
             },
             {
@@ -556,7 +555,7 @@ describe('observation entities', function() {
               required: true,
               title: 'Field 3',
               type: FormFieldType.Dropdown,
-              choices: [ ...choices ]
+              choices: [...choices]
             },
             {
               id: 4,
@@ -586,7 +585,7 @@ describe('observation entities', function() {
               required: true,
               title: 'Field 7',
               type: FormFieldType.MultiSelectDropdown,
-              choices: [ ...choices ]
+              choices: [...choices]
             },
             {
               id: 8,
@@ -609,7 +608,7 @@ describe('observation entities', function() {
               required: true,
               title: 'Field 10',
               type: FormFieldType.Radio,
-              choices: [ ...choices ]
+              choices: [...choices]
             },
             {
               id: 11,
@@ -633,7 +632,7 @@ describe('observation entities', function() {
         }
         mageEventAttrs = {
           ...mageEventAttrs,
-          forms: [ form ]
+          forms: [form]
         }
         const invalidFormEntry: FormEntry = {
           id: 'entry0',
@@ -659,9 +658,9 @@ describe('observation entities', function() {
           [FormFieldType.DateTime]: new Date().toISOString(),
           [FormFieldType.Dropdown]: choices[1].title,
           [FormFieldType.Email]: 'mage1@test.mage',
-          [FormFieldType.Geometry]: { type: 'Point', coordinates: [ 106, 38 ] },
+          [FormFieldType.Geometry]: { type: 'Point', coordinates: [106, 38] },
           [FormFieldType.Hidden]: `¯\_(ツ)_/¯`,
-          [FormFieldType.MultiSelectDropdown]: [ choices[0].title, choices[1].title ],
+          [FormFieldType.MultiSelectDropdown]: [choices[0].title, choices[1].title],
           [FormFieldType.Numeric]: Number.MAX_SAFE_INTEGER,
           [FormFieldType.Password]: `m@g3i5th3b3$t`,
           [FormFieldType.Radio]: choices[2].title,
@@ -688,29 +687,28 @@ describe('observation entities', function() {
         }
 
         expect(Array.from(untestedFieldTypes), `untested field types: ${Array.from(untestedFieldTypes)}`).to.be.empty
-        expect(Array.from(untestedFields), `untested fields: ${Array.from(untestedFields)}`).to.deep.equal([ FormFieldType.Attachment ])
+        expect(Array.from(untestedFields), `untested fields: ${Array.from(untestedFields)}`).to.deep.equal([FormFieldType.Attachment])
 
         const mageEvent = new MageEvent(mageEventAttrs)
-        observationAttrs.properties.forms = [ invalidFormEntry ]
+        observationAttrs.properties.forms = [invalidFormEntry]
         observationAttrs.attachments = []
         let invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.formEntryErrors.length).to.equal(1)
         const formEntryError = new Map(invalid.formEntryErrors).get(0)
         expect(formEntryError).to.exist
-        // currently, hidden field validation is a no-op
         const invalidFieldsExceptHidden = form.fields.filter(x => x.type !== FormFieldType.Hidden).map(x => x.name)
         expect(formEntryError?.fieldErrors).to.have.keys(invalidFieldsExceptHidden)
 
-        observationAttrs.properties.forms = [ validFormEntry ]
-        observationAttrs.attachments = [ attachment ]
+        observationAttrs.properties.forms = [validFormEntry]
+        observationAttrs.attachments = [attachment]
         invalid = validateObservation(observationAttrs, mageEvent)
 
         console.info(validationResultMessage(invalid))
         expect(invalid.hasErrors).to.be.false
       })
 
-      it('passes when a required numeric field value is zero', function() {
+      it('passes when a required numeric field value is zero', function () {
 
         const form: Form = {
           id: 0,
@@ -732,7 +730,7 @@ describe('observation entities', function() {
         }
         mageEventAttrs = {
           ...mageEventAttrs,
-          forms: [ form ]
+          forms: [form]
         }
         const invalidFormEntryUndef: FormEntry = {
           id: 'entry0',
@@ -749,7 +747,7 @@ describe('observation entities', function() {
         }
         const observationAttrs = makeObservationAttrs(mageEventAttrs.id)
         const mageEvent = new MageEvent(mageEventAttrs)
-        observationAttrs.properties.forms = [ invalidFormEntryUndef ]
+        observationAttrs.properties.forms = [invalidFormEntryUndef]
         let invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.formEntryErrors.length).to.equal(1)
@@ -758,7 +756,7 @@ describe('observation entities', function() {
         expect(formEntryError?.fieldErrors.size).to.equal(1)
         expect(formEntryError?.fieldErrors).to.have.keys(FormFieldType.Numeric)
 
-        observationAttrs.properties.forms = [ invalidFormEntryNull ]
+        observationAttrs.properties.forms = [invalidFormEntryNull]
         invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.formEntryErrors.length).to.equal(1)
@@ -767,19 +765,19 @@ describe('observation entities', function() {
         expect(formEntryError?.fieldErrors.size).to.equal(1)
         expect(formEntryError?.fieldErrors).to.have.keys(FormFieldType.Numeric)
 
-        observationAttrs.properties.forms = [ validFormEntry ]
+        observationAttrs.properties.forms = [validFormEntry]
         invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.hasErrors).to.be.false
       })
 
-      describe('attachment validation', function() {
+      describe('attachment validation', function () {
 
         let field: FormField
         let formEntry: FormEntry
         let attachment1: Attachment
 
-        beforeEach(function() {
+        beforeEach(function () {
 
           field = {
             type: FormFieldType.Attachment,
@@ -789,7 +787,7 @@ describe('observation entities', function() {
             title: 'Min/Max Attachment Test',
             allowedAttachmentTypes: undefined
           }
-          mageEventAttrs.forms[0].fields = [ field ]
+          mageEventAttrs.forms[0].fields = [field]
           formEntry = {
             id: 'formEntry0',
             formId: mageEventAttrs.forms[0].id,
@@ -804,17 +802,17 @@ describe('observation entities', function() {
           }
         })
 
-        it('allows any attachment type when the field does not constrain attachment types', function() {
+        it('allows any attachment type when the field does not constrain attachment types', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
-          observationAttrs.properties.forms = [ formEntry ]
-          observationAttrs.attachments = [ attachment1 ]
+          observationAttrs.properties.forms = [formEntry]
+          observationAttrs.attachments = [attachment1]
           const valid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
           expect(valid.hasErrors).to.be.false
         })
 
-        describe('supported image types', function() {
+        describe('supported image types', function () {
 
           const supportedImageTypes = [
             'image/gif',
@@ -824,26 +822,26 @@ describe('observation entities', function() {
           ]
           for (const supportedImageType of supportedImageTypes) {
 
-            it(`allows ${supportedImageType}`, function() {
+            it(`allows ${supportedImageType}`, function () {
 
-              field.allowedAttachmentTypes = [ AttachmentPresentationType.Image ]
+              field.allowedAttachmentTypes = [AttachmentPresentationType.Image]
               const observationAttrs = makeObservationAttrs(mageEventAttrs)
-              observationAttrs.properties.forms = [ formEntry ]
+              observationAttrs.properties.forms = [formEntry]
               attachment1.contentType = supportedImageType
-              observationAttrs.attachments = [ attachment1 ]
+              observationAttrs.attachments = [attachment1]
               const valid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
               expect(valid.hasErrors).to.be.false
             })
           }
 
-          it('does not allow some other image type', function() {
+          it('does not allow some other image type', function () {
 
-            field.allowedAttachmentTypes = [ AttachmentPresentationType.Image ]
+            field.allowedAttachmentTypes = [AttachmentPresentationType.Image]
             const observationAttrs = makeObservationAttrs(mageEventAttrs)
-            observationAttrs.properties.forms = [ formEntry ]
+            observationAttrs.properties.forms = [formEntry]
             attachment1.contentType = 'image/trash'
-            observationAttrs.attachments = [ attachment1 ]
+            observationAttrs.attachments = [attachment1]
             const invalid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
             expect(invalid.hasErrors).to.be.true
@@ -856,7 +854,7 @@ describe('observation entities', function() {
           })
         })
 
-        it('validates min/max constraints on attachment fields', function() {
+        it('validates min/max constraints on attachment fields', function () {
 
           field.min = 1
           field.max = 2
@@ -869,7 +867,7 @@ describe('observation entities', function() {
             id: 'attachment3',
           }
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
 
           let invalid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
@@ -881,7 +879,7 @@ describe('observation entities', function() {
           expect(fieldErrors?.size).to.equal(1)
           expect(fieldErrors?.get(field.name)?.constraint).to.equal(FieldConstraintKey.Min)
 
-          observationAttrs.attachments = [ attachment1, attachment2, attachment3 ]
+          observationAttrs.attachments = [attachment1, attachment2, attachment3]
           invalid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
           expect(invalid.hasErrors).to.be.true
@@ -892,16 +890,16 @@ describe('observation entities', function() {
           expect(fieldErrors?.size).to.equal(1)
           expect(fieldErrors?.get(field.name)?.constraint).to.equal(FieldConstraintKey.Max)
 
-          observationAttrs.attachments = [ attachment1, attachment2 ]
+          observationAttrs.attachments = [attachment1, attachment2]
           const valid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
           expect(valid.hasErrors).to.be.false
         })
 
-        it('validates all attachments reference a form entry and field that exists', function() {
+        it('validates all attachments reference a form entry and field that exists', function () {
 
           const o = makeObservationAttrs(mageEventAttrs)
-          o.properties.forms = [ formEntry ]
+          o.properties.forms = [formEntry]
           o.attachments = [
             {
               id: 'a1',
@@ -929,10 +927,10 @@ describe('observation entities', function() {
           expect(attachmentErrors.get(1)?.reason).to.equal(AttachmentValidationErrorReason.FieldRef)
         })
 
-        it('validates attachment ids are unique on the observation', function() {
+        it('validates attachment ids are unique on the observation', function () {
 
           const o = makeObservationAttrs(mageEventAttrs)
-          o.properties.forms = [ formEntry ]
+          o.properties.forms = [formEntry]
           o.attachments = [
             {
               id: 'a1',
@@ -966,13 +964,13 @@ describe('observation entities', function() {
     })
   })
 
-  describe('creating observation instances', function() {
+  describe('creating observation instances', function () {
 
     /*
     TODO: domain event for observation create - fired from repository?
     */
 
-    it('does not allow constructing an observation directly', function() {
+    it('does not allow constructing an observation directly', function () {
 
       try {
         const observation = new Observation()
@@ -983,7 +981,7 @@ describe('observation entities', function() {
       expect.fail('constructor succeeded')
     })
 
-    it('adds a default active state if there are no states', function() {
+    it('adds a default active state if there are no states', function () {
 
       const attrs = makeObservationAttrs(mageEventAttrs)
       attrs.userId = 'user1'
@@ -995,7 +993,7 @@ describe('observation entities', function() {
       expect(observation.states[0].userId).to.equal(attrs.userId)
     })
 
-    it('parses date field entries during for the evaulated observation', function() {
+    it('parses date field entries during for the evaulated observation', function () {
 
       const form: Form = {
         id: 1,
@@ -1015,7 +1013,7 @@ describe('observation entities', function() {
       }
       mageEventAttrs = {
         ...mageEventAttrs,
-        forms: [ form ]
+        forms: [form]
       }
       const mageEvent = new MageEvent(mageEventAttrs)
       const attrs = makeObservationAttrs(mageEventAttrs.id)
@@ -1034,7 +1032,7 @@ describe('observation entities', function() {
       expect(attrs.properties.forms[1].parsedDate).to.equal(dateEntry2.toISOString(), 'should not mutate input attrs')
     })
 
-    it('accepts date field entries that are already date instances', function() {
+    it('accepts date field entries that are already date instances', function () {
 
       const form: Form = {
         id: 1,
@@ -1054,7 +1052,7 @@ describe('observation entities', function() {
       }
       mageEventAttrs = {
         ...mageEventAttrs,
-        forms: [ form ]
+        forms: [form]
       }
       const mageEvent = new MageEvent(mageEventAttrs)
       const attrs = makeObservationAttrs(mageEventAttrs.id)
@@ -1076,7 +1074,7 @@ describe('observation entities', function() {
     it.skip('deep copies and does not reference any values from the source attributes')
   })
 
-  describe('observation mutations', function() {
+  describe('observation mutations', function () {
 
     /*
     TODO: add domain events for observation mutations
@@ -1086,13 +1084,13 @@ describe('observation entities', function() {
     event for form add/update/remove
     */
 
-    describe('total update with put semantics', function() {
+    describe('total update with put semantics', function () {
 
       let mageEvent: MageEvent
       let form1: Form
       let form2: Form
 
-      beforeEach(function() {
+      beforeEach(function () {
         form1 = {
           id: 1001,
           name: 'Form 1',
@@ -1113,7 +1111,7 @@ describe('observation entities', function() {
               required: false,
               title: 'Form 1 Field 2',
               type: FormFieldType.Attachment,
-              allowedAttachmentTypes: [ AttachmentPresentationType.Audio ]
+              allowedAttachmentTypes: [AttachmentPresentationType.Audio]
             }
           ],
         }
@@ -1135,19 +1133,19 @@ describe('observation entities', function() {
             },
           ],
         }
-        mageEventAttrs.forms = [ form1, form2 ]
+        mageEventAttrs.forms = [form1, form2]
         mageEvent = new MageEvent(mageEventAttrs)
       })
 
-      it('updates geometry', function() {
+      it('updates geometry', function () {
 
         const beforeGeom: Point = {
           type: 'Point',
-          coordinates: [ 100, 20 ]
+          coordinates: [100, 20]
         }
         const afterGeom: Point = {
           type: 'Point',
-          coordinates: [ 111, 22 ]
+          coordinates: [111, 22]
         }
         const beforeAttrs = makeObservationAttrs(mageEvent)
         beforeAttrs.geometry = beforeGeom
@@ -1164,7 +1162,7 @@ describe('observation entities', function() {
         expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
       })
 
-      it('updates timestamp', function() {
+      it('updates timestamp', function () {
 
         const now = Date.now()
         const diff = 1000 * 60 * 99
@@ -1184,7 +1182,7 @@ describe('observation entities', function() {
         expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
       })
 
-      it('does not change create timestamp', function() {
+      it('does not change create timestamp', function () {
 
         const now = Date.now()
         const diff = 1000 * 60 * 99
@@ -1203,7 +1201,7 @@ describe('observation entities', function() {
         expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
       })
 
-      it('adds form entries', function() {
+      it('adds form entries', function () {
 
         const beforeAttrs = makeObservationAttrs(mageEvent)
         const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
@@ -1231,7 +1229,7 @@ describe('observation entities', function() {
         // expect(after.pendingEvents).to.include(...)
       })
 
-      it('updates form entries', function() {
+      it('updates form entries', function () {
 
         const beforeAttrs = makeObservationAttrs(mageEvent)
         beforeAttrs.properties.forms = [
@@ -1274,7 +1272,7 @@ describe('observation entities', function() {
         // TODO: form entry udpated event?
       })
 
-      it('removes form entries', function() {
+      it('removes form entries', function () {
 
         // TODO: form entry removed event?
 
@@ -1329,7 +1327,7 @@ describe('observation entities', function() {
         expect(after.pendingEvents).to.deep.equal([])
       })
 
-      it.skip('removes child attachments of removed form entries', function() {
+      it.skip('removes child attachments of removed form entries', function () {
         /*
         TODO: better to just let the observation become invalid if assigning
         attrs with removed form enties and orphaned attachments?  but then is
@@ -1337,11 +1335,11 @@ describe('observation entities', function() {
         */
       })
 
-      it.skip('TODO: adds attachments', function() {
+      it.skip('TODO: adds attachments', function () {
         // TODO: attachment added event?
       })
 
-      it('updates attachments', function() {
+      it('updates attachments', function () {
 
         const beforeLastModified = Date.now() - 1000 * 60 * 35
         const beforeAttrs = {
@@ -1426,7 +1424,7 @@ describe('observation entities', function() {
         // TODO: attachment updated event
       })
 
-      it('removes attachments with domain events', function() {
+      it('removes attachments with domain events', function () {
 
         const beforeLastModified = Date.now() - 1000 * 60 * 60
         const beforeAttrs = makeObservationAttrs(mageEvent)
@@ -1462,7 +1460,7 @@ describe('observation entities', function() {
           },
         ]
         const afterAttrs1 = copyObservationAttrs(beforeAttrs)
-        afterAttrs1.attachments = [ copyAttachmentAttrs(beforeAttrs.attachments[0]) ]
+        afterAttrs1.attachments = [copyAttachmentAttrs(beforeAttrs.attachments[0])]
         const afterAttrs2 = copyObservationAttrs(beforeAttrs)
         afterAttrs2.attachments = []
         const before = Observation.evaluate(beforeAttrs, mageEvent)
@@ -1477,11 +1475,11 @@ describe('observation entities', function() {
         expect(before.lastModified.getTime()).to.equal(beforeLastModified)
         expect(after1.validation.hasErrors).to.be.false
         expect(after1.lastModified.getTime()).to.be.closeTo(Date.now(), 150)
-        expect(after1.attachments).to.deep.equal([ copyAttachmentAttrs(before.attachments[0]) ])
+        expect(after1.attachments).to.deep.equal([copyAttachmentAttrs(before.attachments[0])])
         expect(after1.pendingEvents).to.deep.equal([
           {
             type: ObservationDomainEventType.AttachmentsRemoved,
-            removedAttachments: [ copyAttachmentAttrs(before.attachments[1]) ]
+            removedAttachments: [copyAttachmentAttrs(before.attachments[1])]
           }
         ])
         expect(after2.validation.hasErrors).to.be.false
@@ -1490,12 +1488,12 @@ describe('observation entities', function() {
         expect(after2.pendingEvents).to.deep.equal([
           {
             type: ObservationDomainEventType.AttachmentsRemoved,
-            removedAttachments: [ copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0]) ]
+            removedAttachments: [copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0])]
           }
         ])
       })
 
-      it('can make an invalid observation valid', function() {
+      it('can make an invalid observation valid', function () {
 
         const invalidFieldEntry = form2.fields[0].min as number - 1
         const validFieldEntry = form2.fields[0].min as number
@@ -1540,9 +1538,9 @@ describe('observation entities', function() {
         expect(after.validation.hasErrors).to.be.false
       })
 
-      it.skip('TODO: fails if the observation id does not match', function() { })
+      it.skip('TODO: fails if the observation id does not match', function () { })
 
-      it('fails if the event id does not match', function() {
+      it('fails if the event id does not match', function () {
 
         const beforeAttrs = makeObservationAttrs(mageEvent)
         const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
@@ -1554,7 +1552,7 @@ describe('observation entities', function() {
         expect(after.reason).to.equal(ObservationUpdateErrorReason.EventId)
       })
 
-      it('adds an attachments removed event for removed attachments', function() {
+      it('adds an attachments removed event for removed attachments', function () {
 
         const beforeAttrs = makeObservationAttrs(mageEvent)
         beforeAttrs.properties.forms = [
@@ -1574,8 +1572,8 @@ describe('observation entities', function() {
         ]
         const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
         const afterAttrs = copyObservationAttrs(beforeAttrs)
-        afterAttrs.properties.forms = [ beforeAttrs.properties.forms[1] ]
-        afterAttrs.attachments = [ beforeAttrs.attachments[1] ]
+        afterAttrs.properties.forms = [beforeAttrs.properties.forms[1]]
+        afterAttrs.attachments = [beforeAttrs.attachments[1]]
         const after = Observation.assignTo(before, afterAttrs) as Observation
 
         expect(before.validation.hasErrors).to.be.false
@@ -1591,21 +1589,21 @@ describe('observation entities', function() {
         ])
       })
 
-      it.skip('TODO: fails if the device id does not match', function() { })
+      it.skip('TODO: fails if the device id does not match', function () { })
     })
 
-    describe('form entries', function() {
+    describe('form entries', function () {
 
       it.skip('TODO: provides mutation functions for adding, updating, and removing form entries')
       it.skip('TODO: fails if the form entry ids are not unique on the observation')
 
-      describe('removing form entries', function() {
+      describe('removing form entries', function () {
 
         let mageEvent: MageEvent
         let form1: Form
         let form2: Form
 
-        beforeEach(function() {
+        beforeEach(function () {
           form1 = {
             id: 1,
             name: 'Form 1',
@@ -1653,11 +1651,11 @@ describe('observation entities', function() {
             color: '#aabbcc',
             archived: false
           }
-          mageEventAttrs.forms = [ form1, form2 ]
+          mageEventAttrs.forms = [form1, form2]
           mageEvent = new MageEvent(mageEventAttrs)
         })
 
-        it('removes the specified entry', function() {
+        it('removes the specified entry', function () {
 
           const beforeAttrs = makeObservationAttrs(mageEvent)
           beforeAttrs.properties.forms = [
@@ -1686,7 +1684,7 @@ describe('observation entities', function() {
           ])
         })
 
-        it('removes attachments that reference removed form entries', function() {
+        it('removes attachments that reference removed form entries', function () {
 
           const beforeAttrs = makeObservationAttrs(mageEvent)
           beforeAttrs.properties.forms = [
@@ -1725,14 +1723,14 @@ describe('observation entities', function() {
       })
     })
 
-    describe('attachments', function() {
+    describe('attachments', function () {
 
       let attachmentField1: FormField
       let attachmentField2: FormField
       let nonAttachmentField: FormField
       let mageEvent: MageEvent
 
-      beforeEach(function() {
+      beforeEach(function () {
         attachmentField1 = {
           id: 0,
           type: FormFieldType.Attachment,
@@ -1741,7 +1739,7 @@ describe('observation entities', function() {
           required: false,
           min: 0,
           max: 5,
-          allowedAttachmentTypes: [ AttachmentPresentationType.Image ]
+          allowedAttachmentTypes: [AttachmentPresentationType.Image]
         }
         attachmentField2 = {
           id: 1,
@@ -1751,7 +1749,7 @@ describe('observation entities', function() {
           required: false,
           min: 0,
           max: 1,
-          allowedAttachmentTypes: [ AttachmentPresentationType.Video ]
+          allowedAttachmentTypes: [AttachmentPresentationType.Video]
         }
         nonAttachmentField = {
           id: 2,
@@ -1768,16 +1766,16 @@ describe('observation entities', function() {
         mageEvent = new MageEvent(mageEventAttrs)
       })
 
-      describe('adding attachments', function() {
+      describe('adding attachments', function () {
 
-        it('adds an attachment for given field and form entry', function() {
+        it('adds an attachment for given field and form entry', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
           const formEntry: FormEntry = {
             id: 'form0',
             formId: mageEvent.forms[0].id,
           }
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const attachmentAttrs: AttachmentCreateAttrs = {
             contentType: 'image/jpeg',
@@ -1801,14 +1799,14 @@ describe('observation entities', function() {
           expect(mod.attachments[0].lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
-        it('fails if the form entry does not exist', function() {
+        it('fails if the form entry does not exist', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
           const formEntry: FormEntry = {
             id: 'form0',
             formId: mageEvent.forms[0].id,
           }
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const attachmentAttrs: AttachmentCreateAttrs = {
             contentType: 'image/jpeg',
@@ -1824,14 +1822,14 @@ describe('observation entities', function() {
           expect(invalid.validationErr?.reason).to.equal(AttachmentValidationErrorReason.FormEntryRef)
         })
 
-        it('fails if the field does not exist', function() {
+        it('fails if the field does not exist', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
           const formEntry: FormEntry = {
             id: 'form0',
             formId: mageEvent.forms[0].id,
           }
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const attachmentAttrs: AttachmentCreateAttrs = {
             contentType: 'image/jpeg',
@@ -1847,14 +1845,14 @@ describe('observation entities', function() {
           expect(invalid.validationErr?.reason).to.equal(AttachmentValidationErrorReason.FieldRef)
         })
 
-        it('fails if the field name is not an attachment field', function() {
+        it('fails if the field name is not an attachment field', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
           const formEntry: FormEntry = {
             id: 'form0',
             formId: mageEvent.forms[0].id,
           }
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const attachmentAttrs: AttachmentCreateAttrs = {
             contentType: 'image/jpeg',
@@ -1870,14 +1868,14 @@ describe('observation entities', function() {
           expect(invalid.validationErr?.reason).to.equal(AttachmentValidationErrorReason.FieldRef)
         })
 
-        it('fails if the attachment id is not unique on the observation', function() {
+        it('fails if the attachment id is not unique on the observation', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
           const formEntry: FormEntry = {
             id: 'form0',
             formId: mageEvent.forms[0].id,
           }
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const attachmentAttrs: AttachmentCreateAttrs = {
             contentType: 'image/jpeg',
@@ -1894,14 +1892,14 @@ describe('observation entities', function() {
           expect(mod2.validationErr?.reason).to.equal(AttachmentValidationErrorReason.DuplicateId)
         })
 
-        it('returns an invalid observation if the attachment violates the form constraints', function() {
+        it('returns an invalid observation if the attachment violates the form constraints', function () {
 
           const observationAttrs = makeObservationAttrs(mageEventAttrs)
           const formEntry: FormEntry = {
             id: 'form0',
             formId: mageEvent.forms[0].id,
           }
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const attachmentAttrs: AttachmentCreateAttrs = {
             contentType: 'image/jpeg',
@@ -1926,9 +1924,9 @@ describe('observation entities', function() {
         })
       })
 
-      describe('updating attachments', function() {
+      describe('updating attachments', function () {
 
-        it('patches the target attachment', function() {
+        it('patches the target attachment', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -1950,8 +1948,8 @@ describe('observation entities', function() {
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.lastModified = new Date(Date.now() - 1000 * 60 * 60)
-          observationAttrs.properties.forms = [ formEntry ]
-          observationAttrs.attachments = [ attachment ]
+          observationAttrs.properties.forms = [formEntry]
+          observationAttrs.attachments = [attachment]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
 
           expect(observation.validation.hasErrors).to.be.false
@@ -1979,7 +1977,7 @@ describe('observation entities', function() {
           expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
-        it('patches the first attachment', function() {
+        it('patches the first attachment', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -2001,8 +1999,8 @@ describe('observation entities', function() {
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.lastModified = new Date(Date.now() - 1000 * 60 * 60)
-          observationAttrs.properties.forms = [ formEntry ]
-          observationAttrs.attachments = [ attachment ]
+          observationAttrs.properties.forms = [formEntry]
+          observationAttrs.attachments = [attachment]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
 
           expect(observation.validation.hasErrors).to.be.false
@@ -2035,7 +2033,7 @@ describe('observation entities', function() {
         it('TODO: fails if the attachment does not exist')
         it('TODO: fails if the attachment is invalid')
 
-        it('adds a new thumbnail to an attachment', function() {
+        it('adds a new thumbnail to an attachment', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -2056,8 +2054,8 @@ describe('observation entities', function() {
             contentLocator: 'abc123:attachment0'
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
-          observationAttrs.properties.forms = [ formEntry ]
-          observationAttrs.attachments = [ attachment ]
+          observationAttrs.properties.forms = [formEntry]
+          observationAttrs.attachments = [attachment]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
 
           expect(observation.validation.hasErrors).to.be.false
@@ -2077,12 +2075,12 @@ describe('observation entities', function() {
             expect.fail('expected an observation instance')
           }
           expect(mod.attachments.length).to.equal(1)
-          expect(mod.attachments[0].thumbnails).to.deep.equal([ thumb ])
+          expect(mod.attachments[0].thumbnails).to.deep.equal([thumb])
           expect(mod.attachments[0].lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
           expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
-        it('replaces a thumbnail for the same min dimension', function() {
+        it('replaces a thumbnail for the same min dimension', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -2107,8 +2105,8 @@ describe('observation entities', function() {
             contentLocator: 'abc123:attachment0'
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
-          observationAttrs.properties.forms = [ formEntry ]
-          observationAttrs.attachments = [ attachment ]
+          observationAttrs.properties.forms = [formEntry]
+          observationAttrs.attachments = [attachment]
           const observation = Observation.evaluate(observationAttrs, mageEvent)
           const thumb: Required<Thumbnail> = {
             minDimension: 200,
@@ -2125,15 +2123,15 @@ describe('observation entities', function() {
             expect.fail('expected an observation instance')
           }
           expect(mod.attachments.length).to.equal(1)
-          expect(mod.attachments[0].thumbnails).to.deep.equal([ copyThumbnailAttrs(attachment.thumbnails[0]), thumb, copyThumbnailAttrs(attachment.thumbnails[2]) ])
+          expect(mod.attachments[0].thumbnails).to.deep.equal([copyThumbnailAttrs(attachment.thumbnails[0]), thumb, copyThumbnailAttrs(attachment.thumbnails[2])])
           expect(mod.attachments[0].lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
           expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
       })
 
-      describe('removing attachments', function() {
+      describe('removing attachments', function () {
 
-        it('removes the attachment for the given id', function() {
+        it('removes the attachment for the given id', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -2164,13 +2162,13 @@ describe('observation entities', function() {
             }
           ]
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           observationAttrs.attachments = attachments
           const before = Observation.evaluate(observationAttrs, mageEvent)
           const after = Observation.evaluate(
             {
               ...copyObservationAttrs(observationAttrs),
-              attachments: [ attachments[1] ]
+              attachments: [attachments[1]]
             },
             mageEvent
           )
@@ -2186,7 +2184,7 @@ describe('observation entities', function() {
           expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
-        it('returns an invalid observation if removing the attachment violates the form constraints', function() {
+        it('returns an invalid observation if removing the attachment violates the form constraints', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -2206,7 +2204,7 @@ describe('observation entities', function() {
             }
           ]
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           observationAttrs.attachments = attachments
           mageEvent = new MageEvent({
             ...copyMageEventAttrs(mageEvent),
@@ -2243,7 +2241,7 @@ describe('observation entities', function() {
           expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
-        it('returns an error if the attachment id does not exist', function() {
+        it('returns an error if the attachment id does not exist', function () {
 
           const formEntry: FormEntry = {
             id: 'formEntry0',
@@ -2263,7 +2261,7 @@ describe('observation entities', function() {
             }
           ]
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
-          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.properties.forms = [formEntry]
           observationAttrs.attachments = attachments
           const before = Observation.evaluate(observationAttrs, mageEvent)
           const mod = removeAttachment(before, attachments[0].id + 'wut') as AttachmentNotFoundError
@@ -2278,24 +2276,24 @@ describe('observation entities', function() {
       })
     })
 
-    describe('adding form entries', function() {
+    describe('adding form entries', function () {
 
     })
 
-    describe('updating form entries', function() {
+    describe('updating form entries', function () {
 
     })
 
-    describe('removing form entries', function() {
+    describe('removing form entries', function () {
 
     })
   })
 
-  describe('attachments', function() {
+  describe('attachments', function () {
 
-    describe('selecting a thumbnail representation', function() {
+    describe('selecting a thumbnail representation', function () {
 
-      it('selects the thumbnail with the smallest minimum dimension greater than the target dimension', function() {
+      it('selects the thumbnail with the smallest minimum dimension greater than the target dimension', function () {
 
         const att: Attachment = {
           id: uniqid(),
