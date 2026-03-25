@@ -33,5 +33,5 @@ import { MatDialogRef } from '@angular/material/dialog';
   `
 })
 export class ResetConfirmDialogComponent {
-  constructor(public dialogRef: MatDialogRef<ResetConfirmDialogComponent>) {}
+  constructor(public dialogRef: MatDialogRef<ResetConfirmDialogComponent>) { }
 }

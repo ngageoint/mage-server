@@ -181,7 +181,6 @@
     </button>
     <button mat-stroked-button color="warn" (click)="resetToDefaults()" [disabled]="isResetting">
       <mat-spinner *ngIf="isResetting" diameter="20" class="button-spinner"></mat-spinner>
-      <mat-icon *ngIf="!isResetting">restart_alt</mat-icon>
       {{isResetting ? 'Resetting...' : 'Reset to Defaults'}}
     </button>
   </div>

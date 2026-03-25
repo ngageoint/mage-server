@@ -154,10 +154,9 @@ export class SftpController {
    * @returns The current configuration from the database.
    */
   public async getConfiguration(): Promise<SFTPPluginConfig> {
-    let config = this.configuration;
-    if (this.configuration === null) {
-      config = await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? x : this.stateRepository.put(defaultSFTPPluginConfig))
-    }
+    let config: SFTPPluginConfig = this.configuration
+      ?? await this.stateRepository.get()
+      ?? await this.stateRepository.put(defaultSFTPPluginConfig);
     return { ...config, hasPrivateKey: this.privateKeyFileExists() }
   }
 
@@ -338,7 +337,7 @@ export class SftpController {
 
       try {
         await testClient.list(sftpConfig.path || '/')
-      } catch (pathError) {    
+      } catch (pathError) {
         await testClient.end()
         return {
           success: false,

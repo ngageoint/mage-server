@@ -126,7 +126,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 if (!trimmedKey.includes('PRIVATE KEY')) {
                   return res.status(400).json({
                     success: false,
-                    message: 'The provided text does not appear to be a valid private key. It should contain a PRIVATE KEY header.'
+                    message: 'The provided text does not appear to be a valid private key.'
                   })
                 }
 
