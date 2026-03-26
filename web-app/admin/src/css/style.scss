@@ -3,7 +3,6 @@
 @import './material-theme.scss';
 @import 'material-components-web/material-components-web.scss';
 
-@import 'ui-select/dist/select.min.css';
 @import 'font-awesome/css/font-awesome.min.css';
 @import 'jquery-minicolors/jquery.minicolors.css';
 @import 'select2/dist/css/select2.min.css';
@@ -99,6 +98,7 @@ a:focus {
 .mdc-list--dense .mdc-list-item.mdc-list-item--two-line {
   height: 60px;
 }
+
 /** End fix */
 
 .mdc-dialog .mdc-dialog__title {
@@ -144,7 +144,7 @@ a:focus {
 }
 
 /* Fixing what bootstrap is doing */
-.mdc-form-field > label {
+.mdc-form-field>label {
   margin-bottom: unset;
   font-weight: unset;
 }
@@ -162,6 +162,7 @@ a:focus {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -171,6 +172,7 @@ a:focus {
   from {
     transform: rotate(360deg);
   }
+
   to {
     transform: rotate(0deg);
   }
@@ -321,24 +323,9 @@ a:focus {
   -webkit-backface-visibility: hidden;
 }
 
-.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(
-    .mdc-select--focused
-  )
-  .mdc-select__selected-text-mine:hover
-  ~ .mdc-notched-outline
-  .mdc-notched-outline__leading,
-.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(
-    .mdc-select--focused
-  )
-  .mdc-select__selected-text-mine:hover
-  ~ .mdc-notched-outline
-  .mdc-notched-outline__trailing,
-.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(
-    .mdc-select--focused
-  )
-  .mdc-select__selected-text-mine:hover
-  ~ .mdc-notched-outline
-  .mdc-notched-outline__notch {
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__leading,
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__trailing,
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__notch {
   border-color: rgba(0, 0, 0, 0.87);
 }
 
@@ -357,10 +344,12 @@ a:focus {
   margin-top: 16px;
   margin-bottom: 16px;
 }
-.coordinate-editor > div {
+
+.coordinate-editor>div {
   margin-right: 8px;
   margin-left: 8px;
 }
+
 /* .coordinate-editor > div:last-child {
   margin-left: 8px;
 } */
@@ -391,13 +380,16 @@ a:focus {
   clear: both;
   visibility: hidden;
 }
+
 .clearfix {
   display: inline-block;
 }
+
 /* Hides from IE-mac \*/
 * html .clearfix {
   height: 1%;
 }
+
 .clearfix {
   display: block;
 }
@@ -409,15 +401,18 @@ body {
   flex-direction: column;
   font-size: 14px;
   line-height: unset;
+
   /* font-family: Roboto;
   font-weight: 400; */
   &:has(.banner-header) {
     .nav-float-wrapper {
       top: 91px !important;
+
       @media (max-width: 599px) {
         top: 85px !important;
       }
     }
+
     .drawer-backdrop {
       margin-top: 139px !important;
 
@@ -425,9 +420,11 @@ body {
         margin-top: 135px !important;
       }
     }
-    .drawer{
+
+    .drawer {
       top: 45px;
-      &.open{
+
+      &.open {
         @media (max-width: 599px) {
           margin-top: 135px;
         }
@@ -449,16 +446,16 @@ h5 {
   color: #1e88e5;
 }
 
-.nav > li > a {
+.nav>li>a {
   color: #ffffff;
 }
 
-.nav-pills > li > a {
+.nav-pills>li>a {
   color: #1e88e5;
 }
 
-.nav > li > a:hover,
-.nav > li > a:focus {
+.nav>li>a:hover,
+.nav>li>a:focus {
   text-decoration: none;
   color: #1565c0;
   background: transparent;
@@ -781,7 +778,7 @@ a {
     0 2px 2px 0 rgba(0, 0, 0, 0.098), 0 1px 5px 0 rgba(0, 0, 0, 0.084);
 }
 
-.card > .card-content {
+.card>.card-content {
   padding: 16px;
 }
 
@@ -1082,13 +1079,13 @@ admin {
   border-color: #f0f0f0;
 }
 
-.admin-dashboard-navbar > .container-fluid > .navbar-header > .navbar-brand {
+.admin-dashboard-navbar>.container-fluid>.navbar-header>.navbar-brand {
   color: #204976;
 }
 
-.nav-pills > li.active > a,
-.nav-pills > li.active > a:hover,
-.nav-pills > li.active > a:focus {
+.nav-pills>li.active>a,
+.nav-pills>li.active>a:hover,
+.nav-pills>li.active>a:focus {
   color: #fff;
   background-color: #1e88e5;
 }
@@ -1326,6 +1323,7 @@ admin {
   transition: 0.5s linear all;
   opacity: 1;
 }
+
 .cssFade.ng-hide {
   opacity: 0;
 }

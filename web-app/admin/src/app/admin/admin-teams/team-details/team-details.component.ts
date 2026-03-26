@@ -80,6 +80,13 @@ export class TeamDetailsComponent implements OnInit {
     }
   ];
 
+  private asId(value: any): string {
+    if (!value) return '';
+    if (typeof value === 'object' && typeof value.toHexString === 'function')
+      return value.toHexString();
+    return String(value);
+  }
+
   private updateActionButtons(): void {
     this.actionButtons = [];
     this.memberActionButtons = [];
@@ -155,14 +162,16 @@ export class TeamDetailsComponent implements OnInit {
       const globalPerms: string[] = this.myself?.role?.permissions || [];
 
       const myAccess =
-        myId && this.team?.acl ? (this.team.acl[myId] ?? null) : null;
+        myId && this.team?.acl ? this.team.acl[myId] ?? null : null;
       const aclPermissions: string[] = myAccess?.permissions || [];
 
       this.hasUpdatePermission =
-        globalPerms.includes('UPDATE_TEAM') || aclPermissions.includes('update');
+        globalPerms.includes('UPDATE_TEAM') ||
+        aclPermissions.includes('update');
 
       this.hasDeletePermission =
-        globalPerms.includes('DELETE_TEAM') || aclPermissions.includes('delete');
+        globalPerms.includes('DELETE_TEAM') ||
+        aclPermissions.includes('delete');
 
       this.updateActionButtons();
       this.getMembers();
@@ -182,7 +191,7 @@ export class TeamDetailsComponent implements OnInit {
 
     this.teamService
       .getMembers({
-        id: this.team.id,
+        id: this.asId(this.team.id),
         term: this.memberSearchTerm,
         page: this.membersPageIndex,
         page_size: this.membersPageSize
@@ -252,7 +261,7 @@ export class TeamDetailsComponent implements OnInit {
     const description = this.editForm.description || '';
 
     this.teamService
-      .editTeam(this.team.id, { name, description })
+      .editTeam(this.asId(this.team.id), { name, description })
       .subscribe((updatedTeam: Team) => {
         this.team = updatedTeam;
         this.editingDetails = false;
@@ -273,7 +282,7 @@ export class TeamDetailsComponent implements OnInit {
   }
 
   addMember(): void {
-    const teamId = this.team?.id || '';
+    const teamId = this.asId(this.team?.id);
     if (!teamId) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
@@ -312,7 +321,8 @@ export class TeamDetailsComponent implements OnInit {
           {
             key: 'email',
             label: 'Email',
-            displayFunction: (user: CoreUser) => user.email || 'No email provided',
+            displayFunction: (user: CoreUser) =>
+              user.email || 'No email provided',
             width: '35%'
           }
         ] as SearchModalColumn[]
@@ -321,9 +331,11 @@ export class TeamDetailsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
       if (result?.selectedItem && this.team?.id) {
-        this.teamService.addUserToTeam(this.team.id, result.selectedItem).subscribe({
-          next: () => this.getMembers()
-        });
+        this.teamService
+          .addUserToTeam(this.asId(this.team.id), result.selectedItem)
+          .subscribe({
+            next: () => this.getMembers()
+          });
       }
     });
   }
@@ -332,9 +344,11 @@ export class TeamDetailsComponent implements OnInit {
     $event.stopPropagation();
     if (!this.team?.id) return;
 
-    this.teamService.removeMember(this.team.id, user.id).subscribe({
-      next: () => this.getMembers()
-    });
+    this.teamService
+      .removeMember(this.asId(this.team.id), this.asId(user.id))
+      .subscribe({
+        next: () => this.getMembers()
+      });
   }
 
   toggleEditRoles(): void {
@@ -361,12 +375,14 @@ export class TeamDetailsComponent implements OnInit {
     const newRole = event?.target?.value;
     if (!this.team?.id || !newRole) return;
 
-    this.teamService.updateUserRole(this.team.id, user.id, newRole).subscribe({
-      next: (updatedTeam: Team) => {
-        this.team = updatedTeam;
-        this.getMembers();
-      }
-    });
+    this.teamService
+      .updateUserRole(this.asId(this.team.id), this.asId(user.id), newRole)
+      .subscribe({
+        next: (updatedTeam: Team) => {
+          this.team = updatedTeam;
+          this.getMembers();
+        }
+      });
   }
 
   addEventToTeam(): void {
@@ -388,7 +404,7 @@ export class TeamDetailsComponent implements OnInit {
             term: searchTerm,
             page,
             page_size: pageSize,
-            excludeTeamId: this.team!.id
+            excludeTeamId: this.asId(this.team!.id)
           });
         },
         columns: [
@@ -411,10 +427,9 @@ export class TeamDetailsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
       if (result?.selectedItem && this.team?.id) {
-        this.eventsService.addTeamToEvent(
-          String(result.selectedItem.id),
-          this.team
-        ).subscribe(() => this.getTeamEvents());
+        this.eventsService
+          .addTeamToEvent(this.asId(result.selectedItem.id), this.team)
+          .subscribe(() => this.getTeamEvents());
       }
     });
   }
@@ -424,7 +439,7 @@ export class TeamDetailsComponent implements OnInit {
     if (!this.team?.id) return;
 
     this.eventsService
-      .removeEventFromTeam(String(event.id), String(this.team.id))
+      .removeEventFromTeam(this.asId(event.id), this.asId(this.team.id))
       .subscribe(() => this.getTeamEvents());
   }
 

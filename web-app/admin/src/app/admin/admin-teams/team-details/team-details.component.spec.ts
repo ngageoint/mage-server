@@ -449,7 +449,6 @@ describe('TeamDetailsComponent', () => {
 
       component.deleteTeam();
 
-      // ✅ FIX: allow width property that component passes
       expect(mockDialog.open).toHaveBeenCalledWith(
         DeleteTeamComponent,
         jasmine.objectContaining({
@@ -478,3 +477,4 @@ describe('TeamDetailsComponent', () => {
     });
   });
 });
+
