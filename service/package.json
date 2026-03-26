@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.5.16",
+  "version": "6.6.0",
   "displayName": "Mage Service",
   "description": "Mage is a geospatial situational awareness and data collection platform.  The Mage Service is the ReST service API that the Mage client apps use to interact with Mage data.",
   "keywords": [
@@ -43,6 +43,7 @@
     "async-lock": "1.4.1",
     "base-64": "1.0.0",
     "busboy": "1.6.0",
+    "captcha-canvas": "^3.4.0",
     "cfenv": "1.2.4",
     "commander": "12.0.0",
     "express": "4.21.2",
@@ -70,7 +71,6 @@
     "pug": "3.0.3",
     "rfc5646": "3.0.0",
     "superagent": "8.1.2",
-    "svg-captcha": "1.4.0",
     "uniqid": "5.4.0",
     "walk": "2.3.15",
     "winston": "^3.19.0",

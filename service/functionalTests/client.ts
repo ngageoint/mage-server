@@ -171,14 +171,14 @@ export class MageClientSession {
    * TODO: mage api should support a simple PUT with content-type header
    */
   saveMapIcon(...args: any[]): Promise<AxiosResponse<MapIcon>> {
-    const [ data, iconName, eventId, formId, primary, variant ] = ((): [ data: Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined ] => {
+    const [data, iconName, eventId, formId, primary, variant] = ((): [data: Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined] => {
       if (typeof args[0] === 'string') {
-        const [ filePath, eventId, formId, primary, variant ] = args
+        const [filePath, eventId, formId, primary, variant] = args
         const iconName = path.basename(filePath)
         const data = fs.createReadStream(filePath)
-        return [ data, iconName, eventId, formId, primary, variant ]
+        return [data, iconName, eventId, formId, primary, variant]
       }
-      return [ args[0], args[1], args[2], args[3], args[4], args[5] ]
+      return [args[0], args[1], args[2], args[3], args[4], args[5]]
     })()
     const primaryPath = primary ? `/${primary}` : ''
     const variantPath = primary && variant ? `/${variant}` : ''
@@ -202,7 +202,7 @@ export class MageClientSession {
     }
     const savedObs = await this.http.put<Observation>(`/api/events/${mod.eventId}/observations/${mod.id}`, mod).then(x => x.data)
     for (const upload of attachmentUploads) {
-      const [ savedAttachment ] = savedAttachmentForMod(upload.attachmentInfo, savedObs)
+      const [savedAttachment] = savedAttachmentForMod(upload.attachmentInfo, savedObs)
       if (!savedAttachment) {
         throw new Error(`no saved attachment matches upload id ${upload.attachmentInfo.id} on observation ${savedObs.id}`)
       }
@@ -229,7 +229,7 @@ export class MageClientSession {
   }
 
   postUserLocations(eventId: number, locations: Array<[lon: number, lat: number, timestamp?: number | undefined]>): Promise<AxiosResponse<UserLocation[]>> {
-    const features = locations.map<geojson.Feature<geojson.Point>>(([ lon, lat, timestamp ]) => {
+    const features = locations.map<geojson.Feature<geojson.Point>>(([lon, lat, timestamp]) => {
       if (typeof timestamp !== 'number') {
         timestamp = Date.now()
       }
@@ -237,7 +237,7 @@ export class MageClientSession {
         type: 'Feature',
         geometry: {
           type: 'Point',
-          coordinates: [ lon, lat ]
+          coordinates: [lon, lat]
         },
         properties: {
           timestamp: new Date(timestamp).toISOString(),
@@ -318,7 +318,7 @@ export function createBlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, na
   } as any
 }
 
-export interface BlobDuck extends globalThis.Blob {}
+export interface BlobDuck extends globalThis.Blob { }
 
 export type ISODateString = string
 
@@ -705,7 +705,7 @@ export function addUploadIdToAttachmentMod(x: AttachmentMod): AttachmentMod {
   }
 }
 
-export function savedAttachmentForMod(mod: AttachmentMod, observation: Observation): [ attachment: Attachment | undefined, index: number ] {
+export function savedAttachmentForMod(mod: AttachmentMod, observation: Observation): [attachment: Attachment | undefined, index: number] {
   if (!mod.name) {
     throw new Error('attachment must have a name')
   }
@@ -715,7 +715,7 @@ export function savedAttachmentForMod(mod: AttachmentMod, observation: Observati
   }
   const pos = observation.attachments.findIndex(x => String(x.name).startsWith(uploadId))
   const attachment = observation.attachments[pos]
-  return [ attachment, pos ]
+  return [attachment, pos]
 }
 
 export type AttachmentMod = Partial<Omit<Attachment, 'observationFormId'>> & {

@@ -85,7 +85,7 @@ export function copyFormAttrs(x: Form): Form {
     secondaryFeedField: x.secondaryFeedField,
     color: x.color,
     style: x.style ? copyBaseFormStyle(x.style) : undefined,
-    userFields: x.userFields ? [ ...x.userFields ] : [],
+    userFields: x.userFields ? [...x.userFields] : [],
   }
 }
 
@@ -101,7 +101,7 @@ export function copyFormFieldAttrs(x: FormField): FormField {
     max: x.max,
     value: x.value,
     choices: x.choices?.map(copyFormFieldChoiceAttrs),
-    allowedAttachmentTypes: x.allowedAttachmentTypes ? [ ...x.allowedAttachmentTypes ] : undefined
+    allowedAttachmentTypes: x.allowedAttachmentTypes ? [...x.allowedAttachmentTypes] : undefined
   }
 }
 
@@ -178,9 +178,9 @@ export enum AttachmentPresentationType {
  * designations associated with the {@link content types} that MAGE supports.
  */
 export const AttachmentMediaTypes: { [MediaType in AttachmentPresentationType]: readonly string[] } = Object.freeze({
-  [AttachmentPresentationType.Image]: Object.freeze([ 'image/gif', 'image/jpeg', 'image/png', 'image/webp' ]),
-  [AttachmentPresentationType.Video]: Object.freeze([ 'video/mp4', 'video/quicktime' ]),
-  [AttachmentPresentationType.Audio]: Object.freeze([ 'audio/mp4' ]),
+  [AttachmentPresentationType.Image]: Object.freeze(['image/gif', 'image/jpeg', 'image/png', 'image/webp']),
+  [AttachmentPresentationType.Video]: Object.freeze(['video/mp4', 'video/quicktime']),
+  [AttachmentPresentationType.Audio]: Object.freeze(['audio/mp4']),
 })
 
 /**
