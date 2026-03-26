@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
-import { SFTPPluginConfig, ConnectionTestResult, PluginStatus } from '../entities/entities.format';
+import { SFTPPluginConfig, ConnectionTestResult, PluginStatus, MageEventSummary } from '../entities/entities.format';
 
 export const baseUrl = '/plugins/@ngageoint/mage.sftp.service'
 
@@ -11,11 +11,19 @@ export interface ConfigurationResponse {
   configuration?: SFTPPluginConfig
 }
 
+export interface PrivateKeyResponse {
+  success: boolean
+  message: string
+}
+
 export interface ConfigurationApi {
   getConfiguration(): Observable<SFTPPluginConfig>
   updateConfiguration(request: SFTPPluginConfig): Observable<ConfigurationResponse>
   testConnection(config?: Partial<SFTPPluginConfig>): Observable<ConnectionTestResult>
   getStatus(): Observable<PluginStatus>
+  savePrivateKey(privateKey: string): Observable<PrivateKeyResponse>
+  resetConfiguration(): Observable<ConfigurationResponse>
+  getEvents(): Observable<MageEventSummary[]>
 }
 
 @Injectable({
@@ -61,6 +69,39 @@ export class ConfigurationService implements ConfigurationApi {
           connected: false,
           lastError: error.error?.message || error.message || 'Failed to get status'
         })
+      })
+    );
+  }
+
+  savePrivateKey(privateKey: string): Observable<PrivateKeyResponse> {
+    return this.http.post<PrivateKeyResponse>(`${baseUrl}/private-key`, { privateKey }, {
+      headers: { "Content-Type": "application/json" }
+    }).pipe(
+      catchError(error => {
+        return of({
+          success: false,
+          message: error.error?.message || error.message || 'Failed to save private key'
+        })
+      })
+    );
+  }
+
+  resetConfiguration(): Observable<ConfigurationResponse> {
+    return this.http.post<ConfigurationResponse>(`${baseUrl}/reset`, {}).pipe(
+      catchError(error => {
+        return of({
+          success: false,
+          message: error.error?.message || error.message || 'Failed to reset configuration'
+        })
+      })
+    );
+  }
+
+  getEvents(): Observable<MageEventSummary[]> {
+    return this.http.get<MageEventSummary[]>(`${baseUrl}/events`).pipe(
+      catchError(error => {
+        console.error('Failed to fetch events:', error)
+        return of([])
       })
     );
   }
