@@ -251,6 +251,7 @@ export class SftpController {
       return
     }
 
+    this.isRunning = true;
     this.status.lastConnectionAttempt = new Date()
 
     try {
@@ -261,15 +262,16 @@ export class SftpController {
         username: this.configuration.sftpClient.username,
         privateKey: privateKey
       });
-      this.isRunning = true;
       this.status.connected = true;
       this.status.lastError = undefined;
+      this.setupConnectionListeners()
       await this.processAndScheduleNext()
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e)
       this.console.error("error connecting to sftp endpoint", e)
       this.status.connected = false
       this.status.lastError = `Connection failed: ${errorMessage}`
+      this.scheduleNext(this.configuration.interval)
     }
   }
 
