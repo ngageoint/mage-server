@@ -8,6 +8,7 @@ import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, EventFilterMode } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import fs from 'fs';
+import path from 'path';
 import { SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
@@ -153,11 +154,10 @@ export class SftpController {
    * @returns The current configuration from the database.
    */
   public async getConfiguration(): Promise<SFTPPluginConfig> {
-    if (this.configuration === null) {
-      return await this.stateRepository.get().then((x: SFTPPluginConfig | null) => !!x ? x : this.stateRepository.put(defaultSFTPPluginConfig))
-    } else {
-      return this.configuration
-    }
+    let config: SFTPPluginConfig = this.configuration
+      ?? await this.stateRepository.get()
+      ?? await this.stateRepository.put(defaultSFTPPluginConfig);
+    return { ...config, hasPrivateKey: this.privateKeyFileExists() }
   }
 
   /**
@@ -170,6 +170,74 @@ export class SftpController {
     } catch (err) {
       this.console.log(`ERROR: updateConfiguration: ${err}`)
     }
+  }
+
+  /**
+   * Returns the configured SFTP key file path from MAGE_SFTP_KEY_FILE env var.
+   */
+  private getSftpKeyFilePath(): string {
+    const keyFile = process.env['MAGE_SFTP_KEY_FILE'] as string
+    if (!keyFile) {
+      throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set. Configure sftpKeyFile in the server config.')
+    }
+    return keyFile
+  }
+
+  /**
+   * Checks whether a private key file exists at the configured path.
+   */
+  private privateKeyFileExists(): boolean {
+    try {
+      const keyFile = this.getSftpKeyFilePath()
+      return fs.existsSync(keyFile)
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Saves a private key to the configured MAGE_SFTP_KEY_FILE path.
+   * @param keyText The OpenSSH private key text
+   */
+  public savePrivateKey(keyText: string): void {
+    const keyFile = this.getSftpKeyFilePath()
+    const keyDir = path.dirname(keyFile)
+    if (!fs.existsSync(keyDir)) {
+      fs.mkdirSync(keyDir, { recursive: true })
+    }
+    fs.writeFileSync(keyFile, keyText, { mode: 0o600 })
+  }
+
+  /**
+   * Removes the private key file from the configured path.
+   */
+  public removePrivateKey(): void {
+    const keyFile = this.getSftpKeyFilePath()
+    if (fs.existsSync(keyFile)) {
+      fs.unlinkSync(keyFile)
+    }
+  }
+
+  /**
+   * Resets the plugin to default configuration and removes the private key file.
+   */
+  public async resetToDefaults(): Promise<void> {
+    await this.stop()
+    this.removePrivateKey()
+    await this.stateRepository.put(defaultSFTPPluginConfig)
+    this.configuration = null
+  }
+
+  /**
+   * Reads the private key from the configured MAGE_SFTP_KEY_FILE path.
+   * @returns The private key as a Buffer
+   */
+  private resolvePrivateKey(): Buffer {
+    const keyFile = this.getSftpKeyFilePath()
+    if (!fs.existsSync(keyFile)) {
+      throw new Error('No SFTP private key file found. Upload a key in the admin settings or place one at the configured path.')
+    }
+    return fs.readFileSync(keyFile)
   }
 
   /**
@@ -186,16 +254,12 @@ export class SftpController {
     this.status.lastConnectionAttempt = new Date()
 
     try {
-      const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string;
-      if (!sftpKeyFilename) {
-        throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set')
-      }
-      const sftpKeyFile = fs.readFileSync(sftpKeyFilename);
+      const privateKey = this.resolvePrivateKey()
       await this.sftpClient.connect({
         host: this.configuration.sftpClient.host,
         port: this.configuration.sftpClient.port,
         username: this.configuration.sftpClient.username,
-        privateKey: sftpKeyFile
+        privateKey: privateKey
       });
       this.isRunning = true;
       this.status.connected = true;
@@ -256,22 +320,13 @@ export class SftpController {
     const timestamp = new Date()
 
     try {
-      const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string
-      if (!sftpKeyFilename) {
-        return {
-          success: false,
-          message: 'MAGE_SFTP_KEY_FILE environment variable is not set. Please configure the server with a valid SFTP private key file path.',
-          timestamp
-        }
-      }
-
-      let sftpKeyFile: Buffer
+      let privateKey: Buffer
       try {
-        sftpKeyFile = fs.readFileSync(sftpKeyFilename)
+        privateKey = this.resolvePrivateKey()
       } catch (e) {
         return {
           success: false,
-          message: `Failed to read SFTP key file at "${sftpKeyFilename}": ${e instanceof Error ? e.message : String(e)}`,
+          message: e instanceof Error ? e.message : 'No SFTP private key configured',
           timestamp
         }
       }
@@ -291,7 +346,7 @@ export class SftpController {
         host: sftpConfig.host,
         port: sftpConfig.port || 22,
         username: sftpConfig.username,
-        privateKey: sftpKeyFile
+        privateKey: privateKey
       })
 
       try {

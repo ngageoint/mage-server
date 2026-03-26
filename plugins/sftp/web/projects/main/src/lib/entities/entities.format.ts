@@ -111,4 +111,10 @@ export interface SFTPPluginConfig {
     path: string,
     username: string
   }
+
+  /**
+   * Whether a private key is stored on the server.
+   * This is a read-only field returned by the server and never sent by the client.
+   */
+  hasPrivateKey?: boolean
 }

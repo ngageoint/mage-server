@@ -111,6 +111,59 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
             })
 
+          routes.route('/private-key')
+            .post(async (req, res, _next) => {
+              try {
+                const { privateKey } = req.body
+                if (!privateKey || typeof privateKey !== 'string') {
+                  return res.status(400).json({
+                    success: false,
+                    message: 'Private key text is required'
+                  })
+                }
+
+                const trimmedKey = privateKey.trim()
+                if (!trimmedKey.includes('PRIVATE KEY')) {
+                  return res.status(400).json({
+                    success: false,
+                    message: 'The provided text does not appear to be a valid private key.'
+                  })
+                }
+
+                controller.savePrivateKey(trimmedKey)
+
+                res.json({
+                  success: true,
+                  message: 'Private key saved successfully'
+                })
+              } catch (error) {
+                console.error('Error saving private key:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Failed to save private key'
+                })
+              }
+            })
+
+          routes.route('/reset')
+            .post(async (_req, res, _next) => {
+              try {
+                await controller.resetToDefaults()
+                const config = await controller.getConfiguration()
+                res.json({
+                  success: true,
+                  message: 'Plugin has been reset to default settings',
+                  configuration: config
+                })
+              } catch (error) {
+                console.error('Error resetting plugin:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Failed to reset plugin'
+                })
+              }
+            })
+
           routes.route('/test-connection')
             .post(async (req, res, _next) => {
               try {
