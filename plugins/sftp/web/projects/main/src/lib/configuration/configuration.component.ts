@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule, ConnectionTestResult, PluginStatus } from '../entities/entities.format';
+import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule, ConnectionTestResult, PluginStatus, EventFilterMode, MageEventSummary } from '../entities/entities.format';
 import { ConfigurationService } from './configuration.service';
 import { Subject, interval, takeUntil } from 'rxjs';
 import { ResetConfirmDialogComponent } from './reset-confirm-dialog.component';
@@ -32,6 +32,27 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
       { title: 'Create And Update', value: TriggerRule.CreateAndUpdate },
     ]
 
+  eventFilterModes: {
+    title: string,
+    description: string,
+    value: EventFilterMode
+  }[] = [
+      { title: 'All Events', description: 'Sync observations from all active events', value: EventFilterMode.All },
+      { title: 'Include Events', description: 'Only sync observations from selected events', value: EventFilterMode.Include },
+      { title: 'Exclude Events', description: 'Sync all events except selected events', value: EventFilterMode.Exclude },
+    ]
+
+  availableEvents: MageEventSummary[] = []
+  eventSearchQuery = ''
+
+  get filteredEvents(): MageEventSummary[] {
+    if (!this.eventSearchQuery) {
+      return this.availableEvents
+    }
+    const query = this.eventSearchQuery.toLowerCase()
+    return this.availableEvents.filter(e => e.name.toLowerCase().includes(query))
+  }
+
   configuration: SFTPPluginConfig = {
     enabled: false,
     archiveFormat: ArchiveFormat.GeoJSON,
@@ -42,6 +63,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     },
     interval: 60,
     pageSize: 10,
+    eventFilterMode: EventFilterMode.All,
     events: [],
     sftpClient: {
       host: '',
@@ -81,6 +103,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadConfiguration()
     this.loadStatus()
+    this.loadEvents()
 
     interval(30000)
       .pipe(takeUntil(this.destroy$))
@@ -100,6 +123,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     this.service.getConfiguration().subscribe({
       next: (configuration) => {
         this.hasPrivateKey = !!configuration.hasPrivateKey
+        if (!configuration.eventFilterMode) {
+          configuration.eventFilterMode = EventFilterMode.All
+        }
         this.configuration = configuration
         this.originalConfiguration = JSON.stringify(configuration)
       },
@@ -122,6 +148,30 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         console.error('Failed to load status:', error)
       }
     })
+  }
+
+  private loadEvents(): void {
+    this.service.getEvents().subscribe({
+      next: (events) => {
+        this.availableEvents = events
+      },
+      error: (error) => {
+        console.error('Failed to load events:', error)
+      }
+    })
+  }
+
+  isEventSelected(eventId: number): boolean {
+    return this.configuration.events.includes(eventId)
+  }
+
+  toggleEvent(eventId: number): void {
+    const index = this.configuration.events.indexOf(eventId)
+    if (index >= 0) {
+      this.configuration.events.splice(index, 1)
+    } else {
+      this.configuration.events.push(eventId)
+    }
   }
 
   save(): void {
@@ -161,12 +211,12 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
   testConnection(): void {
     this.isTesting = true
     this.lastTestResult = null
-    
+
     this.service.testConnection({ sftpClient: this.configuration.sftpClient }).subscribe({
       next: (result) => {
         this.isTesting = false
         this.lastTestResult = result
-        
+
         if (result.success) {
           this.snackBar.open('Connection successful!', 'Dismiss', {
             duration: 5000,

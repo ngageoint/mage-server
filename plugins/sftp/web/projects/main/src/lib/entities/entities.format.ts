@@ -13,6 +13,26 @@ export enum TriggerRule {
 }
 
 /**
+ * Determines how the events list is applied when filtering which events to sync.
+ * - All: Sync all active events (ignore the events list)
+ * - Include: Only sync events in the events list
+ * - Exclude: Sync all active events except those in the events list
+ */
+export enum EventFilterMode {
+  All = 'all',
+  Include = 'include',
+  Exclude = 'exclude'
+}
+
+/**
+ * Summary of a MAGE event for display in the configuration UI
+ */
+export interface MageEventSummary {
+  id: number
+  name: string
+}
+
+/**
  * Represents the result of a connection test to the SFTP server
  */
 export interface ConnectionTestResult {
@@ -54,7 +74,13 @@ export interface SFTPPluginConfig {
   pageSize: number
 
   /**
-   * Events in which to SFTP observations
+   * Determines how the events list is applied: 'all' syncs everything,
+   * 'include' syncs only listed events, 'exclude' syncs all except listed events.
+   */
+  eventFilterMode: EventFilterMode
+
+  /**
+   * Events to include or exclude based on eventFilterMode
    */
   events: Array<MageEventId>
 
