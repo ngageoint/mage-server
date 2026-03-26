@@ -5,7 +5,7 @@ import { UserRepository } from "@ngageoint/mage.service/lib/entities/users/entit
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
-import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
+import { SFTPPluginConfig, defaultSFTPPluginConfig, EventFilterMode } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import fs from 'fs';
 import { SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
@@ -233,6 +233,20 @@ export class SftpController {
   }
 
   /**
+   * Gets all active events for display in the configuration UI.
+   * @returns Array of active events with id and name.
+   */
+  public async getActiveEvents(): Promise<{ id: number; name: string }[]> {
+    try {
+      const events = await this.eventRepository.findActiveEvents()
+      return events.map(e => ({ id: e.id, name: e.name }))
+    } catch (e) {
+      this.console.error('Error fetching active events:', e)
+      return []
+    }
+  }
+
+  /**
    * Tests the connection to an SFTP server with the given configuration
    * @param config The SFTP client configuration to test
    * @returns A result object indicating success or failure with a message
@@ -322,7 +336,14 @@ export class SftpController {
     const configuration = await this.getConfiguration();
     if (this.isRunning) {
       try {
-        const events = await this.eventRepository.findActiveEvents();
+        let events = await this.eventRepository.findActiveEvents();
+
+        const filterMode = configuration.eventFilterMode || EventFilterMode.All
+        if (filterMode === EventFilterMode.Include && configuration.events.length > 0) {
+          events = events.filter(e => configuration.events.includes(e.id))
+        } else if (filterMode === EventFilterMode.Exclude && configuration.events.length > 0) {
+          events = events.filter(e => !configuration.events.includes(e.id))
+        }
 
         for (const attrs of events) {
           const event = new MageEvent(attrs)

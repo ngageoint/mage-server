@@ -82,6 +82,46 @@
             </mat-hint>
           </mat-form-field>
         </div>
+
+        <div class="radio-group-container">
+          <span class="radio-label">Event Filter Mode</span>
+          <mat-radio-group class="radio-group" [(ngModel)]="configuration.eventFilterMode">
+            <mat-radio-button class="radio-button" color="primary" *ngFor="let mode of eventFilterModes"
+              [value]="mode.value">
+              <span class="radio-button-label">{{mode.title}}</span>
+              <span class="radio-button-description">{{mode.description}}</span>
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-hint class="hint">Choose which events to sync observations from</mat-hint>
+        </div>
+
+        <div *ngIf="configuration.eventFilterMode !== 'all'" class="event-selection-container">
+          <span class="radio-label">
+            {{configuration.eventFilterMode === 'include' ? 'Select events to sync' : 'Select events to exclude'}}
+          </span>
+          <div *ngIf="availableEvents.length === 0" class="no-events-message">
+            No active events available
+          </div>
+          <div *ngIf="availableEvents.length > 0" class="event-picker">
+            <mat-form-field appearance="fill" class="event-search">
+              <mat-label>Search events</mat-label>
+              <input matInput type="text" [(ngModel)]="eventSearchQuery" placeholder="Filter by name...">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+            <div class="event-list">
+              <mat-checkbox *ngFor="let event of filteredEvents" [checked]="isEventSelected(event.id)"
+                (change)="toggleEvent(event.id)" color="primary" class="event-checkbox">
+                {{event.name}}
+              </mat-checkbox>
+              <div *ngIf="filteredEvents.length === 0" class="no-events-message">
+                No events match "{{eventSearchQuery}}"
+              </div>
+            </div>
+          </div>
+          <mat-hint class="hint" *ngIf="configuration.events.length > 0">
+            {{configuration.events.length}} event(s) selected
+          </mat-hint>
+        </div>
       </div>
     </div>
   </div>
