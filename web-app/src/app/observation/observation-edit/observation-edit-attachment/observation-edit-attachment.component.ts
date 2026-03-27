@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AttachmentAction } from './observation-edit-attachment-action';
 
@@ -20,6 +20,7 @@ export class ObservationEditAttachmentComponent implements OnInit {
   @Input() definition: AttachmentField
   @Input() url: string
   @Input() attachments: any[]
+  @Output() uploadError = new EventEmitter<{ id: number | string }>()
 
   control: UntypedFormControl
   uploadId = 0
@@ -43,7 +44,9 @@ export class ObservationEditAttachmentComponent implements OnInit {
         attachment.fieldName === this.definition.name
     });
 
-    return this.control.value ? attachments.concat(this.control.value) : attachments
+    const result = this.control.value ? attachments.concat(this.control.value) : attachments
+    console.log('[ALL ATTACHMENTS] returning:', result)
+    return result
   }
 
   onAttachmentFile(event): void {
@@ -63,7 +66,6 @@ export class ObservationEditAttachmentComponent implements OnInit {
     })
 
     this.control.setValue(attachments)
-
     this.changeDetector.detectChanges()
   }
 
@@ -79,5 +81,24 @@ export class ObservationEditAttachmentComponent implements OnInit {
   removeAttachment($event): void {
     const attachments = this.control.value || []
     this.control.setValue(attachments.filter(attachment => attachment.id !== $event.id))
+    console.log('[REMOVE] control value after remove:', this.control.value)
+  }
+
+  onUploadError($event: { id: number | string }): void {
+    const attachments = this.control.value || [];
+    const rejected = attachments.find((a: any) => a.id === $event.id);
+    console.log('[UPLOAD ERROR] local id:', $event.id);
+    console.log('[UPLOAD ERROR] rejected attachment:', rejected);
+    console.log('[UPLOAD ERROR] attachmentId to delete:', rejected?.attachmentId);
+    this.removeAttachment($event);
+    this.uploadError.emit({ id: rejected?.attachmentId || $event.id });
+    
+    if (rejected?.attachmentId) {
+      this.attachments = (this.attachments || []).filter(
+        (a: any) => a.id !== rejected.attachmentId
+      );
+      console.log('[UPLOAD ERROR] attachments after filter:', this.attachments);
+      this.changeDetector.detectChanges();
+    }
   }
 }

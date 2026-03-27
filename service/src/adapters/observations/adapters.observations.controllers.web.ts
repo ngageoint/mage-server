@@ -295,7 +295,24 @@ export function ObservationRoutes(
         next(err)
       }
     })
-    .delete(async (req, res) => res.sendStatus(204))
+  .delete(async (req, res, next) => {
+    try {
+      const ObservationModel = require('../../models/observation')
+      const EventModel = require('../../models/event')
+      const { observationId, attachmentId } = req.params
+      const appReq = createAppRequest(req)
+      const eventId = appReq.context.mageEvent.id
+      EventModel.getById(eventId, function(err: any, event: any) {
+        if (err) return next(err)
+        ObservationModel.removeAttachment(event, observationId, attachmentId, (err: any) => {
+          if (err) return next(err)
+          res.sendStatus(204)
+        })
+      })
+    } catch (err) {
+      next(err)
+    }
+  })
 
   // Update Observation
   routes.route('/:observationId').put(async (req, res, next) => {

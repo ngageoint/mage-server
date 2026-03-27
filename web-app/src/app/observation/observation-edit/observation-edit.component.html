@@ -51,7 +51,7 @@
             <observation-edit-form [formGroup]="group" [definition]="formDefinitions[group.get('formId').value]"
               [geometryStyle]="geometryStyle" [attachmentUrl]="attachmentUrl" [observation]="observation"
               [options]="i === 0 ? {expand: true} : formOptions" (remove)="removeForm($event)"
-              (featureEdit)="onGeometryEdit($event)">
+              (featureEdit)="onGeometryEdit($event)" (uploadError)="onUploadError($event)">
 
               <div *ngIf="formGroup?.get('properties')?.get('forms').length > 1" cdkDragHandle>
                 <mat-icon class="form-drag-handle" svgIcon="handle"></mat-icon>
