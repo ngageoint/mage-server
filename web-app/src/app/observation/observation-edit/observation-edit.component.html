@@ -32,8 +32,8 @@
       <mat-card class="form">
         <observation-edit-date [formGroup]="formGroup.get('properties')"
           [definition]="timestampDefinition"></observation-edit-date>
-
-        <mat-checkbox [formControl]="formGroup?.get('noGeometry')" style="margin-top: 16px;">
+        <!-- TODO: Once the No Geometry Actually Works, Remove the display: none; -->
+        <mat-checkbox [formControl]="formGroup?.get('noGeometry')" style="margin-top: 16px; display: none;">
           {{ noGeometryLabel }}
         </mat-checkbox>
 

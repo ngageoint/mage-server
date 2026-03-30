@@ -19,10 +19,12 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { HttpClientModule } from '@angular/common/http'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConfigurationComponent } from './configuration/configuration.component';
+import { ResetConfirmDialogComponent } from './configuration/reset-confirm-dialog.component';
 
 @NgModule({
   declarations: [
-    ConfigurationComponent
+    ConfigurationComponent,
+    ResetConfirmDialogComponent
   ],
   imports: [
     CommonModule,

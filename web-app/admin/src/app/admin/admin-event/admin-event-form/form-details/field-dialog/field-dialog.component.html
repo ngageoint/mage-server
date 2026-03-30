@@ -10,13 +10,8 @@
           <strong>Field Type</strong>
         </div>
         <div class="config-inline-control">
-          <select
-            class="form-input"
-            [(ngModel)]="field.type"
-            name="fieldType"
-            [disabled]="isEditMode"
-            (ngModelChange)="onFieldTypeChange($event)"
-          >
+          <select class="form-input" [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode"
+            (ngModelChange)="onFieldTypeChange($event)">
             <option *ngFor="let type of data.fieldTypes" [value]="type.name">
               {{ type.title }}
             </option>
@@ -34,14 +29,8 @@
           <strong>Field Title *</strong>
         </div>
         <div class="config-inline-control">
-          <input
-            type="text"
-            class="form-input"
-            [(ngModel)]="field.title"
-            placeholder="Enter field title"
-            name="fieldTitle"
-            required
-          />
+          <input type="text" class="form-input" [(ngModel)]="field.title" placeholder="Enter field title"
+            name="fieldTitle" required />
           <p class="field-error" *ngIf="field.title && isFieldNameDuplicate()">
             A field with this name already exists. Please choose a different
             title.
@@ -49,16 +38,9 @@
         </div>
       </div>
 
-      <div
-        *ngIf="field.type === 'dropdown' && !data.isMemberField"
-        class="checkbox-section"
-      >
+      <div *ngIf="field.type === 'dropdown' && !data.isMemberField" class="checkbox-section">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            [(ngModel)]="field.multiselect"
-            name="fieldMultiselect"
-          />
+          <input type="checkbox" [(ngModel)]="field.multiselect" name="fieldMultiselect" />
           <span>Allow Multiple Selections</span>
         </label>
         <p class="field-hint">
@@ -68,11 +50,7 @@
 
       <div *ngIf="field.type === 'userDropdown'" class="checkbox-section">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            [(ngModel)]="field.multiselect"
-            name="fieldMultiselectUser"
-          />
+          <input type="checkbox" [(ngModel)]="field.multiselect" name="fieldMultiselectUser" />
           <span>Allow Multiple Selections</span>
         </label>
         <p class="field-hint">
@@ -86,13 +64,8 @@
             <strong>Minimum Attachments</strong>
           </div>
           <div class="config-inline-control">
-            <input
-              type="number"
-              class="form-input"
-              [(ngModel)]="field.min"
-              placeholder="No Attachment Minimum"
-              name="fieldMin"
-            />
+            <input type="number" class="form-input" [(ngModel)]="field.min" placeholder="No Attachment Minimum"
+              name="fieldMin" />
           </div>
         </div>
 
@@ -101,13 +74,8 @@
             <strong>Maximum Attachments</strong>
           </div>
           <div class="config-inline-control">
-            <input
-              type="number"
-              class="form-input"
-              [(ngModel)]="field.max"
-              placeholder="No Attachment Maximum"
-              name="fieldMax"
-            />
+            <input type="number" class="form-input" [(ngModel)]="field.max" placeholder="No Attachment Maximum"
+              name="fieldMax" />
           </div>
         </div>
 
@@ -121,17 +89,10 @@
           </div>
           <div class="config-inline-control">
             <div class="checkbox-group">
-              <label
-                class="checkbox-label"
-                *ngFor="let type of data.attachmentAllowedTypes"
-              >
-                <input
-                  type="checkbox"
-                  [checked]="isAttachmentTypeSelected(type.name)"
-                  (change)="
+              <label class="checkbox-label" *ngFor="let type of data.attachmentAllowedTypes">
+                <input type="checkbox" [checked]="isAttachmentTypeSelected(type.name)" (change)="
                     toggleAttachmentType(type.name, $any($event.target).checked)
-                  "
-                />
+                  " />
                 <span>{{ type.title }}</span>
               </label>
             </div>
@@ -150,13 +111,7 @@
             <strong>Minimum Value</strong>
           </div>
           <div class="config-inline-control">
-            <input
-              type="number"
-              class="form-input"
-              [(ngModel)]="field.min"
-              placeholder="No Minimum"
-              name="fieldMin"
-            />
+            <input type="number" class="form-input" [(ngModel)]="field.min" placeholder="No Minimum" name="fieldMin" />
           </div>
         </div>
 
@@ -165,13 +120,7 @@
             <strong>Maximum Value</strong>
           </div>
           <div class="config-inline-control">
-            <input
-              type="number"
-              class="form-input"
-              [(ngModel)]="field.max"
-              placeholder="No Maximum"
-              name="fieldMax"
-            />
+            <input type="number" class="form-input" [(ngModel)]="field.max" placeholder="No Maximum" name="fieldMax" />
           </div>
         </div>
 
@@ -180,38 +129,21 @@
             <strong>Default Value</strong>
           </div>
           <div class="config-inline-control">
-            <input
-              type="number"
-              class="form-input"
-              [(ngModel)]="field.value"
-              [min]="field.min"
-              [max]="field.max"
-              placeholder="No Default"
-              name="fieldValue"
-            />
+            <input type="number" class="form-input" [(ngModel)]="field.value" [min]="field.min" [max]="field.max"
+              placeholder="No Default" name="fieldValue" />
           </div>
         </div>
       </div>
 
-      <div
-        *ngIf="
+      <div *ngIf="
           field.type === 'textfield' ||
-          field.type === 'email' ||
-          field.type === 'hidden'
-        "
-        class="config-inline-item"
-      >
+          field.type === 'email'
+        " class="config-inline-item">
         <div class="config-inline-label">
           <strong>Default Value</strong>
         </div>
         <div class="config-inline-control">
-          <input
-            type="text"
-            class="form-input"
-            [(ngModel)]="field.value"
-            placeholder="No Default"
-            name="fieldValue"
-          />
+          <input type="text" class="form-input" [(ngModel)]="field.value" placeholder="No Default" name="fieldValue" />
         </div>
       </div>
 
@@ -220,13 +152,8 @@
           <strong>Default Value</strong>
         </div>
         <div class="config-inline-control">
-          <textarea
-            class="form-input"
-            rows="3"
-            [(ngModel)]="field.value"
-            placeholder="No Default"
-            name="fieldValue"
-          ></textarea>
+          <textarea class="form-input" rows="3" [(ngModel)]="field.value" placeholder="No Default"
+            name="fieldValue"></textarea>
         </div>
       </div>
 
@@ -237,87 +164,46 @@
         </label>
       </div>
 
-      <div
-        *ngIf="showAddOptions() && !data.isMemberField"
-        class="config-inline-item"
-      >
+      <div *ngIf="showAddOptions() && !data.isMemberField" class="config-inline-item">
         <div class="config-inline-label">
           <strong>Field Options</strong>
         </div>
         <div class="config-inline-control">
-          <div
-            class="options-list"
-            *ngIf="field.choices && field.choices.length > 0"
-          >
-            <div
-              class="option-item"
-              *ngFor="let option of field.choices; let i = index"
-            >
-              <button
-                type="button"
-                class="icon-button"
-                *ngIf="i > 0"
-                (click)="moveOptionUp(option)"
-                title="Move up"
-              >
+          <div class="options-list" *ngIf="field.choices && field.choices.length > 0">
+            <div class="option-item" *ngFor="let option of field.choices; let i = index">
+              <button type="button" class="icon-button" *ngIf="i > 0" (click)="moveOptionUp(option)" title="Move up">
                 <i class="fa fa-arrow-up"></i>
               </button>
-              <button
-                type="button"
-                class="icon-button"
-                *ngIf="i < field.choices.length - 1"
-                (click)="moveOptionDown(option)"
-                title="Move down"
-              >
+              <button type="button" class="icon-button" *ngIf="i < field.choices.length - 1"
+                (click)="moveOptionDown(option)" title="Move down">
                 <i class="fa fa-arrow-down"></i>
               </button>
               <span class="option-title">{{ option.title }}</span>
-              <button
-                type="button"
-                class="icon-button delete-button"
-                (click)="deleteOption(option)"
-                title="Delete option"
-              >
+              <button type="button" class="icon-button delete-button" (click)="deleteOption(option)"
+                title="Delete option">
                 <i class="fa fa-trash"></i>
               </button>
             </div>
           </div>
           <div class="add-option-row">
-            <input
-              type="text"
-              class="form-input"
-              [(ngModel)]="newOptionTitle"
-              placeholder="New option title"
-              name="newOptionTitle"
-              (keyup.enter)="addOption(newOptionTitle)"
-            />
-            <button
-              type="button"
-              class="action-button btn-primary"
-              (click)="addOption(newOptionTitle)"
-              [disabled]="!newOptionTitle"
-            >
+            <input type="text" class="form-input" [(ngModel)]="newOptionTitle" placeholder="New option title"
+              name="newOptionTitle" (keyup.enter)="addOption(newOptionTitle)" />
+            <button type="button" class="action-button btn-primary" (click)="addOption(newOptionTitle)"
+              [disabled]="!newOptionTitle">
               <i class="fa fa-plus"></i> Add Option
             </button>
           </div>
         </div>
       </div>
 
-      <div
-        *ngIf="
+      <div *ngIf="
           field.type === 'dropdown' && !field.multiselect && !data.isMemberField
-        "
-        class="config-inline-item"
-      >
+        " class="config-inline-item">
         <div class="config-inline-label">
           <strong>Default Value</strong>
         </div>
         <div class="config-inline-control">
-          <select
-            class="form-input"
-            [(ngModel)]="field.value"
-            name="fieldDefaultValue"
-          >
+          <select class="form-input" [(ngModel)]="field.value" name="fieldDefaultValue">
             <option [value]="null">No Default</option>
             <option *ngFor="let choice of field.choices" [value]="choice.title">
               {{ choice.title }}
@@ -326,45 +212,31 @@
         </div>
       </div>
 
-      <div
-        *ngIf="
+      <div *ngIf="
           field.type === 'dropdown' && field.multiselect && !data.isMemberField
-        "
-        class="config-inline-item"
-      >
+        " class="config-inline-item">
         <div class="config-inline-label">
           <strong>Default Values</strong>
         </div>
         <div class="config-inline-control">
           <div class="checkbox-group">
             <label class="checkbox-label" *ngFor="let choice of field.choices">
-              <input
-                type="checkbox"
-                [checked]="field.value && field.value.includes(choice.title)"
-                (change)="
+              <input type="checkbox" [checked]="field.value && field.value.includes(choice.title)" (change)="
                   toggleDefaultValue(choice.title, $any($event.target).checked)
-                "
-              />
+                " />
               <span>{{ choice.title }}</span>
             </label>
           </div>
         </div>
       </div>
 
-      <div
-        class="checkbox-section"
-        *ngIf="
+      <div class="checkbox-section" *ngIf="
           field.name !== 'timestamp' &&
           field.name !== 'geometry' &&
           field.type !== 'attachment'
-        "
-      >
+        ">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            [(ngModel)]="field.required"
-            name="fieldRequired"
-          />
+          <input type="checkbox" [(ngModel)]="field.required" name="fieldRequired" />
           <span>Required Field</span>
         </label>
       </div>
@@ -373,13 +245,7 @@
 
   <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancel</button>
-    <button
-      mat-button
-      color="primary"
-      (click)="onSave()"
-      [disabled]="!canSave()"
-      cdkFocusInitial
-    >
+    <button mat-button color="primary" (click)="onSave()" [disabled]="!canSave()" cdkFocusInitial>
       {{ isEditMode ? 'Save Changes' : 'Add Field' }}
     </button>
   </mat-dialog-actions>

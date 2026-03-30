@@ -118,6 +118,7 @@ describe('automated processing', () => {
     stateRepository = new TestPluginStateRepository()
     clock = jasmine.clock().install()
     process.env['MAGE_SFTP_KEY_FILE'] = '/tmp/mock_sftp_key'
+    spyOn(fs, 'existsSync').and.returnValue(true)
     spyOn(fs, 'readFileSync').and.returnValue(Buffer.from('mock ssh key content'))
 
     // Create a spy on the SFTPClient constructor
