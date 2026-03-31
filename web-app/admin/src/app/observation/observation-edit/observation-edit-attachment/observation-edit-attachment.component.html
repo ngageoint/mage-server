@@ -1,10 +1,8 @@
 <div class="attachment-field">
-  <!-- Field label with required indicator -->
   <div class="attachment-field__label">
     {{definition.title}} {{definition.min > 0 ? '*' : ''}}
   </div>
 
-  <!-- List extant attachments -->
   <ng-container *ngIf="allAttachments().length; else empty">
     <mat-grid-list class="edit-attachments__grid" cols="2" rowHeight="210px" gutterSize="4px">
       <mat-grid-tile
@@ -12,7 +10,6 @@
         [rowspan]="1"
         [colspan]="isFirst && (allAttachments().length % 2 === 1) ? 2 : 1"
       >
-        <!-- Existing attachments -->
         <observation-attachment
           *ngIf="!attachment.file"
           [attachment]="attachment"
@@ -20,7 +17,6 @@
           (delete)="deleteAttachment(attachment)"
         ></observation-attachment>
 
-        <!-- Newly added files -->
         <attachment-upload
           *ngIf="attachment.file"
           [url]="url"
@@ -31,24 +27,16 @@
     </mat-grid-list>
   </ng-container>
 
-  <!-- Attachment action buttons -->
   <div class="attachment-actions">
-    <!-- Add new files -->
     <button mat-button class="add__button" type="button" color="primary" (click)="file.click()">
       Add Attachment
     </button>
     <input [hidden]="true" type="file" #file multiple (change)="onAttachmentFile($event)">
-
-    <!-- POC Upload button to call backend and show toast messages -->
-    <button mat-button class="upload__button" type="button" color="accent" (click)="uploadAttachmentsToBackend()">
-      Upload Attachments
-    </button>
   </div>
 
   <div class="attachment-field__underline"></div>
 </div>
 
-<!-- Template shown when there are no attachments -->
 <ng-template #empty>
   <div class="no-attachments">
     <mat-icon class="no-attachments__icon">insert_drive_file</mat-icon>
