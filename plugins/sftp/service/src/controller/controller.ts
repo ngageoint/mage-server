@@ -251,6 +251,7 @@ export class SftpController {
       return
     }
 
+    this.isRunning = true;
     this.status.lastConnectionAttempt = new Date()
 
     try {
@@ -261,15 +262,16 @@ export class SftpController {
         username: this.configuration.sftpClient.username,
         privateKey: privateKey
       });
-      this.isRunning = true;
       this.status.connected = true;
       this.status.lastError = undefined;
+      this.setupConnectionListeners()
       await this.processAndScheduleNext()
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e)
       this.console.error("error connecting to sftp endpoint", e)
       this.status.connected = false
       this.status.lastError = `Connection failed: ${errorMessage}`
+      this.scheduleNext(this.configuration.interval)
     }
   }
 
@@ -390,26 +392,41 @@ export class SftpController {
   private async processAndScheduleNext() {
     const configuration = await this.getConfiguration();
     if (this.isRunning) {
-      try {
-        let events = await this.eventRepository.findActiveEvents();
-
-        const filterMode = configuration.eventFilterMode || EventFilterMode.All
-        if (filterMode === EventFilterMode.Include && configuration.events.length > 0) {
-          events = events.filter(e => configuration.events.includes(e.id))
-        } else if (filterMode === EventFilterMode.Exclude && configuration.events.length > 0) {
-          events = events.filter(e => !configuration.events.includes(e.id))
+      if (!this.status.connected) {
+        try {
+          await this.connect()
+          this.console.log('Successfully reconnected to SFTP server')
+        } catch (e) {
+          this.console.error('SFTP reconnection failed, will retry on next interval', e)
+          const errorMessage = e instanceof Error ? e.message : String(e)
+          this.status.connected = false
+          this.status.lastError = `Connection failed: ${errorMessage}`
+          this.status.lastConnectionAttempt = new Date()
         }
+      }
 
-        for (const attrs of events) {
-          const event = new MageEvent(attrs)
-          await this.processEvent(event, configuration)
+      if (this.status.connected) {
+        try {
+          let events = await this.eventRepository.findActiveEvents();
+
+          const filterMode = configuration.eventFilterMode || EventFilterMode.All
+          if (filterMode === EventFilterMode.Include && configuration.events.length > 0) {
+            events = events.filter(e => configuration.events.includes(e.id))
+          } else if (filterMode === EventFilterMode.Exclude && configuration.events.length > 0) {
+            events = events.filter(e => !configuration.events.includes(e.id))
+          }
+
+          for (const attrs of events) {
+            const event = new MageEvent(attrs)
+            await this.processEvent(event, configuration)
+          }
+          this.status.lastSync = new Date()
+          this.status.lastError = undefined
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : String(e)
+          this.console.error('sftp error', e)
+          this.status.lastError = `Sync error: ${errorMessage}`
         }
-        this.status.lastSync = new Date()
-        this.status.lastError = undefined
-      } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : String(e)
-        this.console.error('sftp error', e)
-        this.status.lastError = `Sync error: ${errorMessage}`
       }
 
       this.scheduleNext(configuration.interval);
@@ -524,5 +541,67 @@ export class SftpController {
       this.console.info(`error observation ${observation.id}`, result)
       await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.FAILED)
     }
+  }
+
+  /**
+   * Establishes a fresh SFTP connection, closing any existing one first.
+   */
+  private async connect() {
+    try { await this.sftpClient.end() } catch { }
+    this.sftpClient = new SFTPClient()
+
+    const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string
+    if (!sftpKeyFilename) {
+      throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set')
+    }
+    const sftpKeyFile = fs.readFileSync(sftpKeyFilename)
+
+    if (!this.configuration) {
+      throw new Error('SFTP plugin configuration is not loaded')
+    }
+
+    await this.sftpClient.connect({
+      host: this.configuration.sftpClient.host,
+      port: this.configuration.sftpClient.port,
+      username: this.configuration.sftpClient.username,
+      privateKey: sftpKeyFile
+    })
+
+    this.status.connected = true
+    this.status.lastError = undefined
+    this.status.lastConnectionAttempt = undefined
+    this.setupConnectionListeners()
+  }
+
+  /**
+   * Registers event listeners on the SFTP client to detect connection loss.
+   */
+  private setupConnectionListeners() {
+    this.sftpClient.on('close', () => {
+      this.handleConnectionLost('Connection closed')
+    })
+
+    this.sftpClient.on('end', () => {
+      this.handleConnectionLost('Connection ended')
+    })
+
+    this.sftpClient.on('error', (err: Error) => {
+      this.handleConnectionLost(err.message)
+    })
+  }
+
+  /**
+   * Handles an unexpected connection loss detected via SFTP client events.
+   * The next scheduled sync interval will attempt to reconnect.
+   */
+  private handleConnectionLost(reason: string) {
+    if (!this.isRunning || !this.status.connected) return
+
+    this.console.log(`SFTP connection lost: ${reason}`)
+    this.status.connected = false
+    this.status.lastError = `Connection lost: ${reason}`
+    this.status.lastConnectionAttempt = new Date()
+
+    // Could have it attempt to reconnect immediately here, instead wait for next interval
   }
 }
