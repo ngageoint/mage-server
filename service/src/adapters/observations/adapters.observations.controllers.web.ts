@@ -100,7 +100,6 @@ async function storeAttachment(
       console.log(`[STORE] Stored attachment: ${info.filename}`)
     } else if (appRes.error) {
       uploadErrors.push({ file: info.filename, error: appRes.error })
-      console.warn(`[STORE] Failed to store attachment ${info.filename}: ${appRes.error}`)
     }
   } catch (err) {
     uploadErrors.push({ file: info.filename, error: err instanceof Error ? err.message : String(err) })

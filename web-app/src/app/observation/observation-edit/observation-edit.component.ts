@@ -460,7 +460,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   }
 
   onUploadError($event: { id: number | string }): void {
-    console.log('[OBS EDIT] onUploadError called with id:', $event.id);
     this.eventService.deleteAttachmentForObservation(
       this.observation,
       { id: $event.id }
@@ -562,8 +561,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         break;
       }
       case AttachmentUploadStatus.ERROR: {
-        console.log('[DEBUG] error event upload:', event.upload)
-        console.log('[DEBUG] uploads array:', this.uploads)
         const formArray = this.formGroup
           .get("properties")
           .get("forms") as UntypedFormArray;
