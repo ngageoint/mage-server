@@ -25,7 +25,7 @@ export class AuthBufferInterceptor implements HttpInterceptor {
     private dialog: MatDialog,
     private apiService: ApiService,
     private localStorage: LocalStorageService
-  ) {}
+  ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const isApiCall = req.url.startsWith('/api/') || req.url.includes('/api/');
@@ -50,10 +50,11 @@ export class AuthBufferInterceptor implements HttpInterceptor {
             this.apiService.getApi().subscribe({
               next: (api) => {
                 const ref = this.dialog.open(SigninModalComponent, {
-                  width: 'auto',
-                  height: 'auto',
+                  width: '500px',
+                  maxHeight: '90vh',
                   disableClose: true,
                   autoFocus: false,
+                  panelClass: 'signin-modal-panel',
                   data: { api }
                 });
 
