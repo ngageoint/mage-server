@@ -78,7 +78,7 @@
     "wms-capabilities": "0.6.0",
     "xmlbuilder2": "3.1.1",
     "xpath": "0.0.34",
-    "yaml": "1.10.2"
+    "yaml": "2.8.3"
   },
   "devDependencies": {
     "@fluffy-spoon/substitute": "1.208.0",
