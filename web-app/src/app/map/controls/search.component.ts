@@ -1,10 +1,10 @@
 import { Component, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { MatList } from '@angular/material/list';
+import { MatLegacyList as MatList } from '@angular/material/legacy-list';
 import { DomEvent } from 'leaflet';
 import { MapSettingsService } from '../settings/map.settings.service';
 import { MapSettings } from 'src/app/entities/map/entities.map';
 import { PlacenameSearchResult, PlacenameSearchService } from '../search/search.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 export enum SearchState {
   ON,

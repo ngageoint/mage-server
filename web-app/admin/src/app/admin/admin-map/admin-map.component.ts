@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { MapSettingsService } from '../../../app/map/settings/map.settings.service';

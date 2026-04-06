@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter, AfterViewInit, ElementRef, ViewChildren, QueryList, Input } from '@angular/core';
 import { DomEvent } from 'leaflet';
-import { MatButton } from '@angular/material/button';
+import { MatLegacyButton as MatButton } from '@angular/material/legacy-button';
 
 export enum LocationState {
   Off,

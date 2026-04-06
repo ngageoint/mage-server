@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AuthenticationDialogComponent } from './authentication-dialog.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { IngressModule } from '../ingress.module';
 
 describe('Authentication Dialog', () => {

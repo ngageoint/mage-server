@@ -19,12 +19,12 @@ import {
   takeUntil
 } from 'rxjs';
 import { NgForm } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DeleteUserComponent } from '../delete-user/delete-user.component';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { AdminEventsService } from '../../services/admin-events.service';
-import { MatTableDataSource } from '@angular/material/table';
-import { PageEvent } from '@angular/material/paginator';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { AdminUserService } from '../../services/admin-user.service';
 import { LocalStorageService } from '../../../../../../../web-app/src/app/http/local-storage.service';
 import { User } from '../user';

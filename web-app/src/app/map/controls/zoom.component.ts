@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output, AfterViewInit, ViewChildren, ElementRef, QueryList } from '@angular/core';
 import { DomEvent } from 'leaflet';
-import { MatButton } from '@angular/material/button';
+import { MatLegacyButton as MatButton } from '@angular/material/legacy-button';
 
 export enum ZoomDirection {
   IN,

@@ -5,8 +5,8 @@ import { TimeZoneComponent } from './time-zone/time-zone.component';
 import { PollingIntervalComponent } from './polling-interval/polling-interval.component';
 import { TimeFormatComponent } from './time-format/time-format.component';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
 
 describe('Preferences Component', () => {
   let component: PreferencesComponent;

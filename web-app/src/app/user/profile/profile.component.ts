@@ -6,7 +6,7 @@ import { HttpEvent, HttpEventType } from '@angular/common/http';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
 import { PasswordStrength, passwordStrengthScores } from '../../entities/entities.password';
 

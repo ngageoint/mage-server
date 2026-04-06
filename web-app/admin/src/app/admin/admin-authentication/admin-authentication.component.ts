@@ -8,10 +8,10 @@ import {
   SimpleChanges,
   OnDestroy
 } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { Strategy } from '../admin-authentication/admin-settings.model';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { lastValueFrom, Subject, takeUntil } from 'rxjs';

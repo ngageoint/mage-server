@@ -1,7 +1,7 @@
 import _ from 'underscore'
 import { Component, OnInit } from '@angular/core'
 import { Feed, Service, FeedService } from '@ngageoint/mage.web-core-lib/feed'
-import { MatDialog } from '@angular/material/dialog'
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog'
 import { forkJoin } from 'rxjs'
 import { AdminFeedDeleteComponent } from './admin-feed/admin-feed-delete/admin-feed-delete.component'
 import { AdminServiceDeleteComponent } from './admin-service/admin-service-delete/admin-service-delete.component'

@@ -10,9 +10,9 @@ import { UserService } from 'src/app/user/user.service';
 import { EventService } from 'src/app/event/event.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { MatRippleModule } from '@angular/material/core';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 
 class MockMapService { }
 

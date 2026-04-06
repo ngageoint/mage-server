@@ -28,12 +28,12 @@ import { ObservationEditFormPickerComponent } from "./observation-edit-form-pick
 import moment from 'moment';
 import { ObservationEditDiscardComponent } from "./observation-edit-discard/observation-edit-discard.component";
 import {
-  MatSnackBar,
-  MatSnackBarRef,
-  SimpleSnackBar,
-} from "@angular/material/snack-bar";
+  MatLegacySnackBar as MatSnackBar,
+  MatLegacySnackBarRef as MatSnackBarRef,
+  LegacySimpleSnackBar as SimpleSnackBar,
+} from "@angular/material/legacy-snack-bar";
 import { MatIconRegistry } from "@angular/material/icon";
-import { MatDialog } from "@angular/material/dialog";
+import { MatLegacyDialog as MatDialog } from "@angular/material/legacy-dialog";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import {
   AttachmentService,
