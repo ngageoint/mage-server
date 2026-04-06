@@ -53,9 +53,5 @@ import { RouterModule } from '@angular/router';
         AdminTeamsService,
         AdminEventsService
     ],
-    entryComponents: [
-        CreateTeamDialogComponent,
-        DeleteTeamComponent
-    ]
 })
 export class AdminTeamsModule { }

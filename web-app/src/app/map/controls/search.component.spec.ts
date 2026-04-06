@@ -46,17 +46,17 @@ describe('SearchComponent', () => {
   it('should toggle search on', () => {
     const button = fixture.debugElement.query(By.css('button'));
     button.nativeElement.click();
-
-    expect(component.searchState).toEqual(0);
+  
+    expect(component.searchState as SearchState).toBe(SearchState.ON)
   });
-
+  
   it('should toggle search off', () => {
     component.searchState = SearchState.ON;
-
+  
     const button = fixture.debugElement.query(By.css('button'));
     button.nativeElement.click();
-
-    expect(component.searchState).toEqual(1)
+  
+    expect(component.searchState as SearchState).toBe(SearchState.OFF)
   });
 
   it('should search', fakeAsync(() => {

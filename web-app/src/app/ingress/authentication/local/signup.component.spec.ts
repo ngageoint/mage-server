@@ -13,6 +13,9 @@ import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconModule } from '@angular/material/icon';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -96,6 +99,9 @@ describe('SignupComponent', () => {
         HttpClientTestingModule,
         MatFormFieldModule,
         MatInputModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressBarModule,
         CommonModule,
         BrowserModule,
         NoopAnimationsModule
