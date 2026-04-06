@@ -28,7 +28,7 @@ describe('BulkUserComponent', () => {
 
   const teams: Team[] = [
     {
-      id: 10,
+      id: "10",
       name: 'Team X',
       description: '',
       teamEventId: '',
@@ -36,7 +36,7 @@ describe('BulkUserComponent', () => {
       acl: undefined
     },
     {
-      id: 11,
+      id: "11",
       name: 'Team Y',
       description: '',
       teamEventId: '',
