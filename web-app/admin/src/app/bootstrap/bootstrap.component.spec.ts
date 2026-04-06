@@ -1,8 +1,15 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { Subject, of } from 'rxjs';
 
 import { BootstrapComponent } from './bootstrap.component';
 import { AdminUserService } from '../admin/services/admin-user.service';
+
+@Component({
+  selector: 'admin-navigation',
+  template: ''
+})
+class MockAdminNavigationComponent {}
 
 describe('BootstrapComponent', () => {
   let component: BootstrapComponent;
@@ -25,7 +32,7 @@ describe('BootstrapComponent', () => {
     });
 
     TestBed.configureTestingModule({
-      declarations: [BootstrapComponent],
+      declarations: [BootstrapComponent, MockAdminNavigationComponent],
       providers: [{ provide: AdminUserService, useValue: adminUserService }]
     }).compileComponents();
   }));

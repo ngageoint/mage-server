@@ -111,7 +111,7 @@ describe('BulkUserComponent', () => {
     expect(component.displayedColumns).toEqual(['team', 'role', ...header]);
     expect(component.users.length).toBe(1);
     expect((component.users[0] as any)['Username']).toBe('user1');
-    expect((component.users[0] as any).team?.id).toBe(11);
+    expect((component.users[0] as any).team?.id).toBe("11");
     expect((component.users[0] as any).role?.id).toBe('1');
     expect(component.unmappedFields.length).toBe(0);
   });
@@ -231,7 +231,7 @@ describe('BulkUserComponent', () => {
       closeSpy.calls.mostRecent().args[0];
 
     expect(selectedRole.id).toBe('1');
-    expect(selectedTeam.id).toBe(10);
+    expect(selectedTeam.id).toBe("10");
     expect(users[0]).toEqual(
       jasmine.objectContaining({
         username: 'user9',
@@ -241,7 +241,7 @@ describe('BulkUserComponent', () => {
         password: 'p9',
         passwordconfirm: 'p9',
         roleId: '1',
-        team: 10,
+        team: "10",
         avatar: null,
         icon: null,
         iconMetadata: null
