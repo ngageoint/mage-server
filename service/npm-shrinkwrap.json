@@ -15,7 +15,7 @@
         "@turf/kinks": "7.2.0",
         "@types/geojson": "7946.0.16",
         "@types/json-schema": "7.0.15",
-        "@types/mime-types": "2.1.4",
+        "@types/mime-types": "3.0.1",
         "@xmldom/xmldom": "0.9.8",
         "adm-zip": "0.5.16",
         "archiver": "5.3.2",
@@ -2745,9 +2745,9 @@
       "integrity": "sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w=="
     },
     "node_modules/@types/mime-types": {
-      "version": "2.1.4",
-      "resolved": "https://registry.npmjs.org/@types/mime-types/-/mime-types-2.1.4.tgz",
-      "integrity": "sha512-lfU4b34HOri+kAY5UheuFMWPDOI+OPceBSHZKp69gEyTL/mmJ4cnU6Y/rlme3UL3GyOn6Y42hyIEw0/q8sWx5w==",
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/@types/mime-types/-/mime-types-3.0.1.tgz",
+      "integrity": "sha512-xRMsfuQbnRq1Ef+C+RKaENOxXX87Ygl38W1vDfPHRku02TgQr+Qd8iivLtAMcR0KF5/29xlnFihkTlbqFrGOVQ==",
       "license": "MIT"
     },
     "node_modules/@types/mocha": {
