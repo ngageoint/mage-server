@@ -9,7 +9,8 @@ import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy
 import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatMomentDateModule } from '@angular/material-moment-adapter'
 import { MatLegacyAutocompleteModule as MatAutocompleteModule } from '@angular/material/legacy-autocomplete';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
@@ -28,6 +29,7 @@ import { RouterModule } from '@angular/router';
         MatCardModule,
         MatSelectModule,
         MatDatepickerModule,
+        MatMomentDateModule,
         MatAutocompleteModule,
         MatNativeDateModule,
         MatTableModule,

@@ -40,26 +40,36 @@ mat-button {
 
 .datetime {
   width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 24px;
+  align-items: start;
+}
+
+.datetime-fields {
+  min-width: 0;
   display: flex;
-  flex-direction: row;
-  gap: 8px;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.date {
-  flex: 1;
-}
-
-.time {
-  flex: 1;
+datetime-picker {
+  display: block;
+  width: 100%;
 }
 
 .timezone {
-  margin-top: 58px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 8px;
 }
 
 .timezone__button {
-  width: 120px;
+  width: 160px;
+  white-space: nowrap;
 }
+
 .filter-loading {
   display: flex;
   flex-direction: column;

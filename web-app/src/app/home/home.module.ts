@@ -17,7 +17,8 @@ import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-c
 import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
 import { MatLegacyChipsModule as MatChipsModule } from '@angular/material/legacy-chips';
 import { MatRippleModule } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatMomentDateModule } from '@angular/material-moment-adapter'
 import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
@@ -169,6 +170,7 @@ const routes: Routes = [{
     MatCheckboxModule,
     MatChipsModule,
     MatDatepickerModule,
+    MatMomentDateModule,
     MatDialogModule,
     MatExpansionModule,
     MatFormFieldModule,

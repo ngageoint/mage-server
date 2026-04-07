@@ -152,22 +152,26 @@
         </mat-form-field>
 
         <div class="datetime" *ngIf="intervalChoice?.filter === 'custom'">
-          <div>
-            <datetime-picker
-              title="Start"
-              [datetime]="defaultStartDate"
-              [timezone]="timeZone"
-              (dateTimeChange)="onStartDate($event)"
-            >
-            </datetime-picker>
+          <div class="datetime-fields">
+            <div class="datetime-row">
+              <datetime-picker
+                title="Start"
+                [datetime]="defaultStartDate"
+                [timezone]="timeZone"
+                (dateTimeChange)="onStartDate($event)"
+              >
+              </datetime-picker>
+            </div>
 
-            <datetime-picker
-              title="End"
-              [datetime]="defaultEndDate"
-              [timezone]="timeZone"
-              (dateTimeChange)="onEndDate($event)"
-            >
-            </datetime-picker>
+            <div class="datetime-row">
+              <datetime-picker
+                title="End"
+                [datetime]="defaultEndDate"
+                [timezone]="timeZone"
+                (dateTimeChange)="onEndDate($event)"
+              >
+              </datetime-picker>
+            </div>
           </div>
 
           <div class="timezone">
