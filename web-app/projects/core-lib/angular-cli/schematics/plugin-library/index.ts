@@ -90,7 +90,7 @@ function useCustomBuilder(options: PluginLibraryOptions): Rule {
       builder: '@ngageoint/mage.web-core-lib:amd'
     })
     workspace.projects.set(projName, project)
-  })
+  }) as unknown as Rule
 }
 
 function addCorePeerDependency(options: PluginLibraryOptions): Rule {
@@ -116,7 +116,7 @@ function addCorePeerDependency(options: PluginLibraryOptions): Rule {
   }
 }
 
-export function mageWebPluginLibrary(options: PluginLibraryOptions): Rule {
+export function mageWebPluginLibrary(options: PluginLibraryOptions) {
   if (!options.name) {
     throw new SchematicsException('missing name of the library to generate')
   }
