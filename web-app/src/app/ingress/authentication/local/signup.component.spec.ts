@@ -8,14 +8,14 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { User } from 'core-lib-src/user';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PasswordPolicy } from '../@types/signup';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
-import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;

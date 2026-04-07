@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FilterControlComponent } from './filter.component';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyChipsModule as MatChipsModule } from '@angular/material/legacy-chips';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 
 describe('Filter Control Component', () => {
   let component: FilterControlComponent;

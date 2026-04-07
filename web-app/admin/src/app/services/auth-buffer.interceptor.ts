@@ -9,7 +9,7 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 
 import { HttpRequestBufferService } from '../services/http-request-buffer.service';
 import { SigninModalComponent } from '../../app/authentication/signin-modal/signin-modal.component';

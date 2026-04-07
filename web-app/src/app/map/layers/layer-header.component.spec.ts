@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LayerHeaderComponent } from './layer-header.component';
-import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
+import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
 import { Component, ViewChild } from '@angular/core';
 import { MapLayerService } from './layer.service';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';

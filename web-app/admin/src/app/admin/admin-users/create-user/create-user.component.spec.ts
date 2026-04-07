@@ -7,20 +7,20 @@ import {
 import { CreateUserModalComponent } from './create-user.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import {
-  MatLegacyDialogModule as MatDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA
-} from '@angular/material/legacy-dialog';
+  MatDialogModule as MatDialogModule,
+  MatDialogRef as MatDialogRef,
+  MAT_DIALOG_DATA as MAT_DIALOG_DATA
+} from '@angular/material/dialog';
 import { ApiService } from '../../../api/api.service';
 import { Role } from '../user';
 import { of } from 'rxjs';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
-import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('CreateUserModalComponent', () => {
   let component: CreateUserModalComponent;

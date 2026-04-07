@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
+import { MatListModule as MatListModule } from '@angular/material/list';
 import { MomentModule } from '../../../../app/moment/moment.module';
 import { FeedItemSummaryComponent } from './feed-item-summary.component';
 import { MapService } from 'src/app/map/map.service';

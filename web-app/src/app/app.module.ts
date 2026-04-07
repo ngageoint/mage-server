@@ -4,7 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule, HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { AppComponent } from './app.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { AppRoutingModule } from './routing.module';
 import { LocalStorageService } from './http/local-storage.service';
 import { TokenInterceptorService } from './http/token.interceptor';

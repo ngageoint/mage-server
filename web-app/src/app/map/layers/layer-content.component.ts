@@ -1,5 +1,4 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
-import { MatLegacySliderChange as MatSliderChange } from '@angular/material/legacy-slider';
 import { MapLayerService, SimpleStyle } from './layer.service';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { trigger, style, transition, animate } from '@angular/animations';
@@ -12,11 +11,9 @@ import { trigger, style, transition, animate } from '@angular/animations';
     trigger('visibility', [
       transition(':enter', [
         style({ height: 0, opacity: 0 }),
-        animate('225ms', style({ height: '*', opacity: 1 })),
+        animate('225ms', style({ height: '*', opacity: 1 }))
       ]),
-      transition(':leave', [
-        animate('225ms', style({ height: 0, opacity: 0 }))
-      ])
+      transition(':leave', [animate('225ms', style({ height: 0, opacity: 0 }))])
     ])
   ]
 })
@@ -36,17 +33,17 @@ export class LayerContentComponent {
       this.style = null;
     } else {
       this.style = {
-        stroke: "#000000FF",
-        fill: "#00000011",
+        stroke: '#000000FF',
+        fill: '#00000011',
         width: 1
-      }
+      };
     }
 
     this.layerService.style(this.layer, this.style);
   }
 
-  opacityChanged(event: MatSliderChange): void {
-    this.layerService.opacity(this.layer, event.value / 100);
+  opacityChanged(value: number): void {
+    this.layerService.opacity(this.layer, value / 100);
   }
 
   colorChanged(event: ColorEvent, key: string): void {

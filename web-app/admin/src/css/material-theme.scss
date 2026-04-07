@@ -1,26 +1,114 @@
-  $mdc-theme-primary:#1E88E5;
-  $mdc-theme-primary-dark: #1565C0;
-  $mdc-theme-primary-on-background: rgba(30, 136, 229, 0.87);
-  $mdc-theme-secondary: #1E88E5;
-  $mdc-theme-background: #FFFFFF;
-  $mdc-theme-surface: #FFFFFF;
-  $mdc-theme-error: #D32F2F;
-  $mdc-theme-on-primary: #fff;
-  $mdc-theme-on-secondary: #fff;
-  $mdc-theme-on-surface: #000;
-  $mdc-theme-on-error: #fff;
-  $mdc-theme-text-primary-on-background: rgba(0, 0, 0, 0.87);
-  $mdc-theme-text-secondary-on-background: rgba(0, 0, 0, 0.54);
-  $mdc-theme-text-hint-on-background: rgba(0, 0, 0, 0.38);
-  $mdc-theme-text-disabled-on-background: rgba(0, 0, 0, 0.38);
-  $mdc-theme-text-icon-on-background: rgba(0, 0, 0, 0.38);
-  $mdc-theme-text-primary-on-light: rgba(0, 0, 0, 0.87);
-  $mdc-theme-text-secondary-on-light: rgba(0, 0, 0, 0.54);
-  $mdc-theme-text-hint-on-light: rgba(0, 0, 0, 0.38);
-  $mdc-theme-text-disabled-on-light: rgba(0, 0, 0, 0.38);
-  $mdc-theme-text-icon-on-light: rgba(0, 0, 0, 0.38);
-  $mdc-theme-text-primary-on-dark: white;
-  $mdc-theme-text-secondary-on-dark: rgba(255, 255, 255, 0.7);
-  $mdc-theme-text-hint-on-dark: rgba(255, 255, 255, 0.5);
-  $mdc-theme-text-disabled-on-dark: rgba(255, 255, 255, 0.5);
-  $mdc-theme-text-icon-on-dark: rgba(255, 255, 255, 0.5);
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$mage-primary: mat.define-palette((
+  50: #e3f2fd,
+  100: #bbdefb,
+  200: #90caf9,
+  300: #64b5f6,
+  400: #42a5f5,
+  500: #2196f3,
+  600: #1E88E5,
+  700: #1565C0,
+  800: #1565c0,
+  900: #0d47a1,
+  A100: #82b1ff,
+  A200: #448aff,
+  A400: #2979ff,
+  A700: #2962ff,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: #fff,
+    A400: #fff,
+    A700: #fff,
+  )
+), 600, 500, 700);
+
+$mage-accent: mat.define-palette((
+  50: #e3f2fd,
+  100: #bbdefb,
+  200: #90caf9,
+  300: #64b5f6,
+  400: #42a5f5,
+  500: #2196f3,
+  600: #1E88E5,
+  700: #1565C0,
+  800: #1565c0,
+  900: #0d47a1,
+  A100: #82b1ff,
+  A200: #448aff,
+  A400: #2979ff,
+  A700: #2962ff,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: #fff,
+    A400: #fff,
+    A700: #fff,
+  )
+), 700, 600, 800);
+
+$mage-warn: mat.define-palette((
+  50: #ffebee,
+  100: #ffcdd2,
+  200: #ef9a9a,
+  300: #e57373,
+  400: #ef5350,
+  500: #f44336,
+  600: #e53935,
+  700: #D32F2F,
+  800: #c62828,
+  900: #b71c1c,
+  A100: #ff8a80,
+  A200: #ff5252,
+  A400: #ff1744,
+  A700: #d50000,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: #fff,
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: #fff,
+    A400: #fff,
+    A700: #fff,
+  )
+), 700, 600, 800);
+
+$mage-theme: mat.define-light-theme((
+  color: (
+    primary: $mage-primary,
+    accent: $mage-accent,
+    warn: $mage-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($mage-theme);

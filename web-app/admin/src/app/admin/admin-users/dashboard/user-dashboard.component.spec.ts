@@ -7,9 +7,9 @@ import {
 import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
 import { UserDashboardComponent } from './user-dashboard.component';
 import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef
-} from '@angular/material/legacy-dialog';
+  MatDialog as MatDialog,
+  MatDialogRef as MatDialogRef
+} from '@angular/material/dialog';
 import { RouterTestingModule } from '@angular/router/testing';
 import { UserPagingService } from 'admin/src/app/services/user-paging.service';
 import { AdminTeamsService } from '../../services/admin-teams-service';
@@ -18,11 +18,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
-import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
+import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
+import { MatListModule as MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { LocalStorageService } from 'src/app/http/local-storage.service';

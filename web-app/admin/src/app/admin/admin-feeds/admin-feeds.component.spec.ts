@@ -6,7 +6,7 @@ import {
 } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, Subject } from 'rxjs';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 
 import { AdminFeedsComponent } from './admin-feeds.component';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';

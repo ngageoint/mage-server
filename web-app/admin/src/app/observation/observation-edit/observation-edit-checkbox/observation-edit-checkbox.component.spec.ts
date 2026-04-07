@@ -1,12 +1,12 @@
 import { Component, ViewChild } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
-import { MatLegacyCheckbox as MatCheckbox, MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
-import { MatLegacyError as MatError, MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatCheckbox as MatCheckbox, MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
+import { MatError as MatError, MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { By } from '@angular/platform-browser'
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MatLegacyCheckboxHarness as MatCheckboxHarness } from '@angular/material/legacy-checkbox/testing';
+import { MatCheckboxHarness as MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.component'
 
 @Component({

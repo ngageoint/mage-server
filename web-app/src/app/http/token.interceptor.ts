@@ -11,7 +11,7 @@ import {
 import { catchError, Observable, ReplaySubject, switchMap, throwError, take } from 'rxjs';
 import { LocalStorageService } from './local-storage.service';
 import { AuthenticationDialogComponent } from '../ingress/authentication/authentication-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { UserService } from '../user/user.service';
 
 export const BYPASS_TOKEN = new HttpContextToken(() => false);

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ExportComponent } from './export.component';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 
 describe('ExportComponent', () => {
 

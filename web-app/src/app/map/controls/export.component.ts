@@ -1,5 +1,11 @@
-import { Component, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { MatLegacyButton as MatButton } from '@angular/material/legacy-button';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  AfterViewInit,
+  ElementRef,
+  ViewChild
+} from '@angular/core';
 import { DomEvent } from 'leaflet';
 
 @Component({
@@ -8,12 +14,14 @@ import { DomEvent } from 'leaflet';
   styleUrls: ['./export.component.scss']
 })
 export class ExportControlComponent implements AfterViewInit {
-  @ViewChild(MatButton, { read: ElementRef }) button: ElementRef;
+  @ViewChild('exportButton') button!: ElementRef<HTMLElement>;
 
   @Output() click = new EventEmitter<void>();
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.button.nativeElement); 
+    if (this.button?.nativeElement) {
+      DomEvent.disableClickPropagation(this.button.nativeElement);
+    }
   }
 
   onClick($event: MouseEvent): void {

@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { InitializeComponent } from './initialize.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('Initialize Component', () => {
   let component: InitializeComponent;

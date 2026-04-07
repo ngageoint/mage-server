@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Inject } from '@angular/core'
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog'
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { Strategy } from '../../admin-authentication/admin-settings.model'
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service'
 

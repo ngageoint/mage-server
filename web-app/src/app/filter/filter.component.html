@@ -32,15 +32,15 @@
           <mat-form-field appearance="fill">
             <mat-label>Teams</mat-label>
 
-            <mat-chip-list #chipListTeam>
-              <mat-chip
+            <mat-chip-listbox #chipListTeam>
+              <mat-chip-option
                 *ngFor="let team of selectedTeams"
                 [removable]="true"
                 (removed)="onRemoveTeam(team)"
               >
                 {{ team.name }}
                 <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
+              </mat-chip-option>
 
               <input
                 [formControl]="teamControl"
@@ -49,7 +49,7 @@
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                 (matChipInputTokenEnd)="onSelectTeam($event)"
               />
-            </mat-chip-list>
+            </mat-chip-listbox>
 
             <mat-autocomplete
               #autoTeam="matAutocomplete"
@@ -69,15 +69,15 @@
           <mat-form-field appearance="fill">
             <mat-label>Users</mat-label>
 
-            <mat-chip-list #chipListUser>
-              <mat-chip
+            <mat-chip-listbox #chipListUser>
+              <mat-chip-option
                 *ngFor="let user of selectedUsers"
                 [removable]="true"
                 (removed)="onRemoveUser(user)"
               >
                 {{ user.displayName || user.username }}
                 <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
+              </mat-chip-option>
 
               <input
                 [formControl]="userControl"
@@ -86,7 +86,7 @@
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                 (matChipInputTokenEnd)="onSelectUser($event)"
               />
-            </mat-chip-list>
+            </mat-chip-listbox>
 
             <mat-autocomplete
               #autoUser="matAutocomplete"
@@ -106,15 +106,15 @@
           <mat-form-field appearance="fill">
             <mat-label>Forms</mat-label>
 
-            <mat-chip-list #chipListForm>
-              <mat-chip
+            <mat-chip-listbox #chipListForm>
+              <mat-chip-option
                 *ngFor="let form of selectedForms"
                 [removable]="true"
                 (removed)="onRemoveForm(form)"
               >
                 {{ form.name }}
                 <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
+              </mat-chip-option>
 
               <input
                 [formControl]="formControl"
@@ -123,7 +123,7 @@
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                 (matChipInputTokenEnd)="onSelectForm($event)"
               />
-            </mat-chip-list>
+            </mat-chip-listbox>
 
             <mat-autocomplete
               #autoForm="matAutocomplete"

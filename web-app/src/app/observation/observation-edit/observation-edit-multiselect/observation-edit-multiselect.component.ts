@@ -1,8 +1,8 @@
 import { Component, ViewChild, ElementRef, Input, AfterViewInit, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatLegacyAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/legacy-autocomplete';
-import { MatLegacyChipInputEvent as MatChipInputEvent, MatLegacyChipList as MatChipList } from '@angular/material/legacy-chips';
+import { MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatChipInputEvent as MatChipInputEvent, MatChipListbox as MatChipListbox } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -26,7 +26,7 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
   @Input() formGroup: UntypedFormGroup
   @Input() definition: MultiSelectField
 
-  @ViewChild('chipList', { static: false }) chipList: MatChipList
+  @ViewChild('chipList', { static: false }) chipList: MatChipListbox
   @ViewChild('choiceInput', { static: false }) choiceInput: ElementRef<HTMLInputElement>
   @ViewChild(MatAutocompleteTrigger, {static: false}) autocomplete: MatAutocompleteTrigger
 
@@ -36,6 +36,8 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
   control: UntypedFormControl
   choiceControl = new UntypedFormControl()
   filteredChoices: Observable<Choice[]>
+
+  chipListInvalid = false
 
   constructor() {
     this.filteredChoices = this.choiceControl.valueChanges.pipe(
@@ -105,7 +107,7 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
   }
 
   private checkErrorState(): void {
-    this.chipList.errorState = this.definition.required && (!this.control.value || this.control.value.length === 0)
+    this.chipListInvalid = this.definition.required && (!this.control.value || this.control.value.length === 0)
   }
 
 }

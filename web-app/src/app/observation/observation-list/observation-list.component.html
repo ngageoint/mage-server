@@ -4,15 +4,15 @@
   </mat-toolbar>
 
   <div class="actions">
-    <mat-chip-list selectable="true">
-      <mat-chip color="primary" [selected]="filter === 'all'" (click)="filterChanged('all')">All</mat-chip>
-      <mat-chip color="primary" [selected]="filter === 'favorite'"
-        (click)="filterChanged('favorite')">Favorites</mat-chip>
-      <mat-chip color="primary" [selected]="filter === 'important'"
-        (click)="filterChanged('important')">Important</mat-chip>
-      <mat-chip color="primary" [selected]="filter === 'attachments'"
-        (click)="filterChanged('attachments')">Attachments</mat-chip>
-    </mat-chip-list>
+    <mat-chip-listbox selectable="true">
+      <mat-chip-option color="primary" [selected]="filter === 'all'" (click)="filterChanged('all')">All</mat-chip-option>
+      <mat-chip-option color="primary" [selected]="filter === 'favorite'"
+        (click)="filterChanged('favorite')">Favorites</mat-chip-option>
+      <mat-chip-option color="primary" [selected]="filter === 'important'"
+        (click)="filterChanged('important')">Important</mat-chip-option>
+      <mat-chip-option color="primary" [selected]="filter === 'attachments'"
+        (click)="filterChanged('attachments')">Attachments</mat-chip-option>
+    </mat-chip-listbox>
   </div>
 
   <div class="feed-pages">

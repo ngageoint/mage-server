@@ -5,7 +5,7 @@ import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import moment from 'moment';
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { LocalStorageService } from '../../http/local-storage.service';
 import { MapService } from '../../map/map.service';

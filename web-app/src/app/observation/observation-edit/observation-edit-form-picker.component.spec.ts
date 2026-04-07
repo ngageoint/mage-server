@@ -4,7 +4,7 @@ import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component';
 import { FilterService } from 'src/app/filter/filter.service';
 import { EventService } from 'src/app/event/event.service';
-import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
+import { MatListModule as MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 
 class MockFilterService {

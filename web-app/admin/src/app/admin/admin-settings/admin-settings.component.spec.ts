@@ -1,13 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
-  MatLegacySnackBar as MatSnackBar,
-  MatLegacySnackBarModule as MatSnackBarModule
-} from '@angular/material/legacy-snack-bar';
+  MatSnackBar as MatSnackBar,
+  MatSnackBarModule as MatSnackBarModule
+} from '@angular/material/snack-bar';
 import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogModule as MatDialogModule
-} from '@angular/material/legacy-dialog';
+  MatDialog as MatDialog,
+  MatDialogModule as MatDialogModule
+} from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';

@@ -22,7 +22,7 @@ import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 import { UserService } from '../user/user.service'
 import { FilterComponent } from '../filter/filter.component'
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog'
+import { MatDialog as MatDialog } from '@angular/material/dialog'
 import { ExportDialogComponent } from '../export/export-dialog.component'
 import _ from 'underscore'
 import moment from 'moment';

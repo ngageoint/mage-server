@@ -20,7 +20,6 @@
 @import './navbar.scss';
 @import './tooltip.scss';
 @import './material-select-theme.scss';
-@import './mdDateTimePicker-overrides.scss';
 @import './leaflet-overrides.scss';
 @import './layer-edit.scss';
 
@@ -39,14 +38,8 @@ mage {
   height: 100%;
 }
 
-.application {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .typeahead-dropdown-menu {
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 .vertical-middle {
@@ -85,7 +78,7 @@ a:focus {
   text-decoration: none;
 }
 
-/** Start fix for allowing double and single line list items in the same list **/
+/* Keep this for mixed single/two-line lists if still needed */
 .mdc-list-item--two-line .mdc-list-item__text {
   align-self: flex-start;
 }
@@ -97,8 +90,6 @@ a:focus {
 .mdc-list--dense .mdc-list-item.mdc-list-item--two-line {
   height: 60px;
 }
-
-/** End fix */
 
 .mdc-dialog .mdc-dialog__title {
   color: #ffffff;
@@ -142,15 +133,9 @@ a:focus {
   text-align: right;
 }
 
-/* Fixing what bootstrap is doing */
-.mdc-form-field>label {
-  margin-bottom: unset;
-  font-weight: unset;
-}
-
 .shadow-app-bar {
-  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-    0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+    0 1px 10px 0 rgba(0, 0, 0, 0.12);
 }
 
 .header-spacer {
@@ -214,11 +199,7 @@ a:focus {
   width: 230px;
 }
 
-.export-panel .export-button:not(:disabled) {
-  background-color: #1e88e5 !important;
-  color: white;
-}
-
+.export-panel .export-button:not(:disabled),
 .export-info-panel .export-button:not(:disabled) {
   background-color: #1e88e5 !important;
   color: white;
@@ -235,32 +216,9 @@ a:focus {
   z-index: 1;
 }
 
+/* Temporarily simplified from the old invasive MDC/select/chip overrides */
 .multi-select {
-  height: unset;
   min-height: 56px;
-}
-
-.multi-select .mdc-select__selected-text {
-  min-height: 56px;
-  height: 100%;
-  position: absolute;
-  color: white !important;
-  z-index: 0;
-}
-
-.multi-select .mdc-select__selected-text-mine {
-  min-height: 62px;
-  padding-top: 8px;
-  padding-bottom: 4px;
-  margin-bottom: 2px;
-  margin-top: -8px;
-}
-
-.multi-select .mdc-chip-set {
-  padding-top: 10px;
-  padding-bottom: 0px;
-  margin-bottom: 0px;
-  margin-top: 0px;
 }
 
 .multi-select-list .mdc-list .mdc-list-item--disabled {
@@ -276,8 +234,8 @@ a:focus {
 .location-field-select .map-select {
   position: absolute;
   top: 0;
-  bottom: 0;
   right: 0;
+  bottom: 0;
   left: 0;
   z-index: 1;
 }
@@ -314,22 +272,36 @@ a:focus {
 .location-field-card__view {
   position: absolute;
   top: 8px;
-  bottom: 8px;
   right: 8px;
+  bottom: 8px;
   left: 8px;
   z-index: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__leading,
-.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__trailing,
-.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__notch {
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(
+    .mdc-select--focused
+  )
+  .mdc-select__selected-text-mine:hover
+  ~ .mdc-notched-outline
+  .mdc-notched-outline__leading,
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(
+    .mdc-select--focused
+  )
+  .mdc-select__selected-text-mine:hover
+  ~ .mdc-notched-outline
+  .mdc-notched-outline__trailing,
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(
+    .mdc-select--focused
+  )
+  .mdc-select__selected-text-mine:hover
+  ~ .mdc-notched-outline
+  .mdc-notched-outline__notch {
   border-color: rgba(0, 0, 0, 0.87);
 }
 
 .location-field-select.mdc-select {
-  /* height: unset; */
   cursor: pointer;
 }
 
@@ -344,24 +316,16 @@ a:focus {
   margin-bottom: 16px;
 }
 
-.coordinate-editor>div {
+.coordinate-editor > div {
   margin-right: 8px;
   margin-left: 8px;
 }
-
-/* .coordinate-editor > div:last-child {
-  margin-left: 8px;
-} */
 
 .mgrs-text-field {
   width: 100%;
 }
 
-/*
-  Allow angular.js to be loaded in body, hiding cloaked elements until
-  templates compile.  The !important is important given that there may be
-  other selectors that are more specific or come later and might alter display.
- */
+/* AngularJS cloak support */
 [ng\:cloak],
 [ng-cloak],
 [data-ng-cloak],
@@ -371,7 +335,7 @@ a:focus {
   display: none !important;
 }
 
-/* CLEAR FIX*/
+/* Clearfix */
 .clearfix:after {
   content: '.';
   display: block;
@@ -381,16 +345,11 @@ a:focus {
 }
 
 .clearfix {
-  display: inline-block;
+  display: block;
 }
 
-/* Hides from IE-mac \*/
 * html .clearfix {
   height: 1%;
-}
-
-.clearfix {
-  display: block;
 }
 
 body {
@@ -399,10 +358,7 @@ body {
   display: flex;
   flex-direction: column;
   font-size: 14px;
-  line-height: unset;
 
-  /* font-family: Roboto;
-  font-weight: 400; */
   &:has(.banner-header) {
     .nav-float-wrapper {
       top: 91px !important;
@@ -434,7 +390,6 @@ body {
 
 html {
   height: 100%;
-  font-size: unset;
 }
 
 h1,
@@ -445,16 +400,16 @@ h5 {
   color: #1e88e5;
 }
 
-.nav>li>a {
+.nav > li > a {
   color: #ffffff;
 }
 
-.nav-pills>li>a {
+.nav-pills > li > a {
   color: #1e88e5;
 }
 
-.nav>li>a:hover,
-.nav>li>a:focus {
+.nav > li > a:hover,
+.nav > li > a:focus {
   text-decoration: none;
   color: #1565c0;
   background: transparent;
@@ -524,9 +479,9 @@ a {
 .content-inner {
   position: absolute;
   top: 0;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
   overflow: auto;
 }
 
@@ -564,27 +519,25 @@ a {
   font-size: 16px;
   background-color: #1565c0;
   color: #fff;
-  padding: 10px 0px;
+  padding: 10px 0;
 }
 
 .filter-text {
   flex: 1;
 }
 
-.filter-event {
+.filter-event,
+.filter-teams,
+.filter-interval {
   font-family: Roboto;
   font-weight: 400;
 }
 
 .filter-teams {
-  font-family: Roboto;
-  font-weight: 400;
   margin-left: 5px;
 }
 
 .filter-interval {
-  font-family: Roboto;
-  font-weight: 400;
   padding-left: 35px;
 }
 
@@ -657,9 +610,9 @@ a {
 .map-container {
   position: absolute !important;
   top: 0;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
 }
 
 .leaflet-map {
@@ -693,7 +646,7 @@ a {
 
   .feed.ng-hide {
     flex-grow: 0;
-    margin-left: 0px;
+    margin-left: 0;
   }
 
   .feed-tabs {
@@ -777,7 +730,7 @@ a {
     0 2px 2px 0 rgba(0, 0, 0, 0.098), 0 1px 5px 0 rgba(0, 0, 0, 0.084);
 }
 
-.card>.card-content {
+.card > .card-content {
   padding: 16px;
 }
 
@@ -790,12 +743,12 @@ a {
   color: #fff;
 }
 
-.modal-body {
+.modal-body,
+.modal-footer {
   background: #fff;
 }
 
 .modal-footer {
-  background: #fff;
   color: #1e88e5;
 }
 
@@ -874,14 +827,12 @@ a {
   color: #1565c0;
 }
 
-/* Overrides */
-
 textarea {
   height: 75px;
 }
 
 .btn-no-border {
-  border: 0px solid transparent;
+  border: 0 solid transparent;
   background: none;
 }
 
@@ -1035,7 +986,6 @@ admin {
   justify-content: center;
   color: rgba(255, 255, 255, 0.54);
   cursor: pointer;
-  cursor: hand;
 }
 
 .admin-action-arrow-left {
@@ -1067,7 +1017,6 @@ admin {
   margin-bottom: 8px;
 }
 
-/* User management page styles */
 .admin-card {
   height: 235px;
   background-color: white;
@@ -1078,13 +1027,13 @@ admin {
   border-color: #f0f0f0;
 }
 
-.admin-dashboard-navbar>.container-fluid>.navbar-header>.navbar-brand {
+.admin-dashboard-navbar > .container-fluid > .navbar-header > .navbar-brand {
   color: #204976;
 }
 
-.nav-pills>li.active>a,
-.nav-pills>li.active>a:hover,
-.nav-pills>li.active>a:focus {
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
   color: #fff;
   background-color: #1e88e5;
 }
@@ -1107,7 +1056,7 @@ admin {
 }
 
 .admin-nav-gap {
-  padding: 20px 0 20px;
+  padding: 20px 0;
 }
 
 .admin-fab--absolute {
@@ -1136,21 +1085,14 @@ admin {
   border-top: none !important;
 }
 
-.admin-password-container {
+.admin-password-container,
+.admin-option-container,
+.admin-event-member {
   display: flex;
   align-items: center;
 }
 
-.admin-password-text {
-  margin-left: 5px;
-  flex: 1;
-}
-
-.admin-option-container {
-  display: flex;
-  align-items: center;
-}
-
+.admin-password-text,
 .admin-option-text {
   margin-left: 5px;
   flex: 1;
@@ -1159,7 +1101,6 @@ admin {
 .admin-option-action {
   margin-right: 10px;
   cursor: pointer;
-  cursor: hand;
 }
 
 .admin-option-border {
@@ -1186,7 +1127,9 @@ admin {
   float: left;
 }
 
-.admin-device-container {
+.admin-device-container,
+.user-icon-container,
+.observation-actions {
   display: flex;
 }
 
@@ -1220,14 +1163,17 @@ admin {
   font-size: 36px;
 }
 
+.admin-android-icon-xs,
+.admin-apple-icon-xs {
+  font-size: 18px;
+}
+
 .admin-android-icon-xs {
   color: #a4c739;
-  font-size: 18px;
 }
 
 .admin-apple-icon-xs {
   color: #666;
-  font-size: 18px;
 }
 
 .admin-desktop-icon-xs {
@@ -1241,7 +1187,7 @@ admin {
 }
 
 .admin-layer-icon {
-  padding: 5px 0 5px;
+  padding: 5px 0;
   font-size: 25px;
 }
 
@@ -1262,18 +1208,11 @@ admin {
   min-width: 120px;
 }
 
-.admin-event-member {
-  display: flex;
-  align-items: center;
-}
-
-/* form edit styles */
 .form-section-card {
   width: 100%;
   height: 200px;
   position: relative;
   cursor: pointer;
-  cursor: hand;
   font-size: 1.5rem;
 }
 
@@ -1329,7 +1268,6 @@ admin {
 
 .pointer {
   cursor: pointer;
-  cursor: hand;
 }
 
 h4.image-delete {
@@ -1352,11 +1290,8 @@ h4.image-delete {
   color: #777777;
 }
 
+.file-custom,
 .file-custom:before {
-  box-sizing: border-box;
-}
-
-.file-custom {
   box-sizing: border-box;
 }
 
@@ -1392,7 +1327,7 @@ h4.image-delete {
 }
 
 .circle-avatar-no-border {
-  border: 0px;
+  border: 0;
 }
 
 .observation-type {
@@ -1400,17 +1335,16 @@ h4.image-delete {
   padding-bottom: 2px;
 }
 
-.observation-variant {
-  font-size: 14px;
-  font-style: italic;
-}
-
+.observation-variant,
 .observation-user {
   font-size: 14px;
 }
 
+.observation-variant {
+  font-style: italic;
+}
+
 .observation-actions {
-  display: flex;
   flex-direction: row;
   justify-content: flex-end;
   align-items: flex-end;
@@ -1427,18 +1361,12 @@ h4.image-delete {
   font-size: 14px;
 }
 
-.observation-action-important-active {
-  color: #ff9103 !important;
-}
-
+.observation-action-important-active,
 .observation-action-important:hover {
   color: #ff9103 !important;
 }
 
-.observation-action-favorite-active {
-  color: #7ed321 !important;
-}
-
+.observation-action-favorite-active,
 .observation-action-favorite:hover {
   color: #7ed321 !important;
 }
@@ -1454,10 +1382,6 @@ h4.image-delete {
 
 .observation-action-email:hover {
   color: #4a90e2;
-}
-
-.user-icon-container {
-  display: flex;
 }
 
 .user-icon-initials {
@@ -1515,15 +1439,14 @@ h4.image-delete {
   width: 42px;
 }
 
-.btn .logo img {
-  position: relative;
-  top: 9px;
-  width: 60%;
-}
-
+.btn .logo img,
 .btn .logo i {
   position: relative;
   top: 9px;
+}
+
+.btn .logo img {
+  width: 60%;
 }
 
 .col-equal-height {

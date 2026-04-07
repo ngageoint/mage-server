@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AuthorizationComponent } from './authorization.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 
 describe('Authorization Component', () => {
   let component: AuthorizationComponent;

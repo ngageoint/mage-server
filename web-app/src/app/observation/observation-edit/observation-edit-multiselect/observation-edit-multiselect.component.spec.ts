@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core'
 
 import { ObservationEditMultiselectComponent } from './observation-edit-multiselect.component'
-import { MatLegacyAutocompleteModule as MatAutocompleteModule } from '@angular/material/legacy-autocomplete';
-import { MatLegacyChipsModule as MatChipsModule, MatLegacyChipInputEvent as MatChipInputEvent, MatLegacyChipInput as MatChipInput } from '@angular/material/legacy-chips';
-import { MatLegacyFormFieldModule as MatFormFieldModule, MatLegacyError as MatError } from '@angular/material/legacy-form-field';
+import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatChipsModule as MatChipsModule, MatChipInputEvent as MatChipInputEvent, MatChipInput as MatChipInput } from '@angular/material/chips';
+import { MatFormFieldModule as MatFormFieldModule, MatError as MatError } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { By } from '@angular/platform-browser'

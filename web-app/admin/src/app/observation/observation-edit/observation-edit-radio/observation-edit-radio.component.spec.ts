@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
-import { MatLegacyError as MatError, MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
+import { MatError as MatError, MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
 import { By } from '@angular/platform-browser'
 
 import { ObservationEditRadioComponent } from './observation-edit-radio.component'

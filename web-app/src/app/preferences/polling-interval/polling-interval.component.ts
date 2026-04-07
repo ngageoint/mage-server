@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatLegacySelectChange as MatSelectChange } from '@angular/material/legacy-select';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { PollingService } from '../../event/polling.service';
 
 interface PollingOption {

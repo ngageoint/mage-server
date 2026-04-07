@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, getTestBed, tick, fakeAsync, waitForAsync } from '@angular/core/testing';
 
 import { SearchComponent, SearchState } from './search.component';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacyListModule as MatListModule, MatLegacyListItem as MatListItem } from '@angular/material/legacy-list';
-import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatListModule as MatListModule, MatListItem as MatListItem } from '@angular/material/list';
+import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PlacenameSearchResult, PlacenameSearchService } from '../search/search.service';
-import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
+import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 import { defer } from 'rxjs';
 import { MobileSearchType, WebSearchType } from 'src/app/entities/map/entities.map';
 

@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { MatLegacySelectChange as MatSelectChange } from '@angular/material/legacy-select';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
+import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';

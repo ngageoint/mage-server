@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyAutocompleteModule as MatAutocompleteModule } from '@angular/material/legacy-autocomplete';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field'
+import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input'
+import { MatInputModule as MatInputModule } from '@angular/material/input'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { JsonSchemaWidgetAutocompleteComponent } from './json-schema-widget-autocomplete.component';
 import { JsonSchemaModule } from '../json-schema.module';
