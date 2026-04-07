@@ -20,6 +20,7 @@ import { EventDashboardComponent } from './event-dashboard.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 const mockEventsResponse = {
   totalCount: 2,
@@ -94,7 +95,8 @@ describe('EventDashboardComponent', () => {
         { provide: MatDialog, useValue: dialogSpy },
         { provide: Router, useValue: routerSpy },
         { provide: AdminToastService, useValue: toastSpy }
-      ]
+      ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventDashboardComponent);

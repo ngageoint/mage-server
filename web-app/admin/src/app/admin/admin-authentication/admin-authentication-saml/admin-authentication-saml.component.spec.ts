@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml.component';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AdminAuthenticationSAMLComponent', () => {
   let component: AdminAuthenticationSAMLComponent;
@@ -8,7 +9,8 @@ describe('AdminAuthenticationSAMLComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationSAMLComponent ]
+      declarations: [ AdminAuthenticationSAMLComponent ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
   }));

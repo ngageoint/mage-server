@@ -12,11 +12,8 @@ import {
 } from '@angular/forms';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import {
-  MatLegacyError as MatError,
-  MatLegacyFormFieldModule as MatFormFieldModule
-} from '@angular/material/legacy-form-field';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
 @Component({
@@ -35,15 +32,9 @@ class TestHostComponent {
     name: 'select',
     title: 'Colors',
     choices: [
-      {
-        title: 'red'
-      },
-      {
-        title: 'green'
-      },
-      {
-        title: 'blue'
-      }
+      { title: 'red' },
+      { title: 'green' },
+      { title: 'blue' }
     ]
   };
 

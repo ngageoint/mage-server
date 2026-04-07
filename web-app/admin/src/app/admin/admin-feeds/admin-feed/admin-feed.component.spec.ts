@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ElementRef } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
@@ -110,7 +110,8 @@ describe('AdminFeedComponent', () => {
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: routeStub }
-      ]
+      ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     }).compileComponents();
   }));
 

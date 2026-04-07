@@ -17,6 +17,7 @@ import { AdminUserService } from '../../services/admin-user.service';
 import { LocalStorageService } from '../../../../../../../web-app/src/app/http/local-storage.service';
 import { LoginService } from '../../../services/login.service';
 import { DevicePagingService } from '../../../services/device-paging.service';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('UserDetailsComponent', () => {
   let component: UserDetailsComponent;
@@ -156,7 +157,8 @@ describe('UserDetailsComponent', () => {
         { provide: AdminTeamsService, useValue: mockTeamsService },
         { provide: AdminEventsService, useValue: mockEventsService },
         { provide: LocalStorageService, useValue: mockLocalStorageService }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserDetailsComponent);

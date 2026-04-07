@@ -23,6 +23,7 @@ import {
 import { AdminUserService } from '../../services/admin-user.service';
 import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 const mockDevices: Device[] = [
   {
@@ -91,7 +92,8 @@ describe('DeviceDashboardComponent', () => {
         { provide: AdminUserService, useValue: userServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: AdminToastService, useValue: toastSpy }
-      ]
+      ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DeviceDashboardComponent);

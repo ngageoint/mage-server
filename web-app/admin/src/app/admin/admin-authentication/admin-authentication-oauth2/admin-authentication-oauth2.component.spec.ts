@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminAuthenticationOAuth2Component } from './admin-authentication-oauth2.component';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AdminAuthenticationOAuth2Component', () => {
   let component: AdminAuthenticationOAuth2Component;
@@ -8,7 +9,8 @@ describe('AdminAuthenticationOAuth2Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AdminAuthenticationOAuth2Component]
+      declarations: [AdminAuthenticationOAuth2Component],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     })
       .compileComponents();
   }));

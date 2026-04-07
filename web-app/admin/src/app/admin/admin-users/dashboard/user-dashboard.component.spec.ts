@@ -4,24 +4,39 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
 import { UserDashboardComponent } from './user-dashboard.component';
-import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
-import { Router } from '@angular/router';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef
+} from '@angular/material/legacy-dialog';
+import { RouterTestingModule } from '@angular/router/testing';
 import { UserPagingService } from 'admin/src/app/services/user-paging.service';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { of, BehaviorSubject, throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyOptionModule as MatOptionModule } from '@angular/material/legacy-core';
+import { MatOptionModule } from '@angular/material/core';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
+import { MatSelectModule } from '@angular/material/select';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+
+@Component({
+  selector: 'user-avatar',
+  template: ''
+})
+class MockUserAvatarComponent {
+  @Input() user: any;
+}
 
 describe('UserDashboardComponent', () => {
   let component: UserDashboardComponent;
@@ -73,7 +88,6 @@ describe('UserDashboardComponent', () => {
   ] as any[];
 
   let dialogSpy: jasmine.SpyObj<MatDialog>;
-  let routerSpy: jasmine.SpyObj<Router>;
   let localStorageSpy: jasmine.SpyObj<LocalStorageService>;
   let userServiceSpy: jasmine.SpyObj<AdminUserService>;
   let pagingServiceSpy: jasmine.SpyObj<UserPagingService>;
@@ -83,7 +97,6 @@ describe('UserDashboardComponent', () => {
 
   beforeEach(async () => {
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']);
     localStorageSpy = jasmine.createSpyObj('LocalStorageService', ['getToken']);
     localStorageSpy.getToken.and.returnValue('token123');
 
@@ -135,24 +148,28 @@ describe('UserDashboardComponent', () => {
       imports: [
         CommonModule,
         FormsModule,
+        RouterTestingModule,
         MatIconModule,
         MatOptionModule,
         MatTableModule,
         MatCardModule,
         MatProgressSpinnerModule,
         MatDividerModule,
-        MatListModule
+        MatListModule,
+        MatSelectModule,
+        MatPaginatorModule,
+        NoopAnimationsModule
       ],
-      declarations: [UserDashboardComponent],
+      declarations: [UserDashboardComponent, MockUserAvatarComponent],
       providers: [
         { provide: MatDialog, useValue: dialogSpy },
-        { provide: Router, useValue: routerSpy },
         { provide: LocalStorageService, useValue: localStorageSpy },
         { provide: AdminUserService, useValue: userServiceSpy },
         { provide: UserPagingService, useValue: pagingServiceSpy },
         { provide: AdminTeamsService, useValue: teamsServiceSpy },
         { provide: AdminToastService, useValue: toastSpy }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserDashboardComponent);
@@ -206,15 +223,17 @@ describe('UserDashboardComponent', () => {
     expect(pagingServiceSpy.search).toHaveBeenCalled();
     expect(component.dataSource.length).toBe(3);
   }));
-
+  
   it('should set error message when search fails', fakeAsync(() => {
+    spyOn(console, 'error').and.stub();
+  
     pagingServiceSpy.search.and.returnValue(
       throwError(() => new Error('nope'))
     );
-
+  
     component.onSearchTermChanged('x');
     tick();
-
+  
     expect(component.error).toBe('Search failed.');
   }));
 

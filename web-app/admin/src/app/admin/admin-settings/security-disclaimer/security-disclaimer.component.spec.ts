@@ -5,10 +5,14 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 import { SecurityDisclaimerComponent } from './security-disclaimer.component';
 import { SettingsService } from 'admin/src/app/services/settings.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 describe('SecurityDisclaimerComponent', () => {
   let component: SecurityDisclaimerComponent;
@@ -22,7 +26,13 @@ describe('SecurityDisclaimerComponent', () => {
     ]);
 
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
+      imports: [
+        FormsModule,
+        NoopAnimationsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCheckboxModule
+      ],
       declarations: [SecurityDisclaimerComponent],
       providers: [{ provide: SettingsService, useValue: settingsService }]
     }).compileComponents();

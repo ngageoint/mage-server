@@ -18,6 +18,9 @@ import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/materia
 import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
 import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconModule } from '@angular/material/icon';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
 
 describe('CreateUserModalComponent', () => {
   let component: CreateUserModalComponent;
@@ -78,7 +81,10 @@ describe('CreateUserModalComponent', () => {
         NoopAnimationsModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
+        MatSelectModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressBarModule
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: { roles: mockRoles } },

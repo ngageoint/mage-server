@@ -1,8 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatLegacySnackBar as MatSnackBar, MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
-import { MatLegacyDialog as MatDialog, MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import {
+  MatLegacySnackBar as MatSnackBar,
+  MatLegacySnackBarModule as MatSnackBarModule
+} from '@angular/material/legacy-snack-bar';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogModule as MatDialogModule
+} from '@angular/material/legacy-dialog';
 import { of } from 'rxjs';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
@@ -18,12 +27,19 @@ describe('AdminSettingsComponent', () => {
     snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatDialogModule, MatSnackBarModule],
+      imports: [
+        NoopAnimationsModule,
+        MatDialogModule,
+        MatSnackBarModule,
+        MatTabsModule,
+        MatIconModule
+      ],
       declarations: [AdminSettingsComponent],
       providers: [
         { provide: MatDialog, useValue: dialog },
         { provide: MatSnackBar, useValue: snackBar }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   }));
 

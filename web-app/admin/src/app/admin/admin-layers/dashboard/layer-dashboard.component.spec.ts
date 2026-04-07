@@ -9,6 +9,9 @@ import { LayerDashboardComponent } from './layer-dashboard.component';
 import { LayersService, Layer } from '../layers.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('LayerDashboardComponent', () => {
   let component: LayerDashboardComponent;
@@ -65,14 +68,15 @@ describe('LayerDashboardComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
+      imports: [RouterTestingModule, MatPaginatorModule, NoopAnimationsModule],
       declarations: [LayerDashboardComponent],
       providers: [
         { provide: LayersService, useValue: mockLayersService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: AdminUserService, useValue: mockUserService },
         { provide: AdminToastService, useValue: toastSpy }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LayerDashboardComponent);

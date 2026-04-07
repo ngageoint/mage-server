@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NgZone } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgZone } from '@angular/core';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved.component';
@@ -17,7 +17,8 @@ describe('AdminSettingsUnsavedComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [AdminSettingsUnsavedComponent],
-      providers: [{ provide: MatDialogRef, useValue: dialogRef }]
+      providers: [{ provide: MatDialogRef, useValue: dialogRef }],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminSettingsUnsavedComponent);

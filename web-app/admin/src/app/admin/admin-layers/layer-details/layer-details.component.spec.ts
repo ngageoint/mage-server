@@ -19,6 +19,10 @@ import { AdminEventsService } from '../../services/admin-events.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { AdminUserService } from '../../services/admin-user.service';
 
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatPaginatorModule } from '@angular/material/paginator';
+
 describe('LayerDetailsComponent', () => {
   let component: LayerDetailsComponent;
   let fixture: ComponentFixture<LayerDetailsComponent>;
@@ -99,7 +103,9 @@ describe('LayerDetailsComponent', () => {
         MatDialogModule,
         MatSnackBarModule,
         NoopAnimationsModule,
-        RouterTestingModule
+        RouterTestingModule,
+        MatIconModule,
+        MatPaginatorModule
       ],
       providers: [
         { provide: ActivatedRoute, useValue: makeActivatedRoute(params) },
@@ -107,7 +113,8 @@ describe('LayerDetailsComponent', () => {
         { provide: AdminEventsService, useValue: mockEventsService },
         { provide: LocalStorageService, useValue: mockLocalStorageService },
         { provide: AdminUserService, useValue: mockUserService }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LayerDetailsComponent);
