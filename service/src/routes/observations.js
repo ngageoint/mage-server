@@ -9,7 +9,6 @@ module.exports = function (app, security) {
     archiver = require("archiver"),
     path = require("path"),
     environment = require("../environment/env"),
-    fs = require("fs-extra"),
     moment = require("moment"),
     Team = require("../models/team"),
     access = require("../access"),
@@ -134,8 +133,7 @@ module.exports = function (app, security) {
         return res
           .status(400)
           .send(
-            `Invalid attachment '${
-              attachment.name
+            `Invalid attachment '${attachment.name
             }', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(
               " or "
             )}`
@@ -469,8 +467,8 @@ module.exports = function (app, security) {
               .status(404)
               .send(
                 "Observation with id " +
-                  req.params.observationIdInPath +
-                  " does not exist"
+                req.params.observationIdInPath +
+                " does not exist"
               );
 
           const response = observationXform.transform(
