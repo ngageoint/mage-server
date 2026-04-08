@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
+import fs from 'fs'
+import path from 'path'
+
 import { scanAttachmentWithClamAV } from './adapters.attachments.clamav'
 import { Readable } from 'stream'
 import express from 'express'
@@ -125,11 +128,23 @@ async function handleFileUpload(
     const originalBuffer = await readStreamToBuffer(fileStream)
     const finalBuffer = await scanFileIfNeeded(originalBuffer, info.filename, uploadErrors)
     if (!finalBuffer) {
-      attachmentsJson.push({
-        name: info.filename,
-        rejected: true,
-        error: uploadErrors.find(e => e.file === info.filename)?.error || 'Rejected by ClamAV'
-      })
+      const secErrorPath = path.join(__dirname, '..', '..', '..', 'src', 'assets', 'SecError.png')
+      const placeholderBuffer = await readStreamToBuffer(fs.createReadStream(secErrorPath))
+      await storeAttachment(placeholderBuffer, { filename: info.filename, mimeType: info.mimeType, encoding: info.encoding }, req, createAppRequest, app, attachmentsJson, uploadErrors)
+      const stored = attachmentsJson[attachmentsJson.length - 1]
+      if (stored) {
+        attachmentsJson[attachmentsJson.length - 1] = {
+          ...stored,
+          contentStored: false,
+          error: "File failed security scan",
+          failures: [
+            {
+              file: info.filename,
+              error: "File failed security scan"
+            }
+          ]
+        }
+      }
       console.log(`[REJECT] File ${info.filename} rejected by ClamAV, skipping storage`)
       return
     }
@@ -215,8 +230,12 @@ export function ObservationRoutes(
           req.pipe(bb)
         })
 
+        const rejected = attachmentsJson.find(a => a.error)
+        if (rejected) {
+          return res.status(200).json(rejected)
+        }
         return res.status(200).json({
-          successes: attachmentsJson.filter(a => !a.rejected),
+          successes: attachmentsJson,
           failures: uploadErrors,
           message: uploadErrors.length > 0 ? 'Some files failed to upload due to scanning errors.' : 'All files uploaded successfully.'
         })
