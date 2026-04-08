@@ -1,1 +1,19 @@
-:host ::ng-deep.mat-icon[hidden] { display: none; }
+.map-control-fab {
+    background-color: #fff !important;
+    color: #1e88e5 !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24) !important;
+  }
+  
+  .map-control-fab .mat-icon {
+    color: #1e88e5 !important;
+  }
+  
+  :host ::ng-deep .map-control-fab .mat-mdc-button-persistent-ripple,
+  :host ::ng-deep .map-control-fab .mdc-button__ripple,
+  :host ::ng-deep .map-control-fab .mat-mdc-button-touch-target {
+    border-radius: 50%;
+  }
+  
+  :host ::ng-deep .mat-icon[hidden] {
+    display: none;
+  }

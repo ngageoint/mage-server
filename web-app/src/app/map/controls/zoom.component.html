@@ -1,9 +1,19 @@
 <div class="zoom">
-  <button #zoomOutButton mat-mini-fab color="basic" (click)="onZoomOut($event)">
-    <mat-icon color="primary">remove</mat-icon>
+  <button
+    #zoomOutButton
+    mat-mini-fab
+    class="map-control-fab"
+    (click)="onZoomOut($event)"
+  >
+    <mat-icon>remove</mat-icon>
   </button>
 
-  <button #zoomInButton mat-mini-fab color="basic" (click)="onZoomIn($event)">
-    <mat-icon color="primary">add</mat-icon>
+  <button
+    #zoomInButton
+    mat-mini-fab
+    class="map-control-fab"
+    (click)="onZoomIn($event)"
+  >
+    <mat-icon>add</mat-icon>
   </button>
 </div>

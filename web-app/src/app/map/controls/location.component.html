@@ -1,8 +1,27 @@
 <div class="location">
-  <button #locateButton mat-mini-fab [color]="state === LocationState.Off ? 'basic' : 'primary'" matTooltip="Show Your Location" matTooltipPosition="after" (click)="onLocate()">
-    <mat-icon color="primary" [ngClass]="{'active': state !== LocationState.Off}">{{state === LocationState.Off ? 'near_me' : 'navigation'}}</mat-icon>
+  <button
+    #locateButton
+    mat-mini-fab
+    class="map-control-fab"
+    [ngClass]="{ 'is-active': state !== LocationState.Off }"
+    matTooltip="Show Your Location"
+    matTooltipPosition="after"
+    (click)="onLocate()"
+  >
+    <mat-icon class="map-control-fab__icon">
+      {{ state === LocationState.Off ? 'near_me' : 'navigation' }}
+    </mat-icon>
   </button>
-  <button #broadcastButton mat-mini-fab [color]="state === LocationState.Broadcast ? 'primary' : 'basic'" matTooltip="Report Your Location" matTooltipPosition="after" (click)="onBroadcast()">
-    <mat-icon color="primary" [ngClass]="{'active': state === LocationState.Broadcast}">my_location</mat-icon>
+
+  <button
+    #broadcastButton
+    mat-mini-fab
+    class="map-control-fab"
+    [ngClass]="{ 'is-active': state === LocationState.Broadcast }"
+    matTooltip="Report Your Location"
+    matTooltipPosition="after"
+    (click)="onBroadcast()"
+  >
+    <mat-icon class="map-control-fab__icon">my_location</mat-icon>
   </button>
 </div>

@@ -1,20 +1,48 @@
 <div class="search-control" *ngIf="mapSettings?.webSearchType !== 'NONE'">
-  <button mat-mini-fab [color]="searchState === SearchState.ON ? 'primary' : 'basic'" matTooltip="Address / Place Name Search" matTooltipPosition="after" (click)="searchToggle()">
-    <mat-icon color="primary" [ngClass]="{'active': searchState === SearchState.ON}">search</mat-icon>
+  <button
+    mat-mini-fab
+    class="map-control-fab"
+    [ngClass]="{ 'is-active': searchState === SearchState.ON }"
+    matTooltip="Address / Place Name Search"
+    matTooltipPosition="after"
+    (click)="searchToggle()"
+  >
+    <mat-icon class="map-control-fab__icon">search</mat-icon>
   </button>
+
   <div [hidden]="searchState === SearchState.OFF">
-    <mat-card class="search-field" >
-      <mat-form-field appearance="fill">
+    <mat-card class="search-field">
+      <mat-form-field appearance="outline" class="search-field__form">
         <mat-label>Address / Place Name</mat-label>
-        <input matInput #searchInput type="search" (keydown.enter)="search(searchInput.value)">
-        <button *ngIf="!searching" mat-icon-button matSuffix (click)="clear($event, searchInput)"><mat-icon>cancel</mat-icon></button>
+        <input
+          matInput
+          #searchInput
+          type="search"
+          (keydown.enter)="search(searchInput.value)"
+        />
+
+        <button
+          *ngIf="!searching"
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="clear($event, searchInput)"
+        >
+          <mat-icon>cancel</mat-icon>
+        </button>
+
         <mat-spinner *ngIf="searching" diameter="24" matSuffix></mat-spinner>
       </mat-form-field>
+
       <div [hidden]="!searchResults.length">
         <mat-list #searchList>
-          <mat-list-item matRipple *ngFor="let result of searchResults" (click)="searchResultClick(result)">
-            <mat-icon mat-list-icon>place</mat-icon>
-            <span mat-line class="mat-headline"> {{result.name}}</span>
+          <mat-list-item
+            matRipple
+            *ngFor="let result of searchResults"
+            (click)="searchResultClick(result)"
+          >
+            <mat-icon matListItemIcon>place</mat-icon>
+            <span matListItemTitle>{{ result.name }}</span>
           </mat-list-item>
         </mat-list>
       </div>
