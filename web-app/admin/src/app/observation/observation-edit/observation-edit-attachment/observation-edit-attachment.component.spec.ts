@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 
@@ -26,7 +27,8 @@ describe('ObservationEditAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditAttachmentComponent, TestHostComponent]
+      declarations: [ObservationEditAttachmentComponent, TestHostComponent],
+      imports: [HttpClientTestingModule]
     })
     .compileComponents();
   }));
