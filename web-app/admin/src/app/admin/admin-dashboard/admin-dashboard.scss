@@ -7,7 +7,7 @@
 
   &:has(admin-dashboard) {
     min-height: calc(100vh - 127px);
-    overflow: hidden;
+    overflow: auto;
     -webkit-overflow-scrolling: touch;
 
     @media (max-width: 959px) {
@@ -25,7 +25,6 @@
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0;
-  height: 80%;
 
   .mat-mdc-card-title,
   .mat-card-title {
@@ -44,7 +43,8 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
     background: #fff;
 
-    @media (max-width: 959px), (max-height: 600px) {
+    @media (max-width: 959px),
+    (max-height: 600px) {
       height: auto;
     }
   }
@@ -56,7 +56,8 @@
     width: 100%;
     overflow: visible;
 
-    @media (max-width: 959px), (max-height: 600px) {
+    @media (max-width: 959px),
+    (max-height: 600px) {
       flex-direction: column;
       height: auto;
       max-height: none;
@@ -69,7 +70,8 @@
       display: flex;
       flex-direction: column;
 
-      @media (max-width: 959px), (max-height: 600px) {
+      @media (max-width: 959px),
+      (max-height: 600px) {
         height: auto;
       }
 
@@ -97,14 +99,26 @@
       .mat-mdc-form-field {
         width: 100%;
         margin-bottom: -20px;
-        max-height: 60px;
-  
+
+        .mat-mdc-text-field-wrapper {
+          background-color: transparent;
+          padding: 0 8px;
+        }
+
+        .mdc-line-ripple::before,
+        .mdc-line-ripple::after {
+          border-bottom-color: transparent;
+        }
+
+        .mat-mdc-form-field-subscript-wrapper {
+          display: none;
+        }
       }
 
       .mdc-floating-label {
         padding-bottom: 15px;
       }
-      
+
       mat-list,
       .mat-mdc-list {
         flex: 1;
@@ -114,7 +128,8 @@
         padding-top: 0;
         background: #fcfcfc;
 
-        @media (max-width: 959px), (max-height: 600px) {
+        @media (max-width: 959px),
+        (max-height: 600px) {
           max-height: 260px;
         }
 
@@ -179,6 +194,7 @@
             border-radius: 3px;
             background: #f3f3f3;
             color: #8a8a8a;
+            text-transform: none !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -254,11 +270,12 @@
       padding: 0;
       font-size: 11px;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: none !important;
       color: #b3b3b3;
     }
 
-    @media (max-width: 480px), (max-height: 600px) {
+    @media (max-width: 480px),
+    (max-height: 600px) {
       align-items: stretch;
       gap: 12px;
       flex-direction: column;
@@ -273,7 +290,7 @@
   .section-card {
     background: #fff;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
     margin-top: 0;
