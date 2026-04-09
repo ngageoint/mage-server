@@ -128,7 +128,9 @@ async function handleFileUpload(
     const originalBuffer = await readStreamToBuffer(fileStream)
     const finalBuffer = await scanFileIfNeeded(originalBuffer, info.filename, uploadErrors)
     if (!finalBuffer) {
-      const secErrorPath = path.join(__dirname, '..', '..', '..', 'src', 'assets', 'SecError.png')
+    const secErrorPath = process.env.NODE_ENV === 'production'
+      ? path.join(__dirname, '..', 'assets', 'SecError.png')
+      : path.join(__dirname, '..', '..', '..', 'src', 'assets', 'SecError.png')
       const placeholderBuffer = await readStreamToBuffer(fs.createReadStream(secErrorPath))
       await storeAttachment(placeholderBuffer, { filename: info.filename, mimeType: info.mimeType, encoding: info.encoding }, req, createAppRequest, app, attachmentsJson, uploadErrors)
       const stored = attachmentsJson[attachmentsJson.length - 1]
