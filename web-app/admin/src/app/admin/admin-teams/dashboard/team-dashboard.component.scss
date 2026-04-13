@@ -460,10 +460,11 @@ $max-height: 72.8vh;
 }
 
 ::ng-deep .mat-tooltip-event-desc {
-  position: relative;
-  left: 0 !important;
-  font-size: 20px;
-  min-width: 75vw;
+  font-size: 14px;
+  min-width: 50vw;
+  max-width: 80vw !important;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .w-100 {
