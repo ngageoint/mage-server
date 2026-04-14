@@ -8,49 +8,30 @@
   <div class="table-wrapper mat-elevation-z2">
     <div class="integrated-navbar d-flex align-items-center justify-content-between">
       <div class="filters d-flex align-items-center">
-        <mage-card-navbar
-          [isSearchable]="true"
-          [searchPlaceholder]="'Search teams...'"
-          (searchTermChanged)="onSearchTermChanged($event)"
-          (searchCleared)="onSearchCleared()"
-        ></mage-card-navbar>
+        <mage-card-navbar [isSearchable]="true" [searchPlaceholder]="'Search teams...'"
+          (searchTermChanged)="onSearchTermChanged($event)" (searchCleared)="onSearchCleared()"></mage-card-navbar>
       </div>
 
       <div class="button-group">
-        <button
-          mat-flat-button
-          class="btn-primary"
-          *ngIf="hasTeamCreatePermission"
-          (click)="createTeam()"
-        >
+        <button mat-flat-button color="primary" *ngIf="hasTeamCreatePermission" (click)="createTeam()">
           New Team
         </button>
       </div>
     </div>
 
     <div class="table-scroll" *ngIf="teams.length; else noTeams">
-      <table
-        mat-table
-        [class.mat-table]="true"
-        [dataSource]="dataSource"
-        class="mat-table-even-columns"
-      >
+      <table mat-table [class.mat-table]="true" [dataSource]="dataSource" class="mat-table-even-columns">
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let team">
-            <a
-              class="d-flex align-items-center pointer text-decoration-none w-100"
-              [routerLink]="['../teams', team.id]"
-            >
+            <a class="d-flex align-items-center pointer text-decoration-none w-100"
+              [routerLink]="['../teams', team.id]">
               <i class="icon fa fa-users mr-2" aria-hidden="true"></i>
               <div class="w-100">
                 <div class="strong">{{ team.name }}</div>
-                <div
-                  [matTooltip]="team.description"
+                <div [matTooltip]="team.description"
                   [matTooltipDisabled]="!team.description || team.description.length <= numChars"
-                  matTooltipClass="mat-tooltip-event-desc"
-                  class="w-90"
-                >
+                  matTooltipClass="mat-tooltip-event-desc" class="w-90">
                   <p class="muted ellipsis">{{ team.description }}</p>
                 </div>
               </div>
@@ -68,12 +49,8 @@
     </ng-template>
 
     <div class="pagination">
-      <mat-paginator
-        [length]="totalTeams"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="onPageChange($event)"
-      >
+      <mat-paginator [length]="totalTeams" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)">
       </mat-paginator>
     </div>
   </div>

@@ -23,7 +23,7 @@ export class AdminServiceComponent implements OnInit {
     {
       title: 'Feeds',
       icon: 'rss_feed',
-      route: ['../../feeds']
+      route: ['/feeds']
     }
   ];
 
@@ -52,7 +52,7 @@ export class AdminServiceComponent implements OnInit {
     private route: ActivatedRoute,
     public dialog: MatDialog,
     private adminUserService: AdminUserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.serviceId = this.route.snapshot.paramMap.get('serviceId');

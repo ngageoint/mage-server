@@ -51,7 +51,7 @@ export class AdminFeedComponent implements OnInit {
     {
       title: 'Feeds',
       icon: 'rss_feed',
-      route: ['../../feeds']
+      route: ['/feeds']
     }
   ];
 
@@ -100,7 +100,7 @@ export class AdminFeedComponent implements OnInit {
     private eventsService: AdminEventsService,
     private adminUserService: AdminUserService,
     private eventService: EventService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.feedId = this.route.snapshot.paramMap.get('feedId');
@@ -139,7 +139,7 @@ export class AdminFeedComponent implements OnInit {
         {
           title: 'Feeds',
           icon: 'rss_feed',
-          route: ['../../feeds']
+          route: ['/feeds']
         },
         {
           title: this.feed.title,
