@@ -62,7 +62,7 @@ async function scanFileIfNeeded(
   filename: string,
   uploadErrors: any[]
 ): Promise<Buffer | null> {
-  if (!process.env.CLAM_AV_URL && !process.env.CLAMAV_HOST) return buffer
+  // if (!process.env.CLAM_AV_URL && !process.env.CLAMAV_HOST) return buffer
 
   try {
     const result = await scanAttachmentWithClamAV(Readable.from(buffer))
@@ -130,7 +130,8 @@ async function handleFileUpload(
     if (!finalBuffer) {
     const secErrorPath = process.env.NODE_ENV === 'production'
       ? path.join(__dirname, '..', 'assets', 'SecError.png')
-      : path.join(__dirname, '..', '..', '..', 'src', 'assets', 'SecError.png')
+      : path.join(__dirname, '..', '..', '..', 'lib', 'assets', 'SecError.png')
+      //LOCAL : path.join(__dirname, '..', '..', '..', 'dir', 'assets', 'SecError.png')
       const placeholderBuffer = await readStreamToBuffer(fs.createReadStream(secErrorPath))
       await storeAttachment(placeholderBuffer, { filename: info.filename, mimeType: info.mimeType, encoding: info.encoding }, req, createAppRequest, app, attachmentsJson, uploadErrors)
       const stored = attachmentsJson[attachmentsJson.length - 1]

@@ -1,7 +1,8 @@
 import { Readable, PassThrough } from 'stream';
 import net from 'net';
 
-const CLAMAV_HOST = process.env.CLAMAV_HOST || 'localhost';
+// LOCAL: const CLAMAV_HOST = process.env.CLAMAV_HOST || 'localhost';
+const CLAMAV_HOST = 'clamav.clamav.svc.cluster.local';
 const CLAMAV_PORT = Number(process.env.CLAMAV_PORT) || 3310;
 const CLAMAV_TIMEOUT_MS = 60_000;
 const CLAMAV_RETRIES = 3;
