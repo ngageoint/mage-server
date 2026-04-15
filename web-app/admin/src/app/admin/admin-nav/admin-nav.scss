@@ -6,6 +6,10 @@
   --admin-drawer-open-mt-mobile: calc(86px + var(--admin-banner-extra, 0px));
 }
 
+:host(.has-header-banner) {
+  --admin-banner-extra: 20px;
+}
+
 @media (max-width: 599px) {
   :host {
     --admin-nav-float-top: calc(66px + var(--admin-banner-extra, 0px));
@@ -16,7 +20,7 @@
   position: relative;
 }
 
-::ng-deep app-admin-side-nav>admin-breadcrumb {
+::ng-deep app-admin-side-nav > admin-breadcrumb {
   display: block;
   position: fixed;
   width: 100%;

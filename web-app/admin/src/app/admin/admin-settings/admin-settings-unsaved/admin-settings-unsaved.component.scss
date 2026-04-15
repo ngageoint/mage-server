@@ -1,12 +1,19 @@
 @use '@angular/material' as mat;
 @import "variables.scss";
 
-button {
-    margin-left: 8px; 
-    color: mat.get-color-from-palette($app-primary);
+.dialog-content {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.75);
+  padding-top: 4px;
 }
 
-mat-dialog-actions {
-    display: flex;
-    justify-content: right;
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialog-actions button {
+  color: mat.get-color-from-palette($app-primary);
 }

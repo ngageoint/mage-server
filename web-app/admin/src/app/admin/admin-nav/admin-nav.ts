@@ -22,9 +22,13 @@ interface PluginTab {
 @Component({
   selector: 'app-admin-side-nav',
   templateUrl: './admin-nav.html',
-  styleUrls: ['./admin-nav.scss']
+  styleUrls: ['./admin-nav.scss'],
+  host: {
+    '[class.has-header-banner]': 'hasHeaderBanner'
+  }
 })
 export class AdminNavComponent implements OnInit, OnDestroy, OnChanges {
+  @Input() hasHeaderBanner = false;
   @Input() stateName: string = '';
   @Input() inactiveUsers: any[] = [];
   @Input() unregisteredDevices: any[] = [];

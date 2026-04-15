@@ -1,25 +1,88 @@
 @import "variables.scss";
 
+$page-max-width: 1170px;
+
 .page-container {
   display: flex;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 16px;
-  margin-bottom: 16px;
-  max-width: 1170px;
+  margin: 16px auto;
+  max-width: $page-max-width;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .content {
-  display: block;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
 }
 
+.settings-card {
+  background: #fff;
+  border: 1px solid #d9dde3;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.tab-panel {
+  padding: 20px 24px 24px;
+  box-sizing: border-box;
+}
+
 .settings__action--save {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
   align-items: flex-end;
-  margin-top: 4px;
+  margin-top: 12px;
   margin-right: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+}
+
+.settings__action--save button {
+  min-width: 112px;
+}
+
+:host ::ng-deep .mat-mdc-tab-group {
+  background: transparent;
+}
+
+:host ::ng-deep .mat-mdc-tab-header {
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+:host ::ng-deep .mat-mdc-tab {
+  min-width: 140px;
+}
+
+:host ::ng-deep .mat-mdc-tab-body-wrapper {
+  background: #fff;
+}
+
+:host ::ng-deep .mat-mdc-tab-body-content {
+  overflow: visible;
+}
+
+:host ::ng-deep .mdc-tab__text-label {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0 4px;
+  }
+
+  .tab-panel {
+    padding: 16px;
+  }
+
+  .settings__action--save {
+    align-items: stretch;
+    margin-right: 0;
+  }
+
+  .settings__action--save button {
+    width: 100%;
+  }
 }

@@ -1,3 +1,9 @@
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
 ::ng-deep .admin-main-content {
   transition: margin-left 0.3s;
   width: 100%;
@@ -20,44 +26,42 @@
 .admin-content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 8px;
+  gap: 16px;
+  padding: 8px 8px 25px 8px;
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0;
 
   .mat-mdc-card-title,
   .mat-card-title {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: $font-lg;
+    font-weight: 700;
     margin-bottom: 8px;
     color: #222;
   }
 
   .top-card {
-    padding: 10px 12px 12px 12px;
+    padding: 12px 14px 14px 14px;
     height: auto;
     flex: 0 0 auto;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
     background: #fff;
 
-    @media (max-width: 959px),
-    (max-height: 600px) {
+    @media (max-width: 959px), (max-height: 600px) {
       height: auto;
     }
   }
 
   .top-row {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     align-items: stretch;
     width: 100%;
     overflow: visible;
 
-    @media (max-width: 959px),
-    (max-height: 600px) {
+    @media (max-width: 959px), (max-height: 600px) {
       flex-direction: column;
       height: auto;
       max-height: none;
@@ -70,8 +74,7 @@
       display: flex;
       flex-direction: column;
 
-      @media (max-width: 959px),
-      (max-height: 600px) {
+      @media (max-width: 959px), (max-height: 600px) {
         height: auto;
       }
 
@@ -90,7 +93,7 @@
 
       .search-wrapper {
         background-color: #f7f7f7;
-        padding: 4px 8px 0 8px;
+        padding: 6px 10px 0 10px;
         border: 1px solid #a9a9a9;
         border-bottom: none;
       }
@@ -98,7 +101,7 @@
       mat-form-field,
       .mat-mdc-form-field {
         width: 100%;
-        margin-bottom: -20px;
+        margin-bottom: -18px;
 
         .mat-mdc-text-field-wrapper {
           background-color: transparent;
@@ -117,28 +120,28 @@
 
       .mdc-floating-label {
         padding-bottom: 15px;
+        font-size: $font-sm;
       }
 
       mat-list,
       .mat-mdc-list {
         flex: 1;
         overflow-y: auto;
-        max-height: 220px;
+        max-height: 240px;
         border: 1px solid #a9a9a9;
         padding-top: 0;
         background: #fcfcfc;
 
-        @media (max-width: 959px),
-        (max-height: 600px) {
+        @media (max-width: 959px), (max-height: 600px) {
           max-height: 260px;
         }
 
         mat-list-item,
         a[mat-list-item],
         .mat-mdc-list-item {
-          min-height: 40px;
+          min-height: 48px;
           height: auto;
-          padding: 1px 8px !important;
+          padding: 4px 10px !important;
           border-bottom: 1px solid #efefef;
           display: flex;
           align-items: center;
@@ -157,7 +160,7 @@
 
           mat-icon,
           i[matListIcon] {
-            font-size: 18px;
+            font-size: $font-md;
             margin-right: 10px;
             color: #666;
             margin-top: 0;
@@ -172,8 +175,8 @@
           [matLine],
           .mat-line-horizontal,
           .mdc-list-item__primary-text {
-            font-size: 14px;
-            line-height: 1.25;
+            font-size: $font-sm;
+            line-height: 1.3;
             font-weight: 500;
             color: #333;
             display: inline-flex;
@@ -185,13 +188,13 @@
           button[mat-button],
           .mat-mdc-button {
             margin-left: auto;
-            min-width: 88px;
+            min-width: 92px;
             height: 32px;
             padding: 0 10px;
-            font-size: 12px;
+            font-size: $font-xs;
             line-height: 32px;
             border: 1px solid #a8a8a8;
-            border-radius: 3px;
+            border-radius: 4px;
             background: #f3f3f3;
             color: #8a8a8a;
             text-transform: none !important;
@@ -208,9 +211,9 @@
             }
 
             mat-icon {
-              font-size: 16px;
-              width: 16px;
-              height: 16px;
+              font-size: $font-sm;
+              width: $font-sm;
+              height: $font-sm;
               margin: 0;
               display: inline-flex;
               align-items: center;
@@ -268,14 +271,13 @@
     button {
       min-width: auto;
       padding: 0;
-      font-size: 11px;
-      letter-spacing: 0.08em;
+      font-size: $font-xs;
+      letter-spacing: 0.04em;
       text-transform: none !important;
-      color: #b3b3b3;
+      color: #8b8b8b;
     }
 
-    @media (max-width: 480px),
-    (max-height: 600px) {
+    @media (max-width: 480px), (max-height: 600px) {
       align-items: stretch;
       gap: 12px;
       flex-direction: column;
@@ -290,13 +292,14 @@
   .section-card {
     background: #fff;
     border-radius: 10px;
-    overflow: visible;
+    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
     margin-top: 0;
     margin-bottom: 0;
     flex: 1 1 auto;
-    min-height: 0;
+    min-height: 320px;
+    max-height: 500px;
     display: flex;
     flex-direction: column;
   }
@@ -308,8 +311,10 @@
     flex-direction: column;
     position: relative;
     flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
+    min-height: 320px;
+    max-height: 500px;
+    height: auto;
+    overflow: hidden;
   }
 
   .table-scroll {
@@ -320,13 +325,24 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0;
   }
 
   .section-table-title {
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.9rem 1.25rem 0.45rem 1.25rem;
+    font-size: $font-md;
+    font-weight: 700;
+    padding: 14px 20px 8px 20px;
     color: #111827;
+  }
+}
+
+.page-header {
+  .page-title {
+    font-size: $font-xl;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #1a1a1a;
+    margin: 0;
   }
 }
 
@@ -336,8 +352,54 @@
 
 .text-muted {
   color: #6b7280;
+  font-size: $font-xs;
+}
+
+:host ::ng-deep .admin-content .search-wrapper input,
+:host ::ng-deep .admin-content .search-wrapper .mat-mdc-input-element,
+:host ::ng-deep .admin-content .search-wrapper .mat-input-element {
+  font-size: $font-sm;
+}
+
+:host ::ng-deep .admin-content .search-wrapper .mdc-floating-label,
+:host ::ng-deep .admin-content .search-wrapper .mat-form-field-label {
+  font-size: $font-sm;
+}
+
+/* important: reserve space for paginator/footer inside mage-logins */
+:host ::ng-deep mage-logins {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep mage-logins .section-card,
+:host ::ng-deep mage-logins .table-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+}
+
+:host ::ng-deep mage-logins .table-scroll,
+:host ::ng-deep mage-logins .login-table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:host ::ng-deep mage-logins .mat-paginator,
+:host ::ng-deep mage-logins mat-paginator,
+:host ::ng-deep mage-logins .login-pagination {
+  flex: 0 0 auto;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
 .mt-5 {
-  margin-top: 3rem;
+  margin-top: 48px;
 }
