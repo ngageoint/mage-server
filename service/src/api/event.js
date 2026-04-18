@@ -147,7 +147,7 @@ Event.prototype.deleteEvent = async function(callback) {
     return void(callback(err));
   }
   try {
-    await event.remove();
+    await event.deleteOne();
   }
   catch (err) {
     console.error(`error deleting event ${event.name} (id ${event._id})`, err);

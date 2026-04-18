@@ -32,7 +32,7 @@ async function createOSMLayer(db) {
 
 exports.down = function(done) {
   const collection = this.db.collection('layers');
-  collection.remove({ name: "Open Street Map" })
+  collection.deleteMany({ name: "Open Street Map" })
     .then(() => {
       done();
     })

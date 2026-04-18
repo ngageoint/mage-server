@@ -4,39 +4,39 @@ const mongoose = require('mongoose')
 
 exports.id = 'set-feed-primary-secondary';
 
-exports.up = function(done) {
+exports.up = function (done) {
   this.log('updating forms to have a feed primary and secondary option...');
 
   async.waterfall([
     getEvents,
     migrateEvents
-  ], function(err) {
+  ], function (err) {
     done(err);
   });
 };
 
-exports.down = function(done) {
+exports.down = function (done) {
   // remove the feed primary and secondary
 };
 
 function getEvents(callback) {
   const EventModel = mongoose.model('Event');
-  EventModel.find({}).lean().exec(function(err, events) {
+  EventModel.find({}).lean().exec().then(events => {
     callback(err, events);
   });
 }
 
 function migrateEvents(events, callback) {
   const EventModel = mongoose.model('Event');
-  async.eachSeries(events, function(event, done) {
-    EventModel.findById(event._id).lean().exec(function(err, event) {
+  async.eachSeries(events, function (event, done) {
+    EventModel.findById(event._id).lean().exec().then(event => {
       for (const form of event.forms) {
         form.primaryFeedField = form.primaryField;
         form.secondaryFeedField = form.variantField;
       }
-      EventModel.findByIdAndUpdate(event._id, event, {overwrite: true}, done);
+      EventModel.findByIdAndUpdate(event._id, event, { overwrite: true }).then(() => done(), err => done(err));
     })
-  }, function(err) {
+  }, function (err) {
     callback(err);
   });
 }

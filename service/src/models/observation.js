@@ -294,28 +294,38 @@ exports.getObservations = function (event, o, callback) {
   if (o.stream) {
     return query.cursor();
   } else {
-    query.exec(callback);
+    query.exec().then(r => callback(null, r), e => callback(e));
   }
 };
 
 exports.createObservationId = function (callback) {
-  ObservationId.create({}, callback);
+  ObservationId.create({}).then(
+    doc => callback(null, doc),
+    err => callback(err)
+  );
 };
 
 exports.getObservationId = function (id, callback) {
-  ObservationId.findById(id, function (err, doc) {
-    callback(err, doc ? doc._id : null);
-  });
+  ObservationId.findById(id).then(
+    doc => callback(null, doc ? doc._id : null),
+    err => callback(err)
+  );
 };
 
 exports.getLatestObservation = function (event, callback) {
-  observationModel(event).findOne({}, { lastModified: true }, { sort: { "lastModified": -1 }, limit: 1 }, callback);
+  observationModel(event).findOne({}, { lastModified: true }, { sort: { "lastModified": -1 }, limit: 1 }).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.getObservationById = function (event, observationId, options, callback) {
   const fields = parseFields(options.fields);
 
-  observationModel(event).findById(observationId, fields, callback);
+  observationModel(event).findById(observationId, fields).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.updateObservation = function (event, observationId, update, callback) {
@@ -388,7 +398,10 @@ exports.updateObservation = function (event, observationId, update, callback) {
 };
 
 exports.removeObservation = function (event, observationId, callback) {
-  observationModel(event).findByIdAndRemove(observationId, callback);
+  observationModel(event).findByIdAndDelete(observationId).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.removeUser = function (user, callback) {
@@ -398,10 +411,13 @@ exports.removeUser = function (user, callback) {
 
   Event.getEvents({}, function (err, events) {
     async.each(events, function (event, done) {
-      observationModel(event).update(condition, update, options, function (err, numberAffected) {
-        log.info('Remove deleted user from ' + numberAffected + ' documents for event ' + event.name);
-        done();
-      });
+      observationModel(event).updateMany(condition, update).then(
+        result => {
+          log.info('Remove deleted user from ' + result.modifiedCount + ' documents for event ' + event.name);
+          done();
+        },
+        err => done(err)
+      );
     },
       function (err) {
         callback(err);
@@ -416,10 +432,13 @@ exports.removeDevice = function (device, callback) {
 
   Event.getEvents(function (err, events) {
     async.each(events, function (event, done) {
-      observationModel(event).update(condition, update, options, function (err, numberAffected) {
-        log.info('Remove deleted device from ' + numberAffected + ' documents for event ' + event.name);
-        done();
-      });
+      observationModel(event).updateMany(condition, update).then(
+        result => {
+          log.info('Remove deleted device from ' + result.modifiedCount + ' documents for event ' + event.name);
+          done();
+        },
+        err => done(err)
+      );
     },
       function (err) {
         callback(err);
@@ -439,9 +458,10 @@ exports.addState = function (event, id, state, callback) {
     }
   };
 
-  observationModel(event).update(condition, update, { upsert: false }, function (err) {
-    callback(err, state);
-  });
+  observationModel(event).updateOne(condition, update, { upsert: false }).then(
+    () => callback(null, state),
+    err => callback(err)
+  );
 };
 
 exports.addFavorite = function (event, observationId, user, callback) {
@@ -451,7 +471,10 @@ exports.addFavorite = function (event, observationId, user, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }, callback);
+  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.removeFavorite = function (event, observationId, user, callback) {
@@ -461,7 +484,10 @@ exports.removeFavorite = function (event, observationId, user, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }, callback);
+  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.addImportant = function (event, observationId, important, callback) {
@@ -471,7 +497,7 @@ exports.addImportant = function (event, observationId, important, callback) {
     .findByIdAndUpdate(observationId, update, { new: true })
     .populate({ path: 'userId', select: 'displayName' })
     .populate({ path: 'important.userId', select: 'displayName' })
-    .exec(callback);
+    .exec().then(r => callback(null, r), e => callback(e));
 }
 
 exports.removeImportant = function (event, id, callback) {
@@ -481,7 +507,10 @@ exports.removeImportant = function (event, id, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(id, update, { new: true }, callback);
+  observationModel(event).findByIdAndUpdate(id, update, { new: true }).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.getAttachment = function (event, observationId, attachmentId, callback) {
@@ -490,10 +519,13 @@ exports.getAttachment = function (event, observationId, attachmentId, callback) 
     'attachments._id': attachmentId,
   }
 
-  observationModel(event).findOne(condition, function (err, observation) {
-    const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
-    callback(err, attachment);
-  });
+  observationModel(event).findOne(condition).then(
+    observation => {
+      const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
+      callback(null, attachment);
+    },
+    err => callback(err)
+  );
 };
 
 /**
@@ -517,17 +549,22 @@ exports.addAttachment = function (event, observationId, attachmentId, file, call
     'attachments.$.relativePath': file.relativePath
   }
 
-  observationModel(event).findOneAndUpdate(condition, update, { new: true }, function (err, observation) {
-    if (err || !observation) return callback(err);
-
-    const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
-    callback(err, attachment);
-  });
+  observationModel(event).findOneAndUpdate(condition, update, { new: true }).then(
+    observation => {
+      if (!observation) return callback(null);
+      const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
+      callback(null, attachment);
+    },
+    err => callback(err)
+  );
 };
 
 exports.removeAttachment = function (event, observationId, attachmentId, callback) {
   const update = { $pull: { attachments: { _id: attachmentId } } };
-  observationModel(event).findByIdAndUpdate(observationId, update, callback);
+  observationModel(event).findByIdAndUpdate(observationId, update).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };
 
 exports.addAttachmentThumbnail = function (event, observationId, attachmentId, thumbnail, callback) {

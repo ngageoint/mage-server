@@ -45,7 +45,7 @@ export const FeedServiceSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: FeedServiceDocument, json: any & FeedService, options: SchemaOptions): void => {
+      transform: (doc: any, json: any & FeedService, options: SchemaOptions): void => {
         delete json._id
         json.serviceType = doc.serviceType.toHexString()
       }
@@ -86,7 +86,7 @@ export const FeedSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: FeedDocument, json: any & Feed, options: SchemaOptions): void => {
+      transform: (doc: any, json: any & Feed, options: SchemaOptions): void => {
         delete json._id
         json.service = doc.service.toHexString()
         if (doc.icon) {
@@ -104,7 +104,7 @@ export class MongooseFeedServiceTypeRepository implements FeedServiceTypeReposit
 
   readonly registeredServiceTypes = new Map<string, RegisteredFeedServiceType>()
 
-  constructor(readonly model: FeedServiceTypeIdentityModel) {}
+  constructor(readonly model: FeedServiceTypeIdentityModel) { }
 
   async register(moduleName: string, serviceType: FeedServiceType): Promise<RegisteredFeedServiceType> {
     let identity = await this.model.findOne({ moduleName, pluginServiceTypeId: serviceType.pluginServiceTypeId })
@@ -148,7 +148,7 @@ export class MongooseFeedServiceRepository extends BaseMongooseRepository<FeedSe
 export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument, FeedModel, Feed> implements FeedRepository {
 
   constructor(model: FeedModel, private readonly idFactory: EntityIdFactory) {
-    super(model, { entityToDocStub: e => ({ ...e, icon: e.icon?.id  }) })
+    super(model, { entityToDocStub: e => ({ ...e, icon: e.icon?.id }) })
   }
 
   async create(attrs: Partial<Feed>): Promise<Feed> {
@@ -198,7 +198,7 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
    */
   async removeByServiceId(service: FeedServiceId): Promise<Feed[]> {
     const removed = await this.findFeedsForService(service)
-    await this.model.remove({ service })
+    await this.model.deleteMany({ service })
     return removed
   }
 }

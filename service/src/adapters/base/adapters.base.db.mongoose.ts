@@ -79,7 +79,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
       notFound[id] = null
       return notFound
     }, {} as any)
-    const docs: D[] = await this.model.find({ _id: { $in: ids }}).exec();
+    const docs: D[] = await this.model.find({ _id: { $in: ids } }).exec();
     const found = {} as any
     for (const doc of docs) {
       found[doc.id] = this.entityForDocument(doc)
@@ -100,7 +100,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
   }
 
   async removeById(id: any): Promise<Attrs | null> {
-    const doc = await this.model.findByIdAndRemove(id)
+    const doc = await this.model.findByIdAndDelete(id)
     if (doc) {
       return this.entityForDocument(doc)
     }
