@@ -1,6 +1,6 @@
 <div class="datetime">
   <div class="date">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline">
       <mat-label>{{ definition.title }} Date</mat-label>
       <input
         matInput
@@ -30,11 +30,11 @@
   </div>
 
   <div class="time">
-    <mat-form-field appearance="fill">
-      <mat-label
-        >{{ definition.title }} Time
-        {{ timeZone === 'gmt' ? '(GMT)' : '(Local)' }}</mat-label
-      >
+    <mat-form-field appearance="outline">
+      <mat-label>
+        {{ definition.title }} Time
+        {{ timeZone === 'gmt' ? '(GMT)' : '(Local)' }}
+      </mat-label>
       <input
         matInput
         type="time"

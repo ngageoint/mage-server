@@ -1,16 +1,13 @@
 @use '@angular/material' as mat;
-@import "variables.scss";
+@import 'variables.scss';
 
-mat-card {
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  margin-top: -16px;
-  margin-bottom: 16px;
+:host {
+  display: block;
 }
 
-:host ::ng-deep.mat-form-field-wrapper {
-  padding-bottom: unset;
+.picker-shell {
+  position: relative;
+  display: block;
 }
 
 .swatch {
@@ -21,12 +18,8 @@ mat-card {
   cursor: pointer;
 }
 
-.swatch > mat-label {
-  display: block;
-  position: relative;
-  margin-bottom: 2px;
-  font: 400 12px/24px Roboto, "Helvetica Neue", sans-serif;
-  color: mat.get-color-from-palette($app-primary);
+:host ::ng-deep .mat-form-field-wrapper {
+  padding-bottom: unset;
 }
 
 .swatch-input {
@@ -49,6 +42,21 @@ mat-card {
   left: 0;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.picker-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  margin: 0;
+  min-width: 280px;
+  max-width: min(320px, 100vw - 32px);
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .color {
@@ -95,12 +103,13 @@ mat-card {
 
 .sketch-active {
   position: absolute;
-  top: 0px;
-  right: 0px;
-  bottom: 0px;
-  left: 0px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   border-radius: 2px;
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.25) 0px 0px 4px inset;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset,
+    rgba(0, 0, 0, 0.25) 0 0 4px inset;
 }
 
 .actions {
@@ -108,4 +117,3 @@ mat-card {
   display: flex;
   justify-content: flex-end;
 }
-

@@ -1,38 +1,89 @@
-<div>
+<div class="edit-location">
   <div class="chip-type">
     <span class="chip-type__label">GEOMETRY</span>
     <mat-chip-listbox selectable="true">
-      <mat-chip-option color="primary" [selected]="selectedShapeType === 'Point'" (click)="shapeTypeChanged('Point')">Point</mat-chip-option>
-      <mat-chip-option color="primary" [selected]="selectedShapeType === 'LineString'" (click)="shapeTypeChanged('LineString')">Line</mat-chip-option>
-      <mat-chip-option color="primary" [selected]="selectedShapeType === 'Polygon'" (click)="shapeTypeChanged('Polygon')">Polygon</mat-chip-option>
-      <!-- 
-        TODO: When No Geo finally Works, this should be re-enabled
-        <mat-chip-option color="primary" [selected]="selectedShapeType === undefined" (click)="shapeTypeChanged()">None</mat-chip-option>
-      -->
+      <mat-chip-option
+        color="primary"
+        [selected]="selectedShapeType === 'Point'"
+        (click)="shapeTypeChanged('Point')"
+      >
+        Point
+      </mat-chip-option>
+      <mat-chip-option
+        color="primary"
+        [selected]="selectedShapeType === 'LineString'"
+        (click)="shapeTypeChanged('LineString')"
+      >
+        Line
+      </mat-chip-option>
+      <mat-chip-option
+        color="primary"
+        [selected]="selectedShapeType === 'Polygon'"
+        (click)="shapeTypeChanged('Polygon')"
+      >
+        Polygon
+      </mat-chip-option>
     </mat-chip-listbox>
   </div>
 
   <div class="chip-type">
-    <span class="chip-type__label mat-subtitle-2">MANUAL EDIT</span>
+    <span class="chip-type__label">MANUAL EDIT</span>
     <mat-chip-listbox selectable="true">
-      <mat-chip-option color="primary" [selected]="coordinateSystem === 'wgs84'" (click)="coordinateSystemChange('wgs84')">Lat/Lng</mat-chip-option>
-      <mat-chip-option color="primary" [selected]="coordinateSystem === 'mgrs'" (click)="coordinateSystemChange('mgrs')">MGRS</mat-chip-option>
-      <mat-chip-option color="primary" [selected]="coordinateSystem === 'dms'" (click)="coordinateSystemChange('dms')">DMS</mat-chip-option>
+      <mat-chip-option
+        color="primary"
+        [selected]="coordinateSystem === 'wgs84'"
+        (click)="coordinateSystemChange('wgs84')"
+      >
+        Lat/Lng
+      </mat-chip-option>
+      <mat-chip-option
+        color="primary"
+        [selected]="coordinateSystem === 'mgrs'"
+        (click)="coordinateSystemChange('mgrs')"
+      >
+        MGRS
+      </mat-chip-option>
+      <mat-chip-option
+        color="primary"
+        [selected]="coordinateSystem === 'dms'"
+        (click)="coordinateSystemChange('dms')"
+      >
+        DMS
+      </mat-chip-option>
     </mat-chip-listbox>
   </div>
 
   <div [hidden]="coordinateSystem !== 'wgs84'">
     <div class="coordinates">
       <div class="coordinate">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Latitude</mat-label>
-          <input matInput type="number" step="any" min="-90" max="90" [(ngModel)]="latitude" (ngModelChange)="onLatLngChange()" [disabled]="!feature?.geometry?.coordinates">
+          <input
+            matInput
+            type="number"
+            step="any"
+            min="-90"
+            max="90"
+            [(ngModel)]="latitude"
+            (ngModelChange)="onLatLngChange()"
+            [disabled]="!feature?.geometry?.coordinates"
+          />
         </mat-form-field>
       </div>
+
       <div class="coordinate">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Longitude</mat-label>
-          <input matInput type="number" step="any" min="-180" max="180" [(ngModel)]="longitude" (ngModelChange)="onLatLngChange()" [disabled]="!feature?.geometry?.coordinates">
+          <input
+            matInput
+            type="number"
+            step="any"
+            min="-180"
+            max="180"
+            [(ngModel)]="longitude"
+            (ngModelChange)="onLatLngChange()"
+            [disabled]="!feature?.geometry?.coordinates"
+          />
         </mat-form-field>
       </div>
     </div>
@@ -41,9 +92,17 @@
   <div [hidden]="coordinateSystem !== 'mgrs'">
     <div class="coordinates">
       <div class="coordinate">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>MGRS</mat-label>
-          <input matInput type="text" [(ngModel)]="mgrs" (ngModelChange)="onMgrsChange()" [disabled]="!feature?.geometry?.coordinates" #mgrsModel="ngModel" mgrs>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="mgrs"
+            (ngModelChange)="onMgrsChange()"
+            [disabled]="!feature?.geometry?.coordinates"
+            #mgrsModel="ngModel"
+            mgrs
+          />
           <mat-error>Invalid MGRS</mat-error>
         </mat-form-field>
       </div>
@@ -53,28 +112,33 @@
   <div [hidden]="coordinateSystem !== 'dms'">
     <div class="coordinates" [formGroup]="dmsForm">
       <div class="coordinate">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Latitude DMS</mat-label>
-          <input type="text" placeholder="00° 00' 00&quot; N"
+          <input
+            type="text"
             matInput
+            placeholder="00° 00' 00&quot; N"
             formControlName="lat"
             [inputMask]="dmsLatMask"
             (paste)="onDmsPaste($event, DMSDimensionKey.Latitude)"
             dmsValidation="latitude"
-            >
+          />
           <mat-error>Invalid DMS latitude</mat-error>
         </mat-form-field>
       </div>
+
       <div class="coordinate">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline">
           <mat-label>Longitude DMS</mat-label>
-          <input type="text" placeholder="000° 00' 00&quot; E"
+          <input
+            type="text"
             matInput
+            placeholder="000° 00' 00&quot; E"
             formControlName="lon"
             [inputMask]="dmsLonMask"
             (paste)="onDmsPaste($event, DMSDimensionKey.Longitude)"
             dmsValidation="longitude"
-            >
+          />
           <mat-error>Invalid DMS longitude</mat-error>
         </mat-form-field>
       </div>
@@ -82,7 +146,17 @@
   </div>
 
   <div class="edit-location__actions">
-    <button mat-button type="button" color="primary" (click)="onCancel()">Cancel</button>
-    <button mat-flat-button type="button" color="primary" (click)="onSave()" [disabled]="!feature?.geometry?.coordinates?.length">Save</button>
+    <button mat-button type="button" color="primary" (click)="onCancel()">
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      type="button"
+      color="primary"
+      (click)="onSave()"
+      [disabled]="!feature?.geometry?.coordinates?.length"
+    >
+      Save
+    </button>
   </div>
 </div>

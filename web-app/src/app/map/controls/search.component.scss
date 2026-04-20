@@ -30,31 +30,85 @@
   top: -4px;
   left: calc(100% + 16px);
   padding: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  overflow: hidden;
-  min-width: 500px;
-  max-width: 1000px;
+  overflow: visible;
+  width: 360px;
+  max-width: min(560px, calc(100vw - 140px));
+  border-radius: 0 0 8px 8px;
+  box-sizing: border-box;
 }
 
 .search-field__form {
   width: 100%;
+  margin: 0;
 }
 
 :host ::ng-deep .search-field__form .mat-mdc-form-field-subscript-wrapper,
 :host ::ng-deep .search-field__form .mat-form-field-wrapper {
-  padding-bottom: 0;
+  display: none;
 }
 
 :host ::ng-deep .search-field__form .mat-mdc-text-field-wrapper {
+  min-height: 56px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:host ::ng-deep .search-field__form .mat-mdc-form-field-flex,
+:host ::ng-deep .search-field__form .mat-form-field-flex {
+  min-height: 56px;
+  align-items: center;
+}
+
+:host ::ng-deep .search-field__form .mat-mdc-form-field-infix,
+:host ::ng-deep .search-field__form .mat-form-field-infix {
+  min-height: 56px;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+:host ::ng-deep .search-field__form input.mat-mdc-input-element,
+:host ::ng-deep .search-field__form .mat-input-element {
+  font-size: 18px;
+}
+
+:host ::ng-deep .search-field__form .mdc-floating-label,
+:host ::ng-deep .search-field__form .mat-form-field-label {
+  font-size: 18px;
+}
+
+:host ::ng-deep .search-field__form .mdc-floating-label {
+  top: 24px !important;
+  left: 4px !important;
+}
+
+:host ::ng-deep .search-field__form .mdc-floating-label--float-above {
+  transform: translateY(-26px) scale(0.75) !important;
+}
+
+:host ::ng-deep .search-field__form button[mat-icon-button] {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin-right: 8px;
+}
+
+:host ::ng-deep .search-field__form button[mat-icon-button] .mat-icon,
+:host ::ng-deep .search-field__form button[mat-icon-button] mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
 }
 
 mat-list {
-  max-height: 400px;
+  max-height: 320px;
   overflow-y: auto;
-  max-width: 1000px;
+  max-width: 100%;
+  padding-top: 0;
 }
 
 mat-list-item {

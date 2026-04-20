@@ -1,76 +1,197 @@
-.symbology-content {
-    display: flex;
-    gap: 2rem;
-    min-height: 300px;
-    padding: 1rem 0;
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
+:host {
+  display: block;
 }
 
-.icon-section {
-    flex: 0 0 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-
-    h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1rem;
-        font-weight: 600;
-    }
-
-    .icon-upload {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .icon-preview {
-        width: 100px;
-        height: 100px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        background: #f5f5f5;
-
-        img {
-            max-width: 90px;
-            max-height: 90px;
-            object-fit: contain;
-        }
-
-        &.placeholder {
-            i {
-                font-size: 48px;
-                color: #999;
-            }
-        }
-    }
+:host ::ng-deep .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: #ffffff;
 }
 
-.style-configuration {
-    flex: 1;
-    display: flex;
-    gap: 2rem;
+:host ::ng-deep .mdc-dialog__surface {
+  border-radius: 16px;
+  overflow: hidden;
+}
 
-    .style-group {
-        flex: 1;
-
-        h3 {
-            margin: 0 0 1rem 0;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .full-width {
-            width: 100%;
-            margin-bottom: 1rem;
-        }
-    }
+:host ::ng-deep h2[mat-dialog-title] {
+  margin: 0;
+  padding: 20px 24px 16px 24px;
+  font-size: $font-lg;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
 mat-dialog-content {
-    max-width: 800px;
+  max-width: 800px;
+  padding: 24px !important;
+  margin: 0;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px 20px 24px !important;
+  margin: 0;
+  border-top: 1px solid #e5e7eb;
+  gap: 8px;
+}
+
+.symbology-content {
+  display: flex;
+  gap: 24px;
+  min-height: 300px;
+  padding: 0;
+  align-items: stretch;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+  }
+}
+
+.icon-section {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+
+  @media (max-width: 768px) {
+    flex: 1 1 auto;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: $font-md;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+  }
+
+  .icon-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .icon-preview {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+
+    img {
+      max-width: 90px;
+      max-height: 90px;
+      object-fit: contain;
+    }
+
+    &.placeholder {
+      i {
+        font-size: $font-xl;
+        color: #9ca3af;
+      }
+    }
+  }
+}
+
+.style-configuration {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  .style-group {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+    h3 {
+      margin: 0 0 16px 0;
+      font-size: $font-md;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.3;
+    }
+
+    .full-width {
+      width: 100%;
+      margin-bottom: 16px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+:host ::ng-deep .mat-mdc-form-field {
+  width: 100%;
+}
+
+:host ::ng-deep .mat-mdc-text-field-wrapper,
+:host ::ng-deep .mat-form-field-flex {
+  min-height: 40px;
+  align-items: center;
+}
+
+:host ::ng-deep .mat-mdc-form-field-infix,
+:host ::ng-deep .mat-form-field-infix {
+  min-height: 40px;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+:host ::ng-deep .mdc-floating-label,
+:host ::ng-deep .mat-form-field-label {
+  font-size: $font-xs;
+}
+
+:host ::ng-deep input.mat-mdc-input-element,
+:host ::ng-deep .mat-input-element {
+  font-size: $font-sm;
+}
+
+:host ::ng-deep .mat-mdc-form-field-error,
+:host ::ng-deep mat-error {
+  font-size: $font-xs;
+}
+
+:host ::ng-deep button[mat-button],
+:host ::ng-deep button[mat-raised-button],
+:host ::ng-deep .mat-mdc-button,
+:host ::ng-deep .mat-mdc-raised-button {
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: $font-sm;
+  font-weight: 600;
+  text-transform: none;
+}
+
+:host ::ng-deep button[mat-raised-button] i,
+:host ::ng-deep button[mat-button] i {
+  margin-right: 6px;
 }
