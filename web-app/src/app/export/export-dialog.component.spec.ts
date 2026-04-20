@@ -2,32 +2,33 @@ import {
   ComponentFixture,
   fakeAsync,
   TestBed,
+  tick,
   waitForAsync
 } from '@angular/core/testing';
 import { Observable, of, Subject } from 'rxjs';
 import { ExportDialogComponent } from './export-dialog.component';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatOptionModule as MatOptionModule } from '@angular/material/core';
+import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule as MatInputModule } from '@angular/material/input';
-import { MatListModule as MatListModule } from '@angular/material/list';
-import { MatPaginatorModule as MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import {
-  MatSnackBar as MatSnackBar,
-  MatSnackBarDismiss as MatSnackBarDismiss,
-  MatSnackBarModule as MatSnackBarModule
+  MatSnackBar,
+  MatSnackBarDismiss,
+  MatSnackBarModule
 } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import {
   ExportService,
   Export,
@@ -37,7 +38,7 @@ import {
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
-import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { LocalStorageService } from '../http/local-storage.service';
 import { FilterService } from '../filter/filter.service';
 import { NoExportsComponent } from './empty-state/no-exports.component';
@@ -129,6 +130,7 @@ class MockSnackbar {
   }
 
   open(): any {
+    this.snackbarRef = new MockSnackbarRef();
     return this.snackbarRef;
   }
 }
@@ -159,7 +161,6 @@ describe('ExportDialogComponent', () => {
         MatFormFieldModule,
         MatIconModule,
         HttpClientTestingModule,
-        NoopAnimationsModule,
         MatCheckboxModule,
         MatListModule,
         MatCardModule,
@@ -193,10 +194,15 @@ describe('ExportDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should wire up components to datasource', () => {
-    expect(component.dataSource.sort).toBeTruthy();
+  it('should wire up components to datasource', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(component.dataSource).toBeTruthy();
     expect(component.dataSource.data.length).toBe(3);
-  });
+    expect(component.dataSource.filteredData.length).toBe(3);
+  }));
 
   it('should filter', () => {
     const event: any = {
@@ -277,6 +283,7 @@ describe('ExportDialogComponent', () => {
     fixture.detectChanges();
 
     component.snackBar._openedSnackBarRef.dismiss();
+    tick();
 
     expect(deleteSpy).toHaveBeenCalled();
   }));
@@ -304,6 +311,8 @@ describe('ExportDialogComponent', () => {
     expect(component.dataSource.data.length).toBe(0);
 
     component.snackBar._openedSnackBarRef.dismissWithAction();
+    tick();
+
     expect(deleteSpy).toHaveBeenCalledTimes(0);
     expect(component.dataSource.data.length).toBe(1);
   }));

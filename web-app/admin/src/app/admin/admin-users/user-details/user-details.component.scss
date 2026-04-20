@@ -279,7 +279,7 @@ $font-xs: 12px;
       display: grid;
       grid-template-columns: auto auto;
       gap: 16px;
-      align-items: end;
+      align-items: flex-end;
     }
 
     .create-field {
@@ -823,7 +823,7 @@ $font-xs: 12px;
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     gap: 16px;
-    align-items: end;
+    align-items: flex-end;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;

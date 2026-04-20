@@ -182,7 +182,7 @@ describe('ObservationEditMultiselectComponent', () => {
 
     expect(control.valid).toBe(false)
     const error = fixture.debugElement.query(By.directive(MatError))
-    expect(error.nativeElement.innerText).toBe('You must enter a value')
+    expect(error.nativeElement.innerText.trim()).toBe('You must enter a value')
   })
 
   it('should not show error on invalid if not touched', async () => {

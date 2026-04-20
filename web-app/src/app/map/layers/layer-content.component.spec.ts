@@ -7,7 +7,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { MatSliderModule as MatSliderModule } from '@angular/material/slider';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
-import { CheckboardModule, SaturationModule, HueModule, AlphaModule } from 'ngx-color';
+import {
+  CheckboardModule,
+  SaturationModule,
+  HueModule,
+  AlphaModule
+} from 'ngx-color';
 import { FormsModule } from '@angular/forms';
 import { MapLayerService } from './layer.service';
 import { Component, ViewChild } from '@angular/core';
@@ -17,7 +22,6 @@ import { Component, ViewChild } from '@angular/core';
   template: `<layer-content [layer]="layer"></layer-content>`
 })
 class TestHostComponent {
-
   layer = {
     layer: {
       type: 'Tile'
@@ -34,11 +38,25 @@ describe('LayerContentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule, MatInputModule, MatFormFieldModule, MatCardModule, MatSliderModule, MatIconModule, CheckboardModule, SaturationModule, HueModule, AlphaModule ],
-      providers: [MapLayerService ],
-      declarations: [ ColorPickerComponent, TestHostComponent, LayerContentComponent ]
-    })
-    .compileComponents();
+      imports: [
+        FormsModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatCardModule,
+        MatSliderModule,
+        MatIconModule,
+        CheckboardModule,
+        SaturationModule,
+        HueModule,
+        AlphaModule
+      ],
+      providers: [MapLayerService],
+      declarations: [
+        ColorPickerComponent,
+        TestHostComponent,
+        LayerContentComponent
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -55,8 +73,8 @@ describe('LayerContentComponent', () => {
   it('should toggle default style on', () => {
     component.toggleStyle();
     expect(component.style).toEqual({
-      stroke: "#000000FF",
-      fill: "#00000011",
+      stroke: '#000000FF',
+      fill: '#00000011',
       width: 1
     });
   });
@@ -64,16 +82,19 @@ describe('LayerContentComponent', () => {
   it('should toggle default style off', () => {
     spyOn(component['layerService'], 'style');
     component.toggleStyle();
-    expect(component['layerService'].style).toHaveBeenCalledWith(component.layer, component.style);
+    expect(component['layerService'].style).toHaveBeenCalledWith(
+      component.layer,
+      component.style
+    );
   });
 
   it('should change opacity', () => {
     spyOn(component['layerService'], 'opacity');
-    const event: any = {
-      value: .5
-    };
-    component.opacityChanged(event);
-    expect(component['layerService'].opacity).toHaveBeenCalledWith(component.layer, .5 / 100);
+    component.opacityChanged(0.5 as any);
+    expect(component['layerService'].opacity).toHaveBeenCalledWith(
+      component.layer,
+      0.5 / 100
+    );
   });
 
   it('should change color', () => {
@@ -82,13 +103,19 @@ describe('LayerContentComponent', () => {
       color: '#000000'
     };
     component.colorChanged(event, 'fill');
-    expect(component['layerService'].style).toHaveBeenCalledWith(component.layer, { fill: '#000000'});
+    expect(component['layerService'].style).toHaveBeenCalledWith(
+      component.layer,
+      { fill: '#000000' }
+    );
   });
 
   it('should change line width', () => {
     spyOn(component['layerService'], 'style');
     component.widthChanged(10);
-    expect(component['layerService'].style).toHaveBeenCalledWith(component.layer, { width: 10 });
+    expect(component['layerService'].style).toHaveBeenCalledWith(
+      component.layer,
+      { width: 10 }
+    );
   });
 
   it('should format opacity', () => {
