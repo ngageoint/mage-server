@@ -22,7 +22,7 @@ exports.down = function (done) {
 function getEvents(callback) {
   const EventModel = mongoose.model('Event');
   EventModel.find({}).lean().exec().then(events => {
-    callback(err, events);
+    callback(null, events);
   });
 }
 

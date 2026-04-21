@@ -144,10 +144,10 @@ describe('mongoose observation repository', function () {
     }
     // should run all the middleware to drop the observation collection
     if (eventDoc) {
-      await eventDoc.remove()
+      await eventDoc.deleteOne()
     }
     if (repo && repo.idModel) {
-      await repo.idModel.remove({})
+      await repo.idModel.deleteMany({})
     }
   })
 

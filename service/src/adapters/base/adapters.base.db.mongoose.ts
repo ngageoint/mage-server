@@ -52,7 +52,9 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
   }
 
   async create(attrs: Partial<Attrs>): Promise<Attrs> {
-    const stub = this.documentStubForEntity(attrs)
+    const attrsWithoutId: any = { ...attrs }
+    delete attrsWithoutId.id
+    const stub = this.documentStubForEntity(attrsWithoutId)
     const created = await this.model.create(stub)
     return this.entityForDocument(created)
   }

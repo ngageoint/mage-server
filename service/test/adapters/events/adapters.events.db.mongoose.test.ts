@@ -61,9 +61,9 @@ describe('event mongoose repository', function () {
   })
 
   afterEach(async function () {
-    await model.remove({})
+    await model.deleteMany({})
     // Also clean up teams that were created for events
-    await TeamModel.remove({})
+    await TeamModel.deleteMany({})
   })
 
   describe('finding events by id', function () {
@@ -78,8 +78,8 @@ describe('event mongoose repository', function () {
   describe('finding active events', function () {
 
     beforeEach('clear all events', async function () {
-      await model.remove({})
-      await TeamModel.remove({})
+      await model.deleteMany({})
+      await TeamModel.deleteMany({})
     })
 
     it('finds events whose complete key is false', async function () {

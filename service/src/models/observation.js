@@ -460,7 +460,7 @@ exports.addState = function (event, id, state, callback) {
 
   observationModel(event).updateOne(condition, update, { upsert: false }).then(
     () => callback(null, state),
-    err => callback(err)
+    err => callback(err, state)
   );
 };
 
@@ -570,5 +570,8 @@ exports.removeAttachment = function (event, observationId, attachmentId, callbac
 exports.addAttachmentThumbnail = function (event, observationId, attachmentId, thumbnail, callback) {
   const condition = { _id: observationId, 'attachments._id': attachmentId };
   const update = { '$push': { 'attachments.$.thumbnails': thumbnail } };
-  observationModel(event).update(condition, update, callback);
+  observationModel(event).updateOne(condition, update).then(
+    r => callback(null, r),
+    e => callback(e)
+  );
 };

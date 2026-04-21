@@ -177,7 +177,7 @@ Icon.prototype.delete = function (callback) {
     if (self._primary) remove.primary = self._primary;
     if (self._variant) remove.variant = self._variant;
 
-    IconModel.deleteMany(remove).then(() => {
+    IconModel.Model.deleteMany(remove).then(() => {
       callback(null);
 
       // remove the variant dir, primary dir, or base dir

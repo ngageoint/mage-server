@@ -13,36 +13,36 @@ describe("authentication model", function () {
     sinon.restore();
   });
 
-  describe('local auth model', function() {
+  describe('local auth model', function () {
 
-    it('validates local auth model', function (done) {
+    it('validates local auth model', async function () {
 
       const authentication = new Authentication.Local({
         type: 'local',
         password: 'password',
-        authenticationConfigurationId: mongoose.Types.ObjectId()
+        authenticationConfigurationId: new mongoose.Types.ObjectId()
       });
 
-      authentication.validate(function (err) {
-        expect(err).to.be.null;
+      await authentication.validate();
+      authentication.password = null;
 
-        authentication.password = null;
-        authentication.validate(function (err) {
-          expect(err).to.not.be.null;
-          done();
-        });
-      });
+      try {
+        await authentication.validate();
+        expect.fail('Expected validation to fail when password is null');
+      } catch (err) {
+        expect(err).to.not.be.null;
+      }
     });
 
-    describe('toObject', function() {
+    describe('toObject', function () {
 
-      it('redacts passwords', function() {
+      it('redacts passwords', function () {
 
         const authentication = new Authentication.Local({
           type: 'local',
           password: 'password now',
-          previousPasswords: [ 'password before' ],
-          authenticationConfigurationId: mongoose.Types.ObjectId()
+          previousPasswords: ['password before'],
+          authenticationConfigurationId: new mongoose.Types.ObjectId()
         });
         const authObj = authentication.toObject();
 

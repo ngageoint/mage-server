@@ -4,7 +4,7 @@ import * as migration from '../../lib/migrations/018-feeds-admin-permissions'
 import { Db } from 'mongodb'
 import { expect } from 'chai'
 
-describe('feeds admin permissions migration', function() {
+describe('feeds admin permissions migration', function () {
 
   const feedsPermissions = [
     'FEEDS_LIST_SERVICE_TYPES',
@@ -19,24 +19,24 @@ describe('feeds admin permissions migration', function() {
   before(mongoTest.mongoTestBeforeAllHook())
 
   let db: Db
-  before(function() {
-    db = this.mongo?.conn.getClient().db() as Db;
+  before(function () {
+    db = this.mongo?.conn.getClient().db() as unknown as Db;
   })
 
   after(mongoTest.mongoTestAfterAllHook())
 
-  afterEach(async function() {
+  afterEach(async function () {
     const roles = db.collection('roles')
     await roles.deleteMany({})
   })
 
-  it('has a migration id', function() {
+  it('has a migration id', function () {
     expect(migration.id).to.equal('feeds-admin-permissions')
   })
 
-  describe('migrate up', async function() {
+  describe('migrate up', async function () {
 
-    it('adds feeds permissions to the existing admin role', async function() {
+    it('adds feeds permissions to the existing admin role', async function () {
 
       const roles = db.collection('roles')
       const count = await roles.countDocuments()
@@ -56,13 +56,13 @@ describe('feeds admin permissions migration', function() {
       expect(insert.acknowledged).to.be.true
 
       await new Promise<void>((resolve, reject) => {
-        const done = function(err?: any) {
+        const done = function (err?: any) {
           if (err) {
             reject(err)
           }
           resolve()
         }
-        migration.up.call({ db, log: () => {} }, done)
+        migration.up.call({ db, log: () => { } }, done)
       })
 
       const adminRole = await roles.findOne({ _id: insert.insertedId })
@@ -81,9 +81,9 @@ describe('feeds admin permissions migration', function() {
     })
   })
 
-  describe('migrate down', function() {
+  describe('migrate down', function () {
 
-    it('removes feeds permissions from admin role', async function() {
+    it('removes feeds permissions from admin role', async function () {
 
       const roles = db.collection('roles')
       const insert = await roles.insertOne({
@@ -100,13 +100,13 @@ describe('feeds admin permissions migration', function() {
       expect(insert.acknowledged).to.be.true
 
       await new Promise<void>((resolve, reject) => {
-        const done = function(err?: any) {
+        const done = function (err?: any) {
           if (err) {
             reject(err)
           }
           resolve()
         }
-        migration.down.call({ db, log: () => {} }, done)
+        migration.down.call({ db, log: () => { } }, done)
       })
 
       const role = await roles.findOne({ _id: insert.insertedId })
