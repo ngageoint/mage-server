@@ -18,10 +18,10 @@
       "sourceMaps": true
     },
     {
+      "name": "Attach to MAGE Service",
       "type": "node",
       "request": "attach",
-      "name": "Attach to MAGE Service",
-      "port": 9229, // For Node.js inspect
+      "port": 9229,
       "restart": true,
       "skipFiles": [
         "<node_internals>/**"
@@ -29,7 +29,7 @@
       "cwd": "${workspaceFolder}/service"
     },
     {
-      "name": "mage server instance",
+      "name": "Debug MAGE Backend",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -44,7 +44,6 @@
       },
       "cwd": "${workspaceFolder}/instance",
       "console": "integratedTerminal",
-      "preLaunchTask": "service:build",
       "sourceMaps": true,
       "outFiles": [
         "${workspaceFolder}/service/lib/**/*.js",
@@ -57,7 +56,7 @@
     {
       "name": "Debug Backend + WebApp",
       "configurations": [
-        "Attach to MAGE Service",
+        "Debug MAGE Backend",
         "Launch WebApp"
       ],
       "stopAll": true
@@ -65,7 +64,7 @@
     {
       "name": "Debug Backend + AdminApp",
       "configurations": [
-        "Attach to MAGE Service",
+        "Debug MAGE Backend",
         "Launch AdminApp"
       ],
       "stopAll": true
