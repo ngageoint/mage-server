@@ -1,4 +1,4 @@
-import { buildTitleMap, isArray, JsonSchemaFormService } from '@ajsf/core';
+import { buildTitleMap, isArray, JsonSchemaFormService } from '@ngageoint/vendor-ajsf-core';
 import { Component, Inject, Input, OnInit, Optional } from '@angular/core';
 import { AbstractControl, UntypedFormControl } from '@angular/forms';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS as MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';

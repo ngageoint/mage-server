@@ -1,4 +1,4 @@
-import { JsonSchemaFormModule } from '@ajsf/core';
+import { JsonSchemaFormModule } from '@ngageoint/vendor-ajsf-core';
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
