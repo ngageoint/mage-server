@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AttachmentAction } from './observation-edit-attachment-action';
 
@@ -20,6 +20,7 @@ export class ObservationEditAttachmentComponent implements OnInit {
   @Input() definition: AttachmentField
   @Input() url: string
   @Input() attachments: any[]
+  @Output() uploadError = new EventEmitter<{ id: number | string }>()
 
   control: UntypedFormControl
   uploadId = 0
@@ -63,7 +64,6 @@ export class ObservationEditAttachmentComponent implements OnInit {
     })
 
     this.control.setValue(attachments)
-
     this.changeDetector.detectChanges()
   }
 
@@ -79,5 +79,19 @@ export class ObservationEditAttachmentComponent implements OnInit {
   removeAttachment($event): void {
     const attachments = this.control.value || []
     this.control.setValue(attachments.filter(attachment => attachment.id !== $event.id))
+  }
+
+  onUploadError($event: { id: number | string }): void {
+    const attachments = this.control.value || [];
+    const rejected = attachments.find((a: any) => a.id === $event.id);
+    this.removeAttachment($event);
+    this.uploadError.emit({ id: rejected?.attachmentId || $event.id });
+
+    if (rejected?.attachmentId) {
+      this.attachments = (this.attachments || []).filter(
+        (a: any) => a.id !== rejected.attachmentId
+      );
+      this.changeDetector.detectChanges();
+    }
   }
 }
