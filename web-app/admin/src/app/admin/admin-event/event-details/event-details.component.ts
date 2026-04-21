@@ -437,9 +437,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     if (!this.event) return;
 
     const dialogRef = this.dialog.open(CreateFormDialogComponent, {
-      width: '900px',
+      width: '600px',
       height: '800px',
-      maxWidth: '95vw',
+      maxWidth: '50vw',
       maxHeight: '95vh',
       data: { event: this.event }
     });
