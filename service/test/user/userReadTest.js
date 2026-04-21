@@ -323,7 +323,7 @@ describe("user read tests", function () {
       .returns(class {
         limit() { return this }
         skip() { return this }
-        count() { return Promise.resolve(userDocs.length) }
+        countDocuments() { return Promise.resolve(userDocs.length) }
         cursor() { return userDocs }
       });
 

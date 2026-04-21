@@ -64,7 +64,7 @@ describe('mongoose adapter layer base', function () {
         id: 'ignore',
         ...seed
       })
-      const read = await mongo.conn.db.collection(model.collection.name).find().toArray()
+      const read = await mongo.conn.db!.collection(model.collection.name).find().toArray()
 
       expect(created.id).to.not.be.empty
       expect(created.id).to.not.equal('ignore')
@@ -268,7 +268,7 @@ describe('mongoose adapter layer base', function () {
 
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
       const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
-        this.count = function (): mongoose.Query<number, BaseDocument> {
+        (this as any).countDocuments = function (): mongoose.Query<number, BaseDocument> {
           return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
         }
         return baseQuery
@@ -285,7 +285,7 @@ describe('mongoose adapter layer base', function () {
 
       baseQuery.received().limit(40)
       baseQuery.received().skip(3 * 40)
-      baseQuery.didNotReceive().count(Arg.all())
+      baseQuery.didNotReceive().countDocuments(Arg.all())
     })
 
     it('returns the total count if requested', async function () {
@@ -293,7 +293,7 @@ describe('mongoose adapter layer base', function () {
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
       const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
-          count: {
+          countDocuments: {
             get: () => function () {
               return Promise.resolve(999) as unknown as mongoose.Query<number, BaseDocument>
             }
@@ -320,7 +320,7 @@ describe('mongoose adapter layer base', function () {
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
       const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
-          count: {
+          countDocuments: {
             get: () => function () {
               return Promise.resolve(999) as unknown as mongoose.Query<number, BaseDocument>
             }
@@ -346,7 +346,7 @@ describe('mongoose adapter layer base', function () {
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
       const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
-          count: {
+          countDocuments: {
             get: () => function () {
               return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
             }

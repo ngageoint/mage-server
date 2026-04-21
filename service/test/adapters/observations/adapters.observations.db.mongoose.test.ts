@@ -158,7 +158,7 @@ describe('mongoose observation repository', function () {
       const id = await repo.allocateObservationId()
       const parsed = new mongoose.Types.ObjectId(id)
       const found = await repo.idModel.findById(id)
-      const idCount = await repo.idModel.count({})
+      const idCount = await repo.idModel.countDocuments({})
 
       expect(id).to.be.a.string
       expect(id).to.not.be.empty
@@ -181,7 +181,7 @@ describe('mongoose observation repository', function () {
         expect(observation.validation.hasErrors).to.be.false
         expect(err).to.be.instanceOf(ObservationRepositoryError)
         expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
         expect(count).to.equal(0)
       })
 
@@ -195,7 +195,7 @@ describe('mongoose observation repository', function () {
         const found = await repo.findById(id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
         const foundAttrs = copyObservationAttrs(found)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
@@ -271,7 +271,7 @@ describe('mongoose observation repository', function () {
         const found = await repo.findById(id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
         const foundAttrs = copyObservationAttrs(found)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
@@ -351,7 +351,7 @@ describe('mongoose observation repository', function () {
         const found = await repo.findById(orig.id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
         const foundAttrs = copyObservationAttrs(found)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(orig.id)
@@ -389,7 +389,7 @@ describe('mongoose observation repository', function () {
       expect(observation.validation.hasErrors).to.be.false
       expect(err).to.be.instanceOf(ObservationRepositoryError)
       expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
-      const count = await model.count({})
+      const count = await model.countDocuments({})
       expect(count).to.equal(0)
     })
 
@@ -410,7 +410,7 @@ describe('mongoose observation repository', function () {
       expect(observation.validation.hasErrors).to.be.true
       expect(err).to.be.instanceOf(ObservationRepositoryError)
       expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservation)
-      const count = await model.count({})
+      const count = await model.countDocuments({})
       expect(count).to.equal(0)
     })
 

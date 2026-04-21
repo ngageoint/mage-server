@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import * as ObservationModelModule from '../models/observation'
 import * as UserLocationModelModule from '../models/location'
 import { MageEventDocument } from '../models/event'
-import { MageEvent } from '../entities/events/entities.events'
+import { MageEvent, MageEventAttrs } from '../entities/events/entities.events'
 
 
 export interface ExportOptions {
@@ -35,14 +35,14 @@ export class Exporter {
 
   constructor(options: ExportOptions) {
     this.eventDoc = options.event
-    this._event = new MageEvent(options.event.toJSON())
+    this._event = new MageEvent(options.event.toJSON() as unknown as MageEventAttrs)
     this._filter = options.filter;
   }
 
   requestObservations(filter: ExportFilter): mongoose.Cursor<ObservationModelModule.ObservationDocument> {
     const options: ObservationModelModule.ObservationReadStreamOptions = {
       filter: {
-        states: [ 'active' ] as [ 'active' ],
+        states: ['active'] as ['active'],
         observationStartDate: filter.startDate,
         observationEndDate: filter.endDate,
         favorites: filter.favorites,

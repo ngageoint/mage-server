@@ -1,5 +1,5 @@
 
-import mongoose, { Model, SchemaOptions } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
 import { FeedServiceType, FeedService, FeedServiceTypeId, RegisteredFeedServiceType, FeedRepository, Feed, FeedServiceId } from '../../entities/feeds/entities.feeds'
 import { FeedServiceTypeRepository, FeedServiceRepository } from '../../entities/feeds/entities.feeds'
@@ -45,7 +45,7 @@ export const FeedServiceSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: any, json: any & FeedService, options: SchemaOptions): void => {
+      transform: (doc: any, json: any & FeedService): void => {
         delete json._id
         json.serviceType = doc.serviceType.toHexString()
       }
@@ -86,7 +86,7 @@ export const FeedSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: any, json: any & Feed, options: SchemaOptions): void => {
+      transform: (doc: any, json: any & Feed): void => {
         delete json._id
         json.service = doc.service.toHexString()
         if (doc.icon) {

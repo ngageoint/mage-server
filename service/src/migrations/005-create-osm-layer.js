@@ -2,7 +2,7 @@ const Counter = require('../models/counter')
 
 exports.id = 'create-initial-osm-layer';
 
-exports.up = async function(done) {
+exports.up = async function (done) {
   this.log('creating open street map layer...');
 
   try {
@@ -27,10 +27,10 @@ async function createOSMLayer(db) {
   };
 
   const collection = db.collection('layers');
-  await collection.insert(osm);
+  await collection.insertOne(osm);
 }
 
-exports.down = function(done) {
+exports.down = function (done) {
   const collection = this.db.collection('layers');
   collection.deleteMany({ name: "Open Street Map" })
     .then(() => {

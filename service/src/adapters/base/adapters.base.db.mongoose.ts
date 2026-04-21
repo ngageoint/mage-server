@@ -6,25 +6,25 @@ type EntityReference = { id: string | number }
 /**
  * Map Mongoose `Document` instances to plain entity objects.
  */
-export type DocumentMapping<D extends mongoose.Document, E extends object> = (doc: D) => E
+export type DocumentMapping<D, E extends object> = (doc: D) => E
 /**
  * Map entities to objects suitable to create Mongoose `Document` instances, as
  * in `new mongoose.Model(stub)`.
  */
-export type EntityMapping<D extends mongoose.Document, E extends object> = (entity: Partial<E>) => any
+export type EntityMapping<D, E extends object> = (entity: Partial<E>) => any
 
 /**
  * Return a document mapping that calls `toJSON()` on the given `Document`
  * instance and returns the result.
  */
-export function createDefaultDocMapping<D extends mongoose.Document, E extends object>(): DocumentMapping<D, E> {
-  return (d): any => d.toJSON()
+export function createDefaultDocMapping<D, E extends object>(): DocumentMapping<D, E> {
+  return (d): any => (d as any).toJSON()
 }
 
 /**
  * Return an entity mapping that simply returns the given entity object as is.
  */
-export function createDefaultEntityMapping<D extends mongoose.Document, E extends object>(): EntityMapping<D, E> {
+export function createDefaultEntityMapping<D, E extends object>(): EntityMapping<D, E> {
   return e => e as any
 }
 
@@ -39,7 +39,7 @@ export function createDefaultEntityMapping<D extends mongoose.Document, E extend
  *   entity type that provides extra functionality beyond just the raw data
  *   of the `Attrs` type.
  */
-export class BaseMongooseRepository<D extends mongoose.Document, M extends mongoose.Model<D>, Attrs extends object, Entity extends object = Attrs> {
+export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs extends object, Entity extends object = Attrs> {
 
   readonly model: M
   readonly entityForDocument: DocumentMapping<D, Attrs>
@@ -84,8 +84,8 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
     const docs: D[] = await this.model.find({ _id: { $in: ids } }).exec();
     const found = {} as any
     for (const doc of docs) {
-      found[doc.id] = this.entityForDocument(doc)
-      delete notFound[doc.id]
+      found[(doc as any).id] = this.entityForDocument(doc)
+      delete notFound[(doc as any).id]
     }
     return { ...notFound, ...found }
   }
@@ -116,7 +116,7 @@ export const pageQuery = <RT, DT>(query: mongoose.Query<RT, DT>, paging: PagingP
   const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<RT, DT>
   const includeTotalCount = typeof paging.includeTotalCount === 'boolean' ? paging.includeTotalCount : paging.pageIndex === 0
   if (includeTotalCount) {
-    const countQuery = new BaseQuery().count()
+    const countQuery = new BaseQuery().countDocuments()
     return countQuery.then((totalCount: number) => {
       return { totalCount, query: pageQuery }
     })
