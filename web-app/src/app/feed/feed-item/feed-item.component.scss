@@ -8,7 +8,7 @@
 
 mat-toolbar {
   background-color: white;
-  color: mat.get-color-from-palette($app-primary);
+  color: mat.m2-get-color-from-palette($app-primary);
   position: sticky;
   top: 0;
   z-index: 2;
@@ -20,7 +20,7 @@ mat-toolbar {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: mat.get-color-from-palette($app-primary);
+  color: mat.m2-get-color-from-palette($app-primary);
   font-size: 18px;
   font-weight: 500;
 }

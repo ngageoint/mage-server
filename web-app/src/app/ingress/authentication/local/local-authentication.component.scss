@@ -22,8 +22,8 @@
     margin: 24px 0;
     padding: 16px;
     border-radius: 4px;
-    background-color: mat.get-color-from-palette($app-warn, 50);
-    color: mat.get-color-from-palette($app-warn, 900);
+    background-color: mat.m2-get-color-from-palette($app-warn, 50);
+    color: mat.m2-get-color-from-palette($app-warn, 900);
     overflow: hidden;
   }
 
@@ -68,7 +68,7 @@
 }
 
 :host ::ng-deep a {
-  color: mat.get-color-from-palette($app-warn);
+  color: mat.m2-get-color-from-palette($app-warn);
   cursor: pointer;
   text-decoration: underline;
 }

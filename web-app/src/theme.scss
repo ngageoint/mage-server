@@ -4,13 +4,13 @@
 
 @include mat.core();
 
-$app-theme: mat.define-light-theme((
+$app-theme: mat.m2-define-light-theme((
   color: (
     primary: $app-primary,
     accent: $app-accent,
     warn: $app-warn,
   ),
-  typography: mat.define-typography-config(),
+  typography: mat.m2-define-typography-config(),
   density: 0,
 ));
 

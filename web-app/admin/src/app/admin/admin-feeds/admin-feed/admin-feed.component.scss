@@ -38,7 +38,7 @@
 }
 
 .heading__icon {
-  color: mat.get-color-from-palette($app-primary);
+  color: mat.m2-get-color-from-palette($app-primary);
   margin-right: 16px;
   font-size: 40px;
   height: 40px;
@@ -92,7 +92,7 @@
 
 mat-card-header {
   color: white;
-  background-color: mat.get-color-from-palette($app-primary);
+  background-color: mat.m2-get-color-from-palette($app-primary);
   position: relative;
   padding: 16px 16px 0;
   margin-bottom: 8px;

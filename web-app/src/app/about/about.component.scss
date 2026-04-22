@@ -45,14 +45,14 @@ $mobile-padding: 16px;
   gap: 8px;
   font-size: 1.4rem;
   font-weight: 600;
-  color: mat.get-color-from-palette($app-primary);
-  border-bottom: 2px solid mat.get-color-from-palette($app-primary);
+  color: mat.m2-get-color-from-palette($app-primary);
+  border-bottom: 2px solid mat.m2-get-color-from-palette($app-primary);
   padding-bottom: 4px;
 }
 
 .section-icon {
   font-size: 1.4rem;
-  color: mat.get-color-from-palette($app-primary);
+  color: mat.m2-get-color-from-palette($app-primary);
 }
 
 .section-text {
@@ -61,7 +61,7 @@ $mobile-padding: 16px;
   color: #444;
 
   a {
-    color: mat.get-color-from-palette($app-primary);
+    color: mat.m2-get-color-from-palette($app-primary);
     text-decoration: underline;
   }
 }
@@ -119,7 +119,7 @@ $mobile-padding: 16px;
     font-size: 0.95rem;
 
     a {
-      color: mat.get-color-from-palette($app-primary);
+      color: mat.m2-get-color-from-palette($app-primary);
     }
   }
 }

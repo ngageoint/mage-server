@@ -26,7 +26,7 @@
 .section-icon,
 .contact-info mat-icon,
 .contact-info-toggle button mat-icon {
-  color: mat.get-color-from-palette($app-primary);
+  color: mat.m2-get-color-from-palette($app-primary);
 }
 
 .contact-info-toggle {
@@ -81,7 +81,7 @@
     color: rgba(0, 0, 0, 0.75);
 
     a {
-      color: mat.get-color-from-palette($app-primary);
+      color: mat.m2-get-color-from-palette($app-primary);
       text-decoration: none;
 
       &:hover {

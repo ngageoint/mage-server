@@ -24,7 +24,7 @@
     box-sizing: border-box;
 
     .admin-breadcrumb {
-      color: mat.get-color-from-palette($app-primary);
+      color: mat.m2-get-color-from-palette($app-primary);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -32,7 +32,7 @@
     }
 
     .admin-breadcrumb:hover {
-      color: mat.get-color-from-palette($app-primary);
+      color: mat.m2-get-color-from-palette($app-primary);
       opacity: 0.6;
     }
 
@@ -53,7 +53,7 @@
 
     mat-icon,
     i {
-      color: mat.get-color-from-palette($app-primary);
+      color: mat.m2-get-color-from-palette($app-primary);
       margin-right: 7px;
       margin-left: 7px;
       width: 24px;

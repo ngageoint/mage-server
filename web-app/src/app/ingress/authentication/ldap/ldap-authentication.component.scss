@@ -2,7 +2,7 @@
 @import "variables.scss";
 
 :host ::ng-deep a {
-  color: mat.get-color-from-palette($app-warn);
+  color: mat.m2-get-color-from-palette($app-warn);
   cursor: pointer;
   text-decoration: underline;
 }
@@ -42,7 +42,7 @@ mat-form-field {
   align-items: center;
   gap: 8px;
   margin-top: 24px;
-  color: mat.get-color-from-palette($app-warn);
+  color: mat.m2-get-color-from-palette($app-warn);
   border-radius: 4px;
   padding: 0 16px;
 }
