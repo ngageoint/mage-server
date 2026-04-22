@@ -1,4 +1,4 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import {
   ComponentFixture,
@@ -28,6 +28,7 @@ import {
   feedMetaDataLean,
   FeedMetaDataNullable
 } from './feed-edit.model';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 type FeedMetaDataBooleanKeys = 'itemsHaveIdentity' | 'itemsHaveSpatialDimension';
 
@@ -80,8 +81,11 @@ describe('FeedMetaDataComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
+    declarations: [
+        TestFeedMetaDataHostComponent,
+        AdminFeedEditConfigurationComponent
+    ],
+    imports: [FormsModule,
         MatAutocompleteModule,
         MatCheckboxModule,
         MatExpansionModule,
@@ -89,14 +93,9 @@ describe('FeedMetaDataComponent', () => {
         MatInputModule,
         NoopAnimationsModule,
         ReactiveFormsModule,
-        StaticIconModule,
-        HttpClientTestingModule
-      ],
-      declarations: [
-        TestFeedMetaDataHostComponent,
-        AdminFeedEditConfigurationComponent
-      ]
-    }).compileComponents();
+        StaticIconModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
   }));
 
   beforeEach(() => {

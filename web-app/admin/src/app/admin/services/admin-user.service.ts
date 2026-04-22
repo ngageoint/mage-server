@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpParams,
-  HttpRequest,
-  HttpEvent
-} from '@angular/common/http';
+import { HttpClient, HttpParams, HttpRequest, HttpEvent } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';

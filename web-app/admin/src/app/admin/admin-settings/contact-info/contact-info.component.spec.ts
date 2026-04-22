@@ -6,7 +6,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { ContactInfoComponent } from './contact-info.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SimpleChange } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { SettingsService } from 'admin/src/app/services/settings.service';
@@ -17,6 +17,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatMenuModule } from '@angular/material/menu';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 const MOCK_CONTACT_INFO = {
   phone: '123-456-7890',
@@ -48,19 +49,16 @@ describe('ContactInfoComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        NoopAnimationsModule,
-        HttpClientTestingModule,
+    declarations: [ContactInfoComponent],
+    imports: [NoopAnimationsModule,
         MatMenuModule,
         FormsModule,
         MatFormFieldModule,
         MatCheckboxModule,
         MatInputModule,
-        MatIconModule
-      ],
-      declarations: [ContactInfoComponent],
-      providers: [{ provide: SettingsService, useClass: MockSettingsService }]
-    }).compileComponents();
+        MatIconModule],
+    providers: [{ provide: SettingsService, useClass: MockSettingsService }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
   }));
 
   beforeEach(() => {

@@ -1,8 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { Feed } from '@ngageoint/mage.web-core-lib/feed'
 import { AdminFeedDeleteComponent } from './admin-feed-delete.component'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('AdminFeedDeleteComponent', () => {
   let component: AdminFeedDeleteComponent
@@ -15,13 +16,15 @@ describe('AdminFeedDeleteComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatDialogModule, HttpClientTestingModule],
-      providers: [
+    declarations: [AdminFeedDeleteComponent],
+    imports: [MatDialogModule],
+    providers: [
         { provide: MatDialogRef, useValue: {} },
-        { provide: MAT_DIALOG_DATA, useValue: feedData }
-      ],
-      declarations: [AdminFeedDeleteComponent]
-    })
+        { provide: MAT_DIALOG_DATA, useValue: feedData },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+})
       .compileComponents()
   }))
 

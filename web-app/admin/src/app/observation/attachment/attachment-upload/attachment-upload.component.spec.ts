@@ -1,4 +1,4 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AttachUploadComponent } from './attachment-upload.component';
@@ -8,7 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatListModule as MatListModule } from '@angular/material/list'; // for mat-nav-list
+import { MatListModule as MatListModule } from '@angular/material/list';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'; // for mat-nav-list
 
 describe('AttachUploadComponent', () => {
   let component: AttachUploadComponent;
@@ -16,18 +17,16 @@ describe('AttachUploadComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        CommonModule,
+    declarations: [AttachUploadComponent],
+    imports: [CommonModule,
         MatPaginatorModule,
         MatIconModule,
         MatCardModule,
         MatProgressSpinnerModule,
         MatDividerModule,
-        MatListModule
-      ],
-      declarations: [AttachUploadComponent]
-    }).compileComponents();
+        MatListModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
   }));
 
   beforeEach(() => {

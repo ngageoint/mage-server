@@ -35,13 +35,14 @@ import {
   ExportRequest,
   ExportResponse
 } from './export.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { LocalStorageService } from '../http/local-storage.service';
 import { FilterService } from '../filter/filter.service';
 import { NoExportsComponent } from './empty-state/no-exports.component';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 class MockExportService {
   getExports(): Observable<any> {
@@ -149,8 +150,8 @@ describe('ExportDialogComponent', () => {
     const mockDialogRef = { close: (): void => {} };
 
     TestBed.configureTestingModule({
-      imports: [
-        NoopAnimationsModule,
+    declarations: [ExportDialogComponent, NoExportsComponent],
+    imports: [NoopAnimationsModule,
         MatPaginatorModule,
         MatSortModule,
         MatSnackBarModule,
@@ -160,7 +161,6 @@ describe('ExportDialogComponent', () => {
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
-        HttpClientTestingModule,
         MatCheckboxModule,
         MatListModule,
         MatCardModule,
@@ -171,17 +171,17 @@ describe('ExportDialogComponent', () => {
         MatDatepickerModule,
         MatNativeDateModule,
         FormsModule,
-        MatChipsModule
-      ],
-      providers: [
+        MatChipsModule],
+    providers: [
         { provide: LocalStorageService, useValue: mockLocalStorageService },
         { provide: ExportService, useClass: MockExportService },
         { provide: FilterService, useValue: mockFilterService },
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MatSnackBar, useClass: MockSnackbar }
-      ],
-      declarations: [ExportDialogComponent, NoExportsComponent]
-    }).compileComponents();
+        { provide: MatSnackBar, useClass: MockSnackbar },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+}).compileComponents();
   }));
 
   beforeEach(() => {

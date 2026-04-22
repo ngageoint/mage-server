@@ -1,8 +1,9 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
 import { Component, DebugElement } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { By } from '@angular/platform-browser'
 import { XhrImgComponent, ObjectUrlService, OBJECT_URL_SERVICE } from './xhr-img.component'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
   template: `
@@ -31,9 +32,10 @@ describe('ImgXhrBlobSrcDirective', () => {
     objectUrlService.createObjectURL.and.callFake(URL.createObjectURL)
     objectUrlService.revokeObjectURL.and.callFake(URL.revokeObjectURL)
     TestBed.configureTestingModule({
-      imports: [ HttpClientTestingModule ],
-      declarations: [ XhrImgComponent, TestComponent ]
-    })
+    declarations: [XhrImgComponent, TestComponent],
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     .overrideComponent(XhrImgComponent, {
       set: {
         providers: [

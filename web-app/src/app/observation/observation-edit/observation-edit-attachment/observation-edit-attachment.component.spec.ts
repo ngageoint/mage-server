@@ -1,10 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 import { MatIconModule } from '@angular/material/icon';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
   selector: `host-component`,
@@ -28,9 +29,10 @@ describe('ObservationEditAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditAttachmentComponent, TestHostComponent],
-      imports: [MatIconModule, HttpClientTestingModule]
-    })
+    declarations: [ObservationEditAttachmentComponent, TestHostComponent],
+    imports: [MatIconModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     .compileComponents();
   }));
 

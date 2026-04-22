@@ -1,5 +1,5 @@
 import { JsonSchemaFormModule } from '@ngageoint/vendor-ajsf-core';
-import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -32,6 +32,7 @@ import { AdminFeedEditTopicComponent } from './admin-feed-edit-topic/admin-feed-
 import { AdminFeedEditComponent } from './admin-feed-edit.component';
 import { FeedEditState, freshEditState } from './feed-edit.model'
 import { FeedEditService } from './feed-edit.service'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 type MockFeedEditService = {
   state$: BehaviorSubject<FeedEditState>
@@ -98,19 +99,17 @@ describe('FeedEditComponent', () => {
     mockFeedService.fetchServices.and.returnValue(of([]))
 
     TestBed.configureTestingModule({
-      providers: [
-        { provide: FeedService, useValue: mockFeedService },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              paramMap: convertToParamMap({})
-            }
-          }
-        }
-      ],
-      imports: [
-        MatAutocompleteModule,
+    declarations: [
+        AdminFeedEditComponent,
+        AdminServiceEditComponent,
+        AdminFeedEditTopicComponent,
+        AdminFeedEditTopicConfigurationComponent,
+        AdminFeedEditConfigurationComponent,
+        AdminFeedEditItemPropertiesComponent,
+        FeedItemSummaryComponent,
+        JsonSchemaWidgetAutocompleteComponent
+    ],
+    imports: [MatAutocompleteModule,
         MatDividerModule,
         MatExpansionModule,
         MatListModule,
@@ -129,20 +128,21 @@ describe('FeedEditComponent', () => {
         MomentModule,
         MageCommonModule,
         StaticIconModule,
-        AdminBreadcrumbModule,
-        HttpClientTestingModule,
-      ],
-      declarations: [
-        AdminFeedEditComponent,
-        AdminServiceEditComponent,
-        AdminFeedEditTopicComponent,
-        AdminFeedEditTopicConfigurationComponent,
-        AdminFeedEditConfigurationComponent,
-        AdminFeedEditItemPropertiesComponent,
-        FeedItemSummaryComponent,
-        JsonSchemaWidgetAutocompleteComponent
-      ]
-    })
+        AdminBreadcrumbModule],
+    providers: [
+        { provide: FeedService, useValue: mockFeedService },
+        {
+            provide: ActivatedRoute,
+            useValue: {
+                snapshot: {
+                    paramMap: convertToParamMap({})
+                }
+            }
+        },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+})
       .overrideComponent(AdminFeedEditComponent, {
         set: {
           providers: [{ provide: FeedEditService, useValue: mockEditService }]

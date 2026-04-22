@@ -1,18 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TokenInterceptorService } from './token.interceptor';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Token Interceptor Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [TokenInterceptorService],
-      imports: [
-        HttpClientTestingModule,
-        MatDialogModule
-      ]
-    });
+    imports: [MatDialogModule],
+    providers: [TokenInterceptorService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
   });
 
   afterEach(() => {

@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ContactComponent } from './contact.component';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Contact Component', () => {
 
@@ -10,9 +11,10 @@ describe('Contact Component', () => {
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule, MatDialogModule],
-            declarations: [ContactComponent]
-        }).compileComponents();
+    declarations: [ContactComponent],
+    imports: [MatDialogModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
     }));
 
     beforeEach(() => {

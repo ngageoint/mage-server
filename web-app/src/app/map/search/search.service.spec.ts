@@ -1,9 +1,10 @@
 import { TestBed, getTestBed } from '@angular/core/testing';
 
 import { PlacenameSearchResult, PlacenameSearchService } from './search.service';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MapSettings, MobileSearchType, WebSearchType } from 'src/app/entities/map/entities.map';
 import { FeatureCollection } from 'geojson';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('SearchService', () => {
   let injector: TestBed;
@@ -12,8 +13,9 @@ describe('SearchService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
 
     injector = getTestBed();
     service = injector.get(PlacenameSearchService);

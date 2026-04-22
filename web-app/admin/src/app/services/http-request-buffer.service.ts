@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpEvent,
-  HttpHandler,
-  HttpRequest,
-} from '@angular/common/http';
+import { HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 
 type Buffered = {

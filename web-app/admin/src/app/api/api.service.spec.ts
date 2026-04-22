@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
-import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ApiService } from './api.service';
 
@@ -9,9 +9,9 @@ describe('API Service Tests', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [],
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
 
     // Inject the http service and test controller for each test
     httpClient = TestBed.inject(HttpClient);

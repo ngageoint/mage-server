@@ -1,7 +1,7 @@
 import { USER_READ_BASE_URL as BASE_URL, UserReadService, UserSearchResult, UserSearchParams } from './user-read.service'
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
 import { TestBed } from '@angular/core/testing'
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 
 describe('user read service', () => {
@@ -12,10 +12,9 @@ describe('user read service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ]
-    })
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     http = TestBed.inject(HttpClient)
     httpTest = TestBed.inject(HttpTestingController)
     service = TestBed.inject(UserReadService)

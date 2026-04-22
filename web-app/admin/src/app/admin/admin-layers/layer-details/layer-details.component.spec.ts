@@ -5,7 +5,7 @@ import {
   tick,
   discardPeriodicTasks
 } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -22,6 +22,7 @@ import { AdminUserService } from '../../services/admin-user.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('LayerDetailsComponent', () => {
   let component: LayerDetailsComponent;
@@ -97,25 +98,24 @@ describe('LayerDetailsComponent', () => {
     buildMocks();
 
     await TestBed.configureTestingModule({
-      declarations: [LayerDetailsComponent],
-      imports: [
-        HttpClientTestingModule,
-        MatDialogModule,
+    declarations: [LayerDetailsComponent],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    imports: [MatDialogModule,
         MatSnackBarModule,
         NoopAnimationsModule,
         RouterTestingModule,
         MatIconModule,
-        MatPaginatorModule
-      ],
-      providers: [
+        MatPaginatorModule],
+    providers: [
         { provide: ActivatedRoute, useValue: makeActivatedRoute(params) },
         { provide: LayersService, useValue: mockLayersService },
         { provide: AdminEventsService, useValue: mockEventsService },
         { provide: LocalStorageService, useValue: mockLocalStorageService },
-        { provide: AdminUserService, useValue: mockUserService }
-      ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
+        { provide: AdminUserService, useValue: mockUserService },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+}).compileComponents();
 
     fixture = TestBed.createComponent(LayerDetailsComponent);
     component = fixture.componentInstance;

@@ -1,13 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpContextToken,
-  HttpStatusCode,
-  HttpErrorResponse
-} from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpContextToken, HttpStatusCode, HttpErrorResponse } from '@angular/common/http';
 import { catchError, Observable, ReplaySubject, switchMap, throwError, take } from 'rxjs';
 import { LocalStorageService } from './local-storage.service';
 import { AuthenticationDialogComponent } from '../ingress/authentication/authentication-dialog.component';
