@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import {
-  MatSnackBarRef,
-  MAT_SNACK_BAR_DATA
+  MatSnackBarRef as MatSnackBarRef,
+  MAT_SNACK_BAR_DATA as MAT_SNACK_BAR_DATA
 } from '@angular/material/snack-bar';
 
 export interface AdminToastData {

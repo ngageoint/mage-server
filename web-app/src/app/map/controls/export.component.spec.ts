@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { MatButtonModule } from '@angular/material/button';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ExportControlComponent } from './export.component';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
 
 describe('Export Control Component', () => {
   let component: ExportControlComponent;

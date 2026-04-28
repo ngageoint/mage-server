@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 import { FilterService } from './filter.service';
 import { EventService } from '../event/event.service';
 import { FormControl } from '@angular/forms';
@@ -13,7 +13,7 @@ import {
   of
 } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { LocalStorageService } from '../http/local-storage.service';
 import moment from 'moment';
 import { User } from '@ngageoint/mage.web-core-lib/user';

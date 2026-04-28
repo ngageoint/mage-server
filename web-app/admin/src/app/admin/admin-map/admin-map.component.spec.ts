@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, ViewChild } from '@angular/core';
-import { MatInputModule } from '@angular/material/input';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { AdminMapComponent } from './admin-map.component';
 import { MapSettingsService } from '../../../app/map/settings/map.settings.service';
@@ -46,12 +48,14 @@ describe('AdminMapComponent', () => {
         MatInputModule,
         MatSnackBarModule,
         HttpClientTestingModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        FormsModule
       ],
       declarations: [AdminMapComponent, TestHostComponent],
       providers: [
         { provide: MapSettingsService, useValue: mockMapSettingsService }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   });
 

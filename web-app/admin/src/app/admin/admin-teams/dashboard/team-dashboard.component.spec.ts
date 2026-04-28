@@ -5,7 +5,7 @@ import {
   tick,
   waitForAsync
 } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
@@ -13,7 +13,7 @@ import { TeamDashboardComponent } from './team-dashboard.component';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../team';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
-import { PageEvent } from '@angular/material/paginator';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 

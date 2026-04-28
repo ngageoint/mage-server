@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as Papa from 'papaparse';
 import { BulkUserComponent } from './bulk-user.component';
 import { Role } from '../user';
 import { Team } from '../../admin-teams/team';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('BulkUserComponent', () => {
@@ -28,7 +28,7 @@ describe('BulkUserComponent', () => {
 
   const teams: Team[] = [
     {
-      id: 10,
+      id: "10",
       name: 'Team X',
       description: '',
       teamEventId: '',
@@ -36,7 +36,7 @@ describe('BulkUserComponent', () => {
       acl: undefined
     },
     {
-      id: 11,
+      id: "11",
       name: 'Team Y',
       description: '',
       teamEventId: '',
@@ -111,7 +111,7 @@ describe('BulkUserComponent', () => {
     expect(component.displayedColumns).toEqual(['team', 'role', ...header]);
     expect(component.users.length).toBe(1);
     expect((component.users[0] as any)['Username']).toBe('user1');
-    expect((component.users[0] as any).team?.id).toBe(11);
+    expect((component.users[0] as any).team?.id).toBe("11");
     expect((component.users[0] as any).role?.id).toBe('1');
     expect(component.unmappedFields.length).toBe(0);
   });
@@ -231,7 +231,7 @@ describe('BulkUserComponent', () => {
       closeSpy.calls.mostRecent().args[0];
 
     expect(selectedRole.id).toBe('1');
-    expect(selectedTeam.id).toBe(10);
+    expect(selectedTeam.id).toBe("10");
     expect(users[0]).toEqual(
       jasmine.objectContaining({
         username: 'user9',
@@ -241,7 +241,7 @@ describe('BulkUserComponent', () => {
         password: 'p9',
         passwordconfirm: 'p9',
         roleId: '1',
-        team: 10,
+        team: "10",
         avatar: null,
         icon: null,
         iconMetadata: null

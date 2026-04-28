@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import {
   Feed,
@@ -23,7 +23,7 @@ export class AdminServiceComponent implements OnInit {
     {
       title: 'Feeds',
       icon: 'rss_feed',
-      route: ['../../feeds']
+      route: ['/feeds']
     }
   ];
 
@@ -52,7 +52,7 @@ export class AdminServiceComponent implements OnInit {
     private route: ActivatedRoute,
     public dialog: MatDialog,
     private adminUserService: AdminUserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.serviceId = this.route.snapshot.paramMap.get('serviceId');

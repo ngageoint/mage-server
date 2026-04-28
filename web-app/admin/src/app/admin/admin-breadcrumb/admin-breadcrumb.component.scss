@@ -14,15 +14,21 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 20px 0px 17px 115px;
-    background-color: white;
-    z-index: 100;
+    min-height: 55px;
     height: 55px;
-    margin-bottom: 10px;
+    padding: 0 0 0 115px;
+    background-color: #fff;
+    z-index: 100;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ececec;
+    box-sizing: border-box;
 
     .admin-breadcrumb {
       color: mat.get-color-from-palette($app-primary);
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
     }
 
     .admin-breadcrumb:hover {
@@ -40,6 +46,9 @@
     .admin-breadcrumb__separator {
       color: rgba(0, 0, 0, 0.4);
       margin: 0 8px;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
     }
 
     mat-icon,
@@ -47,7 +56,6 @@
       color: mat.get-color-from-palette($app-primary);
       margin-right: 7px;
       margin-left: 7px;
-      line-height: 26px;
       width: 24px;
       height: 24px;
       min-width: 24px;
@@ -58,10 +66,16 @@
       font-size: 20px;
       line-height: 1;
       flex-shrink: 0;
+      vertical-align: middle;
     }
 
     .icon-fix {
       font-size: 1.4em;
+    }
+
+    @media (max-width: 599px) {
+      min-height: 48px;
+      height: 48px;
     }
   }
 }

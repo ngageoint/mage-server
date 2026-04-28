@@ -1,6 +1,12 @@
-import { Component, EventEmitter, Output, AfterViewInit, ViewChildren, ElementRef, QueryList } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  AfterViewInit,
+  ViewChild,
+  ElementRef
+} from '@angular/core';
 import { DomEvent } from 'leaflet';
-import { MatButton } from '@angular/material/button';
 
 export enum ZoomDirection {
   IN,
@@ -17,13 +23,19 @@ export interface ZoomEvent {
   styleUrls: ['./zoom.component.scss']
 })
 export class ZoomComponent implements AfterViewInit {
-  @ViewChildren(MatButton, { read: ElementRef }) buttons: QueryList<ElementRef>;
+  @ViewChild('zoomOutButton') zoomOutButton!: ElementRef<HTMLElement>;
+  @ViewChild('zoomInButton') zoomInButton!: ElementRef<HTMLElement>;
 
   @Output() onZoom = new EventEmitter<ZoomEvent>();
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.buttons.first.nativeElement);
-    DomEvent.disableClickPropagation(this.buttons.last.nativeElement);
+    if (this.zoomOutButton?.nativeElement) {
+      DomEvent.disableClickPropagation(this.zoomOutButton.nativeElement);
+    }
+
+    if (this.zoomInButton?.nativeElement) {
+      DomEvent.disableClickPropagation(this.zoomInButton.nativeElement);
+    }
   }
 
   onZoomIn($event: MouseEvent): void {

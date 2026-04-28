@@ -2,9 +2,9 @@
     background: white;
     display: flex;
     align-items: center;
-    padding: 1rem 1.5rem;
+    padding: 0;
     gap: 1.5rem;
-    min-height: 4rem;
+    min-height: auto;
 
     flex-direction: row !important;
     flex-wrap: nowrap;
@@ -43,13 +43,15 @@
 
 .search-input {
     width: 100%;
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1rem;
     padding-right: 3rem;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 0.875rem;
     background-color: #f9fafb;
     transition: all 0.2s ease;
+    height: 40px;
+    box-sizing: border-box;
 
     &:focus {
         outline: none;

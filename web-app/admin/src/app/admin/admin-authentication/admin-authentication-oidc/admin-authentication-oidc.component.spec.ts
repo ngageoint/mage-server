@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminAuthenticationOidcComponent } from './admin-authentication-oidc.component';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AdminAuthenticationOidcComponent', () => {
   let component: AdminAuthenticationOidcComponent;
@@ -8,7 +9,9 @@ describe('AdminAuthenticationOidcComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationOidcComponent ]
+      declarations: [ AdminAuthenticationOidcComponent ],
+      imports: [],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   }));

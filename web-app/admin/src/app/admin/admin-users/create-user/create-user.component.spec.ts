@@ -7,17 +7,20 @@ import {
 import { CreateUserModalComponent } from './create-user.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import {
-  MatDialogModule,
-  MatDialogRef,
-  MAT_DIALOG_DATA
+  MatDialogModule as MatDialogModule,
+  MatDialogRef as MatDialogRef,
+  MAT_DIALOG_DATA as MAT_DIALOG_DATA
 } from '@angular/material/dialog';
 import { ApiService } from '../../../api/api.service';
 import { Role } from '../user';
 import { of } from 'rxjs';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('CreateUserModalComponent', () => {
   let component: CreateUserModalComponent;
@@ -78,7 +81,10 @@ describe('CreateUserModalComponent', () => {
         NoopAnimationsModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
+        MatSelectModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressBarModule
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: { roles: mockRoles } },

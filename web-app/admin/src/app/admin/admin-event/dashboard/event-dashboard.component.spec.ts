@@ -6,13 +6,13 @@ import {
 } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog as MatDialog, MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { MatPaginatorModule as MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatOptionModule as MatOptionModule } from '@angular/material/core';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 
@@ -20,6 +20,7 @@ import { EventDashboardComponent } from './event-dashboard.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 const mockEventsResponse = {
   totalCount: 2,
@@ -94,7 +95,8 @@ describe('EventDashboardComponent', () => {
         { provide: MatDialog, useValue: dialogSpy },
         { provide: Router, useValue: routerSpy },
         { provide: AdminToastService, useValue: toastSpy }
-      ]
+      ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventDashboardComponent);

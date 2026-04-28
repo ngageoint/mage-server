@@ -1,7 +1,14 @@
 @import 'variables.scss';
 
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
 :host {
   min-height: 0;
+  display: block;
 }
 
 .container {
@@ -12,33 +19,33 @@
 }
 
 .page-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 2rem;
+  gap: 32px;
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: 16px;
   }
 
   .page-title {
     flex: 1;
-    font-size: 2rem;
+    font-size: $font-xl;
     font-weight: 700;
     color: #1a1a1a;
     margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
+    line-height: 1.1;
+    letter-spacing: 0;
   }
 
   .page-subtitle {
-    font-size: 1rem;
-    color: #666;
-    margin: 0.5rem 0 0 0;
+    font-size: $font-md;
+    color: #666666;
+    margin: 8px 0 0 0;
     line-height: 1.5;
     font-weight: 400;
   }
@@ -50,7 +57,7 @@
 
 .header-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
   flex-shrink: 0;
 
   @media (max-width: 768px) {
@@ -61,23 +68,23 @@
 .details-section.single {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 32px;
   align-items: stretch;
 }
 
 .details-card {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 20px;
 }
 
 .details-form {
   .form-row.two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 24px;
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr;
@@ -90,37 +97,37 @@
 
     .field-label {
       display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
+      font-size: $font-sm;
+      font-weight: 700;
       color: #374151;
-      margin-bottom: 0.5rem;
+      margin-bottom: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
 
     .field-content {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 12px;
     }
   }
 
   .helper-text {
-    font-size: 0.875rem;
+    font-size: $font-sm;
     color: #6b7280;
-    line-height: 1.4;
+    line-height: 1.45;
   }
 
   .radio-stack {
     display: grid;
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   .radio-item {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 0.75rem;
+    gap: 10px;
+    padding: 10px 12px;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
     background: #f9fafb;
@@ -129,12 +136,16 @@
 
     input[type='radio'] {
       margin: 0;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
     }
 
     .radio-text {
-      font-size: 0.9rem;
+      font-size: $font-sm;
       font-weight: 600;
       color: #111827;
+      line-height: 1.35;
     }
 
     &:hover {
@@ -146,34 +157,36 @@
   .sub-card {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    background: #fff;
-    padding: 0.9rem 1rem;
+    background: #ffffff;
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   .sub-label {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: $font-xs;
+    font-weight: 700;
     color: #6b7280;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
 
   .form-input {
     width: 100%;
-    padding: 0.75rem 1rem;
+    min-height: 40px;
+    padding: 10px 14px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 0.875rem;
+    font-size: $font-sm;
     background-color: #f9fafb;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 
     &:focus {
       outline: none;
       border-color: #3b82f6;
-      background-color: white;
+      background-color: #ffffff;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
   }
@@ -181,19 +194,20 @@
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    margin-top: 1.5rem;
+    margin-top: 24px;
   }
 }
 
 .action-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.875rem;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 40px;
+  font-size: $font-sm;
   font-weight: 600;
   border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background-color: #ffffff;
   color: #374151;
   cursor: pointer;
@@ -220,11 +234,15 @@
   &.btn-primary {
     background-color: #3b82f6;
     border-color: #3b82f6;
-    color: white;
+    color: #ffffff;
 
     &:hover:not(:disabled) {
       background-color: #2563eb;
       border-color: #2563eb;
     }
+  }
+
+  i {
+    font-size: $font-sm;
   }
 }

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminAuthenticationLDAPComponent } from './admin-authentication-ldap.component';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AdminAuthenticationLDAPComponent', () => {
   let component: AdminAuthenticationLDAPComponent;
@@ -8,7 +9,8 @@ describe('AdminAuthenticationLDAPComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationLDAPComponent ]
+      declarations: [ AdminAuthenticationLDAPComponent ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
   }));

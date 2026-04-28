@@ -32,24 +32,24 @@
           <mat-form-field appearance="fill">
             <mat-label>Teams</mat-label>
 
-            <mat-chip-list #chipListTeam>
-              <mat-chip
+            <mat-chip-grid #chipGridTeam>
+              <mat-chip-row
                 *ngFor="let team of selectedTeams"
                 [removable]="true"
                 (removed)="onRemoveTeam(team)"
               >
                 {{ team.name }}
                 <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
+              </mat-chip-row>
 
               <input
+                matInput
                 [formControl]="teamControl"
                 [matAutocomplete]="autoTeam"
-                [matChipInputFor]="chipListTeam"
+                [matChipInputFor]="chipGridTeam"
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                (matChipInputTokenEnd)="onSelectTeam($event)"
               />
-            </mat-chip-list>
+            </mat-chip-grid>
 
             <mat-autocomplete
               #autoTeam="matAutocomplete"
@@ -69,24 +69,24 @@
           <mat-form-field appearance="fill">
             <mat-label>Users</mat-label>
 
-            <mat-chip-list #chipListUser>
-              <mat-chip
+            <mat-chip-grid #chipGridUser>
+              <mat-chip-row
                 *ngFor="let user of selectedUsers"
                 [removable]="true"
                 (removed)="onRemoveUser(user)"
               >
                 {{ user.displayName || user.username }}
                 <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
+              </mat-chip-row>
 
               <input
+                matInput
                 [formControl]="userControl"
                 [matAutocomplete]="autoUser"
-                [matChipInputFor]="chipListUser"
+                [matChipInputFor]="chipGridUser"
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                (matChipInputTokenEnd)="onSelectUser($event)"
               />
-            </mat-chip-list>
+            </mat-chip-grid>
 
             <mat-autocomplete
               #autoUser="matAutocomplete"
@@ -106,24 +106,24 @@
           <mat-form-field appearance="fill">
             <mat-label>Forms</mat-label>
 
-            <mat-chip-list #chipListForm>
-              <mat-chip
+            <mat-chip-grid #chipGridForm>
+              <mat-chip-row
                 *ngFor="let form of selectedForms"
                 [removable]="true"
                 (removed)="onRemoveForm(form)"
               >
                 {{ form.name }}
                 <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
+              </mat-chip-row>
 
               <input
+                matInput
                 [formControl]="formControl"
                 [matAutocomplete]="autoForm"
-                [matChipInputFor]="chipListForm"
+                [matChipInputFor]="chipGridForm"
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                (matChipInputTokenEnd)="onSelectForm($event)"
               />
-            </mat-chip-list>
+            </mat-chip-grid>
 
             <mat-autocomplete
               #autoForm="matAutocomplete"
@@ -152,22 +152,26 @@
         </mat-form-field>
 
         <div class="datetime" *ngIf="intervalChoice?.filter === 'custom'">
-          <div>
-            <datetime-picker
-              title="Start"
-              [datetime]="defaultStartDate"
-              [timezone]="timeZone"
-              (dateTimeChange)="onStartDate($event)"
-            >
-            </datetime-picker>
+          <div class="datetime-fields">
+            <div class="datetime-row">
+              <datetime-picker
+                title="Start"
+                [datetime]="defaultStartDate"
+                [timezone]="timeZone"
+                (dateTimeChange)="onStartDate($event)"
+              >
+              </datetime-picker>
+            </div>
 
-            <datetime-picker
-              title="End"
-              [datetime]="defaultEndDate"
-              [timezone]="timeZone"
-              (dateTimeChange)="onEndDate($event)"
-            >
-            </datetime-picker>
+            <div class="datetime-row">
+              <datetime-picker
+                title="End"
+                [datetime]="defaultEndDate"
+                [timezone]="timeZone"
+                (dateTimeChange)="onEndDate($event)"
+              >
+              </datetime-picker>
+            </div>
           </div>
 
           <div class="timezone">
@@ -176,9 +180,7 @@
               class="timezone__button"
               (click)="onTimezone()"
             >
-              <span *ngIf="timeZone === 'local'"
-                >Local ({{ localOffset }})</span
-              >
+              <span *ngIf="timeZone === 'local'">Local ({{ localOffset }})</span>
               <span *ngIf="timeZone === 'gmt'">GMT (+00:00)</span>
             </button>
           </div>
@@ -204,7 +206,6 @@
     <button
       mat-button
       color="primary"
-      cdkFocusInitial
       (click)="onFilter()"
       [disabled]="isLoading"
     >

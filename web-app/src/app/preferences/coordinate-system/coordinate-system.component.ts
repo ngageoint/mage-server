@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatSelectChange } from '@angular/material/select';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 interface CoordinateSystemOption {

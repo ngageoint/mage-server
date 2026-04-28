@@ -3,6 +3,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AdminBreadcrumbComponent } from './admin-breadcrumb.component';
 import { AdminBreadcrumb } from './admin-breadcrumb.model';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterTestingModule } from '@angular/router/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AdminBreadcrumbComponent', () => {
   @Component({
@@ -25,8 +28,9 @@ describe('AdminBreadcrumbComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatIconTestingModule],
-      declarations: [TestHostComponent, AdminBreadcrumbComponent]
+      imports: [MatIconTestingModule, MatIconModule, RouterTestingModule],
+      declarations: [TestHostComponent, AdminBreadcrumbComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   }));
 
