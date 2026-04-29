@@ -15,7 +15,7 @@ url.URL = class Node_18_17_Issue_48886_URL extends url.URL {
 
 declare module 'mocha' {
   namespace Mocha {
-    interface MochaOptions {}
+    interface MochaOptions { }
   }
 }
 
@@ -30,11 +30,11 @@ declare global {
   }
 }
 
-before(function() {
+before(function () {
   chai.use(asPromised)
   const assertionProto = Assertion.prototype as any
   const rejectedWith = assertionProto.rejectedWith as Function
-  Assertion.addMethod('rejectWith', function(...args: any[]): any {
+  Assertion.addMethod('rejectWith', function (...args: any[]): any {
     return rejectedWith.apply(this, args)
   })
 })
@@ -44,18 +44,17 @@ import { waitForDefaultMongooseConnection } from '../lib/adapters/adapters.db.mo
 import { runDatabaseMigrations } from '../lib/migrate'
 import mongoose from 'mongoose'
 
-before('initialize default mongo database', mongoSupport.mongoTestBeforeAllHook({ instance: { dbName: 'mage_test_default' }}))
-before('initialize default mongoose connection', async function() {
+before('initialize default mongo database', mongoSupport.mongoTestBeforeAllHook({ instance: { dbName: 'mage_test_default' } }))
+before('initialize default mongoose connection', async function () {
   await waitForDefaultMongooseConnection(mongoose, this.mongo!.uri, 1000, 1000, {
-    promiseLibrary: Promise
   })
   console.log('default mongoose connection open')
 })
-before('migrate default test db', async function() {
+before('migrate default test db', async function () {
   this.timeout(10000)
   await runDatabaseMigrations(this.mongo!.uri)
 })
-after('close mongoose connection', async function() {
+after('close mongoose connection', async function () {
   await mongoose.disconnect()
 })
 after('destroy default mongo database', mongoSupport.mongoTestAfterAllHook())

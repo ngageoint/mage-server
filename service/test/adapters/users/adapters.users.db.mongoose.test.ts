@@ -9,24 +9,24 @@ import x from 'uniqid'
 
 
 
-describe('users mongoose repository', function() {
+describe('users mongoose repository', function () {
 
   let model: mongoose.Model<UserDocument>
   let repo: MongooseUserRepository
 
-  before(async function() {
+  before(async function () {
     //TODO remove cast to and, was mongoose.Model<UserDocument>
     model = legacy.Model as any
     repo = new MongooseUserRepository(model)
   })
 
-  describe('document to entity transform', function() {
+  describe('document to entity transform', function () {
 
-    afterEach(async function() {
-      await model.remove({})
+    afterEach(async function () {
+      await model.deleteMany({})
     })
 
-    it('transforms object ids to strings', async function() {
+    it('transforms object ids to strings', async function () {
 
       const stub: Partial<User> = {
         id: (new mongoose.Types.ObjectId()).toHexString(),
@@ -43,7 +43,7 @@ describe('users mongoose repository', function() {
       expect(entity).to.deep.include(stub)
     })
 
-    it('retains js dates', async function() {
+    it('retains js dates', async function () {
 
       const stub: Partial<User> = {
         id: (new mongoose.Types.ObjectId()).toHexString(),
@@ -62,13 +62,13 @@ describe('users mongoose repository', function() {
     })
   })
 
-  describe('finding users', function() {
+  describe('finding users', function () {
 
     const authenticationId = (new mongoose.Types.ObjectId()).toHexString()
     const roleId = (new mongoose.Types.ObjectId()).toHexString()
     let allUsers: User[]
 
-    before(async function() {
+    before(async function () {
 
       const users: Partial<User>[] = Array.from({ length: 1000 }, (_, pos) => {
         pos += 1
@@ -76,7 +76,7 @@ describe('users mongoose repository', function() {
           username: `test${pos}`,
           displayName: `Test ${pos}`,
           email: `test${pos}@mage.test${pos % 5}`,
-          phones: [ { number: `${String(pos - 1).padStart(3, '0')}-9999`, type: 'test' } ],
+          phones: [{ number: `${String(pos - 1).padStart(3, '0')}-9999`, type: 'test' }],
           active: pos % 2 === 0,
           enabled: pos % 4 === 0,
           authenticationId,
@@ -87,11 +87,11 @@ describe('users mongoose repository', function() {
       allUsers = docs.map(repo.entityForDocument as any).sort((a: any, b: any) => a.displayName.localeCompare(b.displayName)) as User[]
     })
 
-    after(async function() {
-      await model.remove({})
+    after(async function () {
+      await model.deleteMany({})
     })
 
-    it('supports paging', async function() {
+    it('supports paging', async function () {
 
       const page = await repo.find({ pageSize: 23, pageIndex: 2, includeTotalCount: true })
 
@@ -100,7 +100,7 @@ describe('users mongoose repository', function() {
       expect(page.items).to.deep.equal(allUsers.slice(46, 69))
     })
 
-    it('filters by active flag', async function() {
+    it('filters by active flag', async function () {
 
       const page = await repo.find({ active: true, pageSize: allUsers.length, pageIndex: 0 })
       const activeUsers = allUsers.filter(x => x.active)
@@ -109,7 +109,7 @@ describe('users mongoose repository', function() {
       expect(page.items).to.deep.equal(activeUsers)
     })
 
-    it('filters by enabled flag', async function() {
+    it('filters by enabled flag', async function () {
 
       const page = await repo.find({ enabled: true, pageSize: allUsers.length, pageIndex: 0 })
       const enabledUsers = allUsers.filter(x => x.enabled)
@@ -118,7 +118,7 @@ describe('users mongoose repository', function() {
       expect(page.items).to.deep.equal(enabledUsers)
     })
 
-    it('filters by search term matching username and email', async function() {
+    it('filters by search term matching username and email', async function () {
 
       const found = await repo.find({ nameOrContactTerm: 'test2', pageSize: allUsers.length, pageIndex: 0 })
       const matching = allUsers.filter(x => /Test 5/.test(x.username) || /test2/.test(x.email!))
@@ -127,7 +127,7 @@ describe('users mongoose repository', function() {
       expect(found.items).to.deep.equal(matching)
     })
 
-    it('filters by everything', async function() {
+    it('filters by everything', async function () {
 
       const found = await repo.find({ nameOrContactTerm: 'Test 3', active: true, enabled: false, pageSize: allUsers.length, pageIndex: 0 })
       const matching = allUsers.filter(x => /Test 3/.test(x.displayName) && x.active && !x.enabled)
@@ -136,13 +136,13 @@ describe('users mongoose repository', function() {
       expect(found.items).to.deep.equal(matching)
     })
 
-    it('sorts on display name ascending consistently', async function() {
+    it('sorts on display name ascending consistently', async function () {
 
       const mockModel: SubstituteOf<mongoose.Model<UserDocument>> = Sub.for<mongoose.Model<UserDocument>>()
       const mockQuery = Sub.for<mongoose.Query<UserDocument[], UserDocument>>()
-      mockModel.find(Arg.all()).returns(mockQuery)
+        ; (mockModel.find(Arg.all()) as any).returns(mockQuery)
       mockQuery.sort(Arg.all()).returns(mockQuery)
-      mockQuery.toConstructor().returns(function() { return mockQuery } as any)
+      mockQuery.toConstructor().returns(function () { return mockQuery } as any)
       mockQuery.limit(Arg.all()).returns(mockQuery)
       mockQuery.skip(Arg.all()).returns(mockQuery)
 
@@ -155,7 +155,7 @@ describe('users mongoose repository', function() {
       mockQuery.received(1).sort('displayName _id')
     })
 
-    it('uses the provided mapping', async function() {
+    it('uses the provided mapping', async function () {
 
       const found = await repo.find({ nameOrContactTerm: 'Test 31', pageSize: allUsers.length, pageIndex: 0 }, x => x.username)
       const matching = allUsers.filter(x => /Test 31/.test(x.displayName)).map(x => x.username)
@@ -165,7 +165,7 @@ describe('users mongoose repository', function() {
       expect(found.items[0]).to.equal('test31')
     })
 
-    describe('search term', function() {
+    describe('search term', function () {
 
       const userStubs: Partial<User>[] = [
         {
@@ -198,7 +198,7 @@ describe('users mongoose repository', function() {
       ]
       let users: User[]
 
-      beforeEach(async function() {
+      beforeEach(async function () {
 
         const docs = await model.create(userStubs.map(x => ({ ...x, _id: new mongoose.Types.ObjectId(x.id) })))
         users = docs.map(repo.entityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
@@ -208,47 +208,47 @@ describe('users mongoose repository', function() {
         })
       })
 
-      afterEach(async function() {
-        await model.remove({ _id: { $in: users.map(x => x.id) }})
+      afterEach(async function () {
+        await model.deleteMany({ _id: { $in: users.map(x => x.id) } })
       })
 
-      it('matches username', async function() {
+      it('matches username', async function () {
 
         const found = await repo.find({ nameOrContactTerm: 'flim', pageSize: users.length, pageIndex: 0 })
 
-        expect(found.items).to.deep.equal([ users[1] ])
+        expect(found.items).to.deep.equal([users[1]])
       })
 
-      it('matches display name', async function() {
+      it('matches display name', async function () {
 
         const found = await repo.find({ nameOrContactTerm: 'lor', pageSize: users.length, pageIndex: 0 })
 
         expect(found.items).to.deep.equal(users)
       })
 
-      it('matches email', async function() {
+      it('matches email', async function () {
 
         const found = await repo.find({ nameOrContactTerm: '@top.nop', pageSize: users.length, pageIndex: 0 })
 
         expect(found.items).to.deep.equal(users)
       })
 
-      it('matches phone numbers', async function() {
+      it('matches phone numbers', async function () {
 
         let found = await repo.find({ nameOrContactTerm: '+01 321', pageSize: users.length, pageIndex: 0 })
 
-        expect(found.items).to.deep.equal([ users[0] ])
+        expect(found.items).to.deep.equal([users[0]])
 
         found = await repo.find({ nameOrContactTerm: '+01 123', pageSize: users.length, pageIndex: 0 })
 
         expect(found.items).to.deep.equal(users)
       })
 
-      it('is case-insensitive', async function() {
+      it('is case-insensitive', async function () {
 
         let found = await repo.find({ nameOrContactTerm: 'FLIM', pageSize: users.length, pageIndex: 0 })
 
-        expect(found.items).to.deep.equal([ users[1] ])
+        expect(found.items).to.deep.equal([users[1]])
       })
     })
   })

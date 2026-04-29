@@ -117,7 +117,7 @@ exports.count = function (options) {
 
   const conditions = FilterParser.parse(filter);
 
-  return Export.count(conditions).exec();
+  return Export.countDocuments(conditions).exec();
 };
 
 exports.updateExport = function (id, exp) {
@@ -126,5 +126,5 @@ exports.updateExport = function (id, exp) {
 };
 
 exports.removeExport = function (id) {
-  return Export.findByIdAndRemove(id).exec();
+  return Export.findByIdAndDelete(id).exec();
 };

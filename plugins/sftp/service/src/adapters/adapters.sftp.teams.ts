@@ -27,6 +27,6 @@ export class MongooseTeamsRepository {
         }
         const userObjectId = new mongoose.Types.ObjectId(userId);
         const teams = await this.model.find({ userIds: userObjectId }).exec();
-        return teams.map(team => team.toJSON() as TeamDoc);
+        return teams.map(team => team.toJSON() as unknown as TeamDoc);
     }
 }

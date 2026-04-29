@@ -28,7 +28,7 @@ import { MageEvent } from '../entities/events/entities.events'
 
 // TODO: we really need to revamp our logging
 const logger = require('../logger')
-const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, methodName: string): any => {
+const log = ['debug', 'info', 'warn', 'error', 'log'].reduce((log: any, methodName: string): any => {
   const logMethod = logger[methodName] as (...args: any[]) => any
   return {
     ...log,
@@ -275,7 +275,7 @@ export class GeoPackage extends Exporter {
 
       log.info(`wrote ${numLocations} locations to geopackage`)
     })
-    .catch(err => { log.warn(err) })
+      .catch(err => { log.warn(err) })
   }
 
   async createFormAttributeTables(geopackage: GPKG.GeoPackage): Promise<void> {
@@ -483,21 +483,21 @@ export class GeoPackage extends Exporter {
         }
       }
     })
-    .then(async () => {
-      if (cursor) {
-        await cursor.close()
-      }
-      const featureDao = geopackage.getFeatureDao('Observations');
-      const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
-      rtreeIndex.create();
-      if (zoomToEnvelope) {
-        setContentBounds(geopackage, featureDao, zoomToEnvelope);
-      }
-      log.info(`'wrote ${numObservations} observations to geopackage`);
-    })
-    .catch(err => {
-      log.warn(err)
-    });
+      .then(async () => {
+        if (cursor) {
+          await cursor.close()
+        }
+        const featureDao = geopackage.getFeatureDao('Observations');
+        const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
+        rtreeIndex.create();
+        if (zoomToEnvelope) {
+          setContentBounds(geopackage, featureDao, zoomToEnvelope);
+        }
+        log.info(`'wrote ${numObservations} observations to geopackage`);
+      })
+      .catch(err => {
+        log.warn(err)
+      });
   }
 
   async createObservationFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<GPKG.FeatureTableStyles> {
@@ -592,7 +592,7 @@ function populateGpkgIconRow(gpkgIconRow: IconRow, iconDoc: IconDocument, mageEv
   return gpkgIconRow
 }
 
-function isNothing(wut: any): wut is undefined | null | ''  {
+function isNothing(wut: any): wut is undefined | null | '' {
   return wut === null || wut === undefined || wut === '' || (typeof wut === 'number' && isNaN(wut))
 }
 
@@ -602,7 +602,7 @@ class IconTreeCache {
 
   readonly root: IconTreeCacheNode = new IconTreeCacheNode()
 
-  constructor() {}
+  constructor() { }
 
   get(icon: IconCachePath): IconRow['id'] | null {
     const { formId, primary, variant } = icon
@@ -663,7 +663,7 @@ class IconTreeCacheNode {
 
 type IconCachePath = Pick<IconAttrs, 'formId' | 'primary' | 'variant'>
 
-function  createGeoPackageFile(): Promise<string> {
+function createGeoPackageFile(): Promise<string> {
   const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg'
   const filePath = path.join(os.tmpdir(), filename)
   return new Promise(function (resolve, reject) {
@@ -712,7 +712,7 @@ async function addAttachments(geopackage: GPKG.GeoPackage, attachments: Attachme
             return reject(err);
           }
           const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType || 'application/octet-stream', {
-            name: attachment.name || attachment._id,
+            name: attachment.name || attachment._id?.toString(),
             size: attachment.size || 0
           });
           await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)

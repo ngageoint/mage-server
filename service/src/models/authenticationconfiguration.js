@@ -123,5 +123,5 @@ exports.update = function (id, config) {
 };
 
 exports.remove = function (id) {
-  return AuthenticationConfiguration.findByIdAndRemove(id).exec();
+  return AuthenticationConfiguration.findByIdAndDelete(id).exec();
 };

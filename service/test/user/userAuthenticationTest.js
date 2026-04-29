@@ -17,7 +17,7 @@ describe("user authentication tests", function () {
     sinon.mock(TokenModel)
       .expects('getToken')
       .withArgs('12345')
-      .yields(null, createToken(mongoose.Types.ObjectId(), ['READ_USER']));
+      .yields(null, createToken(new mongoose.Types.ObjectId(), ['READ_USER']));
 
     const configs = [];
     const config = {
