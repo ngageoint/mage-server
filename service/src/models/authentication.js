@@ -166,7 +166,10 @@ exports.OpenIdConnect = OpenIdConnectAuthentication;
 
 exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
   if (callback) {
-    Authentication.findOne({ id: uid, type: strategy }, callback);
+    Authentication.findOne({ id: uid, type: strategy }).then(
+      authentication => callback(null, authentication),
+      err => callback(err)
+    );
   } else {
     return Authentication.findOne({ id: uid, type: strategy });
   }

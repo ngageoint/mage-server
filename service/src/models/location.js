@@ -34,7 +34,10 @@ exports.Model = Location;
 
 // create location
 exports.createLocations = function (locations, callback) {
-  Location.create(locations, callback);
+  Location.create(locations).then(
+    createdLocations => callback(null, createdLocations),
+    err => callback(err)
+  );
 };
 
 exports.getLocations = function (options, callback) {

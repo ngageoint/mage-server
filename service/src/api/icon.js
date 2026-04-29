@@ -112,7 +112,10 @@ Icon.prototype.saveDefaultIconToEventForm = function (callback) {
     if (err) {
       return callback(err);
     }
-    IconModel.create(newIcon, callback);
+    IconModel.create(newIcon).then(
+      oldIcon => callback(null, oldIcon),
+      err => callback(err)
+    );
   });
 };
 
@@ -133,15 +136,18 @@ Icon.prototype.create = function (icon, callback) {
     fs.move(icon.path, iconPath, { overwrite: true }, function (err) {
       if (err) return callback(err);
 
-      IconModel.create(newIcon, function (err, oldIcon) {
-        callback(err, newIcon);
+      IconModel.create(newIcon).then(
+        oldIcon => {
+          callback(null, newIcon);
 
-        if (oldIcon && oldIcon.relativePath !== newIcon.relativePath) {
-          fs.remove(path.join(iconBase, oldIcon.relativePath), function (err) {
-            if (err) log.error('could not remove old icon from file system', err);
-          });
-        }
-      });
+          if (oldIcon && oldIcon.relativePath !== newIcon.relativePath) {
+            fs.remove(path.join(iconBase, oldIcon.relativePath), function (err) {
+              if (err) log.error('could not remove old icon from file system', err);
+            });
+          }
+        },
+        err => callback(err)
+      );
     });
   });
 };
@@ -156,9 +162,10 @@ Icon.prototype.add = function (icon, callback) {
     relativePath: relativePath
   };
 
-  IconModel.create(newIcon, function (err) {
-    callback(err, newIcon);
-  });
+  IconModel.create(newIcon).then(
+    () => callback(null, newIcon),
+    err => callback(err)
+  );
 };
 
 Icon.prototype.delete = function (callback) {
