@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ContactComponent } from './contact.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('Contact Component', () => {

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ObservationViewCheckboxComponent } from './observation-view-checkbox.component';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
 
 describe('ObservationViewCheckboxComponent', () => {
   let component: ObservationViewCheckboxComponent;

@@ -6,8 +6,8 @@ import {
   discardPeriodicTasks
 } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -18,6 +18,10 @@ import { LayersService } from '../layers.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { AdminUserService } from '../../services/admin-user.service';
+
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 describe('LayerDetailsComponent', () => {
   let component: LayerDetailsComponent;
@@ -99,7 +103,9 @@ describe('LayerDetailsComponent', () => {
         MatDialogModule,
         MatSnackBarModule,
         NoopAnimationsModule,
-        RouterTestingModule
+        RouterTestingModule,
+        MatIconModule,
+        MatPaginatorModule
       ],
       providers: [
         { provide: ActivatedRoute, useValue: makeActivatedRoute(params) },
@@ -107,7 +113,8 @@ describe('LayerDetailsComponent', () => {
         { provide: AdminEventsService, useValue: mockEventsService },
         { provide: LocalStorageService, useValue: mockLocalStorageService },
         { provide: AdminUserService, useValue: mockUserService }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LayerDetailsComponent);

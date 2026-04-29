@@ -1,7 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTabGroup } from '@angular/material/tabs';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatTabGroup as MatTabGroup } from '@angular/material/tabs';
 import moment from 'moment';
 import { FeedAction, FeedPanelService } from './feed-panel.service';
 import { MapService } from '../map/map.service';

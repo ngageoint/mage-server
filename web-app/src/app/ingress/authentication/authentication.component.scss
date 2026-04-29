@@ -8,7 +8,7 @@
 .authentications {
   display: flex;
   flex-direction: column;
-  justify-content: start;
+  justify-content: flex-start;
 }
 
 .signin-container {
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: end;
+  justify-content: flex-end;
   color: $primary;
   height: 30vh;
 }

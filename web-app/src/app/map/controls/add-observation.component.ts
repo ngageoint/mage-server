@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { MatButton } from '@angular/material/button';
 import { DomEvent } from 'leaflet';
 
 @Component({
@@ -8,12 +7,14 @@ import { DomEvent } from 'leaflet';
   styleUrls: ['./add-observation.component.scss']
 })
 export class AddObservationComponent implements AfterViewInit {
-  @ViewChild(MatButton, { read: ElementRef }) button: ElementRef;
+  @ViewChild('addObservationButton') button!: ElementRef<HTMLElement>;
 
   @Output() onAddObservation = new EventEmitter<void>();
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.button.nativeElement);
+    if (this.button?.nativeElement) {
+      DomEvent.disableClickPropagation(this.button.nativeElement);
+    }
   }
 
   addObservation($event: MouseEvent): void {

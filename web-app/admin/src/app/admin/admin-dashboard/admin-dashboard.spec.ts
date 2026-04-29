@@ -16,17 +16,17 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatListModule } from '@angular/material/list';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
+import { MatListModule as MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
 
 import { RouterTestingModule } from '@angular/router/testing';
 import { AdminUserService } from '../services/admin-user.service';

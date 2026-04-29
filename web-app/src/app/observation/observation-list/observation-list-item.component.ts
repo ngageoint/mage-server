@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
 import moment from 'moment';
 import { MatRipple } from '@angular/material/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { animate, style, transition, trigger } from '@angular/animations'
 import { FeedPanelService } from '../../feed-panel/feed-panel.service'
 import { MapService } from '../../map/map.service';

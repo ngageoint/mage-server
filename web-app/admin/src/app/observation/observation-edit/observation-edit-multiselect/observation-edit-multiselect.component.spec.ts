@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core'
 
 import { ObservationEditMultiselectComponent } from './observation-edit-multiselect.component'
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatChipsModule, MatChipInputEvent, MatChipInput } from '@angular/material/chips';
-import { MatFormFieldModule, MatError } from '@angular/material/form-field';
+import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatChipsModule as MatChipsModule, MatChipInputEvent as MatChipInputEvent, MatChipInput as MatChipInput } from '@angular/material/chips';
+import { MatFormFieldModule as MatFormFieldModule, MatError as MatError } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { By } from '@angular/platform-browser'
@@ -182,7 +182,7 @@ describe('ObservationEditMultiselectComponent', () => {
 
     expect(control.valid).toBe(false)
     const error = fixture.debugElement.query(By.directive(MatError))
-    expect(error.nativeElement.innerText).toBe('You must enter a value')
+    expect(error.nativeElement.innerText.trim()).toBe('You must enter a value')
   })
 
   it('should not show error on invalid if not touched', async () => {

@@ -7,6 +7,7 @@ import { AdminEventsService } from '../../admin/services/admin-events.service';
 import { FilterService } from 'src/app/filter/filter.service';
 
 import { EventService } from 'src/app/event/event.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 class MockFilterService {
   getEvent(): any {
@@ -40,7 +41,8 @@ describe('ObservationEditFormPickerComponent', () => {
         { provide: EventService, useClass: MockEventService },
 
         { provide: MatBottomSheetRef, useValue: { dismiss: jasmine.createSpy('dismiss') } }
-      ]
+      ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     }).compileComponents();
   }));
 

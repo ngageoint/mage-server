@@ -123,7 +123,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "app:build"
+            "buildTarget": "app:build"
           }
         },
         "test": {
@@ -287,7 +287,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "admin:build"
+            "buildTarget": "admin:build"
           }
         },
         "test": {
@@ -437,21 +437,21 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "core-lib-showcase:build"
+            "buildTarget": "core-lib-showcase:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "core-lib-showcase:build:production"
+              "buildTarget": "core-lib-showcase:build:production"
             },
             "development": {
-              "browserTarget": "core-lib-showcase:build:development"
+              "buildTarget": "core-lib-showcase:build:development"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "core-lib-showcase:build"
+            "buildTarget": "core-lib-showcase:build"
           }
         },
         "test": {
@@ -488,6 +488,5 @@
   },
   "cli": {
     "analytics": false
-  },
-  "defaultProject": "app"
+  }
 }

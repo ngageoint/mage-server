@@ -100,7 +100,7 @@ mat-form-field {
   display: flex;
   flex-direction: row;
   gap: 16px;
-  justify-content: end;
+  justify-content: flex-end;
 }
 
 .password-strength {

@@ -1,5 +1,10 @@
 @use '@angular/material' as mat;
-@import "variables.scss";
+@import 'variables.scss';
+
+:host {
+  display: block;
+  height: 100%;
+}
 
 .user-feed {
   display: flex;
@@ -12,24 +17,30 @@
   color: mat.get-color-from-palette($app-primary);
   background-color: white;
   margin-top: 8px;
+  padding: 0 16px;
+  flex: 0 0 auto;
 }
 
 .feed-pages {
-  padding: 8px 8px 8px;
+  margin: 0 8px 8px;
+  flex: 0 0 auto;
 }
 
 .feed-pages__select {
   width: 100%;
 }
 
-:host ::ng-deep.mat-form-field-wrapper {
-  padding-bottom: unset;
+:host ::ng-deep .feed-pages__select .mat-form-field-wrapper,
+:host ::ng-deep .feed-pages__select .mat-mdc-text-field-wrapper,
+:host ::ng-deep .feed-pages__select .mat-mdc-form-field-subscript-wrapper {
+  padding-bottom: 0;
 }
 
 .page-container {
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  background: #E1E2E1;
+  background: #e1e2e1;
   padding: 8px 0;
 }
 

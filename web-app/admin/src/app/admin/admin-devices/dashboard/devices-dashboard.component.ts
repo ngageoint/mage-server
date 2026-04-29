@@ -1,6 +1,6 @@
 import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { PageEvent } from '@angular/material/paginator';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
 import {
   AdminDeviceService,
   DevicesResponse,

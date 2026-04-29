@@ -5,13 +5,13 @@ import {
   tick
 } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog as MatDialog, MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { MatPaginatorModule as MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatOptionModule as MatOptionModule } from '@angular/material/core';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -23,6 +23,7 @@ import {
 import { AdminUserService } from '../../services/admin-user.service';
 import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 const mockDevices: Device[] = [
   {
@@ -91,7 +92,8 @@ describe('DeviceDashboardComponent', () => {
         { provide: AdminUserService, useValue: userServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: AdminToastService, useValue: toastSpy }
-      ]
+      ],
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DeviceDashboardComponent);

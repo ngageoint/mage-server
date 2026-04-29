@@ -1,185 +1,262 @@
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
 ::ng-deep .admin-main-content {
   transition: margin-left 0.3s;
+  width: 100%;
+  min-height: calc(100vh - 127px);
+  display: flex;
+  flex-direction: column;
 
   &:has(admin-dashboard) {
-    height: 92vh;
-    overflow-y: auto;
+    min-height: calc(100vh - 127px);
+    overflow: auto;
     -webkit-overflow-scrolling: touch;
 
     @media (max-width: 959px) {
+      min-height: calc(100vh - 114px);
       overflow: auto;
     }
   }
-
-  width: 100%;
 }
 
 .admin-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  overflow: hidden;
+  gap: 16px;
+  padding: 8px 8px 25px 8px;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
 
+  .mat-mdc-card-title,
   .mat-card-title {
-    font-size: 15px;
+    font-size: $font-lg;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #222;
   }
 
   .top-card {
-    height: 31vh;
+    padding: 12px 14px 14px 14px;
+    height: auto;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    border: 1px solid #d7d7d7;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+    background: #fff;
 
-    @media (max-width: 959px) {
-      height: 800px;
-    }
-
-    @media (max-height: 600px) {
-      height: 800px;
+    @media (max-width: 959px), (max-height: 600px) {
+      height: auto;
     }
   }
 
   .top-row {
     display: flex;
-    gap: 24px;
-    height: 29vh;
-    overflow: hidden;
+    gap: 16px;
+    align-items: stretch;
+    width: 100%;
+    overflow: visible;
 
-    @media (max-width: 959px) {
-      height: 784px;
-    }
-
-    @media (max-height: 600px) {
-      height: 784px;
+    @media (max-width: 959px), (max-height: 600px) {
+      flex-direction: column;
+      height: auto;
+      max-height: none;
     }
 
     .inactive-users,
     .unregistered-devices {
-      flex: 1;
+      flex: 1 1 0;
       min-width: 0;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
 
-      .search-wrapper {
-        background-color: #f0f0f0;
-        padding: 4px;
-        border: 1px solid black;
-        border-bottom: none;
+      @media (max-width: 959px), (max-height: 600px) {
+        height: auto;
       }
 
-      mat-card {
+      mat-card,
+      .mat-mdc-card {
         flex: 1;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        padding: 4px 16px;
+        padding: 0;
+        border: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
 
-        mat-form-field {
-          margin-bottom: -21px;
+      .search-wrapper {
+        background-color: #f7f7f7;
+        padding: 6px 10px 0 10px;
+        border: 1px solid #a9a9a9;
+        border-bottom: none;
+      }
+
+      mat-form-field,
+      .mat-mdc-form-field {
+        width: 100%;
+        margin-bottom: -18px;
+
+        .mat-mdc-text-field-wrapper {
+          background-color: transparent;
+          padding: 0 8px;
         }
 
-        mat-list {
-          flex: 1;
-          overflow-y: auto;
-          max-height: 28vh;
-          border: 1px solid gray;
+        .mdc-line-ripple::before,
+        .mdc-line-ripple::after {
+          border-bottom-color: transparent;
+        }
 
-          :ng-deep .mat-list-base {
-            padding-top: 0;
+        .mat-mdc-form-field-subscript-wrapper {
+          display: none;
+        }
+      }
+
+      .mdc-floating-label {
+        padding-bottom: 15px;
+        font-size: $font-sm;
+      }
+
+      mat-list,
+      .mat-mdc-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 240px;
+        border: 1px solid #a9a9a9;
+        padding-top: 0;
+        background: #fcfcfc;
+
+        @media (max-width: 959px), (max-height: 600px) {
+          max-height: 260px;
+        }
+
+        mat-list-item,
+        a[mat-list-item],
+        .mat-mdc-list-item {
+          min-height: 48px;
+          height: auto;
+          padding: 4px 10px !important;
+          border-bottom: 1px solid #efefef;
+          display: flex;
+          align-items: center;
+
+          &:last-child {
+            border-bottom: none;
           }
 
-          ::ng-deep mat-list-item .mat-list-item-content {
-            height: 20px;
+          .mdc-list-item__content,
+          .mat-mdc-list-item-unscoped-content {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            width: 100%;
           }
 
-          mat-list-item,
-          a[mat-list-item] {
-            padding-top: 4px !important;
-            padding-bottom: 4px !important;
-            min-height: 48px;
+          mat-icon,
+          i[matListIcon] {
+            font-size: $font-md;
+            margin-right: 10px;
+            color: #666;
+            margin-top: 0;
+            flex: 0 0 18px;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
 
-            mat-icon {
-              font-size: 21px;
-              margin-right: 8px;
-              color: #666;
-              margin-top: 4px;
-            }
+          [matLine],
+          .mat-line-horizontal,
+          .mdc-list-item__primary-text {
+            font-size: $font-sm;
+            line-height: 1.3;
+            font-weight: 500;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+            flex: 1 1 auto;
+          }
 
-            div[matLine] {
-              font-size: 18px;
-              line-height: 1.2;
-            }
+          button[mat-button],
+          .mat-mdc-button {
+            margin-left: auto;
+            min-width: 92px;
+            height: 32px;
+            padding: 0 10px;
+            font-size: $font-xs;
+            line-height: 32px;
+            border: 1px solid #a8a8a8;
+            border-radius: 4px;
+            background: #f3f3f3;
+            color: #8a8a8a;
+            text-transform: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
 
-            button[mat-mini-button] {
-              font-size: 11px;
-              padding: 0 4px;
-              height: 24px;
-              line-height: 24px;
-              min-width: auto;
-              margin-left: auto;
+            .mdc-button__label {
               display: inline-flex;
               align-items: center;
+              justify-content: center;
+              gap: 6px;
+            }
 
-              mat-icon {
-                font-size: 16px;
-                margin-right: 2px;
-                height: 18px;
-                width: 24px;
-              }
+            mat-icon {
+              font-size: $font-sm;
+              width: $font-sm;
+              height: $font-sm;
+              margin: 0;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              line-height: 1;
+            }
 
-              span,
-              ::ng-deep .mat-button-wrapper {
-                line-height: 1;
-                display: flex;
-                align-items: center;
-              }
+            span {
+              display: inline-flex;
+              align-items: center;
+              line-height: 1;
+              margin: 0;
             }
           }
         }
-      }
-    }
-
-    @media (max-width: 959px) {
-      flex-direction: column;
-      max-height: none;
-
-      .inactive-users,
-      .unregistered-devices {
-        height: 300px;
-      }
-    }
-
-    @media (max-height: 600px) {
-      flex-direction: column;
-      max-height: none;
-
-      .inactive-users,
-      .unregistered-devices {
-        height: 300px;
       }
     }
   }
 
   .title-with-badge {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    position: relative;
 
     .inline-badge {
-      position: absolute !important;
+      position: static !important;
       transform: none !important;
       display: inline-flex;
-      vertical-align: middle;
-      right: 20px;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
 
-      ::ng-deep .mat-badge-content {
-        transform: none;
-        top: auto;
-        right: auto;
-        position: relative;
-        font-size: 11px;
-        height: 16px;
-        min-width: 16px;
-        line-height: 16px;
+      .mat-badge-content,
+      .mdc-badge__badge {
+        transform: none !important;
+        position: static !important;
+        font-size: 10px;
+        height: 18px;
+        min-width: 18px;
+        line-height: 18px;
       }
     }
   }
@@ -188,69 +265,141 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 24px;
+    margin-top: 10px;
+    padding: 0 2px;
 
     button {
-      min-width: 100px;
+      min-width: auto;
+      padding: 0;
+      font-size: $font-xs;
+      letter-spacing: 0.04em;
+      text-transform: none !important;
+      color: #8b8b8b;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 480px), (max-height: 600px) {
       align-items: stretch;
       gap: 12px;
+      flex-direction: column;
 
       button {
         width: 100%;
-      }
-    }
-
-    @media (max-height: 600px) {
-      align-items: stretch;
-      gap: 12px;
-
-      button {
-        width: 100%;
+        text-align: center;
       }
     }
   }
 
   .section-card {
-    background: white;
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
-    margin-top: 8px;
-    margin-bottom: 24px;
+    margin-top: 0;
+    margin-bottom: 0;
+    flex: 1 1 auto;
+    min-height: 320px;
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
   }
 
   .table-wrapper {
-    --row-height: 73px;
+    --row-height: 60px;
     --min-page-size: 5;
-    --base-table-height: calc(var(--row-height) * var(--min-page-size));
     display: flex;
     flex-direction: column;
     position: relative;
+    flex: 1 1 auto;
+    min-height: 320px;
+    max-height: 500px;
+    height: auto;
+    overflow: hidden;
   }
 
   .table-scroll {
-    height: var(--base-table-height);
-    max-height: var(--base-table-height);
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0;
   }
 
   .section-table-title {
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 1rem 1.5rem 0.5rem 1.5rem;
+    font-size: $font-md;
+    font-weight: 700;
+    padding: 14px 20px 8px 20px;
     color: #111827;
   }
 }
 
+.page-header {
+  .page-title {
+    font-size: $font-xl;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #1a1a1a;
+    margin: 0;
+  }
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.text-muted {
+  color: #6b7280;
+  font-size: $font-xs;
+}
+
+:host ::ng-deep .admin-content .search-wrapper input,
+:host ::ng-deep .admin-content .search-wrapper .mat-mdc-input-element,
+:host ::ng-deep .admin-content .search-wrapper .mat-input-element {
+  font-size: $font-sm;
+}
+
+:host ::ng-deep .admin-content .search-wrapper .mdc-floating-label,
+:host ::ng-deep .admin-content .search-wrapper .mat-form-field-label {
+  font-size: $font-sm;
+}
+
+/* important: reserve space for paginator/footer inside mage-logins */
+:host ::ng-deep mage-logins {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+:host ::ng-deep mage-logins .section-card,
+:host ::ng-deep mage-logins .table-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+}
+
+:host ::ng-deep mage-logins .table-scroll,
+:host ::ng-deep mage-logins .login-table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:host ::ng-deep mage-logins .mat-paginator,
+:host ::ng-deep mage-logins mat-paginator,
+:host ::ng-deep mage-logins .login-pagination {
+  flex: 0 0 auto;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
 .mt-5 {
-  margin-top: 3rem;
+  margin-top: 48px;
 }

@@ -1,4 +1,3 @@
-import { analytics } from '@angular-devkit/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 

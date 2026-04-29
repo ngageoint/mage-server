@@ -5,13 +5,18 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ContactInfoComponent } from './contact-info.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SimpleChange } from '@angular/core';
-import { MatMenuModule } from '@angular/material/menu';
 import { of, throwError } from 'rxjs';
 import { SettingsService } from 'admin/src/app/services/settings.service';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatMenuModule } from '@angular/material/menu';
 
 const MOCK_CONTACT_INFO = {
   phone: '123-456-7890',
@@ -43,7 +48,16 @@ describe('ContactInfoComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, HttpClientTestingModule, MatMenuModule],
+      imports: [
+        NoopAnimationsModule,
+        HttpClientTestingModule,
+        MatMenuModule,
+        FormsModule,
+        MatFormFieldModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatIconModule
+      ],
       declarations: [ContactInfoComponent],
       providers: [{ provide: SettingsService, useClass: MockSettingsService }]
     }).compileComponents();

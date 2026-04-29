@@ -1,13 +1,22 @@
 .location {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  margin-top: 32px;
+  gap: 16px;
 }
 
-.active {
-  color: white;
+.map-control-fab {
+  --mdc-fab-container-color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24) !important;
 }
 
-button:not(:last-child) {
-  margin-bottom: 8px;
+.map-control-fab.is-active {
+  --mdc-fab-container-color: #1e88e5;
+}
+
+.map-control-fab__icon {
+  color: #1e88e5 !important;
+}
+
+.map-control-fab.is-active .map-control-fab__icon {
+  color: #fff !important;
 }

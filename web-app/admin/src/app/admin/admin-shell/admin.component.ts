@@ -6,6 +6,7 @@ import { PluginService } from '../../plugin/plugin.service';
 import { UserPagingService } from '../../services/user-paging.service';
 import { DevicePagingService } from '../../services/device-paging.service';
 import { LocalStorageService } from '../../../../../../web-app/src/app/http/local-storage.service';
+import { SettingsService } from '../../../../src/app/services/settings.service';
 
 @Component({
   selector: 'admin',
@@ -15,6 +16,8 @@ import { LocalStorageService } from '../../../../../../web-app/src/app/http/loca
 export class AdminComponent implements OnInit, OnDestroy {
   stateName = '';
   token = '';
+
+  hasHeaderBanner = false;
 
   pluginActive = false;
 
@@ -42,7 +45,8 @@ export class AdminComponent implements OnInit, OnDestroy {
     private plugins: PluginService,
     private userPaging: UserPagingService,
     private devicePaging: DevicePagingService,
-    private localStorage: LocalStorageService
+    private localStorage: LocalStorageService,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit(): void {
@@ -67,6 +71,16 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.refreshInactiveUsers();
     this.refreshUnregisteredDevices();
     this.loadPluginTabs();
+
+    this.settingsService.get('banner').subscribe({
+      next: (result: any) => {
+        const bannerSettings = result?.settings ?? result?.banner?.settings;
+        this.hasHeaderBanner = !!bannerSettings?.showHeader;
+      },
+      error: () => {
+        this.hasHeaderBanner = false;
+      }
+    });
   }
 
   ngOnDestroy(): void {

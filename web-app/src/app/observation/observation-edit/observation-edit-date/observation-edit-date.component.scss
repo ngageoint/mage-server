@@ -1,23 +1,179 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
 .datetime {
-  display: flex;
-  margin: 0 -8px;
-  align-items: flex-start;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.date, .time {
-  flex: 1 1 0;
-  padding: 0 8px;
+.date,
+.time {
+  min-width: 0;
+  width: 100%;
 }
 
-:host ::ng-deep .mat-form-field-infix {
-  width: auto;
+.date mat-form-field,
+.time mat-form-field {
+  width: 100%;
+  margin-bottom: 0;
 }
 
 :host ::ng-deep mat-icon {
   color: rgba(0, 0, 0, 0.6);
 }
 
-mat-form-field {
+/* legacy Material support */
+:host ::ng-deep .date .mat-form-field-wrapper,
+:host ::ng-deep .time .mat-form-field-wrapper {
+  padding-bottom: 0 !important;
+}
+
+:host ::ng-deep .date .mat-form-field-flex,
+:host ::ng-deep .time .mat-form-field-flex {
+  min-height: 56px !important;
+  height: 56px !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .date .mat-form-field-infix,
+:host ::ng-deep .time .mat-form-field-infix {
+  min-height: 56px !important;
+  height: 56px !important;
+  padding-top: 20px !important;
+  padding-bottom: 8px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  border-top: 0 !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+}
+
+:host ::ng-deep .date .mat-input-element,
+:host ::ng-deep .time .mat-input-element {
+  font-size: $font-lg !important;
+  line-height: 1.2 !important;
+}
+
+:host ::ng-deep .date .mat-form-field-label,
+:host ::ng-deep .time .mat-form-field-label {
+  font-size: 16px !important;
+}
+
+:host ::ng-deep .date .mat-form-field-suffix,
+:host ::ng-deep .time .mat-form-field-suffix {
+  display: flex !important;
+  align-items: center !important;
+}
+
+:host ::ng-deep .date .mat-icon-button,
+:host ::ng-deep .time .mat-icon-button {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 8px !important;
+}
+
+:host ::ng-deep .date .mat-icon,
+:host ::ng-deep .time .mat-icon {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
+  line-height: 24px !important;
+}
+
+/* modern MDC Material support */
+:host ::ng-deep .date .mat-mdc-form-field,
+:host ::ng-deep .time .mat-mdc-form-field {
   width: 100%;
-  margin-bottom: 16px;
+}
+
+:host ::ng-deep .date .mat-mdc-form-field-subscript-wrapper,
+:host ::ng-deep .time .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+:host ::ng-deep .date .mat-mdc-text-field-wrapper,
+:host ::ng-deep .time .mat-mdc-text-field-wrapper {
+  min-height: 56px !important;
+  height: 56px !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .date .mat-mdc-form-field-flex,
+:host ::ng-deep .time .mat-mdc-form-field-flex {
+  min-height: 56px !important;
+  height: 56px !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .date .mat-mdc-form-field-infix,
+:host ::ng-deep .time .mat-mdc-form-field-infix {
+  min-height: 56px !important;
+  height: 56px !important;
+  min-width: 0 !important;
+  width: auto !important;
+  padding-top: 20px !important;
+  padding-bottom: 8px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .date input.mat-mdc-input-element,
+:host ::ng-deep .time input.mat-mdc-input-element {
+  font-size: $font-lg !important;
+  line-height: 1.2 !important;
+}
+
+:host ::ng-deep .date .mdc-floating-label,
+:host ::ng-deep .time .mdc-floating-label {
+  font-size: 16px !important;
+}
+
+:host ::ng-deep .date .mdc-floating-label--float-above,
+:host ::ng-deep .time .mdc-floating-label--float-above {
+  padding-top: 6px;
+  font-size: 16px !important;
+}
+
+:host ::ng-deep .date .mat-mdc-form-field-icon-suffix,
+:host ::ng-deep .time .mat-mdc-form-field-icon-suffix {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  padding-right: 8px !important;
+}
+
+:host ::ng-deep .date .mat-mdc-icon-button,
+:host ::ng-deep .time .mat-mdc-icon-button {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 8px !important;
+}
+
+:host ::ng-deep .date .mat-mdc-icon-button .mat-icon,
+:host ::ng-deep .time .mat-mdc-icon-button .mat-icon {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
+  line-height: 24px !important;
+}
+
+@media (max-width: 700px) {
+  .datetime {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }

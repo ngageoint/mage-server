@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { HttpClient } from '@angular/common/http';
 
 import { LayersService, Layer } from '../layers.service';

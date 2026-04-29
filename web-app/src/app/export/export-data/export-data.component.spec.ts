@@ -1,27 +1,28 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatOptionModule as MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatListModule as MatListModule } from '@angular/material/list';
+import { MatPaginatorModule as MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 import {
-  MatSnackBar,
-  MatSnackBarDismiss,
-  MatSnackBarModule
+  MatSnackBar as MatSnackBar,
+  MatSnackBarDismiss as MatSnackBarDismiss,
+  MatSnackBarModule as MatSnackBarModule
 } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Observable, of, Subject } from 'rxjs';
 import { ExportDialogComponent } from '../export-dialog.component';
@@ -35,7 +36,7 @@ import { ExportDataComponent } from './export-data.component';
 import { FilterService } from 'src/app/filter/filter.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 
 class MockExportService {
   getExports(): Observable<any> {

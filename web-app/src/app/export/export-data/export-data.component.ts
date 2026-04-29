@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, QueryList, ViewChildren, ElementRef, EventEmitter, Output } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, ExportResponse, ExportRequest } from '../export.service';
 import moment from 'moment';
 import { first } from 'rxjs/operators';
