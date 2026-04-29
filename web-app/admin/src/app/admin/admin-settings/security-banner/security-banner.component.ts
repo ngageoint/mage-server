@@ -15,9 +15,23 @@ import {
   import { Subject } from 'rxjs';
   import { takeUntil } from 'rxjs/operators';
   import { SettingsService } from '../../../../../src/app/services/settings.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
   
   @Component({
     selector: 'security-banner',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MatCheckboxModule,
+      MatFormFieldModule,
+      MatInputModule,
+      ColorPickerComponent
+    ],
     templateUrl: 'security-banner.component.html',
     styleUrls: ['./security-banner.component.scss']
   })

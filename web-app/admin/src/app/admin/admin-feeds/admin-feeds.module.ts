@@ -40,29 +40,31 @@ import { AdminServiceDeleteComponent } from './admin-service/admin-service-delet
 import { AdminFeedEditTopicConfigurationComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-topic/admin-feed-edit-topic-configuration.component';
 import { JsonSchemaModule } from '../../json-schema/json-schema.module';
 import { FeedItemSummaryModule } from '../../feed/feed-item/feed-item-summary/feed-item-summary.module';
-import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
+    AdminFeedEditComponent
+  ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+
     AdminFeedsComponent,
     AdminFeedComponent,
     AdminFeedDeleteComponent,
-    AdminFeedEditComponent,
     JsonSchemaWidgetAutocompleteComponent,
     AdminServiceEditComponent,
     AdminFeedEditItemPropertiesComponent,
     AdminFeedEditTopicComponent,
     AdminFeedEditConfigurationComponent,
     AdminFeedEditTopicConfigurationComponent,
-    AdminFeedEditTopicComponent,
     AdminServiceComponent,
-    AdminServiceDeleteComponent
-  ],
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
+    AdminServiceDeleteComponent,
+
     AdminBreadcrumbModule,
     MatAutocompleteModule,
     MatTabsModule,
@@ -77,7 +79,6 @@ import { RouterModule } from '@angular/router';
     MatRadioModule,
     MatCheckboxModule,
     MatInputModule,
-    MatAutocompleteModule,
     MatSelectModule,
     MatSliderModule,
     MatExpansionModule,
@@ -91,13 +92,11 @@ import { RouterModule } from '@angular/router';
     FeedItemSummaryModule,
     JsonSchemaModule,
     StaticIconModule,
-    RouterModule,
     MatSnackBarModule
   ],
   exports: [
     AdminFeedsComponent,
     AdminFeedComponent,
-    AdminFeedEditComponent,
     AdminServiceEditComponent
   ]
 })

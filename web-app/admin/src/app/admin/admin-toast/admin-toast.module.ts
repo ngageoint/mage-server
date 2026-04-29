@@ -5,8 +5,8 @@ import { AdminToastComponent } from './admin-toast.component';
 import { CommonModule } from '@angular/common';
 
 @NgModule({
-  declarations: [AdminToastComponent],
   imports: [
+    AdminToastComponent,
     RouterModule,
     MatSnackBarModule,
     CommonModule

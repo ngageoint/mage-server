@@ -4,9 +4,7 @@ import { CommonModule } from '@angular/common'
 
 @NgModule({
   imports: [
-    CommonModule
-  ],
-  declarations: [
+    CommonModule,
     XhrImgComponent
   ],
   exports: [

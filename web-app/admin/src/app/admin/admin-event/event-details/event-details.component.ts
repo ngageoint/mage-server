@@ -1,15 +1,15 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatSelectChange as MatSelectChange } from '@angular/material/select';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatSelectChange as MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
-import { NgForm } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule, NgForm } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { Event as MageEvent, Layer } from '../../../../../../src/app/filter/filter.types';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import { CardActionButton } from '../../../core/card-navbar/card-navbar.component';
+import { CardActionButton, CardNavbarComponent } from '../../../core/card-navbar/card-navbar.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { User as MageUser } from '@ngageoint/mage.web-core-lib/user';
 import { Team } from '../../admin-teams/team';
@@ -22,6 +22,13 @@ import {
 } from '../../../core/search-modal/search-modal.component';
 import { DeleteEventComponent } from '../delete-event/delete-event.component';
 import { CreateFormDialogComponent } from '../create-form/create-form.component';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { DraggableListComponent } from 'admin/src/app/core/draggable-list/draggable-list.component';
+import { AdminEventFormPreviewComponent } from '../admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 
 interface ExtendedEvent extends MageEvent {
   complete?: boolean;
@@ -40,6 +47,22 @@ interface PagedResult<T> {
 
 @Component({
   selector: 'mage-event-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatCardModule,
+    MatIconModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent,
+    DraggableListComponent,
+    AdminEventFormPreviewComponent
+  ],
   templateUrl: './event-details.component.html',
   styleUrls: ['./event-details.component.scss']
 })

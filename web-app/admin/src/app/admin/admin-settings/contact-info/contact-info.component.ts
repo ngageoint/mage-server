@@ -9,9 +9,28 @@ import {
 } from '@angular/core';
 import { SettingsService } from '../../../../../src/app/services/settings.service';
 import { take } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'contact-info',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatCheckboxModule,
+    MatMenuModule,
+    MatButtonModule
+  ],
   templateUrl: 'contact-info.component.html',
   styleUrls: ['./contact-info.component.scss']
 })

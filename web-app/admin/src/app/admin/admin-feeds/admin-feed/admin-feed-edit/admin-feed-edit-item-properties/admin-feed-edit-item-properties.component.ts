@@ -1,5 +1,9 @@
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { ReactiveFormsModule, UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import * as _ from 'lodash'
 import { debounceTime, filter } from 'rxjs/operators'
 
@@ -38,6 +42,13 @@ export type SchemaFormValue = KeyedPropertySchemaFormValue[]
 
 @Component({
   selector: 'app-feed-item-properties-configuration',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './admin-feed-edit-item-properties.component.html',
   styleUrls: ['./admin-feed-edit-item-properties.component.scss']
 })

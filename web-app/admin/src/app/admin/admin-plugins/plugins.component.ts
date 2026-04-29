@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { PluginService, PluginsById } from '../../plugin/plugin.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { template } from 'lodash';
 
 export interface AdminPluginListItem {
   id: string;
@@ -9,6 +12,11 @@ export interface AdminPluginListItem {
 
 @Component({
   selector: 'mage-plugins',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule
+  ],
   templateUrl: './plugins.component.html',
   styleUrls: ['./plugins.component.scss']
 })

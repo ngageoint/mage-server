@@ -30,6 +30,12 @@ import {
   prepareFormPayload,
   isUserFieldType
 } from '../../helpers/form-field-utils';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { AdminBreadcrumbComponent } from '../../../admin-breadcrumb/admin-breadcrumb.component';
+import { FieldsListComponent } from '../fields-list/fields-list.component';
+import { MatIconModule } from '@angular/material/icon';
 
 interface FormData {
   id?: number;
@@ -60,6 +66,15 @@ interface ErrorDialogData {
 
 @Component({
   selector: 'mage-form-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    AdminBreadcrumbComponent,
+    FieldsListComponent,
+    MatIconModule
+  ],
   templateUrl: './form-details.component.html',
   styleUrls: ['./form-details.component.scss']
 })

@@ -1,16 +1,40 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { Router, ActivatedRoute } from '@angular/router';
+import {
+  MatPaginatorModule,
+  PageEvent as PageEvent
+} from '@angular/material/paginator';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 
 import { LayersService, Layer } from '../layers.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
+import { CardNavbarComponent } from 'admin/src/app/core/card-navbar/card-navbar.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'mage-layer-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AdminBreadcrumbModule,
+    CardNavbarComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTableModule,
+    MatTooltipModule,
+    MatPaginatorModule
+  ],
   templateUrl: './layer-dashboard.component.html',
   styleUrls: ['./layer-dashboard.component.scss']
 })
@@ -82,7 +106,7 @@ export class LayerDashboardComponent implements OnInit {
   private applyFilters(): void {
     const term = this.layerSearch.trim().toLowerCase();
 
-    this.filteredLayers = (this.layers ?? []).filter(layer => {
+    this.filteredLayers = (this.layers ?? []).filter((layer) => {
       const matchesSearch =
         !term ||
         (layer.name ?? '').toLowerCase().includes(term) ||
@@ -119,9 +143,9 @@ export class LayerDashboardComponent implements OnInit {
   getTypeCount(type: 'all' | 'online' | 'offline'): number {
     if (type === 'all') return this.filteredLayers.length;
     if (type === 'online') {
-      return this.filteredLayers.filter(l => l.type === 'Imagery').length;
+      return this.filteredLayers.filter((l) => l.type === 'Imagery').length;
     }
-    return this.filteredLayers.filter(l => l.type !== 'Imagery').length;
+    return this.filteredLayers.filter((l) => l.type !== 'Imagery').length;
   }
 
   onSearchChanged(): void {
@@ -167,7 +191,6 @@ export class LayerDashboardComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((newLayer: Layer | undefined) => {
       if (!newLayer?.id) return;
-
 
       this.toastService.show(
         'Layer Created',

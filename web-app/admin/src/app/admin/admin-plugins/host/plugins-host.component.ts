@@ -6,14 +6,22 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { PluginService } from '../../../plugin/plugin.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { CommonModule } from '@angular/common';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
 
 @Component({
   selector: 'mage-plugins-host',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    AdminBreadcrumbComponent
+  ],
   templateUrl: './plugins-host.component.html',
   styleUrls: ['./plugins-host.component.scss']
 })

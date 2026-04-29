@@ -7,9 +7,38 @@ import { AdminFeedDeleteComponent } from './admin-feed/admin-feed-delete/admin-f
 import { AdminServiceDeleteComponent } from './admin-service/admin-service-delete/admin-service-delete.component'
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { AdminUserService } from '../services/admin-user.service'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
+import { MatListModule } from '@angular/material/list'
+import { MatPaginatorModule } from '@angular/material/paginator'
+import { MatTabsModule } from '@angular/material/tabs'
+import { RouterModule } from '@angular/router'
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component'
 
 @Component({
   selector: 'admin-feeds',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AdminBreadcrumbComponent,
+    MatCardModule,
+    MatTabsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatListModule,
+    MatDividerModule,
+    MatPaginatorModule
+  ],
   templateUrl: './admin-feeds.component.html',
   styleUrls: ['./admin-feeds.component.scss']
 })

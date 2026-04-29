@@ -7,9 +7,22 @@ import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { User } from '../../admin-users/user';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminDeviceService } from '../../services/admin-device.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LoginsComponent } from '../../../logins/logins.component';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { UserSearchBoxComponent } from '../../admin-users/user-search/user-search-box.component';
 
 @Component({
   selector: 'mage-device-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    AdminBreadcrumbComponent,
+    UserSearchBoxComponent,
+    LoginsComponent 
+  ],
   templateUrl: './device-details.component.html',
   styleUrls: ['./device-details.component.scss']
 })

@@ -1,14 +1,18 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { XhrImgComponent } from '@ngageoint/mage.web-core-lib/common'
 import { RegisteredStaticIconReference, contentPathOfIcon } from '../static-icon.model'
 
 @Component({
   selector: 'mage-static-icon-img',
+  standalone: true,
+  imports: [XhrImgComponent],
   template: `<mage-xhr-img [src]="iconPath"></mage-xhr-img>`,
 })
 export class StaticIconImgComponent implements OnInit, OnChanges {
 
   @Input()
   iconRef: RegisteredStaticIconReference | string | null
+
   iconPath: string | null
 
   constructor() { }

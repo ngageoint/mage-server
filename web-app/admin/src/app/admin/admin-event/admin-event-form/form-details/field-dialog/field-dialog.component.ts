@@ -1,6 +1,8 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+    import { Component, Inject } from '@angular/core';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Field } from '../../../helpers/observation-feed-helper';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export interface FieldDialogData {
     fieldTypes: { name: string; title: string }[];
@@ -25,6 +27,12 @@ export interface FieldResult {
 
 @Component({
     selector: 'mage-field-dialog',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MatDialogModule
+    ],
     templateUrl: './field-dialog.component.html',
     styleUrls: ['./field-dialog.component.scss']
 })

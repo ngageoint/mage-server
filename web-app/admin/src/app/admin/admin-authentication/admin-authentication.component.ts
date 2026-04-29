@@ -20,7 +20,15 @@ import { LocalStorageService } from '../../../../../../web-app/src/app/http/loca
 import { AuthenticationConfigurationService } from '../services/admin-authentication-configuration.service';
 import { AdminTeamsService } from '../services/admin-teams-service';
 import { AdminEventsService } from '../services/admin-events.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
+import { AdminAuthenticationSettingsComponent } from './admin-authentication-settings.component';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 export interface CanComponentDeactivate {
   canDeactivate: () => boolean | Promise<boolean>;
@@ -28,6 +36,19 @@ export interface CanComponentDeactivate {
 
 @Component({
   selector: 'admin-authentication',
+  
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatIconModule,
+    MatExpansionModule,
+    MatSlideToggleModule,
+    MatFormFieldModule,
+    AdminBreadcrumbComponent,
+    AdminAuthenticationSettingsComponent
+  ],
   templateUrl: 'admin-authentication.component.html',
   styleUrls: ['./admin-authentication.component.scss']
 })

@@ -4,12 +4,21 @@ import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { MapSettingsService } from '../../../app/map/settings/map.settings.service';
 import { MapSettings } from '../../../app/entities/map/entities.map';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
 
 type MobileSearchType = 'NONE' | 'NATIVE' | 'NOMINATIM';
 type WebSearchType = 'NONE' | 'NOMINATIM';
 
 @Component({
   selector: 'mage-admin-map',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    AdminBreadcrumbComponent
+  ],
   templateUrl: './admin-map.component.html',
   styleUrls: ['./admin-map.component.scss']
 })

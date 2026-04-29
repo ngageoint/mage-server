@@ -3,17 +3,8 @@ import { CommonModule } from '@angular/common';
 import { MomentPipe } from './moment.pipe';
 
 @NgModule({
-  imports: [
-    CommonModule
-  ],
-  declarations: [
-    MomentPipe
-  ],
-  exports: [
-    MomentPipe
-  ],
-  providers: [
-    MomentPipe
-  ],
+  imports: [CommonModule, MomentPipe],
+  exports: [MomentPipe],
+  providers: [MomentPipe]
 })
-export class MomentModule { }
+export class MomentModule {}

@@ -24,34 +24,29 @@ import { AdminTeamsService } from '../services/admin-teams-service';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-    declarations: [
-        TeamDashboardComponent,
-        CreateTeamDialogComponent,
-        TeamDetailsComponent,
-        DeleteTeamComponent
-    ],
-    imports: [
-        CommonModule,
-        FormsModule,
-        CoreModule,
-        ReactiveFormsModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatCheckboxModule,
-        MatIconModule,
-        MatProgressSpinnerModule,
-        AdminBreadcrumbModule,
-        MatTooltipModule,
-        RouterModule
-    ],
-    providers: [
-        AdminTeamsService,
-        AdminEventsService
-    ],
+  imports: [
+    TeamDashboardComponent,
+    CreateTeamDialogComponent,
+    TeamDetailsComponent,
+    DeleteTeamComponent,
+    CommonModule,
+    FormsModule,
+    CoreModule,
+    ReactiveFormsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    AdminBreadcrumbModule,
+    MatTooltipModule,
+    RouterModule
+  ],
+  providers: [AdminTeamsService, AdminEventsService]
 })
-export class AdminTeamsModule { }
+export class AdminTeamsModule {}

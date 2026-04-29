@@ -1,9 +1,16 @@
+import { CommonModule } from '@angular/common'
 import { HttpClient } from '@angular/common/http'
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core'
+import { MatIconModule } from '@angular/material/icon'
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser'
 
 @Component({
   selector: 'user-avatar',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule
+  ],
   templateUrl: './user-avatar.component.html',
   styleUrls: ['./user-avatar.component.scss']
 })

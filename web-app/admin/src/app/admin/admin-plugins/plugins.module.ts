@@ -6,8 +6,9 @@ import { CommonModule } from '@angular/common';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 
 @NgModule({
-  declarations: [PluginsComponent, PluginHostComponent],
   imports: [
+    PluginsComponent,
+    PluginHostComponent,
     CommonModule,
     AdminBreadcrumbModule,
     RouterModule.forChild([{ path: '', component: PluginsComponent }])

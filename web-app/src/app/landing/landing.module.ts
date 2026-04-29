@@ -24,6 +24,6 @@ const routes: Routes = [{
     IngressModule,
     RouterModule.forChild(routes)
   ],
-  exports: [ RouterModule ]
+  exports: [RouterModule]
 })
 export class LandingModule { }

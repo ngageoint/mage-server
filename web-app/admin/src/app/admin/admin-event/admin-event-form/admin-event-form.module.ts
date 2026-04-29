@@ -23,37 +23,35 @@ import { FieldsListComponent } from './fields-list/fields-list.component';
 import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
 
 @NgModule({
-    declarations: [
-        AdminEventFormPreviewComponent,
-        AdminEventFormPreviewDialogComponent,
-        FormDetailsComponent,
-        FieldDialogComponent,
-        SymbologyDialogComponent,
-        FieldsListComponent
-    ],
-    imports: [
-        CommonModule,
-        CoreModule,
-        FormsModule,
-        ReactiveFormsModule,
-        DragDropModule,
-        MatDialogModule,
-        MatButtonModule,
-        MatSnackBarModule,
-        MatTabsModule,
-        MatCardModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatFormFieldModule,
-        MatInputModule,
-        ObservationModule,
-        AdminBreadcrumbModule
-    ],
-    exports: [
-        AdminEventFormPreviewComponent,
-        AdminEventFormPreviewDialogComponent,
-        FormDetailsComponent,
-        FieldsListComponent
-    ]
+  imports: [
+    AdminEventFormPreviewComponent,
+    AdminEventFormPreviewDialogComponent,
+    FormDetailsComponent,
+    FieldDialogComponent,
+    SymbologyDialogComponent,
+    FieldsListComponent,
+    CommonModule,
+    CoreModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DragDropModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatSnackBarModule,
+    MatTabsModule,
+    MatCardModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ObservationModule,
+    AdminBreadcrumbModule
+  ],
+  exports: [
+    AdminEventFormPreviewComponent,
+    AdminEventFormPreviewDialogComponent,
+    FormDetailsComponent,
+    FieldsListComponent
+  ]
 })
-export class AdminEventFormModule { }
+export class AdminEventFormModule {}

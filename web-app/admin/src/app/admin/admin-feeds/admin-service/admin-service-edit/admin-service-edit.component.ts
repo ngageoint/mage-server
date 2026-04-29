@@ -1,10 +1,27 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { Service, ServiceType, FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { CommonModule } from '@angular/common';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { JsonSchemaModule } from 'admin/src/app/json-schema/json-schema.module';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 @Component({
   selector: 'app-create-service',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    NgxMatSelectSearchModule,
+    JsonSchemaModule
+  ],
   templateUrl: './admin-service-edit.component.html',
   styleUrls: ['./admin-service-edit.component.scss']
 })

@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormControl } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map, startWith, debounceTime, switchMap } from 'rxjs/operators';
 import {
@@ -12,7 +12,7 @@ import {
   FeedService
 } from 'core-lib-src/feed';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import {
   trigger,
@@ -26,9 +26,35 @@ import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.
 import { AdminEventsService } from '../../services/admin-events.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { EventService } from '../../../../app/services/event.service';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-admin-feed',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    AdminBreadcrumbComponent,
+    MatIconModule,
+    MatCardModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    MatListModule,
+    MatDividerModule,
+    MatPaginatorModule
+  ],
   templateUrl: './admin-feed.component.html',
   styleUrls: ['./admin-feed.component.scss'],
   animations: [

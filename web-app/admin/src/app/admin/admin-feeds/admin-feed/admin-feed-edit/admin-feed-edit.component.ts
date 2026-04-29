@@ -7,6 +7,7 @@ import { FeedEditService } from './feed-edit.service';
 
 @Component({
   selector: 'app-feed-edit',
+  standalone: false,
   templateUrl: './admin-feed-edit.component.html',
   styleUrls: ['./admin-feed-edit.component.scss'],
   providers: [FeedEditService]
@@ -48,7 +49,7 @@ export class AdminFeedEditComponent implements OnInit {
       this.breadcrumbs = this.breadcrumbs.concat([{ title: '' }, { title: 'Edit' }]);
     } else {
       this.breadcrumbs.push({ title: 'New' });
-      console.log(this.breadcrumbs)
+      console.log(this.breadcrumbs);
     }
   }
 

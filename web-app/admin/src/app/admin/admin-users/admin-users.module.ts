@@ -29,6 +29,12 @@ import { RouterModule } from '@angular/router';
 
 @NgModule({
   imports: [
+    UserDashboardComponent,
+    UserDetailsComponent,
+    DeleteUserComponent,
+    CreateUserModalComponent,
+    BulkUserComponent,
+    UserSearchBoxComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -48,15 +54,7 @@ import { RouterModule } from '@angular/router';
     MatProgressBarModule,
     MatOptionModule,
     AdminBreadcrumbModule,
-    RouterModule,
-  ],
-  declarations: [
-    UserDashboardComponent,
-    UserDetailsComponent,
-    DeleteUserComponent,
-    CreateUserModalComponent,
-    BulkUserComponent,
-    UserSearchBoxComponent
+    RouterModule
   ],
   exports: [
     UserDetailsComponent,

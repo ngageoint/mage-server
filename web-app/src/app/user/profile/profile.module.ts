@@ -39,12 +39,10 @@ const routes: Routes = [{
 class AngularModule { }
 
 @NgModule({
-  declarations: [
-    ProfileComponent
-  ],
   imports: [
     AngularModule,
     UserAvatarModule,
+    ProfileComponent,
     RouterModule.forChild(routes)
   ],
   exports: [ RouterModule ]

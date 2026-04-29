@@ -10,9 +10,20 @@ import {
   import { take } from "rxjs/operators";
   import { Disclaimer } from "./security-disclaimer.model";
   import { SettingsService } from '../../../../../src/app/services/settings.service';
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatFormFieldModule } from "@angular/material/form-field";
   
   @Component({
     selector: "security-disclaimer",
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MatCheckboxModule,
+      MatFormFieldModule
+    ],
     templateUrl: "security-disclaimer.component.html",
     styleUrls: ["./security-disclaimer.component.scss"]
   })

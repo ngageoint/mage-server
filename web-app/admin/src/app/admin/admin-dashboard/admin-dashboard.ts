@@ -5,7 +5,7 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
@@ -14,9 +14,34 @@ import { AdminDeviceService } from '../services/admin-device.service';
 import { DevicePagingService } from '../../services/device-paging.service';
 import { UserPagingService } from '../../services/user-paging.service';
 import { User } from '../admin-users/user';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
+import { LoginsModule } from '../../logins/logins.module';
+
 
 @Component({
   selector: 'admin-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AdminBreadcrumbComponent,
+    MatCardModule,
+    MatBadgeModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatListModule,
+    MatIconModule,
+    LoginsModule
+  ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss']
 })

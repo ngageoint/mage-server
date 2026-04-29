@@ -1,7 +1,10 @@
 import { AfterViewInit, Component, ElementRef } from '@angular/core';
 import { LocalStorageService } from '../http/local-storage.service';
 import SwaggerUI from 'swagger-ui';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 const DisableAuthorizePlugin = function () {
   return {
@@ -15,6 +18,13 @@ const DisableAuthorizePlugin = function () {
 
 @Component({
   selector: 'swagger',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatToolbarModule,
+    MatIconModule
+  ],
   templateUrl: './swagger.component.html',
   styleUrls: ['./swagger.component.scss']
 })

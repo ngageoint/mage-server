@@ -1,8 +1,21 @@
+import { CommonModule } from '@angular/common'
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
+import { FormsModule } from '@angular/forms'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatSelectModule } from '@angular/material/select'
 import { FeedTopic, Service } from '@ngageoint/mage.web-core-lib/feed'
 
 @Component({
   selector: 'app-choose-service-topic',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatSelectModule
+  ],
   templateUrl: './admin-feed-edit-topic.component.html',
   styleUrls: ['./admin-feed-edit-topic.component.scss']
 })

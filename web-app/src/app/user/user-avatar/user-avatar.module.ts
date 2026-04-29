@@ -4,13 +4,7 @@ import { UserAvatarComponent } from './user-avatar.component';
 import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
-  declarations: [
-    UserAvatarComponent
-  ],
-  imports: [
-    CommonModule,
-    MatIconModule
-  ],
-  exports: [ UserAvatarComponent ]
+  imports: [CommonModule, MatIconModule, UserAvatarComponent],
+  exports: [UserAvatarComponent]
 })
-export class UserAvatarModule { }
+export class UserAvatarModule {}

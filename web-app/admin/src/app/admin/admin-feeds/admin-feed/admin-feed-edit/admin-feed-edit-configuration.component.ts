@@ -1,9 +1,15 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
 import { debounceTime, map } from 'rxjs/operators'
 import { FeedTopic } from '@ngageoint/mage.web-core-lib/feed'
 import { StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
 import { FeedMetaData, feedMetaDataLean, FeedMetaDataNullable } from './feed-edit.model'
+import { CommonModule } from '@angular/common';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 export type IconModel = Readonly<
   | { iconFile: string }
@@ -17,6 +23,16 @@ export interface MapStyle {
 
 @Component({
   selector: 'app-feed-configuration',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatAutocompleteModule
+  ],
   templateUrl: './admin-feed-edit-configuration.component.html',
   styleUrls: ['./admin-feed-edit-configuration.component.scss']
 })

@@ -26,40 +26,34 @@ import { ImageryLayerSettingsComponent } from './imagery-layer-settings/imagery-
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-    declarations: [
-        LayerDashboardComponent,
-        CreateLayerDialogComponent,
-        LayerDetailsComponent,
-        DeleteLayerComponent,
-        LayerPreviewComponent,
-        ImageryLayerSettingsComponent,
-    ],
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatDialogModule,
-        MatButtonModule,
-        MatPaginatorModule,
-        MatTableModule,
-        MatIconModule,
-        MatSelectModule,
-        MatFormFieldModule,
-        MatTooltipModule,
-        MatCardModule,
-        MatDividerModule,
-        MatProgressBarModule,
-        MatProgressSpinnerModule,
-        MatInputModule,
-        CoreModule,
-        AdminBreadcrumbModule,
-        RouterModule
-    ],
-    providers: [
-        LayersService
-    ],
-    exports: [
-        LayerDashboardComponent
-    ]
+  imports: [
+    LayerDashboardComponent,
+    CreateLayerDialogComponent,
+    LayerDetailsComponent,
+    DeleteLayerComponent,
+    LayerPreviewComponent,
+    ImageryLayerSettingsComponent,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatPaginatorModule,
+    MatTableModule,
+    MatIconModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatTooltipModule,
+    MatCardModule,
+    MatDividerModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatInputModule,
+    CoreModule,
+    AdminBreadcrumbModule,
+    RouterModule
+  ],
+  providers: [LayersService],
+  exports: [LayerDashboardComponent]
 })
-export class AdminLayersModule { }
+export class AdminLayersModule {}

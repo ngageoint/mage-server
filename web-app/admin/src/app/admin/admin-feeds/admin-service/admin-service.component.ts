@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import {
@@ -12,9 +12,31 @@ import {
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminServiceDeleteComponent } from './admin-service-delete/admin-service-delete.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { JsonSchemaModule } from 'admin/src/app/json-schema/json-schema.module';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
 
 @Component({
   selector: 'app-admin-service',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AdminBreadcrumbComponent,
+    MatIconModule,
+    MatCardModule,
+    MatListModule,
+    MatDividerModule,
+    MatPaginatorModule,
+    JsonSchemaModule
+  ],
   templateUrl: './admin-service.component.html',
   styleUrls: ['./admin-service.component.scss']
 })

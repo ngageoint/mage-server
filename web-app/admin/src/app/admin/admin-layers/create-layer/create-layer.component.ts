@@ -6,15 +6,18 @@ import {
   Validators,
   AbstractControl,
   ValidationErrors,
-  AsyncValidatorFn
+  AsyncValidatorFn,
+  ReactiveFormsModule
 } from '@angular/forms';
 import { LayersService, Layer } from '../layers.service';
 import { Observable, of } from 'rxjs';
 import { map, catchError, debounceTime, first } from 'rxjs/operators';
-import { ImageryLayerConfig } from '../imagery-layer-settings/imagery-layer-settings.component';
+import { ImageryLayerConfig, ImageryLayerSettingsComponent } from '../imagery-layer-settings/imagery-layer-settings.component';
 
 @Component({
   selector: 'mage-admin-layer-create',
+  standalone: true,
+  imports: [ReactiveFormsModule, ImageryLayerSettingsComponent],
   templateUrl: './create-layer.component.html',
   styleUrls: ['./create-layer.component.scss']
 })

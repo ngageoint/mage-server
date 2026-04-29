@@ -2,7 +2,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Component, DebugElement } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { By } from '@angular/platform-browser'
-import { XhrImgComponent, ObjectUrlService, OBJECT_URL_SERVICE } from './xhr-img.component'
+import { ObjectUrlService, OBJECT_URL_SERVICE } from './xhr-img.component'
+import { XhrImgComponent } from '@ngageoint/mage.web-core-lib/common'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({

@@ -24,11 +24,9 @@ const routes: Routes = [{
 class AngularModule { }
 
 @NgModule({
-  declarations: [
-    SwaggerComponent
-  ],
   imports: [
     AngularModule,
+    SwaggerComponent,
     RouterModule.forChild(routes)
   ],
   exports: [ RouterModule ]

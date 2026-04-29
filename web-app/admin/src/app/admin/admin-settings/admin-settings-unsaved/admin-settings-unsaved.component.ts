@@ -1,8 +1,14 @@
+import { CommonModule } from '@angular/common';
 import { Component, NgZone } from '@angular/core'
-import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 
 @Component({
     selector: 'admin-settings-unsaved',
+    standalone: true,
+    imports: [
+      CommonModule,
+      MatDialogModule
+    ],  
     templateUrl: './admin-settings-unsaved.component.html',
     styleUrls: ['./admin-settings-unsaved.component.scss']
 })

@@ -1,9 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminDeviceService } from '../../services/admin-device.service';
 import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { User } from '../../admin-users/user';
+import { CommonModule } from '@angular/common';
+import { UserSearchBoxComponent } from '../../admin-users/user-search/user-search-box.component';
 
 /**
  * Dialog component for creating new devices.
@@ -11,6 +13,8 @@ import { User } from '../../admin-users/user';
  */
 @Component({
   selector: 'mage-admin-device-create',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, UserSearchBoxComponent],
   templateUrl: './create-device.component.html',
   styleUrls: ['./create-device.component.scss']
 })

@@ -1,13 +1,27 @@
-import { HttpClient } from '@angular/common/http'
-import { Component, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
-import { AbstractControl, ControlValueAccessor, UntypedFormControl, UntypedFormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms'
-import { DomSanitizer } from '@angular/platform-browser'
-import { StaticIcon, StaticIconReference } from '../static-icon.model'
-import { StaticIconService } from '../static-icon.service'
-
+import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { Component, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import {
+  AbstractControl,
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  UntypedFormControl,
+  UntypedFormGroup,
+  ValidationErrors,
+  Validator,
+  Validators
+} from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { XhrImgComponent } from '@ngageoint/mage.web-core-lib/common'
+import { StaticIcon, StaticIconReference } from '../static-icon.model';
+import { StaticIconService } from '../static-icon.service';
 
 @Component({
   selector: 'mage-static-icon-form-field',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, XhrImgComponent],
   templateUrl: './static-icon-form-field.component.html',
   styleUrls: ['./static-icon-form-field.component.scss'],
   providers: [
@@ -20,79 +34,85 @@ import { StaticIconService } from '../static-icon.service'
       provide: NG_VALIDATORS,
       multi: true,
       useExisting: StaticIconFormFieldComponent
-    },
+    }
   ]
 })
-export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, ControlValueAccessor, Validator {
-
-  iconRef: StaticIconReference = null
+export class StaticIconFormFieldComponent
+  implements OnChanges, OnDestroy, ControlValueAccessor, Validator
+{
+  iconRef: StaticIconReference = null;
 
   form: UntypedFormGroup = new UntypedFormGroup({
     iconRefToken: new UntypedFormControl(null),
     iconRefType: new UntypedFormControl(null, Validators.required)
-  })
-  icon: StaticIcon | null
+  });
+  icon: StaticIcon | null;
 
-  private onChange: (iconRef: StaticIconReference) => void = (iconRef: StaticIconReference) => {}
-  private onValidatorChange: () => void = () => {}
-  private onTouched: () => void = () => {}
+  private onChange: (iconRef: StaticIconReference) => void = (
+    iconRef: StaticIconReference
+  ) => {};
+  private onValidatorChange: () => void = () => {};
+  private onTouched: () => void = () => {};
 
-  constructor(private iconService: StaticIconService, private httpClient: HttpClient, private sanitizer: DomSanitizer) {
+  constructor(
+    private iconService: StaticIconService,
+    private httpClient: HttpClient,
+    private sanitizer: DomSanitizer
+  ) {
     this.form.valueChanges.subscribe((x: IconRefFormValue) => {
-      this.iconRef = iconRefForFormValue(x)
-      this.onChange(this.iconRef)
-    })
+      this.iconRef = iconRefForFormValue(x);
+      this.onChange(this.iconRef);
+    });
   }
 
   registerOnValidatorChange?(fn: () => void): void {
-    this.onValidatorChange = fn
+    this.onValidatorChange = fn;
   }
 
-  ngOnChanges(changes: SimpleChanges) { }
+  ngOnChanges(changes: SimpleChanges) {}
 
-  ngOnDestroy() { }
+  ngOnDestroy() {}
 
-  onSelectIcon() { }
+  onSelectIcon() {}
 
   writeValue(iconRef: StaticIconReference): void {
-    this.iconRef = iconRef
-    const formValue = formValueForIconRef(iconRef)
-    this.form.setValue(formValue, { emitEvent: false })
-    this.resolveIconRef()
+    this.iconRef = iconRef;
+    const formValue = formValueForIconRef(iconRef);
+    this.form.setValue(formValue, { emitEvent: false });
+    this.resolveIconRef();
   }
 
   registerOnChange(fn: (x: StaticIconReference | null) => void): void {
-    this.onChange = fn
+    this.onChange = fn;
   }
 
   registerOnTouched(fn: () => void): void {
-    this.onTouched = fn
+    this.onTouched = fn;
   }
 
   setDisabledState?(isDisabled: boolean): void {
     if (isDisabled) {
-      this.form.disable()
-    }
-    else {
-      this.form.enable()
+      this.form.disable();
+    } else {
+      this.form.enable();
     }
   }
 
   validate(control: AbstractControl): ValidationErrors {
-    return this.form.errors
+    return this.form.errors;
   }
 
   private resolveIconRef() {
     if (!this.iconRef) {
-      this.icon = null
-      return
+      this.icon = null;
+      return;
     }
-    this.iconService.fetchIconByReference(this.iconRef).subscribe(x => {
-      this.icon = x
+    this.iconService.fetchIconByReference(this.iconRef).subscribe((x) => {
+      this.icon = x;
       if (!this.icon) {
-        return
+        return;
       }
-    })
+    });
   }
 }
 
@@ -102,21 +122,21 @@ enum IconRefType {
 }
 
 type IconRefFormValue = {
-  iconRefToken: string | null
-  iconRefType: IconRefType | null
-}
+  iconRefToken: string | null;
+  iconRefType: IconRefType | null;
+};
 
 function iconRefForFormValue(x: IconRefFormValue): StaticIconReference | null {
   if (!x.iconRefType) {
-    return null
+    return null;
   }
   switch (x.iconRefType) {
     case IconRefType.Registered:
-      return { [IconRefType.Registered]: x.iconRefToken }
+      return { [IconRefType.Registered]: x.iconRefToken };
     case IconRefType.SourceUrl:
-      return { [IconRefType.SourceUrl]: x.iconRefToken }
+      return { [IconRefType.SourceUrl]: x.iconRefToken };
     default:
-      throw new Error('invalid icon ref type: ' + x.iconRefToken)
+      throw new Error('invalid icon ref type: ' + x.iconRefToken);
   }
 }
 
@@ -125,20 +145,19 @@ function formValueForIconRef(x: StaticIconReference | null): IconRefFormValue {
     return {
       iconRefType: null,
       iconRefToken: null
-    }
+    };
   }
-  let iconRefType: IconRefType | null = null
-  let iconRefToken: string | null = null
+  let iconRefType: IconRefType | null = null;
+  let iconRefToken: string | null = null;
   if (x.hasOwnProperty(IconRefType.Registered)) {
-    iconRefType = IconRefType.Registered || null
-    iconRefToken = x[IconRefType.Registered] || null
-  }
-  else if (x.hasOwnProperty(IconRefType.SourceUrl)) {
-    iconRefType = IconRefType.SourceUrl || null
-    iconRefToken = x[IconRefType.SourceUrl] || null
+    iconRefType = IconRefType.Registered || null;
+    iconRefToken = x[IconRefType.Registered] || null;
+  } else if (x.hasOwnProperty(IconRefType.SourceUrl)) {
+    iconRefType = IconRefType.SourceUrl || null;
+    iconRefToken = x[IconRefType.SourceUrl] || null;
   }
   return {
     iconRefType,
     iconRefToken
-  }
+  };
 }

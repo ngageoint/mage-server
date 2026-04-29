@@ -33,51 +33,44 @@ import { EventService } from 'src/app/event/event.service';
 import { CreateEventDialogComponent } from './create-event/create-event.component';
 
 @NgModule({
-    declarations: [
-        EventDashboardComponent,
-        CreateEventDialogComponent,
-        EventDetailsComponent,
-        DeleteEventComponent,
-        CreateFormDialogComponent
-    ],
-    imports: [
-        CommonModule,
-        FormsModule,
-        CoreModule,
-        ReactiveFormsModule,
-        RouterModule,
-        CoreModule,
-        AdminBreadcrumbModule,
-        AdminEventFormModule,
-        MatButtonModule,
-        MatCardModule,
-        MatChipsModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatDividerModule,
-        MatIconModule,
-        MatInputModule,
-        MatButtonModule,
-        MatCheckboxModule,
-        MatIconModule,
-        MatProgressSpinnerModule,
-        AdminBreadcrumbModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatTooltipModule,
-        MatTableModule,
-        MatPaginatorModule,
-        DragDropModule
-    ],
-    exports: [
-        EventDashboardComponent,
-        EventDetailsComponent
-    ],
-    providers: [
-        EventService
-    ]
+  imports: [
+    EventDashboardComponent,
+    CreateEventDialogComponent,
+    EventDetailsComponent,
+    DeleteEventComponent,
+    CreateFormDialogComponent,
+    CommonModule,
+    FormsModule,
+    CoreModule,
+    ReactiveFormsModule,
+    RouterModule,
+    CoreModule,
+    AdminBreadcrumbModule,
+    AdminEventFormModule,
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatDividerModule,
+    MatIconModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    AdminBreadcrumbModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatTooltipModule,
+    MatTableModule,
+    MatPaginatorModule,
+    DragDropModule
+  ],
+  exports: [EventDashboardComponent, EventDetailsComponent],
+  providers: [EventService]
 })
-export class AdminEventsModule { }
+export class AdminEventsModule {}

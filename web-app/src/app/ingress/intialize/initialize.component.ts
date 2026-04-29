@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { PasswordStrength, passwordStrengthScores } from '../../entities/entities.password';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import { InitializeService } from './initialize.service';
 import { UserService } from '../../user/user.service';
@@ -8,6 +8,11 @@ import { User } from 'core-lib-src/user';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import { animate, style, transition, trigger } from '@angular/animations';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 export interface InitializedEvent {
   token: string
@@ -15,6 +20,15 @@ export interface InitializedEvent {
 
 @Component({
   selector: 'initialize',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressBarModule
+  ],
   templateUrl: './initialize.component.html',
   styleUrls: ['./initialize.component.scss'],
   animations: [

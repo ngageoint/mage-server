@@ -5,10 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [
-    AdminBreadcrumbComponent
-  ],
   imports: [
+    AdminBreadcrumbComponent,
     CommonModule,
     MatIconModule,
     RouterModule,

@@ -4,9 +4,24 @@ import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
 import { lastValueFrom } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { MatTabsModule } from '@angular/material/tabs';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
+import { ContactInfoComponent, SecurityBannerComponent, SecurityDisclaimerComponent } from './admin-settings';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'admin-settings',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatTabsModule,
+    MatIconModule,
+    AdminBreadcrumbComponent,
+    SecurityBannerComponent,
+    SecurityDisclaimerComponent,
+    ContactInfoComponent
+  ],
   templateUrl: 'admin-settings.component.html',
   styleUrls: ['./admin-settings.component.scss']
 })

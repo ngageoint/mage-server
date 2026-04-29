@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { HttpClient } from '@angular/common/http';
 
 import { LayersService, Layer } from '../layers.service';
@@ -11,7 +11,7 @@ import { AdminEventsService } from '../../services/admin-events.service';
 import { LocalStorageService } from '../../../../../../../web-app/src/app/http/local-storage.service'
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import { CardActionButton } from '../../../core/card-navbar/card-navbar.component';
+import { CardActionButton, CardNavbarComponent } from '../../../core/card-navbar/card-navbar.component';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -21,7 +21,13 @@ import {
 import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { Event } from '../../../../../../src/app/filter/filter.types';
 import { Observable } from 'rxjs';
-import { ImageryLayerConfig } from '../imagery-layer-settings/imagery-layer-settings.component';
+import { ImageryLayerConfig, ImageryLayerSettingsComponent } from '../imagery-layer-settings/imagery-layer-settings.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { LayerPreviewComponent } from '../layer-preview/layer-preview.component';
 
 interface UrlLayer {
   table: string;
@@ -50,6 +56,20 @@ interface PagedResult<T> {
 
 @Component({
   selector: 'mage-layer-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatTableModule,
+    MatPaginatorModule,
+    AdminBreadcrumbComponent,
+    ImageryLayerSettingsComponent,
+    CardNavbarComponent,
+    LayerPreviewComponent
+  ],
   templateUrl: './layer-details.component.html',
   styleUrls: ['./layer-details.component.scss']
 })

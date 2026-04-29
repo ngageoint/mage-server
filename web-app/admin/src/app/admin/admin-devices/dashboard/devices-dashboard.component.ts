@@ -1,6 +1,6 @@
 import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
 import {
   AdminDeviceService,
   DevicesResponse,
@@ -12,9 +12,31 @@ import { CreateDeviceDialogComponent } from '../create-device/create-device.comp
 import { AdminUserService } from '../../services/admin-user.service';
 import { Subject, takeUntil } from 'rxjs';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterModule } from '@angular/router';
+import { CardNavbarComponent } from '../../../core/card-navbar/card-navbar.component';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
 
 @Component({
   selector: 'admin-devices',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTableModule,
+    MatTooltipModule,
+    MatPaginatorModule
+  ],
   templateUrl: './devices-dashboard.component.html',
   styleUrls: ['./devices-dashboard.component.scss']
 })

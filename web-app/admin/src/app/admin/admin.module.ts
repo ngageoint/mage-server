@@ -23,9 +23,11 @@ import { AdminGuard } from './services/admin-guard.service';
 import { PluginModule } from './admin-plugins/plugins.module';
 import { RouterModule } from '@angular/router';
 
-
 @NgModule({
   imports: [
+    AdminComponent,
+    AdminNavComponent,
+    AdminPluginTabContentComponent,
     CommonModule,
     FormsModule,
     AdminBreadcrumbModule,
@@ -40,11 +42,6 @@ import { RouterModule } from '@angular/router';
     AdminEventFormModule,
     PluginModule,
     RouterModule
-  ],
-  declarations: [
-    AdminComponent,
-    AdminNavComponent,
-    AdminPluginTabContentComponent
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

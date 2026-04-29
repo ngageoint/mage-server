@@ -1,10 +1,18 @@
 import { AfterViewInit, Component, Inject } from '@angular/core'
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog'
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog'
 import { Strategy } from '../../admin-authentication/admin-settings.model'
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service'
+import { CommonModule } from '@angular/common'
+import { MatButtonModule } from '@angular/material/button'
 
 @Component({
   selector: 'admin-authentication-delete',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule
+  ],
   templateUrl: './admin-authentication-delete.component.html',
   styleUrls: ['./admin-authentication-delete.component.scss']
 })

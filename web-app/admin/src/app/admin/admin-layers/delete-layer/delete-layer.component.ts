@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { LayersService, Layer } from '../layers.service';
+import { CommonModule } from '@angular/common';
 
 /**
  * Modal component for confirming layer deletion.
@@ -8,6 +9,8 @@ import { LayersService, Layer } from '../layers.service';
  */
 @Component({
     selector: 'mage-delete-layer',
+    standalone: true,
+    imports: [CommonModule],
     templateUrl: './delete-layer.component.html',
     styleUrls: ['./delete-layer.component.scss']
 })

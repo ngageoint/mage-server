@@ -8,9 +8,11 @@ import {
   OnDestroy,
   OnChanges
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AdminUserService } from '../services/admin-user.service';
 import { Subject, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
 
 interface PluginTab {
   id: string;
@@ -21,6 +23,12 @@ interface PluginTab {
 
 @Component({
   selector: 'app-admin-side-nav',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    AdminBreadcrumbComponent
+  ],
   templateUrl: './admin-nav.html',
   styleUrls: ['./admin-nav.scss'],
   host: {

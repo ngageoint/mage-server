@@ -20,8 +20,8 @@ import { MatTableModule as MatTableModule } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [AdminDashboardComponent],
   imports: [
+    AdminDashboardComponent,
     CommonModule,
     FormsModule,
     LoginsModule,

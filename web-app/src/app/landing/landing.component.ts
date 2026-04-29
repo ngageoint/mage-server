@@ -1,27 +1,23 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { Api } from '../api/api.entity';
 import { ApiService } from 'admin/src/app/api/api.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'landing',
   templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.scss'],
+  styleUrls: ['./landing.component.scss']
 })
 export class LandingComponent {
-  api: Api
+  api: Api;
 
-  constructor(
-    apiService: ApiService,
-    private router: Router
-  ) {
+  constructor(apiService: ApiService, private router: Router) {
     apiService.getApi().subscribe((api: Api) => {
-      this.api = api
-    })
+      this.api = api;
+    });
   }
 
   onIngress(): void {
-    this.router.navigate(['home'])
+    this.router.navigate(['home']);
   }
-
 }

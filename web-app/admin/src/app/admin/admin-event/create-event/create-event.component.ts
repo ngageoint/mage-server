@@ -1,8 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { Event } from '../../../../../../src/app/filter/filter.types';
+import { CommonModule } from '@angular/common';
 
 /**
  * Dialog component for creating new events.
@@ -10,6 +11,11 @@ import { Event } from '../../../../../../src/app/filter/filter.types';
  */
 @Component({
   selector: 'mage-admin-event-create',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './create-event.component.html',
   styleUrls: ['./create-event.component.scss']
 })

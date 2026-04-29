@@ -1,7 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { Router } from '@angular/router';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { Router, RouterModule } from '@angular/router';
 
 import { AdminUserService } from '../../services/admin-user.service';
 import {
@@ -14,9 +14,30 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { Event } from '../../../../../../src/app/filter/filter.types';
 import { CreateEventDialogComponent } from '../create-event/create-event.component';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { CardNavbarComponent } from 'admin/src/app/core/card-navbar/card-navbar.component';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
 
 @Component({
   selector: 'admin-events',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTableModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent
+  ],
   templateUrl: './event-dashboard.component.html',
   styleUrls: ['./event-dashboard.component.scss']
 })

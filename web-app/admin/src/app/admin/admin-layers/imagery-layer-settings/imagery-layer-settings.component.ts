@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export interface ImageryLayerConfig {
     url: string;
@@ -12,6 +14,8 @@ export interface ImageryLayerConfig {
 
 @Component({
     selector: 'mage-imagery-layer-settings',
+    standalone: true,
+    imports: [CommonModule, FormsModule],
     templateUrl: './imagery-layer-settings.component.html',
     styleUrls: ['./imagery-layer-settings.component.scss']
 })

@@ -24,9 +24,7 @@ import { NgSelectModule } from '@ng-select/ng-select'
     MatListModule,
     MatSelectModule,
     NgSelectModule,
-  ],
-  declarations: [
-    UserSelectComponent
+    UserSelectComponent,
   ],
   exports: [
     UserSelectComponent
