@@ -28,8 +28,8 @@ const LocationModel = mongoose.model('Location');
 stream.Writable.prototype.type = function () { };
 stream.Writable.prototype.attachment = function () { };
 
-const userId = new mongoose.Types.ObjectId();
-const deviceId = new mongoose.Types.ObjectId();
+const userId = mongoose.Types.ObjectId();
+const deviceId = mongoose.Types.ObjectId();
 
 describe("csv export tests", function () {
 
@@ -56,7 +56,7 @@ describe("csv export tests", function () {
     }
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(event);
+      .yields(null, event);
 
     sinon.mock(UserModel)
       .expects('getUserById')
@@ -118,7 +118,7 @@ describe("csv export tests", function () {
 
     sinon.mock(TeamModel)
       .expects('find')
-      .resolves([{ name: 'Team 1' }]);
+      .yields(null, [{ name: 'Team 1' }]);
 
     const writable = new TestWritableStream();
     writable.on('finish', async () => {
@@ -149,7 +149,7 @@ describe("csv export tests", function () {
 
     sinon.mock(TeamModel)
       .expects('find')
-      .resolves([{ name: 'Team 1' }]);
+      .yields(null, [{ name: 'Team 1' }]);
 
     sinon.mock(LocationModel)
       .expects('find')
@@ -201,7 +201,7 @@ describe("csv export tests", function () {
 
     sinon.mock(TeamModel)
       .expects('find')
-      .resolves([{ name: 'Team 1' }]);
+      .yields(null, [{ name: 'Team 1' }]);
 
     sinon.mock(LocationModel)
       .expects('find')
@@ -257,7 +257,7 @@ class TestLocationCursor {
   constructor() {
     this.i = 0;
     this.locations = [{
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       "eventId": 1,
       "geometry": {
         "type": "Point",

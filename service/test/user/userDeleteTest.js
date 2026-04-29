@@ -40,7 +40,7 @@ describe("user delete tests", function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -51,7 +51,7 @@ describe("user delete tests", function () {
   it('should delete user by id', function (done) {
     mockTokenWithPermission('DELETE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -66,8 +66,8 @@ describe("user delete tests", function () {
       .resolves(mockUser);
 
     sinon.mock(mockUser)
-      .expects('deleteOne')
-      .resolves(mockUser);
+      .expects('remove')
+      .yields(null, mockUser);
 
     request(app)
       .delete('/api/users/' + id.toString())

@@ -47,7 +47,7 @@ describe('deleting events', function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -65,15 +65,15 @@ describe('deleting events', function () {
       name: 'Mock Event',
       collectionName: 'observations1'
     })
-    const eventRemoveSpy = sinon.spy(mockEvent, 'deleteOne')
+    const eventRemoveSpy = sinon.spy(mockEvent, 'remove')
 
     sinon.mock(EventModel)
       .expects('findById')
       .twice()
       .onFirstCall()
-      .resolves(mockEvent)
+      .yields(null, mockEvent)
       .onSecondCall()
-      .resolves(null);
+      .yields(null, null);
 
     const droppedObservationCollection = sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
@@ -85,9 +85,9 @@ describe('deleting events', function () {
 
     sinon.mock(IconModel)
       .expects('remove')
-      .resolves();
+      .yields(null);
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
@@ -106,11 +106,11 @@ describe('deleting events', function () {
       .expects('find')
       .chain('populate')
       .chain('exec')
-      .resolves([mockTeam]);
+      .yields(null, [mockTeam]);
 
     const removedEventTeam = sinon.mock(mockTeam)
-      .expects('deleteOne')
-      .resolves();
+      .expects('remove')
+      .yields(null);
 
     request(app)
       .delete('/api/events/' + eventId)
@@ -148,7 +148,7 @@ describe('deleting events', function () {
 
     sinon.mock(IconModel)
       .expects('remove')
-      .resolves();
+      .yields(null);
 
     sinon.mock(UserModel)
       .expects('removeRecentEventForUsers')
@@ -158,7 +158,7 @@ describe('deleting events', function () {
       '/var/lib/mage': {}
     });
 
-    sinon.stub(mockEvent, 'deleteOne').callsFake(function () { });
+    sinon.stub(mockEvent, 'remove').callsFake(function (){});
 
     request(app)
       .delete('/api/events/' + eventId)
@@ -186,7 +186,7 @@ describe('deleting events', function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .delete('/api/events/' + eventId)

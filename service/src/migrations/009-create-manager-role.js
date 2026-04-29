@@ -28,29 +28,29 @@ function createManagerRole(callback) {
   };
 
   this.log('creating event/team manager role...');
-  Role.createRole(managerRole, function (err) {
+  Role.createRole(managerRole, function(err) {
     callback(err);
   });
 }
 
 exports.id = 'create-manager-role';
 
-exports.up = function (done) {
+exports.up = function(done) {
   async.series([
     createManagerRole.bind(this),
-    function (done) {
-      TeamModel.updateMany({}, { $set: { acl: {} } }).then(() => done(), err => done(err));
+    function(done) {
+      TeamModel.updateMany({}, {$set: {acl: {}}}, {}, done);
     },
-    function (done) {
-      EventModel.updateMany({}, { $set: { acl: {} } }).then(() => done(), err => done(err));
+    function(done) {
+      EventModel.updateMany({}, {$set: {acl: {}}}, {}, done);
     }
-  ], function (err) {
+  ], function(err) {
     done(err);
   });
 };
 
-exports.down = function (done) {
-  Role.getRole("EVENT_MANAGER_ROLE", function (err, role) {
+exports.down = function(done) {
+  Role.getRole("EVENT_MANAGER_ROLE", function(err, role) {
     if (err || !role) return done(err);
 
     Role.deleteRole(role, done);

@@ -14,46 +14,40 @@ var TokenSchema = new Schema({
   deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
   expirationDate: { type: Date, required: true },
   token: { type: String, required: true }
-}, {
+},{
   versionKey: false
 });
 
 // TODO: index token
-TokenSchema.index({ 'expirationDate': 1 }, { expireAfterSeconds: 0 });
+TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 
 // Creates the Model for the User Schema
 var Token = mongoose.model('Token', TokenSchema);
 
-exports.getToken = function (token, callback) {
-  Token.findOne({ token: token }).populate({
+exports.getToken = function(token, callback) {
+  Token.findOne({token: token}).populate({
     path: 'userId',
     populate: {
       path: 'authenticationId',
       model: 'Authentication'
     }
-  }).exec().then(
-    async function (token) {
-      if (!token || !token.userId) {
-        return callback(null, null);
-      }
+  }).exec(function(err, token) {
+    if (err) return callback(err);
 
-      try {
-        const user = await token.userId.populate('roleId');
-        return callback(null, { user: user, deviceId: token.deviceId, token: token });
-      } catch (err) {
-        return callback(err);
-      }
-    },
-    function (err) {
-      return callback(err);
+    if (!token || !token.userId) {
+      return callback(null, null);
     }
-  );
+
+    token.userId.populate('roleId', function(err, user) {
+      return callback(err, {user: user, deviceId: token.deviceId, token: token});
+    });
+  });
 };
 
-exports.createToken = function (options, callback) {
+exports.createToken = function(options, callback) {
   const seed = crypto.randomBytes(20);
   const token = crypto.createHash('sha256').update(seed).digest('hex');
-  const query = { userId: options.userId };
+  const query = {userId: options.userId};
   if (options.device) {
     query.deviceId = options.device._id;
   }
@@ -62,29 +56,25 @@ exports.createToken = function (options, callback) {
     token: token,
     expirationDate: new Date(now + tokenExpiration)
   };
-  Token.findOneAndUpdate(query, update, { upsert: true, new: true }).then(
-    newToken => callback(null, newToken),
-    err => callback(err)
-  );
+  Token.findOneAndUpdate(query, update, {upsert: true, new: true}, function(err, newToken) {
+    callback(err, newToken);
+  });
 };
 
-exports.removeToken = function (token, callback) {
-  Token.findByIdAndDelete(token._id).then(
-    () => callback(null),
-    err => callback(err)
-  );
+exports.removeToken = function(token, callback) {
+  Token.findByIdAndRemove(token._id, function(err) {
+    callback(err);
+  });
 };
 
-exports.removeTokensForUser = function (user, callback) {
-  Token.deleteMany({ userId: user._id }).then(
-    () => callback(null),
-    err => callback(err)
-  );
+exports.removeTokensForUser = function(user, callback) {
+  Token.remove({userId: user._id}, function(err, numberRemoved) {
+    callback(err, numberRemoved);
+  });
 };
 
-exports.removeTokenForDevice = function (device, callback) {
-  Token.deleteMany({ deviceId: device._id }).then(
-    () => callback(null),
-    err => callback(err)
-  );
+exports.removeTokenForDevice = function(device, callback) {
+  Token.remove({deviceId: device._id}, function(err, numberRemoved) {
+    callback(err, numberRemoved);
+  });
 };

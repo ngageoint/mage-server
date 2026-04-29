@@ -39,7 +39,7 @@ describe("device read tests", function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')

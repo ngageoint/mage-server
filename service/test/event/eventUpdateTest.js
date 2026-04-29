@@ -44,14 +44,14 @@ describe("event update tests", function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
-      .resolves(MockToken(userId, [permission]));
+      .yields(null, MockToken(userId, [permission]));
   }
 
   it("should update event", function (done) {
@@ -64,12 +64,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, { name: 'Mock Event', description: 'Mock Event Description' })
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -93,12 +93,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, { name: 'Mock Event', description: null })
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -118,12 +118,12 @@ describe("event update tests", function () {
     const eventId = 1;
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(new EventModel({
+      .yields(null, new EventModel({
         _id: eventId,
         name: 'testEvent'
       }));
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
@@ -134,7 +134,7 @@ describe("event update tests", function () {
       .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
-      .resolves(mockTeams);
+      .yields(null, mockTeams);
 
     sinon.mock(EventModel.collection)
       .expects('findAndModify')
@@ -170,7 +170,7 @@ describe("event update tests", function () {
     const eventId = 1;
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(new EventModel({
+      .yields(null, new EventModel({
         _id: eventId,
         name: 'testEvent'
       }));
@@ -229,12 +229,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -270,11 +270,11 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeams = [{
-      id: new mongoose.Types.ObjectId(),
+      id: mongoose.Types.ObjectId(),
       name: 'Mock Team',
       teamEventId: 2
     }];
@@ -283,7 +283,7 @@ describe("event update tests", function () {
       .expects('find')
       .chain('populate')
       .chain('exec')
-      .resolves(mockTeams);
+      .yields(null, mockTeams);
 
     request(app)
       .post('/api/events/' + eventId + '/teams/')
@@ -309,12 +309,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, sinon.match({ complete: true }))
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -350,12 +350,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, sinon.match({ complete: false }))
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -394,12 +394,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId)
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -424,7 +424,7 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -451,7 +451,7 @@ describe("event update tests", function () {
 
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -466,9 +466,9 @@ describe("event update tests", function () {
 
   it("should update user in acl for event", function (done) {
     mockTokenWithPermission('');
-    const aclUserId = new mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
@@ -479,7 +479,7 @@ describe("event update tests", function () {
       .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
-      .resolves(mockTeams);
+      .yields(null, mockTeams);
 
     const eventId = 1;
     const acl = {};
@@ -492,7 +492,7 @@ describe("event update tests", function () {
 
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     const mockTeam = {
       name: 'Mock Team'
@@ -503,19 +503,19 @@ describe("event update tests", function () {
     sinon.mock(EventModel)
       .expects('findOneAndUpdate')
       .withArgs({ _id: eventId }, eventUpdate)
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     sinon.mock(TeamModel)
       .expects('findOne')
       .withArgs({ teamEventId: eventId })
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     const teamUpdate = {};
     teamUpdate['acl.' + aclUserId.toString()] = 'OWNER';
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({ teamEventId: eventId }, teamUpdate)
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     request(app)
       .put('/api/events/' + eventId + '/acl/' + aclUserId.toString())
@@ -530,9 +530,9 @@ describe("event update tests", function () {
 
   it("should delete user in acl for event", function (done) {
     mockTokenWithPermission('');
-    const aclUserId = new mongoose.Types.ObjectId();
+    const aclUserId = mongoose.Types.ObjectId();
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
@@ -543,7 +543,7 @@ describe("event update tests", function () {
       .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
-      .resolves(mockTeams);
+      .yields(null, mockTeams);
 
     const eventId = 1;
     const acl = {};
@@ -556,30 +556,30 @@ describe("event update tests", function () {
 
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
-    const mockTeam = {
-      name: 'Mock Team'
-    };
+      const mockTeam = {
+        name: 'Mock Team'
+      };
 
     const eventUpdate = { $unset: {} };
     eventUpdate.$unset['acl.' + aclUserId.toString()] = true;
     sinon.mock(EventModel)
       .expects('findOneAndUpdate')
       .withArgs({ _id: eventId }, eventUpdate)
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     sinon.mock(TeamModel)
       .expects('findOne')
       .withArgs({ teamEventId: eventId })
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     const teamUpdate = { $unset: {} };
     teamUpdate.$unset['acl.' + aclUserId.toString()] = true;
     sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({ teamEventId: eventId }, teamUpdate)
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     request(app)
       .delete('/api/events/' + eventId + '/acl/' + aclUserId.toString())
@@ -593,7 +593,7 @@ describe("event update tests", function () {
   it("should reject update user in acl for event with invalid userId", function (done) {
     mockTokenWithPermission('');
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
@@ -604,7 +604,7 @@ describe("event update tests", function () {
       .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
-      .resolves(mockTeams);
+      .yields(null, mockTeams);
 
     const eventId = 1;
     const acl = {};
@@ -617,7 +617,7 @@ describe("event update tests", function () {
 
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId + '/acl/1')
@@ -633,7 +633,7 @@ describe("event update tests", function () {
   it("should reject update user in acl for event with invalid role", function (done) {
     mockTokenWithPermission('');
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeams = [{
       id: teamId,
       name: 'Mock Team'
@@ -644,7 +644,7 @@ describe("event update tests", function () {
       .withArgs({ _id: { $in: [teamId.toString()] } })
       .chain('populate')
       .chain('exec')
-      .resolves(mockTeams);
+      .yields(null, mockTeams);
 
     const eventId = 1;
     const acl = {};
@@ -657,10 +657,10 @@ describe("event update tests", function () {
 
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
-      .put('/api/events/' + eventId + '/acl/' + new mongoose.Types.ObjectId())
+      .put('/api/events/' + eventId + '/acl/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -680,12 +680,12 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, sinon.match.has('name', 'Mock Event'))
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -719,7 +719,7 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -750,7 +750,7 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -787,7 +787,7 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)
@@ -824,7 +824,7 @@ describe("event update tests", function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     request(app)
       .put('/api/events/' + eventId)

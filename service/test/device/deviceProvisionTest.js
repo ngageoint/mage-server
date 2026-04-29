@@ -41,20 +41,20 @@ describe("device provision tests", function () {
   });
 
   it("test authenticate", async function () {
-    const userId = new mongoose.Types.ObjectId();
+    const userId = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       enabled: true,
-      roleId: new mongoose.Types.ObjectId(),
+      roleId: mongoose.Types.ObjectId(),
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {}

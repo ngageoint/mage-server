@@ -181,7 +181,7 @@ exports.getAuthenticationsByAuthConfigId = function (authConfigId) {
 };
 
 exports.countAuthenticationsByAuthConfigId = function (authConfigId) {
-  return Authentication.countDocuments({ authenticationConfigurationId: authConfigId }).exec();
+  return Authentication.count({ authenticationConfigurationId: authConfigId }).exec();
 };
 
 exports.createAuthentication = function (authentication) {
@@ -193,7 +193,7 @@ exports.createAuthentication = function (authentication) {
 
   if (authentication.type === 'local') {
     document.password = authentication.password;
-    document.security = {
+    document.security ={
       lockedUntil: null
     }
   }
@@ -206,8 +206,5 @@ exports.updateAuthentication = function (authentication) {
 };
 
 exports.removeAuthenticationById = function (authenticationId, done) {
-  Authentication.findByIdAndDelete(authenticationId).then(
-    r => done(null, r),
-    e => done(e)
-  );
+  Authentication.findByIdAndRemove(authenticationId, done);
 };

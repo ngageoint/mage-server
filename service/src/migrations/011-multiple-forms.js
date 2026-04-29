@@ -10,36 +10,36 @@ const iconBase = environment.iconBaseDirectory;
 
 exports.id = 'multiple-forms';
 
-exports.up = function (done) {
+exports.up = function(done) {
   this.log('migrating single form per event to multiple forms');
 
   async.waterfall([
     getEvents.bind(this),
     migrateEvents.bind(this)
-  ], function (err) {
+  ], function(err) {
     done(err);
   });
 };
 
-exports.down = function () {
+exports.down = function() {
   // No down, please backup your instance
 };
 
 function getEvents(callback) {
   const EventModel = mongoose.model('Event');
-  EventModel.find({}).lean().exec().then(events => {
-    callback(null, events);
+  EventModel.find({}).lean().exec(function(err, events) {
+    callback(err, events);
   });
 }
 
 function migrateEvents(events, callback) {
   this.log('migrating events to multiple forms...');
 
-  async.eachSeries(events, function (event, done) {
+  async.eachSeries(events, function(event, done) {
     Counter.getNext('form').then(formId => {
       migrateEvent.bind(this)(event, formId, done);
     });
-  }, function (err) {
+  }, function(err) {
     callback(err);
   });
 }
@@ -48,19 +48,19 @@ function migrateEvent(event, formId, callback) {
   this.log('migrating event ' + event.name);
 
   async.series([
-    function (done) {
+    function(done) {
       migrateIconFiles.call(this, event, formId, done);
     }.bind(this),
-    function (done) {
+    function(done) {
       migrateIconData.call(this, event, formId, done);
     }.bind(this),
-    function (done) {
+    function(done) {
       migrateEventData.call(this, event, formId, done);
     }.bind(this),
-    function (done) {
+    function(done) {
       migrateObservationData.call(this, event, formId, done);
     }.bind(this)
-  ], function (err) {
+  ], function(err) {
     this.log('migrated event ' + event.name);
     callback(err);
   }.bind(this));
@@ -73,7 +73,7 @@ function migrateIconFiles(event, formId, callback) {
   const formIconPath = path.join(eventIconPath, formId.toString());
 
   async.eachSeries(fs.readdirSync(eventIconPath),
-    function (child, done) {
+    function(child, done) {
       if (child === formId.toString()) {
         done();
       } else if (child === 'icon.png') {
@@ -82,7 +82,7 @@ function migrateIconFiles(event, formId, callback) {
         fs.move(path.join(eventIconPath, child), path.join(formIconPath, child), done);
       }
     }.bind(this),
-    function (err) {
+    function(err) {
       this.log('migrated icon files with error', err);
       callback(err);
     }.bind(this));
@@ -94,24 +94,24 @@ function migrateIconData(event, formId, callback) {
   const IconModel = mongoose.model('Icon');
 
   async.series([
-    function (done) {
-      IconModel.find({ eventId: event._id }).then(icons => {
-        async.eachSeries(icons, function (icon, done) {
+    function(done) {
+      IconModel.find({eventId: event._id}, function(err, icons) {
+        async.eachSeries(icons, function(icon, done) {
           icon.formId = formId;
-          icon.relativePath = path.join(path.join(event._id.toString(), formId.toString()), icon.relativePath.split(path.sep).splice(1).join(path.sep));
-          icon.save().then(() => done(), err => done(err));
-        }, function (err) {
+          icon.relativePath = path.join(path.join(event._id.toString(), formId.toString()),  icon.relativePath.split(path.sep).splice(1).join(path.sep));
+          icon.save(done);
+        }, function(err) {
           done(err);
         });
       });
     },
-    function (done) {
-      IconModel.create({ eventId: event._id, formId: null, type: null, variant: null, relativePath: path.join(event._id.toString(), 'icon.png') }).then(() => done(), err => done(err));
+    function(done) {
+      IconModel.create({eventId: event._id, formId: null, type: null, variant: null, relativePath: path.join(event._id.toString(), 'icon.png')}, done);
     },
-    function (done) {
-      IconModel.updateMany({ eventId: event._id, formId: formId }, { $rename: { 'type': 'primary' } }, { strict: false }).then(() => done(), err => done(err));
+    function(done) {
+      IconModel.updateMany({eventId: event._id, formId: formId}, {$rename: {'type': 'primary'}}, {strict: false}, done);
     }
-  ], function (err) {
+  ],function(err) {
     callback(err);
   });
 }
@@ -122,8 +122,8 @@ function migrateEventData(event, formId, callback) {
   const EventModel = mongoose.model('Event');
 
   async.series([
-    function (done) {
-      EventModel.findById(event._id).lean().exec().then(event => {
+    function(done) {
+      EventModel.findById(event._id).lean().exec(function(err, event) {
         event.forms = [];
         event.forms.push(event.form);
         event.forms[0]._id = formId;
@@ -133,11 +133,11 @@ function migrateEventData(event, formId, callback) {
 
         // remove the timestamp and geometry fields, these are no
         // longer in the form.
-        event.forms[0].fields = event.forms[0].fields.filter(function (field) {
+        event.forms[0].fields = event.forms[0].fields.filter(function(field) {
           return field.name !== 'timestamp' && field.name !== 'geometry';
         });
 
-        const typeFields = event.forms[0].fields.filter(function (field) {
+        const typeFields = event.forms[0].fields.filter(function(field) {
           return field.name === 'type';
         });
         typeFields[0].required = false;
@@ -151,10 +151,10 @@ function migrateEventData(event, formId, callback) {
           strokeWidth: 2
         };
 
-        EventModel.findByIdAndUpdate(event._id, event, { overwrite: true }).then(() => done(), err => done(err));
+        EventModel.findByIdAndUpdate(event._id, event, {overwrite: true}, done);
       });
     }
-  ], function (err) {
+  ],function(err) {
     callback(err);
   });
 }
@@ -165,12 +165,12 @@ function migrateObservationData(event, formId, callback) {
   const ObservationModel = Observation.observationModel(event);
 
   const fieldMap = {};
-  event.form.fields.forEach(function (field) {
+  event.form.fields.forEach(function(field) {
     fieldMap[field.name] = field;
   });
 
-  ObservationModel.find({}).lean().exec().then(observations => {
-    async.eachSeries(observations, function (observation, done) {
+  ObservationModel.find({}).lean().exec(function(err, observations) {
+    async.eachSeries(observations, function(observation, done) {
       const form = {
         formId: formId
       };
@@ -185,10 +185,10 @@ function migrateObservationData(event, formId, callback) {
 
       observation.properties.forms = [form];
 
-      ObservationModel.findByIdAndUpdate(observation._id, observation, { overwrite: true, new: true }).then(() => {
-        done();
-      }, err => done(err));
-    }, function (err) {
+      ObservationModel.findByIdAndUpdate(observation._id, observation, {overwrite: true, new: true}, function(err) {
+        done(err);
+      });
+    }, function(err) {
       callback(err);
     });
   });

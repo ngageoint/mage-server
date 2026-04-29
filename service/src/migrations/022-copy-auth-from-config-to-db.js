@@ -69,7 +69,7 @@ exports.up = async function (done) {
     await collection.createIndex(['type', 'name'], { unique: true });
     if (authDbObjects.length > 0) {
       log.info('Inserting ' + authDbObjects.length + ' authentication strategies into the DB');
-      collection.insertMany(authDbObjects, {}).then(() => done(), err => done(err));
+      collection.insertMany(authDbObjects, {}, done);
     } else {
       done();
     }

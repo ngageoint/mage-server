@@ -5,61 +5,58 @@ const IconSchema = new mongoose.Schema({
   formId: { type: Number, required: false },
   primary: { type: String, required: false },
   variant: { type: Object, required: false },
-  relativePath: { type: String, required: true }
-}, {
+  relativePath: {type: String, required: true }
+},{
   versionKey: false
 });
 
 const Icon = mongoose.model('Icon', IconSchema);
 exports.Model = Icon;
 
-exports.getAll = function (options, callback) {
+exports.getAll = function(options, callback) {
   var conditions = {};
   if (options.eventId) conditions.eventId = options.eventId;
   if (options.formId) conditions.formId = options.formId;
 
-  Icon.find(conditions).then(
-    icons => callback(null, icons),
-    err => callback(err)
-  );
+  Icon.find(conditions, function(err, icons) {
+    callback(err, icons);
+  });
 };
 
-exports.getIcon = function (options, callback) {
+exports.getIcon = function(options, callback) {
   var primary = options.primary;
   var variant = options.variant;
 
   var condition = {
     eventId: options.eventId,
     formId: options.formId,
-    primary: { "$in": [primary, null] }
+    primary: {"$in": [primary, null]}
   };
 
   if (isNaN(variant)) {
-    condition.variant = { "$in": [variant, null] };
+    condition.variant = {"$in": [variant, null]};
   } else {
-    condition["$or"] = [{ variant: { "$lte": variant } }, { variant: null }];
+    condition["$or"] = [{variant: {"$lte": variant}}, {variant: null}];
   }
 
-  Icon.findOne(condition, {}, { sort: { primary: -1, variant: -1 } }).then(
-    icon => callback(null, icon),
-    err => callback(err)
-  );
+  Icon.findOne(condition, {}, {sort: {primary: -1, variant: -1}}, function (err, icon) {
+    callback(err, icon);
+  });
 };
 
-exports.create = function (icon, callback) {
+exports.create = function(icon, callback) {
   var conditions = {
     eventId: icon.eventId,
     formId: icon.formId,
     primary: icon.primary,
     variant: icon.variant
   };
-  Icon.findOneAndUpdate(conditions, icon, { upsert: true, new: false }).then(
-    oldIcon => callback(null, oldIcon),
-    err => callback(err)
-  );
+  Icon.findOneAndUpdate(conditions, icon, {upsert: true, new: false}, function(err, oldIcon) {
+    callback(err, oldIcon);
+  });
 };
 
-exports.remove = function (options, callback) {
+exports.remove = function(options, callback) {
   var condition = {
     eventId: options.eventId,
     formId: options.formId
@@ -68,8 +65,7 @@ exports.remove = function (options, callback) {
   if (options.primary) condition.primary = options.primary;
   if (options.variant) condition.variant = options.variant;
 
-  Icon.deleteMany(condition).then(
-    () => callback(null),
-    err => callback(err)
-  );
+  Icon.remove(condition, function(err) {
+    callback(err);
+  });
 };
