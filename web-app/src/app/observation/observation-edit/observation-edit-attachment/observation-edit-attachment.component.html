@@ -19,7 +19,7 @@
             (delete)="deleteAttachment(attachment)"></observation-attachment>
 
           <attachment-upload *ngIf="attachment.file" [url]="url" [attachment]="attachment"
-            (remove)="removeAttachment($event)" (error)="onUploadError($event)"></attachment-upload>
+            (remove)="removeAttachment($event)"></attachment-upload>
         </div>
       </div>
     </ng-container>
