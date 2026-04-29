@@ -2,16 +2,26 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Api } from '../api/api.entity';
 import { ApiService } from 'admin/src/app/api/api.service';
+import { IngressModule } from '../ingress/ingress.module';
+import { InfoComponent } from './info.component';
 
 @Component({
   selector: 'landing',
+  standalone: true,
+  imports: [
+    IngressModule,
+    InfoComponent
+  ],
   templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.scss']
+  styleUrls: ['./landing.component.scss'],
 })
 export class LandingComponent {
   api: Api;
 
-  constructor(apiService: ApiService, private router: Router) {
+  constructor(
+    apiService: ApiService,
+    private router: Router
+  ) {
     apiService.getApi().subscribe((api: Api) => {
       this.api = api;
     });

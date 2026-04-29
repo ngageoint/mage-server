@@ -1,5 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { UserService } from 'src/app/user/user.service';
 
 export interface AuthorizationEvent {
@@ -8,6 +11,13 @@ export interface AuthorizationEvent {
 
 @Component({
   selector: 'authorization',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './authorization.component.html',
   styleUrls: ['./authorization.component.scss']
 })

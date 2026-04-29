@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Observable } from 'rxjs';
 
 import { AdminUserService } from '../../services/admin-user.service';
@@ -14,7 +14,7 @@ import { User as CoreUser } from '@ngageoint/mage.web-core-lib/user';
 
 import { Event } from '../../../../../../src/app/filter/filter.types';
 import { DeleteTeamComponent } from '../delete-team/delete-team.component';
-import { CardActionButton } from '../../../core/card-navbar/card-navbar.component';
+import { CardActionButton, CardNavbarComponent } from '../../../core/card-navbar/card-navbar.component';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -22,9 +22,22 @@ import {
   SearchModalColumn
 } from '../../../core/search-modal/search-modal.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
 
 @Component({
   selector: 'mage-team-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatTableModule,
+    MatPaginatorModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent
+  ],
   templateUrl: './team-details.component.html',
   styleUrls: ['./team-details.component.scss']
 })

@@ -3,9 +3,16 @@ import { UserService } from 'mage-web-app/user/user.service'
 import { SigninEvent } from '../auth.types'
 import { AuthenticationStrategy, ContactInfo } from '../local-signin/local-signin.component'
 import { take } from 'rxjs/operators'
+import { CommonModule } from '@angular/common'
+import { ContactModule } from '../../contact/contact.module'
 
 @Component({
   selector: 'idp-signin',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ContactModule
+  ],
   templateUrl: './idp-signin.component.html',
   styleUrls: ['./idp-signin.component.scss']
 })

@@ -4,9 +4,16 @@ import { AuthService } from '../auth.service';
 import { UserService } from 'mage-web-app/user/user.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { Api } from '../signin/signin.component';
+import { CommonModule } from '@angular/common';
+import { AuthenticationComponent } from '../../../../../src/app/ingress/authentication/authentication.component';
 
 @Component({
   selector: 'signin-modal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    AuthenticationComponent
+  ],
   templateUrl: './signin-modal.component.html',
   styleUrls: ['./signin-modal.component.scss']
 })

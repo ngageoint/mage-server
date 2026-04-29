@@ -9,9 +9,18 @@ import {
 } from '@angular/core';
 import { AdminUserService } from '../../admin/services/admin-user.service';
 import { ContactInfo } from '../local-signin/local-signin.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ContactModule } from '../../contact/contact.module';
 
 @Component({
   selector: 'authorize',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ContactModule
+  ],
   templateUrl: './authorize.component.html',
   styleUrls: ['./authorize.component.scss']
 })

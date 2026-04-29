@@ -2,6 +2,10 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { Api, AuthenticationStrategy } from '../../api/api.entity'
 import { User } from 'core-lib-src/user'
 import * as _ from 'underscore'
+import { CommonModule } from '@angular/common'
+import { AuthorizeComponent } from 'admin/src/app/authentication/authorize/authorize.component'
+import { LocalSignupComponent } from 'admin/src/app/authentication/local-signup/local-signup.component'
+import { SigninComponent } from 'admin/src/app/authentication/signin/signin.component'
 
 export interface AuthenticationEvent {
   user: User,
@@ -10,6 +14,13 @@ export interface AuthenticationEvent {
 
 @Component({
   selector: 'authentication',
+  standalone: true,
+  imports: [
+    CommonModule,
+    SigninComponent,
+    LocalSignupComponent,
+    AuthorizeComponent
+  ],
   templateUrl: './authentication.component.html',
   styleUrls: ['./authentication.component.scss']
 })

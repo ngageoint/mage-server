@@ -1,14 +1,34 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from '@angular/core';
 import { Api, AuthenticationStrategy } from '../api/api.entity';
 import { UserService } from '../user/user.service';
-import { AuthorizationEvent } from './authorization/authorization.component';
+import {
+  AuthorizationComponent,
+  AuthorizationEvent
+} from './authorization/authorization.component';
 import { LocalStorageService } from '../http/local-storage.service';
-import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component';
+import {
+  DiscalimeCloseEvent,
+  DiscalimerCloseReason,
+  DisclaimerComponent
+} from './disclaimer/disclaimer.component';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { SignupEvent } from './authentication/@types/signup';
 import { User } from 'core-lib-src/user';
-import { InitializedEvent } from './intialize/initialize.component';
+import {
+  InitializeComponent,
+  InitializedEvent
+} from './intialize/initialize.component';
 import * as _ from 'underscore';
+import { AccountStatusComponent } from './account-status/account-status.component';
+import { AuthenticationComponent } from './authentication/authentication.component';
+import { SignupComponent } from './authentication/local/signup.component';
 
 enum IngressState {
   Initialize,
@@ -67,12 +87,19 @@ class Initialize extends Ingress {
 
 @Component({
   selector: 'ingress',
+  standalone: true,
+  imports: [
+    AccountStatusComponent,
+    InitializeComponent,
+    AuthenticationComponent,
+    AuthorizationComponent,
+    DisclaimerComponent,
+    SignupComponent
+  ],
   templateUrl: './ingress.component.html',
   styleUrls: ['./ingress.component.scss'],
   animations: [
-    trigger('disableOnEnter', [
-      transition(':enter', [])
-    ]),
+    trigger('disableOnEnter', [transition(':enter', [])]),
     trigger('slide', [
       transition(':enter', [
         style({ transform: 'translateX(100%)' }),
@@ -121,7 +148,9 @@ export class IngressComponent implements OnChanges {
 
   signup($event: SignupEvent): void {
     if ($event.reason === 'signup') {
-      this.ingress = $event.user.active ? new ActiveAccount() : new InactiveAccount();
+      this.ingress = $event.user.active
+        ? new ActiveAccount()
+        : new InactiveAccount();
     } else {
       this.ingress = new Signin();
     }

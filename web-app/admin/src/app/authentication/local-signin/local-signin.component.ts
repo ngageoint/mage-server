@@ -2,6 +2,13 @@ import { Component, EventEmitter, Input, Output, AfterViewInit, ElementRef, View
 import { UserService } from 'mage-web-app/user/user.service'
 import { SigninEvent } from '../auth.types'
 import { take } from 'rxjs/operators'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { ContactModule } from '../../contact/contact.module'
+import { MatButtonModule } from '@angular/material/button'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 export interface AuthenticationStrategy {
   name: string
@@ -20,6 +27,16 @@ export interface ContactInfo {
 
 @Component({
   selector: 'local-signin',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressBarModule,
+    MatButtonModule
+  ],
   templateUrl: './local-signin.component.html',
   styleUrls: ['./local-signin.component.scss']
 })

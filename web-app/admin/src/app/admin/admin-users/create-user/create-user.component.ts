@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Role } from '../user';
 import { ApiService } from '../../../api/api.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import {
   createPasswordPolicyValidator,
@@ -17,12 +17,30 @@ import {
 } from 'src/app/entities/entities.password';
 
 import { PasswordPolicy } from 'src/app/ingress/authentication/@types/signup';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 /**
  * Modal component for creating a new user.
  */
 @Component({
   selector: 'create-user-modal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatProgressBarModule
+  ],
   templateUrl: './create-user.component.html',
   styleUrls: ['./create-user.component.scss']
 })

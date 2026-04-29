@@ -3,9 +3,16 @@ import { User } from '../user';
 import { UserPagingService } from '../../../services/user-paging.service';
 import { Subject, of, lastValueFrom } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'user-search-box',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './user-search-box.component.html',
   styleUrls: ['./user-search-box.component.scss']
 })

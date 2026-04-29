@@ -36,7 +36,6 @@ export interface CanComponentDeactivate {
 
 @Component({
   selector: 'admin-authentication',
-  
   standalone: true,
   imports: [
     CommonModule,

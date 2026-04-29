@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Team } from '../team';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -10,6 +10,12 @@ import { CreateTeamDialogComponent } from '../create-team/create-team.component'
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterModule } from '@angular/router';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { CardNavbarComponent } from '../../../core/card-navbar/card-navbar.component';
 
 /**
  * Team dashboard component that displays a paginated list of teams with search functionality.
@@ -17,6 +23,17 @@ import { AdminToastService } from '../../services/admin-toast.service';
  */
 @Component({
   selector: 'mage-admin-teams',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatTableModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent
+  ],
   templateUrl: './team-dashboard.component.html',
   styleUrls: ['./team-dashboard.component.scss']
 })

@@ -5,9 +5,18 @@ import {
   AuthenticationStrategy,
   ContactInfo
 } from '../local-signin/local-signin.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ContactModule } from '../../contact/contact.module';
 
 @Component({
   selector: 'ldap-signin',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ContactModule
+  ],
   templateUrl: './ldap-signin.component.html',
   styleUrls: ['./ldap-signin.component.scss']
 })

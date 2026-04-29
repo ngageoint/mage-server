@@ -1,8 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../team';
+import { CommonModule } from '@angular/common';
 
 /**
  * Dialog component for creating new teams.
@@ -10,6 +11,11 @@ import { Team } from '../team';
  */
 @Component({
     selector: 'mage-admin-team-create',
+    standalone: true,
+    imports: [
+      CommonModule,
+      ReactiveFormsModule
+    ],
     templateUrl: './create-team.component.html',
     styleUrls: ['./create-team.component.scss']
 })

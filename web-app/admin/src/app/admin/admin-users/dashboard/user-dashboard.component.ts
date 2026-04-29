@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
 import { from, lastValueFrom, EMPTY, Subject } from 'rxjs';
 import { mergeMap, tap, catchError, finalize, takeUntil } from 'rxjs/operators';
 
@@ -16,6 +16,14 @@ import { Team } from '../../admin-teams/team';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { CardNavbarComponent } from 'admin/src/app/core/card-navbar/card-navbar.component';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { UserAvatarComponent } from '../../../user/user-avatar/user-avatar.component';
 
 type UserFilter = {
   limit?: number;
@@ -26,6 +34,19 @@ type UserFilter = {
 
 @Component({
   selector: 'admin-users',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatIconModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent,
+    UserAvatarComponent
+  ],
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.scss']
 })

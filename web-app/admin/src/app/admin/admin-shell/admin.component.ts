@@ -7,9 +7,20 @@ import { UserPagingService } from '../../services/user-paging.service';
 import { DevicePagingService } from '../../services/device-paging.service';
 import { LocalStorageService } from '../../../../../../web-app/src/app/http/local-storage.service';
 import { SettingsService } from '../../../../src/app/services/settings.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
+import { AdminNavComponent } from '../admin-nav/admin-nav';
 
 @Component({
   selector: 'admin',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    AdminBreadcrumbComponent,
+    AdminNavComponent
+  ],
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss']
 })

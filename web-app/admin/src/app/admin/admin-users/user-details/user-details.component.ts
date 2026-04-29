@@ -5,7 +5,7 @@ import {
   ElementRef,
   ViewChild
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   catchError,
   EMPTY,
@@ -18,13 +18,13 @@ import {
   take,
   takeUntil
 } from 'rxjs';
-import { NgForm } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { DeleteUserComponent } from '../delete-user/delete-user.component';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { AdminEventsService } from '../../services/admin-events.service';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
 import { AdminUserService } from '../../services/admin-user.service';
 import { LocalStorageService } from '../../../../../../../web-app/src/app/http/local-storage.service';
 import { User } from '../user';
@@ -37,6 +37,10 @@ import { LoginService } from '../../../services/login.service';
 import { DevicePagingService } from '../../../services/device-paging.service';
 import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { TeamService } from '../../../../app/services/team.service';
+import { CommonModule } from '@angular/common';
+import { AdminBreadcrumbComponent } from '../../admin-breadcrumb/admin-breadcrumb.component';
+import { CardNavbarComponent } from 'admin/src/app/core/card-navbar/card-navbar.component';
+import { LoginsModule } from 'admin/src/app/logins/logins.module';
 
 interface Login {
   id: string;
@@ -63,6 +67,17 @@ interface IconMetadata {
 
 @Component({
   selector: 'mage-user-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatTableModule,
+    MatPaginatorModule,
+    AdminBreadcrumbComponent,
+    CardNavbarComponent,
+    LoginsModule
+  ],
   templateUrl: './user-details.component.html',
   styleUrls: ['./user-details.component.scss']
 })

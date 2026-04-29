@@ -4,6 +4,8 @@ import { Observable, forkJoin } from 'rxjs';
 import { Team } from '../team';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { AdminUserService } from '../../services/admin-user.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 /**
  * Modal component for confirming team deletion.
@@ -11,6 +13,11 @@ import { AdminUserService } from '../../services/admin-user.service';
  */
 @Component({
   selector: 'mage-delete-team',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './delete-team.component.html',
   styleUrls: ['./delete-team.component.scss']
 })

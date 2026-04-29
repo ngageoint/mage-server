@@ -1,8 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import {
   MatSnackBarRef as MatSnackBarRef,
   MAT_SNACK_BAR_DATA as MAT_SNACK_BAR_DATA
 } from '@angular/material/snack-bar';
+import { RouterModule } from '@angular/router';
 
 export interface AdminToastData {
   message: string;
@@ -12,6 +14,11 @@ export interface AdminToastData {
 
 @Component({
   selector: 'admin-toast',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule
+  ],
   templateUrl: './admin-toast.component.html',
   styleUrls: ['./admin-toast.component.scss']
 })

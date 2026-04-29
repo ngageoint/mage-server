@@ -1,8 +1,15 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import * as Papa from 'papaparse';
 import { Role, User } from '../user';
 import { Team } from '../../admin-teams/team';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 /**
  * Bulk import users from a CSV.
@@ -13,6 +20,17 @@ import { Team } from '../../admin-teams/team';
  */
 @Component({
   selector: 'app-bulk-user',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTooltipModule,
+    MatIconModule,
+    MatTableModule
+  ],
   templateUrl: './bulk-user.component.html',
   styleUrls: ['./bulk-user.component.scss']
 })
