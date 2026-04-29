@@ -6,10 +6,30 @@
   <mat-divider class="form-picker-header__divider"></mat-divider>
 
   <mat-nav-list class="form-picker-list">
-    <mat-list-item *ngFor="let form of forms" (click)="formPicked(form)">
-      <mat-icon mat-list-icon [style.color]="form.color">description</mat-icon>
-      <div mat-line>{{form.name}}</div>
-      <div mat-line> {{form.description}} </div>
+    <mat-list-item
+      class="form-picker-list-item"
+      *ngFor="let form of forms"
+      (click)="formPicked(form)"
+    >
+      <mat-icon
+        matListItemIcon
+        class="form-picker-list-item__icon"
+        [style.color]="form.color"
+      >
+        description
+      </mat-icon>
+
+      <div matListItemTitle class="form-picker-list-item__title">
+        {{ form.name }}
+      </div>
+
+      <div
+        *ngIf="form.description"
+        matListItemLine
+        class="form-picker-list-item__description"
+      >
+        {{ form.description }}
+      </div>
     </mat-list-item>
   </mat-nav-list>
 
@@ -17,4 +37,3 @@
     <button mat-button color="primary" (click)="cancel()">CANCEL</button>
   </div>
 </div>
-
