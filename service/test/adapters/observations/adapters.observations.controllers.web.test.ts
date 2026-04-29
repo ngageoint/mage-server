@@ -33,7 +33,6 @@ describe('observations web controller', function () {
   let context: ObservationRequestContext
 
   beforeEach(function () {
-    delete process.env.CLAMAV_HOST
     mageEvent = new MageEvent({
       id: Date.now(),
       name: 'Test Obsevation Web Layer',
@@ -66,7 +65,6 @@ describe('observations web controller', function () {
         req.getRoot = () => hostUrl
         next()
       })
-      .use(express.json())
       .use(`${basePath}/events/:eventId/observations`, routes)
     client = supertest(webApp)
   })
@@ -148,6 +146,8 @@ describe('observations web controller', function () {
       expect(res.status).to.equal(201)
       expect(res.type).to.match(jsonMediaType)
       expect(res.headers['location']).to.equal(`${basePath}/events/${mageEvent.id}/observations/${observationId}`)
+      // TODO: stop using the url property in the response; either remove
+      // completely or change to a relative path
       expect(res.body).to.deep.equal({
         id: observationId,
         eventId: mageEvent.id,
@@ -482,18 +482,15 @@ describe('observations web controller', function () {
       app.storeAttachmentContent(Arg.all()).mimicks(async appReq => {
         const uploadStream = appReq.content.bytes as NodeJS.ReadableStream
         uploadStream.pipe(uploaded)
-        await new Promise(resolve => uploadStream.on('end', resolve))
         return AppResponse.success(obs)
       })
       const res = await client.put(attachmentRequestPath)
         .attach('attachment', attachmentBytes, { filename: fileName, contentType: 'video/mp4' })
         .accept('application/json')
 
-      const expectedAttachment = jsonForAttachment(obs.attachments[1], `${baseUrl}/events/${mageEvent.id}/observations/${observationId}`)
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.include(expectedAttachment)
-      expect(res.body.failures).to.deep.equal([])
+      expect(res.body).to.deep.equal(jsonForAttachment(obs.attachments[1], `${baseUrl}/events/${mageEvent.id}/observations/${observationId}`))
       expect(uploaded.bytes.toString()).to.equal(attachmentBytes.toString())
       app.received(1).storeAttachmentContent(Arg.all())
       app.received(1).storeAttachmentContent(Arg.is(actualReq => {
@@ -537,7 +534,6 @@ describe('observations web controller', function () {
       app.storeAttachmentContent(Arg.all()).mimicks(async appReq => {
         const uploadStream = appReq.content.bytes as NodeJS.ReadableStream
         uploadStream.pipe(uploaded)
-        await new Promise(resolve => uploadStream.on('end', resolve))
         return AppResponse.success(obs)
       })
       const res = await client.put(attachmentRequestPath)
@@ -547,10 +543,9 @@ describe('observations web controller', function () {
         .field('more-nonsense', 'wut is going on')
         .accept('application/json')
 
-      const expectedAttachment = jsonForAttachment(obs.attachments[1], `${baseUrl}/events/${mageEvent.id}/observations/${observationId}`)
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.include(expectedAttachment)
+      expect(res.body).to.deep.equal(jsonForAttachment(obs.attachments[1], `${baseUrl}/events/${mageEvent.id}/observations/${observationId}`))
       expect(uploaded.bytes.toString()).to.equal(attachmentBytes.toString())
       app.received(1).storeAttachmentContent(Arg.all())
       app.received(1).storeAttachmentContent(Arg.is(actualReq => {
@@ -569,12 +564,20 @@ describe('observations web controller', function () {
         .attach('attachment', attachmentBytes, { filename: 'does it matter.mp4', contentType: 'video/mp4' })
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.equal([])
-      expect(res.body.failures).to.have.length(1)
-      expect(res.body.failures[0].file).to.equal('does it matter.mp4')
+      expect(res.body).to.deep.equal({ message: `permission denied: store attachment` })
       app.received(1).storeAttachmentContent(Arg.all())
+      app.received(1).storeAttachmentContent(Arg.is(actualReq => {
+        expect(actualReq.observationId).to.equal(observationId)
+        expect(actualReq.attachmentId).to.equal(attachmentId)
+        expect(actualReq.content.name).to.equal('does it matter.mp4')
+        expect(actualReq.content.mediaType).to.equal('video/mp4')
+        const reqStream = actualReq.content.bytes as Readable
+        expect(reqStream.destroyed).to.be.true
+        expect(reqStream.readable).to.be.false
+        return true
+      }))
     })
 
     it('returns 404 when the observation is not found', async function () {
@@ -584,12 +587,20 @@ describe('observations web controller', function () {
         .attach('attachment', attachmentBytes, { filename: 'does it matter.mp4', contentType: 'video/mp4' })
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.equal([])
-      expect(res.body.failures).to.have.length(1)
-      expect(res.body.failures[0].file).to.equal('does it matter.mp4')
+      expect(res.body).to.deep.equal({ message: `Observation not found: ${observationId}` })
       app.received(1).storeAttachmentContent(Arg.all())
+      app.received(1).storeAttachmentContent(Arg.is(actualReq => {
+        expect(actualReq.observationId).to.equal(observationId)
+        expect(actualReq.attachmentId).to.equal(attachmentId)
+        expect(actualReq.content.name).to.equal('does it matter.mp4')
+        expect(actualReq.content.mediaType).to.equal('video/mp4')
+        const reqStream = actualReq.content.bytes as Readable
+        expect(reqStream.destroyed).to.be.true
+        expect(reqStream.readable).to.be.false
+        return true
+      }))
     })
 
     it('returns 404 when the attachment is not found', async function () {
@@ -600,12 +611,20 @@ describe('observations web controller', function () {
         .attach('attachment', attachmentBytes, { filename: 'does it matter.mp4', contentType: 'video/mp4' })
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.equal([])
-      expect(res.body.failures).to.have.length(1)
-      expect(res.body.failures[0].file).to.equal('does it matter.mp4')
+      expect(res.body).to.deep.equal({ message: notFound.message })
       app.received(1).storeAttachmentContent(Arg.all())
+      app.received(1).storeAttachmentContent(Arg.is(actualReq => {
+        expect(actualReq.observationId).to.equal(observationId)
+        expect(actualReq.attachmentId).to.equal(attachmentId)
+        expect(actualReq.content.name).to.equal('does it matter.mp4')
+        expect(actualReq.content.mediaType).to.equal('video/mp4')
+        const reqStream = actualReq.content.bytes as Readable
+        expect(reqStream.destroyed).to.be.true
+        expect(reqStream.readable).to.be.false
+        return true
+      }))
     })
 
     it('returns 400 when the attachment multipart field is not a file', async function () {
@@ -614,11 +633,9 @@ describe('observations web controller', function () {
         .field('attachment', 'not a file.png')
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.equal([])
-      expect(res.body.failures).to.have.length(1)
-      expect(res.body.failures[0].error).to.equal('Too many fields')
+      expect(res.body).to.deep.equal({ message: `request must contain only one file part named 'attachment'` })
       app.didNotReceive().storeAttachmentContent(Arg.all())
     })
 
@@ -630,9 +647,9 @@ describe('observations web controller', function () {
         .attach('attachment', attachmentBytes, { filename: 'too late.mp4', contentType: 'video/mp4' })
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.failures.length).to.be.greaterThan(0)
+      expect(res.body).to.deep.equal({ message: `request must contain only one file part named 'attachment'` })
       app.didNotReceive().storeAttachmentContent(Arg.all())
     })
 
@@ -644,7 +661,7 @@ describe('observations web controller', function () {
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.have.property('message')
+      expect(res.body).to.deep.equal({ message: `Unsupported content type: application/json` })
       app.didNotReceive().storeAttachmentContent(Arg.all())
     })
 
@@ -656,12 +673,20 @@ describe('observations web controller', function () {
         .attach('attachment', attachmentBytes, { filename: 'gonna fail.mp4', contentType: 'video/wut' })
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.equal([])
-      expect(res.body.failures).to.have.length(1)
-      expect(res.body.failures[0].file).to.equal('gonna fail.mp4')
+      expect(res.body).to.deep.equal({ message: invalid.message })
       app.received(1).storeAttachmentContent(Arg.all())
+      app.received(1).storeAttachmentContent(Arg.is(actualReq => {
+        expect(actualReq.observationId).to.equal(observationId)
+        expect(actualReq.attachmentId).to.equal(attachmentId)
+        expect(actualReq.content.name).to.equal('gonna fail.mp4')
+        expect(actualReq.content.mediaType).to.equal('video/wut')
+        const reqStream = actualReq.content.bytes as Readable
+        expect(reqStream.destroyed).to.be.true
+        expect(reqStream.readable).to.be.false
+        return true
+      }))
     })
 
     it('returns 400 when the file name does not match the attachment', async function () {
@@ -672,12 +697,20 @@ describe('observations web controller', function () {
         .attach('attachment', attachmentBytes, { filename: 'gonna fail.mp4', contentType: 'video/mp4' })
         .accept('application/json')
 
-      expect(res.status).to.equal(200)
+      expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body.successes).to.deep.equal([])
-      expect(res.body.failures).to.have.length(1)
-      expect(res.body.failures[0].file).to.equal('gonna fail.mp4')
+      expect(res.body).to.deep.equal({ message: invalid.message })
       app.received(1).storeAttachmentContent(Arg.all())
+      app.received(1).storeAttachmentContent(Arg.is(actualReq => {
+        expect(actualReq.observationId).to.equal(observationId)
+        expect(actualReq.attachmentId).to.equal(attachmentId)
+        expect(actualReq.content.name).to.equal('gonna fail.mp4')
+        expect(actualReq.content.mediaType).to.equal('video/mp4')
+        const reqStream = actualReq.content.bytes as Readable
+        expect(reqStream.destroyed).to.be.true
+        expect(reqStream.readable).to.be.false
+        return true
+      }))
     })
 
     it('TODO: supports localization - uploading localized attachment content, e.g. video or audio recordings?')
