@@ -41,7 +41,7 @@ describe("team delete tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -52,7 +52,7 @@ describe("team delete tests", function () {
   it("should delete team", function (done) {
     mockTokenWithPermission('DELETE_TEAM');
 
-    const teamId = mongoose.Types.ObjectId();
+    const teamId = new mongoose.Types.ObjectId();
     const eventId = 1;
     const mockTeam = new TeamModel({
       id: teamId,
@@ -64,7 +64,7 @@ describe("team delete tests", function () {
       .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
-      .yields(null, mockTeam);
+      .resolves(mockTeam);
 
     sinon.mock(EventModel)
       .expects('getById')
@@ -73,8 +73,8 @@ describe("team delete tests", function () {
       });
 
     sinon.mock(mockTeam)
-      .expects('remove')
-      .yields(null);
+      .expects('deleteOne')
+      .resolves();
 
     request(app)
       .delete('/api/teams/' + teamId.toString())
@@ -87,7 +87,7 @@ describe("team delete tests", function () {
   it("should delete team with acl delete", function (done) {
     mockTokenWithPermission('');
 
-    const teamId = mongoose.Types.ObjectId();
+    const teamId = new mongoose.Types.ObjectId();
     const eventId = 1;
 
     const acl = {};
@@ -103,7 +103,7 @@ describe("team delete tests", function () {
       .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
-      .yields(null, mockTeam);
+      .resolves(mockTeam);
 
     sinon.mock(EventModel)
       .expects('getById')
@@ -112,8 +112,8 @@ describe("team delete tests", function () {
       });
 
     sinon.mock(mockTeam)
-      .expects('remove')
-      .yields(null);
+      .expects('deleteOne')
+      .resolves();
 
     request(app)
       .delete('/api/teams/' + teamId.toString())
@@ -126,7 +126,7 @@ describe("team delete tests", function () {
   it("should fail to delete team with no acl delete", function (done) {
     mockTokenWithPermission('');
 
-    const teamId = mongoose.Types.ObjectId();
+    const teamId = new mongoose.Types.ObjectId();
     const eventId = 1;
 
     const acl = {};
@@ -142,7 +142,7 @@ describe("team delete tests", function () {
       .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
-      .yields(null, mockTeam);
+      .resolves(mockTeam);
 
     request(app)
       .delete('/api/teams/' + teamId.toString())
@@ -155,7 +155,7 @@ describe("team delete tests", function () {
   it("should not delete team specifically for event", function (done) {
     mockTokenWithPermission('DELETE_TEAM');
 
-    const teamId = mongoose.Types.ObjectId();
+    const teamId = new mongoose.Types.ObjectId();
     const eventId = 1;
     const mockTeam = new TeamModel({
       id: teamId,
@@ -167,7 +167,7 @@ describe("team delete tests", function () {
       .expects('findOne').withArgs({ _id: teamId.toString() })
       .chain('populate').withArgs('userIds')
       .chain('exec')
-      .yields(null, mockTeam);
+      .resolves(mockTeam);
 
     sinon.mock(EventModel)
       .expects('getById')

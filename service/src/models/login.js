@@ -79,10 +79,13 @@ exports.getLogins = function (options, callback) {
     }
   };
 
-  Login.find(conditions, null, o).populate([{ path: 'userId' }, { path: 'deviceId' }]).exec(function (err, logins) {
-    if (err || !logins) return callback(err, logins);
-    callback(null, options.firstLoginId ? logins.reverse() : logins);
-  });
+  Login.find(conditions, null, o).populate([{ path: 'userId' }, { path: 'deviceId' }]).exec().then(
+    logins => {
+      if (!logins) return callback(null, logins);
+      callback(null, options.firstLoginId ? logins.reverse() : logins);
+    },
+    err => callback(err)
+  );
 };
 
 exports.createLogin = function (user, device, callback) {
@@ -94,15 +97,15 @@ exports.createLogin = function (user, device, callback) {
     create.deviceId = device._id
   }
 
-  Login.create(create, function (err, login) {
-    if (err) return callback(err);
-
-    callback(null, login);
-  });
+  Login.create(create).then(
+    login => callback(null, login),
+    err => callback(err)
+  );
 };
 
 exports.removeLoginsForUser = function (user, callback) {
-  Login.remove({ userId: user._id }, function (err) {
-    callback(err);
-  });
+  Login.deleteMany({ userId: user._id }).then(
+    () => callback(null),
+    err => callback(err)
+  );
 };

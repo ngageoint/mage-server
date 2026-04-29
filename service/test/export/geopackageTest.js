@@ -32,10 +32,10 @@ describe("geopackage export tests", function () {
             formMap: {},
             acl: {}
         })
-        userId = mongoose.Types.ObjectId()
+        userId = new mongoose.Types.ObjectId()
         sinon.mock(EventModel)
             .expects('findById')
-            .yields(null, event);
+            .resolves(event);
     });
 
     afterEach(function () {
@@ -69,7 +69,7 @@ describe("geopackage export tests", function () {
 
         sinon.mock(TeamModel)
             .expects('find')
-            .yields(null, [{ name: 'Team 1' }]);
+            .resolves([{ name: 'Team 1' }]);
 
         const writable = new TestWritableStream();
         writable.on('finish', async () => {

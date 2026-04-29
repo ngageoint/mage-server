@@ -56,7 +56,7 @@ describe('Authentication API Appender Tests', function() {
     const models = [];
 
     const model0 = {
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       name: 'local',
       enabled: true,
@@ -130,7 +130,7 @@ describe('Authentication API Appender Tests', function() {
     const models = [];
 
     const model0 = {
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       name: 'local',
       enabled: false,

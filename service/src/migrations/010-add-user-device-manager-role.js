@@ -6,10 +6,10 @@ const RoleModel = mongoose.model('Role');
 
 exports.id = 'add-user-device-manager-role';
 
-exports.up = function(done) {
+exports.up = function (done) {
   async.series([
     createManagerRole,
-  ], function(err) {
+  ], function (err) {
     done(err);
   });
 };
@@ -34,11 +34,11 @@ function createManagerRole(callback) {
   };
 
   console.log('Update event/team manager role to add user and device edit permissions...');
-  RoleModel.updateOne({name: 'EVENT_MANAGER_ROLE'}, managerRole, function(err) {
-    callback(err);
-  });
+  RoleModel.updateOne({ name: 'EVENT_MANAGER_ROLE' }, managerRole).then(() => {
+    callback();
+  }, err => callback(err));
 }
 
-exports.down = function(done) {
+exports.down = function (done) {
   done();
 };

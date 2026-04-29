@@ -5,15 +5,13 @@ const async = require('async')
 
 exports.id = '006-event-teams';
 
-exports.up = function(done) {
+exports.up = function (done) {
   this.log('creating team for each event');
 
-  mongoose.model('Team').collection.dropIndexes(function (err) {
-    if (err) console.log('could not drop indexes', err);
-
-    Event.getEvents(function(err, events) {
-      async.each(events, function(event, done) {
-        Team.createTeamForEvent(event, function(err, eventTeam) {
+  mongoose.model('Team').collection.dropIndexes().then(() => {
+    Event.getEvents(function (err, events) {
+      async.each(events, function (event, done) {
+        Team.createTeamForEvent(event, function (err, eventTeam) {
           if (err) {
             console.log('Error creating team for event ' + event.name);
             return done(err);
@@ -22,21 +20,21 @@ exports.up = function(done) {
           console.log('Created team ' + eventTeam.name + ' for event ' + event.name);
           done();
         });
-      }, function(err) {
+      }, function (err) {
         done(err);
       });
     });
   });
 };
 
-exports.down = function(done) {
-  Event.getEvents(function(err, events) {
+exports.down = function (done) {
+  Event.getEvents(function (err, events) {
     if (err) return done(err);
 
-    events.forEach({populate: 'teamIds'}, function(event) {
-      event.teamIds.forEach(function(team) {
+    events.forEach({ populate: 'teamIds' }, function (event) {
+      event.teamIds.forEach(function (team) {
         if (team.teamEventId) {
-          Team.deleteTeam(team, function(err) {
+          Team.deleteTeam(team, function (err) {
             done(err);
           });
         }
