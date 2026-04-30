@@ -586,7 +586,7 @@ admin {
 .admin-main-content {
   overflow-y: auto;
   height: 100%;
-  max-height: 90vh;
+  max-height: calc(100vh - 104px);
   position: relative;
   display: block;
 }
