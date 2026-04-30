@@ -1,12 +1,13 @@
 .container {
   width: 468px;
+  background: #fff;
 }
 
 .form-picker-header {
   display: flex;
   align-items: center;
-  margin: 8px 0;
-  height: 50px;
+  min-height: 72px;
+  padding: 0 32px;
 }
 
 .form-picker-header__text {
@@ -17,15 +18,38 @@
 }
 
 .form-picker-header__divider {
-  margin: 0 -16px;
+  margin: 0;
 }
 
 .form-picker-list {
   background-color: white;
+  padding: 24px 0 8px;
+}
+
+.form-picker-list-item {
+  min-height: 96px;
+  padding: 0 32px !important;
+}
+
+.form-picker-list-item__icon {
+  margin-right: 24px;
+}
+
+.form-picker-list-item__title {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.form-picker-list-item__description {
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(0, 0, 0, .87);
 }
 
 .form-picker-actions {
   display: flex;
   justify-content: center;
-  padding: 8px 0;
+  padding: 12px 0 16px;
 }
