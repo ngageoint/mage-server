@@ -322,15 +322,11 @@ $login-pagination-height: 40px;
 }
 
 .empty-table-row {
-  height: calc(
-    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
-  );
+  height: calc(#{$login-table-frame-height} - #{$login-pagination-height} - 40px);
 }
 
 .empty-table-row td {
-  height: calc(
-    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
-  ) !important;
+  height: calc(#{$login-table-frame-height} - #{$login-pagination-height} - 40px) !important;
   padding: 0 !important;
   border-bottom: none !important;
   white-space: normal !important;
@@ -339,12 +335,8 @@ $login-pagination-height: 40px;
 }
 
 .empty-state {
-  height: calc(
-    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
-  );
-  min-height: calc(
-    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
-  );
+  height: calc(#{$login-table-frame-height} - #{$login-pagination-height} - 40px);
+  min-height: calc(#{$login-table-frame-height} - #{$login-pagination-height} - 40px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -384,11 +376,44 @@ $login-pagination-height: 40px;
 
   button {
     min-width: auto;
-    padding: 0;
+    padding: 0 8px;
     font-size: 12px;
     letter-spacing: 0.04em;
     text-transform: none !important;
-    color: #8b8b8b;
+    border-radius: 4px;
+    transition: color 160ms ease, background-color 160ms ease, opacity 160ms ease;
+
+    &:not(:disabled):not(.mat-mdc-button-disabled) {
+      color: #1e88e5 !important;
+      cursor: pointer;
+
+      --mdc-text-button-label-text-color: #1e88e5;
+      --mat-text-button-state-layer-color: #1e88e5;
+
+      &:hover {
+        background: rgba(30, 136, 229, 0.08);
+        color: #1565c0 !important;
+
+        --mdc-text-button-label-text-color: #1565c0;
+      }
+
+      &:focus-visible {
+        outline: 2px solid rgba(30, 136, 229, 0.35);
+        outline-offset: 2px;
+      }
+    }
+
+    &:disabled,
+    &[disabled],
+    &.mat-mdc-button-disabled {
+      color: #b8b8b8 !important;
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+
+      --mdc-text-button-disabled-label-text-color: #b8b8b8;
+      --mdc-text-button-label-text-color: #b8b8b8;
+    }
   }
 }
 
