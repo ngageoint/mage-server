@@ -4,6 +4,9 @@ $font-md: 16px;
 $font-sm: 14px;
 $font-xs: 12px;
 
+$top-panel-height: 390px;
+$top-panel-list-height: 236px;
+
 ::ng-deep .admin-main-content {
   transition: margin-left 0.3s;
   width: 100%;
@@ -48,10 +51,6 @@ $font-xs: 12px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
     background: #fff;
-
-    @media (max-width: 959px), (max-height: 600px) {
-      height: auto;
-    }
   }
 
   .top-row {
@@ -62,175 +61,240 @@ $font-xs: 12px;
     overflow: visible;
 
     @media (max-width: 959px), (max-height: 600px) {
-      flex-direction: column;
+      display: flex;
+      flex-direction: column !important;
+      align-items: stretch;
       height: auto;
       max-height: none;
     }
+  }
 
-    .inactive-users,
-    .unregistered-devices {
-      flex: 1 1 0;
-      min-width: 0;
+  .dashboard-panel,
+  .inactive-users,
+  .unregistered-devices {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: $top-panel-height;
+    min-height: $top-panel-height;
+    max-height: $top-panel-height;
+
+    @media (max-width: 959px), (max-height: 600px) {
+      flex: 0 0 auto;
+      width: 100%;
+      height: $top-panel-height;
+      min-height: $top-panel-height;
+      max-height: $top-panel-height;
+    }
+  }
+
+  .dashboard-panel-card,
+  .inactive-users mat-card,
+  .inactive-users .mat-mdc-card,
+  .unregistered-devices mat-card,
+  .unregistered-devices .mat-mdc-card {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+  }
+
+  .search-wrapper {
+    flex: 0 0 auto;
+    background-color: #f7f7f7;
+    padding: 6px 10px 0 10px;
+    border: 1px solid #a9a9a9;
+    border-bottom: none;
+  }
+
+  mat-form-field,
+  .mat-mdc-form-field {
+    width: 100%;
+    margin-bottom: -18px;
+
+    .mat-mdc-text-field-wrapper {
+      background-color: transparent;
+      padding: 0 8px;
+    }
+
+    .mdc-line-ripple::before,
+    .mdc-line-ripple::after {
+      border-bottom-color: transparent;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+  }
+
+  .mdc-floating-label {
+    padding-bottom: 15px;
+    font-size: $font-sm;
+  }
+
+  .panel-list-shell {
+    position: relative;
+    flex: 0 0 $top-panel-list-height;
+    height: $top-panel-list-height;
+    min-height: $top-panel-list-height;
+    max-height: $top-panel-list-height;
+    overflow: hidden;
+    border: 1px solid #a9a9a9;
+    background: #fcfcfc;
+
+    @media (max-width: 959px), (max-height: 600px) {
+      flex: 0 0 $top-panel-list-height;
+      height: $top-panel-list-height;
+      min-height: $top-panel-list-height;
+      max-height: $top-panel-list-height;
+    }
+  }
+
+  mat-list,
+  .mat-mdc-list {
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 0;
+    background: #fcfcfc;
+  }
+
+  mat-list-item,
+  a[mat-list-item],
+  .mat-mdc-list-item {
+    min-height: 48px;
+    height: auto;
+    padding: 4px 10px !important;
+    border-bottom: 1px solid #efefef;
+    display: flex;
+    align-items: center;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .mdc-list-item__content,
+    .mat-mdc-list-item-unscoped-content {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+      width: 100%;
+    }
 
-      @media (max-width: 959px), (max-height: 600px) {
-        height: auto;
+    mat-icon,
+    i[matListIcon] {
+      font-size: $font-md;
+      margin-right: 10px;
+      color: #666;
+      margin-top: 0;
+      flex: 0 0 18px;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    [matLine],
+    .mat-line-horizontal,
+    .mdc-list-item__primary-text {
+      font-size: $font-sm;
+      line-height: 1.3;
+      font-weight: 500;
+      color: #333;
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    button[mat-button],
+    .mat-mdc-button {
+      margin-left: auto;
+      min-width: 92px;
+      height: 32px;
+      padding: 0 10px;
+      font-size: $font-xs;
+      line-height: 32px;
+      border: 1px solid #a8a8a8;
+      border-radius: 4px;
+      background: #f3f3f3;
+      color: #8a8a8a;
+      text-transform: none !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+
+      .mdc-button__label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
       }
 
-      mat-card,
-      .mat-mdc-card {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        padding: 0;
-        border: 0 !important;
-        box-shadow: none !important;
-        background: transparent !important;
-        border-radius: 0 !important;
-      }
-
-      .search-wrapper {
-        background-color: #f7f7f7;
-        padding: 6px 10px 0 10px;
-        border: 1px solid #a9a9a9;
-        border-bottom: none;
-      }
-
-      mat-form-field,
-      .mat-mdc-form-field {
-        width: 100%;
-        margin-bottom: -18px;
-
-        .mat-mdc-text-field-wrapper {
-          background-color: transparent;
-          padding: 0 8px;
-        }
-
-        .mdc-line-ripple::before,
-        .mdc-line-ripple::after {
-          border-bottom-color: transparent;
-        }
-
-        .mat-mdc-form-field-subscript-wrapper {
-          display: none;
-        }
-      }
-
-      .mdc-floating-label {
-        padding-bottom: 15px;
+      mat-icon {
         font-size: $font-sm;
+        width: $font-sm;
+        height: $font-sm;
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
       }
 
-      mat-list,
-      .mat-mdc-list {
-        flex: 1;
-        overflow-y: auto;
-        max-height: 240px;
-        border: 1px solid #a9a9a9;
-        padding-top: 0;
-        background: #fcfcfc;
-
-        @media (max-width: 959px), (max-height: 600px) {
-          max-height: 260px;
-        }
-
-        mat-list-item,
-        a[mat-list-item],
-        .mat-mdc-list-item {
-          min-height: 48px;
-          height: auto;
-          padding: 4px 10px !important;
-          border-bottom: 1px solid #efefef;
-          display: flex;
-          align-items: center;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          .mdc-list-item__content,
-          .mat-mdc-list-item-unscoped-content {
-            display: flex;
-            align-items: center;
-            min-width: 0;
-            width: 100%;
-          }
-
-          mat-icon,
-          i[matListIcon] {
-            font-size: $font-md;
-            margin-right: 10px;
-            color: #666;
-            margin-top: 0;
-            flex: 0 0 18px;
-            width: 18px;
-            height: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          [matLine],
-          .mat-line-horizontal,
-          .mdc-list-item__primary-text {
-            font-size: $font-sm;
-            line-height: 1.3;
-            font-weight: 500;
-            color: #333;
-            display: inline-flex;
-            align-items: center;
-            min-width: 0;
-            flex: 1 1 auto;
-          }
-
-          button[mat-button],
-          .mat-mdc-button {
-            margin-left: auto;
-            min-width: 92px;
-            height: 32px;
-            padding: 0 10px;
-            font-size: $font-xs;
-            line-height: 32px;
-            border: 1px solid #a8a8a8;
-            border-radius: 4px;
-            background: #f3f3f3;
-            color: #8a8a8a;
-            text-transform: none !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-
-            .mdc-button__label {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-            }
-
-            mat-icon {
-              font-size: $font-sm;
-              width: $font-sm;
-              height: $font-sm;
-              margin: 0;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              line-height: 1;
-            }
-
-            span {
-              display: inline-flex;
-              align-items: center;
-              line-height: 1;
-              margin: 0;
-            }
-          }
-        }
+      span {
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
+        margin: 0;
       }
     }
+
+    @media (max-width: 560px) {
+      .mdc-list-item__content,
+      .mat-mdc-list-item-unscoped-content {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }
+
+      [matLine],
+      .mat-line-horizontal,
+      .mdc-list-item__primary-text {
+        flex: 1 1 calc(100% - 32px);
+      }
+
+      button[mat-button],
+      .mat-mdc-button {
+        margin-left: 28px;
+        margin-top: 4px;
+      }
+    }
+  }
+
+  .empty-panel-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    color: #6b7280;
+    font-size: $font-sm;
+    pointer-events: none;
+    background: #fcfcfc;
   }
 
   .title-with-badge {
@@ -262,29 +326,83 @@ $font-xs: 12px;
   }
 
   .pagination-controls {
+    flex: 0 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
     margin-top: 10px;
     padding: 0 2px;
 
+    .pagination-button,
     button {
       min-width: auto;
-      padding: 0;
+      height: 28px;
+      padding: 0 8px;
       font-size: $font-xs;
       letter-spacing: 0.04em;
       text-transform: none !important;
-      color: #8b8b8b;
+      border-radius: 4px;
+      transition: color 160ms ease, background-color 160ms ease,
+        opacity 160ms ease;
+    }
+
+    .pagination-button:first-child {
+      margin-right: auto;
+    }
+
+    .pagination-button:last-child {
+      margin-left: auto;
+    }
+
+    .pagination-button:not(:disabled):not(.mat-mdc-button-disabled),
+    button:not(:disabled):not(.mat-mdc-button-disabled) {
+      color: #1e88e5 !important;
+      opacity: 1;
+      cursor: pointer;
+
+      --mdc-text-button-label-text-color: #1e88e5;
+      --mat-text-button-state-layer-color: #1e88e5;
+
+      &:hover {
+        background: rgba(30, 136, 229, 0.08);
+        color: #1565c0 !important;
+
+        --mdc-text-button-label-text-color: #1565c0;
+      }
+
+      &:focus-visible {
+        outline: 2px solid rgba(30, 136, 229, 0.35);
+        outline-offset: 2px;
+      }
+    }
+
+    .pagination-button:disabled,
+    .pagination-button[disabled],
+    .pagination-button.mat-mdc-button-disabled,
+    button:disabled,
+    button[disabled],
+    button.mat-mdc-button-disabled {
+      color: #b8b8b8 !important;
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+
+      --mdc-text-button-disabled-label-text-color: #b8b8b8;
+      --mdc-text-button-label-text-color: #b8b8b8;
     }
 
     @media (max-width: 480px), (max-height: 600px) {
       align-items: stretch;
-      gap: 12px;
+      gap: 8px;
       flex-direction: column;
 
+      .pagination-button,
       button {
         width: 100%;
         text-align: center;
+        margin-left: 0;
+        margin-right: 0;
       }
     }
   }
@@ -366,30 +484,9 @@ $font-xs: 12px;
   font-size: $font-sm;
 }
 
-/* important: reserve space for paginator/footer inside mage-logins */
 :host ::ng-deep mage-logins {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-}
-
-:host ::ng-deep mage-logins .section-card,
-:host ::ng-deep mage-logins .table-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  max-height: 100%;
-}
-
-:host ::ng-deep mage-logins .table-scroll,
-:host ::ng-deep mage-logins .login-table-scroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  display: block;
+  width: 100%;
 }
 
 :host ::ng-deep mage-logins .mat-paginator,

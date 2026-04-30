@@ -1,6 +1,18 @@
+$login-table-frame-height: 420px;
+$login-pagination-height: 40px;
+
 :host {
   display: block;
-  height: 100%;
+  width: 100%;
+  min-height: 0;
+}
+
+.logins-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  overflow: visible;
 }
 
 .section-table-title {
@@ -12,6 +24,7 @@
 }
 
 .filter-header {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -58,6 +71,7 @@
 .filters-drawer-shell {
   position: relative;
   z-index: 5;
+  flex: 0 0 auto;
 }
 
 .integrated-navbar {
@@ -226,48 +240,35 @@
   }
 }
 
-@media (max-width: 900px) {
-  .filters-drawer-shell.open .integrated-navbar {
-    max-height: 60vh;
-    overflow: auto;
-  }
-
-  .integrated-navbar .filter-section {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .integrated-navbar .form-group,
-  .actions-group,
-  .integrated-navbar .user-input,
-  .integrated-navbar .date-input,
-  .integrated-navbar .results-select {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .integrated-navbar .suggestions {
-    width: 100%;
-  }
+.login-table-frame {
+  flex: 0 0 $login-table-frame-height;
+  height: $login-table-frame-height;
+  min-height: $login-table-frame-height;
+  max-height: $login-table-frame-height;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top: 1px solid #dfe5eb;
+  background: #fff;
 }
 
 .table-scroll.login-table-scroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 93%;
-  max-height: none;
+  flex: 0 0 calc(#{$login-table-frame-height} - #{$login-pagination-height});
+  height: calc(#{$login-table-frame-height} - #{$login-pagination-height});
+  min-height: calc(#{$login-table-frame-height} - #{$login-pagination-height});
+  max-height: calc(#{$login-table-frame-height} - #{$login-pagination-height});
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   border-bottom: 1px solid #dfe5eb;
-  display: flex;
-  flex-direction: column;
+  display: block;
+  background: #fff;
 }
 
 .logins-table {
   width: 100%;
-  height: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 1rem;
@@ -299,7 +300,9 @@
 }
 
 .logins-table tbody td {
-  height: var(--row-height, 42px);
+  height: 42px;
+  max-height: 42px;
+  line-height: 1.25;
 }
 
 .logins-table tbody tr:first-of-type td {
@@ -318,28 +321,35 @@
   color: #9ca3af;
 }
 
-.pagination-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 3;
-  height: 40px;
-  background: #f5f5f5;
-  border-top: 1px solid #d9d9d9;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.7rem;
-  margin-top: auto;
-  font-size: 12px;
-  flex: 0 0 auto;
+.empty-table-row {
+  height: calc(
+    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
+  );
+}
+
+.empty-table-row td {
+  height: calc(
+    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
+  ) !important;
+  padding: 0 !important;
+  border-bottom: none !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: initial !important;
 }
 
 .empty-state {
+  height: calc(
+    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
+  );
+  min-height: calc(
+    #{$login-table-frame-height} - #{$login-pagination-height} - 40px
+  );
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2.5rem 2rem;
-  min-height: 180px;
+  box-sizing: border-box;
 
   .empty-state-content {
     text-align: center;
@@ -356,5 +366,53 @@
       color: #6b7280;
       font-weight: 500;
     }
+  }
+}
+
+.pagination-bar {
+  flex: 0 0 $login-pagination-height;
+  height: $login-pagination-height;
+  min-height: $login-pagination-height;
+  max-height: $login-pagination-height;
+  background: #f5f5f5;
+  border-top: 1px solid #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.7rem;
+  font-size: 12px;
+
+  button {
+    min-width: auto;
+    padding: 0;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: none !important;
+    color: #8b8b8b;
+  }
+}
+
+@media (max-width: 900px) {
+  .filters-drawer-shell.open .integrated-navbar {
+    max-height: 60vh;
+    overflow: auto;
+  }
+
+  .integrated-navbar .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .integrated-navbar .form-group,
+  .actions-group,
+  .integrated-navbar .user-input,
+  .integrated-navbar .date-input,
+  .integrated-navbar .results-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .integrated-navbar .suggestions {
+    width: 100%;
   }
 }
