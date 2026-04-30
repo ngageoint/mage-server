@@ -120,7 +120,6 @@
 .table-scroll {
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -354,8 +353,8 @@
 
   &:has(admin-users) {
     height: 92vh;
+    height: 92dvh;
     overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
 
     @media (max-height: 500px) {
       overflow-y: scroll;
@@ -365,6 +364,7 @@
   admin-users {
     .container {
       height: 90vh;
+      height: 90dvh;
     }
   }
 }

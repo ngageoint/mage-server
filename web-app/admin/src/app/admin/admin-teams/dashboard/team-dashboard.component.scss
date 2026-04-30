@@ -9,8 +9,8 @@ $font-xs: 12px;
 
   &:has(admin-teams) {
     height: 92vh;
+    height: 92dvh;
     overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
 
     @media (max-height: 500px) {
       overflow-y: scroll;
@@ -20,6 +20,7 @@ $font-xs: 12px;
   admin-teams {
     .container {
       height: 90vh;
+      height: 90dvh;
     }
   }
 }
@@ -112,7 +113,7 @@ $font-xs: 12px;
   min-width: 0;
 }
 
-.filters > * {
+.filters>* {
   min-width: 0;
 }
 
@@ -127,7 +128,7 @@ $font-xs: 12px;
 }
 
 :host ::ng-deep .filters mage-card-navbar,
-:host ::ng-deep .filters mage-card-navbar > *,
+:host ::ng-deep .filters mage-card-navbar>*,
 :host ::ng-deep .filters mage-card-navbar .card-navbar,
 :host ::ng-deep .filters mage-card-navbar .search-container,
 :host ::ng-deep .filters mage-card-navbar .search-wrapper,
@@ -184,6 +185,7 @@ $font-xs: 12px;
 }
 
 :host {
+
   ::ng-deep mage-card-navbar input.search-input,
   ::ng-deep input.search-input.ng-untouched.ng-pristine.ng-valid,
   ::ng-deep input.search-input.ng-valid.ng-dirty.ng-touched,
@@ -546,6 +548,7 @@ $font-xs: 12px;
 .mt-5 {
   margin-top: 5px !important;
 }
+
 .mb-5 {
   margin-bottom: 5px !important;
 }

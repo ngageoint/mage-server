@@ -11,16 +11,18 @@ $top-panel-list-height: 236px;
   transition: margin-left 0.3s;
   width: 100%;
   min-height: calc(100vh - 127px);
+  min-height: calc(100dvh - 127px);
   display: flex;
   flex-direction: column;
 
   &:has(admin-dashboard) {
     min-height: calc(100vh - 127px);
+    min-height: calc(100dvh - 127px);
     overflow: auto;
-    -webkit-overflow-scrolling: touch;
 
     @media (max-width: 959px) {
       min-height: calc(100vh - 114px);
+      min-height: calc(100dvh - 114px);
       overflow: auto;
     }
   }
@@ -60,7 +62,8 @@ $top-panel-list-height: 236px;
     width: 100%;
     overflow: visible;
 
-    @media (max-width: 959px), (max-height: 600px) {
+    @media (max-width: 959px),
+    (max-height: 600px) {
       display: flex;
       flex-direction: column !important;
       align-items: stretch;
@@ -80,7 +83,8 @@ $top-panel-list-height: 236px;
     min-height: $top-panel-height;
     max-height: $top-panel-height;
 
-    @media (max-width: 959px), (max-height: 600px) {
+    @media (max-width: 959px),
+    (max-height: 600px) {
       flex: 0 0 auto;
       width: 100%;
       height: $top-panel-height;
@@ -150,7 +154,8 @@ $top-panel-list-height: 236px;
     border: 1px solid #a9a9a9;
     background: #fcfcfc;
 
-    @media (max-width: 959px), (max-height: 600px) {
+    @media (max-width: 959px),
+    (max-height: 600px) {
       flex: 0 0 $top-panel-list-height;
       height: $top-panel-list-height;
       min-height: $top-panel-list-height;
@@ -263,6 +268,7 @@ $top-panel-list-height: 236px;
     }
 
     @media (max-width: 560px) {
+
       .mdc-list-item__content,
       .mat-mdc-list-item-unscoped-content {
         flex-wrap: wrap;
@@ -392,7 +398,8 @@ $top-panel-list-height: 236px;
       --mdc-text-button-label-text-color: #b8b8b8;
     }
 
-    @media (max-width: 480px), (max-height: 600px) {
+    @media (max-width: 480px),
+    (max-height: 600px) {
       align-items: stretch;
       gap: 8px;
       flex-direction: column;
@@ -440,7 +447,6 @@ $top-panel-list-height: 236px;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     border-bottom: 1px solid #e5e7eb;
     padding-bottom: 0;

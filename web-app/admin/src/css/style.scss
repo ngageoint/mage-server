@@ -259,7 +259,7 @@ h5 {
   margin-bottom: 16px;
 }
 
-.coordinate-editor > div {
+.coordinate-editor>div {
   margin-right: 8px;
   margin-left: 8px;
 }
@@ -478,7 +478,7 @@ h5 {
     0 2px 2px 0 rgba(0, 0, 0, 0.098), 0 1px 5px 0 rgba(0, 0, 0, 0.084);
 }
 
-.card > .card-content {
+.card>.card-content {
   padding: 16px;
 }
 
@@ -587,6 +587,7 @@ admin {
   overflow-y: auto;
   height: 100%;
   max-height: calc(100vh - 104px);
+  max-height: calc(100dvh - 104px);
   position: relative;
   display: block;
 }
@@ -662,7 +663,7 @@ admin {
   border-color: #f0f0f0;
 }
 
-.admin-dashboard-navbar > .container-fluid > .navbar-header > .navbar-brand {
+.admin-dashboard-navbar>.container-fluid>.navbar-header>.navbar-brand {
   color: #204976;
 }
 
