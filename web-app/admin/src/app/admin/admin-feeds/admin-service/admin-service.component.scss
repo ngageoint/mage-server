@@ -67,6 +67,19 @@
 
 .heading__action {
   margin-left: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 42px;
+
+  mat-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    margin-right: 6px;
+    line-height: 22px;
+  }
 }
 
 .content {

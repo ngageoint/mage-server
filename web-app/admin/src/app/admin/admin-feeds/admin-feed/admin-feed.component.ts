@@ -26,6 +26,7 @@ import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.
 import { AdminEventsService } from '../../services/admin-events.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { EventService } from '../../../../app/services/event.service';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-admin-feed',
@@ -47,6 +48,10 @@ import { EventService } from '../../../../app/services/event.service';
   ]
 })
 export class AdminFeedComponent implements OnInit {
+  @ViewChild('eventSelect', { static: false }) eventSelect!: ElementRef;
+  @ViewChild('eventAutocompleteTrigger', { static: false })
+  eventAutocompleteTrigger!: MatAutocompleteTrigger;
+
   breadcrumbs: AdminBreadcrumb[] = [
     {
       title: 'Feeds',
@@ -88,8 +93,7 @@ export class AdminFeedComponent implements OnInit {
   feedTopic!: FeedTopic;
 
   private myself: any | null = null;
-
-  @ViewChild('eventSelect', { static: false }) eventSelect!: ElementRef;
+  private allFeedEvents: any[] = [];
 
   constructor(
     private feedService: FeedService,
@@ -100,7 +104,7 @@ export class AdminFeedComponent implements OnInit {
     private eventsService: AdminEventsService,
     private adminUserService: AdminUserService,
     private eventService: EventService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.feedId = this.route.snapshot.paramMap.get('feedId');
@@ -142,7 +146,7 @@ export class AdminFeedComponent implements OnInit {
           route: ['/feeds']
         },
         {
-          title: this.feed.title,
+          title: this.feed.title
         }
       ];
 
@@ -174,18 +178,28 @@ export class AdminFeedComponent implements OnInit {
   }
 
   loadAllEvents(): void {
+    if (!this.feed?.id) return;
+
     this.loadingEvents = true;
 
     this.eventsService
       .getEvents({
         feedId: this.feed.id,
-        page: this.eventsPage,
-        page_size: this.eventsPerPage
+        page: 0,
+        page_size: 1000
       })
       .subscribe({
         next: (response) => {
-          this.feedEvents = response.items || [];
-          this.totalFeedEvents = response.totalCount || 0;
+          const events = response.items || [];
+
+          this.allFeedEvents = events.filter((event) =>
+            this.eventHasFeed(event, this.feed.id)
+          );
+
+          this.totalFeedEvents = this.allFeedEvents.length;
+          this.clampEventsPage();
+          this.applyEventsPage();
+
           this.loadingEvents = false;
         },
         error: (err) => {
@@ -201,14 +215,19 @@ export class AdminFeedComponent implements OnInit {
         term: searchTerm,
         excludeFeedId: this.feed.id,
         page: 0,
-        page_size: 20
+        page_size: 1000
       })
       .pipe(
         map((response) => {
           let events = response.items || [];
 
+          events = events.filter(
+            (event) => !this.eventHasFeed(event, this.feed.id)
+          );
+
           if (!this.hasUpdateEventPermission) {
             const myId = this.myself?.id;
+
             events = events.filter((event) => {
               const permissions = myId
                 ? event.acl?.[myId]?.permissions || []
@@ -217,7 +236,7 @@ export class AdminFeedComponent implements OnInit {
             });
           }
 
-          return events;
+          return events.slice(0, 20);
         })
       );
   }
@@ -289,7 +308,7 @@ export class AdminFeedComponent implements OnInit {
   onEventsPageChange(event: any): void {
     this.eventsPage = event.pageIndex;
     this.eventsPerPage = event.pageSize;
-    this.loadAllEvents();
+    this.applyEventsPage();
   }
 
   deleteFeed(): void {
@@ -307,5 +326,88 @@ export class AdminFeedComponent implements OnInit {
           });
         }
       });
+  }
+
+  private applyEventsPage(): void {
+    const start = this.eventsPage * this.eventsPerPage;
+    const end = start + this.eventsPerPage;
+
+    this.feedEvents = this.allFeedEvents.slice(start, end);
+  }
+
+  private clampEventsPage(): void {
+    const maxPageIndex = this.maxEventsPageIndex();
+
+    if (this.eventsPage > maxPageIndex) {
+      this.eventsPage = maxPageIndex;
+    }
+  }
+
+  private maxEventsPageIndex(): number {
+    if (!this.totalFeedEvents) return 0;
+
+    return Math.ceil(this.totalFeedEvents / this.eventsPerPage) - 1;
+  }
+
+  private eventHasFeed(event: any, feedId: string): boolean {
+    if (!event || !feedId) return false;
+
+    const candidates = [
+      event.feedId,
+      event.feed?.id,
+      event.feed?._id,
+      event.feed,
+      event.feeds,
+      event.feedIds,
+      event.feedIdsForEvent
+    ];
+
+    for (const candidate of candidates) {
+      if (this.candidateHasId(candidate, feedId)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private candidateHasId(candidate: any, id: string): boolean {
+    if (!candidate) return false;
+
+    if (typeof candidate === 'string') {
+      return candidate === id;
+    }
+
+    if (Array.isArray(candidate)) {
+      return candidate.some((item) => this.candidateHasId(item, id));
+    }
+
+    if (typeof candidate === 'object') {
+      return (
+        candidate.id === id || candidate._id === id || candidate.feedId === id
+      );
+    }
+
+    return false;
+  }
+
+  tagEventsAutocompleteOverlayPane(): void {
+    window.setTimeout(() => {
+      const autocompleteId = this.eventAutocompleteTrigger?.autocomplete?.id;
+
+      if (!autocompleteId) return;
+
+      const panel = document.getElementById(autocompleteId);
+
+      if (!panel) return;
+
+      const overlayPane = panel.closest(
+        '.cdk-overlay-pane'
+      ) as HTMLElement | null;
+
+      if (!overlayPane) return;
+
+      overlayPane.classList.add('events-add-autocomplete-overlay-pane');
+    });
   }
 }

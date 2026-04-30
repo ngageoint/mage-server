@@ -1,11 +1,18 @@
 @use '@angular/material' as mat;
-@import "variables.scss";
+@import 'variables.scss';
 
 $font-xl: 32px;
 $font-lg: 18px;
 $font-md: 16px;
 $font-sm: 14px;
 $font-xs: 12px;
+
+$event-row-height: 72px;
+$event-page-size: 5;
+$event-paginator-height: 56px;
+$event-list-height: calc($event-row-height * $event-page-size);
+$event-frame-height: calc($event-list-height + $event-paginator-height);
+$event-add-overlay-height: 72px;
 
 .page {
   position: relative;
@@ -14,7 +21,7 @@ $font-xs: 12px;
   right: 0;
   left: 0;
   overflow-y: auto;
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
 }
 
 .mat-breadcrumb {
@@ -66,17 +73,16 @@ $font-xs: 12px;
   }
 }
 
-
 .heading__info {
   flex: 1;
 }
 
 .heading__title {
-  color: rgba(0, 0, 0, .87)
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .heading__summary {
-  color: rgba(0, 0, 0, .6)
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .content {
@@ -129,18 +135,105 @@ mat-card-content {
   position: absolute;
   right: 16px;
   bottom: -18px;
-  z-index: 1;
-}
-
-.events__new>.mat-form-field> ::ng-deep .mat-form-field-wrapper {
-  margin-bottom: -1.25em;
+  z-index: 5;
 }
 
 .events__new {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 16px;
+  height: $event-add-overlay-height;
+  min-height: $event-add-overlay-height;
+  max-height: $event-add-overlay-height;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.events__new > .mat-form-field > ::ng-deep .mat-form-field-wrapper {
+  margin-bottom: -1.25em;
+}
+
+.events-add-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 4;
+  height: $event-add-overlay-height;
+  min-height: $event-add-overlay-height;
+  max-height: $event-add-overlay-height;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 220ms ease, opacity 180ms ease;
+}
+
+.events-add-overlay--open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.content__events {
+  position: relative;
+  padding: 0;
+  height: $event-frame-height;
+  min-height: $event-frame-height;
+  max-height: $event-frame-height;
+  overflow: hidden;
+}
+
+.events-list-frame {
+  height: $event-frame-height;
+  min-height: $event-frame-height;
+  max-height: $event-frame-height;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.events-list-scroll {
+  position: relative;
+  flex: 0 0 $event-list-height;
+  height: $event-list-height;
+  min-height: $event-list-height;
+  max-height: $event-list-height;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.empty-events-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.55);
+  background: #fff;
+}
+
+.empty-events-state__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: $font-md;
+  font-weight: 600;
+  text-align: center;
+
+  mat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 42px;
+    opacity: 0.65;
+  }
 }
 
 mat-form-field {
@@ -152,12 +245,13 @@ mat-form-field {
 }
 
 :host ::ng-deep .content__events mat-nav-list {
+  min-height: $event-list-height;
   padding-top: 0;
 }
 
 :host ::ng-deep .content__events .mat-mdc-list-item {
-  min-height: 72px;
-  height: auto;
+  min-height: $event-row-height;
+  height: $event-row-height;
   padding: 0 12px;
 }
 
@@ -187,14 +281,16 @@ mat-form-field {
 :host ::ng-deep .content__events .mat-mdc-list-item-icon {
   align-self: center;
   margin-top: 0;
+  margin-right: 16px;
 }
 
 :host ::ng-deep .content__events .mat-mdc-list-item-meta {
   width: 44px;
   height: 44px;
   padding: 10px;
-  align-self: center;
+  align-self: flex-start;
   margin-left: 12px;
+  margin-top: 10px;
 
   mat-icon {
     width: 24px;
@@ -203,13 +299,60 @@ mat-form-field {
   }
 }
 
-:host ::ng-deep .content__events .mdc-list-item__start,
 :host ::ng-deep .content__events .mdc-list-item__end {
-  margin-top: 0;
+  margin-top: 0 !important;
+}
+
+:host ::ng-deep .content__events .mdc-list-item__start{
+  margin-top: 25px !important;
+}
+
+:host ::ng-deep .content__events mat-paginator {
+  flex: 0 0 $event-paginator-height;
+  height: $event-paginator-height;
+  min-height: $event-paginator-height;
+  max-height: $event-paginator-height;
+  border-top: 0;
+}
+
+:host ::ng-deep mat-paginator {
+  min-height: 56px;
+  font-size: $font-sm;
 }
 
 .feed__icon {
   width: 20px;
   height: 20px;
   font-size: 20px;
+}
+
+::ng-deep .cdk-overlay-pane.events-add-autocomplete-overlay-pane {
+  transform: translateY(72px) !important;
+}
+
+:host ::ng-deep .content__events .mat-mdc-list-item-meta.mat-mdc-icon-button,
+:host ::ng-deep .content__events .mat-mdc-icon-button {
+  background: transparent !important;
+  --mdc-icon-button-state-layer-size: 0px;
+  --mat-icon-button-state-layer-color: transparent;
+  --mat-icon-button-ripple-color: transparent;
+  --mdc-icon-button-state-layer-color: transparent;
+  --mdc-icon-button-ripple-color: transparent;
+}
+
+:host
+  ::ng-deep
+  .content__events
+  .mat-mdc-icon-button
+  .mat-mdc-button-persistent-ripple,
+:host ::ng-deep .content__events .mat-mdc-icon-button .mat-ripple,
+:host ::ng-deep .content__events .mat-mdc-icon-button .mdc-icon-button__ripple {
+  display: none !important;
+}
+
+:host ::ng-deep .content__events .mat-mdc-icon-button:hover,
+:host ::ng-deep .content__events .mat-mdc-icon-button:focus,
+:host ::ng-deep .content__events .mat-mdc-icon-button:active {
+  background: transparent !important;
+  box-shadow: none !important;
 }

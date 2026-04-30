@@ -4,6 +4,11 @@ $font-md: 16px;
 $font-sm: 14px;
 $font-xs: 12px;
 
+$list-row-height: 82px;
+$list-page-size: 5;
+$list-paginator-height: 56px;
+$list-frame-height: calc(($list-row-height * $list-page-size) + $list-paginator-height);
+
 :host {
   min-height: 0;
   display: flex;
@@ -42,6 +47,54 @@ mat-card {
   overflow: hidden;
   border-radius: 8px;
   background: white;
+}
+
+.feed-list-frame {
+  height: $list-frame-height;
+  min-height: $list-frame-height;
+  max-height: $list-frame-height;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.feed-list-scroll {
+  position: relative;
+  flex: 0 0 calc($list-row-height * $list-page-size);
+  height: calc($list-row-height * $list-page-size);
+  min-height: calc($list-row-height * $list-page-size);
+  max-height: calc($list-row-height * $list-page-size);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.empty-list-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.55);
+  background: #fff;
+}
+
+.empty-list-state__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: $font-md;
+  font-weight: 600;
+
+  mat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 42px;
+    opacity: 0.6;
+  }
 }
 
 .actions {
