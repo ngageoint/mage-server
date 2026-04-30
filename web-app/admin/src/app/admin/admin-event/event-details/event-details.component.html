@@ -113,7 +113,10 @@
                 observation and location data. This cannot be undone, and all
                 event data will be unrecoverable.
               </p>
-              <button class="action-button btn-danger btn-right" (click)="deleteEvent()">
+              <button
+                class="action-button btn-danger btn-right"
+                (click)="deleteEvent()"
+              >
                 <i class="fa fa-trash-o"></i> Delete
               </button>
             </div>
@@ -153,6 +156,7 @@
                     >
                       <a
                         class="row-item text-decoration-none"
+                        [class.row-item--editing-members]="editMembers"
                         [routerLink]="['../../users', user.id]"
                       >
                         <div class="row-icon">
@@ -419,7 +423,11 @@
                         >
                           <button
                             class="action-button btn-danger btn-sm"
-                            (click)="removeLayer($event, layer)"
+                            (click)="
+                              $event.preventDefault();
+                              $event.stopPropagation();
+                              removeLayer($event, layer)
+                            "
                             title="Remove Layer"
                           >
                             <i class="fa fa-trash"></i>

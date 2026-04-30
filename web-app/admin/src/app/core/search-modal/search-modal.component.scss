@@ -1,4 +1,4 @@
-$font-xl: 32px;
+$font-xl: 24px;
 $font-lg: 18px;
 $font-md: 16px;
 $font-sm: 14px;
@@ -8,7 +8,7 @@ $font-xs: 12px;
   width: 600px;
   max-width: 600px;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 20px;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -16,7 +16,7 @@ $font-xs: 12px;
 .dialog-header {
   h2 {
     margin: 0;
-    font-size: $font-lg;
+    font-size: $font-xl;
     line-height: 24px;
     font-weight: 600;
     color: rgba(0, 0, 0, 0.87);
@@ -36,7 +36,7 @@ $font-xs: 12px;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 12px;
   background: #fff;
   box-shadow: none;
   box-sizing: border-box;
@@ -53,7 +53,7 @@ $font-xs: 12px;
 .column-header {
   display: block;
   width: 100%;
-  font-size: $font-xs;
+  font-size: $font-sm;
   line-height: 18px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.87);
@@ -103,7 +103,7 @@ $font-xs: 12px;
   min-width: 92px;
   height: 40px;
   padding: 0 16px;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: $font-sm;
   font-weight: 500;
 }
@@ -115,7 +115,7 @@ $font-xs: 12px;
   .mat-mdc-dialog-surface {
     width: 600px !important;
     max-width: 600px !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
   }
@@ -123,7 +123,7 @@ $font-xs: 12px;
   .mat-mdc-dialog-surface,
   .mdc-dialog__surface {
     padding: 0 !important;
-    background: #fff !important;
+    background: transparent !important;
     box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2),
       0 24px 38px 3px rgba(0, 0, 0, 0.14), 0 9px 46px 8px rgba(0, 0, 0, 0.12) !important;
   }
@@ -238,15 +238,22 @@ $font-xs: 12px;
     padding: 0 20px !important;
     justify-content: flex-end !important;
     font-size: $font-xs !important;
+    background-color: #f9fafb;
   }
 
   .mat-mdc-paginator-page-size-label,
   .mat-mdc-paginator-range-label {
     font-size: $font-xs !important;
   }
-
   .results-container,
   .results-container * {
     box-shadow: none !important;
+  }
+}
+
+:host ::ng-deep {
+  .mat-mdc-dialog-container .mdc-dialog__surface,
+  .mat-mdc-dialog-container .mat-mdc-dialog-surface {
+    background: transparent !important;
   }
 }
