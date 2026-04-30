@@ -16,17 +16,17 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule as MatInputModule } from '@angular/material/input';
-import { MatButtonModule as MatButtonModule } from '@angular/material/button';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatListModule as MatListModule } from '@angular/material/list';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 
 import { RouterTestingModule } from '@angular/router/testing';
 import { AdminUserService } from '../services/admin-user.service';
@@ -88,6 +88,60 @@ const TEST_USERS: any[] = [
     },
     email: 'kiku@example.com',
     phones: []
+  },
+  {
+    id: '4',
+    username: 'sakura_',
+    displayName: 'Sakura',
+    active: true,
+    enabled: true,
+    authentication: 'LOCAL',
+    createdAt: new Date().toDateString(),
+    lastUpdated: new Date().toDateString(),
+    recentEventIds: [],
+    role: {
+      id: 'Test',
+      name: 'role',
+      permissions: []
+    },
+    email: 'sakura@example.com',
+    phones: []
+  },
+  {
+    id: '5',
+    username: 'yuki_',
+    displayName: 'Yuki',
+    active: true,
+    enabled: true,
+    authentication: 'LOCAL',
+    createdAt: new Date().toDateString(),
+    lastUpdated: new Date().toDateString(),
+    recentEventIds: [],
+    role: {
+      id: 'Test',
+      name: 'role',
+      permissions: []
+    },
+    email: 'yuki@example.com',
+    phones: []
+  },
+  {
+    id: '6',
+    username: 'momo_',
+    displayName: 'Momo',
+    active: true,
+    enabled: true,
+    authentication: 'LOCAL',
+    createdAt: new Date().toDateString(),
+    lastUpdated: new Date().toDateString(),
+    recentEventIds: [],
+    role: {
+      id: 'Test',
+      name: 'role',
+      permissions: []
+    },
+    email: 'momo@example.com',
+    phones: []
   }
 ];
 
@@ -95,7 +149,7 @@ const TEST_DEVICES: any[] = [
   {
     id: 'd1',
     uid: 'Primary Desktop',
-    registered: true,
+    registered: false,
     appVersion: 'Web Client',
     userAgent: '',
     iconClass: ''
@@ -103,7 +157,7 @@ const TEST_DEVICES: any[] = [
   {
     id: 'd2',
     uid: 'iOS Device',
-    registered: true,
+    registered: false,
     appVersion: 'mobile',
     userAgent: 'iOS',
     iconClass: ''
@@ -114,6 +168,30 @@ const TEST_DEVICES: any[] = [
     registered: false,
     appVersion: 'mobile',
     userAgent: 'android',
+    iconClass: ''
+  },
+  {
+    id: 'd4',
+    uid: 'Tablet Device',
+    registered: false,
+    appVersion: 'mobile',
+    userAgent: 'tablet',
+    iconClass: ''
+  },
+  {
+    id: 'd5',
+    uid: 'Backup Phone',
+    registered: false,
+    appVersion: 'mobile',
+    userAgent: 'mobile',
+    iconClass: ''
+  },
+  {
+    id: 'd6',
+    uid: 'Field Laptop',
+    registered: false,
+    appVersion: 'Web Client',
+    userAgent: '',
     iconClass: ''
   }
 ];
@@ -132,6 +210,40 @@ const mockDeviceService: Partial<AdminDeviceService> & any = {
     .and.callFake((_id: string, patch: any) => {
       const updated = { ...TEST_DEVICES[0], ...patch };
       return of(updated);
+    }),
+  getDashboardDevicePage: jasmine
+    .createSpy('getDashboardDevicePage')
+    .and.callFake((options: any) => {
+      const start = options?.start || 0;
+      const limit = options?.limit || 5;
+      const term = (options?.term || '').toLowerCase();
+
+      const filteredDevices = TEST_DEVICES.filter((device) => {
+        if (options?.registered !== undefined) {
+          if (device.registered !== options.registered) {
+            return false;
+          }
+        }
+
+        if (!term) {
+          return true;
+        }
+
+        return (device.uid || '').toLowerCase().includes(term);
+      });
+
+      const devices = filteredDevices.slice(start, start + limit);
+      const nextStart =
+        start + limit < filteredDevices.length ? start + limit : null;
+      const prevStart = start - limit >= 0 ? Math.max(start - limit, 0) : null;
+
+      return of({
+        start,
+        nextStart,
+        prevStart,
+        totalCount: filteredDevices.length,
+        devices
+      });
     })
 };
 
@@ -150,16 +262,12 @@ const mockUserPagingService: Partial<UserPagingService> & any = {
   refresh: jasmine.createSpy('refresh').and.returnValue(of([])),
   users: jasmine.createSpy('users').and.callFake((_state: any) => TEST_USERS),
   count: jasmine.createSpy('count').and.returnValue(TEST_USERS.length),
-  hasNext: jasmine.createSpy('hasNext').and.returnValue(true),
-  hasPrevious: jasmine.createSpy('hasPrevious').and.returnValue(false),
-  next: jasmine.createSpy('next').and.returnValue(of([TEST_USERS[1]])),
-  previous: jasmine.createSpy('previous').and.returnValue(of([TEST_USERS[0]])),
   search: jasmine
     .createSpy('search')
     .and.callFake((_state: any, term: string) => {
       return of(
-        TEST_USERS.filter((u) =>
-          (u.displayName || '')
+        TEST_USERS.filter((user) =>
+          (user.displayName || '')
             .toLowerCase()
             .includes((term || '').toLowerCase())
         )
@@ -170,30 +278,7 @@ const mockUserPagingService: Partial<UserPagingService> & any = {
 const mockDevicePagingService: Partial<DevicePagingService> & any = {
   constructDefault: jasmine
     .createSpy('constructDefault')
-    .and.returnValue(deviceStateAndData),
-  refresh: jasmine.createSpy('refresh').and.returnValue(of([])),
-  devices: jasmine
-    .createSpy('devices')
-    .and.callFake((_state: any) => TEST_DEVICES),
-  count: jasmine.createSpy('count').and.returnValue(TEST_DEVICES.length),
-  hasNext: jasmine.createSpy('hasNext').and.returnValue(true),
-  hasPrevious: jasmine.createSpy('hasPrevious').and.returnValue(false),
-  next: jasmine.createSpy('next').and.returnValue(of([TEST_DEVICES[1]])),
-  previous: jasmine
-    .createSpy('previous')
-    .and.returnValue(of([TEST_DEVICES[0]])),
-  search: jasmine
-    .createSpy('search')
-    .and.callFake((_state: any, term: string) => {
-      return of(
-        TEST_DEVICES.filter((d) =>
-          (d.uid || '')
-            .toString()
-            .toLowerCase()
-            .includes((term || '').toLowerCase())
-        )
-      );
-    })
+    .and.returnValue(deviceStateAndData)
 };
 
 describe('AdminDashboardComponent', () => {
@@ -234,16 +319,11 @@ describe('AdminDashboardComponent', () => {
 
     (mockUserPagingService.constructDefault as jasmine.Spy).calls.reset();
     (mockUserPagingService.refresh as jasmine.Spy).calls.reset();
-    (mockDevicePagingService.constructDefault as jasmine.Spy).calls.reset();
-    (mockDevicePagingService.refresh as jasmine.Spy).calls.reset();
     (mockUserPagingService.search as jasmine.Spy).calls.reset();
-    (mockDevicePagingService.search as jasmine.Spy).calls.reset();
-    (mockUserPagingService.next as jasmine.Spy).calls.reset();
-    (mockUserPagingService.previous as jasmine.Spy).calls.reset();
-    (mockDevicePagingService.next as jasmine.Spy).calls.reset();
-    (mockDevicePagingService.previous as jasmine.Spy).calls.reset();
+    (mockDevicePagingService.constructDefault as jasmine.Spy).calls.reset();
     (mockUserService.updateUser as jasmine.Spy).calls.reset();
     (mockDeviceService.updateDevice as jasmine.Spy).calls.reset();
+    (mockDeviceService.getDashboardDevicePage as jasmine.Spy).calls.reset();
 
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
@@ -254,12 +334,17 @@ describe('AdminDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call paging refresh in ngOnInit and populate lists', fakeAsync(() => {
+  it('should initialize paging data and populate dashboard lists', fakeAsync(() => {
     tick();
+
+    expect(mockUserPagingService.constructDefault).toHaveBeenCalled();
+    expect(mockDevicePagingService.constructDefault).toHaveBeenCalled();
     expect(mockUserPagingService.refresh).toHaveBeenCalled();
-    expect(mockDevicePagingService.refresh).toHaveBeenCalled();
-    expect(component.inactiveUsers.length).toBe(TEST_USERS.length);
-    expect(component.unregisteredDevices.length).toBe(TEST_DEVICES.length);
+    expect(mockDeviceService.getDashboardDevicePage).toHaveBeenCalled();
+
+    expect(component.inactiveUsers).toEqual(TEST_USERS.slice(0, 5));
+    expect(component.unregisteredDevices).toEqual(TEST_DEVICES.slice(0, 5));
+    expect(component.deviceTotalCount).toBe(TEST_DEVICES.length);
   }));
 
   it('should activate user and emit event', fakeAsync(() => {
@@ -268,12 +353,13 @@ describe('AdminDashboardComponent', () => {
     spyOn(component.onUserActivated, 'emit');
 
     (mockUserService.updateUser as jasmine.Spy).and.callFake(
-      (_id: string, _user: any) => of(_user)
+      (_id: string, updatedUser: any) => of(updatedUser)
     );
 
     component.activateUser(user);
     tick();
 
+    expect(mockUserService.updateUser).toHaveBeenCalledWith(user.id, user);
     expect(user.active).toBeTrue();
     expect(component.onUserActivated.emit).toHaveBeenCalledWith({ user });
   }));
@@ -283,9 +369,15 @@ describe('AdminDashboardComponent', () => {
     component.onDeviceEnabled = new EventEmitter();
     spyOn(component.onDeviceEnabled, 'emit');
 
-    component.registerDevice(new MouseEvent('click'), device);
+    const event = new MouseEvent('click');
+    spyOn(event, 'preventDefault');
+    spyOn(event, 'stopPropagation');
+
+    component.registerDevice(event, device);
     tick();
 
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
     expect(mockDeviceService.updateDevice).toHaveBeenCalledWith(device.id, {
       registered: true
     });
@@ -301,43 +393,85 @@ describe('AdminDashboardComponent', () => {
 
   it('should search users', fakeAsync(() => {
     component.userSearch = 'Lily Hoshikawa';
+
     component.search();
     tick();
+
+    expect(mockUserPagingService.search).toHaveBeenCalledWith(
+      userStateAndData.inactive,
+      'Lily Hoshikawa'
+    );
     expect(component.inactiveUsers).toEqual([TEST_USERS[0]]);
   }));
 
   it('should search devices', fakeAsync(() => {
     component.deviceSearch = 'iOS Device';
+
     component.searchDevices();
     tick();
+
+    expect(mockDeviceService.getDashboardDevicePage).toHaveBeenCalledWith({
+      start: 0,
+      limit: component.devicePageSize,
+      registered: false,
+      user: true,
+      includePagination: true,
+      term: 'iOS Device'
+    });
     expect(component.unregisteredDevices).toEqual([TEST_DEVICES[1]]);
+    expect(component.deviceTotalCount).toBe(1);
   }));
 
   it('should handle previous and next user pages', fakeAsync(() => {
+    tick();
+
     expect(component.hasNext()).toBeTrue();
     expect(component.hasPrevious()).toBeFalse();
 
     component.next();
     tick();
-    expect(component.inactiveUsers).toEqual([TEST_USERS[1]]);
+
+    expect(component.userPageIndex).toBe(1);
+    expect(component.inactiveUsers).toEqual([TEST_USERS[5]]);
+    expect(component.hasNext()).toBeFalse();
+    expect(component.hasPrevious()).toBeTrue();
 
     component.previous();
     tick();
-    expect(component.inactiveUsers).toEqual([TEST_USERS[0]]);
+
+    expect(component.userPageIndex).toBe(0);
+    expect(component.inactiveUsers).toEqual(TEST_USERS.slice(0, 5));
   }));
 
   it('should handle previous and next device pages', fakeAsync(() => {
+    tick();
+
     expect(component.hasNextDevice()).toBeTrue();
     expect(component.hasPreviousDevice()).toBeFalse();
 
     component.nextDevice();
     tick();
-    expect(component.unregisteredDevices).toEqual([TEST_DEVICES[1]]);
+
+    expect(component.deviceStart).toBe(5);
+    expect(component.unregisteredDevices).toEqual([TEST_DEVICES[5]]);
+    expect(component.hasNextDevice()).toBeFalse();
+    expect(component.hasPreviousDevice()).toBeTrue();
 
     component.previousDevice();
     tick();
-    expect(component.unregisteredDevices).toEqual([TEST_DEVICES[0]]);
+
+    expect(component.deviceStart).toBe(0);
+    expect(component.unregisteredDevices).toEqual(TEST_DEVICES.slice(0, 5));
   }));
+
+  it('should not navigate to a user without an id', () => {
+    const router = TestBed.inject(RouterTestingModule as any);
+
+    component.goToUser(null as any);
+    component.goToUser({});
+
+    expect(router).toBeTruthy();
+  });
 
   it('should set icon classes correctly', () => {
     expect(component.iconClass(TEST_DEVICES[0])).toContain('desktop');
@@ -346,6 +480,12 @@ describe('AdminDashboardComponent', () => {
     expect(
       component.iconClass({ ...TEST_DEVICES[1], userAgent: 'mobile' })
     ).toContain('mobile');
+    expect(
+      component.iconClass({
+        ...TEST_DEVICES[1],
+        iconClass: 'custom-device-icon'
+      })
+    ).toBe('custom-device-icon');
     expect(component.iconClass(null as any)).toEqual('');
   });
 });
