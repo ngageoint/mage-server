@@ -3,11 +3,14 @@ import {
   ElementRef,
   Input,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   ViewChild
 } from '@angular/core';
 import { UntypedFormGroup, NgModel } from '@angular/forms';
 import moment from 'moment';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { LocalStorageService } from '../../../http/local-storage.service';
 
 @Component({
@@ -15,7 +18,7 @@ import { LocalStorageService } from '../../../http/local-storage.service';
   templateUrl: './observation-edit-date.component.html',
   styleUrls: ['./observation-edit-date.component.scss']
 })
-export class ObservationEditDateComponent implements OnChanges {
+export class ObservationEditDateComponent implements OnChanges, OnDestroy {
   @Input() formGroup: UntypedFormGroup;
   @Input() definition: any;
 
@@ -29,8 +32,23 @@ export class ObservationEditDateComponent implements OnChanges {
   timeInvalid = false;
   second = 0;
 
+  private timeChange$ = new Subject<void>();
+  private timeChangeSub: Subscription;
+
   constructor(private localStorageService: LocalStorageService) {
     this.timeZone = localStorageService.getTimeZoneEdit();
+    this.timeChangeSub = this.timeChange$
+      .pipe(debounceTime(300))
+      .subscribe(() => {
+        this.timeInvalid = !this.isValidTime(this.time);
+        if (!this.timeInvalid) {
+          this.setValue(false);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.timeChangeSub.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -67,11 +85,7 @@ export class ObservationEditDateComponent implements OnChanges {
   }
 
   onTime(): void {
-    this.timeInvalid = !this.isValidTime(this.time);
-
-    if (!this.timeInvalid) {
-      this.setValue(false);
-    }
+    this.timeChange$.next();
   }
 
   openTimePicker(event: Event): void {
