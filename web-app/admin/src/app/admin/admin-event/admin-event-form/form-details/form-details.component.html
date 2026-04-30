@@ -1,7 +1,6 @@
 <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
 
 <div class="container bottom-gap-l" *ngIf="event">
-    <!-- Header -->
     <div class="page-header">
         <div class="header-title-section">
             <h2 class="page-title" *ngIf="form.id">{{ form.name }}</h2>
@@ -17,7 +16,6 @@
     <div class="container-fluid bottom-gap-l">
         <div class="row">
             <div class="col-12">
-                <!-- Form Details Section -->
                 <div class="details-section">
                     <div class="details-card">
                         <div class="details-form">
@@ -108,7 +106,6 @@
                     </div>
 
                     <div class="details-actions">
-                        <!-- Export Form Card -->
                         <div class="action-card card-spacing" *ngIf="form.id">
                             <h3 class="action-card-title">Export Form</h3>
                             <p class="action-card-description">Export this form for use in another event.</p>
@@ -117,7 +114,6 @@
                             </button>
                         </div>
 
-                        <!-- Archive Form Card -->
                         <div class="danger-zone-card warning card-spacing" *ngIf="form.id && !form.archived">
                             <h3 class="danger-zone-title">Archive Form</h3>
                             <p class="danger-zone-description">Archiving a form will remove it from the list of forms a
@@ -127,7 +123,6 @@
                             </button>
                         </div>
 
-                        <!-- Restore Form Card -->
                         <div class="action-card success card-spacing" *ngIf="form.id && form.archived">
                             <h3 class="action-card-title">Restore Form</h3>
                             <p class="action-card-description">Restoring a form will add it back to the list of forms a
@@ -139,11 +134,9 @@
                     </div>
                 </div>
 
-                <!-- Configuration Sections (only for existing forms) -->
                 <div class="configuration-sections" *ngIf="form.id">
                     <h3 class="sections-header">Form Configuration</h3>
                     <div class="sections-grid">
-                        <!-- Fields Section Card -->
                         <div class="configuration-card">
                             <div class="section-content">
                                 <div class="section-header" (click)="toggleFieldsSection()" style="cursor: pointer;">
@@ -162,7 +155,6 @@
                                     <p class="section-description">Create custom form fields that include your
                                         organization's unique information.</p>
 
-                                    <!-- Use the fields-list component -->
                                     <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
                                         [attachmentAllowedTypes]="attachmentAllowedTypes"
                                         [userFields]="form.userFields || []" [showDetailedView]="true"
@@ -172,7 +164,6 @@
                             </div>
                         </div>
 
-                        <!-- Map Section Card -->
                         <div class="configuration-card">
                             <div class="section-content">
                                 <div class="section-header" (click)="toggleMapSection()" style="cursor: pointer;">
@@ -193,10 +184,8 @@
                                         map by selecting primary
                                         and variant fields for symbology.</p>
 
-                                    <!-- No Select Fields Available Message -->
                                     <div *ngIf="getDropdownFields().length === 0"
                                         style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
-                                        <!-- Default Map Icon Preview -->
                                         <div class="symbology-preview" style="flex: 0 0 auto; min-width: 250px;">
                                             <h4 class="subsection-title">Default Symbology</h4>
                                             <div class="symbology-list">
@@ -211,7 +200,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- Message -->
                                         <div
                                             style="flex: 1; padding: 2rem; background-color: #f5f5f5; border-radius: 8px;">
                                             <div style="display: flex; align-items: flex-start; gap: 1rem;">
@@ -231,10 +219,8 @@
                                         </div>
                                     </div>
 
-                                    <!-- Map Configuration Row: Symbology Preview + Field Dropdowns -->
                                     <div *ngIf="getDropdownFields().length > 0"
                                         style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
-                                        <!-- Map Symbology Preview -->
                                         <div class="symbology-preview" *ngIf="form.primaryField"
                                             style="flex: 0 0 auto; min-width: 250px;">
                                             <h4 class="subsection-title">Configured Symbology</h4>
@@ -255,9 +241,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Field Selection Controls -->
                                         <div style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
-                                            <!-- Field Selection -->
                                             <div class="config-section">
                                                 <h4 class="subsection-title">Configure Fields</h4>
 
@@ -304,7 +288,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Primary Field Choices Symbology -->
                                     <div class="primary-choices-section"
                                         *ngIf="form.primaryField && getPrimaryFieldChoices().length > 0">
                                         <div class="choices-list">
@@ -390,7 +373,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Save Button -->
                                     <div class="section-save-actions">
                                         <button class="action-button btn-primary" (click)="saveMap()"
                                             [disabled]="!mapChanged || savingMap">
@@ -402,7 +384,6 @@
                             </div>
                         </div>
 
-                        <!-- Feeds Section Card -->
                         <div class="configuration-card">
                             <div class="section-content">
                                 <div class="section-header" (click)="toggleFeedSection()" style="cursor: pointer;">
@@ -423,7 +404,6 @@
                                         feed by selecting
                                         primary and secondary fields.</p>
 
-                                    <!-- Feed Configuration with Inline Edits -->
                                     <div class="feed-config-inline">
                                         <div class="config-inline-item">
                                             <div class="config-inline-label">
@@ -463,7 +443,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Sample Observation Feed -->
                                     <div class="feed-samples-section" *ngIf="observations.length > 0">
                                         <h4 class="subsection-title">Sample Observation Feed</h4>
                                         <p class="field-hint">Preview how observations will appear in the feed based on
@@ -547,7 +526,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Save Button -->
                                     <div class="section-save-actions">
                                         <button class="action-button btn-primary" (click)="saveFeeds()"
                                             [disabled]="!feedsChanged || savingFeeds">

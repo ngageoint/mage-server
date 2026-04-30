@@ -34,14 +34,19 @@
   padding: 0;
   overflow: visible;
   width: 360px;
-  max-width: min(560px, calc(100vw - 140px));
+  max-width: min(360px, calc(100vw - 140px));
   border-radius: 0 0 8px 8px;
   box-sizing: border-box;
 }
 
 .search-field__form {
-  width: 100%;
+  width: 360px;
+  max-width: min(360px, calc(100vw - 140px));
   margin: 0;
+}
+
+:host ::ng-deep .search-field.mat-mdc-card {
+  overflow: visible;
 }
 
 :host ::ng-deep .search-field__form .mat-mdc-form-field-subscript-wrapper,
@@ -106,19 +111,50 @@
   line-height: 28px;
 }
 
+.search-results {
+  width: max-content;
+  min-width: 360px;
+  max-width: min(720px, calc(100vw - 140px));
+  background: #ffffff;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
 mat-list {
+  width: max-content;
+  min-width: 360px;
+  max-width: min(720px, calc(100vw - 140px));
   max-height: 320px;
   overflow-y: auto;
-  max-width: 100%;
+  overflow-x: hidden;
   padding-top: 0;
 }
 
 mat-list-item {
   cursor: pointer;
+  width: max-content;
+  min-width: 360px;
+  max-width: min(720px, calc(100vw - 140px));
 }
 
 mat-list-item:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+:host ::ng-deep mat-list-item .mdc-list-item__content {
+  width: max-content;
+  min-width: 0;
+  max-width: calc(min(720px, calc(100vw - 140px)) - 64px);
+}
+
+:host ::ng-deep mat-list-item [matListItemTitle],
+:host ::ng-deep mat-list-item .mdc-list-item__primary-text {
+  display: block;
+  width: max-content;
+  max-width: calc(min(720px, calc(100vw - 140px)) - 64px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 :host ::ng-deep .mat-mdc-list-item-icon,

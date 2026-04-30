@@ -14,6 +14,7 @@
     <mat-card class="search-field">
       <mat-form-field appearance="outline" class="search-field__form">
         <mat-label>Address / Place Name</mat-label>
+
         <input
           matInput
           #searchInput
@@ -34,7 +35,7 @@
         <mat-spinner *ngIf="searching" diameter="24" matSuffix></mat-spinner>
       </mat-form-field>
 
-      <div [hidden]="!searchResults.length">
+      <div class="search-results" [hidden]="!searchResults.length">
         <mat-list #searchList>
           <mat-list-item
             matRipple
