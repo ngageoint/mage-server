@@ -1,5 +1,6 @@
 import {
   Component,
+  ElementRef,
   Input,
   OnChanges,
   SimpleChanges,
@@ -20,11 +21,13 @@ export class ObservationEditDateComponent implements OnChanges {
 
   @ViewChild('dateModel') dateModel: NgModel;
   @ViewChild('timeModel') timeModel: NgModel;
+  @ViewChild('timeInput') timeInput?: ElementRef<HTMLInputElement>;
 
   date: moment.Moment | null = null;
   time = '';
   timeZone: string;
   timeInvalid = false;
+  second = 0;
 
   constructor(private localStorageService: LocalStorageService) {
     this.timeZone = localStorageService.getTimeZoneEdit();
@@ -35,12 +38,17 @@ export class ObservationEditDateComponent implements OnChanges {
       const timestamp = this.formGroup.get(this.definition.name)?.value;
 
       if (timestamp) {
-        const m = moment(timestamp);
+        const m =
+          this.timeZone === 'gmt'
+            ? moment.utc(timestamp)
+            : moment(timestamp).local();
         this.date = m.clone();
-        this.time = m.format('HH:mm:ss');
+        this.second = m.second();
+        this.time = m.format('HH:mm');
       } else {
         this.date = null;
         this.time = '';
+        this.second = 0;
       }
 
       this.timeInvalid = false;
@@ -54,7 +62,7 @@ export class ObservationEditDateComponent implements OnChanges {
     }
 
     if (!this.dateModel?.invalid) {
-      this.setValue();
+      this.setValue(true);
     }
   }
 
@@ -62,23 +70,45 @@ export class ObservationEditDateComponent implements OnChanges {
     this.timeInvalid = !this.isValidTime(this.time);
 
     if (!this.timeInvalid) {
-      this.setValue();
+      this.setValue(false);
     }
+  }
+
+  openTimePicker(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const input = this.timeInput?.nativeElement as
+      | (HTMLInputElement & { showPicker?: () => void })
+      | undefined;
+
+    if (!input) {
+      return;
+    }
+
+    input.focus();
+    input.click();
+    input.showPicker?.();
   }
 
   toggleTimeZone(): void {
     this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt';
   }
 
-  private setValue(): void {
+  private setValue(preserveSeconds: boolean): void {
     if (!this.date) {
       return;
     }
 
-    const parsedTime = this.parseTime(this.time);
+    const parsedTime = this.parseTime(
+      this.time,
+      preserveSeconds ? this.second : 0
+    );
     if (!parsedTime) {
       return;
     }
+
+    this.second = parsedTime.second;
 
     const date = this.date.clone().set({
       hour: parsedTime.hour,
@@ -99,14 +129,15 @@ export class ObservationEditDateComponent implements OnChanges {
   }
 
   private isValidTime(value: string): boolean {
-    return !!this.parseTime(value);
+    return !!this.parseTime(value, this.second);
   }
 
   private parseTime(
-    value: string
+    value: string,
+    defaultSecond = 0
   ): { hour: number; minute: number; second: number } | null {
     if (!value) {
-      return { hour: 0, minute: 0, second: 0 };
+      return { hour: 0, minute: 0, second: defaultSecond };
     }
 
     const match = value.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
@@ -116,7 +147,7 @@ export class ObservationEditDateComponent implements OnChanges {
 
     const hour = Number(match[1]);
     const minute = Number(match[2]);
-    const second = match[3] ? Number(match[3]) : 0;
+    const second = match[3] ? Number(match[3]) : defaultSecond;
 
     if (
       Number.isNaN(hour) ||
