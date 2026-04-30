@@ -956,3 +956,16 @@ mat-spinner {
   float: inline-end !important;
   align-self: flex-end !important;
 }
+
+.row-main-link {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: inherit;
+}
+
+.row-main-link:hover {
+  color: inherit;
+  text-decoration: none;
+}

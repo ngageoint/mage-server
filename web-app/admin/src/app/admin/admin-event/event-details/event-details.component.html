@@ -26,9 +26,9 @@
               <div class="form-field">
                 <label class="field-label">Name:</label>
                 <div class="field-content">
-                  <span *ngIf="!editingDetails" class="field-value">{{
-                    event.name
-                  }}</span>
+                  <span *ngIf="!editingDetails" class="field-value">
+                    {{ event.name }}
+                  </span>
                   <input
                     *ngIf="editingDetails"
                     type="text"
@@ -42,9 +42,9 @@
               <div class="form-field">
                 <label class="field-label">Description:</label>
                 <div class="field-content">
-                  <span *ngIf="!editingDetails" class="field-value">{{
-                    event.description
-                  }}</span>
+                  <span *ngIf="!editingDetails" class="field-value">
+                    {{ event.description }}
+                  </span>
                   <textarea
                     *ngIf="editingDetails"
                     class="form-input"
@@ -58,11 +58,16 @@
               <div class="form-actions" *ngIf="editingDetails">
                 <button
                   class="action-button btn-primary"
+                  type="button"
                   (click)="saveEventDetails()"
                 >
                   <i class="fa fa-save"></i> Save
                 </button>
-                <button class="action-button" (click)="cancelEditDetails()">
+                <button
+                  class="action-button"
+                  type="button"
+                  (click)="cancelEditDetails()"
+                >
                   <i class="fa fa-times"></i> Cancel
                 </button>
               </div>
@@ -82,6 +87,7 @@
               </p>
               <button
                 class="action-button btn-primary btn-right"
+                type="button"
                 (click)="completeEvent(event)"
               >
                 <i class="fa fa-check-circle"></i> Complete
@@ -100,6 +106,7 @@
               </p>
               <button
                 class="action-button btn-primary btn-right"
+                type="button"
                 (click)="activateEvent(event)"
               >
                 <i class="fa fa-play-circle"></i> Activate
@@ -115,6 +122,7 @@
               </p>
               <button
                 class="action-button btn-danger btn-right"
+                type="button"
                 (click)="deleteEvent()"
               >
                 <i class="fa fa-trash-o"></i> Delete
@@ -140,6 +148,7 @@
                 >
                 </mage-card-navbar>
               </div>
+
               <div class="table-scroll">
                 <table
                   mat-table
@@ -154,18 +163,29 @@
                       *matCellDef="let user"
                       class="table-row-content"
                     >
-                      <a
+                      <div
                         class="row-item text-decoration-none"
                         [class.row-item--editing-members]="editMembers"
-                        [routerLink]="['../../users', user.id]"
                       >
-                        <div class="row-icon">
-                          <i class="fa fa-user"></i>
-                        </div>
-                        <div class="row-info">
-                          <div class="row-primary">{{ user.displayName }}</div>
-                          <div class="row-secondary">{{ user.username }}</div>
-                        </div>
+                        <a
+                          class="row-main-link text-decoration-none"
+                          [routerLink]="
+                            !editMembers ? ['../../users', user.id] : null
+                          "
+                          (click)="editMembers && $event.preventDefault()"
+                        >
+                          <div class="row-icon">
+                            <i class="fa fa-user"></i>
+                          </div>
+
+                          <div class="row-info">
+                            <div class="row-primary">
+                              {{ user.displayName }}
+                            </div>
+                            <div class="row-secondary">{{ user.username }}</div>
+                          </div>
+                        </a>
+
                         <div class="row-role">
                           <span
                             *ngIf="!editMembers"
@@ -173,22 +193,26 @@
                           >
                             {{ getUserRole(user) }}
                           </span>
+
                           <mat-form-field
                             *ngIf="hasUpdatePermission && editMembers"
                             class="role-select-field"
                             appearance="outline"
                             (click)="$event.stopPropagation()"
+                            (mousedown)="$event.stopPropagation()"
                           >
                             <mat-select
                               [value]="getUserRole(user)"
                               (selectionChange)="updateUserRole(user, $event)"
                               (click)="$event.stopPropagation()"
+                              (mousedown)="$event.stopPropagation()"
                               panelClass="role-select-panel"
-                              disableOptionCentering="true"
+                              [disableOptionCentering]="true"
                             >
                               <mat-select-trigger>
                                 {{ getUserRole(user) }}
                               </mat-select-trigger>
+
                               <mat-option value="GUEST">
                                 <div class="role-option">
                                   <div class="role-name">Guest</div>
@@ -197,6 +221,7 @@
                                   </div>
                                 </div>
                               </mat-option>
+
                               <mat-option value="MANAGER">
                                 <div class="role-option">
                                   <div class="role-name">Manager</div>
@@ -205,6 +230,7 @@
                                   </div>
                                 </div>
                               </mat-option>
+
                               <mat-option value="OWNER">
                                 <div class="role-option">
                                   <div class="role-name">Owner</div>
@@ -216,24 +242,27 @@
                             </mat-select>
                           </mat-form-field>
                         </div>
+
                         <div
                           class="row-actions"
                           *ngIf="hasUpdatePermission && editMembers"
                         >
                           <button
+                            type="button"
                             class="action-button btn-danger btn-sm"
                             (click)="
                               $event.preventDefault();
                               $event.stopPropagation();
                               removeMember($event, user)
                             "
+                            (mousedown)="$event.stopPropagation()"
                             title="Remove Member"
                           >
                             <i class="fa fa-trash"></i>
                             Remove Member
                           </button>
                         </div>
-                      </a>
+                      </div>
                     </td>
                   </ng-container>
 
@@ -288,6 +317,7 @@
                 >
                 </mage-card-navbar>
               </div>
+
               <div class="table-scroll">
                 <table
                   mat-table
@@ -303,6 +333,7 @@
                       class="table-row-content"
                     >
                       <a
+                        *ngIf="!editTeams"
                         class="row-item text-decoration-none"
                         [routerLink]="['../../teams', team.id]"
                       >
@@ -315,24 +346,33 @@
                             {{ team.description }}
                           </div>
                         </div>
-                        <div
-                          class="row-actions"
-                          *ngIf="hasUpdatePermission && editTeams"
-                        >
+                      </a>
+
+                      <div
+                        *ngIf="editTeams"
+                        class="row-item text-decoration-none"
+                      >
+                        <div class="row-icon">
+                          <i class="fa fa-users"></i>
+                        </div>
+                        <div class="row-info">
+                          <div class="row-primary">{{ team.name }}</div>
+                          <div class="row-secondary">
+                            {{ team.description }}
+                          </div>
+                        </div>
+                        <div class="row-actions" *ngIf="hasUpdatePermission">
                           <button
                             class="action-button btn-danger btn-sm"
-                            (click)="
-                              $event.preventDefault();
-                              $event.stopPropagation();
-                              removeTeam($event, team)
-                            "
+                            type="button"
+                            (click)="removeTeam($event, team)"
                             title="Remove Team"
                           >
                             <i class="fa fa-trash"></i>
                             Remove
                           </button>
                         </div>
-                      </a>
+                      </div>
                     </td>
                   </ng-container>
 
@@ -405,6 +445,7 @@
                       class="table-row-content"
                     >
                       <a
+                        *ngIf="!editLayers"
                         class="row-item text-decoration-none"
                         [routerLink]="['../../layers', layer.id]"
                       >
@@ -417,24 +458,33 @@
                             {{ layer.description }}
                           </div>
                         </div>
-                        <div
-                          class="row-actions"
-                          *ngIf="hasUpdatePermission && editLayers"
-                        >
+                      </a>
+
+                      <div
+                        *ngIf="editLayers"
+                        class="row-item text-decoration-none"
+                      >
+                        <div class="row-icon">
+                          <i class="fa fa-map"></i>
+                        </div>
+                        <div class="row-info">
+                          <div class="row-primary">{{ layer.name }}</div>
+                          <div class="row-secondary" *ngIf="layer.description">
+                            {{ layer.description }}
+                          </div>
+                        </div>
+                        <div class="row-actions" *ngIf="hasUpdatePermission">
                           <button
                             class="action-button btn-danger btn-sm"
-                            (click)="
-                              $event.preventDefault();
-                              $event.stopPropagation();
-                              removeLayer($event, layer)
-                            "
+                            type="button"
+                            (click)="removeLayer($event, layer)"
                             title="Remove Layer"
                           >
                             <i class="fa fa-trash"></i>
                             Remove
                           </button>
                         </div>
-                      </a>
+                      </div>
                     </td>
                   </ng-container>
 
@@ -498,12 +548,12 @@
                 >
                   <div class="form-name">
                     <mat-icon class="form-icon">description</mat-icon>
-                    <span
-                      >{{ form.name
-                      }}<span *ngIf="form.archived" class="text-danger">
-                        (Archived)</span
-                      ></span
-                    >
+                    <span>
+                      {{ form.name }}
+                      <span *ngIf="form.archived" class="text-danger">
+                        (Archived)
+                      </span>
+                    </span>
                   </div>
                 </a>
               </ng-template>
@@ -511,7 +561,12 @@
               <ng-template #itemActionsTemplate let-form>
                 <button
                   mat-icon-button
-                  (click)="$event.stopPropagation(); preview($event, form)"
+                  type="button"
+                  (click)="
+                    $event.preventDefault();
+                    $event.stopPropagation();
+                    preview($event, form)
+                  "
                   matTooltip="Preview Form"
                 >
                   <mat-icon>visibility</mat-icon>
@@ -522,6 +577,7 @@
             <div class="section-save-actions">
               <button
                 class="action-button"
+                type="button"
                 (click)="showArchivedForms = !showArchivedForms"
               >
                 <i
@@ -530,7 +586,11 @@
                 ></i>
                 {{ showArchivedForms ? 'Hide' : 'Show' }} Archived Forms
               </button>
-              <button class="action-button btn-primary" (click)="createForm()">
+              <button
+                class="action-button btn-primary"
+                type="button"
+                (click)="createForm()"
+              >
                 <i class="fa fa-plus"></i> Create Form
               </button>
             </div>
@@ -552,10 +612,10 @@
                   [(ngModel)]="event.minObservationForms"
                   placeholder="No Minimum"
                 />
-                <mat-hint
-                  >Minimum number of forms that must be present in an
-                  observation for this event</mat-hint
-                >
+                <mat-hint>
+                  Minimum number of forms that must be present in an observation
+                  for this event
+                </mat-hint>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-width">
@@ -567,10 +627,10 @@
                   [(ngModel)]="event.maxObservationForms"
                   placeholder="No Maximum"
                 />
-                <mat-hint
-                  >Limit the total number of forms that can be added to an
-                  observation for this event</mat-hint
-                >
+                <mat-hint>
+                  Limit the total number of forms that can be added to an
+                  observation for this event
+                </mat-hint>
               </mat-form-field>
 
               <div class="restrictions-help">
@@ -629,6 +689,7 @@
               <div class="section-save-actions">
                 <button
                   class="action-button btn-primary"
+                  type="button"
                   (click)="saveFormRestrictions()"
                   [disabled]="!restrictions.dirty"
                 >
