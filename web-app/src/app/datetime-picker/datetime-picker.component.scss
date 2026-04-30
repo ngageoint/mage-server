@@ -59,13 +59,12 @@
 :host ::ng-deep .time .mat-mdc-form-field-flex {
   min-height: 56px;
   height: 56px;
-  align-items: center;
 }
 
 :host ::ng-deep .date .mat-mdc-form-field-infix,
 :host ::ng-deep .time .mat-mdc-form-field-infix {
   min-height: 56px;
-  padding-top: 16px;
+  padding-top: 24px;
   padding-bottom: 8px;
   box-sizing: border-box;
 }
@@ -98,10 +97,6 @@
 }
 
 :host ::ng-deep .date .mat-form-field-appearance-fill .mat-form-field-underline,
-:host
-  ::ng-deep
-  .time
-  .mat-form-field-appearance-fill
-  .mat-form-field-underline {
+:host ::ng-deep .time .mat-form-field-appearance-fill .mat-form-field-underline {
   position: static !important;
 }

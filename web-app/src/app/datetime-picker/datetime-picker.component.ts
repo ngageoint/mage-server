@@ -89,6 +89,14 @@ export class DatetimePickerComponent implements OnChanges {
     this.dateTimeChange.emit(date.toDate());
   }
 
+  showTimePicker(input: HTMLInputElement): void {
+    try {
+      input.showPicker();
+    } catch {
+      input.focus();
+    }
+  }
+
   private isValidTime(value: string): boolean {
     return !!this.parseTime(value);
   }

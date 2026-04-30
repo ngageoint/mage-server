@@ -2,25 +2,13 @@
   <div class="date">
     <mat-form-field appearance="fill" floatLabel="always">
       <mat-label>{{ title }} Date</mat-label>
-      <input
-        matInput
-        [matDatepicker]="datePicker"
-        [(ngModel)]="date"
-        [required]="required"
-        (ngModelChange)="onDate()"
-        #dateModel="ngModel"
-        autocomplete="off"
-      />
-      <mat-datepicker-toggle
-        matSuffix
-        [for]="datePicker"
-      ></mat-datepicker-toggle>
+      <input matInput [matDatepicker]="datePicker" [(ngModel)]="date" [required]="required" (ngModelChange)="onDate()"
+        #dateModel="ngModel" autocomplete="off" />
+      <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
       <mat-datepicker #datePicker></mat-datepicker>
-      <mat-error
-        *ngIf="
+      <mat-error *ngIf="
           dateModel.errors?.required && !dateModel.errors?.matDatepickerParse
-        "
-      >
+        ">
         Date is required
       </mat-error>
       <mat-error *ngIf="dateModel.errors?.matDatepickerParse">
@@ -34,16 +22,11 @@
       <mat-label>
         {{ title }} Time {{ timezone === 'gmt' ? '(GMT)' : '(Local)' }}
       </mat-label>
-      <input
-        matInput
-        type="time"
-        step="1"
-        [(ngModel)]="time"
-        [required]="required"
-        (ngModelChange)="onTime()"
-        #timeModel="ngModel"
-        autocomplete="off"
-      />
+      <input matInput #timeInput type="time" step="1" [(ngModel)]="time" [required]="required"
+        (ngModelChange)="onTime()" #timeModel="ngModel" autocomplete="off" />
+      <button mat-icon-button matSuffix type="button" (click)="showTimePicker(timeInput)">
+        <mat-icon>schedule</mat-icon>
+      </button>
       <mat-error *ngIf="timeInvalid">Invalid time</mat-error>
     </mat-form-field>
   </div>
