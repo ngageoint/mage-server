@@ -156,7 +156,10 @@
               <a
                 class="pointer"
                 *ngIf="login.user?.id; else unknownUser"
-                [routerLink]="['/admin/users', login.user.id]"
+                [routerLink]="[
+                  userId || deviceId ? '../../users' : '../users',
+                  login.user.id
+                ]"
               >
                 {{ login.user?.displayName || 'Unknown User' }}
               </a>
@@ -171,7 +174,10 @@
                 <a
                   class="pointer"
                   *ngIf="login.device?.id; else unknownDevice"
-                  [routerLink]="['/admin/devices', login.device.id]"
+                  [routerLink]="[
+                    userId || deviceId ? '../../devices' : '../devices',
+                    login.device.id
+                  ]"
                 >
                   <i class="fa" [ngClass]="iconClass(login.device)"></i>
                   {{ login.device?.uid || 'Unknown Device' }}
