@@ -3,173 +3,75 @@
   width: 100%;
 }
 
-.datetime {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
+.edit-location {
+  padding: 0 16px;
 }
 
-.date,
-.time {
+.chip-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chip-type__label {
+  margin-right: 16px;
+  white-space: nowrap;
+  font: 500 14px/28px Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.coordinates {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.coordinate {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+mat-form-field {
   width: 100%;
   min-width: 0;
 }
 
-.date mat-form-field,
-.time mat-form-field {
-  width: 100%;
+::ng-deep .mat-form-field-infix {
+  width: auto;
 }
 
-/* legacy Material */
-:host ::ng-deep .date .mat-form-field,
-:host ::ng-deep .time .mat-form-field {
-  width: 100%;
+::ng-deep .mat-mdc-form-field,
+::ng-deep .mat-mdc-text-field-wrapper,
+::ng-deep .mat-mdc-form-field-infix {
+  min-width: 0;
 }
 
-:host ::ng-deep .date .mat-form-field-wrapper,
-:host ::ng-deep .time .mat-form-field-wrapper {
-  padding-bottom: 0 !important;
-}
-
-:host ::ng-deep .date .mat-form-field-flex,
-:host ::ng-deep .time .mat-form-field-flex {
-  min-height: 56px !important;
-  height: 56px !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
-}
-
-:host ::ng-deep .date .mat-form-field-infix,
-:host ::ng-deep .time .mat-form-field-infix {
-  min-height: 56px !important;
-  height: 56px !important;
-  padding-top: 16px !important;
-  padding-bottom: 16px !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-  border-top: 0 !important;
-  width: auto !important;
-  box-sizing: border-box !important;
-}
-
-:host ::ng-deep .date .mat-input-element,
-:host ::ng-deep .time .mat-input-element {
-  font-size: 18px !important;
-  line-height: 1.2 !important;
-}
-
-:host ::ng-deep .date .mat-form-field-label,
-:host ::ng-deep .time .mat-form-field-label {
-  font-size: 12px !important;
-}
-
-:host ::ng-deep .date .mat-form-field-suffix,
-:host ::ng-deep .time .mat-form-field-suffix {
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-}
-
-:host ::ng-deep .date .mat-icon-button,
-:host ::ng-deep .time .mat-icon-button {
-  width: 40px !important;
-  height: 40px !important;
-  padding: 8px !important;
-}
-
-:host ::ng-deep .date .mat-icon,
-:host ::ng-deep .time .mat-icon {
-  width: 24px !important;
-  height: 24px !important;
-  font-size: 24px !important;
-  line-height: 24px !important;
-}
-
-/* MDC / modern Material */
-:host ::ng-deep .date .mat-mdc-form-field,
-:host ::ng-deep .time .mat-mdc-form-field {
-  width: 100%;
-}
-
-:host ::ng-deep .date .mat-mdc-form-field-subscript-wrapper,
-:host ::ng-deep .time .mat-mdc-form-field-subscript-wrapper {
+::ng-deep mat-chip-option .mat-mdc-chip-graphic {
   display: none !important;
+  width: 0 !important;
 }
 
-:host ::ng-deep .date .mat-mdc-text-field-wrapper,
-:host ::ng-deep .time .mat-mdc-text-field-wrapper {
-  min-height: 56px !important;
-  height: 56px !important;
-  box-sizing: border-box !important;
+::ng-deep mat-chip-option .mdc-evolution-chip__action--primary {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
 }
 
-:host ::ng-deep .date .mat-mdc-form-field-flex,
-:host ::ng-deep .time .mat-mdc-form-field-flex {
-  min-height: 56px !important;
-  height: 56px !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
+.edit-location__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0;
+  padding-bottom: 0;
 }
 
-:host ::ng-deep .date .mat-mdc-form-field-infix,
-:host ::ng-deep .time .mat-mdc-form-field-infix {
-  min-height: 56px !important;
-  height: 56px !important;
-  min-width: 0 !important;
-  width: auto !important;
-  padding-top: 16px !important;
-  padding-bottom: 16px !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-  box-sizing: border-box !important;
-}
-
-:host ::ng-deep .date input.mat-mdc-input-element,
-:host ::ng-deep .time input.mat-mdc-input-element {
-  font-size: 18px !important;
-  line-height: 1.2 !important;
-}
-
-:host ::ng-deep .date .mdc-floating-label,
-:host ::ng-deep .time .mdc-floating-label {
-  font-size: 12px !important;
-}
-
-:host ::ng-deep .date .mat-mdc-form-field-icon-suffix,
-:host ::ng-deep .time .mat-mdc-form-field-icon-suffix {
-  display: flex !important;
-  align-items: center !important;
-  align-self: center !important;
-  padding-right: 8px !important;
-}
-
-:host ::ng-deep .date .mat-mdc-icon-button,
-:host ::ng-deep .time .mat-mdc-icon-button {
-  width: 40px !important;
-  height: 40px !important;
-  padding: 8px !important;
-}
-
-:host ::ng-deep .date .mat-mdc-icon-button .mat-icon,
-:host ::ng-deep .time .mat-mdc-icon-button .mat-icon {
-  width: 24px !important;
-  height: 24px !important;
-  font-size: 24px !important;
-  line-height: 24px !important;
-}
-
-:host ::ng-deep .date .mat-mdc-text-field-wrapper,
-:host ::ng-deep .time .mat-mdc-text-field-wrapper,
-:host ::ng-deep .date .mat-form-field-flex,
-:host ::ng-deep .time .mat-form-field-flex {
-  border-radius: 4px 4px 0 0;
+.edit-location__actions>button+button {
+  margin-left: 8px;
 }
 
 @media (max-width: 700px) {
-  .datetime {
-    grid-template-columns: 1fr;
-    gap: 12px;
+  .coordinates {
+    flex-direction: column;
+    gap: 0;
   }
 }

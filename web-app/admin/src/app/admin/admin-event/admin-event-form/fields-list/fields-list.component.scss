@@ -249,6 +249,9 @@ $font-xs: 12px;
   color: #6b7280;
   border-radius: 8px;
   transition: background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: #e5e7eb;
@@ -260,4 +263,7 @@ $font-xs: 12px;
   font-size: $font-md;
   width: $font-md;
   height: $font-md;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

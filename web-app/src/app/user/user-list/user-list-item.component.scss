@@ -1,6 +1,5 @@
 .item {
   cursor: pointer;
-  padding: 16px 16px 0;
 }
 
 .item-header {
@@ -36,7 +35,7 @@
   min-width: 0;
 }
 
-.item-title > div {
+.item-title>div {
   min-width: 0;
 }
 
@@ -112,7 +111,7 @@
   justify-content: flex-end;
 }
 
-.actions-icons > * + * {
+.actions-icons>*+* {
   margin-left: 8px;
 }
 
