@@ -1,55 +1,64 @@
-<div class="dialog-modal">
-  <div class="dialog-header">
-    <h2 class="dialog-title">Create a New Device</h2>
+<form [formGroup]="deviceForm" class="modal-container">
+  <div class="modal-header">
+    <h2>Create a New Device</h2>
   </div>
 
-  <div class="dialog-content">
-    <div *ngIf="errorMessage" class="error-popover">
+  <div class="modal-body">
+    <div *ngIf="errorMessage" class="error-alert">
       <i class="fa fa-exclamation-triangle"></i>
       <span>{{ errorMessage }}</span>
     </div>
 
-    <form [formGroup]="deviceForm" class="device-form">
-      <div class="form-field">
-        <label class="field-label">Device uid</label>
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Device UID</mat-label>
         <input
+          matInput
           type="text"
-          class="form-input"
           formControlName="uid"
           placeholder="ex: 01:02:03:04:05:06:07"
         />
-        <div class="field-error">
-          <span
-            class="error-text"
-            [class.visible]="
-              deviceForm.get('uid').invalid &&
-              (deviceForm.get('uid').touched ||
-                deviceForm.get('uid').dirty)
-            "
-          >
-            uid is required
-          </span>
-        </div>
+      </mat-form-field>
+
+      <div
+        class="error-popover"
+        *ngIf="
+          deviceForm.controls.uid.invalid &&
+          (deviceForm.controls.uid.touched || deviceForm.controls.uid.dirty)
+        "
+      >
+        UID is required
       </div>
-      <div class="form-field">
-        <label class="field-label">Description</label>
+    </div>
+
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Description</mat-label>
         <textarea
-          class="form-input"
+          matInput
           formControlName="description"
           rows="3"
           placeholder="Enter device description (optional)"
         ></textarea>
-      </div>
+      </mat-form-field>
+    </div>
+
+    <div class="user-search-shell">
       <user-search-box
         placeholder="Pick a contact user..."
         (userSelected)="onPointOfContactSelected($event)"
       ></user-search-box>
-    </form>
+    </div>
   </div>
 
-  <div class="dialog-actions">
-    <button class="action-button" (click)="cancel()">Cancel</button>
+  <div class="modal-footer">
+    <button type="button" class="action-button" (click)="cancel()">
+      <i class="fa fa-times"></i>
+      Cancel
+    </button>
+
     <button
+      type="button"
       class="action-button btn-primary"
       (click)="save()"
       [disabled]="deviceForm.invalid"
@@ -58,4 +67,4 @@
       Create Device
     </button>
   </div>
-</div>
+</form>

@@ -1,37 +1,63 @@
-<div class="dialog-modal">
-    <div class="dialog-header">
-        <h2 class="dialog-title">Create a New Team</h2>
+<form [formGroup]="teamForm" class="modal-container">
+    <div class="modal-header">
+      <h2>Create a New Team</h2>
     </div>
-
-    <div class="dialog-content">
-        <div *ngIf="errorMessage" class="error-alert">
-            <i class="fa fa-exclamation-triangle"></i>
-            <span>{{ errorMessage }}</span>
+  
+    <div class="modal-body">
+      <div *ngIf="errorMessage" class="error-alert">
+        <i class="fa fa-exclamation-triangle"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+  
+      <div class="field-shell">
+        <mat-form-field appearance="fill">
+          <mat-label>Team Name</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="name"
+            placeholder="Enter team name"
+          />
+        </mat-form-field>
+  
+        <div
+          class="error-popover"
+          *ngIf="
+            teamForm.controls.name.invalid &&
+            teamForm.controls.name.touched
+          "
+        >
+          Name is required
         </div>
-
-        <form [formGroup]="teamForm" class="team-form">
-            <div class="form-field">
-                <label class="field-label">Team Name</label>
-                <input type="text" class="form-input" formControlName="name" placeholder="Enter team name">
-                <div *ngIf="teamForm.get('name').hasError('required')" class="field-error">
-                    <i class="fa fa-exclamation-circle"></i>
-                    Name is required
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label class="field-label">Description</label>
-                <textarea class="form-input" formControlName="description" rows="3"
-                    placeholder="Enter team description (optional)"></textarea>
-            </div>
-        </form>
+      </div>
+  
+      <div class="field-shell">
+        <mat-form-field appearance="fill">
+          <mat-label>Description</mat-label>
+          <textarea
+            matInput
+            formControlName="description"
+            rows="3"
+            placeholder="Enter team description (optional)"
+          ></textarea>
+        </mat-form-field>
+      </div>
     </div>
-
-    <div class="dialog-actions">
-        <button class="action-button" (click)="cancel()">Cancel</button>
-        <button class="action-button btn-primary" (click)="save()" [disabled]="teamForm.invalid">
-            <i class="fa fa-save"></i>
-            Create Team
-        </button>
+  
+    <div class="modal-footer">
+      <button type="button" class="action-button" (click)="cancel()">
+        <i class="fa fa-times"></i>
+        Cancel
+      </button>
+  
+      <button
+        type="button"
+        class="action-button btn-primary"
+        (click)="save()"
+        [disabled]="teamForm.invalid"
+      >
+        <i class="fa fa-save"></i>
+        Create Team
+      </button>
     </div>
-</div>
+  </form>
