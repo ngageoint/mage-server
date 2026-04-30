@@ -14,13 +14,13 @@
   overflow: auto;
   background: #fff;
   border-top: 1px solid #eee;
+  padding: 16px 24px;
+  box-sizing: border-box;
 }
 
 .form-preview-scale {
-  width: 600px;
+  width: 100%;
   transform-origin: top left;
-  margin-bottom: -24%;
-  padding: 5px;
 }
 
 :host ::ng-deep .form-preview-scale {
@@ -56,4 +56,9 @@
 :host ::ng-deep h2[mat-dialog-title],
 :host ::ng-deep .mat-mdc-dialog-title {
   color: #1e88e5;
+}
+
+:host ::ng-deep .form-preview-viewport mat-card,
+:host ::ng-deep .form-preview-viewport .mat-mdc-card {
+  box-shadow: none !important;
 }
