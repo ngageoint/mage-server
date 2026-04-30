@@ -39,13 +39,14 @@ $font-xs: 12px;
     margin-bottom: 20px;
 
     .field-label {
-      display: block;
+      display: inline-flex;
       font-size: $font-sm;
       font-weight: 700;
       color: #374151;
       margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      align-items: flex-end;
     }
 
     .field-content {
@@ -825,7 +826,7 @@ $font-xs: 12px;
   .item-header {
     display: flex;
     flex-direction: row;
-    padding-bottom: 16px;
+    padding: 16px;
     gap: 16px;
   }
 
@@ -910,6 +911,7 @@ $font-xs: 12px;
 
   .actions__location-button {
     padding: 4px;
+    left: 15px;
   }
 
   .actions__location-icon {

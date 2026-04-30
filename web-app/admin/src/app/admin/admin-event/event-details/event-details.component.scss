@@ -161,18 +161,20 @@ mat-card {
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
 
   .action-card-title {
     font-size: $font-lg;
     font-weight: 700;
-    color: #111827;
+    color: #1e40af;
     margin: 0 0 16px;
     line-height: 1.2;
   }
 
   .action-card-description {
     font-size: $font-sm;
-    color: #6b7280;
+    color: #1e3a8a;
     margin: 0 0 24px;
     line-height: 1.55;
     flex: 1;
@@ -334,6 +336,18 @@ mat-card {
   &:hover {
     background-color: #f8fafc;
   }
+
+  &.row-item--editing-members {
+    min-height: 73px;
+
+    .role-select-field {
+      height: 35px;
+      min-height: 35px;
+      width: 150px;
+      min-width: 150px;
+      max-width: 150px;
+    }
+  }
 }
 
 .row-icon {
@@ -424,7 +438,7 @@ mat-card {
   }
 
   .role-select {
-    height: 40px;
+    height: 25px;
     min-width: 120px;
     padding: 0 12px;
     border: 1px solid #d1d5db;
@@ -446,9 +460,11 @@ mat-card {
   }
 
   .role-select-field {
-    width: 140px;
-    min-width: 140px;
-    max-width: 140px;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    height: 35px;
+    min-height: 35px;
     font-size: $font-sm;
 
     ::ng-deep .mat-form-field-wrapper {
@@ -462,16 +478,18 @@ mat-card {
     }
 
     ::ng-deep .mat-form-field-flex {
-      min-height: 40px;
+      height: 35px;
+      min-height: 35px;
       padding: 0;
       border: 1px solid #d1d5db;
       border-radius: 8px;
       background-color: #fff;
       transition: all 0.2s ease;
+      align-items: center;
     }
 
     ::ng-deep .mat-form-field-infix {
-      padding: 8px 12px;
+      padding: 0 12px;
       border: 0;
       width: 100%;
     }
@@ -482,7 +500,10 @@ mat-card {
     }
 
     ::ng-deep .mat-select-trigger {
-      min-height: auto;
+      height: 35px;
+      min-height: 35px;
+      display: flex;
+      align-items: center;
     }
 
     ::ng-deep .mat-select-arrow-wrapper {
@@ -490,12 +511,59 @@ mat-card {
       padding-right: 8px;
     }
 
-    &.mat-focused ::ng-deep .mat-form-field-flex {
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      height: 35px;
+      min-height: 35px;
+      padding: 0;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background-color: #fff;
+      transition: all 0.2s ease;
+    }
+
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 35px;
+      min-height: 35px;
+      align-items: center;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      min-height: 35px;
+      height: 35px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    ::ng-deep .mat-mdc-select-trigger {
+      height: 35px;
+      min-height: 35px;
+      display: flex;
+      align-items: center;
+    }
+
+    ::ng-deep .mat-mdc-select-value {
+      font-size: $font-sm;
+      color: #374151;
+    }
+
+    ::ng-deep .mat-mdc-select-arrow-wrapper {
+      transform: translateY(0);
+      padding-right: 8px;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+
+    &.mat-focused ::ng-deep .mat-form-field-flex,
+    &.mat-focused ::ng-deep .mat-mdc-text-field-wrapper {
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    &:hover:not(.mat-focused) ::ng-deep .mat-form-field-flex {
+    &:hover:not(.mat-focused) ::ng-deep .mat-form-field-flex,
+    &:hover:not(.mat-focused) ::ng-deep .mat-mdc-text-field-wrapper {
       border-color: #9ca3af;
     }
   }
