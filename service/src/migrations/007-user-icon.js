@@ -3,22 +3,22 @@ const async = require('async')
 
 exports.id = '007-user-icon';
 
-exports.up = function (done) {
+exports.up = function(done) {
   this.log('updating user icons');
 
-  User.getUsers(function (err, users) {
+  User.getUsers(function(err, users) {
     if (err) return done(err);
 
-    async.each(users, function (user, done) {
+    async.each(users, function(user, done) {
       user.icon = user.icon || {};
       user.icon.type = user.icon.relativePath ? 'upload' : 'none';
-      user.save().then(() => done(), err => done(err));
-    }, function (err) {
+      user.save(done);
+    }, function(err) {
       done(err);
     });
   });
 };
 
-exports.down = function (done) {
+exports.down = function(done) {
   done();
 };

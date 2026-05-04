@@ -2,7 +2,6 @@ import moment from 'moment'
 import path from 'path'
 import express from 'express'
 import fs from 'fs'
-import mongoose from 'mongoose'
 import log from '../logger'
 import { exportDirectory } from '../environment/env'
 import Event, { MageEventDocument } from '../models/event'
@@ -16,14 +15,14 @@ import { EventAccessType } from '../entities/events/entities.events'
 import Export, { ExportDocument } from '../models/export'
 
 type ExportRequest = express.Request & {
-  export?: ExportDocument | null
-  parameters?: {
-    exportId?: ExportDocument['_id']
-    filter: any
-  },
+    export?: ExportDocument | null
+    parameters?: {
+      exportId?: ExportDocument['_id']
+      filter: any
+    },
 }
 
-const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
+const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
 
   const passport = security.authentication.passport;
 
@@ -74,7 +73,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
         res.location(`${req.route.path}/${result._id.toString()}`).status(201).json(response);
         exportData(result._id, exportReq.event!);
       })
-        .catch(err => next(err))
+      .catch(err => next(err))
     }
   )
 
@@ -158,7 +157,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
     function (req, res) {
       const exportId = req.params.exportId
       res.json({ id: exportId })
-      exportData(new mongoose.Types.ObjectId(exportId), req.event!)
+      exportData(exportId, req.event!)
     })
 }
 
@@ -171,12 +170,12 @@ in the actual request handler.
 function getExport(req: express.Request, res: express.Response, next: express.NextFunction): void {
   const exportId = req.params.exportId
   if (!exportId) {
-    return void (res.status(400).json({ message: `exportId is required` }))
+    return void(res.status(400).json({ message: `exportId is required`}))
   }
   Export.getExportById(exportId)
     .then(result => {
       if (!result) {
-        return void (res.status(404).json({ message: `No export exists for ID ${exportId}` }))
+        return void(res.status(404).json({ message: `No export exists for ID ${exportId}`}))
       }
       const exportReq = req as ExportRequest
       const parameters = { filter: {} } as Required<ExportRequest>['parameters']
@@ -202,7 +201,7 @@ function parseQueryParams(req: express.Request, res: express.Response, next: exp
   }
   const eventId = body.eventId;
   if (!eventId) {
-    return void (res.status(400).send("eventId is required"))
+    return void(res.status(400).send("eventId is required"))
   }
   parameters.filter.eventId = eventId;
   parameters.filter.exportObservations = String(body.observations).toLowerCase() === 'true';
@@ -224,7 +223,7 @@ function parseQueryParams(req: express.Request, res: express.Response, next: exp
 function getEvent(req: express.Request, res: express.Response, next: express.NextFunction): void {
   const exportReq = req as ExportRequest
   if (!exportReq.parameters?.filter) {
-    return void (res.status(400).send('eventId is required'))
+    return void(res.status(400).send('eventId is required'))
   }
   const { eventId } = exportReq.parameters.filter
   Event.getById(eventId, {}, function (err, event) {

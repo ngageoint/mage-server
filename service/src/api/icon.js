@@ -59,7 +59,7 @@ Icon.prototype.writeZip = function (zipPath, callback) {
 };
 
 Icon.prototype.getZipPath = function (callback) {
-  var zipPath = path.join(os.tmpdir(), this._eventId + '_icons' + new mongoose.Types.ObjectId() + '.zip');
+  var zipPath = path.join(os.tmpdir(), this._eventId + '_icons' + mongoose.Types.ObjectId() + '.zip');
   this.writeZip(zipPath, function (err) {
     return callback(err, zipPath);
   }.bind(this));
@@ -184,8 +184,10 @@ Icon.prototype.delete = function (callback) {
     if (self._primary) remove.primary = self._primary;
     if (self._variant) remove.variant = self._variant;
 
-    IconModel.Model.deleteMany(remove).then(() => {
-      callback(null);
+    IconModel.remove(remove, function (err) {
+      if (err) return callback(err);
+
+      callback(err);
 
       // remove the variant dir, primary dir, or base dir
       var removePath = path.join(iconBase, self._eventId.toString());

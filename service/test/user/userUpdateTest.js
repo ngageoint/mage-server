@@ -27,7 +27,7 @@ describe("user update tests", function () {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -50,7 +50,7 @@ describe("user update tests", function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     const permissions = Array.isArray(permission) ? permission : [permission];
     sinon.mock(TokenOperations)
@@ -71,8 +71,8 @@ describe("user update tests", function () {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function () {
-          return Promise.resolve(mockUser);
+        populate: function (field, callback) {
+          callback(null, mockUser);
         }
       }
     };
@@ -82,15 +82,15 @@ describe("user update tests", function () {
       .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
-      .resolves(token);
+      .yields(null, token);
 
     sinon.mock(mockUser)
       .expects('save')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .put('/api/users/myself')
@@ -119,14 +119,14 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       enabled: true,
-      roleId: new mongoose.Types.ObjectId(),
+      roleId: mongoose.Types.ObjectId(),
       authentication: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         security: {},
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {}
@@ -140,7 +140,7 @@ describe("user update tests", function () {
       .chain('populate', 'roleId')
       .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -177,13 +177,13 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       enabled: true,
-      roleId: new mongoose.Types.ObjectId(),
+      roleId: mongoose.Types.ObjectId(),
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {
@@ -209,7 +209,7 @@ describe("user update tests", function () {
       .chain('populate', 'roleId')
       .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -238,13 +238,13 @@ describe("user update tests", function () {
   it('should update user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -255,11 +255,11 @@ describe("user update tests", function () {
 
     sinon.mock(mockUser)
       .expects('save')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .put('/api/users/' + id.toString())
@@ -271,7 +271,7 @@ describe("user update tests", function () {
         email: 'test@test.com',
         phone: '000-000-0000',
         active: true,
-        roleId: new mongoose.Types.ObjectId()
+        roleId: mongoose.Types.ObjectId()
       })
       .expect(200)
       .expect('Content-Type', /json/)
@@ -288,14 +288,14 @@ describe("user update tests", function () {
       .expects('getToken')
       .yields(null, createToken(userId, ['UPDATE_USER', 'UPDATE_USER_ROLE']));
 
-    const id = new mongoose.Types.ObjectId();
-    const roleId = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
+    const roleId = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -334,7 +334,7 @@ describe("user update tests", function () {
   it('should update user password with UPDATE_USER_ROLE permission', function (done) {
     mockTokenWithPermission(['UPDATE_USER', 'UPDATE_USER_ROLE']);
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -342,7 +342,7 @@ describe("user update tests", function () {
       active: true,
       enabled: true,
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         security: {}
@@ -379,7 +379,7 @@ describe("user update tests", function () {
   it('should fail to update user password w/o UPDATE_USER_ROLE permission', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -387,7 +387,7 @@ describe("user update tests", function () {
       active: true,
       enabled: true,
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: undefined,
         security: {}
@@ -415,14 +415,14 @@ describe("user update tests", function () {
   it('fails to update the user password without the passwordconfirm parameter', function (done) {
     mockTokenWithPermission('UPDATE_USER_ROLE');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: undefined,
         security: {}
@@ -455,13 +455,13 @@ describe("user update tests", function () {
   it('should fail to update user role w/o UPDATE_USER_ROLE', function (done) {
     mockTokenWithPermission(['UPDATE_USER']);
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     mockUser.authentication = {
@@ -493,7 +493,7 @@ describe("user update tests", function () {
         active: true,
         password: 'passwordpassword',
         passwordconfirm: 'passwordpassword',
-        roleId: new mongoose.Types.ObjectId()
+        roleId: mongoose.Types.ObjectId()
       })
       .expect(200)
       .expect('Content-Type', /json/)
@@ -508,12 +508,12 @@ describe("user update tests", function () {
   it('should activate user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -542,12 +542,12 @@ describe("user update tests", function () {
   it('should disable user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -576,22 +576,22 @@ describe("user update tests", function () {
   it('should remove token if user is inactive', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: false,
       enabled: true,
-      roleId: new mongoose.Types.ObjectId(),
-      authenticationId: new mongoose.Types.ObjectId()
+      roleId: mongoose.Types.ObjectId(),
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     // mock variable used by mongoose to determine if this is a create or update
     mockUser.isNew = false;
     // mock mongoose populate call
-    mockUser.populate = function () {
-      return Promise.resolve(mockUser);
+    mockUser.populate = function (field, callback) {
+      callback(null, mockUser);
     };
 
     sinon.mock(UserModel)
@@ -602,16 +602,16 @@ describe("user update tests", function () {
 
     sinon.mock(UserModel.collection)
       .expects('updateOne')
-      .resolves({});
+      .yields(null, {});
 
     sinon.mock(UserModel.collection)
       .expects('findOne')
-      .resolves(null);
+      .yields(null, null);
 
     const tokenStub = sinon.mock(TokenModel)
-      .expects('deleteMany')
+      .expects('remove')
       .withArgs(sinon.match({ userId: id }))
-      .resolves();
+      .yields(null);
 
     request(app)
       .put('/api/users/' + id.toString())
@@ -631,22 +631,22 @@ describe("user update tests", function () {
   it('should remove token if user is disabled', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
       enabled: true,
-      roleId: new mongoose.Types.ObjectId(),
-      authenticationId: new mongoose.Types.ObjectId()
+      roleId: mongoose.Types.ObjectId(),
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     // mock variable used by mongoose to determine if this is a create or update
     mockUser.isNew = false;
     // mock mongoose populate call
-    mockUser.populate = function () {
-      return Promise.resolve(mockUser);
+    mockUser.populate = function (field, callback) {
+      callback(null, mockUser);
     };
 
     sinon.mock(UserModel)
@@ -657,16 +657,16 @@ describe("user update tests", function () {
 
     sinon.mock(UserModel.collection)
       .expects('updateOne')
-      .resolves({});
+      .yields(null, {});
 
     sinon.mock(UserModel.collection)
       .expects('findOne')
-      .resolves(null);
+      .yields(null, null);
 
     const tokenStub = sinon.mock(TokenModel)
-      .expects('deleteMany')
+      .expects('remove')
       .withArgs(sinon.match({ userId: id }))
-      .resolves();
+      .yields(null);
 
     request(app)
       .put('/api/users/' + id.toString())
@@ -686,14 +686,14 @@ describe("user update tests", function () {
   it('should fail to update user if passwords dont match', function (done) {
     mockTokenWithPermission('UPDATE_USER_ROLE');
 
-    const id = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
     const mockUser = {
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
       authentication: Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         security: {}
@@ -715,7 +715,7 @@ describe("user update tests", function () {
         displayName: 'test',
         password: 'password',
         passwordconfirm: 'confirm',
-        roleId: new mongoose.Types.ObjectId()
+        roleId: mongoose.Types.ObjectId()
       })
       .expect(400)
       .expect(function (res) {
@@ -727,18 +727,18 @@ describe("user update tests", function () {
   it('should fail to update user if password does not meet complexity', function (done) {
     mockTokenWithPermission('UPDATE_USER_ROLE');
 
-    const id = new mongoose.Types.ObjectId();
-    const mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser =  new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {
@@ -773,7 +773,7 @@ describe("user update tests", function () {
         displayName: 'test',
         password: 'password',
         passwordconfirm: 'password',
-        roleId: new mongoose.Types.ObjectId()
+        roleId: mongoose.Types.ObjectId()
       })
       .expect(400)
       .expect(function (res) {
@@ -795,8 +795,8 @@ describe("user update tests", function () {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function () {
-          return Promise.resolve(mockUser);
+        populate: function (field, callback) {
+          callback(null, mockUser);
         }
       }
     };
@@ -806,15 +806,15 @@ describe("user update tests", function () {
       .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
-      .resolves(token);
+      .yields(null, token);
 
     sinon.mock(mockUser)
       .expects('save')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .put('/api/users/myself/status')
@@ -848,8 +848,8 @@ describe("user update tests", function () {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function () {
-          return Promise.resolve(mockUser);
+        populate: function (field, callback) {
+          callback(null, mockUser);
         }
       }
     };
@@ -859,7 +859,7 @@ describe("user update tests", function () {
       .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
-      .resolves(token);
+      .yields(null, token);
 
     request(app)
       .put('/api/users/myself/status')
@@ -887,8 +887,8 @@ describe("user update tests", function () {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function () {
-          return Promise.resolve(mockUser);
+        populate: function (field, callback) {
+          callback(null, mockUser);
         }
       }
     };
@@ -898,15 +898,15 @@ describe("user update tests", function () {
       .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
-      .resolves(token);
+      .yields(null, token);
 
     sinon.mock(mockUser)
       .expects('save')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .delete('/api/users/myself/status')
@@ -935,7 +935,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -956,7 +956,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
       .withArgs(userId, { recentEventIds: [1] }, { new: true })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .post('/api/users/' + userId.toString() + '/events/1/recent')
@@ -979,7 +979,7 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       recentEventIds: [5, 4, 3, 2, 1],
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     const token = {
@@ -987,8 +987,8 @@ describe("user update tests", function () {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function () {
-          return Promise.resolve(mockUser);
+        populate: function (field, callback) {
+          callback(null, mockUser);
         }
       }
     };
@@ -998,7 +998,7 @@ describe("user update tests", function () {
       .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
-      .resolves(token);
+      .yields(null, token);
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(userId.toHexString())
@@ -1021,7 +1021,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
       .withArgs(userId, { recentEventIds: [6, 5, 4, 3, 2] }, { new: true })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .post('/api/users/' + userId.toString() + '/events/6/recent')
@@ -1045,7 +1045,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -1069,7 +1069,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
       .withArgs(userId, { recentEventIds: [1] }, { new: true })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .post('/api/users/' + userId.toString() + '/events/1/recent')
@@ -1093,7 +1093,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -1121,7 +1121,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
       .withArgs(userId, { recentEventIds: [1] }, { new: true })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .post('/api/users/' + userId.toString() + '/events/1/recent')
@@ -1145,7 +1145,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new mongoose.Types.ObjectId()
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
@@ -1167,7 +1167,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
       .withArgs(userId, { recentEventIds: [1] }, { new: true })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .post('/api/users/' + userId.toString() + '/events/1/recent')

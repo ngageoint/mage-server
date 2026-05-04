@@ -12,7 +12,7 @@ export type StaticIconModel = mongoose.Model<StaticIconDocument>
 export const StaticIconModelName = 'StaticIcon'
 export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
   {
-    _id: { type: String as any, required: true },
+    _id: { type: String, required: true },
     sourceUrl: { type: String, required: true, unique: true },
     registeredTimestamp: { type: Number, required: true },
     resolvedTimestamp: { type: Number, required: false },
@@ -29,7 +29,7 @@ export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
       required: false
     },
     sizeBytes: { type: Number, required: false },
-    tags: [String],
+    tags: [ String ],
     title: { type: String, required: false },
     summary: { type: String, required: false },
     fileName: { type: String, required: false },
@@ -38,7 +38,7 @@ export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: StaticIconDocument, json: any & StaticIcon): void => {
+      transform: (doc: StaticIconDocument, json: any & StaticIcon, options: mongoose.SchemaOptions): void => {
         delete json._id
         json.sourceUrl = new URL(doc.sourceUrl)
       }
@@ -160,11 +160,11 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
         console.error(`failed to resolve local icon url`, content)
         return content
       }
-      return [this.entityForDocument(icon), content]
+      return [ this.entityForDocument(icon), content ]
     }
     content = await this.contentStore.loadContent(id)
     if (content) {
-      return [this.entityForDocument(resolved), content]
+      return [ this.entityForDocument(resolved), content ]
     }
     return null
   }

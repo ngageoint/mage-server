@@ -12,21 +12,21 @@ describe("authentication configuration model tests", function () {
         sinon.restore();
     });
 
-    it('validate model', async function () {
+    it('validate model', function (done) {
         const authConfig = new AuthenticationConfiguration.Model({
             name: 'local',
             type: 'local'
         });
 
-        await authConfig.validate();
-        authConfig.name = null;
+        authConfig.validate(function (err) {
+            expect(err).to.be.null;
 
-        try {
-            await authConfig.validate();
-            expect.fail('Expected validation to fail when name is null');
-        } catch (err) {
-            expect(err).to.not.be.null;
-        }
+            authConfig.name = null;
+            authConfig.validate(function (err) {
+                expect(err).to.not.be.null;
+                done();
+            });
+        });
     });
 
     it('test whitelist', function (done) {

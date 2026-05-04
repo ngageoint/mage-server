@@ -45,7 +45,7 @@ function purgeAppModules() {
 }
 
 function installDeterministicHasher() {
-  require.cache[pbkdf2Path].exports = function () {
+  require.cache[pbkdf2Path].exports = function() {
     return {
       hashPassword(value, cb) {
         cb(null, `hash:${String(value)}`);
@@ -64,7 +64,7 @@ async function captcha(username = 'test') {
     .set('Accept', 'application/json')
     .send({ username })
     .expect(200)
-    .expect(function (res) {
+    .expect(function(res) {
       jwt = res.body.token;
       res.body.should.have.property('captcha');
     });
@@ -72,8 +72,8 @@ async function captcha(username = 'test') {
   return jwt;
 }
 
-describe('user create tests', function () {
-  beforeEach(function () {
+describe('user create tests', function() {
+  beforeEach(function() {
     const config = {
       name: 'local',
       type: 'local'
@@ -106,13 +106,13 @@ describe('user create tests', function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
     require.cache[pbkdf2Path].exports = originalPbkdf2Factory;
     purgeAppModules();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
 
   function mockTokenWithPermission(permission) {
     sinon
@@ -122,11 +122,11 @@ describe('user create tests', function () {
       .yields(null, createToken(userId, [permission]));
   }
 
-  it('should create user as admin', function (done) {
+  it('should create user as admin', function(done) {
     mockTokenWithPermission('CREATE_USER');
 
-    const id = new mongoose.Types.ObjectId();
-    const roleId = new mongoose.Types.ObjectId();
+    const id = mongoose.Types.ObjectId();
+    const roleId = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -135,11 +135,11 @@ describe('user create tests', function () {
       passwordconfirm: 'password',
       roleId: roleId,
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {
@@ -164,18 +164,18 @@ describe('user create tests', function () {
     sinon
       .mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(UserModel)
       .expects('create')
       .withArgs(sinon.match.has('active', true))
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(mockUser)
       .expects('save')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     request(app)
       .post('/api/users')
@@ -190,18 +190,18 @@ describe('user create tests', function () {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
+      .expect(function(res) {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
-      .end(function (err) {
+      .end(function(err) {
         if (err) return done(err);
         done();
       });
   });
 
-  it('should fail to create user as admin w/o roleId', function (done) {
+  it('should fail to create user as admin w/o roleId', function(done) {
     mockTokenWithPermission('CREATE_USER');
 
     sinon
@@ -225,13 +225,13 @@ describe('user create tests', function () {
         passwordconfirm: 'passwordpassword'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('roleId is a required field');
       })
       .end(done);
   });
 
-  it('should create captcha', function (done) {
+  it('should create captcha', function(done) {
     request(app)
       .post('/api/users/signups')
       .set('Accept', 'application/json')
@@ -240,7 +240,7 @@ describe('user create tests', function () {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
+      .expect(function(res) {
         should.exist(res.body);
         res.body.should.have.property('token');
         res.body.should.have.property('captcha');
@@ -248,7 +248,7 @@ describe('user create tests', function () {
       .end(done);
   });
 
-  it('should fail to create captcha with no username', function (done) {
+  it('should fail to create captcha with no username', function(done) {
     request(app)
       .post('/api/users/signups')
       .set('Accept', 'application/json')
@@ -257,8 +257,8 @@ describe('user create tests', function () {
       .end(done);
   });
 
-  it('should create user', async function () {
-    const id = new mongoose.Types.ObjectId();
+  it('should create user', async function() {
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -266,11 +266,11 @@ describe('user create tests', function () {
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {
@@ -302,17 +302,17 @@ describe('user create tests', function () {
         path: 'authenticationId',
         populate: { path: 'authenticationConfigurationId' }
       })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(UserModel)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(UserModel)
       .expects('create')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     await request(app)
       .post('/api/users/signups/verifications')
@@ -328,15 +328,15 @@ describe('user create tests', function () {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
+      .expect(function(res) {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       });
   });
 
-  it('should create user and default admin approval to true', async function () {
-    const id = new mongoose.Types.ObjectId();
+  it('should create user and default admin approval to true', async function() {
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -344,11 +344,11 @@ describe('user create tests', function () {
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {}
@@ -378,18 +378,18 @@ describe('user create tests', function () {
         path: 'authenticationId',
         populate: { path: 'authenticationConfigurationId' }
       })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(UserModel)
       .expects('create')
       .withArgs(sinon.match.has('active', false))
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     await request(app)
       .post('/api/users/signups/verifications')
@@ -405,15 +405,15 @@ describe('user create tests', function () {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
+      .expect(function(res) {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       });
   });
 
-  it('should create user with no whitespace', async function () {
-    const id = new mongoose.Types.ObjectId();
+  it('should create user with no whitespace', async function() {
+    const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -421,11 +421,11 @@ describe('user create tests', function () {
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {
@@ -457,18 +457,18 @@ describe('user create tests', function () {
         path: 'authenticationId',
         populate: { path: 'authenticationConfigurationId' }
       })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(UserModel)
       .expects('create')
       .withArgs(sinon.match.has('username', 'test'))
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     await request(app)
       .post('/api/users/signups/verifications')
@@ -484,14 +484,14 @@ describe('user create tests', function () {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
+      .expect(function(res) {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       });
   });
 
-  it('should create user and default event', async function () {
+  it('should create user and default event', async function() {
     const mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event',
@@ -501,9 +501,9 @@ describe('user create tests', function () {
     sinon
       .mock(EventModel)
       .expects('findById')
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
@@ -517,17 +517,20 @@ describe('user create tests', function () {
       .resolves(mockTeam);
     mockTeamModel
       .expects('findByIdAndUpdate')
-      .resolves(mockTeam);
+      .yields(null, mockTeam);
 
     sinon
       .mock(RoleModel)
       .expects('findOne')
       .withArgs({ name: 'USER_ROLE' })
-      .resolves(new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
+      .yields(
+        null,
+        new RoleModel({
+          permissions: ['SOME_PERMISSIONS']
+        })
+      );
 
-    const userId = new mongoose.Types.ObjectId();
+    const userId = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -535,11 +538,11 @@ describe('user create tests', function () {
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
       authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
         authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           type: 'local',
           name: 'local',
           settings: {
@@ -571,18 +574,18 @@ describe('user create tests', function () {
         path: 'authenticationId',
         populate: { path: 'authenticationConfigurationId' }
       })
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     sinon
       .mock(UserModel)
       .expects('create')
       .withArgs(sinon.match.has('active', false))
-      .resolves(mockUser);
+      .yields(null, mockUser);
 
     const res = await request(app)
       .post('/api/users/signups/verifications')
@@ -602,17 +605,17 @@ describe('user create tests', function () {
     expect(res.body).to.have.property('id', userId.toString());
   });
 
-  it('should fail to create user with duplicate username', async function () {
+  it('should fail to create user with duplicate username', async function() {
     const jwt = await captcha('test');
-
+  
     const duplicateError = new Error('duplicate key error');
     duplicateError.status = 409;
-
+  
     const api = require('../../lib/api');
     sinon
       .stub(api.User.prototype, 'create')
       .rejects(duplicateError);
-
+  
     await request(app)
       .post('/api/users/signups/verifications')
       .set('Accept', 'application/json')
@@ -628,7 +631,7 @@ describe('user create tests', function () {
       .expect(409);
   });
 
-  it('should fail to create user w/o displayName', async function () {
+  it('should fail to create user w/o displayName', async function() {
     const jwt = await captcha('test');
 
     await request(app)
@@ -641,14 +644,14 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal(
           "Invalid account document: missing required parameter 'displayName'"
         );
       });
   });
 
-  it('should fail to create user with invalid email', async function () {
+  it('should fail to create user with invalid email', async function() {
     const jwt = await captcha('test');
 
     await request(app)
@@ -663,12 +666,12 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('Invalid email address');
       });
   });
 
-  it('should fail to create user w/o password', async function () {
+  it('should fail to create user w/o password', async function() {
     const jwt = await captcha('test');
 
     await request(app)
@@ -681,14 +684,14 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal(
           "Invalid account document: missing required parameter 'password'"
         );
       });
   });
 
-  it('should fail to create user w/o passwordconfirm', async function () {
+  it('should fail to create user w/o passwordconfirm', async function() {
     const jwt = await captcha('test');
 
     await request(app)
@@ -701,14 +704,14 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal(
           "Invalid account document: missing required parameter 'passwordconfirm'"
         );
       });
   });
 
-  it('should fail to create user when passsord and passwordconfirm do not match', async function () {
+  it('should fail to create user when passsord and passwordconfirm do not match', async function() {
     const jwt = await captcha('test');
 
     await request(app)
@@ -722,16 +725,16 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('Passwords do not match');
       });
   });
 
-  it('should fail to create user when password does not meet complexity', async function () {
+  it('should fail to create user when password does not meet complexity', async function() {
     const jwt = await captcha('test');
 
     const authConfig = {
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'local',
       name: 'local',
       settings: {
@@ -766,12 +769,12 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('Password must be at least 14 characters');
       });
   });
 
-  it('should fail to create user with no captcha token', async function () {
+  it('should fail to create user with no captcha token', async function() {
     await request(app)
       .post('/api/users/signups/verifications')
       .set('Accept', 'application/json')
@@ -782,12 +785,12 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('Bad Request');
       });
   });
 
-  it('should fail to create user with invalid captcha token', async function () {
+  it('should fail to create user with invalid captcha token', async function() {
     await request(app)
       .post('/api/users/signups/verifications')
       .set('Accept', 'application/json')
@@ -799,12 +802,12 @@ describe('user create tests', function () {
         captchaText: 'captcha'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('Invalid captcha, please try again');
       });
   });
 
-  it('should fail to create user with invalid captcha text', async function () {
+  it('should fail to create user with invalid captcha text', async function() {
     const jwt = await captcha('test');
 
     await request(app)
@@ -818,7 +821,7 @@ describe('user create tests', function () {
         captchaText: 'wrong'
       })
       .expect(403)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('Invalid captcha, please try again.');
       });
   });

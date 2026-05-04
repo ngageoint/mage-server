@@ -79,7 +79,7 @@ describe.skip("observation create tests", function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -94,7 +94,7 @@ describe.skip("observation create tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockObservation = new ObservationIdModel({ _id: new mongoose.Types.ObjectId() });
+    const mockObservation = new ObservationIdModel({ _id: mongoose.Types.ObjectId() });
     sinon.mock(ObservationIdModel)
       .expects('create')
       .withArgs({})
@@ -121,10 +121,10 @@ describe.skip("observation create tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const observationId = new mongoose.Types.ObjectId();
+    const observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: observationId });
+      .yields(null, { _id: observationId });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -149,7 +149,7 @@ describe.skip("observation create tests", function () {
       .expects('findById')
       .twice()
       .onFirstCall()
-      .resolves(null)
+      .yields(null, null)
       .onSecondCall()
       .resolves(mockObservation);
 
@@ -186,10 +186,10 @@ describe.skip("observation create tests", function () {
   it("should reject new observation with invalid id", function (done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    const observationId = new mongoose.Types.ObjectId();
+    const observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     const ObservationModel = observationModel({
       _id: observationId,
@@ -199,7 +199,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
@@ -231,10 +231,10 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + new mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -264,7 +264,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: 1 });
+      .yields(null, { _id: 1 });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -274,10 +274,10 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + new mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -303,7 +303,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: 1 });
+      .yields(null, { _id: 1 });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -313,10 +313,10 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + new mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -346,7 +346,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: 1 });
+      .yields(null, { _id: 1 });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -356,10 +356,10 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + new mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -386,7 +386,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: 1 });
+      .yields(null, { _id: 1 });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -396,10 +396,10 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + new mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -428,7 +428,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: 1 });
+      .yields(null, { _id: 1 });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -438,10 +438,10 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + new mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -535,10 +535,10 @@ describe.skip("observation create tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const observationId = new mongoose.Types.ObjectId();
+    const observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: observationId });
+      .yields(null, { _id: observationId });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -560,7 +560,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
@@ -568,7 +568,7 @@ describe.skip("observation create tests", function () {
       .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
       .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
@@ -629,10 +629,10 @@ describe.skip("observation create tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: observationId });
+      .yields(null, { _id: observationId });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -661,7 +661,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
@@ -669,7 +669,7 @@ describe.skip("observation create tests", function () {
       .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
       .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
@@ -739,10 +739,10 @@ describe.skip("observation create tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const observationId = new mongoose.Types.ObjectId();
+    const observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: observationId });
+      .yields(null, { _id: observationId });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -768,7 +768,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
@@ -776,7 +776,7 @@ describe.skip("observation create tests", function () {
       .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
       .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
@@ -842,10 +842,10 @@ describe.skip("observation create tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const observationId = new mongoose.Types.ObjectId();
+    const observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationIdModel)
       .expects('findById')
-      .resolves({ _id: observationId });
+      .yields(null, { _id: observationId });
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -874,7 +874,7 @@ describe.skip("observation create tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
@@ -882,7 +882,7 @@ describe.skip("observation create tests", function () {
       .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
       .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())

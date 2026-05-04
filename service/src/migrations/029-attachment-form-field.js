@@ -1,7 +1,7 @@
 "use strict";
 
 const log = require('winston')
-  , ObjectId = require('mongodb').ObjectId;
+  , ObjectID = require('mongodb').ObjectID;
 
 exports.id = 'attachment-form-field';
 
@@ -41,15 +41,15 @@ async function createAttachmentField(db) {
       log.info(`Event ${event.name} has no forms`);
 
       const observationCollection = await db.collection(`observations${event._id}`);
-      const count = await observationCollection.countDocuments({ attachments: { $exists: true, $ne: [] } })
+      const count = await observationCollection.count({attachments: { $exists: true, $ne: [] } })
       if (count > 0) {
         log.info(`Event ${event.name} has no forms, but does contain attachments, create new form w/ attachment field`);
 
-        const counter = await formCounterCollection.findOneAndUpdate({ _id: 'form' }, { $inc: { sequence: 1 } }, { upsert: true, returnDocument: 'after' });
+        const counter = await formCounterCollection.findOneAndUpdate({ _id: 'form' }, { $inc: { sequence: 1 } }, { upsert: true, returnOriginal: false });
 
         // Create a new form for this event that would allow users to submit attachments
         event.forms = [{
-          _id: counter.sequence,
+          _id: counter.value.sequence,
           name: event.name,
           color: '#1E88E5',
           userFields: [],
@@ -68,7 +68,7 @@ async function createAttachmentField(db) {
       }
     }
 
-    await collection.findOneAndReplace({ _id: event._id }, event);
+    await collection.findOneAndUpdate({ _id: event._id }, event);
   }
 }
 
@@ -81,7 +81,7 @@ async function updateEventAttachments(db, event) {
   log.info(`found ${observations.length} in collection`)
   for (const observation of observations) {
     // Add _id to observation form, if exists
-    const observationFormId = new ObjectId();
+    const observationFormId = new ObjectID();
     if (observation.properties.forms && observation.properties.forms.length) {
       const observationForm = observation.properties.forms[0];
       observationForm._id = observationFormId;
@@ -111,7 +111,7 @@ async function updateEventAttachments(db, event) {
 
     log.info('updating observation attachments', observation.attachments);
 
-    await collection.findOneAndReplace({ _id: observation._id }, observation);
+    await collection.findOneAndUpdate({_id: observation._id}, observation);
   }
 }
 

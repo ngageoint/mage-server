@@ -6,13 +6,13 @@ import { expect } from 'chai'
 
 const collectionName = 'authenticationconfigurations'
 
-describe('saml settings migration', function () {
+describe('saml settings migration', function() {
 
   before(mongoTest.mongoTestBeforeAllHook())
 
   let db: Db
-  before(function () {
-    db = this.mongo?.conn.db! as unknown as Db
+  before(function() {
+    db = this.mongo?.conn.db!
   })
 
   after(mongoTest.mongoTestAfterAllHook())
@@ -20,7 +20,7 @@ describe('saml settings migration', function () {
   let migrateUp: () => Promise<void>
   let migrateDown: () => Promise<void>
 
-  beforeEach(async function () {
+  beforeEach(async function() {
     migrateUp = () => {
       return new Promise((resolve, reject) => {
         const done = (err?: any) => {
@@ -29,7 +29,7 @@ describe('saml settings migration', function () {
           }
           resolve()
         }
-        migration.up.call({ db, log: () => { } }, done)
+        migration.up.call({ db, log: () => {} }, done)
       })
     }
     migrateDown = () => {
@@ -40,26 +40,26 @@ describe('saml settings migration', function () {
           }
           resolve()
         }
-        migration.down.call({ db, log: () => { } }, done)
+        migration.down.call({ db, log: () => {} }, done)
       })
     }
   })
 
-  afterEach(async function () {
+  afterEach(async function() {
     const col = db.collection(collectionName)
     await col.deleteMany({})
   })
 
-  it('has a migration id', function () {
+  it('has a migration id', function() {
     expect(migration.id).to.equal('saml-settings')
   })
 
-  describe('migrate up', async function () {
+  describe('migrate up', async function() {
 
-    it('moves entries from options to settings', async function () {
+    it('moves entries from options to settings', async function() {
 
       const col = db.collection(collectionName)
-      const count = await col.countDocuments()
+      const count = await col.count()
 
       expect(count).to.equal(0)
 
@@ -124,7 +124,7 @@ describe('saml settings migration', function () {
       }
     })
 
-    it('does not overwrite settings values with option values', async function () {
+    it('does not overwrite settings values with option values', async function() {
 
       const preDoc = {
         type: 'saml',
@@ -161,7 +161,7 @@ describe('saml settings migration', function () {
       })
     })
 
-    it('does not change non-saml configurations', async function () {
+    it('does not change non-saml configurations', async function() {
 
       const preDocs = [
         {
@@ -220,11 +220,11 @@ describe('saml settings migration', function () {
       })
     })
 
-    it('succeeds when there are no saml configurations', async function () {
+    it('succeeds when there are no saml configurations', async function() {
 
       await migrateUp()
 
-      const preDocs = [1, 2, 3].map(x => {
+      const preDocs = [ 1, 2, 3 ].map(x => {
         return {
           type: `saml${x}`,
           name: `saml${x}`,
@@ -253,9 +253,9 @@ describe('saml settings migration', function () {
     })
   })
 
-  describe('migrate down', function () {
+  describe('migrate down', function() {
 
-    it('moves entry point and issuer settings back to options', async function () {
+    it('moves entry point and issuer settings back to options', async function() {
 
       const preDocs = [
         {
@@ -288,7 +288,7 @@ describe('saml settings migration', function () {
       await migrateDown()
 
       const postDocsByName = await col.find({}).toArray().then(postDocs => {
-        return Object.fromEntries(postDocs.map(x => [x.name, x]))
+        return Object.fromEntries(postDocs.map(x => [ x.name, x ]))
       })
 
       expect(Object.entries(postDocsByName).length).to.equal(2)
@@ -313,11 +313,11 @@ describe('saml settings migration', function () {
       })
     })
 
-    it('succeeds when there are no saml configurations', async function () {
+    it('succeeds when there are no saml configurations', async function() {
 
       await migrateDown()
 
-      const preDocs = [1, 2, 3].map(x => {
+      const preDocs = [ 1, 2, 3 ].map(x => {
         return {
           type: `saml${x}`,
           name: `saml${x}`,

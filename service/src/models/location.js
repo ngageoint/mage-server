@@ -70,9 +70,9 @@ exports.getLocations = function (options, callback) {
     if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  let queryOptions = {};
+  let queryOptions = { };
 
-  if (options.sort) {
+  if(options.sort) {
     queryOptions.sort = options.sort;
   } else {
     queryOptions.sort = { sort: { "properties.timestamp": 1, _id: 1 } };
@@ -96,17 +96,15 @@ exports.getLocations = function (options, callback) {
       queryOptions.limit = 2000;
     }
 
-    Location.find(conditions, {}, queryOptions).then(
-      locations => callback(null, locations),
-      err => callback(err)
-    );
+    Location.find(conditions, {}, queryOptions, function (err, locations) {
+      callback(err, locations);
+    });
   }
 };
 
 exports.removeLocationsForUser = function (user, callback) {
   const conditions = { "userId": user._id };
-  Location.deleteMany(conditions).then(
-    () => callback(null),
-    err => callback(err)
-  );
+  Location.remove(conditions, function (err) {
+    callback(err);
+  });
 };

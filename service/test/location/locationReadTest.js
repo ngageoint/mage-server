@@ -55,7 +55,7 @@ describe("location read tests", function () {
       .expects('appendToConfig')
       .resolves(config);
 
-    userId = new mongoose.Types.ObjectId();
+    userId = mongoose.Types.ObjectId();
     app = require('../../lib/express').app;
   });
 
@@ -79,7 +79,7 @@ describe("location read tests", function () {
 
     sinon.mock(LocationModel)
       .expects('find')
-      .resolves([{
+      .yields(null, [{
         "eventId": 1,
         "geometry": {
           "type": "Point",
@@ -115,7 +115,7 @@ describe("location read tests", function () {
 
     sinon.mock(LocationModel)
       .expects('find')
-      .resolves([{
+      .yields(null, [{
         "eventId": 1,
         "geometry": {
           "type": "Point",
@@ -152,10 +152,10 @@ describe("location read tests", function () {
     sinon.mock(CappedLocationModel)
       .expects('getLocations')
       .yields(null, [{
-        userId: new mongoose.Types.ObjectId(),
+        userId: mongoose.Types.ObjectId(),
         locations: [{
           type: "Feature",
-          userId: new mongoose.Types.ObjectId(),
+          userId: mongoose.Types.ObjectId(),
           properties: {
             timestamp: "2016-02-02T14:42:13.811Z",
             accuracy: 39,
@@ -204,7 +204,7 @@ describe("location read tests", function () {
           $lt: endDate.toDate()
         }
       })
-      .resolves([{
+      .yields(null, [{
         "eventId": 1,
         "geometry": {
           "type": "Point",
@@ -241,7 +241,7 @@ describe("location read tests", function () {
 
     const startDate = moment("2016-01-01T00:00:00");
     const endDate = moment("2016-02-01T00:00:00");
-    const lastLocationId = new mongoose.Types.ObjectId();
+    const lastLocationId = mongoose.Types.ObjectId();
     sinon.mock(LocationModel)
       .expects('find')
       .withArgs({
@@ -258,7 +258,7 @@ describe("location read tests", function () {
           $lt: endDate.toDate()
         }
       })
-      .resolves([{
+      .yields(null, [{
         "eventId": 1,
         "geometry": {
           "type": "Point",
@@ -300,7 +300,7 @@ describe("location read tests", function () {
     sinon.mock(LocationModel)
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, sinon.match.any)
-      .resolves([{
+      .yields(null, [{
         "eventId": 1,
         "geometry": {
           "type": "Point",
@@ -337,7 +337,7 @@ describe("location read tests", function () {
 
     sinon.mock(LocationModel)
       .expects('find')
-      .resolves([{
+      .yields(null, [{
         "eventId": 1,
         "geometry": {
           "type": "Point",

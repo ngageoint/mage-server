@@ -46,7 +46,7 @@
 
 .picker-popover {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% - 22px);
   left: 0;
   z-index: 1000;
   display: flex;

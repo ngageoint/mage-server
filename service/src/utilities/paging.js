@@ -54,7 +54,7 @@ function page(count, query, options, dataKey, dataConverter) {
 }
 
 function countAndPage(countQuery, query, options, dataKey) {
-  return countQuery.countDocuments().then(count => {
+  return countQuery.count().then(count => {
     return page(count, query, options, dataKey, null);
   });
 }
