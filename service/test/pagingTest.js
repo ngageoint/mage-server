@@ -21,8 +21,8 @@ describe("Paging Tests", function () {
 
     it('Test page users', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(1));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(1));
 
         let user0 = {
             _id: '0'
@@ -53,8 +53,8 @@ describe("Paging Tests", function () {
 
     it('Test page to end', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(2));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(2));
 
         let user0 = {
             _id: '0'
@@ -108,8 +108,8 @@ describe("Paging Tests", function () {
 
     it('Test page no results', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(0));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(0));
 
 
         const query = new mongoose.Query();
@@ -138,8 +138,8 @@ describe("Paging Tests", function () {
 
     it('Test page devices', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(10));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(10));
 
         let device0 = {
             _id: '0'

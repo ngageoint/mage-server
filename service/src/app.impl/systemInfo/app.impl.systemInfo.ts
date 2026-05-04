@@ -51,21 +51,22 @@ export function CreateReadSystemInfo(
     return apiCopy;
   }
   return async function readSystemInfo(
-  req: api.ReadSystemInfoRequest
+    req: api.ReadSystemInfoRequest
   ): Promise<api.ReadSystemInfoResponse> {
     const isAuthenticated = req.context.requestingPrincipal() != null;
 
-	// FIXME: Replace this with Robert's first-run secret implementation when available
-	const legacyUsers = Users as any;   
-    const userCount = await new Promise(resolve => {
-      legacyUsers.count({}, (err:any, count:any) => {
-      resolve(count)
+    // FIXME: Replace this with Robert's first-run secret implementation when available
+    const legacyUsers = Users as any;
+    const userCount = await new Promise((resolve, reject) => {
+      legacyUsers.count({}, (err: any, count: any) => {
+        if (err) return reject(err);
+        resolve(count);
       });
     });
-    
+
     // Initialize with base system info
-    let systemInfoResponse: ExoRedactedSystemInfo = {	  
-      version: versionInfo,	  
+    let systemInfoResponse: ExoRedactedSystemInfo = {
+      version: versionInfo,
       initial: userCount == 0,
       disclaimer: (await settingsModule.getSetting('disclaimer'))?.settings || {},
       contactInfo: (await settingsModule.getSetting('contactinfo'))?.settings || {}
@@ -87,7 +88,7 @@ export function CreateReadSystemInfo(
 
     // Apply authentication strategies to the system info response
     const updatedApiConfig = await appendAuthenticationStrategies(systemInfoResponse, {
-        whitelist: true
+      whitelist: true
     });
 
     return AppResponse.success(updatedApiConfig as ExoSystemInfo); // Cast to ExoSystemInfo

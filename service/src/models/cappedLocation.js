@@ -51,9 +51,10 @@ exports.addLocations = function (user, event, locations, callback) {
     }
   };
 
-  CappedLocation.findOneAndUpdate({ userId: user._id, eventId: event._id }, update, { upsert: true, new: true }, function (err, user) {
-    callback(err, user);
-  });
+  CappedLocation.findOneAndUpdate({ userId: user._id, eventId: event._id }, update, { upsert: true, new: true }).then(
+    user => callback(null, user),
+    err => callback(err)
+  );
 };
 
 exports.getLocations = function (options, callback) {
@@ -83,12 +84,13 @@ exports.getLocations = function (options, callback) {
     })
   }
 
-  query.exec(callback);
+  query.exec().then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeLocationsForUser = function (user, callback) {
   const conditions = { "userId": user._id };
-  CappedLocation.remove(conditions, function (err) {
-    callback(err);
-  });
+  CappedLocation.deleteMany(conditions).then(
+    () => callback(null),
+    err => callback(err)
+  );
 };

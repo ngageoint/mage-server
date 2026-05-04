@@ -79,7 +79,7 @@ describe("observation important tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermissions(permissions) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -96,7 +96,7 @@ describe("observation important tests", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -116,7 +116,7 @@ describe("observation important tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
       const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
@@ -124,7 +124,7 @@ describe("observation important tests", function () {
       .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
       .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
       .chain('exec')
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId + '/important')
@@ -156,11 +156,11 @@ describe("observation important tests", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, null);
+      .resolves(null);
 
     request(app)
       .put('/api/events/1/observations/' + observationId + '/important')
@@ -182,11 +182,11 @@ describe("observation important tests", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, {});
+      .resolves({});
 
     request(app)
       .put('/api/events/1/observations/' + observationId + '/important')
@@ -208,7 +208,7 @@ describe("observation important tests", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -225,12 +225,12 @@ describe("observation important tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
       const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId, sinon.match({ '$unset': { important: 1 } }), sinon.match.any)
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     request(app)
       .delete('/api/events/1/observations/' + observationId + '/important')
