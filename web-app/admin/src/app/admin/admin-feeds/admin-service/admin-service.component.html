@@ -1,9 +1,10 @@
 <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
-<div class="page" *ngIf="service && serviceType">
 
+<div class="page" *ngIf="service && serviceType; else loading">
   <div class="heading">
     <div class="heading__content">
       <mat-icon class="heading__icon">cloud_queue</mat-icon>
+
       <div class="heading__info">
         <div class="heading__title">{{ service.title }}</div>
         <div class="heading__summary">{{ service.summary }}</div>
@@ -17,19 +18,23 @@
         class="heading__action"
         (click)="deleteService()"
       >
-        <mat-icon>delete</mat-icon>Delete
+        <mat-icon>delete</mat-icon>
+        Delete
       </button>
     </div>
   </div>
 
-  <div class="content" *ngIf="service">
-    <div class="row__card">
-      <div class="column__config">
+  <div class="content">
+    <div class="content__layout">
+      <div class="content__column">
         <mat-card class="content__card">
-          <mat-card-header>
-            <mat-card-title class="primary-color">Configuration</mat-card-title>
+          <mat-card-header class="content__card-header">
+            <mat-card-title class="content__card-title">
+              Configuration
+            </mat-card-title>
           </mat-card-header>
-          <mat-card-content>
+
+          <mat-card-content class="content__card-content">
             <mage-json-schema-form
               [(schema)]="serviceType.configSchema"
               [data]="service.config"
@@ -41,13 +46,14 @@
         </mat-card>
       </div>
 
-      <div class="column__feeds">
+      <div class="content__column">
         <mat-card class="content__card">
-          <mat-card-header>
-            <mat-card-title color="primary">Feeds</mat-card-title>
+          <mat-card-header class="content__card-header">
+            <mat-card-title class="content__card-title"> Feeds </mat-card-title>
           </mat-card-header>
-          <mat-card-content>
-            <mat-nav-list>
+
+          <mat-card-content class="content__card-content">
+            <mat-nav-list class="feed-list" *ngIf="feeds?.length; else noFeeds">
               <ng-container
                 *ngFor="
                   let feed of feeds
@@ -56,17 +62,33 @@
                       : (feedPage + 1) * itemsPerPage
                 "
               >
-                <mat-list-item [routerLink]="['../feed', feed.id]">
-                  <mat-icon class="feed__icon" mat-list-icon>rss_feed</mat-icon>
-                  <div mat-line>{{ feed.title }}</div>
-                  <div mat-line>{{ feed.summary }}</div>
+                <mat-list-item
+                  class="feed-list__item"
+                  [routerLink]="['../feed', feed.id]"
+                >
+                  <mat-icon class="feed-list__icon" matListItemIcon>
+                    rss_feed
+                  </mat-icon>
+
+                  <div matListItemTitle class="feed-list__title">
+                    {{ feed.title }}
+                  </div>
+
+                  <div matListItemLine class="feed-list__summary">
+                    {{ feed.summary }}
+                  </div>
                 </mat-list-item>
 
-                <mat-divider [inset]="true"></mat-divider>
+                <mat-divider></mat-divider>
               </ng-container>
             </mat-nav-list>
 
+            <ng-template #noFeeds>
+              <div class="feed-list__empty">No feeds configured.</div>
+            </ng-template>
+
             <mat-paginator
+              class="feed-paginator"
               [length]="feeds.length"
               [pageSize]="itemsPerPage"
               (page)="feedPage = $event.pageIndex"
@@ -78,6 +100,7 @@
     </div>
   </div>
 </div>
+
 <ng-template #loading>
-  <div>Loading</div>
+  <div class="content">Loading</div>
 </ng-template>

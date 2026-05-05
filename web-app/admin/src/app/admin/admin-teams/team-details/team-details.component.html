@@ -78,7 +78,10 @@
               undone, and all team data will be unrecoverable. Users within the
               team will not be deleted.
             </p>
-            <button class="action-button btn-danger btn-right" (click)="deleteTeam()">
+            <button
+              class="action-button btn-danger btn-right"
+              (click)="deleteTeam()"
+            >
               <i class="fa fa-trash-o"></i> Delete
             </button>
           </div>
@@ -117,6 +120,7 @@
                     >
                       <div
                         class="row-item"
+                        [class.row-item--editing-members]="editingMembers"
                         [routerLink]="['../../users', user.id]"
                         role="link"
                         tabindex="0"

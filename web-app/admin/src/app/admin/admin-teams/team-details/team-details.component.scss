@@ -309,6 +309,21 @@ $font-xs: 12px;
   }
 }
 
+.row-item.row-item--editing-members {
+  min-height: 73px;
+
+  .role-select {
+    height: 35px;
+    min-height: 35px;
+    line-height: 35px;
+    box-sizing: border-box;
+    padding-top: 0;
+    padding-bottom: 0;
+    min-width: 150px;
+    width: 35px;
+  }
+}
+
 .item-icon,
 .row-icon {
   flex-shrink: 0;

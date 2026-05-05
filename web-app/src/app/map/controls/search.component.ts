@@ -48,7 +48,7 @@ export class SearchComponent implements AfterViewInit {
     private mapSettingsService: MapSettingsService,
     private searchService: PlacenameSearchService,
     private snackBar: MatSnackBar
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.mapSettingsService
@@ -97,6 +97,7 @@ export class SearchComponent implements AfterViewInit {
     $event.preventDefault();
     input.value = '';
     this.searchResults = [];
+    this.searchState = SearchState.OFF;
 
     this.onSearchClear.emit();
   }

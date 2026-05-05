@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
 
@@ -14,6 +20,9 @@ import { SettingsService } from '../../../../src/app/services/settings.service';
   styleUrls: ['./admin.component.scss']
 })
 export class AdminComponent implements OnInit, OnDestroy {
+  @ViewChild('adminMainContent')
+  adminMainContent?: ElementRef<HTMLElement>;
+
   stateName = '';
   token = '';
 
@@ -56,7 +65,17 @@ export class AdminComponent implements OnInit, OnDestroy {
         filter((e): e is NavigationEnd => e instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
-      .subscribe((e) => (this.stateName = e.urlAfterRedirects));
+      .subscribe((e) => {
+        this.stateName = e.urlAfterRedirects;
+
+        requestAnimationFrame(() => {
+          this.adminMainContent?.nativeElement.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'auto'
+          });
+        });
+      });
 
     const defaultUserQueries = this.userPaging.constructDefault();
     this.stateAndData = { inactive: defaultUserQueries.inactive };

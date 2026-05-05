@@ -67,7 +67,7 @@ mat-form-field {
   grid-column: 1 / 3;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  gap: 16px;
   align-items: start;
 }
 
@@ -126,6 +126,11 @@ mat-form-field {
 .plus-sign {
   font-size: $font-xl;
   font-weight: 700;
+}
+
+::ng-deep .tooltip-wide {
+  white-space: pre-line;
+  max-width: 300px;
 }
 
 .filename-wrapper {
@@ -222,12 +227,19 @@ mat-form-field {
   align-items: center;
 }
 
+
+.btn-primary {
+  background-color: #1e88e5;
+  color: #fff;
+}
+
 .icon-preview {
   width: 72px;
   height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid black;
 
   img {
     width: 56px;

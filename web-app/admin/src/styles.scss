@@ -1,5 +1,4 @@
 @import 'theme.scss';
-/* You can add global styles to this file, and also import other style files */
 @import '@ng-select/ng-select/themes/material.theme.css';
 @import './roboto.scss';
 @import './css/style.scss';
@@ -121,7 +120,6 @@
 .table-scroll {
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -355,8 +353,8 @@
 
   &:has(admin-users) {
     height: 92vh;
+    height: 92dvh;
     overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
 
     @media (max-height: 500px) {
       overflow-y: scroll;
@@ -366,6 +364,7 @@
   admin-users {
     .container {
       height: 90vh;
+      height: 90dvh;
     }
   }
 }
@@ -646,23 +645,6 @@ td.mat-cell i.fab {
   box-shadow: none;
 }
 
-.search-modal-dialog .mat-dialog-container {
-  padding: 0 !important;
-  border-radius: 12px !important;
-  background-color: white !important;
-  background: white !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-}
-
-.search-modal-dialog .mat-mdc-dialog-container {
-  padding: 0 !important;
-  border-radius: 12px !important;
-  background-color: white !important;
-  background: white !important;
-  --mdc-dialog-container-color: #ffffff;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-}
-
 .signin-modal-panel {
 
   .mat-dialog-container,
@@ -674,44 +656,4 @@ td.mat-cell i.fab {
     background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%) !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.15) !important;
   }
-}
-
-.search-modal-dialog .mat-paginator {
-  border-top: 1px solid #e5e7eb;
-  background-color: #f9fafb;
-  color: #374151;
-  min-height: 48px;
-}
-
-.search-modal-dialog .mat-paginator .mat-paginator-container {
-  padding: 0.5rem 1rem;
-  min-height: 48px;
-}
-
-.search-modal-dialog .mat-paginator .mat-paginator-page-size-label,
-.search-modal-dialog .mat-paginator .mat-paginator-range-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  line-height: 1.2;
-}
-
-.search-modal-dialog .mat-paginator .mat-select-value {
-  font-size: 0.75rem;
-  color: #374151;
-}
-
-.search-modal-dialog .mat-dialog-actions {
-  padding: 0;
-  margin: 0;
-}
-
-.search-modal-dialog .mat-dialog-content {
-  overflow: hidden;
-}
-
-.search-modal-dialog .mat-dialog-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
 }

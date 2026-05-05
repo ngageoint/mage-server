@@ -1,3 +1,64 @@
-.admin-event-form-preview {
-  margin: 8px 0;
+:host {
+  display: block;
+}
+
+.form-preview-dialog-content {
+  padding: 0 !important;
+  margin: 0;
+  overflow: hidden;
+}
+
+.form-preview-viewport {
+  width: 100%;
+  max-height: 70vh;
+  overflow: auto;
+  background: #fff;
+  border-top: 1px solid #eee;
+  padding: 16px 24px;
+  box-sizing: border-box;
+}
+
+.form-preview-scale {
+  width: 100%;
+  transform-origin: top left;
+}
+
+:host ::ng-deep .form-preview-scale {
+  font-family: 'Times New Roman', Times, serif;
+  color: #000;
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+:host ::ng-deep .form-preview-scale table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+:host ::ng-deep .form-preview-scale td,
+:host ::ng-deep .form-preview-scale th {
+  border: 1px solid #444;
+  padding: 2px 6px;
+  vertical-align: middle;
+  color: #000;
+}
+
+:host ::ng-deep .form-preview-scale input,
+:host ::ng-deep .form-preview-scale textarea,
+:host ::ng-deep .form-preview-scale select {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  color: #000;
+}
+
+:host ::ng-deep h2[mat-dialog-title],
+:host ::ng-deep .mat-mdc-dialog-title {
+  color: #1e88e5;
+}
+
+:host ::ng-deep .form-preview-viewport mat-card,
+:host ::ng-deep .form-preview-viewport .mat-mdc-card {
+  box-shadow: none !important;
 }
