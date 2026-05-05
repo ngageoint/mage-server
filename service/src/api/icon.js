@@ -112,10 +112,7 @@ Icon.prototype.saveDefaultIconToEventForm = function (callback) {
     if (err) {
       return callback(err);
     }
-    IconModel.create(newIcon).then(
-      oldIcon => callback(null, oldIcon),
-      err => callback(err)
-    );
+    IconModel.create(newIcon, callback);
   });
 };
 
