@@ -95,7 +95,7 @@ describe("location create tests", function () {
     }];
     sinon.mock(LocationModel)
       .expects('create')
-      .yields(null, mockLocations);
+      .resolves(mockLocations);
 
     sinon.mock(CappedLocationModel)
       .expects('addLocations')
@@ -157,7 +157,7 @@ describe("location create tests", function () {
     };
     sinon.mock(LocationModel)
       .expects('create')
-      .yields(null, mockLocations);
+      .resolves(mockLocations);
 
     sinon.mock(CappedLocationModel)
       .expects('addLocations')
