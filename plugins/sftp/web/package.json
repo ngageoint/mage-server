@@ -3,8 +3,19 @@
   "version": "1.0.0-beta.3",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ngageoint/mage-server.git"
+    "url": "git+https://github.com/ngageoint/mage-server.git"
   },
+  "keywords": [
+    "mage",
+    "plugin",
+    "sftp"
+  ],
+  "author": "National Geospatial-Intelligence Agency",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ngageoint/mage-server/issues"
+  },
+  "homepage": "https://github.com/ngageoint/mage-server#readme",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
