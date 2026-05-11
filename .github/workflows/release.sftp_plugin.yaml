@@ -50,6 +50,9 @@ jobs:
     name: publish packages
     needs: [config, build_and_test-service]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: setup node
         uses: actions/setup-node@v4
