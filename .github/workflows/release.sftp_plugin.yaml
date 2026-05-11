@@ -17,12 +17,11 @@ on:
   # release:
 
 jobs:
-
   config:
     uses: ./.github/workflows/config.yaml
 
   check_release_version:
-    needs: [ config ]
+    needs: [config]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -40,16 +39,16 @@ jobs:
         run: |
           [[ $(json version < ./plugins/sftp/web/package.json) = ${{ inputs.version }} ]] || exit 1
   build_and_test-service:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.sftp.service.yaml
 
   build_and_test-web:
-    needs: [ check_release_version ]
+    needs: [check_release_version]
     uses: ./.github/workflows/build_test.sftp.web-app.yaml
 
   publish_packages:
-    name:  publish packages
-    needs: [ config, build_and_test-service ]
+    name: publish packages
+    needs: [config, build_and_test-service]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
@@ -68,9 +67,7 @@ jobs:
           name: sftp.web-artifacts
       - name: publish sftp service
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.sftp.service-*.tgz) || echo "skipping sftp service plugin publish..."
       - name: publish sftp web
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.sftp.web-*.tgz) || echo "skipping sftp web plugin publish"
