@@ -72,7 +72,7 @@ jobs:
           name: sftp.web-artifacts
       - name: publish sftp service
         run: |
-          npm publish --access public $(ls -1 ngageoint-mage.sftp.service-*.tgz) || echo "skipping sftp service plugin publish..."
+          npm publish --access public $(ls -1 ngageoint-mage.sftp.service-*.tgz) --tag beta || echo "skipping sftp service plugin publish..."
       - name: publish sftp web
         run: |
-          npm publish --access public $(ls -1 ngageoint-mage.sftp.web-*.tgz) || echo "skipping sftp web plugin publish"
+          npm publish --access public $(ls -1 ngageoint-mage.sftp.web-*.tgz) --tag beta || echo "skipping sftp web plugin publish"
