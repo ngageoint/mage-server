@@ -13,12 +13,12 @@ const express = require('express'),
   AuthenticationInitializer = require('./authentication');
 
 const app = express();
-app.use(function(req, res, next) {
-  req.getRoot = function() {
+app.use(function (req, res, next) {
+  req.getRoot = function () {
     return req.protocol + '://' + req.get('host');
   };
 
-  req.getPath = function() {
+  req.getPath = function () {
     return req.getRoot() + req.path;
   };
 
@@ -49,7 +49,7 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.get('/api/docs/openapi.yaml', async function(req, res) {
+app.get('/api/docs/openapi.yaml', async function (req, res) {
   const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
   fs.readFile(docPath, (err, contents) => {
     const doc = yaml.parse(contents.toString('utf-8'));
@@ -75,7 +75,13 @@ const authentication = AuthenticationInitializer.initialize(
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
 require('./routes')(app, { authentication });
 
-const adminDist = path.join(__dirname, '..', '..', 'web-app', 'dist', 'admin');
+let adminDist;
+try {
+  const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
+  adminDist = path.join(path.dirname(webappPackagePath), 'admin');
+} catch (err) {
+  adminDist = path.join(__dirname, '..', '..', 'web-app', 'dist', 'admin');
+}
 
 app.use(
   '/admin',
@@ -115,7 +121,7 @@ app.get('/admin/*', (req, res) => {
 
 // Express requires a 4 parameter function callback, do not remove unused next parameter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   log.error(
     '\n-----\nunhandled error during request\n',
     req.method,
