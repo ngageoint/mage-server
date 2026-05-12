@@ -1,10 +1,8 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, NO_ERRORS_SCHEMA } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ElementRef } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs'
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { of, throwError } from 'rxjs';
 
 import { AdminFeedComponent } from './admin-feed.component';
 import { AdminUserService } from '../../services/admin-user.service';
@@ -14,7 +12,6 @@ import { FeedService } from 'core-lib-src/feed';
 
 describe('AdminFeedComponent', () => {
   let component: AdminFeedComponent;
-  let fixture: ComponentFixture<AdminFeedComponent>;
 
   let feedServiceSpy: jasmine.SpyObj<FeedService>;
   let adminUserServiceSpy: jasmine.SpyObj<AdminUserService>;
@@ -28,7 +25,7 @@ describe('AdminFeedComponent', () => {
     snapshot: {
       paramMap: convertToParamMap({ feedId: 'feed-1' })
     }
-  };
+  } as Partial<ActivatedRoute>;
 
   const mockFeed = {
     id: 'feed-1',
@@ -50,7 +47,7 @@ describe('AdminFeedComponent', () => {
     summary: 'Example Summary'
   } as any;
 
-  beforeEach(waitForAsync(() => {
+  function setupSpies(): void {
     feedServiceSpy = jasmine.createSpyObj<FeedService>('FeedService', [
       'fetchFeed',
       'fetchServiceType',
@@ -85,40 +82,43 @@ describe('AdminFeedComponent', () => {
 
     feedServiceSpy.fetchFeed.and.returnValue(of(mockFeed));
     feedServiceSpy.fetchServiceType.and.returnValue(of(mockServiceType));
+
     adminEventsServiceSpy.getEvents.and.returnValue(
       of({ items: [], totalCount: 0 } as any)
     );
+
     eventServiceSpy.addFeed.and.returnValue(
       of({ name: 'Example Event' } as any)
     );
+
     eventServiceSpy.removeFeed.and.returnValue(of({} as any));
     feedServiceSpy.deleteFeed.and.returnValue(of({} as any));
 
     dialogSpy.open.and.returnValue({
       afterClosed: () => of(false)
     } as any);
+  }
 
-    TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule],
-      declarations: [AdminFeedComponent],
-      providers: [
-        { provide: FeedService, useValue: feedServiceSpy },
-        { provide: AdminUserService, useValue: adminUserServiceSpy },
-        { provide: AdminEventsService, useValue: adminEventsServiceSpy },
-        { provide: EventService, useValue: eventServiceSpy },
-        { provide: MatDialog, useValue: dialogSpy },
-        { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: Router, useValue: routerSpy },
-        { provide: ActivatedRoute, useValue: routeStub }
-      ],
-      schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
-    }).compileComponents();
-  }));
+  function createComponent(): AdminFeedComponent {
+    component = new AdminFeedComponent(
+      feedServiceSpy,
+      routeStub as ActivatedRoute,
+      routerSpy,
+      dialogSpy,
+      snackBarSpy,
+      adminEventsServiceSpy,
+      adminUserServiceSpy,
+      eventServiceSpy
+    );
+
+    component.ngOnInit();
+
+    return component;
+  }
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AdminFeedComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    setupSpies();
+    createComponent();
   });
 
   it('should create', () => {
@@ -151,27 +151,43 @@ describe('AdminFeedComponent', () => {
   });
 
   it('should set permissions to false when getMyself errors', () => {
-    adminUserServiceSpy.getMyself.and.returnValue(throwError(() => new Error('fail')))
-  
-    const f2 = TestBed.createComponent(AdminFeedComponent)
-    const c2 = f2.componentInstance
-    f2.detectChanges()
-  
-    expect(c2.hasFeedCreatePermission).toBeFalse()
-    expect(c2.hasFeedEditPermission).toBeFalse()
-    expect(c2.hasFeedDeletePermission).toBeFalse()
-    expect(c2.hasUpdateEventPermission).toBeFalse()
-  })   
+    setupSpies();
+
+    adminUserServiceSpy.getMyself.and.returnValue(
+      throwError(() => new Error('fail'))
+    );
+
+    component = new AdminFeedComponent(
+      feedServiceSpy,
+      routeStub as ActivatedRoute,
+      routerSpy,
+      dialogSpy,
+      snackBarSpy,
+      adminEventsServiceSpy,
+      adminUserServiceSpy,
+      eventServiceSpy
+    );
+
+    component.ngOnInit();
+
+    expect(component.hasFeedCreatePermission).toBeFalse();
+    expect(component.hasFeedEditPermission).toBeFalse();
+    expect(component.hasFeedDeletePermission).toBeFalse();
+    expect(component.hasUpdateEventPermission).toBeFalse();
+  });
 
   it('toggleNewEvent should flip addEvent and try to focus eventSelect when opening', () => {
     const focusSpy = jasmine.createSpy('focus');
+
     component.eventSelect = {
       nativeElement: { focus: focusSpy }
     } as ElementRef;
 
     jasmine.clock().install();
+
     component.toggleNewEvent();
     jasmine.clock().tick(0);
+
     jasmine.clock().uninstall();
 
     expect(component.addEvent).toBeTrue();
@@ -180,7 +196,6 @@ describe('AdminFeedComponent', () => {
 
   it('addFeedToEvent should call addFeed and show success snackbar', () => {
     const autocompleteEvent = { option: { id: 99 } } as any;
-    component.addFeedToEvent(autocompleteEvent);
 
     component.feed = mockFeed;
     component.addFeedToEvent(autocompleteEvent);
@@ -220,7 +235,9 @@ describe('AdminFeedComponent', () => {
   it('deleteFeed should open dialog and do nothing when dialog returns false', () => {
     component.feed = mockFeed;
 
-    dialogSpy.open.and.returnValue({ afterClosed: () => of(false) } as any);
+    dialogSpy.open.and.returnValue({
+      afterClosed: () => of(false)
+    } as any);
 
     component.deleteFeed();
 
@@ -231,18 +248,19 @@ describe('AdminFeedComponent', () => {
 
   it('deleteFeed should delete and navigate back to feeds when dialog returns true', () => {
     component.feed = mockFeed;
-  
-    dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
-  
+
+    dialogSpy.open.and.returnValue({
+      afterClosed: () => of(true)
+    } as any);
+
     component.deleteFeed();
-  
+
     expect(dialogSpy.open).toHaveBeenCalled();
     expect(feedServiceSpy.deleteFeed).toHaveBeenCalledWith(mockFeed);
-  
+
     expect(routerSpy.navigate).toHaveBeenCalledWith(
       ['../../feeds'],
-      jasmine.objectContaining({ relativeTo: jasmine.any(Object) })
+      jasmine.objectContaining({ relativeTo: routeStub })
     );
   });
-  
 });

@@ -11,8 +11,7 @@ describe('Contact Component', () => {
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-    declarations: [ContactComponent],
-    imports: [MatDialogModule],
+    imports: [ContactComponent, MatDialogModule],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
     }));

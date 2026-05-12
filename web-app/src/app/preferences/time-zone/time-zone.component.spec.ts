@@ -10,12 +10,12 @@ describe('TimeZone Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [TimeZoneComponent],
       imports: [
         MatSelectModule,
         MatIconModule,
         MatFormFieldModule,
-        MatSelectModule
+        MatSelectModule,
+        TimeZoneComponent
       ]
     }).compileComponents();
   }));

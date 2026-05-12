@@ -1,101 +1,116 @@
-import { Component, EventEmitter, Input } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 
-import { SecurityBannerComponent } from './security-banner.component';
 import { SettingsService } from 'admin/src/app/services/settings.service';
+import { SecurityDisclaimerComponent } from '../admin-settings';
 
-@Component({
-  selector: 'color-picker',
-  template: ''
-})
-class MockColorPickerComponent {
-  @Input() hexColor: string = '';
-  onColorChanged = new EventEmitter<{ color: string }>();
+describe('SecurityDisclaimerComponent', () => {
+  let component: SecurityDisclaimerComponent;
+  let settingsService: jasmine.SpyObj<SettingsService>;
 
-  updateColor(): void {}
-}
+  function createComponent(): void {
+    settingsService = jasmine.createSpyObj<SettingsService>('SettingsService', [
+      'get',
+      'update'
+    ]);
 
-class MockSettingsService {
-  get = jasmine.createSpy('get').and.returnValue(
-    of({
-      type: 'banner',
-      settings: {
-        headerTextColor: '#000000',
-        headerText: '',
-        headerBackgroundColor: '#FFFFFF',
-        footerTextColor: '#000000',
-        footerText: '',
-        footerBackgroundColor: '#FFFFFF',
-        showHeader: false,
-        showFooter: false
-      }
-    })
-  );
+    settingsService.get.and.returnValue(
+      of({
+        settings: {
+          show: true,
+          title: 'T',
+          text: 'X'
+        }
+      })
+    );
 
-  update = jasmine.createSpy('update').and.returnValue(of({}));
-}
+    settingsService.update.and.returnValue(of({}));
 
-describe('SecurityBannerComponent', () => {
-  let component: SecurityBannerComponent;
-  let fixture: ComponentFixture<SecurityBannerComponent>;
-  let settingsService: MockSettingsService;
-
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
-      declarations: [SecurityBannerComponent, MockColorPickerComponent],
-      providers: [{ provide: SettingsService, useClass: MockSettingsService }]
-    })
-      .overrideTemplate(
-        SecurityBannerComponent,
-        `
-          <color-picker #headerTextColor></color-picker>
-          <color-picker #headerBackgroundColor></color-picker>
-          <color-picker #footerTextColor></color-picker>
-          <color-picker #footerBackgroundColor></color-picker>
-        `
-      )
-      .compileComponents();
-  }));
+    component = new SecurityDisclaimerComponent(settingsService);
+    component.ngOnInit();
+  }
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(SecurityBannerComponent);
-    component = fixture.componentInstance;
-    settingsService = TestBed.inject(
-      SettingsService
-    ) as unknown as MockSettingsService;
-    fixture.detectChanges();
+    createComponent();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load banner settings on init', () => {
-    expect(settingsService.get).toHaveBeenCalledWith('banner');
-    expect(component.banner).toEqual({
-      headerTextColor: '#000000',
-      headerText: '',
-      headerBackgroundColor: '#FFFFFF',
-      footerTextColor: '#000000',
-      footerText: '',
-      footerBackgroundColor: '#FFFFFF',
-      showHeader: false,
-      showFooter: false
-    });
+  it('should load disclaimer settings on init', () => {
+    expect(settingsService.get).toHaveBeenCalledWith('disclaimer');
+
+    expect(component.disclaimer).toEqual(
+      jasmine.objectContaining({
+        show: true,
+        title: 'T',
+        text: 'X'
+      })
+    );
   });
 
-  it('should initialize pickers with loaded values and update banner on color change', () => {
-    expect(component.isDirty).toBe(false);
+  it('should save when dirty and beginSave changes', fakeAsync(() => {
+    component.setDirty(true);
+    settingsService.update.calls.reset();
 
-    const dirtySpy = spyOn(component.onDirty, 'emit');
+    component.ngOnChanges({
+      beginSave: {
+        currentValue: {},
+        previousValue: null,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    } as any);
 
-    component.headerTextColorPicker?.onColorChanged.emit({ color: '#111111' });
+    tick();
 
-    expect(component.banner.headerTextColor).toBe('#111111');
-    expect(component.isDirty).toBe(true);
-    expect(dirtySpy).toHaveBeenCalledWith(true);
-  });
+    expect(settingsService.update).toHaveBeenCalledWith(
+      'disclaimer',
+      component.disclaimer
+    );
+    expect(component.isDirty).toBeFalse();
+  }));
+
+  it('should emit saveComplete true on successful save', fakeAsync(() => {
+    const emitSpy = spyOn(component.saveComplete, 'emit');
+
+    component.setDirty(true);
+
+    component.ngOnChanges({
+      beginSave: {
+        currentValue: {},
+        previousValue: null,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    } as any);
+
+    tick();
+
+    expect(emitSpy).toHaveBeenCalledWith(true);
+  }));
+
+  it('should emit saveComplete false on save error', fakeAsync(() => {
+    const emitSpy = spyOn(component.saveComplete, 'emit');
+
+    settingsService.update.and.returnValue(
+      throwError(() => ({ error: 'nope' }))
+    );
+
+    component.setDirty(true);
+
+    component.ngOnChanges({
+      beginSave: {
+        currentValue: {},
+        previousValue: null,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    } as any);
+
+    tick();
+
+    expect(emitSpy).toHaveBeenCalledWith(false);
+  }));
 });

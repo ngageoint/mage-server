@@ -1,13 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FilterComponent } from './filter.component';
-import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialogModule as MatDialogModule,
+  MatDialogRef as MatDialogRef
+} from '@angular/material/dialog';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule as MatSelectModule } from '@angular/material/select';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 describe('FilterComponent', () => {
   let component: FilterComponent;
@@ -15,25 +21,31 @@ describe('FilterComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [FilterComponent],
-    imports: [FormsModule,
+      imports: [
+        FormsModule,
         ReactiveFormsModule,
         MatAutocompleteModule,
         MatDialogModule,
         MatFormFieldModule,
         MatChipsModule,
-        MatSelectModule],
-    providers: [{
-            provide: MatDialogRef, useValue: {}
-        }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-}).compileComponents();
+        MatSelectModule,
+        FilterComponent
+      ],
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {}
+        },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(FilterComponent);
     component = fixture.componentInstance;
   });
-
 
   it('should create', () => {
     expect(component).toBeTruthy();

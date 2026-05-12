@@ -64,7 +64,7 @@ describe('DeviceDetailsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [DeviceDetailsComponent],
+      imports: [DeviceDetailsComponent],
       providers: [
         { provide: ActivatedRoute, useValue: route },
         { provide: Router, useValue: router },

@@ -10,8 +10,7 @@ describe('UserAvatarComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [UserAvatarComponent],
-    imports: [],
+    imports: [UserAvatarComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 })
     .compileComponents();

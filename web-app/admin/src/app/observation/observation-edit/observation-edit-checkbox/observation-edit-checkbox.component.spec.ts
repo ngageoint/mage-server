@@ -16,11 +16,14 @@ import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-checkbox
-    [definition]="definition"
-    [formGroup]="formGroup"
-  ></observation-edit-checkbox>`
+  standalone: true,
+  imports: [ObservationEditCheckboxComponent],
+  template: `
+    <observation-edit-checkbox
+      [definition]="definition"
+      [formGroup]="formGroup"
+    ></observation-edit-checkbox>
+  `
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -51,9 +54,10 @@ describe('ObservationEditCheckboxComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        ObservationEditCheckboxComponent,
+        TestHostComponent
       ],
-      declarations: [ObservationEditCheckboxComponent, TestHostComponent]
     }).compileComponents();
   }));
 

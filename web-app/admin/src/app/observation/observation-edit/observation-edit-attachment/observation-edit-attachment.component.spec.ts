@@ -7,8 +7,15 @@ import { ObservationEditAttachmentComponent } from './observation-edit-attachmen
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-attachment [definition]="definition" [formGroup]="formGroup" [attachments]="attachments"></observation-edit-attachment>`
+  standalone: true,
+  imports: [ObservationEditAttachmentComponent],
+  template: `
+    <observation-edit-attachment
+      [definition]="definition"
+      [formGroup]="formGroup"
+      [attachments]="attachments"
+    ></observation-edit-attachment>
+  `
 })
 class TestHostComponent {
   attachments = []
@@ -28,9 +35,8 @@ describe('ObservationEditAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [ObservationEditAttachmentComponent, TestHostComponent],
+    imports: [ObservationEditAttachmentComponent, TestHostComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
-    imports: [],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 })
     .compileComponents();

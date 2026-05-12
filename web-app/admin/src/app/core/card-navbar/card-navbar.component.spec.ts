@@ -10,8 +10,7 @@ describe('CardNavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CardNavbarComponent],
-      imports: [FormsModule]
+      imports: [CardNavbarComponent, FormsModule],
     })
       .compileComponents();
 

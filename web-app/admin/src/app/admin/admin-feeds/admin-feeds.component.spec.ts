@@ -50,7 +50,7 @@ describe('AdminFeedsComponent', () => {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
-      declarations: [AdminFeedsComponent],
+      imports: [AdminFeedsComponent],
       providers: [
         { provide: FeedService, useValue: feedService },
         { provide: MatDialog, useValue: dialog },

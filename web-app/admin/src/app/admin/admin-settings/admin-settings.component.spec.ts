@@ -1,52 +1,23 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import {
-  MatSnackBar as MatSnackBar,
-  MatSnackBarModule as MatSnackBarModule
-} from '@angular/material/snack-bar';
-import {
-  MatDialog as MatDialog,
-  MatDialogModule as MatDialogModule
-} from '@angular/material/dialog';
 import { of } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
 
 describe('AdminSettingsComponent', () => {
   let component: AdminSettingsComponent;
-  let fixture: ComponentFixture<AdminSettingsComponent>;
   let dialog: jasmine.SpyObj<MatDialog>;
   let snackBar: jasmine.SpyObj<MatSnackBar>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
     snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
-    TestBed.configureTestingModule({
-      imports: [
-        NoopAnimationsModule,
-        MatDialogModule,
-        MatSnackBarModule,
-        MatTabsModule,
-        MatIconModule
-      ],
-      declarations: [AdminSettingsComponent],
-      providers: [
-        { provide: MatDialog, useValue: dialog },
-        { provide: MatSnackBar, useValue: snackBar }
-      ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(AdminSettingsComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    component = new (AdminSettingsComponent as any)(
+      dialog,
+      snackBar
+    ) as AdminSettingsComponent;
   });
 
   it('should create', () => {
@@ -55,7 +26,9 @@ describe('AdminSettingsComponent', () => {
 
   it('save should reset onSave object', () => {
     const prev = component.onSave;
+
     component.save();
+
     expect(component.onSave).not.toBe(prev);
   });
 
@@ -64,32 +37,39 @@ describe('AdminSettingsComponent', () => {
     component.isDisclaimerDirty = false;
     component.isAuthenticationDirty = false;
     component.isContactInfoDirty = false;
+
     expect(component.isDirty()).toBe(false);
   });
 
   it('isDirty should return true when any dirty', () => {
     component.isContactInfoDirty = true;
+
     expect(component.isDirty()).toBe(true);
   });
 
   it('onBannerDirty should set flag', () => {
     component.onBannerDirty(true);
+
     expect(component.isBannerDirty).toBe(true);
   });
 
   it('onDisclaimerDirty should set flag', () => {
     component.onDisclaimerDirty(true);
+
     expect(component.isDisclaimerDirty).toBe(true);
   });
 
   it('onContactInfoDirty should set flag', () => {
     component.onContactInfoDirty(true);
+
     expect(component.isContactInfoDirty).toBe(true);
   });
 
   it('onBannerSaved should show success snack and clear dirty', () => {
     component.isBannerDirty = true;
+
     component.onBannerSaved(true);
+
     expect(snackBar.open).toHaveBeenCalledWith(
       'Banner successfully saved',
       undefined,
@@ -100,7 +80,9 @@ describe('AdminSettingsComponent', () => {
 
   it('onBannerSaved should show failure snack and clear dirty', () => {
     component.isBannerDirty = true;
+
     component.onBannerSaved(false);
+
     expect(snackBar.open).toHaveBeenCalledWith(
       'Failed to save banner',
       undefined,
@@ -111,7 +93,9 @@ describe('AdminSettingsComponent', () => {
 
   it('onDisclaimerSaved should show success snack and clear dirty', () => {
     component.isDisclaimerDirty = true;
+
     component.onDisclaimerSaved(true);
+
     expect(snackBar.open).toHaveBeenCalledWith(
       'Disclaimer successfully saved',
       undefined,
@@ -122,7 +106,9 @@ describe('AdminSettingsComponent', () => {
 
   it('onDisclaimerSaved should show failure snack and clear dirty', () => {
     component.isDisclaimerDirty = true;
+
     component.onDisclaimerSaved(false);
+
     expect(snackBar.open).toHaveBeenCalledWith(
       'Failed to save disclaimer',
       undefined,
@@ -133,7 +119,9 @@ describe('AdminSettingsComponent', () => {
 
   it('onContactInfoSaved should show success snack and clear dirty', () => {
     component.isContactInfoDirty = true;
+
     component.onContactInfoSaved(true);
+
     expect(snackBar.open).toHaveBeenCalledWith(
       'Contact info successfully saved',
       undefined,
@@ -144,7 +132,9 @@ describe('AdminSettingsComponent', () => {
 
   it('onContactInfoSaved should show failure snack and clear dirty', () => {
     component.isContactInfoDirty = true;
+
     component.onContactInfoSaved(false);
+
     expect(snackBar.open).toHaveBeenCalledWith(
       'Failed to save contact info',
       undefined,

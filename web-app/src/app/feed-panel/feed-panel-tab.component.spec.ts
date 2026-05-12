@@ -10,9 +10,8 @@ describe('FeedTabComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        MatIconModule
+        MatIconModule, FeedPanelTabComponent
       ],
-      declarations: [FeedPanelTabComponent ]
     })
     .compileComponents();
   }));

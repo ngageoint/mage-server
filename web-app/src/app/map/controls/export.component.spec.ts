@@ -11,10 +11,13 @@ describe('Export Control Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ MatIconModule, MatButtonModule, MatTooltipModule ],
-      declarations: [ ExportControlComponent ]
-    })
-    .compileComponents();
+      imports: [
+        MatIconModule,
+        MatButtonModule,
+        MatTooltipModule,
+        ExportControlComponent
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

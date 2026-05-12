@@ -10,8 +10,7 @@ describe('FeedPanelComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedPanelComponent],
-      imports: [MatDialogModule]
+      imports: [MatDialogModule, FeedPanelComponent]
     })
     .compileComponents();
   }));

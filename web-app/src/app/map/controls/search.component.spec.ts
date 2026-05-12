@@ -1,96 +1,93 @@
-import {
-  ComponentFixture,
-  TestBed,
-  getTestBed,
-  tick,
-  fakeAsync,
-  flush,
-  discardPeriodicTasks,
-  waitForAsync
-} from '@angular/core/testing';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 
 import { SearchComponent, SearchState } from './search.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule, MatListItem } from '@angular/material/list';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { By } from '@angular/platform-browser';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   PlacenameSearchResult,
   PlacenameSearchService
 } from '../search/search.service';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { of } from 'rxjs';
 import {
+  MapSettings,
   MobileSearchType,
   WebSearchType
 } from 'src/app/entities/map/entities.map';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { MapSettingsService } from '../settings/map.settings.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ElementRef } from '@angular/core';
 
 describe('SearchComponent', () => {
   let component: SearchComponent;
-  let fixture: ComponentFixture<SearchComponent>;
-  let injector: TestBed;
-  let service: PlacenameSearchService;
+  let mapSettingsService: jasmine.SpyObj<MapSettingsService>;
+  let searchService: jasmine.SpyObj<PlacenameSearchService>;
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-    declarations: [SearchComponent],
-    imports: [BrowserAnimationsModule,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatInputModule,
-        MatListModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule],
-    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-}).compileComponents();
-  }));
+  const mapSettings: MapSettings = {
+    webSearchType: WebSearchType.NOMINATIM,
+    webNominatimUrl: '',
+    mobileSearchType: MobileSearchType.NONE,
+    mobileNominatimUrl: ''
+  };
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(SearchComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    mapSettingsService = jasmine.createSpyObj<MapSettingsService>(
+      'MapSettingsService',
+      ['getMapSettings']
+    );
 
-    injector = getTestBed();
-    service = injector.inject(PlacenameSearchService);
+    searchService = jasmine.createSpyObj<PlacenameSearchService>(
+      'PlacenameSearchService',
+      ['search']
+    );
+
+    snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+
+    mapSettingsService.getMapSettings.and.returnValue(of(mapSettings));
+
+    component = new SearchComponent(
+      mapSettingsService,
+      searchService,
+      snackBar
+    );
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should toggle search on', () => {
-    const button = fixture.debugElement.query(By.css('button'));
-    button.nativeElement.click();
+  it('should load map settings on init', () => {
+    component.ngOnInit();
+
+    expect(mapSettingsService.getMapSettings).toHaveBeenCalled();
+    expect(component.mapSettings).toEqual(mapSettings);
+  });
+
+  it('should toggle search on', fakeAsync(() => {
+    const focusSpy = jasmine.createSpy('focus');
+
+    component.searchInput = {
+      nativeElement: {
+        focus: focusSpy
+      }
+    } as any as ElementRef<HTMLInputElement>;
+
+    component.searchToggle();
+
+    tick();
 
     expect(component.searchState as SearchState).toBe(SearchState.ON);
-  });
+    expect(focusSpy).toHaveBeenCalled();
+  }));
 
   it('should toggle search off', () => {
     component.searchState = SearchState.ON;
 
-    const button = fixture.debugElement.query(By.css('button'));
-    button.nativeElement.click();
+    component.searchToggle();
 
     expect(component.searchState as SearchState).toBe(SearchState.OFF);
   });
 
-  it('should search', fakeAsync(() => {
-    spyOn(component.onSearch, 'emit');
-
-    component.searchState = SearchState.ON;
-    component.mapSettings = {
-      webSearchType: WebSearchType.NOMINATIM,
-      webNominatimUrl: '',
-      mobileSearchType: MobileSearchType.NONE,
-      mobileNominatimUrl: ''
-    };
+  it('should search', () => {
+    component.mapSettings = mapSettings;
 
     const results: PlacenameSearchResult[] = [
       {
@@ -100,63 +97,79 @@ describe('SearchComponent', () => {
       }
     ];
 
-    spyOn(service, 'search').and.returnValue(of(results));
+    searchService.search.and.returnValue(of(results));
 
-    fixture.detectChanges();
+    component.search('test');
 
-    const input = fixture.debugElement.query(By.css('input')).nativeElement;
-    input.value = 'test';
-
-    const event = new KeyboardEvent('keydown', {
-      key: 'Enter'
-    });
-    input.dispatchEvent(event);
-
-    tick();
-    fixture.detectChanges();
-
+    expect(component.searching).toBe(false);
+    expect(searchService.search).toHaveBeenCalledWith(mapSettings, 'test');
     expect(component.searchResults).toEqual(results);
+  });
 
-    const item = fixture.debugElement.query(By.directive(MatListItem));
-    expect(item).toBeTruthy();
+  it('should show snack bar when search fails', () => {
+    component.mapSettings = mapSettings;
 
-    item.nativeElement.click();
+    searchService.search.and.returnValue(
+      throwError(() => new Error('Search failed'))
+    );
 
-    expect(component.onSearch.emit).toHaveBeenCalledWith({
-      result: results[0]
-    });
+    component.search('test');
 
-    flush();
-    discardPeriodicTasks();
-  }));
+    expect(component.searching).toBe(false);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Error accessing place name server ',
+      undefined,
+      {
+        duration: 2000
+      }
+    );
+  });
 
   it('should clear', () => {
     spyOn(component.onSearchClear, 'emit');
 
+    const event = jasmine.createSpyObj<MouseEvent>('MouseEvent', [
+      'stopPropagation',
+      'preventDefault'
+    ]);
+
+    const input = {
+      value: 'test'
+    } as HTMLInputElement;
+
+    component.searchResults = [
+      {
+        name: 'test',
+        bbox: [0, 0, 0, 0],
+        position: [0, 0]
+      }
+    ];
+
+    component.clear(event, input);
+
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(input.value).toEqual('');
+    expect(component.searchResults).toEqual([]);
+    expect(component.onSearchClear.emit).toHaveBeenCalled();
+  });
+
+  it('should emit selected search result and close search', () => {
+    spyOn(component.onSearch, 'emit');
+    spyOn(component, 'searchToggle').and.callThrough();
+
     component.searchState = SearchState.ON;
 
-    component.mapSettings = {
-      webSearchType: WebSearchType.NOMINATIM,
-      webNominatimUrl: '',
-      mobileSearchType: MobileSearchType.NONE,
-      mobileNominatimUrl: ''
+    const result: PlacenameSearchResult = {
+      name: 'test',
+      bbox: [0, 0, 0, 0],
+      position: [0, 0]
     };
 
-    fixture.detectChanges();
+    component.searchResultClick(result);
 
-    const input = fixture.debugElement.query(By.css('input')).nativeElement;
-    input.value = 'test';
-
-    fixture.detectChanges();
-
-    expect(input.value).toEqual('test');
-
-    const clearButton = fixture.debugElement.queryAll(By.css('button'))[1];
-    clearButton.nativeElement.click();
-
-    fixture.detectChanges();
-
-    expect(input.value).toEqual('');
-    expect(component.onSearchClear.emit).toHaveBeenCalled();
+    expect(component.searchToggle).toHaveBeenCalled();
+    expect(component.searchState as SearchState).toBe(SearchState.OFF);
+    expect(component.onSearch.emit).toHaveBeenCalledWith({ result });
   });
 });

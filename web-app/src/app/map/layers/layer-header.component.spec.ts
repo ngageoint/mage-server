@@ -11,11 +11,11 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  selector: `host-component`,
+  standalone: true,
+  imports: [LayerHeaderComponent],
   template: `<layer-header [layer]="layer"></layer-header>`
 })
 class TestHostComponent {
-
   layer = {
     layer: {
       type: 'Tile'
@@ -32,18 +32,24 @@ describe('LayerHeaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ NoopAnimationsModule, MatFormFieldModule, MatCheckboxModule, MatRadioModule, MatIconModule ],
-      providers: [MapLayerService ],
-      declarations: [ LayerHeaderComponent, TestHostComponent ]
-    })
-    .compileComponents();
+      imports: [
+        NoopAnimationsModule,
+        MatFormFieldModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        MatIconModule,
+        LayerHeaderComponent,
+        TestHostComponent
+      ],
+      providers: [MapLayerService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestHostComponent);
     hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.layerHeader
+    component = hostComponent.layerHeader;
   });
 
   it('should create', () => {
@@ -51,13 +57,15 @@ describe('LayerHeaderComponent', () => {
   });
 
   it('should have getBounds', () => {
-    component.layer.layer.getBounds = function(): any { return null; };
+    component.layer.layer.getBounds = function (): any {
+      return null;
+    };
     expect(component.hasBounds()).toBeTruthy();
   });
 
   it('should have bbox', () => {
     component.layer.layer.table = {
-      bbox: [0,0,0,0]
+      bbox: [0, 0, 0, 0]
     };
     expect(component.hasBounds()).toBeTruthy();
   });
@@ -72,7 +80,10 @@ describe('LayerHeaderComponent', () => {
       checked: true
     };
     component.checkChanged(event);
-    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer, true);
+    expect(component['layerService'].toggle).toHaveBeenCalledWith(
+      component.layer,
+      true
+    );
   });
 
   it('should toggle check off', () => {
@@ -81,13 +92,19 @@ describe('LayerHeaderComponent', () => {
       checked: false
     };
     component.checkChanged(event);
-    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer, false);
+    expect(component['layerService'].toggle).toHaveBeenCalledWith(
+      component.layer,
+      false
+    );
   });
 
   it('should toggle radio on', () => {
     spyOn(component['layerService'], 'toggle');
     component.radioChanged();
-    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer, true);
+    expect(component['layerService'].toggle).toHaveBeenCalledWith(
+      component.layer,
+      true
+    );
   });
 
   it('should zoom', () => {
@@ -98,7 +115,9 @@ describe('LayerHeaderComponent', () => {
     spyOn(component['layerService'], 'zoom');
     const button = fixture.debugElement.queryAll(By.css('button'))[0];
     button.nativeElement.click();
-    expect(component['layerService'].zoom).toHaveBeenCalledWith(component.layer);
+    expect(component['layerService'].zoom).toHaveBeenCalledWith(
+      component.layer
+    );
   });
 
   it('should toggle expanded', () => {

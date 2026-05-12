@@ -7,7 +7,10 @@ import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form
 import { UserAvatarModule } from '../user-avatar/user-avatar.module';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 describe('Profile Component', () => {
   let component: ProfileComponent;
@@ -15,15 +18,20 @@ describe('Profile Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [ProfileComponent],
-    imports: [MatDialogModule,
+      imports: [
+        MatDialogModule,
+        ProfileComponent,
         MatIconModule,
         MatFormFieldModule,
         UserAvatarModule,
         MatCardModule,
-        MatToolbarModule],
-    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-}).compileComponents();
+        MatToolbarModule
+      ],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

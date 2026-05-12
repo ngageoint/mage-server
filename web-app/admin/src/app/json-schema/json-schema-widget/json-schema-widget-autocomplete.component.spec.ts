@@ -1,13 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field'
-import { MatIconModule } from '@angular/material/icon'
-import { MatInputModule as MatInputModule } from '@angular/material/input'
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { JsonSchemaWidgetAutocompleteComponent } from './json-schema-widget-autocomplete.component';
 import { JsonSchemaModule } from '../json-schema.module';
-
 
 describe('AutocompleteMaterialSelectComponent', () => {
   let component: JsonSchemaWidgetAutocompleteComponent;
@@ -23,11 +22,10 @@ describe('AutocompleteMaterialSelectComponent', () => {
         ReactiveFormsModule,
         MatAutocompleteModule,
         JsonSchemaModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        JsonSchemaWidgetAutocompleteComponent
       ],
-      declarations: [JsonSchemaWidgetAutocompleteComponent ]
-    })
-    .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {

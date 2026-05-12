@@ -9,7 +9,7 @@ describe('AdminAuthenticationSAMLComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationSAMLComponent ],
+      imports: [ AdminAuthenticationSAMLComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

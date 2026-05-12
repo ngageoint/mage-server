@@ -46,8 +46,7 @@ describe('AboutComponent', () => {
     mockLocation = jasmine.createSpyObj('Location', ['back']);
 
     TestBed.configureTestingModule({
-      imports: [MatToolbarModule, MatIconModule],
-      declarations: [AboutComponent],
+      imports: [MatToolbarModule, MatIconModule, AboutComponent],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         { provide: Location, useValue: mockLocation }

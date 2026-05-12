@@ -68,8 +68,7 @@ describe('LayerDashboardComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, MatPaginatorModule, NoopAnimationsModule],
-      declarations: [LayerDashboardComponent],
+      imports: [RouterTestingModule, MatPaginatorModule, NoopAnimationsModule, LayerDashboardComponent],
       providers: [
         { provide: LayersService, useValue: mockLayersService },
         { provide: MatDialog, useValue: mockDialog },

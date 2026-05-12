@@ -9,7 +9,7 @@ describe('ObservationEditGeometryComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditGeometryComponent ]
+      imports: [ObservationEditGeometryComponent ]
     })
     .compileComponents();
   }));

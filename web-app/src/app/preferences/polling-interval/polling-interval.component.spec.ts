@@ -12,14 +12,14 @@ describe('PollingIntervalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PollingIntervalComponent],
       imports: [
         MatSelectModule,
         MatIconModule,
         MatFormFieldModule,
         MatSelectModule,
         BrowserAnimationsModule,
-        CommonModule
+        CommonModule,
+        PollingIntervalComponent
       ]
     }).compileComponents();
   }));

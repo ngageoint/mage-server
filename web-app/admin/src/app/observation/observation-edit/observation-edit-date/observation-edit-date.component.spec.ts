@@ -9,7 +9,7 @@ describe('ObservationEditDateComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditDateComponent ]
+      imports: [ObservationEditDateComponent ]
     })
     .compileComponents();
   }));

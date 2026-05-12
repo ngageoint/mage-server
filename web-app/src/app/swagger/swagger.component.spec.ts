@@ -10,8 +10,7 @@ describe('SwaggerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatIconModule, MatToolbarModule],
-      declarations: [SwaggerComponent]
+      imports: [MatIconModule, MatToolbarModule, SwaggerComponent],
     })
       .compileComponents();
   }));

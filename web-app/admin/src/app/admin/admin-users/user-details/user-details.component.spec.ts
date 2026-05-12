@@ -139,8 +139,7 @@ describe('UserDetailsComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FormsModule],
-      declarations: [UserDetailsComponent],
+      imports: [FormsModule, UserDetailsComponent],
       providers: [
         {
           provide: ActivatedRoute,

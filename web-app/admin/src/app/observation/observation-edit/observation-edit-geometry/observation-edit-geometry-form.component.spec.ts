@@ -9,7 +9,7 @@ describe('ObservationEditGeometryFormComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditGeometryFormComponent ]
+      imports: [ObservationEditGeometryFormComponent ]
     })
     .compileComponents();
   }));

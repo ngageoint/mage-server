@@ -34,8 +34,7 @@ describe('DeleteTeamComponent', () => {
     mockUserService = jasmine.createSpyObj('UserService', ['deleteUser']);
 
     await TestBed.configureTestingModule({
-      declarations: [DeleteTeamComponent],
-      imports: [FormsModule],
+      imports: [FormsModule, DeleteTeamComponent],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { team: mockTeam } },

@@ -30,12 +30,11 @@ describe('AdminServiceDeleteComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatDialogModule],
+      imports: [MatDialogModule, AdminServiceDeleteComponent],
       providers: [
         { provide: MatDialogRef, useValue: {} },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }
       ],
-      declarations: [AdminServiceDeleteComponent]
     }).compileComponents();
   }));
 

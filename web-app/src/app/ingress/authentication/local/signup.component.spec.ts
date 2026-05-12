@@ -93,8 +93,7 @@ describe('SignupComponent', () => {
     };
 
     TestBed.configureTestingModule({
-    declarations: [SignupComponent],
-    imports: [ReactiveFormsModule,
+    imports: [SignupComponent, ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
         MatIconModule,

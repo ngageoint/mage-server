@@ -10,8 +10,7 @@ describe('NoExportsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatDialogModule, MatIconModule, MatDividerModule],
-      declarations: [NoExportsComponent]
+      imports: [MatDialogModule, MatIconModule, MatDividerModule, NoExportsComponent],
     }).compileComponents();
   }));
 

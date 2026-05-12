@@ -12,8 +12,7 @@ describe('LocationComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatIconModule, MatButtonModule, MatTooltipModule],
-      declarations: [ LocationComponent ]
+      imports: [MatIconModule, MatButtonModule, MatTooltipModule, LocationComponent],
     })
     .compileComponents();
   }));

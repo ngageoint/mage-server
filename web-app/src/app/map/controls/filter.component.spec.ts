@@ -19,8 +19,8 @@ describe('Filter Control Component', () => {
         MatFormFieldModule,
         MatChipsModule,
         MatSelectModule,
+        FilterControlComponent
       ],
-      declarations: [FilterControlComponent]
     }).compileComponents();
   }));
 

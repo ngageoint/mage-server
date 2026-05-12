@@ -14,7 +14,7 @@ describe('FieldsListComponent', () => {
         mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
         TestBed.configureTestingModule({
-            declarations: [FieldsListComponent],
+            imports: [FieldsListComponent],
             providers: [
                 { provide: MatDialog, useValue: mockDialog }
             ],

@@ -11,14 +11,14 @@ describe('ObservationOptionsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatListModule, MatIconModule],
-      declarations: [ ObservationOptionsComponent ],
-      providers: [{
-        provide: MatBottomSheetRef,
-        useValue: {}
-      }]
-    })
-    .compileComponents();
+      imports: [MatListModule, MatIconModule, ObservationOptionsComponent],
+      providers: [
+        {
+          provide: MatBottomSheetRef,
+          useValue: {}
+        }
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

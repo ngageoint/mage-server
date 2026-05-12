@@ -1,4 +1,7 @@
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule as MatListModule } from '@angular/material/list';
@@ -12,16 +15,15 @@ describe('FeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [
-        FeedListComponent
-    ],
-    imports: [MatToolbarModule,
+      imports: [
+        MatToolbarModule,
         FeedItemSummaryModule,
         MatDividerModule,
-        MatListModule],
-    providers: [provideHttpClient(withInterceptorsFromDi())]
-})
-    .compileComponents();
+        MatListModule,
+        FeedListComponent
+      ],
+      providers: [provideHttpClient(withInterceptorsFromDi())]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

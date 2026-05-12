@@ -36,8 +36,6 @@ describe('user select component', () => {
         FormsModule,
         NgSelectModule,
         ReactiveFormsModule,
-      ],
-      declarations: [
         TestHostComponent,
         UserSelectComponent,
       ],

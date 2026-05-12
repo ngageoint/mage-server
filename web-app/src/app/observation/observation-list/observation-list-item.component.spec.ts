@@ -14,7 +14,7 @@ import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 
-class MockMapService { }
+class MockMapService {}
 
 class MockUserService {
   myself = {
@@ -82,11 +82,14 @@ class MockLocalStorageService {
 }
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-list-item
-    [observation]="observation"
-    [event]="event"
-  ></observation-list-item>`
+  standalone: true,
+  imports: [ObservationListItemComponent],
+  template: `
+    <observation-list-item
+      [observation]="observation"
+      [event]="event"
+    ></observation-list-item>
+  `
 })
 class TestHostComponent {
   event: any = {
@@ -106,18 +109,16 @@ describe('ObservationListItemComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        ObservationListItemComponent,
-        MomentPipe,
-        GeometryPipe,
-        TestHostComponent
-      ],
       imports: [
         NoopAnimationsModule,
         MatIconModule,
         MatCardModule,
         MatRippleModule,
-        MatSnackBarModule
+        MatSnackBarModule,
+        ObservationListItemComponent,
+        MomentPipe,
+        GeometryPipe,
+        TestHostComponent
       ],
       providers: [
         {

@@ -9,7 +9,7 @@ describe('MapClipComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [MapClipComponent]
+      imports: [MapClipComponent]
     })
     .compileComponents();
   }));

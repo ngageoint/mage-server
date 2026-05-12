@@ -7,8 +7,7 @@ describe('Account Status Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AccountStatusComponent],
-      imports: []
+      imports: [AccountStatusComponent],
     }).compileComponents();
   }));
 

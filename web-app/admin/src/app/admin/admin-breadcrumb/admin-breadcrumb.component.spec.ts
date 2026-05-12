@@ -5,11 +5,12 @@ import { AdminBreadcrumb } from './admin-breadcrumb.model';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterTestingModule } from '@angular/router/testing';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AdminBreadcrumbComponent', () => {
   @Component({
     selector: 'app-host-component',
+    standalone: true,
+    imports: [AdminBreadcrumbComponent],
     template: `<admin-breadcrumb
       [breadcrumbs]="breadcrumbs"
     ></admin-breadcrumb>`
@@ -28,9 +29,12 @@ describe('AdminBreadcrumbComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatIconTestingModule, MatIconModule, RouterTestingModule],
-      declarations: [TestHostComponent, AdminBreadcrumbComponent],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
+      imports: [
+        TestHostComponent,
+        MatIconTestingModule,
+        MatIconModule,
+        RouterTestingModule
+      ]
     }).compileComponents();
   }));
 

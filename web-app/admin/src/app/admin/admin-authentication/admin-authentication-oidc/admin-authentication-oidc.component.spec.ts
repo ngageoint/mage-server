@@ -9,8 +9,7 @@ describe('AdminAuthenticationOidcComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationOidcComponent ],
-      imports: [],
+      imports: [ AdminAuthenticationOidcComponent ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     })
     .compileComponents();

@@ -33,8 +33,7 @@ describe('ImgXhrBlobSrcDirective', () => {
     objectUrlService.createObjectURL.and.callFake(URL.createObjectURL)
     objectUrlService.revokeObjectURL.and.callFake(URL.revokeObjectURL)
     TestBed.configureTestingModule({
-    declarations: [XhrImgComponent, TestComponent],
-    imports: [],
+    imports: [XhrImgComponent, TestComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 })
     .overrideComponent(XhrImgComponent, {

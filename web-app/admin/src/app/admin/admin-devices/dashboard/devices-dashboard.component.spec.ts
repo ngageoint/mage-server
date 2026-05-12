@@ -75,8 +75,9 @@ describe('DeviceDashboardComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [DeviceDashboardComponent],
+      
       imports: [
+        DeviceDashboardComponent,
         RouterTestingModule.withRoutes([]),
         MatDialogModule,
         MatPaginatorModule,

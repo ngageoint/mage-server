@@ -4,19 +4,25 @@ import { ColorPickerComponent } from './color-picker.component';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule as MatInputModule } from '@angular/material/input';
-import { CheckboardModule, SaturationModule, HueModule, AlphaModule } from 'ngx-color';
+import {
+  CheckboardModule,
+  SaturationModule,
+  HueModule,
+  AlphaModule
+} from 'ngx-color';
 import { Component, ViewChild } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TinyColor } from '@ctrl/tinycolor';
 
 @Component({
-  selector: `host-component`,
+  standalone: true,
+  imports: [ColorPickerComponent],
   template: `<color-picker hexColor="hexColor"></color-picker>`
 })
 class TestHostComponent {
   hexColor = '#000000FF';
 
- @ViewChild(ColorPickerComponent) colorPicker: ColorPickerComponent;
+  @ViewChild(ColorPickerComponent) colorPicker: ColorPickerComponent;
 }
 
 describe('ColorPickerComponent', () => {
@@ -26,10 +32,19 @@ describe('ColorPickerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ NoopAnimationsModule, MatInputModule, MatFormFieldModule, MatCardModule, CheckboardModule, SaturationModule, HueModule, AlphaModule ],
-      declarations: [ TestHostComponent, ColorPickerComponent ]
-    })
-    .compileComponents();
+      imports: [
+        NoopAnimationsModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatCardModule,
+        CheckboardModule,
+        SaturationModule,
+        HueModule,
+        AlphaModule,
+        TestHostComponent,
+        ColorPickerComponent
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -42,7 +57,6 @@ describe('ColorPickerComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-
 
   it('should show color picker on open', () => {
     component.open();
@@ -67,5 +81,3 @@ describe('ColorPickerComponent', () => {
     });
   });
 });
-
-

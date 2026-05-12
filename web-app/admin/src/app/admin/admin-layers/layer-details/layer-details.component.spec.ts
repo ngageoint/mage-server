@@ -22,7 +22,10 @@ import { AdminUserService } from '../../services/admin-user.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 describe('LayerDetailsComponent', () => {
   let component: LayerDetailsComponent;
@@ -98,15 +101,17 @@ describe('LayerDetailsComponent', () => {
     buildMocks();
 
     await TestBed.configureTestingModule({
-    declarations: [LayerDetailsComponent],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [MatDialogModule,
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      imports: [
+        MatDialogModule,
         MatSnackBarModule,
         NoopAnimationsModule,
         RouterTestingModule,
         MatIconModule,
-        MatPaginatorModule],
-    providers: [
+        MatPaginatorModule,
+        LayerDetailsComponent
+      ],
+      providers: [
         { provide: ActivatedRoute, useValue: makeActivatedRoute(params) },
         { provide: LayersService, useValue: mockLayersService },
         { provide: AdminEventsService, useValue: mockEventsService },
@@ -114,8 +119,8 @@ describe('LayerDetailsComponent', () => {
         { provide: AdminUserService, useValue: mockUserService },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
-    ]
-}).compileComponents();
+      ]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LayerDetailsComponent);
     component = fixture.componentInstance;

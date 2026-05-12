@@ -9,7 +9,10 @@ import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule as MatListModule } from '@angular/material/list';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'; // for mat-nav-list
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http'; // for mat-nav-list
 
 describe('AttachUploadComponent', () => {
   let component: AttachUploadComponent;
@@ -17,16 +20,21 @@ describe('AttachUploadComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [AttachUploadComponent],
-    imports: [CommonModule,
+      imports: [
+        CommonModule,
         MatPaginatorModule,
         MatIconModule,
         MatCardModule,
         MatProgressSpinnerModule,
         MatDividerModule,
-        MatListModule],
-    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-}).compileComponents();
+        MatListModule,
+        AttachUploadComponent
+      ],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

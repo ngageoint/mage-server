@@ -12,7 +12,8 @@ import {
 
 describe('AdminServiceEditComponent', () => {
   @Component({
-    selector: 'app-host-component',
+    standalone: true,
+    imports: [AdminServiceEditComponent],
     template: `<app-create-service [expanded]="expanded"></app-create-service>`
   })
   class TestHostComponent {
@@ -57,7 +58,7 @@ describe('AdminServiceEditComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [TestHostComponent, AdminServiceEditComponent],
+      imports: [TestHostComponent, AdminServiceEditComponent],
       providers: [{ provide: FeedService, useValue: feedService }],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();

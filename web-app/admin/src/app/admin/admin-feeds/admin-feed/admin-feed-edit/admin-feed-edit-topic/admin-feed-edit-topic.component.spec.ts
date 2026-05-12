@@ -10,14 +10,17 @@ import { AdminFeedEditTopicComponent } from './admin-feed-edit-topic.component';
 
 describe('ChooseServiceTopicComponent', () => {
   @Component({
-    selector: 'app-host-component',
-    template: `<app-choose-service-topic
-      [services]="services"
-      [topics]="topics"
-      [selectedService]="selectedService"
-      [selectedTopic]="selectedTopic"
-    >
-    </app-choose-service-topic>`
+    standalone: true,
+    imports: [AdminFeedEditTopicComponent],
+    template: `
+      <app-choose-service-topic
+        [services]="services"
+        [topics]="topics"
+        [selectedService]="selectedService"
+        [selectedTopic]="selectedTopic"
+      >
+      </app-choose-service-topic>
+    `
   })
   class TestHostComponent {
     services: Service[];
@@ -44,9 +47,10 @@ describe('ChooseServiceTopicComponent', () => {
         NoopAnimationsModule,
         MatExpansionModule,
         MatSelectModule,
-        NgxMatSelectSearchModule
-      ],
-      declarations: [AdminFeedEditTopicComponent, TestHostComponent]
+        NgxMatSelectSearchModule,
+        AdminFeedEditTopicComponent,
+        TestHostComponent
+      ]
     }).compileComponents();
   }));
 

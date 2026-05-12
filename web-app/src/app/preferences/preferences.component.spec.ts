@@ -14,14 +14,16 @@ describe('Preferences Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [
+      imports: [
         PreferencesComponent,
         CoordinateSystemComponent,
         TimeZoneComponent,
         PollingIntervalComponent,
-        TimeFormatComponent
+        TimeFormatComponent,
+        MatIconModule,
+        MatFormFieldModule,
+        MatSelectModule
       ],
-      imports: [MatIconModule, MatFormFieldModule, MatSelectModule]
     }).compileComponents();
   }));
 

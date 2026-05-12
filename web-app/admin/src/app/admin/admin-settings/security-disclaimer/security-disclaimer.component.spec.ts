@@ -1,52 +1,37 @@
-import {
-  ComponentFixture,
-  TestBed,
-  waitForAsync,
-  fakeAsync,
-  tick
-} from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+
 import { SecurityDisclaimerComponent } from './security-disclaimer.component';
 import { SettingsService } from 'admin/src/app/services/settings.service';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 
 describe('SecurityDisclaimerComponent', () => {
   let component: SecurityDisclaimerComponent;
-  let fixture: ComponentFixture<SecurityDisclaimerComponent>;
   let settingsService: jasmine.SpyObj<SettingsService>;
 
-  beforeEach(waitForAsync(() => {
+  function createComponent(): void {
     settingsService = jasmine.createSpyObj<SettingsService>('SettingsService', [
       'get',
       'update'
     ]);
 
-    TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        NoopAnimationsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCheckboxModule
-      ],
-      declarations: [SecurityDisclaimerComponent],
-      providers: [{ provide: SettingsService, useValue: settingsService }]
-    }).compileComponents();
-  }));
-
-  beforeEach(() => {
     settingsService.get.and.returnValue(
-      of({ settings: { show: true, title: 'T', text: 'X' } })
+      of({
+        settings: {
+          show: true,
+          title: 'T',
+          text: 'X'
+        }
+      })
     );
+
     settingsService.update.and.returnValue(of({}));
 
-    fixture = TestBed.createComponent(SecurityDisclaimerComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    component = new SecurityDisclaimerComponent(settingsService);
+    component.ngOnInit();
+  }
+
+  beforeEach(() => {
+    createComponent();
   });
 
   it('should create', () => {
@@ -55,8 +40,13 @@ describe('SecurityDisclaimerComponent', () => {
 
   it('should load disclaimer settings on init', () => {
     expect(settingsService.get).toHaveBeenCalledWith('disclaimer');
+
     expect(component.disclaimer).toEqual(
-      jasmine.objectContaining({ show: true, title: 'T', text: 'X' })
+      jasmine.objectContaining({
+        show: true,
+        title: 'T',
+        text: 'X'
+      })
     );
   });
 
@@ -84,6 +74,7 @@ describe('SecurityDisclaimerComponent', () => {
 
   it('should emit saveComplete true on successful save', fakeAsync(() => {
     const emitSpy = spyOn(component.saveComplete, 'emit');
+
     component.setDirty(true);
 
     component.ngOnChanges({
@@ -102,11 +93,13 @@ describe('SecurityDisclaimerComponent', () => {
 
   it('should emit saveComplete false on save error', fakeAsync(() => {
     const emitSpy = spyOn(component.saveComplete, 'emit');
+
     settingsService.update.and.returnValue(
       throwError(() => ({ error: 'nope' }))
     );
 
     component.setDirty(true);
+
     component.ngOnChanges({
       beginSave: {
         currentValue: {},

@@ -76,7 +76,7 @@ describe('FormDetailsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [FormDetailsComponent],
+      imports: [FormDetailsComponent],
       providers: [
         { provide: AdminEventsService, useValue: mockEventsService },
         { provide: MatDialog, useValue: mockDialog },

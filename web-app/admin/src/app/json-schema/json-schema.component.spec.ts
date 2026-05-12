@@ -8,8 +8,7 @@ describe('JsonSchemaFormWithServiceComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [JsonSchemaFormModule],
-      declarations: [JsonSchemaFormWithServiceComponent]
+      imports: [JsonSchemaFormModule, JsonSchemaFormWithServiceComponent],
     }).compileComponents();
   }));
 

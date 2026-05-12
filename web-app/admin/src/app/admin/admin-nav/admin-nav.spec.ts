@@ -25,7 +25,7 @@ describe('AdminNavComponent', () => {
     mockUserService.hasPermission.and.callFake((perm: string) => perm === 'UPDATE_SETTINGS')
 
     TestBed.configureTestingModule({
-      declarations: [AdminNavComponent],
+      imports: [AdminNavComponent],
       providers: [
         { provide: AdminUserService, useValue: mockUserService },
         { provide: Router, useValue: mockRouter }

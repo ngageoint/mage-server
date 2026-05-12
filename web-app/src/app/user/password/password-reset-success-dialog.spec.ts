@@ -8,8 +8,7 @@ describe('Password Reset Success Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PasswordResetSuccessDialog],
-      imports: [MatDialogModule],
+      imports: [MatDialogModule, PasswordResetSuccessDialog],
       providers: [{
         provide: MatDialogRef, 
         useValue: {}

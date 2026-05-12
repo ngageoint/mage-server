@@ -5,43 +5,59 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 import { MatIconModule } from '@angular/material/icon';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-attachment [definition]="definition" [formGroup]="formGroup" [attachments]="attachments"></observation-edit-attachment>`
+  standalone: true,
+  imports: [ObservationEditAttachmentComponent],
+  template: `
+    <observation-edit-attachment
+      [definition]="definition"
+      [formGroup]="formGroup"
+      [attachments]="attachments"
+    ></observation-edit-attachment>
+  `
 })
 class TestHostComponent {
-  attachments = []
+  attachments = [];
   formGroup = new UntypedFormGroup({
     attachment: new UntypedFormControl([])
   });
   definition = {
     name: 'attachment'
-  }
-  @ViewChild(ObservationEditAttachmentComponent) component: ObservationEditAttachmentComponent
+  };
+  @ViewChild(ObservationEditAttachmentComponent)
+  component: ObservationEditAttachmentComponent;
 }
 
 describe('ObservationEditAttachmentComponent', () => {
-  let component: ObservationEditAttachmentComponent
-  let hostComponent: TestHostComponent
-  let fixture: ComponentFixture<TestHostComponent>
+  let component: ObservationEditAttachmentComponent;
+  let hostComponent: TestHostComponent;
+  let fixture: ComponentFixture<TestHostComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [ObservationEditAttachmentComponent, TestHostComponent],
-    imports: [MatIconModule],
-    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-})
-    .compileComponents();
+      imports: [
+        ObservationEditAttachmentComponent,
+        TestHostComponent,
+        MatIconModule
+      ],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TestHostComponent)
-    hostComponent = fixture.componentInstance
+    fixture = TestBed.createComponent(TestHostComponent);
+    hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component
-  })
+    component = hostComponent.component;
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -10,8 +10,7 @@ describe('Home Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [HomeComponent],
-    imports: [RouterTestingModule],
+    imports: [RouterTestingModule, HomeComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));

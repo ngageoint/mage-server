@@ -10,7 +10,7 @@ describe('ObservationViewGeometryComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationViewGeometryComponent, GeometryPipe]
+      imports: [ObservationViewGeometryComponent, GeometryPipe]
     })
     .compileComponents();
   }));

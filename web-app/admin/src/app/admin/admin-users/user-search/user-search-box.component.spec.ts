@@ -41,8 +41,7 @@ describe('UserSearchBoxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule],
-      declarations: [UserSearchBoxComponent],
+      imports: [FormsModule, UserSearchBoxComponent],
       providers: [{ provide: UserPagingService, useValue: mockUserPaging }]
     }).compileComponents();
 

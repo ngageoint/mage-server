@@ -88,8 +88,8 @@ describe('EventDetailsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [EventDetailsComponent],
-      imports: [NoopAnimationsModule],
+      
+      imports: [EventDetailsComponent, NoopAnimationsModule],
       providers: [
         { provide: AdminEventsService, useValue: eventsServiceSpy },
         { provide: AdminTeamsService, useValue: teamsServiceSpy },

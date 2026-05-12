@@ -45,7 +45,8 @@ const topicSchema = Object.freeze({
 describe('AdminFeedEditItemPropertiesComponent', () => {
 
   @Component({
-    selector: 'app-host-component',
+    standalone: true,
+    imports: [AdminFeedEditItemPropertiesComponent],
     template: `
       <app-feed-item-properties-configuration
         [topicSchema]="topicSchema"
@@ -81,11 +82,9 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         JsonSchemaFormModule,
         JsonSchemaModule,
         NoopAnimationsModule,
-      ],
-      declarations: [
         TestHostComponent,
         AdminFeedEditItemPropertiesComponent
-      ]
+      ],
     })
     .compileComponents();
   }));

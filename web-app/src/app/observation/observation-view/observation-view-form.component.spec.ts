@@ -8,11 +8,14 @@ import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-view-form
-    [form]="form"
-    [geometryStyle]="geometryStyle"
-  ></observation-view-form>`
+  standalone: true,
+  imports: [ObservationViewFormComponent],
+  template: `
+    <observation-view-form
+      [form]="form"
+      [geometryStyle]="geometryStyle"
+    ></observation-view-form>
+  `
 })
 class TestHostComponent {
   form = {
@@ -37,9 +40,10 @@ describe('ObservationViewFormComponent', () => {
         MatIconModule,
         MatFormFieldModule,
         MatCardModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        ObservationViewFormComponent,
+        TestHostComponent
       ],
-      declarations: [ObservationViewFormComponent, TestHostComponent]
     }).compileComponents();
   }));
 

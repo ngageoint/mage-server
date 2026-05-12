@@ -12,30 +12,37 @@ import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
 import { MatSliderModule as MatSliderModule } from '@angular/material/slider';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { FormsModule } from '@angular/forms';
-import { CheckboardModule, HueModule, SaturationModule, AlphaModule } from 'ngx-color';
+import {
+  CheckboardModule,
+  HueModule,
+  SaturationModule,
+  AlphaModule
+} from 'ngx-color';
 import { Component, ViewChild } from '@angular/core';
 
 @Component({
-  selector: `host-component`,
-  template: `<map-layers-panel
-    [mageLayers]="mageLayers"
-    [baseLayers]="baseLayers"
-    [tileOverlays]="tileOverlays"
-    [featureOverlays]="featureOverlays"
-    [gridOverlays]="gridOverlays">
-  </map-layers-panel>`
+  standalone: true,
+  imports: [LayersComponent],
+  template: `
+    <map-layers-panel
+      [mageLayers]="mageLayers"
+      [baseLayers]="baseLayers"
+      [tileOverlays]="tileOverlays"
+      [featureOverlays]="featureOverlays"
+      [gridOverlays]="gridOverlays"
+    >
+    </map-layers-panel>
+  `
 })
 class TestHostComponent {
-
   mageLayers = [];
-  baseLayers= [];
+  baseLayers = [];
   tileOverlays = [];
   featureOverlays = [];
   gridOverlays = [];
 
   @ViewChild(LayersComponent) layers: LayersComponent;
 }
-
 
 describe('LayersComponent', () => {
   let component: LayersComponent;
@@ -44,10 +51,26 @@ describe('LayersComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule, MatCardModule, MatFormFieldModule, MatIconModule, MatSliderModule, MatCheckboxModule, MatRadioModule, MatExpansionModule, CheckboardModule, HueModule, SaturationModule, AlphaModule ],
-      declarations: [ LayersComponent, LayerHeaderComponent, LayerContentComponent, ColorPickerComponent, TestHostComponent ]
-    })
-    .compileComponents();
+      imports: [
+        FormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatSliderModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        MatExpansionModule,
+        CheckboardModule,
+        HueModule,
+        SaturationModule,
+        LayersComponent,
+        LayerHeaderComponent,
+        LayerContentComponent,
+        ColorPickerComponent,
+        TestHostComponent,
+        AlphaModule
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -61,14 +84,13 @@ describe('LayersComponent', () => {
     expect(component).toBeTruthy();
   });
 
-
   it('should reorder', () => {
     spyOn(component.onReorder, 'emit');
 
     const event: any = {
       currentIndex: 1,
       previousIndex: 0
-    }
+    };
     const type = 'tile';
     const layers: [any] = [{}];
     component.reorderLayers(event, type, layers);
@@ -87,7 +109,7 @@ describe('LayersComponent', () => {
     const event: any = {
       currentIndex: 0,
       previousIndex: 0
-    }
+    };
     const type = 'tile';
     const layers: [any] = [{}];
     component.reorderLayers(event, type, layers);

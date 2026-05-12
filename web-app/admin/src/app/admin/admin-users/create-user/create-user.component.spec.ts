@@ -73,7 +73,6 @@ describe('CreateUserModalComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      declarations: [CreateUserModalComponent],
       imports: [
         ReactiveFormsModule,
         FormsModule,
@@ -84,7 +83,8 @@ describe('CreateUserModalComponent', () => {
         MatSelectModule,
         MatIconModule,
         MatTooltipModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        CreateUserModalComponent
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: { roles: mockRoles } },

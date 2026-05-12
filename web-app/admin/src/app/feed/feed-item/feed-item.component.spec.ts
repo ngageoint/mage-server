@@ -38,7 +38,9 @@ class MockMapService {
 }
 
 @Component({
-  template: '<feed-item [feed]="feed" [item]="item"></feed-item>'
+  standalone: true,
+  imports: [FeedItemComponent],
+  template: `<feed-item [feed]="feed" [item]="item"></feed-item>`
 })
 class TestHostComponent {
   feed: Feed = {
@@ -97,14 +99,12 @@ describe('FeedItemComponent', () => {
         MatToolbarModule,
         MatDividerModule,
         MatCardModule,
-        GeometryModule
-      ],
-      declarations: [
+        GeometryModule,
         FeedItemComponent,
         MapClipComponent,
         TestHostComponent,
         MomentPipe
-      ]
+      ],
     })
     .compileComponents()
   }));

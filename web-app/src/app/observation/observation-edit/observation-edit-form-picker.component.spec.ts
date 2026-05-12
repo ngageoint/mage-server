@@ -25,7 +25,6 @@ describe('ObservationEditFormPickerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ObservationEditFormPickerComponent ],
       providers: [{
         provide: FilterService,
         useClass: MockFilterService
@@ -36,7 +35,7 @@ describe('ObservationEditFormPickerComponent', () => {
         provide: MatBottomSheetRef,
         useValue: {}
       }],
-      imports: [MatListModule, MatDividerModule]
+      imports: [MatListModule, MatDividerModule, ObservationEditFormPickerComponent]
     })
     .compileComponents();
   }));

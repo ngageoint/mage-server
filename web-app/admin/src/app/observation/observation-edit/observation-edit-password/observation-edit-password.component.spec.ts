@@ -4,9 +4,14 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { ObservationEditPasswordComponent } from './observation-edit-password.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-password [definition]="definition" [formGroup]="formGroup"></observation-edit-password>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  standalone: true,
+  imports: [ObservationEditPasswordComponent],
+  template: `
+    <observation-edit-password
+      [definition]="definition"
+      [formGroup]="formGroup"
+    ></observation-edit-password>
+  `
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -29,7 +34,7 @@ describe('ObservationEditPasswordComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ObservationEditPasswordComponent, TestHostComponent ]
+      imports: [ ObservationEditPasswordComponent, TestHostComponent ]
     })
     .compileComponents();
   }));

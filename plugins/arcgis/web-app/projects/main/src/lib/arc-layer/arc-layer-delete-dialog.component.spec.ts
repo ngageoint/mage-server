@@ -11,8 +11,7 @@ describe('Arc Layer Delete Dialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientModule, MatDialogModule], 
-      declarations: [ArcLayerDeleteDialogComponent],
+      imports: [HttpClientModule, MatDialogModule, ArcLayerDeleteDialogComponent], 
       providers: [
         {
           provide: MatDialogRef,

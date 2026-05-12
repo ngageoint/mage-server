@@ -11,10 +11,14 @@ import { FormsModule } from '@angular/forms';
 
 import { AdminMapComponent } from './admin-map.component';
 import { MapSettingsService } from '../../../app/map/settings/map.settings.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 @Component({
-  selector: 'host-component',
+  standalone: true,
+  imports: [AdminMapComponent],
   template: `<mage-admin-map></mage-admin-map>`
 })
 class TestHostComponent {
@@ -45,18 +49,21 @@ describe('AdminMapComponent', () => {
     mockMapSettingsService.updateMapSettings.and.returnValue(of({} as any));
 
     await TestBed.configureTestingModule({
-    declarations: [AdminMapComponent, TestHostComponent],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [MatInputModule,
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      imports: [
+        MatInputModule,
         MatSnackBarModule,
         NoopAnimationsModule,
-        FormsModule],
-    providers: [
+        FormsModule,
+        AdminMapComponent,
+        TestHostComponent
+      ],
+      providers: [
         { provide: MapSettingsService, useValue: mockMapSettingsService },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
-    ]
-}).compileComponents();
+      ]
+    }).compileComponents();
   });
 
   beforeEach(() => {

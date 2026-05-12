@@ -1,115 +1,144 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
-import { MatError as MatError, MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+import {
+  MatError as MatError,
+  MatFormFieldModule as MatFormFieldModule
+} from '@angular/material/form-field';
 import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
-import { By } from '@angular/platform-browser'
+import { By } from '@angular/platform-browser';
 
-import { ObservationEditRadioComponent } from './observation-edit-radio.component'
+import { ObservationEditRadioComponent } from './observation-edit-radio.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-radio [definition]="definition" [formGroup]="formGroup"></observation-edit-radio>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  standalone: true,
+  imports: [ObservationEditRadioComponent],
+  template: `
+    <observation-edit-radio
+      [definition]="definition"
+      [formGroup]="formGroup"
+    ></observation-edit-radio>
+  `
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
     radio: new UntypedFormControl()
-  })
+  });
 
   definition = {
     title: 'Radio',
     name: 'radio',
-    choices: [{
-      title: 'choice1'
-    },{
-      title: 'choice2'
-    }]
-  }
+    choices: [
+      {
+        title: 'choice1'
+      },
+      {
+        title: 'choice2'
+      }
+    ]
+  };
 
-  @ViewChild(ObservationEditRadioComponent) component: ObservationEditRadioComponent
+  @ViewChild(ObservationEditRadioComponent)
+  component: ObservationEditRadioComponent;
 }
 
 describe('ObservationEditRadioComponent', () => {
-  let component: ObservationEditRadioComponent
-  let hostComponent: TestHostComponent
-  let fixture: ComponentFixture<TestHostComponent>
+  let component: ObservationEditRadioComponent;
+  let hostComponent: TestHostComponent;
+  let fixture: ComponentFixture<TestHostComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatRadioModule],
-      declarations: [ObservationEditRadioComponent, TestHostComponent]
-    })
-      .compileComponents()
-  }))
+      imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatRadioModule,
+        ObservationEditRadioComponent,
+        TestHostComponent
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TestHostComponent)
-    hostComponent = fixture.componentInstance
+    fixture = TestBed.createComponent(TestHostComponent);
+    hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component
-  })
+    component = hostComponent.component;
+  });
 
   it('should create', () => {
-    expect(component).toBeTruthy()
-  })
+    expect(component).toBeTruthy();
+  });
 
   it('should not indicate required', async () => {
-    component.definition.required = false
+    component.definition.required = false;
 
-    const control = component.formGroup.get('radio')
-    control.clearValidators()
-    control.updateValueAndValidity()
+    const control = component.formGroup.get('radio');
+    control.clearValidators();
+    control.updateValueAndValidity();
 
-    fixture.detectChanges()
-    await fixture.whenStable()
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(control.valid).toBe(true)
-    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
-    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
-  })
+    expect(control.valid).toBe(true);
+    const error = fixture.debugElement
+      .query(By.directive(MatError))
+      .query(By.css('span'));
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy();
+  });
 
   it('should indicate required', async () => {
-    component.definition.required = true
+    component.definition.required = true;
 
-    const control = component.formGroup.get('radio')
-    control.setValidators(Validators.required)
-    control.updateValueAndValidity()
+    const control = component.formGroup.get('radio');
+    control.setValidators(Validators.required);
+    control.updateValueAndValidity();
 
-    fixture.detectChanges()
-    await fixture.whenStable()
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(control.valid).toBe(false)
-  })
+    expect(control.valid).toBe(false);
+  });
 
   it('should show error on invalid and touched', async () => {
-    component.definition.required = true
+    component.definition.required = true;
 
-    const control = component.formGroup.get('radio')
-    control.setValidators(Validators.required)
-    control.updateValueAndValidity()
-    control.markAsTouched()
+    const control = component.formGroup.get('radio');
+    control.setValidators(Validators.required);
+    control.updateValueAndValidity();
+    control.markAsTouched();
 
-    fixture.detectChanges()
-    await fixture.whenStable()
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(control.valid).toBe(false)
-    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
-    expect(error.nativeElement.innerText).toBe('Radio is required')
-  })
+    expect(control.valid).toBe(false);
+    const error = fixture.debugElement
+      .query(By.directive(MatError))
+      .query(By.css('span'));
+    expect(error.nativeElement.innerText).toBe('Radio is required');
+  });
 
   it('should not show error on invalid if not touched', async () => {
-    component.definition.required = true
+    component.definition.required = true;
 
-    const control = component.formGroup.get('radio')
-    control.setValidators(Validators.required)
-    control.updateValueAndValidity()
+    const control = component.formGroup.get('radio');
+    control.setValidators(Validators.required);
+    control.updateValueAndValidity();
 
-    fixture.detectChanges()
-    await fixture.whenStable()
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(control.valid).toBe(false)
-    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
-    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
-  })
+    expect(control.valid).toBe(false);
+    const error = fixture.debugElement
+      .query(By.directive(MatError))
+      .query(By.css('span'));
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy();
+  });
 });

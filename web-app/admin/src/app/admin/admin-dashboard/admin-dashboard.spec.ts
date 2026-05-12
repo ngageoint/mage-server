@@ -33,6 +33,11 @@ import { AdminUserService } from '../services/admin-user.service';
 import { AdminDeviceService } from '../services/admin-device.service';
 import { DevicePagingService } from '../../services/device-paging.service';
 import { UserPagingService } from '../../services/user-paging.service';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 const TEST_USERS: any[] = [
   {
@@ -202,8 +207,8 @@ describe('AdminDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AdminDashboardComponent],
       imports: [
+        AdminDashboardComponent,
         CommonModule,
         FormsModule,
         MatToolbarModule,
@@ -227,7 +232,9 @@ describe('AdminDashboardComponent', () => {
         { provide: AdminUserService, useValue: mockUserService },
         { provide: AdminDeviceService, useValue: mockDeviceService },
         { provide: DevicePagingService, useValue: mockDevicePagingService },
-        { provide: UserPagingService, useValue: mockUserPagingService }
+        { provide: UserPagingService, useValue: mockUserPagingService },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();

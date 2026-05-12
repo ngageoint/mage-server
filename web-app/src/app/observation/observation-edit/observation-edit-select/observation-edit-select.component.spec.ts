@@ -17,11 +17,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
 @Component({
-  template: `<observation-edit-dropdown
-    [definition]="definition"
-    [formGroup]="formGroup"
-  ></observation-edit-dropdown>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  standalone: true,
+  imports: [ObservationEditSelectComponent],
+  template: `
+    <observation-edit-dropdown
+      [definition]="definition"
+      [formGroup]="formGroup"
+    ></observation-edit-dropdown>
+  `
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -62,9 +65,10 @@ describe('ObservationEditSelectComponent', () => {
         NgxMatSelectSearchModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
+        MatSelectModule,
+        ObservationEditSelectComponent,
+        TestHostComponent
       ],
-      declarations: [ObservationEditSelectComponent, TestHostComponent]
     }).compileComponents();
   }));
 

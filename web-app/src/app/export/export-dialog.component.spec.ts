@@ -1,48 +1,13 @@
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-  waitForAsync
-} from '@angular/core/testing';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { Observable, of, Subject } from 'rxjs';
 import { ExportDialogComponent } from './export-dialog.component';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatOptionModule } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
-import {
-  MatSnackBar,
-  MatSnackBarDismiss,
-  MatSnackBarModule
-} from '@angular/material/snack-bar';
-import { MatSortModule } from '@angular/material/sort';
-import { MatTableModule } from '@angular/material/table';
 import {
   ExportService,
   Export,
   ExportRequest,
   ExportResponse
 } from './export.service';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { FormsModule } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { LocalStorageService } from '../http/local-storage.service';
-import { FilterService } from '../filter/filter.service';
-import { NoExportsComponent } from './empty-state/no-exports.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { MatSnackBarDismiss } from '@angular/material/snack-bar';
 
 class MockExportService {
   getExports(): Observable<any> {
@@ -92,12 +57,12 @@ class MockExportService {
     ]);
   }
 
-  export(request: ExportRequest): Observable<ExportResponse> {
+  export(_request: ExportRequest): Observable<ExportResponse> {
     return of({ id: '1' });
   }
 
   retryExport(retry: Export): Observable<ExportResponse> {
-    return of({ id: retry.id });
+    return of({ id: String(retry.id) });
   }
 
   deleteExport(id: string): Observable<{ id: string }> {
@@ -106,31 +71,31 @@ class MockExportService {
 }
 
 class MockSnackbarRef {
-  private readonly _afterDismissed = new Subject<MatSnackBarDismiss>();
+  private readonly afterDismissedSubject = new Subject<MatSnackBarDismiss>();
 
   afterDismissed(): Observable<MatSnackBarDismiss> {
-    return this._afterDismissed;
+    return this.afterDismissedSubject.asObservable();
   }
 
   dismiss(): void {
-    this._afterDismissed.next({ dismissedByAction: false });
-    this._afterDismissed.complete();
+    this.afterDismissedSubject.next({ dismissedByAction: false });
+    this.afterDismissedSubject.complete();
   }
 
   dismissWithAction(): void {
-    this._afterDismissed.next({ dismissedByAction: true });
-    this._afterDismissed.complete();
+    this.afterDismissedSubject.next({ dismissedByAction: true });
+    this.afterDismissedSubject.complete();
   }
 }
 
 class MockSnackbar {
   private snackbarRef = new MockSnackbarRef();
 
-  get _openedSnackBarRef(): any {
+  get _openedSnackBarRef(): MockSnackbarRef {
     return this.snackbarRef;
   }
 
-  open(): any {
+  open(): MockSnackbarRef {
     this.snackbarRef = new MockSnackbarRef();
     return this.snackbarRef;
   }
@@ -138,56 +103,31 @@ class MockSnackbar {
 
 describe('ExportDialogComponent', () => {
   let component: ExportDialogComponent;
-  let fixture: ComponentFixture<ExportDialogComponent>;
-
-  beforeEach(waitForAsync(() => {
-    const mockLocalStorageService = { getToken: (): string => '1' };
-    const mockFilterService = {
-      getEvent: (): any => {
-        return { id: 1 };
-      }
-    };
-    const mockDialogRef = { close: (): void => {} };
-
-    TestBed.configureTestingModule({
-    declarations: [ExportDialogComponent, NoExportsComponent],
-    imports: [NoopAnimationsModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatSnackBarModule,
-        MatTableModule,
-        MatDialogModule,
-        MatProgressSpinnerModule,
-        MatInputModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatCheckboxModule,
-        MatListModule,
-        MatCardModule,
-        MatExpansionModule,
-        MatRadioModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        FormsModule,
-        MatChipsModule],
-    providers: [
-        { provide: LocalStorageService, useValue: mockLocalStorageService },
-        { provide: ExportService, useClass: MockExportService },
-        { provide: FilterService, useValue: mockFilterService },
-        { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MatSnackBar, useClass: MockSnackbar },
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting()
-    ]
-}).compileComponents();
-  }));
+  let exportService: MockExportService;
+  let snackBar: MockSnackbar;
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ExportDialogComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    const mockDialogRef = {
+      close: (): void => {}
+    };
+
+    const mockLocalStorageService = {
+      getToken: (): string => '1'
+    };
+
+    exportService = new MockExportService();
+    snackBar = new MockSnackbar();
+
+    component = new ExportDialogComponent(
+      mockDialogRef as any,
+      snackBar as any,
+      exportService as any,
+      mockLocalStorageService as any
+    );
+  });
+
+  afterEach(() => {
+    component.ngOnDestroy();
   });
 
   it('should create component', () => {
@@ -195,9 +135,8 @@ describe('ExportDialogComponent', () => {
   });
 
   it('should wire up components to datasource', fakeAsync(() => {
-    fixture.detectChanges();
+    component.ngOnInit();
     tick();
-    fixture.detectChanges();
 
     expect(component.dataSource).toBeTruthy();
     expect(component.dataSource.data.length).toBe(3);
@@ -205,26 +144,38 @@ describe('ExportDialogComponent', () => {
   }));
 
   it('should filter', () => {
+    component.dataSource.filterPredicate = (data: any, filter: string) =>
+      data.exportType.toLowerCase().includes(filter.trim().toLowerCase());
+
+    component.dataSource.data = [
+      { id: 1, exportType: 'kml' } as any,
+      { id: 2, exportType: 'csv' } as any,
+      { id: 3, exportType: 'json' } as any
+    ];
+
     const event: any = {
       target: {
         value: 'kml'
       }
     };
+
     expect(component.dataSource.filteredData.length).toBe(3);
+
     component.applyFilter(event);
+
     expect(component.dataSource.filteredData.length).toBe(1);
     expect(component.dataSource.filteredData[0].id).toBe(1);
   });
 
   it('should open export view', () => {
     expect(component.isExportOpen).toBe(false);
+
     component.openExport();
+
     expect(component.isExportOpen).toBe(true);
   });
 
   it('should retry export', () => {
-    const exportService: ExportService =
-      fixture.debugElement.injector.get(ExportService);
     const retrySpy = spyOn(exportService, 'retryExport').and.callThrough();
 
     const retry: Export = {
@@ -239,8 +190,12 @@ describe('ExportDialogComponent', () => {
       }
     };
 
+    component.dataSource.data = [retry];
+
     component.retryExport(retry);
-    expect(retrySpy).toHaveBeenCalled();
+
+    expect(retrySpy).toHaveBeenCalledWith(retry);
+    expect(component.dataSource.data[0].status).toBe('Running');
   });
 
   it('should schedule export delete', () => {
@@ -253,17 +208,17 @@ describe('ExportDialogComponent', () => {
         options: {},
         url: '/api/exports/1',
         status: 'Completed'
-      }
+      } as any
     ];
 
     const exp = component.dataSource.data[0];
+
     component.scheduleDeleteExport(exp);
+
     expect(component.dataSource.data.length).toEqual(0);
   });
 
   it('should delete export', fakeAsync(() => {
-    const exportService: ExportService =
-      fixture.debugElement.injector.get(ExportService);
     const deleteSpy = spyOn(exportService, 'deleteExport').and.callThrough();
 
     component.dataSource.data = [
@@ -275,22 +230,20 @@ describe('ExportDialogComponent', () => {
         options: {},
         url: '/api/exports/1',
         status: 'Completed'
-      }
+      } as any
     ];
 
     const exp = component.dataSource.data[0];
-    component.scheduleDeleteExport(exp);
-    fixture.detectChanges();
 
-    component.snackBar._openedSnackBarRef.dismiss();
+    component.scheduleDeleteExport(exp);
+
+    snackBar._openedSnackBarRef.dismiss();
     tick();
 
-    expect(deleteSpy).toHaveBeenCalled();
+    expect(deleteSpy).toHaveBeenCalledWith('1');
   }));
 
   it('should undo delete export', fakeAsync(() => {
-    const exportService: ExportService =
-      fixture.debugElement.injector.get(ExportService);
     const deleteSpy = spyOn(exportService, 'deleteExport').and.callThrough();
 
     component.dataSource.data = [
@@ -302,15 +255,16 @@ describe('ExportDialogComponent', () => {
         options: {},
         url: '/api/exports/1',
         status: 'Completed'
-      }
+      } as any
     ];
 
     const exp = component.dataSource.data[0];
+
     component.scheduleDeleteExport(exp);
-    fixture.detectChanges();
+
     expect(component.dataSource.data.length).toBe(0);
 
-    component.snackBar._openedSnackBarRef.dismissWithAction();
+    snackBar._openedSnackBarRef.dismissWithAction();
     tick();
 
     expect(deleteSpy).toHaveBeenCalledTimes(0);

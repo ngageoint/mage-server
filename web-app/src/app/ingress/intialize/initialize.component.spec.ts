@@ -11,9 +11,8 @@ describe('Initialize Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [InitializeComponent],
     imports: [MatFormFieldModule,
-        MatProgressBarModule],
+        MatProgressBarModule, InitializeComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));

@@ -33,7 +33,7 @@ describe('ObservationEditFormPickerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditFormPickerComponent],
+      imports: [ObservationEditFormPickerComponent],
       providers: [
         { provide: FilterService, useClass: MockFilterService },
         { provide: AdminEventsService, useClass: MockAdminEventsService },

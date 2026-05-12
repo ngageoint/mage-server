@@ -82,7 +82,7 @@ describe('AdminServiceComponent', () => {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
-      declarations: [AdminServiceComponent],
+      imports: [AdminServiceComponent],
       providers: [
         { provide: FeedService, useValue: feedService },
         { provide: AdminUserService, useValue: adminUserService },
@@ -111,7 +111,7 @@ describe('AdminServiceComponent', () => {
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      declarations: [AdminServiceComponent],
+      imports: [AdminServiceComponent],
       providers: [
         { provide: FeedService, useValue: feedService },
         { provide: AdminUserService, useValue: adminUserService },

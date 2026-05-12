@@ -10,13 +10,16 @@ import { MatListModule as MatListModule } from '@angular/material/list';
 import { MapClipComponent } from 'src/app/map/clip/clip.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-form
-    [formGroup]="formGroup"
-    [definition]="definition"
-    [geometryStyle]="geometryStyle"
-    [options]="options"
-  ></observation-edit-form>`
+  standalone: true,
+  imports: [ObservationEditFormComponent],
+  template: `
+    <observation-edit-form
+      [formGroup]="formGroup"
+      [definition]="definition"
+      [geometryStyle]="geometryStyle"
+      [options]="options"
+    ></observation-edit-form>
+  `
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({});
@@ -40,8 +43,15 @@ describe('ObservationEditFormComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatIconModule, MatCardModule, MatListModule ],
-      declarations: [ObservationEditFormComponent, TestHostComponent, MapClipComponent]
+      imports: [
+        NoopAnimationsModule,
+        MatIconModule,
+        MatCardModule,
+        MatListModule,
+        ObservationEditFormComponent,
+        TestHostComponent,
+        MapClipComponent
+      ],
     }).compileComponents();
   }));
 

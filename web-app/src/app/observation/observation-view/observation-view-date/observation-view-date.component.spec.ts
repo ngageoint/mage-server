@@ -10,7 +10,7 @@ describe('ObservationViewDateComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationViewDateComponent, MomentPipe]
+      imports: [ObservationViewDateComponent, MomentPipe]
     })
     .compileComponents();
   }));

@@ -18,7 +18,8 @@ import { MapLayerService } from './layer.service';
 import { Component, ViewChild } from '@angular/core';
 
 @Component({
-  selector: `host-component`,
+  standalone: true,
+  imports: [LayerContentComponent],
   template: `<layer-content [layer]="layer"></layer-content>`
 })
 class TestHostComponent {
@@ -48,14 +49,12 @@ describe('LayerContentComponent', () => {
         CheckboardModule,
         SaturationModule,
         HueModule,
-        AlphaModule
-      ],
-      providers: [MapLayerService],
-      declarations: [
+        AlphaModule,
         ColorPickerComponent,
         TestHostComponent,
         LayerContentComponent
-      ]
+      ],
+      providers: [MapLayerService],
     }).compileComponents();
   }));
 

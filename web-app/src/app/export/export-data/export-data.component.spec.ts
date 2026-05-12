@@ -37,7 +37,10 @@ import { FilterService } from 'src/app/filter/filter.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 class MockExportService {
   getExports(): Observable<any> {
@@ -142,8 +145,10 @@ describe('ExportDataComponent', () => {
     };
 
     TestBed.configureTestingModule({
-    declarations: [ExportDialogComponent, ExportDataComponent],
-    imports: [NoopAnimationsModule,
+      imports: [
+        ExportDialogComponent,
+        ExportDataComponent,
+        NoopAnimationsModule,
         MatPaginatorModule,
         MatSortModule,
         MatSnackBarModule,
@@ -167,15 +172,16 @@ describe('ExportDataComponent', () => {
         MatOptionModule,
         BrowserModule,
         CommonModule,
-        MatDialogModule],
-    providers: [
+        MatDialogModule
+      ],
+      providers: [
         { provide: ExportService, useClass: MockExportService },
         { provide: FilterService, useValue: mockFilterService },
         { provide: MatSnackBar, useClass: MockSnackbar },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
-    ]
-}).compileComponents();
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

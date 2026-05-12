@@ -9,8 +9,7 @@ describe('ExportComponent', () => {
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            imports: [MatDialogModule],
-            declarations: [ExportComponent]
+            imports: [MatDialogModule, ExportComponent],
         }).compileComponents();
     }));
 

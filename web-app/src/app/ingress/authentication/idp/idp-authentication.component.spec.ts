@@ -11,8 +11,7 @@ describe('Idp Authentication Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [IdpAuthenticationComponent, AuthenticationButtonComponent],
-    imports: [MatFormFieldModule],
+    imports: [IdpAuthenticationComponent, AuthenticationButtonComponent, MatFormFieldModule],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));

@@ -1,25 +1,17 @@
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick,
-  waitForAsync
-} from '@angular/core/testing';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
+import { PageEvent } from '@angular/material/paginator';
 import { of } from 'rxjs';
 
 import { TeamDashboardComponent } from './team-dashboard.component';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../team';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 
 describe('TeamDashboardComponent', () => {
   let component: TeamDashboardComponent;
-  let fixture: ComponentFixture<TeamDashboardComponent>;
   let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockUserService: any;
@@ -60,34 +52,42 @@ describe('TeamDashboardComponent', () => {
     }
   ];
 
-  beforeEach(waitForAsync(() => {
-    mockTeamsService = jasmine.createSpyObj('AdminTeamsService', ['getTeams']);
-    mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
-    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
+  function setup(): void {
+    mockDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+
+    mockTeamsService = jasmine.createSpyObj<AdminTeamsService>(
+      'AdminTeamsService',
+      ['getTeams']
+    );
+
+    toastSpy = jasmine.createSpyObj<AdminToastService>('AdminToastService', [
+      'show'
+    ]);
 
     mockUserService = {
-      myself$: of({ role: { permissions: ['CREATE_TEAM'] } })
+      myself$: of({
+        role: {
+          permissions: ['CREATE_TEAM']
+        }
+      })
     };
 
-    TestBed.configureTestingModule({
-      declarations: [TeamDashboardComponent],
-      imports: [NoopAnimationsModule],
-      providers: [
-        { provide: AdminTeamsService, useValue: mockTeamsService },
-        { provide: MatDialog, useValue: mockDialog },
-        { provide: AdminUserService, useValue: mockUserService },
-        { provide: AdminToastService, useValue: toastSpy }
-      ]
-    })
-      .overrideTemplate(TeamDashboardComponent, '')
-      .compileComponents();
-  }));
+    mockTeamsService.getTeams.and.returnValue(of(mockTeamsResponse as any));
+
+    component = new TeamDashboardComponent(
+      mockDialog,
+      mockTeamsService,
+      mockUserService as AdminUserService,
+      toastSpy
+    );
+  }
 
   beforeEach(() => {
-    mockTeamsService.getTeams.and.returnValue(of(mockTeamsResponse));
+    setup();
+  });
 
-    fixture = TestBed.createComponent(TeamDashboardComponent);
-    component = fixture.componentInstance;
+  afterEach(() => {
+    component.ngOnDestroy?.();
   });
 
   it('should create', () => {
@@ -99,7 +99,7 @@ describe('TeamDashboardComponent', () => {
   });
 
   it('should fetch teams on init', () => {
-    fixture.detectChanges();
+    component.ngOnInit();
 
     expect(mockTeamsService.getTeams).toHaveBeenCalledWith({
       term: '',
@@ -116,7 +116,7 @@ describe('TeamDashboardComponent', () => {
   });
 
   it('should reset page index when searching', () => {
-    fixture.detectChanges();
+    component.ngOnInit();
     component.pageIndex = 2;
 
     component.onSearchTermChanged('test');
@@ -182,7 +182,7 @@ describe('TeamDashboardComponent', () => {
       data: { team: {} }
     });
   });
-  
+
   it('should refresh teams after creating new team', fakeAsync(() => {
     component.hasTeamCreatePermission = true;
 
@@ -218,6 +218,7 @@ describe('TeamDashboardComponent', () => {
 
   it('should not refresh teams if dialog is cancelled', fakeAsync(() => {
     mockTeamsService.getTeams.calls.reset();
+    toastSpy.show.calls.reset();
 
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
     dialogRefSpy.afterClosed.and.returnValue(of(null));
@@ -231,9 +232,9 @@ describe('TeamDashboardComponent', () => {
   }));
 
   it('should handle empty teams response by leaving defaults unchanged', () => {
-    mockTeamsService.getTeams.and.returnValue(of([]));
+    mockTeamsService.getTeams.and.returnValue(of([] as any));
 
-    fixture.detectChanges();
+    component.ngOnInit();
 
     expect(component.teams).toEqual([]);
     expect(component.totalTeams).toBe(0);

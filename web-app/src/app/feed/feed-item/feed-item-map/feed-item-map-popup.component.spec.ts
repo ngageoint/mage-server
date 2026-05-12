@@ -4,7 +4,6 @@ import { MatListModule as MatListModule } from '@angular/material/list';
 import { MomentModule } from 'src/app/moment/moment.module';
 import { FeedItemMapPopupComponent } from './feed-item-map-popup.component';
 
-
 describe('FeedItemMapPopupComponent', () => {
   let component: FeedItemMapPopupComponent;
   let fixture: ComponentFixture<FeedItemMapPopupComponent>;
@@ -14,11 +13,10 @@ describe('FeedItemMapPopupComponent', () => {
       imports: [
         MatIconModule,
         MomentModule,
-        MatListModule
+        MatListModule,
+        FeedItemMapPopupComponent
       ],
-      declarations: [FeedItemMapPopupComponent ]
-    })
-    .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {

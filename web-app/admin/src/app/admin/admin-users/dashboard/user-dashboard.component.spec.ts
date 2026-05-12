@@ -1,46 +1,16 @@
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick
-} from '@angular/core/testing';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
+import { Router } from '@angular/router';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { BehaviorSubject, of, throwError } from 'rxjs';
+
 import { UserDashboardComponent } from './user-dashboard.component';
-import {
-  MatDialog as MatDialog,
-  MatDialogRef as MatDialogRef
-} from '@angular/material/dialog';
-import { RouterTestingModule } from '@angular/router/testing';
 import { UserPagingService } from 'admin/src/app/services/user-paging.service';
 import { AdminTeamsService } from '../../services/admin-teams-service';
-import { of, BehaviorSubject, throwError } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
-import { MatOptionModule } from '@angular/material/core';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatListModule as MatListModule } from '@angular/material/list';
-import { MatSelectModule } from '@angular/material/select';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { AdminUserService } from '../../services/admin-user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-
-@Component({
-  selector: 'user-avatar',
-  template: ''
-})
-class MockUserAvatarComponent {
-  @Input() user: any;
-}
 
 describe('UserDashboardComponent', () => {
   let component: UserDashboardComponent;
-  let fixture: ComponentFixture<UserDashboardComponent>;
 
   const testUsers = [
     {
@@ -88,6 +58,7 @@ describe('UserDashboardComponent', () => {
   ] as any[];
 
   let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let routerSpy: jasmine.SpyObj<Router>;
   let localStorageSpy: jasmine.SpyObj<LocalStorageService>;
   let userServiceSpy: jasmine.SpyObj<AdminUserService>;
   let pagingServiceSpy: jasmine.SpyObj<UserPagingService>;
@@ -95,27 +66,54 @@ describe('UserDashboardComponent', () => {
   let toastSpy: jasmine.SpyObj<AdminToastService>;
   let myself$: BehaviorSubject<any>;
 
-  beforeEach(async () => {
-    dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-    localStorageSpy = jasmine.createSpyObj('LocalStorageService', ['getToken']);
+  function setupSpies(): void {
+    dialogSpy = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+
+    routerSpy = jasmine.createSpyObj<Router>('Router', [
+      'navigate',
+      'navigateByUrl'
+    ]);
+
+    localStorageSpy = jasmine.createSpyObj<LocalStorageService>(
+      'LocalStorageService',
+      ['getToken']
+    );
     localStorageSpy.getToken.and.returnValue('token123');
 
-    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
+    toastSpy = jasmine.createSpyObj<AdminToastService>('AdminToastService', [
+      'show'
+    ]);
 
     myself$ = new BehaviorSubject<any>({
-      role: { permissions: ['CREATE_USER', 'UPDATE_USER', 'DELETE_USER'] }
+      role: {
+        permissions: ['CREATE_USER', 'UPDATE_USER', 'DELETE_USER']
+      }
     });
 
     userServiceSpy = jasmine.createSpyObj<AdminUserService>(
       'AdminUserService',
       ['getRoles', 'createUser']
     ) as any;
-    (userServiceSpy as any).myself$ = myself$.asObservable();
+
+    Object.defineProperty(userServiceSpy, 'myself$', {
+      get: () => myself$.asObservable()
+    });
 
     userServiceSpy.getRoles.and.returnValue(
-      of([{ id: '1', name: 'Admin', permissions: [] } as any])
+      of([
+        {
+          id: '1',
+          name: 'Admin',
+          permissions: []
+        } as any
+      ])
     );
-    userServiceSpy.createUser.and.returnValue(of({ id: 'created-id' } as any));
+
+    userServiceSpy.createUser.and.returnValue(
+      of({
+        id: 'created-id'
+      } as any)
+    );
 
     pagingServiceSpy = jasmine.createSpyObj<UserPagingService>(
       'UserPagingService',
@@ -124,12 +122,15 @@ describe('UserDashboardComponent', () => {
 
     pagingServiceSpy.constructDefault.and.returnValue({
       all: {
-        pageInfo: { totalCount: 2 },
+        pageInfo: {
+          totalCount: 2
+        },
         userFilter: {},
         pageSize: 10,
         pageIndex: 0
       }
     } as any);
+
     pagingServiceSpy.refresh.and.returnValue(of(undefined));
     pagingServiceSpy.users.and.callFake(() => testUsers as any);
     pagingServiceSpy.search.and.returnValue(of(testUsers as any));
@@ -138,43 +139,43 @@ describe('UserDashboardComponent', () => {
       'AdminTeamsService',
       ['getTeams', 'addUserToTeam']
     );
-    teamsServiceSpy.getTeams.and.returnValue(of({ items: [] } as any));
+
+    teamsServiceSpy.getTeams.and.returnValue(
+      of({
+        items: []
+      } as any)
+    );
+
     teamsServiceSpy.addUserToTeam.and.returnValue(of({} as any));
 
     spyOn(window, 'addEventListener').and.stub();
     spyOn(window, 'removeEventListener').and.stub();
+  }
 
-    await TestBed.configureTestingModule({
-      imports: [
-        CommonModule,
-        FormsModule,
-        RouterTestingModule,
-        MatIconModule,
-        MatOptionModule,
-        MatTableModule,
-        MatCardModule,
-        MatProgressSpinnerModule,
-        MatDividerModule,
-        MatListModule,
-        MatSelectModule,
-        MatPaginatorModule,
-        NoopAnimationsModule
-      ],
-      declarations: [UserDashboardComponent, MockUserAvatarComponent],
-      providers: [
-        { provide: MatDialog, useValue: dialogSpy },
-        { provide: LocalStorageService, useValue: localStorageSpy },
-        { provide: AdminUserService, useValue: userServiceSpy },
-        { provide: UserPagingService, useValue: pagingServiceSpy },
-        { provide: AdminTeamsService, useValue: teamsServiceSpy },
-        { provide: AdminToastService, useValue: toastSpy }
-      ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
+  function createComponent(runInit = true): void {
+    component = new UserDashboardComponent(
+      dialogSpy,
+      routerSpy,
+      localStorageSpy,
+      teamsServiceSpy,
+      userServiceSpy,
+      pagingServiceSpy,
+      toastSpy
+    );
 
-    fixture = TestBed.createComponent(UserDashboardComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    if (runInit) {
+      component.ngOnInit();
+    }
+  }
+
+  beforeEach(() => {
+    setupSpies();
+    createComponent();
+  });
+
+  afterEach(() => {
+    component.ngOnDestroy?.();
+    myself$.complete();
   });
 
   it('should create component and initialize token', () => {
@@ -183,171 +184,208 @@ describe('UserDashboardComponent', () => {
     expect(window.addEventListener).toHaveBeenCalled();
   });
 
-  it('should initialize permissions from myself$', fakeAsync(() => {
-    tick();
+  it('should initialize permissions from myself$', () => {
     expect(component.hasUserCreatePermission).toBeTrue();
 
-    myself$.next({ role: { permissions: [] } });
-    tick();
-    expect(component.hasUserCreatePermission).toBeFalse();
-  }));
+    myself$.next({
+      role: {
+        permissions: []
+      }
+    });
 
-  it('should load roles on init', fakeAsync(() => {
-    tick();
+    expect(component.hasUserCreatePermission).toBeFalse();
+  });
+
+  it('should load roles on init', () => {
     expect(userServiceSpy.getRoles).toHaveBeenCalled();
     expect(component.roles.length).toBe(1);
     expect(component.roles[0].name).toBe('Admin');
-  }));
+  });
 
-  it('should fetch teams on init', fakeAsync(() => {
-    tick();
+  it('should fetch teams on init', () => {
     expect(teamsServiceSpy.getTeams).toHaveBeenCalled();
     expect(component.teams).toEqual([]);
-  }));
+  });
 
-  it('should refresh users and update dataSource/totalUsers', fakeAsync(() => {
+  it('should refresh users and update dataSource/totalUsers', () => {
     component.refreshUsers();
-    tick();
 
     expect(pagingServiceSpy.refresh).toHaveBeenCalled();
     expect(component.dataSource.length).toBe(3);
     expect(component.totalUsers).toBe(2);
-  }));
+  });
 
-  it('should search and update user list', fakeAsync(() => {
+  it('should search and update user list', () => {
     component.onSearchTermChanged('user');
-    tick();
 
     expect(component.userSearch).toBe('user');
     expect(component.pageIndex).toBe(0);
     expect(pagingServiceSpy.search).toHaveBeenCalled();
     expect(component.dataSource.length).toBe(3);
-  }));
-  
-  it('should set error message when search fails', fakeAsync(() => {
+  });
+
+  it('should set error message when search fails', () => {
     spyOn(console, 'error').and.stub();
-  
+
     pagingServiceSpy.search.and.returnValue(
       throwError(() => new Error('nope'))
     );
-  
-    component.onSearchTermChanged('x');
-    tick();
-  
-    expect(component.error).toBe('Search failed.');
-  }));
 
-  it('should reset and refresh users', fakeAsync(() => {
+    component.onSearchTermChanged('x');
+
+    expect(component.error).toBe('Search failed.');
+  });
+
+  it('should reset and refresh users', () => {
     pagingServiceSpy.constructDefault.calls.reset();
     pagingServiceSpy.refresh.calls.reset();
 
     component.reset();
-    tick();
 
     expect(component.userSearch).toBe('');
     expect(component.pageIndex).toBe(0);
     expect(pagingServiceSpy.constructDefault).toHaveBeenCalled();
     expect(pagingServiceSpy.refresh).toHaveBeenCalled();
-  }));
+  });
 
-  it('should handle pagination event and refresh users', fakeAsync(() => {
+  it('should handle pagination event and refresh users', () => {
     pagingServiceSpy.refresh.calls.reset();
 
-    component.onPageChange({ pageIndex: 1, pageSize: 25 } as any);
-    tick();
+    component.onPageChange({
+      pageIndex: 1,
+      pageSize: 25
+    } as any);
 
     expect(component.pageIndex).toBe(1);
     expect(component.pageSize).toBe(25);
     expect(pagingServiceSpy.refresh).toHaveBeenCalled();
-  }));
+  });
 
-  it('should set userStatusFilter and refresh users when filter changes', fakeAsync(() => {
+  it('should set userStatusFilter and refresh users when filter changes', () => {
     const refreshSpy = spyOn(component, 'refreshUsers').and.callThrough();
 
     component.onStatusFilterChange('active');
-    tick();
 
     expect(component.userStatusFilter).toBe('active');
     expect(component.pageIndex).toBe(0);
     expect(refreshSpy).toHaveBeenCalled();
-  }));
+  });
 
   it('should apply "active" filter', () => {
     component.userStatusFilter = 'active';
+
     const filter = component.getFilter();
+
     expect(filter.active).toBeTrue();
     expect(filter.enabled).toBeUndefined();
   });
 
   it('should apply "inactive" filter', () => {
     component.userStatusFilter = 'inactive';
+
     const filter = component.getFilter();
+
     expect(filter.active).toBeFalse();
     expect(filter.enabled).toBeUndefined();
   });
 
   it('should apply "disabled" filter', () => {
     component.userStatusFilter = 'disabled';
+
     const filter = component.getFilter();
+
     expect(filter.active).toBeTrue();
     expect(filter.enabled).toBeFalse();
   });
 
   it('should keep filter minimal for "all"', () => {
     component.userStatusFilter = 'all';
+
     const filter = component.getFilter();
+
     expect(filter.active).toBeUndefined();
     expect(filter.enabled).toBeUndefined();
   });
 
-  it('should open create user modal and call createUser when confirmed', fakeAsync(() => {
+  it('should open create user modal and call createUser when confirmed', () => {
     const dialogRef = {
-      afterClosed: () => of({ confirmed: true, user: { username: 'x' } })
+      afterClosed: () =>
+        of({
+          confirmed: true,
+          user: {
+            username: 'x'
+          }
+        })
     } as Partial<MatDialogRef<any>> as MatDialogRef<any>;
 
     dialogSpy.open.and.returnValue(dialogRef);
 
     const refreshSpy = spyOn(component, 'refreshUsers').and.callThrough();
+
     userServiceSpy.createUser.calls.reset();
 
     component.createUser();
-    tick();
 
     expect(dialogSpy.open).toHaveBeenCalled();
     expect(userServiceSpy.createUser).toHaveBeenCalled();
     expect(refreshSpy).toHaveBeenCalled();
     expect(toastSpy.show).toHaveBeenCalled();
-  }));
+  });
 
-  it('should not call createUser when modal is not confirmed', fakeAsync(() => {
+  it('should not call createUser when modal is not confirmed', () => {
     const dialogRef = {
-      afterClosed: () => of({ confirmed: false })
+      afterClosed: () =>
+        of({
+          confirmed: false
+        })
     } as Partial<MatDialogRef<any>> as MatDialogRef<any>;
 
     dialogSpy.open.and.returnValue(dialogRef);
+
     userServiceSpy.createUser.calls.reset();
+    toastSpy.show.calls.reset();
 
     component.createUser();
-    tick();
 
     expect(userServiceSpy.createUser).not.toHaveBeenCalled();
     expect(toastSpy.show).not.toHaveBeenCalled();
-  }));
+  });
 
   it('should compute success and failure percent safely', () => {
-    component.bulkProgress = { total: 0, completed: 0, failed: 0 };
+    component.bulkProgress = {
+      total: 0,
+      completed: 0,
+      failed: 0
+    };
+
     expect(component.getSuccessPercent()).toBe(0);
     expect(component.getFailurePercent()).toBe(0);
 
-    component.bulkProgress = { total: 10, completed: 10, failed: 2 };
+    component.bulkProgress = {
+      total: 10,
+      completed: 10,
+      failed: 2
+    };
+
     expect(component.getSuccessPercent()).toBe(80);
     expect(component.getFailurePercent()).toBe(20);
   });
 
   it('should close bulk upload and reset related state', () => {
     component.isBulkUploading = true;
-    component.bulkErrors = [{ user: { username: 'x' }, error: 'e' }];
-    component.bulkProgress = { total: 2, completed: 2, failed: 1 };
+    component.bulkErrors = [
+      {
+        user: {
+          username: 'x'
+        },
+        error: 'e'
+      }
+    ];
+    component.bulkProgress = {
+      total: 2,
+      completed: 2,
+      failed: 1
+    };
     component.showErrorTable = true;
     component.isFinalizing = true;
     component.isFinished = true;
@@ -368,6 +406,7 @@ describe('UserDashboardComponent', () => {
 
   it('should remove window listener and complete destroy$ on destroy', () => {
     component.ngOnDestroy();
+
     expect(window.removeEventListener).toHaveBeenCalled();
   });
 });

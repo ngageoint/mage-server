@@ -17,7 +17,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatMenuModule } from '@angular/material/menu';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 
 const MOCK_CONTACT_INFO = {
   phone: '123-456-7890',
@@ -49,16 +52,22 @@ describe('ContactInfoComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [ContactInfoComponent],
-    imports: [NoopAnimationsModule,
+      imports: [
+        NoopAnimationsModule,
         MatMenuModule,
         FormsModule,
         MatFormFieldModule,
         MatCheckboxModule,
         MatInputModule,
-        MatIconModule],
-    providers: [{ provide: SettingsService, useClass: MockSettingsService }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-}).compileComponents();
+        MatIconModule,
+        ContactInfoComponent
+      ],
+      providers: [
+        { provide: SettingsService, useClass: MockSettingsService },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

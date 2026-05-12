@@ -11,8 +11,7 @@ describe('LDAP Authentication Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [LdapAuthenticationComponent, AuthenticationButtonComponent],
-    imports: [MatFormFieldModule],
+    imports: [MatFormFieldModule, LdapAuthenticationComponent, AuthenticationButtonComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));

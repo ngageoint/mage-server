@@ -9,7 +9,7 @@ describe('AdminAuthenticationOAuth2Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AdminAuthenticationOAuth2Component],
+      imports: [AdminAuthenticationOAuth2Component],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     })
       .compileComponents();

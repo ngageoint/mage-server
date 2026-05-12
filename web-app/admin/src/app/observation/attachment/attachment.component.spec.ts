@@ -9,7 +9,7 @@ describe('AttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AttachmentComponent ]
+      imports: [ AttachmentComponent ]
     })
     .compileComponents();
   }));

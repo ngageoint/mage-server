@@ -9,8 +9,7 @@ describe('Ingress Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [IngressComponent],
-    imports: [],
+    imports: [IngressComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));
