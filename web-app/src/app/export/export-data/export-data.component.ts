@@ -5,6 +5,16 @@ import moment from 'moment';
 import { first } from 'rxjs/operators';
 import { trigger, transition, style, animate, state } from '@angular/animations';
 import { FilterService } from 'src/app/filter/filter.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { DatetimePickerComponent } from 'mage-web-app/datetime-picker/datetime-picker.component';
 
 export interface ExportTimeOption {
 	all?: boolean,
@@ -16,6 +26,19 @@ export interface ExportTimeOption {
 
 @Component({
 	selector: 'export-data',
+	standalone: true,
+	imports: [
+	  CommonModule,
+	  FormsModule,
+	  MatDialogModule,
+	  MatCheckboxModule,
+	  MatChipsModule,
+	  MatFormFieldModule,
+	  MatSelectModule,
+	  MatIconModule,
+	  MatDividerModule,
+	  DatetimePickerComponent
+	],
 	templateUrl: 'export-data.component.html',
 	styleUrls: ['./export-data.component.scss'],
 	animations: [

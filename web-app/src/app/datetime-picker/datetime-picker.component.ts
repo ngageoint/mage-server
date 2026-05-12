@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -7,11 +8,24 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { NgModel } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import moment from 'moment';
 
 @Component({
   selector: 'datetime-picker',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule
+  ],
   templateUrl: './datetime-picker.component.html',
   styleUrls: ['./datetime-picker.component.scss']
 })

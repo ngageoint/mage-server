@@ -14,6 +14,13 @@ import {
   PlacenameSearchService
 } from '../search/search.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export enum SearchState {
   ON,
@@ -26,6 +33,17 @@ export interface SearchEvent {
 
 @Component({
   selector: 'map-control-search',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
+    MatListModule
+  ],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })

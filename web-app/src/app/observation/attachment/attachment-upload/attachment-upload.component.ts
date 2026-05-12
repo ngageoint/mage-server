@@ -3,6 +3,11 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, S
 import { UntypedFormControl } from '@angular/forms';
 import { AttachmentAction } from '../../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { AttachmentService } from '../attachment.service';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FilenamePipe } from 'mage-web-app/filename/filename.pipe';
 
 export interface FileUpload {
   id: number | string;
@@ -22,6 +27,14 @@ enum PreviewType {
 
 @Component({
   selector: 'attachment-upload',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatProgressBarModule,
+    FilenamePipe
+  ],
   templateUrl: './attachment-upload.component.html',
   styleUrls: ['./attachment-upload.component.scss']
 })

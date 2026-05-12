@@ -4,33 +4,24 @@ import { RouterModule, Routes } from '@angular/router';
 import { AboutComponent } from './about.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 
-const routes: Routes = [{
-  path: '',
-  component: AboutComponent
-}];
+const routes: Routes = [
+  {
+    path: '',
+    component: AboutComponent
+  }
+];
 
 @NgModule({
   declarations: [],
   imports: [],
-  exports: [
-    CommonModule,
-    MatButtonModule,
-    MatIconModule,
-    MatToolbarModule
-  ]
+  exports: [CommonModule, MatButtonModule, MatIconModule, MatToolbarModule]
 })
-class AngularModule { }
+class AngularModule {}
 
 @NgModule({
-  declarations: [
-    AboutComponent,
-  ],
-  imports: [
-    AngularModule,
-    RouterModule.forChild(routes)
-  ],
+  imports: [AngularModule, AboutComponent, RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class AboutModule { }
+export class AboutModule {}

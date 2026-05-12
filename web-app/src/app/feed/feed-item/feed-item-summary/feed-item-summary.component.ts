@@ -2,11 +2,23 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 import { Feature } from 'geojson';
 import { FeedPanelService } from '../../../feed-panel/feed-panel.service';
-import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
+import { contentPathOfIcon, StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MapService } from '../../../map/map.service';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
 
 @Component({
   selector: 'feed-item-summary',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatListModule,
+    MomentModule,
+    StaticIconModule
+  ],
   templateUrl: './feed-item-summary.component.html',
   styleUrls: ['./feed-item-summary.component.scss']
 })

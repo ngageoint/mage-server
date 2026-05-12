@@ -1,6 +1,10 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserService } from '../../user/user.service';
+import { CommonModule } from '@angular/common';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatListModule } from '@angular/material/list';
+import { UserAvatarModule } from 'mage-web-app/user/user-avatar/user-avatar.module';
 
 interface Data {
   userIds: any
@@ -9,6 +13,13 @@ interface Data {
 
 @Component({
   selector: 'observation-favorites',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDividerModule,
+    MatListModule,
+    UserAvatarModule
+  ],
   templateUrl: './observation-favorites.component.html',
   styleUrls: ['./observation-favorites.component.scss']
 })

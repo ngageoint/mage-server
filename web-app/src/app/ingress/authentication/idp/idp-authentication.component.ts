@@ -1,8 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AuthenticationStrategy } from '../../../api/api.entity';
 import { UserService } from '../../../user/user.service';
+import { CommonModule } from '@angular/common';
+import { AuthenticationButtonComponent } from '../button/authentication-button.component';
 @Component({
   selector: 'idp-authentication',
+  standalone: true,
+  imports: [
+    CommonModule,
+    AuthenticationButtonComponent
+  ],
   templateUrl: './idp-authentication.component.html',
   styleUrls: ['./idp-authentication.component.scss']
 })

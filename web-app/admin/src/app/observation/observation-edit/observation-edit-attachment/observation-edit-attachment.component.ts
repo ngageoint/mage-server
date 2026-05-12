@@ -1,6 +1,11 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AttachmentAction } from './observation-edit-attachment-action';
+import { CommonModule } from '@angular/common';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
+import { AttachUploadComponent } from '../../attachment/attachment-upload/attachment-upload.component';
+import { AttachmentComponent } from '../../attachment/attachment.component';
 
 interface AttachmentField {
   title: string;
@@ -12,43 +17,56 @@ interface AttachmentField {
 
 @Component({
   selector: 'observation-edit-attachment',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatGridListModule,
+    MatIconModule,
+    AttachmentComponent,
+    AttachUploadComponent
+  ],
   templateUrl: './observation-edit-attachment.component.html',
   styleUrls: ['./observation-edit-attachment.component.scss']
 })
 export class ObservationEditAttachmentComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: AttachmentField
-  @Input() url: string
-  @Input() attachments: any[] = []
+  @Input() formGroup: UntypedFormGroup;
+  @Input() definition: AttachmentField;
+  @Input() url: string;
+  @Input() attachments: any[] = [];
 
-  control: UntypedFormControl
-  uploadId = 0
+  control: UntypedFormControl;
+  uploadId = 0;
 
   constructor(private changeDetector: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
+    this.control = this.formGroup.get(
+      this.definition.name
+    ) as UntypedFormControl;
   }
 
   trackByAttachment(index: number, attachment: any): any {
-    return attachment.id
+    return attachment.id;
   }
 
   allAttachments(): any[] {
-    const observationFormId = this.formGroup.get('id')?.value
-    const attachments = (this.attachments || []).filter(a =>
-      a.url &&
-      a.observationFormId === observationFormId &&
-      a.fieldName === this.definition.name
-    )
-    return this.control.value ? attachments.concat(this.control.value) : attachments
+    const observationFormId = this.formGroup.get('id')?.value;
+    const attachments = (this.attachments || []).filter(
+      (a) =>
+        a.url &&
+        a.observationFormId === observationFormId &&
+        a.fieldName === this.definition.name
+    );
+    return this.control.value
+      ? attachments.concat(this.control.value)
+      : attachments;
   }
 
   onAttachmentFile(event): void {
-    const attachments = this.control.value || []
-    const files = Array.from(event.target.files)
+    const attachments = this.control.value || [];
+    const files = Array.from(event.target.files);
     files.forEach((file: File) => {
-      const id = this.uploadId++
+      const id = this.uploadId++;
       attachments.push({
         id,
         formId: this.formGroup.get('formId').value,
@@ -57,23 +75,25 @@ export class ObservationEditAttachmentComponent implements OnInit {
         contentType: file.type,
         action: AttachmentAction.ADD,
         file
-      })
-    })
-    this.control.setValue(attachments)
-    this.changeDetector.detectChanges()
+      });
+    });
+    this.control.setValue(attachments);
+    this.changeDetector.detectChanges();
   }
 
   deleteAttachment(attachmentToDelete): void {
-    this.attachments = this.attachments.filter(a => a.id !== attachmentToDelete.id)
-    attachmentToDelete.action = AttachmentAction.DELETE
+    this.attachments = this.attachments.filter(
+      (a) => a.id !== attachmentToDelete.id
+    );
+    attachmentToDelete.action = AttachmentAction.DELETE;
 
-    const value = this.control.value || []
-    value.push(attachmentToDelete)
-    this.control.setValue(value)
+    const value = this.control.value || [];
+    value.push(attachmentToDelete);
+    this.control.setValue(value);
   }
 
   removeAttachment($event): void {
-    const attachments = this.control.value || []
-    this.control.setValue(attachments.filter(a => a.id !== $event.id))
+    const attachments = this.control.value || [];
+    this.control.setValue(attachments.filter((a) => a.id !== $event.id));
   }
 }

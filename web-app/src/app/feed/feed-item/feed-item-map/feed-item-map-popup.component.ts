@@ -2,9 +2,20 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Feature } from 'geojson';
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
 
 @Component({
   selector: 'feed-item-map-popup',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatListModule,
+    MatIconModule,
+    MomentModule
+  ],
   templateUrl: './feed-item-map-popup.component.html',
   styleUrls: ['./feed-item-map-popup.component.scss']
 })

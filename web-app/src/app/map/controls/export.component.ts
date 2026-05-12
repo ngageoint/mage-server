@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -6,10 +7,16 @@ import {
   ElementRef,
   ViewChild
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { DomEvent } from 'leaflet';
 
 @Component({
   selector: 'map-control-export',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule
+  ],
   templateUrl: './export.component.html',
   styleUrls: ['./export.component.scss']
 })

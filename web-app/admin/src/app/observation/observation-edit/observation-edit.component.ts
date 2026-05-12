@@ -1,6 +1,6 @@
 import { animate, style, transition, trigger } from "@angular/animations";
-import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
-import { DOCUMENT } from "@angular/common";
+import { CdkDragDrop, DragDropModule, moveItemInArray } from "@angular/cdk/drag-drop";
+import { CommonModule, DOCUMENT } from "@angular/common";
 import {
   Component,
   ElementRef,
@@ -34,7 +34,7 @@ import {
   MatSnackBarRef as MatSnackBarRef,
   SimpleSnackBar as SimpleSnackBar,
 } from "@angular/material/snack-bar";
-import { MatIconRegistry } from "@angular/material/icon";
+import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatDialog as MatDialog } from "@angular/material/dialog";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import {
@@ -51,11 +51,28 @@ import { AdminUserService } from "../../admin/services/admin-user.service";
 import { MapService } from "src/app/map/map.service";
 import { FilterService } from "src/app/filter/filter.service";
 import { ObservationService } from "src/app/observation/observation.service";
+import { MatCardModule } from "@angular/material/card";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { ObservationEditDateComponent, ObservationEditGeometryComponent } from "./observation-edit";
+import { ObservationEditFormComponent } from "./observation-edit-form.component";
 
 export type ObservationFormControl = UntypedFormControl & { definition: any };
 
 @Component({
   selector: "observation-edit",
+  standalone: true,
+  imports: [
+    CommonModule,
+    DragDropModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatCardModule,
+    ObservationEditDateComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditFormComponent
+  ],
   templateUrl: "./observation-edit.component.html",
   styleUrls: ["./observation-edit.component.scss"],
   animations: [

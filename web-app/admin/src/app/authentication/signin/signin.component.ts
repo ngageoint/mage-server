@@ -1,7 +1,10 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { UserService } from 'mage-web-app/user/user.service';
 import { SigninEvent } from '../auth.types';
-import { AuthenticationStrategy } from '../local-signin/local-signin.component';
+import { AuthenticationStrategy, LocalSigninComponent } from '../local-signin/local-signin.component';
+import { CommonModule } from '@angular/common';
+import { IdpSigninComponent } from '../idp-signin/idp-signin.component';
+import { LdapSigninComponent } from '../ldap-signin/ldap-signin.component';
 
 export interface ApiAuthenticationStrategies {
     local?: AuthenticationStrategy;
@@ -24,6 +27,13 @@ export interface Api {
 
 @Component({
     selector: 'signin',
+    standalone: true,
+    imports: [
+      CommonModule,
+      LocalSigninComponent,
+      IdpSigninComponent,
+      LdapSigninComponent
+    ],
     templateUrl: './signin.component.html',
     styleUrls: ['./signin.component.scss']
 })

@@ -1,10 +1,24 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MapLayerService, SimpleStyle } from './layer.service';
-import { ColorEvent } from 'src/app/color-picker/color-picker.component';
+import { ColorEvent, ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { trigger, style, transition, animate } from '@angular/animations';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSliderModule } from '@angular/material/slider';
 
 @Component({
   selector: 'layer-content',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatSliderModule,
+    MatIconModule,
+    MatFormFieldModule,
+    ColorPickerComponent
+  ],
   templateUrl: './layer-content.component.html',
   styleUrls: ['./layer-content.component.scss'],
   animations: [

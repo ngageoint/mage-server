@@ -1,5 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface TextField {
   title: string,
@@ -9,6 +12,13 @@ interface TextField {
 
 @Component({
   selector: 'observation-edit-text',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './observation-edit-text.component.html',
   styleUrls: ['./observation-edit-text.component.scss']
 })

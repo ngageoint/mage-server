@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SecurityContext, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../../api/api.service';
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -7,9 +7,19 @@ import { Api, AuthenticationStrategy } from '../../../../app/api/api.entity';
 import { UserService } from '../../../user/user.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'local-authentication',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './local-authentication.component.html',
   styleUrls: ['./local-authentication.component.scss'],
   animations: [

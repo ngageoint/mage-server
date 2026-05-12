@@ -1,10 +1,21 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
 import { EventService } from 'src/app/event/event.service';
 import { FilterService } from 'src/app/filter/filter.service';
 
 @Component({
   selector: 'app-observation-edit-form-picker',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDividerModule,
+    MatListModule,
+    MatIconModule
+  ],
   templateUrl: './observation-edit-form-picker.component.html',
   styleUrls: ['./observation-edit-form-picker.component.scss']
 })

@@ -1,62 +1,67 @@
 import { NgModule } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
-import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
+import {
+  SaturationModule,
+  HueModule,
+  CheckboardModule,
+  AlphaModule
+} from 'ngx-color';
 
-import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatRippleModule } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker'
-import { MatMomentDateModule } from '@angular/material-moment-adapter'
-import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule as MatInputModule } from '@angular/material/input';
-import { MatListModule as MatListModule } from '@angular/material/list';
-import { MatPaginatorModule as MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatSliderModule as MatSliderModule } from '@angular/material/slider';
-import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
-import { MatTabsModule as MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
-import { MatSlideToggleModule as MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatMenuModule } from '@angular/material/menu';
 
-import { InputMaskModule } from '@ngneat/input-mask'
+import { InputMaskModule } from '@ngneat/input-mask';
 
 import { ZoomComponent } from '../map/controls/zoom.component';
 import { AddObservationComponent } from '../map/controls/add-observation.component';
-
 import { LocationComponent } from '../map/controls/location.component';
 import { SearchComponent } from '../map/controls/search.component';
-import { LayersComponent } from '../map/layers/layers.component'
+import { LayersComponent } from '../map/layers/layers.component';
 import { LayersControlComponent } from '../map/controls/layers-control.component';
 import { MapComponent } from '../map/map.component';
 import { LayerHeaderComponent } from '../map/layers/layer-header.component';
 import { LayerContentComponent } from '../map/layers/layer-content.component';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { ExportComponent } from '../export/export.component';
-import { ExportDialogComponent } from '../export/export-dialog.component'
+import { ExportDialogComponent } from '../export/export-dialog.component';
 
 import { MapClipComponent } from '../map/clip/clip.component';
 import { GeometryModule } from '../geometry/geometry.module';
@@ -110,9 +115,8 @@ import { FeedItemSummaryModule } from '../feed/feed-item/feed-item-summary/feed-
 import { FeedPanelTabComponent } from '../feed-panel/feed-panel-tab.component';
 import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
-import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon';
 import { DatetimePickerComponent } from '../datetime-picker/datetime-picker.component';
-import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from '../observation/observation-view/observation-options.component';
 import { ObservationEditFormPickerComponent } from '../observation/observation-edit/observation-edit-form-picker.component';
 import { ObservationEditDiscardComponent } from '../observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
@@ -132,7 +136,7 @@ import { TimeFormatComponent } from '../preferences/time-format/time-format.comp
 import { TimeZoneComponent } from '../preferences/time-zone/time-zone.component';
 import { CoordinateSystemComponent } from '../preferences/coordinate-system/coordinate-system.component';
 import { PasswordResetSuccessDialog } from '../user/password/password-reset-success-dialog';
-import { HomeComponent } from '..//home/home.component';
+import { HomeComponent } from '../home/home.component';
 import { RouterModule, Routes } from '@angular/router';
 import { UserResolver } from '../ingress/user.resolver';
 import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
@@ -140,15 +144,16 @@ import { IngressModule } from '../ingress/ingress.module';
 import { FilterControlComponent } from '../map/controls/filter.component';
 import { ExportControlComponent } from '../map/controls/export.component';
 import { BannerModule } from '../banner/banner.module';
-import { MatMenuModule as MatMenuModule } from '@angular/material/menu';
 
-const routes: Routes = [{
-  path: '',
-  component: HomeComponent,
-  resolve: {
-    user: UserResolver
+const routes: Routes = [
+  {
+    path: '',
+    component: HomeComponent,
+    resolve: {
+      user: UserResolver
+    }
   }
-}];
+];
 
 @NgModule({
   declarations: [],
@@ -200,10 +205,22 @@ const routes: Routes = [{
     SaturationModule
   ]
 })
-class AngularModule { }
+class AngularModule {}
 
 @NgModule({
-  declarations: [
+  declarations: [],
+  imports: [
+    AngularModule,
+    BannerModule,
+    FeedItemSummaryModule,
+    GeometryModule,
+    IngressModule,
+    MomentModule,
+    StaticIconModule,
+    UserAvatarModule,
+    InputMaskModule.forRoot(),
+    RouterModule.forChild(routes),
+
     AddObservationComponent,
     AttachmentComponent,
     AttachUploadComponent,
@@ -231,7 +248,6 @@ class AngularModule { }
     LayersControlComponent,
     LocationComponent,
     MapClipComponent,
-    MapComponent,
     MapComponent,
     MGRSValidatorDirective,
     NavigationComponent,
@@ -281,21 +297,8 @@ class AngularModule { }
     UserListItemComponent,
     UserPopupComponent,
     UserViewComponent,
-    ZoomComponent,
-  ],
-  imports: [
-    AngularModule,
-    BannerModule,
-    FeedItemSummaryModule,
-    GeometryModule,
-    IngressModule,
-    MomentModule,
-    StaticIconModule,
-    UserAvatarModule,
-    InputMaskModule.forRoot(),
-    RouterModule.forChild(routes)
+    ZoomComponent
   ],
   exports: [RouterModule]
 })
-export class HomeModule {
-}
+export class HomeModule {}

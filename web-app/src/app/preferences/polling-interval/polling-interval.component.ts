@@ -1,6 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatSelectChange as MatSelectChange } from '@angular/material/select';
+import { MatSelectChange as MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { PollingService } from '../../event/polling.service';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 
 interface PollingOption {
   title: string
@@ -9,6 +12,13 @@ interface PollingOption {
 
 @Component({
   selector: 'polling-interval',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule
+  ],
   templateUrl: './polling-interval.component.html',
   styleUrls: ['./polling-interval.component.scss']
 })

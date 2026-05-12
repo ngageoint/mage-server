@@ -2,81 +2,100 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
+import { UserListItemComponent } from './user-list-item.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
 
 @Component({
   selector: 'user-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatToolbarModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MomentModule,
+    UserListItemComponent
+  ],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit, OnDestroy {
+  currentUserPage = 0;
+  usersChanged = 0;
+  userPages = [];
+  followUserId = null;
+  usersPerPage = 50;
 
-  currentUserPage = 0
-  usersChanged = 0
-  userPages = []
-  followUserId = null
-  usersPerPage = 50
-
-  usersById = {}
-  feedUsers = []
+  usersById = {};
+  feedUsers = [];
 
   constructor(
     private eventService: EventService,
-    private filterService: FilterService) {
-  }
+    private filterService: FilterService
+  ) {}
 
   ngOnInit(): void {
-    this.filterService.addListener(this)
-    this.eventService.addUsersChangedListener(this)
+    this.filterService.addListener(this);
+    this.eventService.addUsersChangedListener(this);
   }
 
   ngOnDestroy(): void {
-    this.filterService.removeListener(this)
-    this.eventService.removeUsersChangedListener(this)
+    this.filterService.removeListener(this);
+    this.eventService.removeUsersChangedListener(this);
   }
 
   trackByPageId(index: number, page: any): any {
-    return index
+    return index;
   }
 
   trackByUserId(index: number, user: any): any {
-    return user.id
+    return user.id;
   }
 
   onFilterChanged(): void {
-    this.currentUserPage = 0
+    this.currentUserPage = 0;
   }
 
   onUsersChanged(changed): void {
-    const { added = [], updated = [], removed = [] } = changed
+    const { added = [], updated = [], removed = [] } = changed;
 
-    added.forEach(user => {
+    added.forEach((user) => {
       this.usersById[user.id] = user;
-    })
+    });
 
-    updated.forEach(user => {
+    updated.forEach((user) => {
       const updatedUser = this.usersById[user.id];
       if (updatedUser) {
-        this.usersById[updatedUser.id] = user
+        this.usersById[updatedUser.id] = user;
       }
-    })
+    });
 
-    removed.forEach(user => {
+    removed.forEach((user) => {
       delete this.usersById[user.id];
-    })
+    });
 
     // update the news feed observations
-    this.feedUsers = Object.values(this.usersById)
+    this.feedUsers = Object.values(this.usersById);
 
     this.calculateUserPages(this.feedUsers);
-  };
+  }
 
   calculateUserPages(users): void {
     if (!users) return;
 
     // sort the locations
     users.sort((a, b) => {
-      return moment(b.location.properties.timestamp).valueOf() - moment(a.location.properties.timestamp).valueOf()
-    })
+      return (
+        moment(b.location.properties.timestamp).valueOf() -
+        moment(a.location.properties.timestamp).valueOf()
+      );
+    });
 
     // slice into pages
     const pages = [];

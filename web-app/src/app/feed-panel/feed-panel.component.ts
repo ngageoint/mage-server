@@ -10,9 +10,30 @@ import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { CommonModule } from '@angular/common';
+import { FeedItemComponent } from 'mage-web-app/feed/feed-item/feed-item.component';
+import { FeedListComponent } from 'mage-web-app/feed/feed-list/feed-list.component';
+import { ObservationEditComponent } from 'mage-web-app/observation/observation-edit/observation-edit.component';
+import { ObservationListComponent } from 'mage-web-app/observation/observation-list/observation-list.component';
+import { ObservationViewComponent } from 'mage-web-app/observation/observation-view/observation-view.component';
+import { UserListComponent } from 'mage-web-app/user/user-list/user-list.component';
+import { UserViewComponent } from 'mage-web-app/user/user-view/user-view.component';
+import { FeedPanelTabComponent } from './feed-panel-tab.component';
 
 @Component({
   selector: 'feed-panel',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FeedPanelTabComponent,
+    UserViewComponent,
+    ObservationViewComponent,
+    ObservationEditComponent,
+    FeedItemComponent,
+    ObservationListComponent,
+    UserListComponent,
+    FeedListComponent
+  ],
   templateUrl: './feed-panel.component.html',
   styleUrls: ['./feed-panel.component.scss'],
   animations: [

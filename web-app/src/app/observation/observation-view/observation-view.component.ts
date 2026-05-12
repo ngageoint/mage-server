@@ -11,9 +11,34 @@ import { LocalStorageService } from '../../http/local-storage.service';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 import { UserService } from '../../user/user.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import { MapClipComponent } from 'mage-web-app/map/clip/clip.component';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
+import { ObservationViewFormComponent } from './observation-view-form.component';
 
 @Component({
   selector: 'observation-view',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatToolbarModule,
+    MatCardModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MomentModule,
+    GeometryModule,
+    MapClipComponent,
+    ObservationViewFormComponent
+  ],
   templateUrl: './observation-view.component.html',
   styleUrls: ['./observation-view.component.scss'],
   animations: [

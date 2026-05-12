@@ -1,9 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../api/api.service';
-import {Location} from '@angular/common';
+import {CommonModule, Location} from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   selector: 'about',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatIconModule
+  ],
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.scss', '../../../node_modules/font-awesome/css/font-awesome.min.css']
 })

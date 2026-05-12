@@ -1,6 +1,10 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
+import { CommonModule } from '@angular/common';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { LayerContentComponent } from './layer-content.component';
+import { LayerHeaderComponent } from './layer-header.component';
 
 export interface ReorderEvent {
   type: string;
@@ -11,6 +15,13 @@ export interface ReorderEvent {
 
 @Component({
   selector: 'map-layers-panel',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatExpansionModule,
+    LayerHeaderComponent,
+    LayerContentComponent
+  ],
   templateUrl: './layers.component.html',
   styleUrls: ['./layers.component.scss']
 })

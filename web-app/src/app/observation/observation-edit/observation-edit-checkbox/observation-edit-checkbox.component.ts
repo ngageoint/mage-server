@@ -1,6 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatCheckboxChange as MatCheckboxChange } from '@angular/material/checkbox';
+import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatCheckboxChange as MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 interface CheckboxField {
   title: string,
@@ -11,6 +13,13 @@ interface CheckboxField {
 
 @Component({
   selector: 'observation-edit-checkbox',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatCheckboxModule,
+    MatFormFieldModule
+  ],
   templateUrl: './observation-edit-checkbox.component.html',
   styleUrls: ['./observation-edit-checkbox.component.scss']
 })

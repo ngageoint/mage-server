@@ -3,9 +3,28 @@ import { Feed, StyledFeature } from '@ngageoint/mage.web-core-lib/feed';
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 import { MapService } from '../../map/map.service';
 import { MomentPipe } from '../../moment/moment.pipe';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { StaticIconModule } from 'core-lib-src/static-icon';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import { MapClipComponent } from 'mage-web-app/map/clip/clip.component';
 
 @Component({
   selector: 'feed-item',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatCardModule,
+    MatDividerModule,
+    StaticIconModule,
+    MapClipComponent,
+    GeometryModule
+  ],
   templateUrl: './feed-item.component.html',
   styleUrls: ['./feed-item.component.scss']
 })

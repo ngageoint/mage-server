@@ -1,8 +1,15 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'map-control-layers',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule
+  ],
   templateUrl: './layers-control.component.html',
   styleUrls: ['./layers-control.component.scss'],
   animations: [

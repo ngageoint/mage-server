@@ -1,19 +1,58 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges
+} from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import {
+  ObservationViewGeometryComponent,
+  ObservationViewDateComponent,
+  ObservationViewCheckboxComponent,
+  ObservationViewTextComponent,
+  ObservationViewTextareaComponent,
+  ObservationViewMultiselectdropdownComponent
+} from './observation-view';
+import { ObservationViewAttachmentComponent } from './observation-view-attachment/observation-view-attachment.component';
+import { ObservationViewPasswordComponent } from './observation-view-password/observation-view-password.component';
 
 @Component({
   selector: 'observation-view-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule,
+    GeometryModule,
+    ObservationViewAttachmentComponent,
+    ObservationViewGeometryComponent,
+    ObservationViewDateComponent,
+    ObservationViewCheckboxComponent,
+    ObservationViewTextComponent,
+    ObservationViewTextareaComponent,
+    ObservationViewPasswordComponent,
+    ObservationViewMultiselectdropdownComponent
+  ],
   templateUrl: './observation-view-form.component.html',
   styleUrls: ['./observation-view-form.component.scss'],
   animations: [
     trigger('expand', [
       transition(':enter', [
         style({ height: 0, opacity: 0 }),
-        animate('300ms', style({ height: '*', opacity: 1 })),
+        animate('300ms', style({ height: '*', opacity: 1 }))
       ]),
-      transition(':leave', [
-        animate('300ms', style({ height: 0, opacity: 0 }))
-      ])
+      transition(':leave', [animate('300ms', style({ height: 0, opacity: 0 }))])
     ]),
     trigger('rotate', [
       state('true', style({ transform: 'rotate(180deg)' })),
@@ -23,48 +62,54 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
   ]
 })
 export class ObservationViewFormComponent implements OnInit, OnChanges {
-  @Input() form: any
-  @Input() attachments: any[]
-  @Input() expand: boolean
+  @Input() form: any;
+  @Input() attachments: any[];
+  @Input() expand: boolean;
   @Input() geometryStyle: any;
 
-  primaryField: any = {}
-  secondaryField: any = {}
+  primaryField: any = {};
+  secondaryField: any = {};
 
   ngOnInit(): void {
-    this.updateView()
+    this.updateView();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.updateView()
+    this.updateView();
   }
 
   nonArchivedFields(fields: any[]): any[] {
     return fields
-      .filter(field => !field.archived)
+      .filter((field) => !field.archived)
       .sort((a: { id: number }, b: { id: number }) => a.id - b.id);
   }
 
   hasContent(): boolean {
-    const fields: any[] = this.form.fields
+    const fields: any[] = this.form.fields;
     return fields
-      .filter(field => !field.archived)
-      .some(field => {
+      .filter((field) => !field.archived)
+      .some((field) => {
         if (field.type === 'attachment') {
-          return this.attachments.filter(attachment => attachment.observationFormId === this.form.remoteId).length
+          return this.attachments.filter(
+            (attachment) => attachment.observationFormId === this.form.remoteId
+          ).length;
         } else {
-          return field.value
+          return field.value;
         }
-      })
+      });
   }
 
   private updateView(): void {
     if (this.form.primaryFeedField) {
-      this.primaryField = this.form.fields.find(field => field.name === this.form.primaryFeedField)
+      this.primaryField = this.form.fields.find(
+        (field) => field.name === this.form.primaryFeedField
+      );
     }
 
     if (this.form.secondaryFeedField) {
-      this.secondaryField = this.form.fields.find(field => field.name === this.form.secondaryFeedField)
+      this.secondaryField = this.form.fields.find(
+        (field) => field.name === this.form.secondaryFeedField
+      );
     }
   }
 }

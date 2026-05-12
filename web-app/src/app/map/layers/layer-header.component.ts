@@ -1,10 +1,22 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { MatCheckboxChange as MatCheckboxChange } from '@angular/material/checkbox';
+import { MatCheckboxChange as MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { MapLayerService } from './layer.service';
 import { state, style, trigger } from '@angular/animations';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'layer-header',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCheckboxModule,
+    MatRadioModule,
+    MatIconModule,
+    MatFormFieldModule
+  ],
   templateUrl: './layer-header.component.html',
   styleUrls: ['./layer-header.component.scss'],
   animations: [

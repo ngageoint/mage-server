@@ -1,10 +1,21 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
-import { UntypedFormGroup } from '@angular/forms'
+import { FormsModule, ReactiveFormsModule, UntypedFormGroup } from '@angular/forms'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
+import { CommonModule } from '@angular/common'
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module'
+import { ObservationEditGeometryFormComponent } from './observation-edit-geometry-form.component'
+import { ObservationEditGeometryMapComponent } from './observation-edit-geometry-map.component'
 
 @Component({
   selector: 'observation-edit-geometry',
+  standalone: true,
+  imports: [
+    CommonModule,
+    GeometryModule,
+    ObservationEditGeometryMapComponent,
+    ObservationEditGeometryFormComponent
+  ],
   templateUrl: './observation-edit-geometry.component.html',
   styleUrls: ['./observation-edit-geometry.component.scss']
 })

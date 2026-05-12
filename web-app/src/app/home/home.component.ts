@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MapService } from '../map/map.service';
 import { FilterService } from '../filter/filter.service';
-import { MatSidenav } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
 import { ActivatedRoute } from '@angular/router';
 import { User } from 'core-lib-src/user';
@@ -9,9 +9,23 @@ import { Banners, SettingsService } from '../settings/settings.service';
 import * as _ from 'underscore';
 import { UserService } from '../user/user.service';
 import { MageEvent } from '@ngageoint/mage.web-core-lib/event';
+import { CommonModule } from '@angular/common';
+import { BannerComponent } from 'mage-web-app/banner/baner.component';
+import { FeedPanelComponent } from 'mage-web-app/feed-panel/feed-panel.component';
+import { NavigationComponent } from 'mage-web-app/navigation/navigation.component';
+import { PreferencesComponent } from 'mage-web-app/preferences/preferences.component';
 
 @Component({
   selector: 'home',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatSidenavModule,
+    BannerComponent,
+    NavigationComponent,
+    FeedPanelComponent,
+    PreferencesComponent
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })

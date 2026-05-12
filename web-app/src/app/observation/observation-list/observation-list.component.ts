@@ -2,9 +2,32 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
+import { ObservationListItemComponent } from './observation-list-item.component';
 
 @Component({
   selector: 'observation-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatToolbarModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatCardModule,
+    MatIconModule,
+    MomentModule,
+    ObservationListItemComponent
+  ],
   templateUrl: './observation-list.component.html',
   styleUrls: ['./observation-list.component.scss']
 })

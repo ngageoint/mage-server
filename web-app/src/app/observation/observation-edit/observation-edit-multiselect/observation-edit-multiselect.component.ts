@@ -1,10 +1,13 @@
 import { Component, ViewChild, ElementRef, Input, AfterViewInit, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/autocomplete';
-import { MatChipInputEvent as MatChipInputEvent, MatChipListbox as MatChipListbox } from '@angular/material/chips';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatChipInputEvent as MatChipInputEvent, MatChipListbox as MatChipListbox, MatChipsModule } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 
 interface Choice {
   title: string;
@@ -19,6 +22,15 @@ interface MultiSelectField {
 
 @Component({
   selector: 'observation-edit-multiselect',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatChipsModule,
+    MatIconModule,
+    MatAutocompleteModule
+  ],
   templateUrl: './observation-edit-multiselect.component.html',
   styleUrls: ['./observation-edit-multiselect.component.scss']
 })

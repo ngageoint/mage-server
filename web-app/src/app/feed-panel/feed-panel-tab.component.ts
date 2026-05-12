@@ -1,4 +1,7 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export interface FeedTab {
   id: string,
@@ -9,6 +12,12 @@ export interface FeedTab {
 
 @Component({
   selector: 'feed-panel-tab',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatTooltipModule
+  ],
   templateUrl: './feed-panel-tab.component.html',
   styleUrls: ['./feed-panel-tab.component.scss']
 })

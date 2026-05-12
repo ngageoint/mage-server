@@ -2,8 +2,10 @@ import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { CommonModule } from '@angular/common';
+import { CardNavbarComponent } from '../card-navbar/card-navbar.component';
 
 export interface SearchModalColumn {
     key: string;
@@ -32,6 +34,13 @@ export interface SearchModalResult {
  */
 @Component({
     selector: 'app-search-modal',
+    standalone: true,
+    imports: [
+      CommonModule,
+      MatTableModule,
+      MatPaginatorModule,
+      CardNavbarComponent
+    ],
     templateUrl: './search-modal.component.html',
     styleUrls: ['./search-modal.component.scss']
 })

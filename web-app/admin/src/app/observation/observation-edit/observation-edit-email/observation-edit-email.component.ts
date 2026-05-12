@@ -1,5 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface EmailField {
   title: string,
@@ -10,6 +13,13 @@ interface EmailField {
 
 @Component({
   selector: 'observation-edit-email',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './observation-edit-email.component.html',
   styleUrls: ['./observation-edit-email.component.scss']
 })

@@ -1,9 +1,11 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   Validators,
-  ValidationErrors
+  ValidationErrors,
+  FormsModule,
+  ReactiveFormsModule
 } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -23,13 +25,34 @@ import {
   evaluatePasswordStrength,
   getPasswordTooltip
 } from 'admin/src/app/shared/utils/password.utils';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'signup',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatButtonModule,
+    MatTooltipModule
+  ],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
 })
 export class SignupComponent {
+  @Input() api;
+  @Input() hideSignup;
   @Output() complete = new EventEmitter<SignupEvent>();
 
   passwordPolicy!: PasswordPolicy;

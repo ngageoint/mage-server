@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
-import { LocationEvent, LocationState } from '../../app/map/controls/location.component'
-import { ZoomDirection } from '../../app/map/controls/zoom.component'
+import { LocationComponent, LocationEvent, LocationState } from '../../app/map/controls/location.component'
+import { ZoomComponent, ZoomDirection } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
 import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service'
 import { MapService } from './map.service'
@@ -8,7 +8,7 @@ import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
 import { map, latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map } from "leaflet"
 import { OpacityEvent, ZoomEvent } from './layers/layer.service'
-import { ReorderEvent } from './layers/layers.component'
+import { LayersComponent, ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
 import { locationMarker } from './marker/LocationMarker'
 import { observationMarker } from './marker/ObservationMarker'
@@ -28,11 +28,31 @@ import _ from 'underscore'
 import moment from 'moment';
 import { Subscription } from 'rxjs'
 import { ContactDialogComponent } from '../contact/contact-dialog.component'
+import { CommonModule } from '@angular/common'
+import { MatSidenavModule } from '@angular/material/sidenav'
+import { AddObservationComponent } from './controls/add-observation.component'
+import { ExportControlComponent } from './controls/export.component'
+import { FilterControlComponent } from './controls/filter.component'
+import { LayersControlComponent } from './controls/layers-control.component'
+import { SearchComponent } from './controls/search.component'
 
 Icon.Default.imagePath = '/'
 
 @Component({
   selector: 'map',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatSidenavModule,
+    LayersControlComponent,
+    LayersComponent,
+    SearchComponent,
+    FilterControlComponent,
+    ExportControlComponent,
+    AddObservationComponent,
+    LocationComponent,
+    ZoomComponent
+  ],
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
   providers: [LayerService]

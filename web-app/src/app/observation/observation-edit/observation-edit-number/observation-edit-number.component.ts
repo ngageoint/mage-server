@@ -1,5 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { ReactiveFormsModule, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface NumberField {
   title: string,
@@ -12,6 +15,13 @@ interface NumberField {
 
 @Component({
   selector: 'observation-edit-number',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './observation-edit-number.component.html',
   styleUrls: ['./observation-edit-number.component.scss']
 })

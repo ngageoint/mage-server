@@ -1,14 +1,30 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { LatLng } from 'leaflet';
-import { PointAccuracy } from '../../map/clip/clip.component';
+import { MapClipComponent, PointAccuracy } from '../../map/clip/clip.component';
 import moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { LocationService } from '../location/location.service';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import { UserAvatarModule } from '../user-avatar/user-avatar.module';
 
 @Component({
   selector: 'user-view',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatCardModule,
+    MatIconModule,
+    MapClipComponent,
+    GeometryModule,
+    UserAvatarModule
+  ],
   templateUrl: './user-view.component.html',
   styleUrls: ['./user-view.component.scss']
 })

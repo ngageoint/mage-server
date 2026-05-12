@@ -5,12 +5,26 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { UntypedFormGroup, NgModel } from '@angular/forms';
+import { UntypedFormGroup, NgModel, FormsModule } from '@angular/forms';
 import moment from 'moment';
 import { LocalStorageService } from '../../../../../../src/app/http/local-storage.service';
+import { CommonModule } from '@angular/common';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'observation-edit-date',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule
+  ],
   templateUrl: './observation-edit-date.component.html',
   styleUrls: ['./observation-edit-date.component.scss']
 })

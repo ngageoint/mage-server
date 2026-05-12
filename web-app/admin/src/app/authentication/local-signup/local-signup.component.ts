@@ -1,4 +1,6 @@
+import { CommonModule } from '@angular/common'
 import { Component, EventEmitter, Input, Output, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import { UserService } from 'mage-web-app/user/user.service'
 import { AuthenticationStrategy } from '../local-signin/local-signin.component'
 import { zxcvbn } from '@zxcvbn-ts/core'
@@ -24,6 +26,11 @@ const passwordStrengthMap: { [key: number]: { type: string; text: string } } = {
 
 @Component({
   selector: 'local-signup',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './local-signup.component.html',
   styleUrls: ['./local-signup.component.scss']
 })
@@ -79,7 +86,10 @@ export class LocalSignupComponent implements OnInit, AfterViewInit {
         },
         error: (err: any) => {
           this.loadingCaptcha = false
-          this.showStatusMessage('Could Not Load Captcha', err?.error?.data || err?.error?.message || err?.message || 'Unknown error')
+          this.showStatusMessage(
+            'Could Not Load Captcha',
+            err?.error?.data || err?.error?.message || err?.message || 'Unknown error'
+          )
         }
       })
   }

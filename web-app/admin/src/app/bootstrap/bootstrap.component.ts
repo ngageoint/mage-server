@@ -3,9 +3,21 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { AdminUserService } from '../admin/services/admin-user.service';
 import { User } from '../admin/admin-users/user';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { BannerComponent } from '../banner/banner.component';
+import { AdminNavigationComponent } from '../navigation/admin-navigation.component';
 
 @Component({
   selector: 'bootstrap',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    BannerComponent,
+    AdminNavigationComponent
+  ],
+
   templateUrl: './bootstrap.component.html',
   styleUrls: ['./bootstrap.component.scss']
 })

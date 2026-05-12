@@ -1,5 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { MatSelectChange as MatSelectChange } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectChange as MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 interface TimeFormatOption {
@@ -9,6 +12,13 @@ interface TimeFormatOption {
 
 @Component({
   selector: 'time-format',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule
+  ],
   templateUrl: './time-format.component.html',
   styleUrls: ['./time-format.component.scss']
 })

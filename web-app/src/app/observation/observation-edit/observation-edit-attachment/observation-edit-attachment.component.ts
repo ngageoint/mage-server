@@ -1,6 +1,11 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AttachmentAction } from './observation-edit-attachment-action';
+import { CommonModule } from '@angular/common';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
+import { AttachUploadComponent } from 'mage-web-app/observation/attachment/attachment-upload/attachment-upload.component';
+import { AttachmentComponent } from 'mage-web-app/observation/attachment/attachment.component';
 
 interface AttachmentField {
   title: string,
@@ -12,6 +17,14 @@ interface AttachmentField {
 
 @Component({
   selector: 'observation-edit-attachment',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatGridListModule,
+    MatIconModule,
+    AttachmentComponent,
+    AttachUploadComponent
+  ],
   templateUrl: './observation-edit-attachment.component.html',
   styleUrls: ['./observation-edit-attachment.component.scss']
 })

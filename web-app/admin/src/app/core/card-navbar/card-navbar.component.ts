@@ -1,4 +1,6 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -16,6 +18,11 @@ export interface CardActionButton {
  */
 @Component({
   selector: 'mage-card-navbar',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './card-navbar.component.html',
   styleUrls: ['./card-navbar.component.scss']
 })

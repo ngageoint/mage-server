@@ -5,9 +5,20 @@ import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { AdminUserService } from '../../admin/services/admin-user.service';
 
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
+import { CommonModule } from '@angular/common';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { FilenamePipe } from 'mage-web-app/filename/filename.pipe';
 
 @Component({
   selector: 'observation-attachment',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatChipsModule,
+    MatIconModule,
+    FilenamePipe
+  ],
   templateUrl: './attachment.component.html',
   styleUrls: ['./attachment.component.scss']
 })

@@ -1,13 +1,17 @@
 import { Component, Directive, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
-import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
+import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
 import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/geometry/geometry-dms'
 import * as DMS from 'src/app/geometry/geometry-dms'
-import { createMask } from '@ngneat/input-mask'
+import { createMask, InputMaskModule } from '@ngneat/input-mask'
 import { LocalStorageService } from '../../../http/local-storage.service'
 import { MapService } from '../../../map/map.service'
 import { GeometryService } from '../../../geometry/geometry.service'
+import { CommonModule } from '@angular/common'
+import { MatChipsModule } from '@angular/material/chips'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -59,6 +63,16 @@ type DMSFormValue = Partial<{ [DimensionKey.Latitude]: string, [DimensionKey.Lon
 
 @Component({
   selector: 'observation-edit-geometry-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    InputMaskModule
+  ],
   templateUrl: './observation-edit-geometry-form.component.html',
   styleUrls: ['./observation-edit-geometry-form.component.scss'],
   providers: [

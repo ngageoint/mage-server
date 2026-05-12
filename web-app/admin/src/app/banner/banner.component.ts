@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnInit, HostBinding } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 interface Banner {
     headerTextColor: string;
@@ -14,6 +15,10 @@ interface Banner {
 
 @Component({
     selector: 'banner',
+    standalone: true,
+    imports: [
+      CommonModule
+    ],
     templateUrl: './banner.component.html',
     styleUrls: ['./banner.component.scss']
 })

@@ -2,9 +2,20 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { LocalStorageService } from '../../http/local-storage.service';
 import { UserService } from '../../user/user.service';
+import { CommonModule } from '@angular/common';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { FilenamePipe } from 'mage-web-app/filename/filename.pipe';
 
 @Component({
   selector: 'observation-attachment',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatChipsModule,
+    MatIconModule,
+    FilenamePipe
+  ],
   templateUrl: './attachment.component.html',
   styleUrls: ['./attachment.component.scss']
 })

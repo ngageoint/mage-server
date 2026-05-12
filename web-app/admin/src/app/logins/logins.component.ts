@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import moment from 'moment';
 import { Subject, Observable, from, of, isObservable } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
@@ -13,9 +13,19 @@ import { AdminUserService } from '../admin/services/admin-user.service';
 import { DevicePagingService } from '../services/device-paging.service';
 import { UserPagingService } from '../services/user-paging.service';
 import { LoginService } from '../services/login.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'mage-logins',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    RouterModule
+  ],
   templateUrl: './logins.component.html',
   styleUrls: ['./logins.component.scss']
 })

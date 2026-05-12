@@ -1,5 +1,7 @@
 import { JsonSchemaFormService, JsonSchemaFormComponent } from '@ngageoint/vendor-ajsf-core';
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MaterialDesignFrameworkModule } from 'vendor/ajsf-material';
 
 /**
  * This wrapper components exists to workaround https://github.com/hamzahamidi/ajsf/issues/213.
@@ -10,6 +12,11 @@ import { Component } from '@angular/core';
  */
 @Component({
   selector: 'mage-json-schema-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MaterialDesignFrameworkModule
+  ],
   providers: [ JsonSchemaFormService ],
   template: `
 <form [autocomplete]="jsf?.formOptions?.autocomplete ? 'on' : 'off'" class="json-schema-form" (ngSubmit)="submitForm()">

@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -6,6 +7,7 @@ import {
   ViewChild,
   ElementRef
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { DomEvent } from 'leaflet';
 
 export enum ZoomDirection {
@@ -19,6 +21,11 @@ export interface ZoomEvent {
 
 @Component({
   selector: 'map-control-zoom',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule
+  ],
   templateUrl: './zoom.component.html',
   styleUrls: ['./zoom.component.scss']
 })

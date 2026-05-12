@@ -1,5 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { MatSelectChange as MatSelectChange } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectChange as MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 interface TimeZoneOption {
@@ -9,6 +12,13 @@ interface TimeZoneOption {
 
 @Component({
   selector: 'time-zone',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule
+  ],
   templateUrl: './time-zone.component.html',
   styleUrls: ['./time-zone.component.scss']
 })

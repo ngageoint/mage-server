@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { UserService } from 'mage-web-app/user/user.service';
@@ -5,6 +6,9 @@ import { AuthService } from '../auth.service';
 import { Api } from '../signin/signin.component';
 import { AuthenticationStrategy } from '../local-signin/local-signin.component';
 import { SigninEvent } from '../auth.types';
+import { AuthorizeComponent } from '../authorize/authorize.component';
+import { LocalSignupComponent } from '../local-signup/local-signup.component';
+import { SigninComponent } from '../signin/signin.component';
 
 type AuthenticationAction =
   | 'setup'
@@ -19,6 +23,13 @@ type AuthenticationAction =
 
 @Component({
   selector: 'authentication',
+  standalone: true,
+  imports: [
+    CommonModule,
+    AuthorizeComponent,
+    LocalSignupComponent,
+    SigninComponent
+  ],
   templateUrl: './authentication.component.html',
   styleUrls: ['./authentication.component.scss']
 })
@@ -41,7 +52,6 @@ export class AuthenticationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Angular Router replacement for $stateParams
     const qp = this.route.snapshot.queryParamMap;
     this.action = (qp.get('action') as AuthenticationAction) || null;
     this.strategy = qp.get('strategy') || '';
@@ -71,19 +81,19 @@ export class AuthenticationComponent implements OnInit {
 
   authorized(): void {
     const disclaimer = this.api?.disclaimer || { show: false };
-  
+
     if (!disclaimer.show) {
       this.onSuccess.emit();
       return;
     }
-  
+
     this.action = 'disclaimer';
-  }  
+  }
 
   acceptDisclaimer(): void {
     this.userService.acceptDisclaimer();
     this.onSuccess.emit();
-  }  
+  }
 
   onSignin(event: SigninEvent): void {
     this.user = event.user;

@@ -3,9 +3,20 @@ import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
 
 @Component({
   selector: 'observation-map-popup',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MomentModule,
+    GeometryModule
+  ],
   templateUrl: './observation-popup.component.html',
   styleUrls: ['./observation-popup.component.scss']
 })

@@ -1,11 +1,23 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { FormControl, FormGroup, Validators } from '@angular/forms'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { Api, AuthenticationStrategy } from '../../../api/api.entity'
 import { UserService } from '../../../user/user.service'
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
+import { CommonModule } from '@angular/common'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { AuthenticationButtonComponent } from '../button/authentication-button.component'
 
 @Component({
   selector: 'ldap-authentication',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    AuthenticationButtonComponent
+  ],
   templateUrl: './ldap-authentication.component.html',
   styleUrls: ['./ldap-authentication.component.scss']
 })

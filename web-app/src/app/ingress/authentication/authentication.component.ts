@@ -3,9 +3,11 @@ import { Api, AuthenticationStrategy } from '../../api/api.entity'
 import { User } from 'core-lib-src/user'
 import * as _ from 'underscore'
 import { CommonModule } from '@angular/common'
-import { AuthorizeComponent } from 'admin/src/app/authentication/authorize/authorize.component'
-import { LocalSignupComponent } from 'admin/src/app/authentication/local-signup/local-signup.component'
-import { SigninComponent } from 'admin/src/app/authentication/signin/signin.component'
+import { AuthorizationComponent } from '../authorization/authorization.component'
+import { IdpAuthenticationComponent } from './idp/idp-authentication.component'
+import { LdapAuthenticationComponent } from './ldap/ldap-authentication.component'
+import { LocalAuthenticationComponent } from './local/local-authentication.component'
+import { SignupComponent } from './local/signup.component'
 
 export interface AuthenticationEvent {
   user: User,
@@ -17,9 +19,11 @@ export interface AuthenticationEvent {
   standalone: true,
   imports: [
     CommonModule,
-    SigninComponent,
-    LocalSignupComponent,
-    AuthorizeComponent
+    LocalAuthenticationComponent,
+    IdpAuthenticationComponent,
+    LdapAuthenticationComponent,
+    SignupComponent,
+    AuthorizationComponent
   ],
   templateUrl: './authentication.component.html',
   styleUrls: ['./authentication.component.scss']

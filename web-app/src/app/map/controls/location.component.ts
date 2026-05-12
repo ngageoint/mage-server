@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   Output,
@@ -7,6 +8,7 @@ import {
   ViewChild,
   Input
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { DomEvent } from 'leaflet';
 
 export enum LocationState {
@@ -21,6 +23,11 @@ export interface LocationEvent {
 
 @Component({
   selector: 'map-control-location',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule
+  ],
   templateUrl: './location.component.html',
   styleUrls: ['./location.component.scss']
 })

@@ -11,10 +11,22 @@ import { UserService } from '../user/user.service';
 import { EventService } from '../event/event.service';
 import { PollingService } from '../event/polling.service';
 import * as _ from 'underscore';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   selector: 'navigation',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatMenuModule
+  ],
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.scss']
 })

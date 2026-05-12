@@ -1,7 +1,16 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import { MapClipComponent } from 'mage-web-app/map/clip/clip.component';
 
 @Component({
   selector: 'observation-view-geometry',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MapClipComponent,
+    GeometryModule
+  ],
   templateUrl: './observation-view-geometry.component.html',
   styleUrls: ['./observation-view-geometry.component.scss']
 })

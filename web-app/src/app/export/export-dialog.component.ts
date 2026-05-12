@@ -1,15 +1,38 @@
 import { Component, OnInit, ViewChild, Inject, OnDestroy } from '@angular/core';
-import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
-import { MatTable as MatTable, MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatTable as MatTable, MatTableDataSource as MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, Export, ExportResponse } from './export.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Observable, Subscription, timer } from 'rxjs';
 import { LocalStorageService } from '../http/local-storage.service';
+import { CommonModule } from '@angular/common';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
+import { ExportDataComponent } from './export-data/export-data.component';
+import { NoExportsComponent } from './empty-state/no-exports.component';
 
 @Component({
 	selector: 'export-dialog',
+	standalone: true,
+	imports: [
+	  CommonModule,
+	  MatDialogModule,
+	  MatProgressSpinnerModule,
+	  MatFormFieldModule,
+	  MatTableModule,
+	  MatIconModule,
+	  MatListModule,
+	  MatCheckboxModule,
+	  MomentModule,
+	  NoExportsComponent,
+	  ExportDataComponent
+	],
 	templateUrl: 'export-dialog.component.html',
 	styleUrls: ['./export-dialog.component.scss'],
 	animations: [

@@ -1,9 +1,37 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
+import { CommonModule } from '@angular/common'
 import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
+import { MatIconModule } from '@angular/material/icon'
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module'
+import { ObservationEditCheckboxComponent, ObservationEditDateComponent, ObservationEditSelectComponent, ObservationEditMultiselectComponent, ObservationEditEmailComponent, ObservationEditNumberComponent, ObservationEditRadioComponent, ObservationEditTextComponent, ObservationEditTextareaComponent, ObservationEditGeometryComponent } from './observation-edit'
+import { ObservationEditAttachmentComponent } from './observation-edit-attachment/observation-edit-attachment.component'
+import { ObservationEditPasswordComponent } from './observation-edit-password/observation-edit-password.component'
 
 @Component({
   selector: 'observation-edit-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule,
+    MatDividerModule,
+    GeometryModule,
+    ObservationEditAttachmentComponent,
+    ObservationEditCheckboxComponent,
+    ObservationEditDateComponent,
+    ObservationEditSelectComponent,
+    ObservationEditMultiselectComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditRadioComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditPasswordComponent,
+    ObservationEditGeometryComponent
+  ],
   templateUrl: './observation-edit-form.component.html',
   styleUrls: ['./observation-edit-form.component.scss'],
   animations: [

@@ -2,9 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../api/api.service';
 import { Api } from '../../api/api.entity';
 import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
+import { IngressComponent } from '../ingress.component';
 
 @Component({
 	selector: 'authentication-dialog',
+	standalone: true,
+	imports: [
+	  CommonModule,
+	  IngressComponent
+	],
 	templateUrl: 'authentication-dialog.component.html',
 	styleUrls: ['./authentication-dialog.component.scss']
 })

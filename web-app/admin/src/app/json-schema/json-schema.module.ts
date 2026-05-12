@@ -4,12 +4,10 @@ import { MaterialDesignFrameworkModule } from '@ngageoint/vendor-ajsf-material';
 import { JsonSchemaFormWithServiceComponent } from './json-schema.component';
 
 @NgModule({
-  declarations: [
-    JsonSchemaFormWithServiceComponent
-  ],
   imports: [
     CommonModule,
-    MaterialDesignFrameworkModule
+    MaterialDesignFrameworkModule,
+    JsonSchemaFormWithServiceComponent
   ],
   exports: [
     JsonSchemaFormWithServiceComponent

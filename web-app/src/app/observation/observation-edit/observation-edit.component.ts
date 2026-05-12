@@ -1,6 +1,6 @@
 import { animate, style, transition, trigger } from "@angular/animations";
-import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
-import { DOCUMENT } from "@angular/common";
+import { CdkDragDrop, DragDropModule, moveItemInArray } from "@angular/cdk/drag-drop";
+import { CommonModule, DOCUMENT } from "@angular/common";
 import {
   Component,
   ElementRef,
@@ -16,6 +16,7 @@ import {
   ViewChildren,
 } from "@angular/core";
 import {
+  ReactiveFormsModule,
   UntypedFormArray,
   UntypedFormBuilder,
   UntypedFormControl,
@@ -32,7 +33,7 @@ import {
   MatSnackBarRef as MatSnackBarRef,
   SimpleSnackBar as SimpleSnackBar,
 } from "@angular/material/snack-bar";
-import { MatIconRegistry } from "@angular/material/icon";
+import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatDialog as MatDialog } from "@angular/material/dialog";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import {
@@ -48,11 +49,31 @@ import { UserService } from "src/app/user/user.service";
 import { EventService } from "src/app/event/event.service";
 import { FilterService } from "src/app/filter/filter.service";
 import { ObservationService } from "../observation.service";
+import { MatCardModule } from "@angular/material/card";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { ObservationEditDateComponent, ObservationEditGeometryComponent } from "./observation-edit";
+import { ObservationEditFormComponent } from "./observation-edit-form.component";
 
 export type ObservationFormControl = UntypedFormControl & { definition: any };
 
 @Component({
   selector: "observation-edit",
+  standalone: true,
+  imports: [
+    CommonModule,
+    DragDropModule,
+    ReactiveFormsModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatCardModule,
+    MatCheckboxModule,
+    ObservationEditDateComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditFormComponent
+  ],
   templateUrl: "./observation-edit.component.html",
   styleUrls: ["./observation-edit.component.scss"],
   animations: [

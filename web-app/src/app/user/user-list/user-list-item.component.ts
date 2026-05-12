@@ -1,11 +1,27 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { MatRipple } from '@angular/material/core';
+import { MatRipple, MatRippleModule } from '@angular/material/core';
 import { MapService } from '../../map/map.service';
 import { LocalStorageService } from '../../http/local-storage.service';
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module';
+import { MomentModule } from 'mage-web-app/moment/moment.module';
+import { UserAvatarModule } from '../user-avatar/user-avatar.module';
 
 @Component({
   selector: 'user-list-item',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatRippleModule,
+    MatIconModule,
+    MomentModule,
+    GeometryModule,
+    UserAvatarModule
+  ],
   templateUrl: './user-list-item.component.html',
   styleUrls: ['./user-list-item.component.scss']
 })

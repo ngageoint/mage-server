@@ -1,28 +1,36 @@
-import { Component, EventEmitter, Input, Output, AfterViewInit, ElementRef, ViewChild } from '@angular/core'
-import { UserService } from 'mage-web-app/user/user.service'
-import { SigninEvent } from '../auth.types'
-import { take } from 'rxjs/operators'
-import { CommonModule } from '@angular/common'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { ContactModule } from '../../contact/contact.module'
-import { MatButtonModule } from '@angular/material/button'
-import { MatFormFieldModule } from '@angular/material/form-field'
-import { MatInputModule } from '@angular/material/input'
-import { MatProgressBarModule } from '@angular/material/progress-bar'
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  AfterViewInit,
+  ElementRef,
+  ViewChild
+} from '@angular/core';
+import { UserService } from 'mage-web-app/user/user.service';
+import { SigninEvent } from '../auth.types';
+import { take } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ContactModule } from '../../contact/contact.module';
 
 export interface AuthenticationStrategy {
-  name: string
-  title?: string
-  type?: string
-  buttonColor?: string
-  textColor?: string
-  icon?: string
+  name: string;
+  title?: string;
+  type?: string;
+  buttonColor?: string;
+  textColor?: string;
+  icon?: string;
 }
 
 export interface ContactInfo {
-  statusTitle: string
-  statusMessage: string
-  id: string
+  statusTitle: string;
+  statusMessage: string;
+  id: string;
 }
 
 @Component({
@@ -35,77 +43,78 @@ export interface ContactInfo {
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
-    MatButtonModule
+    MatButtonModule,
+    ContactModule
   ],
   templateUrl: './local-signin.component.html',
   styleUrls: ['./local-signin.component.scss']
 })
 export class LocalSigninComponent implements AfterViewInit {
-  @Input() strategy: AuthenticationStrategy
-  @Input() hideSignup = false
-  @Output() onSignin = new EventEmitter<SigninEvent>()
-  @Output() onSignup = new EventEmitter<void>()
+  @Input() strategy: AuthenticationStrategy;
+  @Input() hideSignup = false;
+  @Output() onSignin = new EventEmitter<SigninEvent>();
+  @Output() onSignup = new EventEmitter<void>();
 
-  @ViewChild('usernameInput') usernameInput: ElementRef<HTMLInputElement>
-  @ViewChild('passwordInput') passwordInput: ElementRef<HTMLInputElement>
+  @ViewChild('usernameInput') usernameInput: ElementRef<HTMLInputElement>;
+  @ViewChild('passwordInput') passwordInput: ElementRef<HTMLInputElement>;
 
-  private _username = ''
-  private _password = ''
+  private _username = '';
+  private _password = '';
 
   get username(): string {
-    return this._username
+    return this._username;
   }
 
   set username(value: string) {
-    this._username = value
+    this._username = value;
     if (value) {
-      this.usernameValid = true
+      this.usernameValid = true;
     }
     if (this.statusMessage) {
-      this.statusMessage = ''
+      this.statusMessage = '';
     }
   }
 
   get password(): string {
-    return this._password
+    return this._password;
   }
 
   set password(value: string) {
-    this._password = value
+    this._password = value;
     if (value) {
-      this.passwordValid = true
+      this.passwordValid = true;
     }
     if (this.statusMessage) {
-      this.statusMessage = ''
+      this.statusMessage = '';
     }
   }
 
-  statusTitle = ''
-  statusMessage = ''
-  info: ContactInfo
-  contactOpen = { opened: false }
+  statusTitle = '';
+  statusMessage = '';
+  info: ContactInfo;
+  contactOpen = { opened: false };
 
-  usernameValid = true
-  passwordValid = true
+  usernameValid = true;
+  passwordValid = true;
 
   constructor(private userService: UserService) {}
 
   ngAfterViewInit(): void {}
 
   signin(): void {
-    this.usernameValid = true
-    this.passwordValid = true
-    this.statusMessage = ''
+    this.usernameValid = true;
+    this.passwordValid = true;
+    this.statusMessage = '';
 
     if (!this.username || this.username.trim() === '') {
-      this.usernameValid = false
+      this.usernameValid = false;
     }
     if (!this.password || this.password.trim() === '') {
-      this.passwordValid = false
+      this.passwordValid = false;
     }
 
     if (!this.usernameValid || !this.passwordValid) {
-      return
+      return;
     }
 
     this.userService
@@ -117,32 +126,32 @@ export class LocalSigninComponent implements AfterViewInit {
             user: response.user,
             token: response.token,
             strategy: this.strategy.name
-          })
+          });
         },
         error: (response: any) => {
-          this.statusTitle = 'Error signing in'
+          this.statusTitle = 'Error signing in';
           this.statusMessage =
             response?.error?.data ||
             response?.error?.errorMessage ||
             response?.error?.message ||
             response?.message ||
-            'Please check your username and password and try again.'
+            'Please check your username and password and try again.';
 
           this.info = {
             statusTitle: this.statusTitle,
             statusMessage: this.statusMessage,
             id: this.username
-          }
-          this.contactOpen = { opened: true }
+          };
+          this.contactOpen = { opened: true };
         }
-      })
+      });
   }
 
   signupClicked(): void {
-    this.onSignup.emit()
+    this.onSignup.emit();
   }
 
   onContactClose(): void {
-    this.contactOpen = { opened: false }
+    this.contactOpen = { opened: false };
   }
 }

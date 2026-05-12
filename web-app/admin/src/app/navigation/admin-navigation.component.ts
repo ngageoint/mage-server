@@ -4,9 +4,20 @@ import { filter, Subject, takeUntil } from 'rxjs';
 
 import { AdminUserService } from '../admin/services/admin-user.service';
 import { LocalStorageService } from '../../../../../web-app/src/app/http/local-storage.service';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { UserAvatarModule } from 'mage-web-app/user/user-avatar/user-avatar.module';
 
 @Component({
   selector: 'admin-navigation',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatIconModule,
+    UserAvatarModule
+  ],  
   templateUrl: './admin-navigation.component.html',
   styleUrls: ['./admin-navigation.component.scss']
 })

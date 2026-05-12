@@ -1,6 +1,8 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EventService } from '../../event/event.service';
+import { CommonModule } from '@angular/common';
+import { ObservationListItemComponent } from '../observation-list/observation-list-item.component';
 
 export interface Observation {
   id: string;
@@ -9,6 +11,11 @@ export interface Observation {
 
 @Component({
   selector: 'observation-delete',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ObservationListItemComponent
+  ],
   templateUrl: './observation-delete.component.html',
   styleUrls: ['./observation-delete.component.scss']
 })

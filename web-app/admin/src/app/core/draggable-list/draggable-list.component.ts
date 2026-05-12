@@ -1,5 +1,7 @@
 import { Component, Input, Output, EventEmitter, TemplateRef, ContentChild } from '@angular/core';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 /**
  * Generic drag-and-drop list component that can be reused for any type of items.
@@ -7,6 +9,12 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
  */
 @Component({
     selector: 'mage-draggable-list',
+    standalone: true,
+    imports: [
+      CommonModule,
+      DragDropModule,
+      MatIconModule
+    ],
     templateUrl: './draggable-list.component.html',
     styleUrls: ['./draggable-list.component.scss']
 })

@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 import { FilterService } from './filter.service';
 import { EventService } from '../event/event.service';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   Observable,
   firstValueFrom,
@@ -13,7 +13,7 @@ import {
   of
 } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { LocalStorageService } from '../http/local-storage.service';
 import moment from 'moment';
 import { User } from '@ngageoint/mage.web-core-lib/user';
@@ -25,9 +25,28 @@ import {
   Interval,
   IntervalOptions
 } from './filter.types';
+import { CommonModule } from '@angular/common';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { DatetimePickerComponent } from 'mage-web-app/datetime-picker/datetime-picker.component';
 
 @Component({
   selector: 'filter',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    MatChipsModule,
+    MatIconModule,
+    MatSelectModule,
+    DatetimePickerComponent
+  ],
   templateUrl: './filter.component.html',
   styleUrls: ['./filter.component.scss'],
   encapsulation: ViewEncapsulation.None
