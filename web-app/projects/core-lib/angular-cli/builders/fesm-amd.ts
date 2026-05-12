@@ -118,7 +118,7 @@ async function rollupFesmToAmd(buildInfo: BuildInfo): Promise<BuilderOutput> {
       input: fesm2022Path,
       plugins: [
         nodeResolve({
-          resolveOnly: moduleId => {
+          resolveOnly: (moduleId: string) => {
             const external = false
               || moduleId.startsWith('@angular/')
               || moduleId.startsWith('@ng-select/')

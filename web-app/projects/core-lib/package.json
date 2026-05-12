@@ -11,6 +11,38 @@
     "save": "devDependencies"
   },
   "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib.mjs"
+    },
+    "./common": {
+      "types": "./common/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-common.mjs"
+    },
+    "./paging": {
+      "types": "./paging/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-paging.mjs"
+    },
+    "./static-icon": {
+      "types": "./static-icon/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-static-icon.mjs"
+    },
+    "./feed": {
+      "types": "./feed/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-feed.mjs"
+    },
+    "./event": {
+      "types": "./event/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-event.mjs"
+    },
+    "./plugin": {
+      "types": "./plugin/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-plugin.mjs"
+    },
+    "./user": {
+      "types": "./user/index.d.ts",
+      "default": "./fesm2022/ngageoint-mage.web-core-lib-user.mjs"
+    },
     "./angular-cli/*": "./angular-cli/*"
   },
   "peerDependencies": {

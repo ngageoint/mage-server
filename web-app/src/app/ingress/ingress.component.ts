@@ -29,6 +29,7 @@ import * as _ from 'underscore';
 import { AccountStatusComponent } from './account-status/account-status.component';
 import { AuthenticationComponent } from './authentication/authentication.component';
 import { SignupComponent } from './authentication/local/signup.component';
+import { CommonModule } from '@angular/common';
 
 enum IngressState {
   Initialize,
@@ -94,7 +95,8 @@ class Initialize extends Ingress {
     AuthenticationComponent,
     AuthorizationComponent,
     DisclaimerComponent,
-    SignupComponent
+    SignupComponent,
+    CommonModule
   ],
   templateUrl: './ingress.component.html',
   styleUrls: ['./ingress.component.scss'],
