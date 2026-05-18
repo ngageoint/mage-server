@@ -15,8 +15,9 @@ $font-xs: 12px;
   padding-bottom: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 32px;
+  flex-wrap: nowrap;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -37,12 +38,13 @@ $font-xs: 12px;
 
 .header-title-section {
   flex: 1;
+  min-width: 0;
 
   .page-title {
     font-size: $font-xl;
     font-weight: 700;
     color: #1a1a1a;
-    margin: 0 0 8px 0;
+    margin: 0 0 8px;
     line-height: 1.1;
     letter-spacing: 0;
   }
@@ -60,30 +62,42 @@ $font-xs: 12px;
   display: flex;
   gap: 12px;
   flex-shrink: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 
   @media (max-width: 768px) {
-    justify-content: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    white-space: normal;
   }
 }
 
 .details-section {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
   gap: 28px;
   margin-bottom: 40px;
   align-items: stretch;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1100px) {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 }
 
-.details-card {
-  background: white;
+.details-card,
+.action-card,
+.danger-zone-card,
+.section-card,
+mat-card {
+  background: #fff;
   border-radius: 12px;
   border: 1px solid #d9dde3;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.details-card {
   padding: 20px;
   height: 100%;
 }
@@ -122,7 +136,7 @@ $font-xs: 12px;
         &:focus {
           outline: none;
           border-color: #3b82f6;
-          background-color: white;
+          background-color: #fff;
           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
       }
@@ -138,45 +152,43 @@ $font-xs: 12px;
     display: flex;
     gap: 12px;
     margin-top: 24px;
+    flex-wrap: wrap;
   }
 }
 
 .action-card {
-  background: white;
-  border: 1px solid #d9dde3;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   padding: 20px;
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
 
   .action-card-title {
     font-size: $font-lg;
     font-weight: 700;
-    color: #111827;
-    margin: 0 0 16px 0;
+    color: #1e40af;
+    margin: 0 0 16px;
     line-height: 1.2;
   }
 
   .action-card-description {
     font-size: $font-sm;
-    color: #6b7280;
-    margin: 0 0 24px 0;
+    color: #1e3a8a;
+    margin: 0 0 24px;
     line-height: 1.55;
     flex: 1;
   }
 
   .action-button {
-    align-self: flex-end;
+    align-self: flex-start;
     margin-top: auto;
   }
 }
 
 .danger-zone-card {
   background: #fdf0f0;
-  border: 1px solid #f3b3b3;
-  border-radius: 12px;
+  border-color: #f3b3b3;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -186,29 +198,30 @@ $font-xs: 12px;
     font-size: $font-lg;
     font-weight: 700;
     color: #dc2626;
-    margin: 0 0 16px 0;
+    margin: 0 0 16px;
     line-height: 1.2;
   }
 
   .danger-zone-description {
     font-size: $font-sm;
     color: #7f1d1d;
-    margin: 0 0 24px 0;
+    margin: 0 0 24px;
     line-height: 1.55;
     flex: 1;
   }
 
   .action-button {
-    align-self: flex-end;
+    align-self: flex-start;
     margin-top: auto;
   }
 }
 
 .sections-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 28px;
   align-items: stretch;
+  margin-bottom: 24px;
 
   @media (max-width: 1200px) {
     grid-template-columns: 1fr;
@@ -224,36 +237,42 @@ $font-xs: 12px;
 }
 
 .section-card {
-  background: white;
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid #d9dde3;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 520px;
+  min-height: 420px;
+
+  @media (max-width: 1200px) {
+    height: auto;
+    min-height: 420px;
+  }
+}
+
+.section-table-title {
+  font-size: $font-lg;
+  font-weight: 700;
+  padding: 24px 28px 18px;
+  color: #111827;
+  line-height: 24px;
 }
 
 .integrated-navbar {
-  background-color: #f9fafb;
+  padding: 20px 28px;
+  background-color: #fafafa;
   border-bottom: 1px solid #e5e7eb;
 
   mage-card-navbar {
+    display: block;
+    width: 100%;
     background: transparent;
     box-shadow: none;
     border-radius: 0;
   }
 }
 
-.section-table-title {
-  font-size: $font-md;
-  font-weight: 700;
-  padding: 16px 24px 12px 24px;
-  color: #111827;
-}
-
 .table-wrapper {
-  --row-height: 74px;
+  --row-height: 88px;
   --min-page-size: 5;
   --base-table-height: calc(var(--row-height) * var(--min-page-size));
 
@@ -262,11 +281,13 @@ $font-xs: 12px;
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
+  box-shadow: none !important;
 }
 
 .table-scroll {
   flex: 1 1 auto;
-  min-height: var(--base-table-height);
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -284,7 +305,7 @@ $font-xs: 12px;
 .table-wrapper mat-paginator {
   flex-shrink: 0;
   border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  background: #fafafa;
 }
 
 .mat-table-no-header {
@@ -305,9 +326,9 @@ $font-xs: 12px;
 .row-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 24px;
-  min-height: 74px;
+  gap: 20px;
+  padding: 0px 28px;
+  min-height: 88px;
   transition: background-color 0.2s ease;
   cursor: pointer;
   text-decoration: none;
@@ -315,21 +336,33 @@ $font-xs: 12px;
   &:hover {
     background-color: #f8fafc;
   }
+
+  &.row-item--editing-members {
+    min-height: 73px;
+
+    .role-select-field {
+      height: 35px;
+      min-height: 35px;
+      width: 150px;
+      min-width: 150px;
+      max-width: 150px;
+    }
+  }
 }
 
 .row-icon {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f3f4f6;
-  border-radius: 12px;
+  border-radius: 10px;
   color: #6b7280;
 
   i {
-    font-size: $font-md;
+    font-size: $font-lg;
   }
 }
 
@@ -338,21 +371,21 @@ $font-xs: 12px;
   min-width: 0;
 
   .row-primary {
-    font-size: $font-sm;
+    font-size: $font-md;
     font-weight: 700;
     color: #111827;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 24rem;
-    line-height: 1.25;
+    line-height: 22px;
   }
 
   .row-secondary {
-    font-size: $font-xs;
+    font-size: $font-sm;
     color: #6b7280;
-    line-height: 1.35;
+    line-height: 20px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -363,19 +396,24 @@ $font-xs: 12px;
 .row-actions {
   flex: 0 0 auto;
   min-width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .row-role {
-  flex-shrink: 0;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   margin-left: auto;
   margin-right: 8px;
 
   .user-role-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
     font-size: $font-xs;
     font-weight: 700;
     text-transform: uppercase;
@@ -400,14 +438,15 @@ $font-xs: 12px;
   }
 
   .role-select {
-    padding: 6px 10px;
+    height: 25px;
+    min-width: 120px;
+    padding: 0 12px;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background-color: #ffffff;
-    font-size: $font-xs;
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: $font-sm;
     color: #374151;
     cursor: pointer;
-    min-width: 120px;
 
     &:focus {
       outline: none;
@@ -421,45 +460,50 @@ $font-xs: 12px;
   }
 
   .role-select-field {
-    width: 120px;
-    min-width: 120px;
-    max-width: 120px;
-    font-size: $font-xs;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    height: 35px;
+    min-height: 35px;
+    font-size: $font-sm;
 
     ::ng-deep .mat-form-field-wrapper {
       padding-bottom: 0;
       margin: 0;
     }
 
-    ::ng-deep .mat-form-field-underline {
-      display: none;
-    }
-
+    ::ng-deep .mat-form-field-underline,
     ::ng-deep .mat-form-field-outline {
       display: none;
     }
 
     ::ng-deep .mat-form-field-flex {
+      height: 35px;
+      min-height: 35px;
       padding: 0;
       border: 1px solid #d1d5db;
       border-radius: 8px;
-      background-color: #ffffff;
+      background-color: #fff;
       transition: all 0.2s ease;
+      align-items: center;
     }
 
     ::ng-deep .mat-form-field-infix {
-      padding: 8px 12px;
+      padding: 0 12px;
       border: 0;
       width: 100%;
     }
 
     ::ng-deep .mat-select-value {
-      font-size: $font-xs;
+      font-size: $font-sm;
       color: #374151;
     }
 
     ::ng-deep .mat-select-trigger {
-      min-height: auto;
+      height: 35px;
+      min-height: 35px;
+      display: flex;
+      align-items: center;
     }
 
     ::ng-deep .mat-select-arrow-wrapper {
@@ -467,12 +511,59 @@ $font-xs: 12px;
       padding-right: 8px;
     }
 
-    &.mat-focused ::ng-deep .mat-form-field-flex {
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      height: 35px;
+      min-height: 35px;
+      padding: 0;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background-color: #fff;
+      transition: all 0.2s ease;
+    }
+
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 35px;
+      min-height: 35px;
+      align-items: center;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      min-height: 35px;
+      height: 35px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    ::ng-deep .mat-mdc-select-trigger {
+      height: 35px;
+      min-height: 35px;
+      display: flex;
+      align-items: center;
+    }
+
+    ::ng-deep .mat-mdc-select-value {
+      font-size: $font-sm;
+      color: #374151;
+    }
+
+    ::ng-deep .mat-mdc-select-arrow-wrapper {
+      transform: translateY(0);
+      padding-right: 8px;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+
+    &.mat-focused ::ng-deep .mat-form-field-flex,
+    &.mat-focused ::ng-deep .mat-mdc-text-field-wrapper {
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    &:hover:not(.mat-focused) ::ng-deep .mat-form-field-flex {
+    &:hover:not(.mat-focused) ::ng-deep .mat-form-field-flex,
+    &:hover:not(.mat-focused) ::ng-deep .mat-mdc-text-field-wrapper {
       border-color: #9ca3af;
     }
   }
@@ -482,21 +573,22 @@ $font-xs: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 32px;
-  min-height: 200px;
+  padding: 56px 32px;
+  min-height: 260px;
 
   .empty-state-content {
     text-align: center;
 
     .empty-state-icon {
-      font-size: $font-xl;
+      font-size: 48px;
       color: #9ca3af;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       display: block;
     }
 
     .empty-state-text {
-      font-size: $font-md;
+      font-size: $font-lg;
+      line-height: 24px;
       color: #6b7280;
       font-weight: 500;
     }
@@ -603,11 +695,7 @@ $font-xs: 12px;
 }
 
 mat-card {
-  background: white;
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid #d9dde3;
 }
 
 mat-card-title {
@@ -625,11 +713,11 @@ mat-card-actions {
 }
 
 mat-card-content {
-  padding: 20px 24px 24px 24px;
+  padding: 20px 24px 24px;
 }
 
 mat-card-header {
-  padding: 20px 24px 0 24px;
+  padding: 20px 24px 0;
 }
 
 mat-spinner {
@@ -697,10 +785,7 @@ mat-spinner {
 
 .loading-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(255, 255, 255, 0.85);
   display: flex;
   align-items: center;
@@ -712,7 +797,7 @@ mat-spinner {
     align-items: center;
     gap: 12px;
     padding: 16px 24px;
-    background-color: white;
+    background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
@@ -732,18 +817,25 @@ mat-spinner {
 .action-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 12px 20px;
-  font-size: $font-xs;
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: $font-sm;
   font-weight: 600;
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: #fff;
   color: #374151;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
   white-space: nowrap;
+
+  i {
+    font-size: $font-sm;
+    line-height: 1;
+  }
 
   &:hover:not(:disabled) {
     background-color: #f9fafb;
@@ -762,14 +854,15 @@ mat-spinner {
   }
 
   &.btn-sm {
-    padding: 10px 16px;
+    min-height: 36px;
+    padding: 0 14px;
     font-size: $font-xs;
   }
 
   &.btn-primary {
     background-color: #3b82f6;
     border-color: #3b82f6;
-    color: white;
+    color: #fff;
 
     &:hover:not(:disabled) {
       background-color: #2563eb;
@@ -780,11 +873,10 @@ mat-spinner {
   &.btn-danger {
     background-color: #ef4444;
     border-color: #ef4444;
-    color: white;
+    color: #fff;
 
     &:hover:not(:disabled) {
       background-color: #dc2626;
-      border-color: #dc2626;
     }
   }
 }
@@ -792,7 +884,7 @@ mat-spinner {
 .section-save-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-top: 20px;
   flex-wrap: wrap;
 }
@@ -806,5 +898,75 @@ mat-spinner {
 }
 
 .text-decoration-none {
+  text-decoration: none;
+}
+
+:host ::ng-deep {
+  .table-wrapper .mat-mdc-paginator {
+    min-height: 72px !important;
+    background: #fafafa !important;
+    border-top: 1px solid #e5e7eb !important;
+  }
+
+  .table-wrapper .mat-mdc-paginator-container {
+    min-height: 72px !important;
+    padding: 0 28px !important;
+    font-size: $font-md !important;
+  }
+
+  .table-wrapper .mat-mdc-paginator-page-size-label,
+  .table-wrapper .mat-mdc-paginator-range-label {
+    font-size: $font-md !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-card {
+    height: auto;
+  }
+
+  .section-table-title,
+  .integrated-navbar {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .row-item {
+    padding: 0px 20px;
+  }
+
+  .row-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .row-info {
+    .row-primary,
+    .row-secondary {
+      max-width: 100%;
+    }
+  }
+
+  .row-role {
+    margin-left: 0;
+  }
+}
+
+.btn-right {
+  float: inline-end !important;
+  align-self: flex-end !important;
+}
+
+.row-main-link {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: inherit;
+  gap: 20px;
+}
+
+.row-main-link:hover {
+  color: inherit;
   text-decoration: none;
 }

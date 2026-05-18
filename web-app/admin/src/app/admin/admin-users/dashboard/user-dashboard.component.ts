@@ -137,8 +137,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe((results: any) => {
-        const items = Array.isArray(results) ? results : results?.items;
-        this.teams = (items || []) as Team[];
+        const page = Array.isArray(results) ? results[0] : results;
+        this.teams = (page?.items ?? []) as Team[];
       });
   }
 

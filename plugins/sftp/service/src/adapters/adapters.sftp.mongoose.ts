@@ -55,17 +55,17 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
 
   async findAll(eventId: MageEventId): Promise<SftpAttrs[]> {
     const documents = await this.model.find({ eventId: eventId })
-    return documents.map(document => document.toJSON() as unknown as SftpAttrs)
+    return documents.map(document => document.toJSON())
   }
 
   async findAllByStatus(eventId: MageEventId, status: SftpStatus[]): Promise<SftpAttrs[]> {
     const documents = await this.model.find({ eventId: eventId, status: { $in: status } })
-    return documents.map(document => document.toJSON() as unknown as SftpAttrs)
+    return documents.map(document => document.toJSON())
   }
 
   async findLatest(eventId: MageEventId): Promise<SftpAttrs | null> {
     const document = await this.model.findOne({ eventId: eventId }, { updatedAt: true }, { sort: { updatedAt: -1 }, limit: 1 })
-    return document ? (document.toJSON() as unknown as SftpAttrs) : null
+    return document ? (document.toJSON() as SftpAttrs) : null
   }
 
   async findLatestSyncedObservationTime(eventId: MageEventId): Promise<Date | null> {
@@ -75,7 +75,7 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
       { sort: { lastObservationModified: -1 }, limit: 1 }
     )
     if (!document) return null
-    const attrs = document.toJSON() as unknown as SftpAttrs
+    const attrs = document.toJSON() as SftpAttrs
     return attrs.lastObservationModified ? new Date(attrs.lastObservationModified) : null
   }
 
@@ -101,7 +101,7 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
       update.lastObservationModified = lastObservationModified
     }
     const document = await this.model.findOneAndUpdate({ eventId: eventId, observationId: observationId }, update, { upsert: true })
-    return document ? (document.toJSON() as unknown as SftpAttrs) : null
+    return document ? (document.toJSON() as SftpAttrs) : null
   }
 
 }

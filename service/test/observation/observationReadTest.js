@@ -36,7 +36,7 @@ describe("observation read tests", function () {
       .expects('getById')
       .yields(null, mockEvent);
 
-    userId = new mongoose.Types.ObjectId()
+    userId = mongoose.Types.ObjectId()
 
     const configs = [];
     const config = {
@@ -80,7 +80,7 @@ describe("observation read tests", function () {
       collectionName: 'observations1'
     });
     const mockObservation = new ObservationModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -93,7 +93,7 @@ describe("observation read tests", function () {
     sinon.mock(ObservationModel)
       .expects('find')
       .chain('exec')
-      .resolves([mockObservation]);
+      .yields(null, [mockObservation]);
 
     request(app)
       .get('/api/events/1/observations')
@@ -119,7 +119,7 @@ describe("observation read tests", function () {
       collectionName: 'observations1'
     });
     const mockObservation = new ObservationModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -140,7 +140,7 @@ describe("observation read tests", function () {
         select: 'displayName'
       })
       .chain('exec')
-      .resolves([mockObservation]);
+      .yields(null, [mockObservation]);
 
     request(app)
       .get('/api/events/1/observations?populate=true')
@@ -166,7 +166,7 @@ describe("observation read tests", function () {
       collectionName: 'observations1'
     });
     const obs = new ObservationModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -180,7 +180,7 @@ describe("observation read tests", function () {
         userId: null
       }
     });
-    sinon.stub(obs, 'populated').callsFake(() => new mongoose.Types.ObjectId())
+    sinon.stub(obs, 'populated').callsFake(() => mongoose.Types.ObjectId())
     sinon.mock(ObservationModel)
       .expects('find')
       .chain('populate').withArgs({
@@ -192,7 +192,7 @@ describe("observation read tests", function () {
         select: 'displayName'
       })
       .chain('exec')
-      .resolves([obs]);
+      .yields(null, [obs]);
 
     const res = await request(app)
       .get('/api/events/1/observations?populate=true')
@@ -217,7 +217,7 @@ describe("observation read tests", function () {
       collectionName: 'observations1'
     });
     const mockObservation = new ObservationModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -230,7 +230,7 @@ describe("observation read tests", function () {
     sinon.mock(ObservationModel)
       .expects('find')
       .chain('exec')
-      .resolves([mockObservation]);
+      .yields(null, [mockObservation]);
     sinon.mock(eventPermissions)
       .expects('userHasEventPermission')
       .withArgs(mockEvent, userId.toHexString(), EventAccessType.Read)
@@ -262,7 +262,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -286,7 +286,7 @@ describe("observation read tests", function () {
         }
       })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -313,7 +313,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -337,7 +337,7 @@ describe("observation read tests", function () {
         }
       })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -364,7 +364,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -391,7 +391,7 @@ describe("observation read tests", function () {
         }
       })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -418,7 +418,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -448,7 +448,7 @@ describe("observation read tests", function () {
         }
       })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -475,7 +475,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -495,7 +495,7 @@ describe("observation read tests", function () {
         "states.0.name": { $in: ['active', 'archive'] }
       })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -518,7 +518,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -536,7 +536,7 @@ describe("observation read tests", function () {
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, { sort: { lastModified: 1 } })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -559,7 +559,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -577,7 +577,7 @@ describe("observation read tests", function () {
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, { sort: { lastModified: -1 } })
       .chain('exec')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations')
@@ -616,7 +616,7 @@ describe("observation read tests", function () {
       collectionName: 'observations1'
     });
     const mockObservation = new ObservationModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -628,7 +628,7 @@ describe("observation read tests", function () {
     });
     sinon.mock(ObservationModel)
       .expects('find')
-      .resolves([mockObservation]);
+      .yields(null, [mockObservation]);
     sinon.mock(eventPermissions)
       .expects('userHasEventPermission')
       .withArgs(mockEvent, userId.toHexString(), EventAccessType.Read)
@@ -657,7 +657,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -674,7 +674,7 @@ describe("observation read tests", function () {
     });
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations/123')
@@ -702,7 +702,7 @@ describe("observation read tests", function () {
     });
     sinon.mock(ObservationModel)
       .expects('findById')
-      .resolves(null);
+      .yields(null, null);
 
     request(app)
       .get('/api/events/1/observations/123')
@@ -724,7 +724,7 @@ describe("observation read tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = new mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -739,7 +739,7 @@ describe("observation read tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs('123', { geometry: 1, id: true, "properties.timestamp": 1, type: true })
-      .resolves(mockObservation);
+      .yields(null, mockObservation);
 
     request(app)
       .get('/api/events/1/observations/123')

@@ -9,8 +9,8 @@ $font-xs: 12px;
 
   &:has(admin-devices) {
     height: 92vh;
+    height: 92dvh;
     overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
 
     @media (max-height: 500px) {
       overflow-y: scroll;
@@ -20,6 +20,7 @@ $font-xs: 12px;
   admin-devices {
     .container {
       height: 90vh;
+      height: 90dvh;
     }
   }
 }
@@ -112,7 +113,7 @@ $font-xs: 12px;
   min-width: 0;
 }
 
-.filters > * {
+.filters>* {
   min-width: 0;
 }
 
@@ -127,7 +128,7 @@ $font-xs: 12px;
 }
 
 :host ::ng-deep .filters mage-card-navbar,
-:host ::ng-deep .filters mage-card-navbar > *,
+:host ::ng-deep .filters mage-card-navbar>*,
 :host ::ng-deep .filters mage-card-navbar .card-navbar,
 :host ::ng-deep .filters mage-card-navbar .search-container,
 :host ::ng-deep .filters mage-card-navbar .search-wrapper,
@@ -459,6 +460,18 @@ $font-xs: 12px;
 
 .mb-10px {
   margin-bottom: 10px;
+}
+
+.m-0 {
+  margin: 0 !important;
+}
+
+.mt-5 {
+  margin-top: 5px !important;
+}
+
+.mb-5 {
+  margin-bottom: 5px !important;
 }
 
 :host ::ng-deep .mat-cell a,

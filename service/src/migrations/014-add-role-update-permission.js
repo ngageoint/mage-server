@@ -6,9 +6,13 @@ exports.id = 'add-role-update-delete';
 exports.up = function(done) {
   this.log('adding update permission to ADMIN_ROLE ...');
 
-  RoleModel.updateOne({name: 'ADMIN_ROLE'}, {$push : {permissions: 'UPDATE_USER_ROLE'}}).then(() => done(), err => done(err));
+  RoleModel.updateOne({name: 'ADMIN_ROLE'}, {$push : {permissions: 'UPDATE_USER_ROLE'}}, function(err) {
+    done(err);
+  });
 };
 
 exports.down = function(done) {
-  RoleModel.updateOne({name: 'ADMIN_ROLE'}, {$pull : {permissions: 'UPDATE_USER_ROLE'}}).then(() => done(), err => done(err));
+  RoleModel.updateOne({name: 'ADMIN_ROLE'}, {$pull : {permissions: 'UPDATE_USER_ROLE'}}, function(err) {
+    done(err);
+  });
 };

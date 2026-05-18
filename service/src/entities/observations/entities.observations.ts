@@ -1184,10 +1184,15 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
   const { mageEvent, observationAttrs } = validation
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
+  const userFields = new Set(form.userFields || [])
   activeFields.forEach(field => {
     const fieldEntry = formEntry[field.name]
     const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
-    const resultEntry = FieldTypeValidationRules[field.type](fieldValidation)
+    const isUserField = userFields.has(field.name)
+    const rule = isUserField
+      ? validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context)))
+      : FieldTypeValidationRules[field.type]
+    const resultEntry = rule(fieldValidation)
     if (resultEntry instanceof FormFieldValidationError) {
       formEntryError.addFieldError(resultEntry)
     }

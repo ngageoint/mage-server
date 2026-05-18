@@ -8,7 +8,7 @@ const request = require('supertest')
   , createToken = require('../mockToken')
   , CounterModel = require('../../lib/models/counter')
   , IconModel = require('../../lib/models/icon')
-  , TeamModel = require('../../lib/models/team')
+  , TeamModel =  require('../../lib/models/team')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
@@ -18,8 +18,7 @@ require('sinon-mongoose');
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-// TODO this is hanging before the first test
-describe.skip("event create tests", function () {
+describe("event create tests", function () {
 
   let app;
 
@@ -48,7 +47,7 @@ describe.skip("event create tests", function () {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
 
   it("should create event", function (done) {
     sinon.mock(TokenModel)
@@ -77,7 +76,7 @@ describe.skip("event create tests", function () {
       .expects('createCollection')
       .resolves(null);
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const mockTeam = {
       _id: teamId,
       name: 'Mock Team',
@@ -97,7 +96,7 @@ describe.skip("event create tests", function () {
     mockEvent.teamIds = [teamId];
     sinon.mock(EventModel)
       .expects('findByIdAndUpdate').withArgs(eventId)
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     const defaultIcon = require('../../lib/api/icon').defaultIconPath;
     const fs = {
@@ -188,7 +187,7 @@ describe.skip("event create tests", function () {
       .end(done);
   });
 
-  it("should reject event with duplicate name", async function () {
+  it("should reject event with duplicate name", async function() {
     sinon.mock(TokenModel)
       .expects('getToken')
       .withArgs('12345')

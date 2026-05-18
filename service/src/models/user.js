@@ -77,17 +77,17 @@ UserSchema.virtual('authentication').get(function () {
 UserSchema.pre('save', function (next) {
   const user = this;
   user.username = user.username.toLowerCase();
-  this.model('User').findOne({ username: user.username }).then(
-    possibleDuplicate => {
-      if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
-        const error = new Error('username already exists');
-        error.status = 409;
-        return next(error);
-      }
-      next();
-    },
-    err => next(err)
-  );
+  this.model('User').findOne({ username: user.username }, function (err, possibleDuplicate) {
+    if (err) return next(err);
+
+    if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
+      const error = new Error('username already exists');
+      error.status = 409;
+      return next(error);
+    }
+
+    next();
+  });
 });
 
 UserSchema.pre('save', function (next) {
@@ -101,7 +101,7 @@ UserSchema.pre('save', function (next) {
   }
 });
 
-UserSchema.pre('deleteOne', { document: true, query: false }, function (next) {
+UserSchema.pre('remove', function (next) {
   const user = this;
 
   async.parallel({
@@ -201,18 +201,18 @@ exports.getUserById = function (id, callback) {
 };
 
 exports.getUserByUsername = function (username, callback) {
-  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(r => callback(null, r), e => callback(e));
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
 };
 
 exports.getUserByAuthenticationId = function (id, callback) {
-  User.findOne({ authenticationId: id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(r => callback(null, r), e => callback(e));
+  User.findOne({ authenticationId: id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
   Authentication.getAuthenticationByStrategy(strategy, uid, function (err, authentication) {
     if (err || !authentication) return callback(err);
 
-    User.findOne({ authenticationId: authentication._id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(r => callback(null, r), e => callback(e));
+    User.findOne({ authenticationId: authentication._id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
   });
 }
 
@@ -240,10 +240,9 @@ exports.count = function (options, callback) {
 
   const conditions = createQueryConditions(filter);
 
-  User.countDocuments(conditions).then(
-    count => callback(null, count),
-    err => callback(err)
-  );
+  User.count(conditions, function (err, count) {
+    callback(err, count);
+  });
 };
 
 exports.getUsers = async function (options, callback) {
@@ -290,10 +289,9 @@ exports.getUsers = async function (options, callback) {
       callback(err);
     }
   } else {
-    baseQuery.exec().then(
-      users => callback(null, users, null),
-      err => callback(err)
-    );
+    baseQuery.exec(function (err, users) {
+      callback(err, users, null);
+    });
   }
 };
 
@@ -321,22 +319,30 @@ exports.createUser = function (user, callback) {
       authenticationId: authentication._id
     };
 
-    User.create(newUser).then(async user => {
-      await user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
-      callback(null, user);
-    }).catch(err => callback(err));
+    User.create(newUser, function (err, user) {
+      if (err) return callback(err);
+
+      user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }, function (err, user) {
+        callback(err, user);
+      });
+    });
   }).catch(err => callback(err));
 };
 
 exports.updateUser = function (user, callback) {
-  user.save().then(async user => {
-    await user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
-    callback(null, user);
-  }).catch(err => callback(err));
+  user.save(function (err, user) {
+    if (err) return callback(err);
+
+    user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }, function (err, user) {
+      callback(err, user);
+    });
+  });
 };
 
 exports.deleteUser = function (user, callback) {
-  user.deleteOne().then(() => callback(null, user), err => callback(err));
+  user.remove(function (err, removedUser) {
+    callback(err, removedUser);
+  });
 };
 
 exports.invalidLogin = async function (user) {
@@ -377,33 +383,29 @@ exports.validLogin = async function (user) {
 
 exports.setStatusForUser = function (user, status, callback) {
   const update = { status: status };
-  User.findByIdAndUpdate(user._id, update, { new: true }).then(
-    user => callback(null, user),
-    err => callback(err)
-  );
+  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
+    callback(err, user);
+  });
 };
 
 exports.setRoleForUser = function (user, role, callback) {
   const update = { role: role };
-  User.findByIdAndUpdate(user._id, update, { new: true }).then(
-    user => callback(null, user),
-    err => callback(err)
-  );
+  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
+    callback(err, user);
+  });
 };
 
 exports.removeRolesForUser = function (user, callback) {
   const update = { roles: [] };
-  User.findByIdAndUpdate(user._id, update, { new: true }).then(
-    user => callback(null, user),
-    err => callback(err)
-  );
+  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
+    callback(err, user);
+  });
 };
 
 exports.removeRoleFromUsers = function (role, callback) {
-  User.updateMany({ role: role._id }, { roles: undefined }).then(
-    number => callback(null, number),
-    err => callback(err)
-  );
+  User.updateMany({ role: role._id }, { roles: undefined }, function (err, number) {
+    callback(err, number);
+  });
 };
 
 exports.addRecentEventForUser = function (user, event, callback) {
@@ -422,10 +424,9 @@ exports.addRecentEventForUser = function (user, event, callback) {
     eventIds = eventIds.slice(0, 5);
   }
 
-  User.findByIdAndUpdate(user._id, { recentEventIds: eventIds }, { new: true }).then(
-    user => callback(null, user),
-    err => callback(err)
-  );
+  User.findByIdAndUpdate(user._id, { recentEventIds: eventIds }, { new: true }, function (err, user) {
+    callback(err, user);
+  });
 };
 
 exports.removeRecentEventForUsers = function (event, callback) {
@@ -433,8 +434,7 @@ exports.removeRecentEventForUsers = function (event, callback) {
     $pull: { recentEventIds: event._id }
   };
 
-  User.updateMany({}, update, {}).then(
-    () => callback(null),
-    err => callback(err)
-  );
+  User.updateMany({}, update, {}, function (err) {
+    callback(err);
+  });
 };

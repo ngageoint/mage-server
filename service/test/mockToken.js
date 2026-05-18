@@ -12,18 +12,18 @@ function createToken(userId, permissions) {
     username: 'test',
     active: true,
     roleId: new RoleModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       permissions,
     })
   });
 
   const token = {
-    _id: new mongoose.Types.ObjectId(),
+    _id: mongoose.Types.ObjectId(),
     token: '12345',
-    deviceId: new mongoose.Types.ObjectId(),
+    deviceId: mongoose.Types.ObjectId(),
     userId: {
-      populate: function () {
-        return Promise.resolve(mockUser);
+      populate: function(field, callback) {
+        callback(null, mockUser);
       }
     },
     user: mockUser

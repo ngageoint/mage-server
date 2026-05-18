@@ -13,11 +13,11 @@ require('sinon-mongoose');
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');
 
-describe("team create tests", function () {
+describe("team create tests", function() {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -36,11 +36,11 @@ describe("team create tests", function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -48,10 +48,10 @@ describe("team create tests", function () {
       .yields(null, createToken(userId, [permission]));
   }
 
-  it("should create team", function (done) {
+  it("should create team", function(done) {
     mockTokenWithPermission('CREATE_TEAM');
 
-    const teamId = new mongoose.Types.ObjectId();
+    const teamId = mongoose.Types.ObjectId();
     const eventId = 1;
     const mockTeam = new TeamModel({
       id: teamId,
@@ -64,9 +64,7 @@ describe("team create tests", function () {
     sinon.mock(TeamModel)
       .expects('create')
       .withArgs(sinon.match.has('acl', acl))
-      .resolves(mockTeam);
-
-    sinon.stub(TeamModel, 'populate').resolves(mockTeam);
+      .yields(null, mockTeam);
 
     request(app)
       .post('/api/teams/')
@@ -79,7 +77,7 @@ describe("team create tests", function () {
       .end(done);
   });
 
-  it("should reject create team w/o name", function (done) {
+  it("should reject create team w/o name", function(done) {
     mockTokenWithPermission('CREATE_TEAM');
 
     request(app)

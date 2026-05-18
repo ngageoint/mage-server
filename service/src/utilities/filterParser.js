@@ -87,9 +87,9 @@ function toObjectIds(operation) {
 
         let ids = [];
         if (Array.isArray(value)) {
-            ids = value.map(function (id) { return new mongoose.Types.ObjectId(id); });
+            ids = value.map(function (id) { return mongoose.Types.ObjectId(id); });
         } else {
-            ids = [new mongoose.Types.ObjectId(value)];
+            ids = [mongoose.Types.ObjectId(value)];
         }
 
         objectIds.set(key, ids);

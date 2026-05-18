@@ -1,5 +1,6 @@
 import {
   Component,
+  ElementRef,
   Input,
   OnChanges,
   SimpleChanges,
@@ -20,6 +21,7 @@ export class ObservationEditDateComponent implements OnChanges {
 
   @ViewChild('dateModel') dateModel: NgModel;
   @ViewChild('timeModel') timeModel: NgModel;
+  @ViewChild('timeInput') timeInput?: ElementRef<HTMLInputElement>;
 
   date: moment.Moment | null = null;
   time = '';
@@ -35,9 +37,12 @@ export class ObservationEditDateComponent implements OnChanges {
       const timestamp = this.formGroup.get(this.definition.name)?.value;
 
       if (timestamp) {
-        const m = moment(timestamp);
+        const m =
+          this.timeZone === 'gmt'
+            ? moment.utc(timestamp)
+            : moment(timestamp).local();
         this.date = m.clone();
-        this.time = m.format('HH:mm:ss');
+        this.time = m.format('HH:mm');
       } else {
         this.date = null;
         this.time = '';
@@ -64,6 +69,23 @@ export class ObservationEditDateComponent implements OnChanges {
     if (!this.timeInvalid) {
       this.setValue();
     }
+  }
+
+  openTimePicker(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const input = this.timeInput?.nativeElement as
+      | (HTMLInputElement & { showPicker?: () => void })
+      | undefined;
+
+    if (!input) {
+      return;
+    }
+
+    input.focus();
+    input.click();
+    input.showPicker?.();
   }
 
   toggleTimeZone(): void {

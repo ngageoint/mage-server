@@ -18,7 +18,7 @@ require('sinon-mongoose');
 describe("device update tests", function () {
 
   let app;
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
 
   beforeEach(function () {
     const configs = [];
@@ -42,7 +42,7 @@ describe("device update tests", function () {
       .expects('getUserById').withArgs(userId)
       .resolves({
         _id: userId,
-        authenticationId: new mongoose.Types.ObjectId()
+        authenticationId: mongoose.Types.ObjectId()
       });
   });
 
@@ -60,8 +60,8 @@ describe("device update tests", function () {
   it("should update device", function (done) {
     mockTokenWithPermission('UPDATE_DEVICE');
 
-    const deviceId = new mongoose.Types.ObjectId();
-    const uid = new mongoose.Types.ObjectId();
+    const deviceId = mongoose.Types.ObjectId();
+    const uid = mongoose.Types.ObjectId();
 
     const reqDevice = {
       _id: deviceId.toHexString(),
@@ -93,8 +93,8 @@ describe("device update tests", function () {
   it("should update empty device", function (done) {
     mockTokenWithPermission('UPDATE_DEVICE');
 
-    const deviceId = new mongoose.Types.ObjectId();
-    const uid = new mongoose.Types.ObjectId();
+    const deviceId = mongoose.Types.ObjectId();
+    const uid = mongoose.Types.ObjectId();
 
     const reqDevice = {
       _id: deviceId.toHexString(),
@@ -127,8 +127,8 @@ describe("device update tests", function () {
   it("should remove token for unregistered device", async function () {
     mockTokenWithPermission('UPDATE_DEVICE');
 
-    const deviceId = new mongoose.Types.ObjectId();
-    const uid = new mongoose.Types.ObjectId();
+    const deviceId = mongoose.Types.ObjectId();
+    const uid = mongoose.Types.ObjectId();
 
     const reqDevice = {
       _id: deviceId.toHexString(),

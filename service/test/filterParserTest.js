@@ -13,7 +13,7 @@ describe("Filter Parser Tests", function () {
     });
 
     it('Test IN filter parsing', function (done) {
-        const objectId = new mongoose.Types.ObjectId('578df3efb618f5141202a196');
+        const objectId = mongoose.Types.ObjectId('578df3efb618f5141202a196');
         let filter = {
             "in": {
                 "testIds": objectId.toString()
@@ -32,7 +32,7 @@ describe("Filter Parser Tests", function () {
     });
 
     it('Test NIN filter parsing', function (done) {
-        const objectId = new mongoose.Types.ObjectId('578df3efb618f5141202a196');
+        const objectId = mongoose.Types.ObjectId('578df3efb618f5141202a196');
         let filter = {
             "nin": {
                 "testIds": objectId.toString()

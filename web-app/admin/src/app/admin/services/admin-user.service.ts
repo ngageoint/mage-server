@@ -25,7 +25,7 @@ export class AdminUserService {
     private router: Router,
     private route: ActivatedRoute,
     private localStorage: LocalStorageService
-  ) {}
+  ) { }
 
   signup(username: string): Observable<any> {
     return this.http.post('/api/users/signups', { username });
@@ -78,14 +78,14 @@ export class AdminUserService {
       tap((user) => this.setUser(user)),
       catchError(() => of(null))
     );
-  }  
+  }
 
   checkLoggedInUser(): Observable<any> {
     return this.getMyself();
   }
 
   updatePassword(userId: string, auth: any): Observable<any> {
-    return this.http.put(`/api/users/${userId}/password`, auth);
+    return this.http.put(`/api/users/${userId}/password`, auth, { responseType: 'text' });
   }
 
   updateMyPassword(auth: any): Observable<void> {
@@ -177,7 +177,7 @@ export class AdminUserService {
     this.myselfSubject.next(null);
     this.isAdminSubject.next(false);
     this.localStorage.removeToken();
-  }  
+  }
 
   private saveUser(
     url: string,

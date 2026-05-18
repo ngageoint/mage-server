@@ -119,16 +119,16 @@ exports.getDevices = async function (options = {}) {
   if (term) {
     const regex = new RegExp(term, 'i');
     const base = Object.keys(conditions).length ? [conditions] : [];
-
+  
     // 🔹 Find users whose displayName matches the term
     const users = await User.Model
       .find({ displayName: regex })
       .select('_id')
       .lean()
       .exec();
-
+  
     const userIds = users.map(u => u._id);
-
+  
     // 🔹 Build OR condition over device fields + matching users
     const searchCondition = {
       $or: [
@@ -138,13 +138,13 @@ exports.getDevices = async function (options = {}) {
         ...(userIds.length ? [{ userId: { $in: userIds } }] : [])
       ]
     };
-
+  
     // Combine existing filters with search
     conditions = base.length
       ? { $and: [...base, searchCondition] }
       : searchCondition;
   }
-
+  
 
   let query = Device.find(conditions);
 
@@ -185,7 +185,7 @@ exports.count = function (options) {
 
   var conditions = createQueryConditions(filter);
 
-  return Device.countDocuments(conditions).exec();
+  return Device.count(conditions).exec();
 };
 
 function createQueryConditions(filter) {
@@ -211,7 +211,7 @@ async function queryUsersAndDevicesThenPage(options, conditions) {
     registered = conditions.registered;
     delete conditions.registered;
   }
-  const count = await User.Model.countDocuments(conditions);
+  const count = await User.Model.count(conditions);
   return User.Model.find(conditions, "_id").populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(data => {
     const ids = [];
     for (let i = 0; i < data.length; i++) {

@@ -44,11 +44,12 @@ $font-xs: 12px;
   height: 580px;
   background: #ffffff;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .export-filter {
-  width: 525px;
-  height: 580px;
+  width: 100%;
   margin-bottom: 16px;
 }
 
@@ -66,8 +67,8 @@ $font-xs: 12px;
 
 .mat-dialog-content {
   display: block;
-  max-height: none !important;
-  overflow: visible !important;
+  flex: 1;
+  overflow-y: auto !important;
   margin: 0;
   padding: 24px !important;
   box-sizing: border-box;
@@ -158,8 +159,6 @@ mat-checkbox {
 :host ::ng-deep .mat-mdc-form-field-infix,
 :host ::ng-deep .mat-form-field-infix {
   min-height: 40px;
-  padding-top: 10px !important;
-  padding-bottom: 10px !important;
 }
 
 :host ::ng-deep .mdc-floating-label,

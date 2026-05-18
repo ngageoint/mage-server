@@ -15,7 +15,7 @@ export interface SearchOptions {
   state?: string;
 
   limit?: number;
-  start?: string;
+  start?: number | string;
   sort?: any;
   registered?: boolean;
   or?: any;
@@ -41,6 +41,15 @@ export interface DevicePageInfo {
   links?: { next?: string; prev?: string };
 }
 
+export interface DashboardDevicePageInfo {
+  devices: Device[];
+  totalCount: number;
+  limit: number;
+  start: number;
+  nextStart: number | null;
+  prevStart: number | null;
+}
+
 export interface PagedResponse<T> {
   pageSize?: number;
   pageIndex?: number;
@@ -50,13 +59,26 @@ export interface PagedResponse<T> {
 
 const setParams = (options: any): HttpParams => {
   let params = new HttpParams();
+
   for (const key of Object.keys(options || {})) {
     const v = options[key];
+
     if (v !== undefined && v !== null) {
       params = params.set(key, typeof v === 'string' ? v : JSON.stringify(v));
     }
   }
+
   return params;
+};
+
+const toNumberOrNull = (value: number | string | null | undefined): number | null => {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isNaN(parsed) ? null : parsed;
 };
 
 @Injectable({
@@ -68,11 +90,13 @@ export class AdminDeviceService {
   getDevices(options: SearchOptions): Observable<DevicesResponse> {
     let params = setParams(options);
     params = params.set('includePagination', 'true');
+
     return this.http.get<DevicesResponse>('/api/devices', { params });
   }
 
   getAllDevices(filter: any): Observable<DevicePageInfo> {
     const params = setParams({ ...filter, includePagination: true });
+
     return this.http.get<any>('/api/devices', { params }).pipe(
       map((res) => {
         const devices =
@@ -81,14 +105,61 @@ export class AdminDeviceService {
           res?.items ??
           res?.pageInfo?.devices ??
           [];
-        const links = res?.links ?? res?.pageInfo?.links ?? {};
+
+        const rawLinks =
+          res?.items?.links ??
+          res?.links ??
+          res?.pageInfo?.links ??
+          {};
+
+        const links = {
+          next:
+            rawLinks?.next !== undefined && rawLinks?.next !== null
+              ? String(rawLinks.next)
+              : undefined,
+          prev:
+            rawLinks?.prev !== undefined && rawLinks?.prev !== null
+              ? String(rawLinks.prev)
+              : undefined
+        };
+
         return { devices, links } as DevicePageInfo;
+      })
+    );
+  }
+
+  getDashboardDevicePage(options: SearchOptions): Observable<DashboardDevicePageInfo> {
+    const limit = Number(options.limit ?? options.page_size ?? 5);
+    const start = Number(options.start ?? 0);
+
+    const params = setParams({
+      ...options,
+      start,
+      limit,
+      includePagination: true
+    });
+
+    return this.http.get<any>('/api/devices', { params }).pipe(
+      map((res) => {
+        const items = res?.items ?? {};
+        const links = items?.links ?? res?.links ?? {};
+        const devices = items?.devices ?? res?.devices ?? [];
+
+        return {
+          devices,
+          totalCount: Number(items?.totalCount ?? res?.totalCount ?? devices.length),
+          limit: Number(items?.limit ?? res?.pageSize ?? limit),
+          start: Number(items?.start ?? start),
+          nextStart: toNumberOrNull(links?.next),
+          prevStart: toNumberOrNull(links?.prev)
+        } as DashboardDevicePageInfo;
       })
     );
   }
 
   count(filter: any): Observable<DeviceCountDoc> {
     const params = setParams(filter);
+
     return this.http.get<DeviceCountDoc>('/api/devices/count', { params });
   }
 

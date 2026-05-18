@@ -63,7 +63,7 @@ describe("export tests", function () {
       .yields(null, createToken(userId, [permission, 'READ_EXPORT']));
   }
 
-  const userId = new mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
 
   it("should export observations as kml", function (done) {
 
@@ -80,9 +80,9 @@ describe("export tests", function () {
       .expects('findById')
       .twice()
       .onFirstCall()
-      .resolves(mockEvent)
+      .yields(null, mockEvent)
       .onSecondCall()
-      .resolves(mockEvent);
+      .yields(null, mockEvent);
 
     sinon.mock(UserModel)
       .expects('getUsers')
@@ -107,7 +107,7 @@ describe("export tests", function () {
       style: {}
     });
     const mockObservation = new ObservationModel({
-      _id: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -122,7 +122,7 @@ describe("export tests", function () {
     sinon.mock(ObservationModel)
       .expects('find')
       .chain('exec')
-      .resolves([mockObservation]);
+      .yields(null, [mockObservation]);
 
     sinon.mock(eventPermissions)
       .expects('userHasEventPermission')
@@ -130,8 +130,8 @@ describe("export tests", function () {
       .resolves(true)
 
     const exportMeta = new ExportModel({
-      _id: new mongoose.Types.ObjectId(),
-      userId: new mongoose.Types.ObjectId(),
+      _id: mongoose.Types.ObjectId(),
+      userId: mongoose.Types.ObjectId(),
       physicalPath: '/tmp',
       exportType: 'kml',
       status: 'Starting',

@@ -218,7 +218,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         graphs: zxcvbnCommonPackage.adjacencyGraphs,
         translations: zxcvbnEnPackage.translations
       });
-    } catch {}
+    } catch { }
   }
 
   private initForUser(userId: string): void {
@@ -774,7 +774,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (updatedUser) => {
           const merged: any = { ...(this.user as any), ...(updatedUser as any) };
-        
+
           const roleFromResponse = (updatedUser as any)?.role;
           if (roleFromResponse && typeof roleFromResponse === 'object') {
             merged.role = roleFromResponse;
@@ -784,15 +784,15 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
               (updatedUser as any)?.role?.id ||
               (this.editUser as any)?.selectedRole?.id ||
               (this.user as any)?.role?.id;
-        
+
             if (roleId && Array.isArray(this.roles)) {
               const fullRole = this.roles.find((r: any) => r?.id === roleId);
               if (fullRole) merged.role = fullRole;
             }
           }
-        
+
           this.user = merged as User;
-        
+
           this.isEditingUser = false;
           this.editUser = null;
           this.saving = false;
@@ -818,7 +818,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
           this.userTeams.push(team);
           this.nonUserTeam = null;
         },
-        error: () => {}
+        error: () => { }
       });
   }
 
@@ -841,7 +841,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
           this.loadUserTeams();
         },
-        error: () => {}
+        error: () => { }
       });
   }
 
@@ -1080,13 +1080,13 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
       if (form) form.resetForm();
       this.changePassword = false;
-      this.cancelEdit();
     };
 
     const onError = (error: any) => {
       this.updatingPassword = false;
       const msg =
-        error?.data || error?.responseText || 'Failed to update password';
+        (typeof error?.error === 'string' ? error.error : error?.error?.message) ||
+        'Failed to update password';
       this.passwordStatus = { status: 'danger', msg };
     };
 
