@@ -1,11 +1,24 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  MatDialogRef as MatDialogRef,
+  MAT_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatDialogModule
+} from '@angular/material/dialog';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import { AdminDeviceService } from '../../services/admin-device.service';
 import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { User } from '../../admin-users/user';
 import { CommonModule } from '@angular/common';
 import { UserSearchBoxComponent } from '../../admin-users/user-search/user-search-box.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 /**
  * Dialog component for creating new devices.
@@ -14,7 +27,16 @@ import { UserSearchBoxComponent } from '../../admin-users/user-search/user-searc
 @Component({
   selector: 'mage-admin-device-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserSearchBoxComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    UserSearchBoxComponent
+  ],
   templateUrl: './create-device.component.html',
   styleUrls: ['./create-device.component.scss']
 })
@@ -40,7 +62,7 @@ export class CreateDeviceDialogComponent {
       userId: user ? user.id : ''
     });
   }
-  
+
   /**
    * Handles form submission for creating a new device.
    * Validates the form, creates the device via the devices service, and closes the dialog on success.

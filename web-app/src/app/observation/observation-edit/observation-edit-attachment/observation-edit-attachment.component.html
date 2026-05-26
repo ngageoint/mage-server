@@ -8,31 +8,18 @@
   <div class="attachment-field__body">
     <ng-container *ngIf="allAttachments().length; else empty">
       <div class="edit-attachments__grid">
-        <div
-          class="edit-attachments__item"
-          *ngFor="
+        <div class="edit-attachments__item" *ngFor="
             let attachment of allAttachments();
             trackBy: trackByAttachment;
             first as isFirst
-          "
-          [class.edit-attachments__item--full]="
+          " [class.edit-attachments__item--full]="
             isFirst && allAttachments().length % 2 === 1
-          "
-        >
-          <observation-attachment
-            *ngIf="!attachment.file"
-            [attachment]="attachment"
-            edit="true"
-            (delete)="deleteAttachment(attachment)"
-          ></observation-attachment>
+          ">
+          <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" edit="true"
+            (delete)="deleteAttachment(attachment)"></observation-attachment>
 
-          <attachment-upload
-            *ngIf="attachment.file"
-            [url]="url"
-            [attachment]="attachment"
-            (remove)="removeAttachment($event)"
-            (error)="onUploadError($event)"
-          ></attachment-upload>
+          <attachment-upload *ngIf="attachment.file" [url]="url" [attachment]="attachment"
+            (remove)="removeAttachment($event)"></attachment-upload>
         </div>
       </div>
     </ng-container>
@@ -46,22 +33,10 @@
   </div>
 
   <div class="attachment-actions">
-    <button
-      mat-stroked-button
-      class="add__button"
-      type="button"
-      color="primary"
-      (click)="file.click()"
-    >
+    <button mat-stroked-button class="add__button" type="button" color="primary" (click)="file.click()">
       Add Attachment
     </button>
 
-    <input
-      [hidden]="true"
-      type="file"
-      #file
-      multiple
-      (change)="onAttachmentFile($event)"
-    />
+    <input [hidden]="true" type="file" #file multiple (change)="onAttachmentFile($event)" />
   </div>
 </div>

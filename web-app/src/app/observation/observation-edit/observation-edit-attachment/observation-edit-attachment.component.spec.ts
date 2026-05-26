@@ -2,13 +2,13 @@ import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-
-import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 import { MatIconModule } from '@angular/material/icon';
 import {
   provideHttpClient,
   withInterceptorsFromDi
 } from '@angular/common/http';
+
+import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 
 @Component({
   standalone: true,
@@ -23,12 +23,15 @@ import {
 })
 class TestHostComponent {
   attachments = [];
+
   formGroup = new UntypedFormGroup({
     attachment: new UntypedFormControl([])
   });
+
   definition = {
     name: 'attachment'
   };
+
   @ViewChild(ObservationEditAttachmentComponent)
   component: ObservationEditAttachmentComponent;
 }
@@ -41,7 +44,6 @@ describe('ObservationEditAttachmentComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        ObservationEditAttachmentComponent,
         TestHostComponent,
         MatIconModule
       ],

@@ -62,7 +62,6 @@ export class ObservationEditFormComponent {
 
   @Output() remove = new EventEmitter<UntypedFormGroup>()
   @Output() featureEdit = new EventEmitter<any>()
-  @Output() uploadError = new EventEmitter<{ id: number | string }>()
 
   fieldNames: string[]
   fieldDefinitions: {}
@@ -101,10 +100,6 @@ export class ObservationEditFormComponent {
 
   removeForm(): void {
     this.remove.emit(this.formGroup)
-  }
-
-  onUploadError($event: { id: number | string }): void {
-    this.uploadError.emit($event)
   }
 
   private updateView(): void {

@@ -7,9 +7,9 @@
 
   <mat-nav-list class="form-picker-list">
     <mat-list-item *ngFor="let form of forms" (click)="formPicked(form)">
-      <mat-icon mat-list-icon [style.color]="form.color">description</mat-icon>
-      <div mat-line>{{form.name}}</div>
-      <div mat-line> {{form.description}} </div>
+      <mat-icon matListItemIcon [style.color]="form.color">description</mat-icon>
+      <span matListItemTitle>{{form.name}}</span>
+      <span matListItemLine>{{form.description}}</span>
     </mat-list-item>
   </mat-nav-list>
 
@@ -17,4 +17,3 @@
     <button mat-button color="primary" (click)="cancel()">CANCEL</button>
   </div>
 </div>
-

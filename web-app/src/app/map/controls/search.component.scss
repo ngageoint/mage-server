@@ -9,12 +9,14 @@
 
 .map-control-fab {
   --mdc-fab-container-color: #fff;
+  --mdc-fab-small-container-color: #fff !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24) !important;
   flex: 0 0 auto;
 }
 
 .map-control-fab.is-active {
   --mdc-fab-container-color: #1e88e5;
+  --mdc-fab-small-container-color: #1e88e5 !important;
 }
 
 .map-control-fab__icon {

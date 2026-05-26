@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { AttachmentAction } from './observation-edit-attachment-action';
 import { CommonModule } from '@angular/common';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
+
+import { AttachmentAction } from './observation-edit-attachment-action';
 import { AttachUploadComponent } from '../../attachment/attachment-upload/attachment-upload.component';
 import { AttachmentComponent } from '../../attachment/attachment.component';
 
@@ -52,24 +53,28 @@ export class ObservationEditAttachmentComponent implements OnInit {
   allAttachments(): any[] {
     const observationFormId = this.formGroup.get('id')?.value;
     const attachments = (this.attachments || []).filter(
-      (a) =>
-        a.url &&
-        a.observationFormId === observationFormId &&
-        a.fieldName === this.definition.name
+      (attachment) =>
+        attachment.url &&
+        attachment.observationFormId === observationFormId &&
+        attachment.fieldName === this.definition.name
     );
+
     return this.control.value
       ? attachments.concat(this.control.value)
       : attachments;
   }
 
-  onAttachmentFile(event): void {
+  onAttachmentFile(event: Event): void {
     const attachments = this.control.value || [];
-    const files = Array.from(event.target.files);
+    const input = event.target as HTMLInputElement;
+    const files: File[] = Array.from(input.files ?? []);
+  
     files.forEach((file: File) => {
       const id = this.uploadId++;
+  
       attachments.push({
         id,
-        formId: this.formGroup.get('formId').value,
+        formId: this.formGroup.get('formId')?.value,
         name: file.name,
         size: file.size,
         contentType: file.type,
@@ -77,14 +82,16 @@ export class ObservationEditAttachmentComponent implements OnInit {
         file
       });
     });
+  
     this.control.setValue(attachments);
     this.changeDetector.detectChanges();
   }
 
   deleteAttachment(attachmentToDelete): void {
     this.attachments = this.attachments.filter(
-      (a) => a.id !== attachmentToDelete.id
+      (attachment) => attachment.id !== attachmentToDelete.id
     );
+
     attachmentToDelete.action = AttachmentAction.DELETE;
 
     const value = this.control.value || [];
@@ -94,6 +101,8 @@ export class ObservationEditAttachmentComponent implements OnInit {
 
   removeAttachment($event): void {
     const attachments = this.control.value || [];
-    this.control.setValue(attachments.filter((a) => a.id !== $event.id));
+    this.control.setValue(
+      attachments.filter((attachment) => attachment.id !== $event.id)
+    );
   }
 }

@@ -21,7 +21,7 @@ describe('BulkUserComponent', () => {
   let closeSpy: jasmine.Spy;
 
   const mockDialogRef = {
-    close: (_?: any) => {}
+    close: (_?: any) => { }
   } as unknown as MatDialogRef<BulkUserComponent>;
 
   const roles: Role[] = [

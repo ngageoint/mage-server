@@ -481,7 +481,7 @@
               access MAGE.
             </p>
             <button
-              class="action-button btn-success"
+              class="action-button btn-success btn-right"
               (click)="activateUser(user)"
             >
               <i class="fa fa-check"></i> Activate
@@ -491,7 +491,7 @@
       </div>
 
       <div
-        class="danger-zone-card warning"
+        class="danger-zone-card warning btn-right"
         *ngIf="user.active && hasUserEditPermission && !isSelf"
       >
         <h3 class="danger-zone-title">
@@ -508,7 +508,7 @@
           }}
         </p>
         <button
-          class="action-button"
+          class="action-button btn-right"
           [ngClass]="user.enabled ? 'btn-warning' : 'btn-success'"
           (click)="user.enabled ? disableUser(user) : enableUser(user)"
         >
@@ -528,7 +528,7 @@
           will be unrecoverable.
         </p>
         <button
-          class="action-button btn-danger"
+          class="action-button btn-danger btn-right"
           (click)="confirmDeleteUser(user)"
         >
           <i class="fa fa-trash-o"></i> Delete

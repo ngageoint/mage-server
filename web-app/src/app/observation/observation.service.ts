@@ -141,14 +141,14 @@ export class ObservationService {
         `/api/events/${event.id}/observations/${observation.id}/attachments/${attachment.id}`
       )
       .pipe(
-        map(() => {
-          const attachments = _.reject(
+        map((response: any) => {
+          response.attachments = _.reject(
             observation.attachments,
             function (a) {
               return attachment.id === a.id;
             }
           );
-          return { ...observation, attachments };
+          return response;
         })
       );
   }

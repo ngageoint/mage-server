@@ -1,6 +1,12 @@
 @use '@angular/material' as mat;
 @import "variables.scss";
 
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
 .page {
   position: relative;
   top: 0;
@@ -47,7 +53,19 @@
 
 .heading__action {
   margin-right: 16px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: $font-sm;
+  font-weight: 600;
+
+  mat-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    margin-right: 6px;
+  }
 }
+
 
 .heading__info {
   flex: 1;
@@ -172,8 +190,17 @@ mat-form-field {
 }
 
 :host ::ng-deep .content__events .mat-mdc-list-item-meta {
+  width: 44px;
+  height: 44px;
+  padding: 10px;
   align-self: center;
   margin-left: 12px;
+
+  mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+  }
 }
 
 :host ::ng-deep .content__events .mdc-list-item__start,

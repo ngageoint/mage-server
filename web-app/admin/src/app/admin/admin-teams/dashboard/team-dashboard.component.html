@@ -28,11 +28,11 @@
               [routerLink]="['../teams', team.id]">
               <i class="icon fa fa-users mr-2" aria-hidden="true"></i>
               <div class="w-100">
-                <div class="strong">{{ team.name }}</div>
+                <div class="strong mt-5">{{ team.name }}</div>
                 <div [matTooltip]="team.description"
                   [matTooltipDisabled]="!team.description || team.description.length <= numChars"
                   matTooltipClass="mat-tooltip-event-desc" class="w-90">
-                  <p class="muted ellipsis">{{ team.description }}</p>
+                  <p class="muted ellipsis mb-5">{{ team.description }}</p>
                 </div>
               </div>
             </a>

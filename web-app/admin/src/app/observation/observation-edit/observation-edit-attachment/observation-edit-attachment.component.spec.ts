@@ -1,10 +1,15 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA, ViewChild } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  NO_ERRORS_SCHEMA,
+  ViewChild
+} from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
   standalone: true,
@@ -18,36 +23,42 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
   `
 })
 class TestHostComponent {
-  attachments = []
+  attachments = [];
+
   formGroup = new UntypedFormGroup({
     attachment: new UntypedFormControl([])
   });
+
   definition = {
     name: 'attachment'
-  }
-  @ViewChild(ObservationEditAttachmentComponent) component: ObservationEditAttachmentComponent
+  };
+
+  @ViewChild(ObservationEditAttachmentComponent)
+  component: ObservationEditAttachmentComponent;
 }
 
 describe('ObservationEditAttachmentComponent', () => {
-  let component: ObservationEditAttachmentComponent
-  let hostComponent: TestHostComponent
-  let fixture: ComponentFixture<TestHostComponent>
+  let component: ObservationEditAttachmentComponent;
+  let hostComponent: TestHostComponent;
+  let fixture: ComponentFixture<TestHostComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    imports: [ObservationEditAttachmentComponent, TestHostComponent],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
-    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-})
-    .compileComponents();
+      imports: [TestHostComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TestHostComponent)
-    hostComponent = fixture.componentInstance
+    fixture = TestBed.createComponent(TestHostComponent);
+    hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component
-  })
+    component = hostComponent.component;
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

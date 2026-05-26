@@ -480,13 +480,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     }
   }
 
-  onUploadError($event: { id: number | string }): void {
-    this.eventService.deleteAttachmentForObservation(
-      this.observation,
-      { id: $event.id }
-    );
-  }
-
   pickForm(): void {
     this.formOptions.expand = true;
     this.bottomSheet
@@ -565,12 +558,12 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   private onAttachmentUpload(event: AttachmentUploadEvent): void {
     switch (event.status) {
-      case AttachmentUploadStatus.COMPLETE: {  
+      case AttachmentUploadStatus.COMPLETE: {
         this.eventService.addAttachmentToObservation(
           this.observation,
           event.response
         );
-  
+
         this.uploads = this.uploads.filter(
           (attachment) => attachment.id !== event.upload.attachmentId
         );
@@ -578,10 +571,12 @@ export class ObservationEditComponent implements OnInit, OnChanges {
           this.saving = false;
           this.close.emit(this.observation);
         }
-  
+
         break;
       }
       case AttachmentUploadStatus.ERROR: {
+        this.snackBar.open(event.response?.error, null, { duration: 4000 });
+
         const formArray = this.formGroup
           .get("properties")
           .get("forms") as UntypedFormArray;
@@ -602,18 +597,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
             }
           });
         });
-
-        // Remove rejected file from uploads queue
-        this.uploads = this.uploads.filter(
-          (attachment) => attachment.id !== event.upload.attachmentId
-        );
-
-        // Delete attachment metadata stub from MongoDB
-        this.observationService.deleteAttachmentInObservationForEvent(
-          this.event,
-          this.observation,
-          { id: event.upload.attachmentId }
-        ).subscribe();
 
         this.saving = false;
         break;

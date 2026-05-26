@@ -195,3 +195,12 @@ mat-dialog-actions {
 :host ::ng-deep button[mat-button] i {
   margin-right: 6px;
 }
+
+::ng-deep .mat-dialog-container {
+  padding: 0 !important;
+  background: white !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+  max-height: 90vh !important;
+  overflow: visible !important;
+}

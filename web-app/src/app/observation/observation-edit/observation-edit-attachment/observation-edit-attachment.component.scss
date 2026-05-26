@@ -65,10 +65,23 @@ $font-xs: 12px;
 
 .edit-attachments__item {
   min-width: 0;
+  position: relative;
+  height: clamp(150px, 28vw, 210px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e5e5e5;
 }
 
 .edit-attachments__item--full {
   grid-column: 1 / -1;
+}
+
+.edit-attachments__item>observation-attachment,
+.edit-attachments__item>attachment-upload {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 input[type='file'] {
@@ -97,5 +110,9 @@ input[type='file'] {
 
   .edit-attachments__item--full {
     grid-column: auto;
+  }
+
+  .edit-attachments__item {
+    height: clamp(140px, 50vw, 200px);
   }
 }

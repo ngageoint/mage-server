@@ -58,7 +58,7 @@
                 aria-hidden="true"
               ></i>
               <div class="w-100">
-                <div class="strong mb-10px">
+                <div class="strong mt-5">
                   {{ device?.user?.displayName }}
                 </div>
                 <div
@@ -67,10 +67,10 @@
                     !device.description || device.description.length <= numChars
                   "
                   matTooltipClass="mat-tooltip-device-desc"
-                  class="w-90"
+                  class="w-90 m-0 mt-5"
                 >
-                  <p class="muted ellipsis">{{ device.userAgent }}</p>
-                  <p class="muted ellipsis">{{ device.uid }}</p>
+                  <p class="muted ellipsis m-0">{{ device.userAgent }}</p>
+                  <p class="muted ellipsis m-0 mb-5">{{ device.uid }}</p>
                 </div>
               </div>
             </div>

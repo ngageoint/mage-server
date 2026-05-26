@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.dev-instance",
-  "version": "6.6.0",
+  "version": "6.6.4",
   "description": "Assemble a Mage Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool because the dependencies point to relative directories instead of production packages.  This can however serve as a starting point to create a production Mage instance package.json.",
   "scripts": {
     "start": "npm run start:dev",
@@ -24,13 +24,12 @@
   },
   "homepage": "https://github.com/ngageoint/mage-server",
   "dependencies": {
-    "@ngageoint/mage.arcgis.service": "file:../plugins/arcgis/service",
-    "@ngageoint/mage.arcgis.web-app": "file:../plugins/arcgis/web-app/dist/main",
-    "@ngageoint/mage.nga-msi": "file:../plugins/nga-msi",
+    "@ngageoint/mage.arcgis.service": "../plugins/arcgis/service",
+    "@ngageoint/mage.arcgis.web-app": "../plugins/arcgis/web-app/dist/main",
+    "@ngageoint/mage.sftp.web": "../plugins/sftp/web/dist/main",
+    "@ngageoint/mage.sftp.service": "../plugins/sftp/service",
+    "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
     "@ngageoint/mage.service": "../service",
-    "@ngageoint/mage.sftp.service": "file:../plugins/sftp/service",
-    "@ngageoint/mage.sftp.web": "file:../plugins/sftp/web/dist/main",
-    "@ngageoint/mage.web-app": "../web-app/dist",
-    "better-sqlite3": "^11.10.0"
+    "@ngageoint/mage.web-app": "../web-app/dist"
   }
 }
