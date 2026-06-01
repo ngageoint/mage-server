@@ -318,7 +318,7 @@ export function createBlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, na
   } as any
 }
 
-export interface BlobDuck extends globalThis.Blob { }
+export interface BlobDuck extends globalThis.Blob { name: string }
 
 export type ISODateString = string
 

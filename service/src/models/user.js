@@ -322,7 +322,7 @@ exports.createUser = function (user, callback) {
     };
 
     User.create(newUser).then(async user => {
-      await user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
+      await user.populate([ { path: 'roleId' }, { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } } ]);
       callback(null, user);
     }).catch(err => callback(err));
   }).catch(err => callback(err));
@@ -330,7 +330,7 @@ exports.createUser = function (user, callback) {
 
 exports.updateUser = function (user, callback) {
   user.save().then(async user => {
-    await user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
+    await user.populate([ { path: 'roleId' }, { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } } ]);
     callback(null, user);
   }).catch(err => callback(err));
 };

@@ -18,6 +18,9 @@ const TokenModel = mongoose.model('Token');
 const UserOperations = require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
+require('../../lib/models/role');
+const RoleModel = mongoose.model('Role');
+
 const EventOperations = require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
@@ -59,11 +62,18 @@ describe("user update tests", function () {
   }
 
   it('should update myself', function (done) {
+    const roleId = new mongoose.Types.ObjectId();
+    const mockRole = new RoleModel({
+      _id: roleId,
+      name: 'User',
+      permissions: ['SOME_PERMISSION']
+    });
     const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
-      active: true
+      active: true,
+      roleId: roleId
     });
 
     const token = {
@@ -90,7 +100,17 @@ describe("user update tests", function () {
 
     sinon.mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .atLeast(1)
+      .callsFake(function (paths) {
+        const requested = Array.isArray(paths) ? paths : [paths];
+        const populatesRole = requested.some(function (p) {
+          return p === 'roleId' || (p && p.path === 'roleId');
+        });
+        if (populatesRole) {
+          mockUser.roleId = mockRole;
+        }
+        return Promise.resolve(mockUser);
+      });
 
     request(app)
       .put('/api/users/myself')
@@ -108,6 +128,8 @@ describe("user update tests", function () {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
+        user.should.have.property('role');
+        user.role.should.have.property('name', 'User');
       })
       .end(done);
   });

@@ -127,6 +127,11 @@ describe('user create tests', function () {
 
     const id = new mongoose.Types.ObjectId();
     const roleId = new mongoose.Types.ObjectId();
+    const mockRole = new RoleModel({
+      _id: roleId,
+      name: 'Admin',
+      permissions: ['SOME_PERMISSIONS']
+    });
     const mockUser = new UserModel({
       _id: id,
       username: 'test',
@@ -164,7 +169,17 @@ describe('user create tests', function () {
     sinon
       .mock(mockUser)
       .expects('populate')
-      .resolves(mockUser);
+      .atLeast(1)
+      .callsFake(function (paths) {
+        const requested = Array.isArray(paths) ? paths : [paths];
+        const populatesRole = requested.some(function (p) {
+          return p === 'roleId' || (p && p.path === 'roleId');
+        });
+        if (populatesRole) {
+          mockUser.roleId = mockRole;
+        }
+        return Promise.resolve(mockUser);
+      });
 
     sinon
       .mock(UserModel)
@@ -194,6 +209,8 @@ describe('user create tests', function () {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
+        user.should.have.property('role');
+        user.role.should.have.property('name', 'Admin');
       })
       .end(function (err) {
         if (err) return done(err);
