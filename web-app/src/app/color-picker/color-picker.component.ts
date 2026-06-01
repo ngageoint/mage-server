@@ -4,8 +4,13 @@ import {
   EventEmitter,
   OnInit,
   Input,
-  HostListener
+  ViewChild,
+  ElementRef,
+  TemplateRef,
+  ViewContainerRef
 } from '@angular/core';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
 import { ColorWrap, RGBA, toState } from 'ngx-color';
 import { TinyColor } from '@ctrl/tinycolor';
 
@@ -14,9 +19,10 @@ export interface ColorEvent {
 }
 
 @Component({
-  selector: 'color-picker',
-  templateUrl: './color-picker.component.html',
-  styleUrls: ['./color-picker.component.scss']
+    selector: 'color-picker',
+    templateUrl: './color-picker.component.html',
+    styleUrls: ['./color-picker.component.scss'],
+    standalone: false
 })
 export class ColorPickerComponent extends ColorWrap implements OnInit {
   private static openInstance: ColorPickerComponent | null = null;
@@ -25,13 +31,16 @@ export class ColorPickerComponent extends ColorWrap implements OnInit {
   @Input() hexColor: string;
   @Output() onColorChanged = new EventEmitter<ColorEvent>();
 
+  @ViewChild('swatchEl') swatchEl: ElementRef;
+  @ViewChild('pickerTemplate') pickerTemplate: TemplateRef<any>;
+
   background: string;
   activeBackground: string;
-  showColorPicker = false;
 
   private originalHexColor: string;
+  private overlayRef: OverlayRef | null = null;
 
-  constructor() {
+  constructor(private overlay: Overlay, private viewContainerRef: ViewContainerRef) {
     super();
   }
 
@@ -60,54 +69,62 @@ export class ColorPickerComponent extends ColorWrap implements OnInit {
   }
 
   open(): void {
-    if (
-      ColorPickerComponent.openInstance &&
-      ColorPickerComponent.openInstance !== this
-    ) {
+    if (ColorPickerComponent.openInstance && ColorPickerComponent.openInstance !== this) {
       ColorPickerComponent.openInstance.forceClose();
     }
 
+    if (this.overlayRef) return;
+
     this.originalHexColor = this.hexColor || '#000000ff';
-    this.showColorPicker = true;
+
+    const positionStrategy = this.overlay
+      .position()
+      .flexibleConnectedTo(this.swatchEl)
+      .withPositions([
+        { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
+        { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
+      ]);
+
+    this.overlayRef = this.overlay.create({
+      positionStrategy,
+      hasBackdrop: true,
+      backdropClass: 'cdk-overlay-transparent-backdrop',
+      scrollStrategy: this.overlay.scrollStrategies.reposition(),
+    });
+
+    this.overlayRef.backdropClick().subscribe(() => this.cancel());
+    this.overlayRef.attach(new TemplatePortal(this.pickerTemplate, this.viewContainerRef));
     ColorPickerComponent.openInstance = this;
   }
 
   ok(): void {
-    this.showColorPicker = false;
     this.background = this.getRGBAStyle(this.rgb);
     this.activeBackground = this.background;
-
-    this.onColorChanged.emit({
-      color: new TinyColor(this.rgb).toHex8String()
-    });
-
-    if (ColorPickerComponent.openInstance === this) {
-      ColorPickerComponent.openInstance = null;
-    }
+    this.onColorChanged.emit({ color: new TinyColor(this.rgb).toHex8String() });
+    this.closeOverlay();
   }
 
   cancel(): void {
     this.setState(toState(this.originalHexColor || this.hexColor || '#000000ff', 0));
     this.background = this.getRGBAStyle(this.rgb);
     this.activeBackground = this.background;
-    this.showColorPicker = false;
-
-    if (ColorPickerComponent.openInstance === this) {
-      ColorPickerComponent.openInstance = null;
-    }
+    this.closeOverlay();
   }
 
   forceClose(): void {
-    this.showColorPicker = false;
     this.setState(toState(this.originalHexColor || this.hexColor || '#000000ff', 0));
     this.background = this.getRGBAStyle(this.rgb);
     this.activeBackground = this.background;
+    this.closeOverlay();
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    if (this.showColorPicker) {
-      this.cancel();
+  private closeOverlay(): void {
+    if (this.overlayRef) {
+      this.overlayRef.dispose();
+      this.overlayRef = null;
+    }
+    if (ColorPickerComponent.openInstance === this) {
+      ColorPickerComponent.openInstance = null;
     }
   }
 

@@ -1,24 +1,28 @@
-$font-xl: 32px;
-$font-lg: 18px;
-$font-md: 16px;
-$font-sm: 14px;
-$font-xs: 12px;
+:host {
+  --mat-card-elevated-container-color: #ffffff;
+}
+
+mat-toolbar {
+  background-color: var(--mat-sys-primary);
+  color: #ffffff;
+
+  mat-icon {
+    color: #ffffff;
+  }
+}
 
 mat-form-field {
   width: 100%;
   margin-bottom: 16px;
 }
 
-.mat-h1 {
+.section-title {
   margin: 0;
-  font-size: $font-xl;
-  line-height: 40px;
-  font-weight: 400;
+  font: var(--mat-sys-headline-large);
 }
 
-.mat-caption {
-  font-size: $font-sm;
-  line-height: 20px;
+.section-subtitle {
+  font: var(--mat-sys-body-medium);
   opacity: .6;
 }
 
@@ -29,13 +33,14 @@ mat-form-field {
 
 .navigation-title {
   margin-left: 16px;
-  font-size: $font-lg;
-  font-weight: 500;
+  font: var(--mat-sys-title-medium);
 }
 
 .container {
   position: relative;
   padding: 16px 0;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .cards {
@@ -73,7 +78,7 @@ mat-form-field {
   position: absolute;
   bottom: 20px;
   right: 20px;
-  background-color: rgb(245, 245, 245);
+  background-color: var(--mat-sys-surface-variant);
   width: 40px;
   height: 40px;
   border-radius: 20px;
@@ -106,13 +111,21 @@ mat-form-field {
   align-items: center;
   gap: 4px;
   margin-bottom: 8px;
+
+  .strength-label {
+    font: var(--mat-sys-body-medium);
+  }
+
+  .strength-value {
+    font: var(--mat-sys-body-small);
+  }
 }
 
 .error {
   display: flex;
   align-items: center;
   gap: 16px;
-  color: rgb(171, 48, 34);
+  color: var(--mat-sys-error);
 }
 
 .error__text {

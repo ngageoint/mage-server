@@ -8,9 +8,10 @@ export interface FeedTab {
 }
 
 @Component({
-  selector: 'feed-panel-tab',
-  templateUrl: './feed-panel-tab.component.html',
-  styleUrls: ['./feed-panel-tab.component.scss']
+    selector: 'feed-panel-tab',
+    templateUrl: './feed-panel-tab.component.html',
+    styleUrls: ['./feed-panel-tab.component.scss'],
+    standalone: false
 })
 export class FeedPanelTabComponent implements OnInit {
   @Input() tab: FeedTab;

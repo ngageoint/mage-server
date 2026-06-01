@@ -22,12 +22,11 @@
       <mat-label>
         {{ title }} Time {{ timezone === 'gmt' ? '(GMT)' : '(Local)' }}
       </mat-label>
-      <input matInput #timeInput type="time" step="1" [(ngModel)]="time" [required]="required"
-        (ngModelChange)="onTime()" #timeModel="ngModel" autocomplete="off" />
-      <button mat-icon-button matSuffix type="button" (click)="showTimePicker(timeInput)">
-        <mat-icon>schedule</mat-icon>
-      </button>
-      <mat-error *ngIf="timeInvalid">Invalid time</mat-error>
+      <mat-timepicker #timePicker interval="30m"></mat-timepicker>
+      <input matInput [matTimepicker]="timePicker" [(ngModel)]="timeValue" [required]="required"
+        (ngModelChange)="onTime()" autocomplete="off" />
+      <mat-timepicker-toggle matSuffix [for]="timePicker"></mat-timepicker-toggle>
+      <mat-error>Invalid time</mat-error>
     </mat-form-field>
   </div>
 </div>

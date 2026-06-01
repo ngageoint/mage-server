@@ -8,9 +8,10 @@ interface CoordinateSystemOption {
 }
 
 @Component({
-  selector: 'coordinate-system',
-  templateUrl: './coordinate-system.component.html',
-  styleUrls: ['./coordinate-system.component.scss']
+    selector: 'coordinate-system',
+    templateUrl: './coordinate-system.component.html',
+    styleUrls: ['./coordinate-system.component.scss'],
+    standalone: false
 })
 export class CoordinateSystemComponent implements OnInit {
 

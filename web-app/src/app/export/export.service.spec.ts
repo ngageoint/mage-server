@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ExportService, Export } from './export.service';
-import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('ExportService', () => {
   let httpClient: HttpClient;
@@ -9,9 +9,9 @@ describe('ExportService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ExportService],
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [ExportService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
 
     // Inject the http service and test controller for each test
     httpClient = TestBed.inject(HttpClient);

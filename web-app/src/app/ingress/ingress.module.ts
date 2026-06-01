@@ -19,6 +19,7 @@ import { AuthenticationDialogComponent } from './authentication/authentication-d
 import { LdapAuthenticationComponent } from './authentication/ldap/ldap-authentication.component';
 import { AuthenticationButtonComponent } from './authentication/button/authentication-button.component';
 import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [],
@@ -32,6 +33,7 @@ import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip'
     MatProgressBarModule,
     ReactiveFormsModule,
     MatTooltipModule,
+    MatDialogModule,
   ]
 })
 class AngularModule { }

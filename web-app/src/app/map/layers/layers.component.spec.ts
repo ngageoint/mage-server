@@ -16,14 +16,15 @@ import { CheckboardModule, HueModule, SaturationModule, AlphaModule } from 'ngx-
 import { Component, ViewChild } from '@angular/core';
 
 @Component({
-  selector: `host-component`,
-  template: `<map-layers-panel
+    selector: `host-component`,
+    template: `<map-layers-panel
     [mageLayers]="mageLayers"
     [baseLayers]="baseLayers"
     [tileOverlays]="tileOverlays"
     [featureOverlays]="featureOverlays"
     [gridOverlays]="gridOverlays">
-  </map-layers-panel>`
+  </map-layers-panel>`,
+    standalone: false
 })
 class TestHostComponent {
 

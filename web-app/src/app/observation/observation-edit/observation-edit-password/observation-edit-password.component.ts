@@ -8,9 +8,10 @@ interface PasswordField {
 }
 
 @Component({
-  selector: 'observation-edit-password',
-  templateUrl: './observation-edit-password.component.html',
-  styleUrls: ['./observation-edit-password.component.scss']
+    selector: 'observation-edit-password',
+    templateUrl: './observation-edit-password.component.html',
+    styleUrls: ['./observation-edit-password.component.scss'],
+    standalone: false
 })
 export class ObservationEditPasswordComponent {
   @Input() formGroup: UntypedFormGroup

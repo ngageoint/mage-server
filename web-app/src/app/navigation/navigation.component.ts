@@ -12,11 +12,13 @@ import { EventService } from '../event/event.service';
 import { PollingService } from '../event/polling.service';
 import * as _ from 'underscore';
 import { Router } from '@angular/router';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
-  selector: 'navigation',
-  templateUrl: './navigation.component.html',
-  styleUrls: ['./navigation.component.scss']
+    selector: 'navigation',
+    templateUrl: './navigation.component.html',
+    styleUrls: ['./navigation.component.scss'],
+    standalone: false
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   @Output() onFeedToggle = new EventEmitter<void>();
@@ -32,6 +34,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private mapService: MapService,
+    private sessionService: SessionService,
     private userService: UserService,
     private eventService: EventService,
     private filterService: FilterService,
@@ -64,7 +67,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
     this.mapService.init();
     this.eventService.init();
-    this.isAdmin = this.userService.amAdmin;
+    this.isAdmin = this.sessionService.amAdmin;
   }
 
   ngOnDestroy(): void {

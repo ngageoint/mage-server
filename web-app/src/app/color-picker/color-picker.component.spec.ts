@@ -4,14 +4,17 @@ import { ColorPickerComponent } from './color-picker.component';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 import { CheckboardModule, SaturationModule, HueModule, AlphaModule } from 'ngx-color';
 import { Component, ViewChild } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { TinyColor } from '@ctrl/tinycolor';
 
 @Component({
-  selector: `host-component`,
-  template: `<color-picker hexColor="hexColor"></color-picker>`
+    selector: `host-component`,
+    template: `<color-picker hexColor="hexColor"></color-picker>`,
+    standalone: false
 })
 class TestHostComponent {
   hexColor = '#000000FF';
@@ -26,7 +29,7 @@ describe('ColorPickerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ NoopAnimationsModule, MatInputModule, MatFormFieldModule, MatCardModule, CheckboardModule, SaturationModule, HueModule, AlphaModule ],
+      imports: [ NoopAnimationsModule, OverlayModule, MatInputModule, MatFormFieldModule, MatCardModule, MatButtonModule, CheckboardModule, SaturationModule, HueModule, AlphaModule ],
       declarations: [ TestHostComponent, ColorPickerComponent ]
     })
     .compileComponents();
@@ -43,29 +46,25 @@ describe('ColorPickerComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should open overlay on open', () => {
+    expect(() => component.open()).not.toThrow();
+  });
 
-  it('should show color picker on open', () => {
+  it('should restore original color on cancel', () => {
     component.open();
-    expect(component.showColorPicker).toEqual(true);
-  });
-
-  it('should hide color picker on cancel', () => {
-    component.showColorPicker = true;
+    const originalBackground = component.background;
     component.cancel();
-    expect(component.showColorPicker).toEqual(false);
+    expect(component.background).toEqual(originalBackground);
   });
 
-  it('should emit color', () => {
+  it('should emit color on ok', () => {
     spyOn(component.onColorChanged, 'emit');
-    component.showColorPicker = true;
+    component.open();
     component.rgb = { r: 1, g: 0, b: 1, a: 1 };
     component.ok();
-    expect(component.showColorPicker).toEqual(false);
     expect(component.background).toEqual('rgba(1, 0, 1, 1)');
     expect(component.onColorChanged.emit).toHaveBeenCalledWith({
       color: new TinyColor(component.rgb).toHex8String()
     });
   });
 });
-
-

@@ -8,9 +8,10 @@ interface TextField {
 }
 
 @Component({
-  selector: 'observation-edit-text',
-  templateUrl: './observation-edit-text.component.html',
-  styleUrls: ['./observation-edit-text.component.scss']
+    selector: 'observation-edit-text',
+    templateUrl: './observation-edit-text.component.html',
+    styleUrls: ['./observation-edit-text.component.scss'],
+    standalone: false
 })
 export class ObservationEditTextComponent {
   @Input() formGroup: UntypedFormGroup

@@ -2,9 +2,10 @@ import { Component, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild }
 import { DomEvent } from 'leaflet';
 
 @Component({
-  selector: 'map-control-filter',
-  templateUrl: './filter.component.html',
-  styleUrls: ['./filter.component.scss']
+    selector: 'map-control-filter',
+    templateUrl: './filter.component.html',
+    styleUrls: ['./filter.component.scss'],
+    standalone: false
 })
 export class FilterControlComponent implements AfterViewInit {
   @ViewChild('filterButton') button!: ElementRef<HTMLElement>;

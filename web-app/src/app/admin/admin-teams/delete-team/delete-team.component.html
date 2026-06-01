@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>Delete "{{ team.name }}"?</h2>
+
+<mat-dialog-content>
+    <p>This team will be permanently deleted. This action cannot be undone.</p>
+
+    <mat-checkbox [(ngModel)]="deleteAllUsers" data-testid="delete-users-checkbox">
+        Delete all users that are part of this team
+    </mat-checkbox>
+
+    <div class="danger-zone" *ngIf="deleteAllUsers" data-testid="danger-zone">
+        <h3 class="danger-zone-title">
+            <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
+            Are you absolutely sure?
+        </h3>
+        <p class="danger-zone-description">
+            This will delete <strong>all users</strong> that are part of this team, regardless of whether they are
+            in other teams. This action <strong>cannot</strong> be undone.
+        </p>
+    </div>
+
+    <div class="error-alert" *ngIf="error">
+        <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+        <span>{{ error }}</span>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button matButton type="button" (click)="cancel()" [disabled]="deleting" cdkFocusInitial
+        data-testid="cancel-button">Cancel</button>
+    <button matButton type="button" class="delete-button" [disabled]="deleting" (click)="deleteTeam()"
+        data-testid="delete-button">
+        <mat-icon fontSet="material-symbols-outlined">{{ deleting ? 'progress_activity' : 'delete' }}</mat-icon>
+        {{ deleteAllUsers ? 'Delete Team and Users' : 'Delete Team' }}
+    </button>
+</mat-dialog-actions>

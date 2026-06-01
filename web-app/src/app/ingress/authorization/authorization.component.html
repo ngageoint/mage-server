@@ -1,6 +1,6 @@
-<div class="authorization">
+<div class="authorization" [class.compact]="compact">
   <div class="header">
-    <div class="header__title">Access Code</div>
+    <div *ngIf="!compact" class="header__title">Access Code</div>
     <div class="header__message">Please enter your Mage access code. If you do not have an access code please ask you Mage
       administrator to provide you with one.</div>
   </div>
@@ -14,6 +14,6 @@
   </div>
 
   <div class="authorize">
-    <button mat-flat-button color="primary" (click)="authorize()">Continue to Mage</button>
+    <button matButton="filled" (click)="authorize()">Continue to Mage</button>
   </div>
 </div>

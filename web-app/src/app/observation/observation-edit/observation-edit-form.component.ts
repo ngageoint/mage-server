@@ -3,25 +3,26 @@ import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 
 @Component({
-  selector: 'observation-edit-form',
-  templateUrl: './observation-edit-form.component.html',
-  styleUrls: ['./observation-edit-form.component.scss'],
-  animations: [
-    trigger('expand', [
-      transition(':enter', [
-        style({ height: 0, opacity: 0 }),
-        animate('300ms', style({ height: '*', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('300ms', style({ height: 0, opacity: 0 }))
-      ])
-    ]),
-    trigger('rotate', [
-      state('true', style({ transform: 'rotate(180deg)' })),
-      state('false', style({ transform: 'rotate(0)' })),
-      transition('* <=> *', animate('300ms ease-out'))
-    ])
-  ]
+    selector: 'observation-edit-form',
+    templateUrl: './observation-edit-form.component.html',
+    styleUrls: ['./observation-edit-form.component.scss'],
+    animations: [
+        trigger('expand', [
+            transition(':enter', [
+                style({ height: 0, opacity: 0 }),
+                animate('300ms', style({ height: '*', opacity: 1 })),
+            ]),
+            transition(':leave', [
+                animate('300ms', style({ height: 0, opacity: 0 }))
+            ])
+        ]),
+        trigger('rotate', [
+            state('true', style({ transform: 'rotate(180deg)' })),
+            state('false', style({ transform: 'rotate(0)' })),
+            transition('* <=> *', animate('300ms ease-out'))
+        ])
+    ],
+    standalone: false
 })
 export class ObservationEditFormComponent {
   @Input() formGroup: UntypedFormGroup

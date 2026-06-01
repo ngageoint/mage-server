@@ -1,0 +1,18 @@
+<mat-toolbar>
+  <button matIconButton class="menu-button" (click)="toggleSidenav()" aria-label="Toggle navigation">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <a class="admin-navbar-title" [routerLink]="['/home']">MAGE</a>
+  <span class="spacer"></span>
+  <div class="actions">
+  <a matTooltip="Profile" [routerLink]="['/profile']" matIconButton>
+    <mat-icon>account_circle</mat-icon>
+  </a>
+  <a matTooltip="Info" [routerLink]="['/about']" matIconButton>
+    <mat-icon>info</mat-icon>
+  </a>
+  <button matTooltip="Logout" matIconButton (click)="logout()">
+    <mat-icon>logout</mat-icon>
+  </button>
+  </div>
+</mat-toolbar>

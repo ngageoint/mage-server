@@ -1,3 +1,7 @@
+:host {
+  --mat-card-elevated-container-color: #ffffff;
+}
+
 .item {
   cursor: pointer;
 }
@@ -6,18 +10,6 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding-bottom: 16px;
-}
-
-.item-header-text {
-  font-size: 24px;
-  color: rgba(30, 136, 229, 0.87);
-  font-weight: 500;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 16px;
-  margin-bottom: 2px;
 }
 
 .item-header-content {
@@ -28,38 +20,17 @@
 }
 
 .item-title {
-  color: rgba(0, 0, 0, 0.87);
-  font-family: Roboto, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  min-width: 0;
-}
-
-.item-title>div {
-  min-width: 0;
-}
-
-.item-title span:first-child {
-  display: inline-block;
-  min-width: 0;
-  max-width: 100%;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  vertical-align: bottom;
 }
 
 .item-thumbnail {
   margin-right: 16px;
   margin-bottom: auto;
-  text-align: center;
   flex: 0 0 auto;
-}
-
-.item-thumbnail ::ng-deep img,
-.item-thumbnail ::ng-deep .avatar,
-.item-thumbnail ::ng-deep .mat-icon {
-  display: block;
 }
 
 .item-icon {
@@ -70,59 +41,25 @@
 }
 
 .item-subtitle {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
   margin-top: 4px;
-  color: rgba(0, 0, 0, 0.6);
-  font-family: Roboto, sans-serif;
-  font-size: 14px;
-  font-weight: 400;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-}
-
-.card-footer {
-  display: block;
-  padding: 0 16px 8px;
-}
-
-.actions {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  box-sizing: border-box;
-  min-height: 52px;
-  padding: 8px 0 0;
 }
 
 .actions-buttons {
   display: flex;
   flex-direction: row;
   align-items: center;
-  box-sizing: border-box;
 }
 
 .actions-icons {
   display: flex;
   flex-direction: row;
   align-items: center;
-  box-sizing: border-box;
-  color: rgba(0, 0, 0, 0.6);
   flex-grow: 1;
   justify-content: flex-end;
-}
-
-.actions-icons>*+* {
-  margin-left: 8px;
-}
-
-.actions__location-button {
-  padding: 4px 8px;
-}
-
-.actions--inactive {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.actions--inactive:focus {
-  outline: none;
+  gap: 8px;
 }

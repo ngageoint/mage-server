@@ -1,8 +1,7 @@
-.dialog-message {
- color: rgba(0, 0, 0, .6);
+[mat-dialog-title] {
+  color: var(--mat-sys-primary);
 }
 
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
+.discard-button {
+  color: var(--mat-sys-error);
 }

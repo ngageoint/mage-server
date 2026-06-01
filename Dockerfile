@@ -1,4 +1,4 @@
-FROM node:20.11.1 AS build-service
+FROM node:22 AS build-service
 
 WORKDIR /service
 COPY service/package*.json ./
@@ -8,7 +8,7 @@ RUN npm run build
 RUN npm pack
 
 # Build web-app
-FROM node:20.11.1 AS build-webapp
+FROM node:22 AS build-webapp
 
 WORKDIR /web-app
 COPY web-app/package*.json ./
@@ -17,7 +17,7 @@ COPY web-app/ ./
 RUN npm run build
 RUN npm pack ./dist
 
-# FROM node:20.11.1 AS build-arcwebplugin
+# FROM node:22 AS build-arcwebplugin
 # # Build arcgis service plugin
 # WORKDIR /arcgiswebplugin
 # COPY plugins/arcgis/web-app/package*.json ./
@@ -27,7 +27,7 @@ RUN npm pack ./dist
 # RUN npm run build
 # RUN npm pack ./dist/main
 
-# FROM node:20.11.1 AS build-arcserviceplugin
+# FROM node:22 AS build-arcserviceplugin
 # WORKDIR /arcgisserviceplugin
 # COPY plugins/arcgis/service/package*.json ./
 # RUN npm install
@@ -36,7 +36,7 @@ RUN npm pack ./dist
 # RUN npm run build
 # RUN npm pack
 
-# FROM node:20.11.1 AS build-imageserviceplugin
+# FROM node:22 AS build-imageserviceplugin
 # WORKDIR /imageserviceplugin
 # COPY plugins/image/service/package*.json ./
 # RUN npm install
@@ -46,7 +46,7 @@ RUN npm pack ./dist
 # RUN npm run build
 # RUN npm pack
 
-# FROM node:20.11.1 AS build-sftpserviceplugin
+# FROM node:22 AS build-sftpserviceplugin
 # WORKDIR /sftpserviceplugin
 # COPY plugins/sftp/service/package*.json ./
 # RUN npm install
@@ -55,7 +55,7 @@ RUN npm pack ./dist
 # RUN npm run build
 # RUN npm pack
 
-# FROM node:20.11.1 AS build-sftpwebplugin
+# FROM node:22 AS build-sftpwebplugin
 # # Build sftp service plugin
 # WORKDIR /sftpwebplugin
 # COPY plugins/sftp/web/package*.json ./
@@ -65,7 +65,7 @@ RUN npm pack ./dist
 # RUN npm pack ./dist/main
 
 # Build instance
-FROM node:20.11.1 AS build-instance
+FROM node:22 AS build-instance
 COPY --from=build-service /service/ngageoint*.tgz /service/
 COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
 # COPY --from=build-arcwebplugin /arcgiswebplugin/ngageoint*.tgz /arcgiswebplugin/

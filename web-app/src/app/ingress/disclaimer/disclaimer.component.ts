@@ -9,13 +9,15 @@ export interface DiscalimeCloseEvent {
 }
 
 @Component({
-  selector: 'disclaimer',
-  templateUrl: './disclaimer.component.html',
-  styleUrls: ['./disclaimer.component.scss']
+    selector: 'disclaimer',
+    templateUrl: './disclaimer.component.html',
+    styleUrls: ['./disclaimer.component.scss'],
+    standalone: false
 })
-export class DisclaimerComponent {  
-  @Input() title: string
-  @Input() text: string
+export class DisclaimerComponent {
+  @Input() title!: string
+  @Input() text!: string
+  @Input() compact = false
 
   @Output() close = new EventEmitter<DiscalimeCloseEvent>()
 

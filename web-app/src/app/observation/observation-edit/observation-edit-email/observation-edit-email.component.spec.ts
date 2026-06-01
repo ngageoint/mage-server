@@ -9,9 +9,10 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ObservationEditEmailComponent } from './observation-edit-email.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-email [definition]="definition" [formGroup]="formGroup"></observation-edit-email>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: `host-component`,
+    template: `<observation-edit-email [definition]="definition" [formGroup]="formGroup"></observation-edit-email>`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({

@@ -27,10 +27,11 @@ import {
 } from './filter.types';
 
 @Component({
-  selector: 'filter',
-  templateUrl: './filter.component.html',
-  styleUrls: ['./filter.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'filter',
+    templateUrl: './filter.component.html',
+    styleUrls: ['./filter.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class FilterComponent implements OnInit {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];

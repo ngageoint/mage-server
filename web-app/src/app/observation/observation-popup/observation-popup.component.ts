@@ -5,9 +5,10 @@ import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 
 @Component({
-  selector: 'observation-map-popup',
-  templateUrl: './observation-popup.component.html',
-  styleUrls: ['./observation-popup.component.scss']
+    selector: 'observation-map-popup',
+    templateUrl: './observation-popup.component.html',
+    styleUrls: ['./observation-popup.component.scss'],
+    standalone: false
 })
 export class ObservationPopupComponent implements OnInit, OnChanges {
   @Input() observation: any;

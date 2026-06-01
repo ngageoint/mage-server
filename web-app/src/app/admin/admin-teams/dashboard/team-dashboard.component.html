@@ -1,0 +1,47 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+  <div class="nav-actions">
+    <button matButton="filled" *ngIf="hasTeamCreatePermission" (click)="createTeam()">
+      <mat-icon>add</mat-icon>New Team
+    </button>
+  </div>
+</admin-breadcrumb>
+
+<div class="teams-page">
+  <mat-card appearance="elevated" class="teams-card">
+    <mat-card-header>
+      <mat-card-title>Teams</mat-card-title>
+    </mat-card-header>
+
+    <div class="toolbar">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Search teams</mat-label>
+        <input matInput [(ngModel)]="teamSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="teamSearch" (click)="onSearchCleared()" aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <mat-nav-list *ngIf="teams.length; else noTeams">
+      <mat-list-item *ngFor="let team of teams" [routerLink]="['../teams', team.id]">
+        <mat-icon matListItemIcon>groups</mat-icon>
+        <span matListItemTitle>{{ team.name }}</span>
+        <span matListItemLine *ngIf="team.description">{{ team.description }}</span>
+      </mat-list-item>
+    </mat-nav-list>
+
+    <ng-template #noTeams>
+      <div class="no-teams">No teams found.</div>
+    </ng-template>
+
+    <mat-paginator
+      [length]="totalTeams"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </mat-card>
+</div>

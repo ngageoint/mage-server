@@ -6,7 +6,7 @@ import { MomentPipe } from 'src/app/moment/moment.pipe';
 
 import { ObservationListItemComponent } from './observation-list-item.component';
 import { MapService } from 'src/app/map/map.service';
-import { UserService } from 'src/app/user/user.service';
+import { SessionService } from 'src/app/http/session.service';
 import { EventService } from 'src/app/event/event.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,8 +16,8 @@ import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-
 
 class MockMapService { }
 
-class MockUserService {
-  myself = {
+class MockSessionService {
+  user = {
     id: 1,
     role: {
       permissions: []
@@ -26,6 +26,10 @@ class MockUserService {
 
   hasPermission(): boolean {
     return true;
+  }
+
+  getToken(): string {
+    return 'mockToken';
   }
 }
 
@@ -82,11 +86,12 @@ class MockLocalStorageService {
 }
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-list-item
+    selector: `host-component`,
+    template: `<observation-list-item
     [observation]="observation"
     [event]="event"
-  ></observation-list-item>`
+  ></observation-list-item>`,
+    standalone: false
 })
 class TestHostComponent {
   event: any = {
@@ -125,8 +130,8 @@ describe('ObservationListItemComponent', () => {
           useClass: MockMapService
         },
         {
-          provide: UserService,
-          useClass: MockUserService
+          provide: SessionService,
+          useClass: MockSessionService
         },
         {
           provide: EventService,

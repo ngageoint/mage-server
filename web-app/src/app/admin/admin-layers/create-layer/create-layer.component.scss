@@ -1,0 +1,46 @@
+.layer-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 480px;
+}
+
+mat-dialog-content {
+  overflow-y: auto;
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border-radius: 8px;
+  margin: 0 24px 0;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.conditional-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.geopackage-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.file-input {
+  display: none;
+}
+
+mat-dialog-actions {
+  justify-content: flex-end;
+}

@@ -3,6 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule as MatListModule } from '@angular/material/list';
 import { MomentModule } from 'src/app/moment/moment.module';
 import { FeedItemMapPopupComponent } from './feed-item-map-popup.component';
+import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 
 
 describe('FeedItemMapPopupComponent', () => {
@@ -16,7 +17,10 @@ describe('FeedItemMapPopupComponent', () => {
         MomentModule,
         MatListModule
       ],
-      declarations: [FeedItemMapPopupComponent ]
+      declarations: [FeedItemMapPopupComponent],
+      providers: [
+        { provide: FeedPanelService, useValue: { selectFeedItem: () => {} } }
+      ]
     })
     .compileComponents();
   }));
@@ -24,6 +28,7 @@ describe('FeedItemMapPopupComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(FeedItemMapPopupComponent);
     component = fixture.componentInstance;
+    component.feed = { id: 'test', service: 'svc', topic: 'tpc', title: 'Test Feed' } as any;
     fixture.detectChanges();
   });
 

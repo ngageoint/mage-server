@@ -8,9 +8,10 @@ import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 
 @Component({
-  selector: 'user-view',
-  templateUrl: './user-view.component.html',
-  styleUrls: ['./user-view.component.scss']
+    selector: 'user-view',
+    templateUrl: './user-view.component.html',
+    styleUrls: ['./user-view.component.scss'],
+    standalone: false
 })
 export class UserViewComponent implements OnInit, OnChanges {
   @Input() user: any

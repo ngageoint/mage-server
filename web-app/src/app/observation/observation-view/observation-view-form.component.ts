@@ -2,25 +2,26 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 
 @Component({
-  selector: 'observation-view-form',
-  templateUrl: './observation-view-form.component.html',
-  styleUrls: ['./observation-view-form.component.scss'],
-  animations: [
-    trigger('expand', [
-      transition(':enter', [
-        style({ height: 0, opacity: 0 }),
-        animate('300ms', style({ height: '*', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('300ms', style({ height: 0, opacity: 0 }))
-      ])
-    ]),
-    trigger('rotate', [
-      state('true', style({ transform: 'rotate(180deg)' })),
-      state('false', style({ transform: 'rotate(0)' })),
-      transition('* <=> *', animate('300ms ease-out'))
-    ])
-  ]
+    selector: 'observation-view-form',
+    templateUrl: './observation-view-form.component.html',
+    styleUrls: ['./observation-view-form.component.scss'],
+    animations: [
+        trigger('expand', [
+            transition(':enter', [
+                style({ height: 0, opacity: 0 }),
+                animate('300ms', style({ height: '*', opacity: 1 })),
+            ]),
+            transition(':leave', [
+                animate('300ms', style({ height: 0, opacity: 0 }))
+            ])
+        ]),
+        trigger('rotate', [
+            state('true', style({ transform: 'rotate(180deg)' })),
+            state('false', style({ transform: 'rotate(0)' })),
+            transition('* <=> *', animate('300ms ease-out'))
+        ])
+    ],
+    standalone: false
 })
 export class ObservationViewFormComponent implements OnInit, OnChanges {
   @Input() form: any

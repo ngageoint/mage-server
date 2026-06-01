@@ -27,6 +27,11 @@ const appRoutes: Routes = [
       import('./swagger/swagger.module').then((m) => m.SwaggerModule)
   },
   {
+    path: 'admin',
+    loadChildren: () =>
+      import('./admin/admin.module').then((m) => m.AdminModule)
+  },
+  {
     path: '',
     redirectTo: 'landing',
     pathMatch: 'full'
@@ -38,7 +43,7 @@ const appRoutes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(appRoutes, { enableTracing: true })],
+  imports: [RouterModule.forRoot(appRoutes)],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}

@@ -1,10 +1,10 @@
-<div class="options-row">
-  <button mat-button (click)="onOption(options.DOWNLOAD)" class="option-button">
-    <mat-icon>save_alt</mat-icon>
-    Download Observation
-  </button>
-  <button mat-button (click)="onOption(options.DELETE)" class="option-button options-delete">
-    <mat-icon>delete</mat-icon>
-    Delete Observation
-  </button>
-</div>
+<mat-action-list>
+  <mat-list-item (click)="onOption(options.DOWNLOAD)" class="options-download">
+    <mat-icon matListItemIcon>save_alt</mat-icon>
+    <span matListItemTitle>Download Observation</span>
+  </mat-list-item>
+  <mat-list-item (click)="onOption(options.DELETE)" class="options-delete">
+    <mat-icon matListItemIcon>delete</mat-icon>
+    <span matListItemTitle>Delete Observation</span>
+  </mat-list-item>
+</mat-action-list>

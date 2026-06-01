@@ -12,9 +12,10 @@ interface RadioField {
 }
 
 @Component({
-  selector: 'observation-edit-radio',
-  templateUrl: './observation-edit-radio.component.html',
-  styleUrls: ['./observation-edit-radio.component.scss']
+    selector: 'observation-edit-radio',
+    templateUrl: './observation-edit-radio.component.html',
+    styleUrls: ['./observation-edit-radio.component.scss'],
+    standalone: false
 })
 export class ObservationEditRadioComponent {
   @Input() formGroup: UntypedFormGroup

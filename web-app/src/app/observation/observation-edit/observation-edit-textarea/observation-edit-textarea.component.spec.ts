@@ -9,9 +9,10 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ObservationEditTextareaComponent } from './observation-edit-textarea.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-textarea [formGroup]="formGroup" [definition]="definition"></observation-edit-textarea>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: `host-component`,
+    template: `<observation-edit-textarea [formGroup]="formGroup" [definition]="definition"></observation-edit-textarea>`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({

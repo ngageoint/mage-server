@@ -7,9 +7,10 @@ export enum ObservationOption {
 }
 
 @Component({
-  selector: 'observation-options',
-  templateUrl: './observation-options.component.html',
-  styleUrls: ['./observation-options.component.scss']
+    selector: 'observation-options',
+    templateUrl: './observation-options.component.html',
+    styleUrls: ['./observation-options.component.scss'],
+    standalone: false
 })
 export class ObservationOptionsComponent {
   public options: typeof ObservationOption = ObservationOption;

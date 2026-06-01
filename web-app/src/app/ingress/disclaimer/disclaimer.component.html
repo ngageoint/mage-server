@@ -1,5 +1,5 @@
-<div class="container">
-  <div class="header">
+<div class="container" [class.compact]="compact">
+  <div *ngIf="!compact" class="header">
     <div class="header__title">{{title}}</div>
   </div>
 
@@ -8,8 +8,8 @@
   </div>
 
   <div class="actions">
-    <button class="actions__button" mat-stroked-button (click)="onReject()">Exit</button>
-    <button class="actions__button" mat-flat-button color="primary" (click)="onAccept()">Accept</button>
+    <button class="actions__button" matButton="outlined" (click)="onReject()">Exit</button>
+    <button class="actions__button" matButton="filled" (click)="onAccept()">Accept</button>
   </div>
 
 </div>

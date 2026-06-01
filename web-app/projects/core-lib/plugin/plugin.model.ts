@@ -4,7 +4,7 @@ export interface PluginHooks {
   module: Type<unknown>
   adminTab?: {
     title: string
-    icon?: { path: string } | { className: string } | null | undefined
+    icon?: { path: string } | { matIconName: string } | null | undefined
     tabContentComponent: Type<unknown>
   }
 }

@@ -4,12 +4,12 @@ import {
   SystemInfo
 } from '../../../lib/entities/systemInfo/entities.systemInfo';
 import { Substitute, Arg } from '@fluffy-spoon/substitute';
-import { CreateReadSystemInfo, ApiVersion } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
+import { CreateReadSystemInfo } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
 import * as Settings from '../../../lib/models/setting';
 import * as AuthenticationConfiguration from '../../../lib/models/authenticationconfiguration';
 import * as AuthenticationConfigurationTransformer from '../../../lib/transformers/authenticationconfiguration';
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base';
-import { ReadSystemInfo, ReadSystemInfoRequest } from '../../../lib/app.api/systemInfo/app.api.systemInfo';
+import { ApiVersion, ReadSystemInfo, ReadSystemInfoRequest } from '../../../lib/app.api/systemInfo/app.api.systemInfo';
 import { RoleBasedSystemInfoPermissionService } from '../../../lib/permissions/permissions.systemInfo';
 import { SystemInfoPermission } from '../../../lib/entities/authorization/entities.permissions';
 
@@ -23,11 +23,7 @@ const mockEnvironmentInfo: EnvironmentInfo = {
 };
 const mockDisclaimer = {};
 const mockContactInfo = {};
-const mockVersionInfo: ApiVersion = {
-  major: 1,
-  minor: 2,
-  micro: 3
-};
+const mockVersionInfo = '1.2.3';
 
 // Mocked user with role having READ_SYSTEM_INFO permission
 const mockUserWithRole = ({
@@ -100,15 +96,6 @@ describe('CreateReadSystemInfo', () => {
     typeof AuthenticationConfigurationTransformer
   >();
 
-  const mockConfig = {
-    api: {
-      name: 'test-name',
-      nodeVersion: '14.16.1',
-      description: 'test-description',
-      version: { major: 1, minor: 2, micro: 3 }
-    }
-  };
-
   const mockedPermissionsModule = new RoleBasedSystemInfoPermissionService();
 
   beforeEach(() => {
@@ -154,12 +141,13 @@ describe('CreateReadSystemInfo', () => {
     expect(systemInfo.version).to.be.an('object');
     expect(systemInfo.version.major).to.be.a('number');
     expect(systemInfo.version.minor).to.be.a('number');
-    expect(systemInfo.version.micro).to.be.a('number');
+    expect(systemInfo.version.patch).to.be.a('number');
 
     expect(systemInfo.environment).to.eql(mockEnvironmentInfo);
     expect(systemInfo.disclaimer).to.eql(mockDisclaimer);
     expect(systemInfo.contactInfo).to.eql(mockContactInfo);
-    expect(systemInfo.version).to.eql(mockConfig.api.version);
+    expect(systemInfo.serverVersion).to.equal(mockVersionInfo);
+    expect(systemInfo.version).to.eql(ApiVersion);
   });
 
   it("should format the node version as 'major.minor.patch'", async () => {

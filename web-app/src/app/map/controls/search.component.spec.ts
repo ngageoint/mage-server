@@ -18,7 +18,7 @@ import { MatListModule, MatListItem } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   PlacenameSearchResult,
   PlacenameSearchService
@@ -29,6 +29,7 @@ import {
   MobileSearchType,
   WebSearchType
 } from 'src/app/entities/map/entities.map';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('SearchComponent', () => {
   let component: SearchComponent;
@@ -38,20 +39,17 @@ describe('SearchComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        BrowserAnimationsModule,
-        HttpClientTestingModule,
+    declarations: [SearchComponent],
+    imports: [BrowserAnimationsModule,
         MatCardModule,
         MatButtonModule,
         MatIconModule,
         MatInputModule,
         MatListModule,
         MatProgressSpinnerModule,
-        MatSnackBarModule
-      ],
-      declarations: [SearchComponent],
-      providers: []
-    }).compileComponents();
+        MatSnackBarModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
   }));
 
   beforeEach(() => {

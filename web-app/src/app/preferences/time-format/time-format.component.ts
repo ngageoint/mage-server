@@ -8,9 +8,10 @@ interface TimeFormatOption {
 }
 
 @Component({
-  selector: 'time-format',
-  templateUrl: './time-format.component.html',
-  styleUrls: ['./time-format.component.scss']
+    selector: 'time-format',
+    templateUrl: './time-format.component.html',
+    styleUrls: ['./time-format.component.scss'],
+    standalone: false
 })
 export class TimeFormatComponent implements OnInit {
 

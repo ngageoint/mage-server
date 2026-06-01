@@ -2,13 +2,13 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { Api, AuthenticationStrategy } from '../api/api.entity';
 import { UserService } from '../user/user.service';
 import { AuthorizationEvent } from './authorization/authorization.component';
-import { LocalStorageService } from '../http/local-storage.service';
 import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { SignupEvent } from './authentication/@types/signup';
 import { User } from 'core-lib-src/user';
 import { InitializedEvent } from './intialize/initialize.component';
 import * as _ from 'underscore';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 enum IngressState {
   Initialize,
@@ -66,28 +66,31 @@ class Initialize extends Ingress {
 }
 
 @Component({
-  selector: 'ingress',
-  templateUrl: './ingress.component.html',
-  styleUrls: ['./ingress.component.scss'],
-  animations: [
-    trigger('disableOnEnter', [
-      transition(':enter', [])
-    ]),
-    trigger('slide', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)' }),
-        animate('250ms', style({ transform: 'translateX(0%)', opacity: 1 }))
-      ]),
-      transition(':leave', [
-        animate('250ms', style({ transform: 'translateX(-100%)', opacity: 0 }))
-      ])
-    ])
-  ]
+    selector: 'ingress',
+    templateUrl: './ingress.component.html',
+    styleUrls: ['./ingress.component.scss'],
+    animations: [
+        trigger('disableOnEnter', [
+            transition(':enter', [])
+        ]),
+        trigger('slide', [
+            transition(':enter', [
+                style({ transform: 'translateX(100%)' }),
+                animate('250ms', style({ transform: 'translateX(0%)', opacity: 1 }))
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ transform: 'translateX(-100%)', opacity: 0 }))
+            ])
+        ])
+    ],
+    standalone: false
 })
 export class IngressComponent implements OnChanges {
   @Input() api: Api;
   @Input() landing: boolean;
   @Output() complete = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
+  @Output() title = new EventEmitter<string>();
 
   public readonly IngressState: typeof IngressState = IngressState;
 
@@ -98,13 +101,28 @@ export class IngressComponent implements OnChanges {
 
   constructor(
     private userService: UserService,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.api?.currentValue?.initial === true) {
       this.ingress = new Initialize();
+      this.emitTitle();
     }
+  }
+
+  private emitTitle(): void {
+    const titles: Record<IngressState, string> = {
+      [IngressState.Initialize]: 'Initialize Mage',
+      [IngressState.Signin]: 'Sign in to Mage',
+      [IngressState.Signup]: 'Create Account',
+      [IngressState.Authorization]: 'Access Code',
+      [IngressState.Disclaimer]: 'Terms & Conditions',
+      [IngressState.ActiveAccount]: 'Account Created',
+      [IngressState.InactiveAccount]: 'Account Pending',
+      [IngressState.DisabledAccount]: 'Account Disabled',
+    };
+    this.title.emit(titles[this.ingress.state]);
   }
 
   localStrategyFilter(_strategy: AuthenticationStrategy, name: string) {
@@ -117,6 +135,7 @@ export class IngressComponent implements OnChanges {
 
   onSignup(): void {
     this.ingress = new Signup();
+    this.emitTitle();
   }
 
   signup($event: SignupEvent): void {
@@ -125,6 +144,7 @@ export class IngressComponent implements OnChanges {
     } else {
       this.ingress = new Signin();
     }
+    this.emitTitle();
   }
 
   onAuthenticated($event: { user: User; token: string }) {
@@ -134,6 +154,7 @@ export class IngressComponent implements OnChanges {
       },
       error: () => {
         this.ingress = new Authenticated($event.token);
+        this.emitTitle();
       }
     });
   }
@@ -145,8 +166,9 @@ export class IngressComponent implements OnChanges {
   private authorized(token: string) {
     if (this.api.disclaimer?.show === true) {
       this.ingress = new Authorized(token);
+      this.emitTitle();
     } else {
-      this.localStorageService.setToken(token);
+      this.sessionService.setToken(token);
       this.complete.emit();
     }
   }
@@ -154,19 +176,26 @@ export class IngressComponent implements OnChanges {
   onDisclaimer($event: DiscalimeCloseEvent) {
     if ($event.reason === DiscalimerCloseReason.ACCEPT) {
       const ingress = this.ingress as Authorized;
-      this.localStorageService.setToken(ingress.apiToken);
+      this.sessionService.setToken(ingress.apiToken)
       this.complete.emit();
     } else {
-      this.ingress = new Signin();
+      this.sessionService.clearSession();
+      if (this.landing) {
+        this.ingress = new Signin();
+        this.emitTitle();
+      } else {
+        this.cancel.emit();
+      }
     }
   }
 
   onAccountStatus(): void {
     this.ingress = new Signin();
+    this.emitTitle();
   }
 
   onInitialized($event: InitializedEvent): void {
-    this.localStorageService.setToken($event.token);
+    this.sessionService.setToken($event.token);
     this.complete.emit();
   }
 }

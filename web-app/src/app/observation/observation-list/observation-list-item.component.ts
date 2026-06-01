@@ -5,25 +5,25 @@ import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { animate, style, transition, trigger } from '@angular/animations'
 import { FeedPanelService } from '../../feed-panel/feed-panel.service'
 import { MapService } from '../../map/map.service';
-import { UserService } from '../../user/user.service';
 import { EventService } from '../../event/event.service';
-import { LocalStorageService } from '../../http/local-storage.service';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
-  selector: 'observation-list-item',
-  templateUrl: './observation-list-item.component.html',
-  styleUrls: ['./observation-list-item.component.scss'],
-  animations: [
-    trigger('important', [
-      transition(':enter', [
-        style({ height: 0, opacity: 0 }),
-        animate('250ms', style({ height: '*', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('250ms', style({ height: 0, opacity: 0 }))
-      ])
-    ])
-  ]
+    selector: 'observation-list-item',
+    templateUrl: './observation-list-item.component.html',
+    styleUrls: ['./observation-list-item.component.scss'],
+    animations: [
+        trigger('important', [
+            transition(':enter', [
+                style({ height: 0, opacity: 0 }),
+                animate('250ms', style({ height: '*', opacity: 1 })),
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ height: 0, opacity: 0 }))
+            ])
+        ])
+    ],
+    standalone: false
 })
 export class ObservationListItemComponent implements OnChanges {
   @Input() event: any
@@ -53,9 +53,8 @@ export class ObservationListItemComponent implements OnChanges {
 
   constructor(
     private mapService: MapService,
-    private userService: UserService,
+    private sessionService: SessionService,
     private eventService: EventService,
-    private localStorageService: LocalStorageService,
     private feedPanelService: FeedPanelService,
     private snackBar: MatSnackBar) { }
 
@@ -114,7 +113,7 @@ export class ObservationListItemComponent implements OnChanges {
   }
 
   downloadUrl(): string {
-    return `/api/events/${this.observation?.eventId}/observations/${this.observation?.id}.zip?access_token=${this.localStorageService.getToken()}`
+    return `/api/events/${this.observation?.eventId}/observations/${this.observation?.id}.zip?access_token=${this.sessionService.getToken()}`
   }
 
   onRipple(): void {
@@ -135,12 +134,12 @@ export class ObservationListItemComponent implements OnChanges {
   updateItem(): void {
     if (!this.observation || !this.event) return
 
-    this.isUserFavorite = this.observation.favoriteUserIds && this.observation.favoriteUserIds.includes(this.userService.myself.id)
-    this.canEdit = this.userService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.userService.hasPermission('UPDATE_OBSERVATION_ALL')
+    this.isUserFavorite = this.observation.favoriteUserIds && this.observation.favoriteUserIds.includes(this.sessionService.user.id)
+    this.canEdit = this.sessionService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.sessionService.hasPermission('UPDATE_OBSERVATION_ALL')
 
-    const myAccess = this.event.acl[this.userService.myself.id] || {}
+    const myAccess = this.event.acl[this.sessionService.user.id] || {}
     const aclPermissions = myAccess.permissions || []
-    this.canEditImportant = this.userService.myself.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
+    this.canEditImportant = this.sessionService.user.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
 
     const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce((map, form) => {
       map[form.id] = form
@@ -192,7 +191,7 @@ export class ObservationListItemComponent implements OnChanges {
       }
     }
 
-    this.isUserFavorite = this.observation.favoriteUserIds.includes(this.userService.myself.id)
+    this.isUserFavorite = this.observation.favoriteUserIds.includes(this.sessionService.user.id)
 
     this.attachments = this.observation.attachments.filter(attachment => {
       return this.observationForm.forms.find(observationForm => {

@@ -11,9 +11,10 @@ interface AttachmentField {
 }
 
 @Component({
-  selector: 'observation-edit-attachment',
-  templateUrl: './observation-edit-attachment.component.html',
-  styleUrls: ['./observation-edit-attachment.component.scss']
+    selector: 'observation-edit-attachment',
+    templateUrl: './observation-edit-attachment.component.html',
+    styleUrls: ['./observation-edit-attachment.component.scss'],
+    standalone: false
 })
 export class ObservationEditAttachmentComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup

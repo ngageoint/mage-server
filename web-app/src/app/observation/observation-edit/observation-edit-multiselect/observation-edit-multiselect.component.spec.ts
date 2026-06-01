@@ -12,9 +12,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { By } from '@angular/platform-browser'
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-multiselect [definition]="definition" [formGroup]="formGroup"></observation-edit-multiselect>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: `host-component`,
+    template: `<observation-edit-multiselect [definition]="definition" [formGroup]="formGroup"></observation-edit-multiselect>`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({

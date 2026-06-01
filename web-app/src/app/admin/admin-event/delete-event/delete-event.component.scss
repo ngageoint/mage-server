@@ -1,0 +1,39 @@
+.danger-zone {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-error);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.danger-zone-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: var(--mat-sys-title-medium-size);
+  font-weight: 600;
+  color: var(--mat-sys-error);
+}
+
+.danger-zone-description {
+  margin: 0 0 16px;
+}
+
+.confirm-field {
+  width: 100%;
+}
+
+.confirm-mismatch {
+  color: var(--mat-sys-error);
+}
+
+mat-dialog-actions {
+  justify-content: flex-end;
+}
+
+.delete-button:not(:disabled) {
+  --mdc-filled-button-container-color: var(--mat-sys-error);
+  --mdc-filled-button-label-text-color: var(--mat-sys-on-error);
+}

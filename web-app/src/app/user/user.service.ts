@@ -1,30 +1,18 @@
-import { HttpClient, HttpContext, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpEvent, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, tap } from 'rxjs';
-import { LocalStorageService } from '../http/local-storage.service';
-import { BYPASS_TOKEN } from '../http/token.interceptor';
+import { Observable, Subject, tap } from 'rxjs';
+import { BYPASS_TOKEN, SUPPRESS_AUTH_DIALOG } from '../http/token.interceptor';
 import { User } from 'core-lib-src/user';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  amAdmin: boolean;
-
-  private _myself = new BehaviorSubject<any>(null);
-  myself: any;
-  myself$ = this._myself.asObservable();
-
-  private _userEvent = new Subject<{
-    user: any;
-    token: string | null;
-    isAdmin: boolean;
-  }>();
-  userEvent$ = this._userEvent.asObservable();
 
   constructor(
     private httpClient: HttpClient,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) {}
 
   signup(username: string): Observable<any> {
@@ -114,29 +102,19 @@ export class UserService {
       )
       .pipe(
         tap((response: any) => {
-          if (response?.token) {
-            this.localStorageService.setToken(response.token);
-          }
-          this.setUser(response?.user);
+          this.sessionService.setToken(response?.token);
+          this.sessionService.setUser(response?.user);
         })
       );
   }
 
-  getMyself(): Observable<any> {
-    return this.httpClient.get<any>('/api/users/myself').pipe(
+  getMyself(options?: { suppressAuthDialog?: boolean }): Observable<any> {
+    return this.httpClient.get<any>('/api/users/myself', {
+      context: new HttpContext().set(SUPPRESS_AUTH_DIALOG, options?.suppressAuthDialog ?? false)
+    }).pipe(
       tap((user: any) => {
-        this.setUser(user);
+        this.sessionService.setUser(user);
       })
-    );
-  }
-
-  setUser(user: any) {
-    this._myself.next(user);
-    this.myself = user;
-    this.amAdmin = !!(
-      this.myself?.role &&
-      (this.myself.role.name === 'ADMIN_ROLE' ||
-        this.myself.role.name === 'EVENT_MANAGER_ROLE')
     );
   }
 
@@ -150,20 +128,66 @@ export class UserService {
     return this.httpClient.get<any>(`/api/users/${id}`, { params: parameters });
   }
 
-  hasPermission(permission: string): boolean {
-    return !!this.myself?.role?.permissions?.includes(permission);
+  getAllUsers(options: any = {}): Observable<any> {
+    const params = new HttpParams({
+      fromObject: {
+        page_size: options.pageSize ?? 10,
+        page: options.pageIndex ?? 0,
+        term: options.term ?? '',
+        total: options.includeTotalCount !== false ? 'true' : 'false',
+        ...(typeof options.active === 'boolean' && { active: options.active }),
+        ...(typeof options.enabled === 'boolean' && {
+          enabled: options.enabled
+        })
+      }
+    });
+
+    return this.httpClient.get('/api/next-users/search', { params });
+  }
+
+  createUser(user: any): Observable<any> {
+    return this.saveUser('/api/users', 'POST', user);
+  }
+
+  updateUser(id: string, user: any): Observable<any> {
+    return this.saveUser(`/api/users/${id}`, 'PUT', user);
+  }
+
+  deleteUser(userId: string): Observable<void> {
+    return this.httpClient.delete<void>(`/api/users/${userId}`);
+  }
+
+  getRoles(): Observable<any[]> {
+    return this.httpClient.get<any[]>('/api/roles');
+  }
+
+  updateUserPassword(userId: string, auth: any): Observable<any> {
+    return this.httpClient.put(`/api/users/${userId}/password`, auth, { responseType: 'text' });
+  }
+
+  private saveUser(url: string, method: 'POST' | 'PUT', user: any): Observable<any> {
+    const formData = new FormData();
+    Object.keys(user).forEach((k) => {
+      if (user[k] !== null && user[k] !== undefined) {
+        formData.append(k, user[k]);
+      }
+    });
+
+    return method === 'POST'
+      ? this.httpClient.post<any>(url, formData)
+      : this.httpClient.put<any>(url, formData);
   }
 
   addRecentEvent(event: any): Observable<any> {
     return this.httpClient.post<any>(
-      `/api/users/${this.myself.id}/events/${event.id}/recent`,
+      `/api/users/${this.sessionService.user.id}/events/${event.id}/recent`,
       {}
     );
   }
 
   getRecentEventId() {
-    const recentEventIds = this.myself?.recentEventIds ?? [];
-    return recentEventIds.length > 0 ? recentEventIds[0] : null;
+    const recentEventIds = this.sessionService.user?.recentEventIds
+    return recentEventIds?.length > 0 ? recentEventIds[0] : null
   }
 
   logout(): Observable<string> {
@@ -171,9 +195,9 @@ export class UserService {
       .post('/api/logout', null, { responseType: 'text' })
       .pipe(
         tap(() => {
-          this.clearUser();
+          this.sessionService.clearSession()
         })
-      );
+      )
   }
 
   saveProfile(user: any): Observable<HttpEvent<any>> {
@@ -190,37 +214,15 @@ export class UserService {
     });
   }
 
-  updatePassword(password: string, newPassword: string): Observable<any> {
-    return this.httpClient.put(
-      `/api/users/myself/password`,
-      {
-        username: this.myself.username,
-        password: password,
-        newPassword: newPassword,
-        newPasswordConfirm: newPassword
-      },
-      {
-        context: new HttpContext().set(BYPASS_TOKEN, true),
-        responseType: 'text'
-      }
-    );
-  }
-
-  acceptDisclaimer(): void {
-    const user = this.myself;
-    if (!user) return;
-
-    this._userEvent.next({
-      user,
-      token: this.localStorageService.getToken?.() ?? null,
-      isAdmin: !!this.amAdmin
-    });
-  }
-
-  private clearUser() {
-    this.myself = null;
-    this.amAdmin = null;
-    this._myself.next(null);
-    this.localStorageService.removeToken();
+  updatePassword(password: string, newPassword): Observable<any> {
+    return this.httpClient.put(`/api/users/myself/password`, {
+      username: this.sessionService.user?.username,
+      password: password,
+      newPassword: newPassword,
+      newPasswordConfirm: newPassword
+    }, {
+      context: new HttpContext().set(BYPASS_TOKEN, true),
+      responseType: 'text'
+    })
   }
 }

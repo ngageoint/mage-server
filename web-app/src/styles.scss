@@ -2,7 +2,6 @@
 @import '@ng-select/ng-select/themes/material.theme.css';
 @import './roboto.scss';
 @import './leaflet.scss';
-@import '../admin/src/css/map.scss';
 
 html,
 body {
@@ -19,6 +18,28 @@ app {
   height: 100%;
 }
 
+.application > *:not(router-outlet) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// Angular Material sets display: block and align-self: flex-start on the trailing meta slot for
+// multi-line list items with leading icons. Override to keep the slot centered.
+mat-nav-list .mdc-list-item--with-leading-icon.mdc-list-item--with-trailing-meta.mdc-list-item--with-two-lines .mdc-list-item__end,
+mat-nav-list .mdc-list-item--with-leading-icon.mdc-list-item--with-trailing-meta.mdc-list-item--with-three-lines .mdc-list-item__end {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feed-panel {
+  --mat-bottom-sheet-container-background-color: white;
+}
+
 .feed-panel .mat-bottom-sheet-container {
   position: absolute !important;
   left: 0;
@@ -26,12 +47,10 @@ app {
   min-width: 500px;
 }
 
-.form-remove-snackbar {
-  position: absolute;
-  left: 29px;
-  bottom: 0;
+.cdk-global-overlay-wrapper:has(.form-remove-snackbar) {
+  justify-content: flex-start !important;
 }
 
-mat-card {
-  padding: 16px;
+.cdk-overlay-pane:has(.form-remove-snackbar) {
+  margin-left: 78px !important;
 }

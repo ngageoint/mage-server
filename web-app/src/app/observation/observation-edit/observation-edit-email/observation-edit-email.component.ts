@@ -9,9 +9,10 @@ interface EmailField {
 }
 
 @Component({
-  selector: 'observation-edit-email',
-  templateUrl: './observation-edit-email.component.html',
-  styleUrls: ['./observation-edit-email.component.scss']
+    selector: 'observation-edit-email',
+    templateUrl: './observation-edit-email.component.html',
+    styleUrls: ['./observation-edit-email.component.scss'],
+    standalone: false
 })
 export class ObservationEditEmailComponent {
   @Input() formGroup: UntypedFormGroup

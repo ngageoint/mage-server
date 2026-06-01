@@ -1,18 +1,16 @@
-<mat-list>
-  <mat-list-item class="item" (click)="onInfo()">
+<div class="popup">
+  <div class="popup__content">
     <ng-container *ngIf="hasContent; else noContent">
-      <span matListItemTitle class="overline">{{timestamp | moment}}</span>
-      <span matListItemLine class="mat-body-2">{{primary || "&nbsp;"}}</span>
-      <span matListItemLine class="mat-body-1">{{secondary || "&nbsp;"}}</span>
+      <span class="item__timestamp">{{timestamp | moment}}</span>
+      <span class="item__primary">{{primary || "&nbsp;"}}</span>
+      <span class="item__secondary">{{secondary || "&nbsp;"}}</span>
     </ng-container>
-
     <ng-template #noContent>
-      <span matListItemTitle>No Content</span>
-      <span matListItemLine>&nbsp;</span>
+      <span class="item__primary">{{feed.title}}</span>
     </ng-template>
+  </div>
 
-    <button mat-icon-button matListItemMeta>
-      <mat-icon ngClass="action">info_outline</mat-icon>
-    </button>
-  </mat-list-item>
-</mat-list>
+  <button matIconButton (click)="onInfo()">
+    <mat-icon class="action">info_outline</mat-icon>
+  </button>
+</div>

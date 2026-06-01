@@ -1,51 +1,29 @@
-@import 'variables.scss';
-
-$font-xl: 32px;
-$font-lg: 18px;
-$font-md: 16px;
-$font-sm: 14px;
-$font-xs: 12px;
-
 :host {
-  display: block;
-}
-
-:host ::ng-deep label {
-  display: unset;
-  max-width: unset;
-  margin-bottom: unset;
-  font-weight: unset;
-}
-
-:host ::ng-deep .mat-mdc-dialog-container {
-  --mdc-dialog-container-color: #ffffff;
-}
-
-:host ::ng-deep .mdc-dialog__surface {
-  border-radius: 16px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: min(580px, calc(90vh - 48px));
 }
 
 .export {
-  width: 525px;
-  height: 580px;
-  display: block;
-  box-sizing: border-box;
-
-  @media (max-width: 800px) {
-    min-width: 0;
-    max-width: calc(100vw - 32px);
-    min-height: 560px;
-  }
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .export-panel {
-  width: 525px;
-  height: 580px;
-  background: #ffffff;
-  box-sizing: border-box;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+mat-dialog-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .export-filter {
@@ -53,49 +31,12 @@ $font-xs: 12px;
   margin-bottom: 16px;
 }
 
-:host ::ng-deep .mat-dialog-title,
-:host ::ng-deep [mat-dialog-title] {
-  margin: 0;
-  padding: 20px 24px 16px 24px;
-  font-size: $font-lg;
-  font-weight: 700;
-  line-height: 1.25;
-  color: #111827;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-.mat-dialog-content {
-  display: block;
-  flex: 1;
-  overflow-y: auto !important;
-  margin: 0;
-  padding: 24px !important;
-  box-sizing: border-box;
-}
-
 .export-table {
   max-height: 360px;
   overflow-y: auto;
   overflow-x: hidden;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.export-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin: 0 !important;
-  padding: 16px 24px 20px 24px !important;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-  box-sizing: border-box;
-}
-
-.actions-divider {
-  margin: 0;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-medium);
 }
 
 .export-row {
@@ -108,93 +49,86 @@ $font-xs: 12px;
   border-bottom-width: 0;
 }
 
+.download-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-tertiary);
+}
+
+.retry-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-tertiary);
+}
+
+.delete-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-error);
+}
+
 .loading-shade {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: color-mix(in srgb, var(--mat-sys-scrim) 15%, transparent);
   z-index: 289;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.export-details-icon {
-  height: 18px;
-  width: 18px;
-  font-size: 18px;
-  margin-right: 8px;
+.export-detail {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.export-details-info {
-  color: rgba(0, 0, 0, 0.6);
-  margin-left: 16px;
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--mat-sys-title-small-size);
+  font-weight: var(--mat-sys-title-small-weight);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.detail-body {
+  margin-left: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.expand-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-on-surface-variant);
+}
+
+.expand-icon {
+  transition: transform 250ms ease;
+
+  &.expanded {
+    transform: rotate(180deg);
+  }
 }
 
 .export-detail-row {
   min-height: 0;
 }
 
-.export-detail {
-  overflow: hidden;
-  display: flex;
-}
-
-mat-checkbox {
-  margin: 0 10px 0 0;
-}
-
-:host ::ng-deep .mat-mdc-form-field {
-  width: 100%;
-}
-
-:host ::ng-deep .mat-mdc-text-field-wrapper,
-:host ::ng-deep .mat-form-field-flex {
-  min-height: 40px;
-  align-items: center;
-}
-
-:host ::ng-deep .mat-mdc-form-field-infix,
-:host ::ng-deep .mat-form-field-infix {
-  min-height: 40px;
-}
-
-:host ::ng-deep .mdc-floating-label,
-:host ::ng-deep .mat-form-field-label {
-  font-size: $font-xs;
-}
-
-:host ::ng-deep .mat-mdc-input-element,
-:host ::ng-deep .mat-mdc-select-value,
-:host ::ng-deep .mat-select-value {
-  font-size: $font-sm;
-}
-
-:host ::ng-deep button[mat-button],
-:host ::ng-deep .mat-mdc-button {
-  min-height: 40px;
-  border-radius: 8px;
-  font-size: $font-sm;
-  font-weight: 600;
-  text-transform: none;
-}
-
 @media (max-width: 800px) {
-  .mat-dialog-content {
-    padding: 20px !important;
-  }
-
-  .export-actions {
-    padding: 16px 20px 20px 20px !important;
-  }
-
   .export-table {
     max-height: 300px;
-  }
-
-  .export-panel {
-    min-height: 560px;
   }
 }

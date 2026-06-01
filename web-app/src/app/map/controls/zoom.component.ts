@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Output,
-  AfterViewInit,
-  ViewChild,
-  ElementRef
-} from '@angular/core';
-import { DomEvent } from 'leaflet';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 export enum ZoomDirection {
   IN,
@@ -18,25 +10,13 @@ export interface ZoomEvent {
 }
 
 @Component({
-  selector: 'map-control-zoom',
-  templateUrl: './zoom.component.html',
-  styleUrls: ['./zoom.component.scss']
+    selector: 'map-control-zoom',
+    templateUrl: './zoom.component.html',
+    styleUrls: ['./zoom.component.scss'],
+    standalone: false
 })
-export class ZoomComponent implements AfterViewInit {
-  @ViewChild('zoomOutButton') zoomOutButton!: ElementRef<HTMLElement>;
-  @ViewChild('zoomInButton') zoomInButton!: ElementRef<HTMLElement>;
-
+export class ZoomComponent {
   @Output() onZoom = new EventEmitter<ZoomEvent>();
-
-  ngAfterViewInit(): void {
-    if (this.zoomOutButton?.nativeElement) {
-      DomEvent.disableClickPropagation(this.zoomOutButton.nativeElement);
-    }
-
-    if (this.zoomInButton?.nativeElement) {
-      DomEvent.disableClickPropagation(this.zoomInButton.nativeElement);
-    }
-  }
 
   onZoomIn($event: MouseEvent): void {
     $event.stopPropagation();

@@ -1,0 +1,257 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+  <div class="nav-actions" *ngIf="layer && (hasLayerEditPermission || hasLayerDeletePermission)">
+    <button matButton="outlined" *ngIf="isLayerFileBased() && hasLayerEditPermission" (click)="downloadLayer()"
+      [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating">
+      <mat-icon fontSet="material-symbols-outlined">download</mat-icon>Download
+    </button>
+    <button matButton="outlined" class="delete-layer-button" *ngIf="hasLayerDeletePermission" (click)="deleteLayer()">
+      <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+    </button>
+  </div>
+</admin-breadcrumb>
+
+<div class="loading-state" *ngIf="loading && !layer">
+  <mat-spinner></mat-spinner>
+  <p>Loading layer details...</p>
+</div>
+
+<div class="error-state" *ngIf="error && !layer">
+  <mat-icon fontSet="material-symbols-outlined" class="error-icon">error</mat-icon>
+  <p>{{ error }}</p>
+  <button matButton="filled" (click)="ngOnInit()">Retry</button>
+</div>
+
+<div class="layer-page" *ngIf="layer && !loading">
+  <mat-card appearance="outlined" class="details-card">
+    <div class="layer-header">
+      <div class="media-content">
+        <div class="layer-icon-placeholder">
+          <mat-icon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
+        </div>
+      </div>
+
+      <div class="layer-info">
+        <div class="layer-name-row">
+          <span class="layer-name">{{ layer.name }}</span>
+          <span class="layer-type-badge">{{ layer.type }}</span>
+        </div>
+        <span class="layer-description" *ngIf="layer.description">{{ layer.description }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.type === 'Imagery'">
+      <span class="detail-label">Base Layer</span>
+      <span class="detail-value">{{ layer.base }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.type === 'Imagery'">
+      <span class="detail-label">Format</span>
+      <span class="detail-value">{{ layer.format }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.type === 'Imagery'">
+      <span class="detail-label">URL</span>
+      <span class="detail-value">{{ layer.url }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+      <span class="detail-label">Layers</span>
+      <span class="detail-value">{{ layer.wms?.layers }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+      <span class="detail-label">Styles</span>
+      <span class="detail-value">{{ layer.wms?.styles }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+      <span class="detail-label">WMS Format</span>
+      <span class="detail-value">{{ layer.wms?.format }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+      <span class="detail-label">Transparent</span>
+      <span class="detail-value">{{ layer.wms?.transparent }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+      <span class="detail-label">Version</span>
+      <span class="detail-value">{{ layer.wms?.version }}</span>
+    </div>
+
+    <mat-divider class="section-divider" *ngIf="hasLayerEditPermission"></mat-divider>
+
+    <div class="layer-actions" *ngIf="hasLayerEditPermission">
+      <button matButton="outlined" type="button" (click)="editLayerDetails()">
+        <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+        Edit Layer
+      </button>
+    </div>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="section-card" *ngIf="layer.invalid">
+    <h3 class="section-title">GeoPackage Validation Errors</h3>
+
+    <div class="error-item" *ngFor="let error of layer.invalid.errors">
+      <span *ngIf="error.warning" class="warning-message">
+        <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ error.error }}
+      </span>
+      <span *ngIf="error.fatal" class="error-message">
+        <mat-icon fontSet="material-symbols-outlined">block</mat-icon>{{ error.error }}
+      </span>
+    </div>
+
+    <mat-card appearance="outlined" class="danger-zone-card" *ngIf="layer.state === 'unavailable'">
+      <h3 class="danger-zone-title">Proceed With Layer Creation</h3>
+      <p class="danger-zone-description">
+        The GeoPackage used to create this layer is invalid. This layer is not currently available to any user of
+        MAGE. You may proceed with the creation of this layer, but be aware doing so
+        <strong>may result in unintended consequences including app and server crashes.</strong>
+      </p>
+      <button matButton="outlined" class="warning-button" (click)="confirmCreateLayer()">
+        <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>Proceed With Layer Creation
+      </button>
+    </mat-card>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="section-card" *ngIf="layer.type === 'GeoPackage' && layer.state === 'processing'">
+    <h3 class="processing-title">
+      <mat-icon fontSet="material-symbols-outlined" class="spin">progress_activity</mat-icon>Processing
+    </h3>
+    <p class="processing-description">
+      The GeoPackage file is being optimized for maximum performance across all MAGE clients. This includes
+      indexing the feature layers and processing the tile layers for quick access.
+    </p>
+
+    <div class="processing-status" *ngFor="let status of layer.processing">
+      <h5 class="status-header">
+        <mat-icon *ngIf="status.complete" fontSet="material-symbols-outlined" class="status-complete">check</mat-icon>
+        <span *ngIf="status.type === 'tile'">"{{ status.layer }}" layer optimization</span>
+        <span *ngIf="status.type === 'feature'">"{{ status.layer }}" layer index</span>
+      </h5>
+
+      <ng-container *ngIf="!status.total">
+        <mat-progress-bar [mode]="status.complete ? 'determinate' : 'indeterminate'" [value]="100"></mat-progress-bar>
+        <div class="progress-label" *ngIf="!status.complete">{{ status.description }}</div>
+      </ng-container>
+
+      <ng-container *ngIf="status.total">
+        <mat-progress-bar mode="determinate" [value]="(status.count / status.total) * 100"></mat-progress-bar>
+        <div class="progress-label">{{ status.count }} of {{ status.total }} {{ status.type }}s</div>
+      </ng-container>
+    </div>
+  </mat-card>
+
+  <ng-container *ngIf="layer.state === 'available'">
+    <mat-card appearance="outlined" class="section-card" *ngIf="layer.type === 'Feature' && hasLayerEditPermission">
+      <h3 class="section-title">Add KML or KMZ Data</h3>
+      <p class="section-description">Add features to this layer by uploading a KML, KMZ, or zipped shapefile (50MB max).</p>
+
+      <div class="completed-uploads-section" *ngIf="completedUploads.length > 0">
+        <h4 class="completed-uploads-title">Upload Results:</h4>
+
+        <div *ngFor="let status of completedUploads">
+          <div class="upload-status" *ngIf="!status.error" [class.upload-status--warning]="(status.features || 0) === 0">
+            <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
+            <span>Created {{ status.features || 0 }} Features From File {{ status.name }}</span>
+          </div>
+
+          <div class="upload-error" *ngIf="status.error">
+            <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ status.name }}: {{ status.error }}
+          </div>
+        </div>
+      </div>
+
+      <div class="upload-item">
+        <div class="upload-placeholder">
+          <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="isUploading">
+            <mat-icon fontSet="material-symbols-outlined" [class.spin]="isUploading">
+              {{ isUploading ? 'progress_activity' : 'upload' }}
+            </mat-icon>
+            {{ isUploading ? 'Uploading...' : (upload.file?.name || 'Choose KML/KMZ File') }}
+          </button>
+          <input #fileInput type="file" class="file-input" accept=".kml,.kmz,.zip" (change)="onFileSelected($event)" [disabled]="isUploading">
+          <button
+            matIconButton
+            *ngIf="upload.file"
+            (click)="clearUpload()"
+            [disabled]="isUploading"
+            aria-label="Remove selected file"
+          >
+            <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+          </button>
+        </div>
+
+        <div class="upload-info" *ngIf="upload.file && !upload.error && !isUploading">
+          {{ (upload.file.size / 1024).toFixed(2) }} KB
+        </div>
+
+        <div class="upload-error" *ngIf="upload.error">
+          <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ upload.error }}
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="events-card">
+      <div class="card-header">
+        <h3 class="section-title">Events</h3>
+        <div class="card-actions" *ngIf="hasLayerEditPermission">
+          <button matButton="outlined" (click)="addEventToLayer()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Event
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+          <mat-label>Search events</mat-label>
+          <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
+          <button matSuffix matIconButton *ngIf="eventSearchTerm" (click)="onEventSearchChange()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      <div class="events-content">
+        <mat-nav-list *ngIf="eventsPage.totalCount > 0 && !loadingEvents">
+          <mat-list-item *ngFor="let event of eventsDataSource.data" [routerLink]="['../events', event.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
+            <span matListItemTitle>{{ event.name }}</span>
+            <span matListItemLine *ngIf="event.description">{{ event.description }}</span>
+            <span matListItemMeta *ngIf="hasLayerEditPermission">
+              <button
+                matIconButton
+                (click)="removeEventFromLayer(event, $event)"
+                aria-label="Remove Event"
+              >
+                <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+              </button>
+            </span>
+          </mat-list-item>
+        </mat-nav-list>
+
+        <div class="empty-state" *ngIf="eventsPage.totalCount === 0 && !loadingEvents">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+          <div class="empty-state-text">This layer is not part of any events</div>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingEvents">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </div>
+
+      <mat-paginator
+        [length]="eventsPage.totalCount || 0"
+        [pageSize]="eventsPageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onEventsPageChange($event)"
+      ></mat-paginator>
+    </mat-card>
+  </ng-container>
+
+  <mat-card appearance="outlined" class="section-card" *ngIf="layer.state === 'available'">
+    <h3 class="section-title">Layer Preview</h3>
+    <mage-layer-preview [layer]="layer"></mage-layer-preview>
+  </mat-card>
+</div>

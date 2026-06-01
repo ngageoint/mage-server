@@ -1,5 +1,9 @@
 mat-toolbar {
   background-color: white;
+
+  button {
+    color: var(--mat-sys-primary);
+  }
 }
 
 .navigation {
@@ -8,7 +12,7 @@ mat-toolbar {
 }
 
 .user-container {
-  background-color: #E1E2E1;
+  background-color: var(--mat-sys-surface-container);
   position: absolute;
   top: 64px;
   bottom: 0;
@@ -16,12 +20,14 @@ mat-toolbar {
   overflow-y: auto;
 }
 
-.user-info {
-  flex-grow: 1;
-}
-
 .user-card {
   margin: 8px;
+  overflow: hidden;
+  --mat-card-elevated-container-color: white;
+}
+
+mat-card-content {
+  padding-bottom: 0;
 }
 
 .user-map {
@@ -33,9 +39,6 @@ mat-toolbar {
   width: 100%;
   height: 200px;
   z-index: 0;
-  overflow: hidden;
-  border-top-right-radius: 4px;
-  border-top-left-radius: 4px;
 }
 
 .user-avatar {
@@ -61,83 +64,33 @@ mat-toolbar {
 }
 
 .user__name {
-  padding-left: 72px;
-  margin-top: 16px;
-  color: rgba(0, 0, 0, 0.87);
-  font: 400 34px/40px Roboto, "Helvetica Neue", sans-serif;
+  text-align: center;
+  margin-top: 8px;
+  font: var(--mat-sys-headline-medium);
+  color: var(--mat-sys-on-surface);
 }
 
-.user__divider {
-  margin: 16px -16px 16px 72px;
-  height: 0;
-  border: none;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: rgba(0, 0, 0, 0.12)
+mat-divider {
+  margin: 16px -16px 0;
 }
 
-.user__row {
-  margin-left: 16px;
-  padding: 8px 16px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  cursor: pointer;
+mat-action-list {
+  margin: 0 -8px;
+  --mat-list-list-item-container-shape: var(--mat-sys-corner-full);
+  --mat-list-list-item-leading-icon-color: var(--mat-sys-primary);
+  --mat-list-list-item-hover-leading-icon-color: var(--mat-sys-primary);
 }
 
-.user__row:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.user__icon {
-  margin-right: 16px;
-}
-
-.user__icon--location {
-  color: #1976D2;
-}
-
-.user__icon--phone {
-  color: #4CAF50;
-}
-
-.user__icon--email {
-  color: #03A9F4
+.row-phone {
+  --mat-list-list-item-leading-icon-color: var(--mat-sys-tertiary);
+  --mat-list-list-item-hover-leading-icon-color: var(--mat-sys-tertiary);
 }
 
 .user__location--accuracy {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 16px;
-  color: rgba(0, 0, 0, 0.6);
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .user__location--provider {
   text-transform: uppercase;
-}
-
-.user__text {
-  font: 400 16px/28px Roboto, "Helvetica Neue", sans-serif;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.user-observations__subheader {
-  margin-left: 16px;
-  font: 500 24px/48px Roboto, "Helvetica Neue", sans-serif;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.user-observations {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  margin-top: 16px;
-}
-
-.user-observation {
-  margin: 0 8px 8px;
-}
-
-.listViewPort {
-  flex-grow: 1;
 }
