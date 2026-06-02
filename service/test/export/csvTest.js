@@ -9,8 +9,6 @@ const JSZip = require('jszip')
 const { Csv: CsvExporter } = require('../../lib/export/csv')
 const createToken = require('../mockToken')
 
-require('sinon-mongoose');
-
 const TokenModel = require('../../lib/models/token');
 const UserModel = require('../../lib/models/user');
 const DeviceModel = require('../../lib/models/device');

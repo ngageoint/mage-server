@@ -4,8 +4,6 @@ const sinon = require('sinon')
     , expect = require('chai').expect
     , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('sinon-mongoose');
-
 describe("authentication configuration model tests", function () {
 
     afterEach(function () {

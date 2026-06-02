@@ -11,9 +11,6 @@ const request = require('supertest')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-
-require('sinon-mongoose');
-
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
 

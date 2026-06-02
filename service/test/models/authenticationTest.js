@@ -5,8 +5,6 @@ const sinon = require('sinon')
   , mongoose = require('mongoose')
   , Authentication = require('../../lib/models/authentication');
 
-require('sinon-mongoose');
-
 describe("authentication model", function () {
 
   afterEach(function () {

@@ -10,7 +10,6 @@ const sinon = require('sinon')
     , GeoPackageAPI = require('@ngageoint/geopackage');
 
 require('chai').should();
-require('sinon-mongoose');
 
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');

@@ -9,8 +9,6 @@ const Paging = require('../lib/utilities/paging.js'),
     User = require('../lib/models/user.js'),
     Device = require('../lib/models/device.js');
 
-require('sinon-mongoose');
-
 chai.use(sinonChai);
 
 describe("Paging Tests", function () {

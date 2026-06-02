@@ -2,7 +2,6 @@ var sinon = require('sinon')
   , proxyquire = require('proxyquire');
 
 require('chai').should();
-require('sinon-mongoose');
 
 describe("form upload tests", function() {
 

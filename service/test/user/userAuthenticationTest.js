@@ -7,8 +7,6 @@ const sinon = require('sinon')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('sinon-mongoose');
-
 describe("user authentication tests", function () {
 
   let app;
