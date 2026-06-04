@@ -64,9 +64,8 @@ exports.createLocations = function(locations, user, event, callback) {
   async.each(locations, function(location, done) {
     var normalized = normalizeLocation(location, user, event);
 
-    LocationModel.findByIdAndUpdate({_id: location._id}, normalized, options, function(err) {
-      done(err);
-    });
+    LocationModel.findOneAndUpdate({_id: location._id}, normalized, options)
+      .then(() => done(), err => done(err));
   }, function(err) {
     if (err) {
       log.error('Error creating locations', err);
@@ -79,19 +78,14 @@ exports.createLocations = function(locations, user, event, callback) {
 };
 
 exports.removeLocations = function(event, callback) {
-  LocationModel.remove({'properties.event._id': event._id}, function(err) {
-    if (callback) {
-      callback(err);
-    }
-  });
+  LocationModel.deleteMany({'properties.event._id': event._id})
+    .then(() => { if (callback) callback(null); }, err => { if (callback) callback(err); });
 };
 
 exports.getLastLocation = function(event, callback) {
-
-  LocationModel.find({'properties.event._id': event._id},{}, {limit: 1, sort: {'properties.timestamp': -1}}, function(err, locations) {
-    if (err) return callback(err);
-
-    var location = locations.length ? locations[0] : null;
-    callback(err, location);
-  });
+  LocationModel.find({'properties.event._id': event._id}, {}, {limit: 1, sort: {'properties.timestamp': -1}})
+    .then(locations => {
+      var location = locations.length ? locations[0] : null;
+      callback(null, location);
+    }, err => callback(err));
 };

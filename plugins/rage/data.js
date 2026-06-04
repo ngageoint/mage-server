@@ -68,7 +68,7 @@ function syncUsers(done) {
     async.each(users, function(user, done) {
       user._id = user.id;
       delete user.id;
-      User.Model.findByIdAndUpdate(user._id, user, {upsert: true, new: true}, done);
+      User.Model.findByIdAndUpdate(user._id, user, {upsert: true, new: true}).then(() => done(), done);
     },
     function(err) {
       done(err);
@@ -86,7 +86,7 @@ function syncDevices(done) {
     async.each(devices, function(device, done) {
       device._id = device.id;
       delete device.id;
-      Device.Model.findByIdAndUpdate(device._id, device, {upsert: true, new: true}, done);
+      Device.Model.findByIdAndUpdate(device._id, device, {upsert: true, new: true}).then(() => done(), done);
     },
     function(err) {
       done(err);
@@ -105,7 +105,7 @@ function syncTeams(done) {
       team._id = team.id;
       delete team.id;
       team.userIds = team.users.map(function(user) { return user.id; });
-      Team.TeamModel.findByIdAndUpdate(team._id, team, {upsert: true, new: true}, done);
+      Team.TeamModel.findByIdAndUpdate(team._id, team, {upsert: true, new: true}).then(() => done(), done);
     },
     function(err) {
       done(err);
@@ -138,22 +138,20 @@ function syncEvents(done) {
       event.collectionName = 'observations' + event._id;
       event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
       event.layerIds = event.layers.map(function(layer) { return layer.id; });
-      Event.Model.findByIdAndUpdate(event._id, event, {upsert: true, new: false}, function(err, oldEvent) {
-        if (err) return done(err);
-
-        if (!oldEvent || !oldEvent.id) {
-          log.info('calling create collection');
-          createCollection('observations' + event._id, function(err) {
-            if (err) return done(err);
-
-            events.push(event);
+      Event.Model.findByIdAndUpdate(event._id, event, {upsert: true, new: false})
+        .then(oldEvent => {
+          if (!oldEvent || !oldEvent.id) {
+            log.info('calling create collection');
+            createCollection('observations' + event._id, function(err) {
+              if (err) return done(err);
+              events.push(event);
+              done();
+            });
+          } else {
+            events.push(oldEvent);
             done();
-          });
-        } else {
-          events.push(oldEvent);
-          done();
-        }
-      });
+          }
+        }, done);
     },
     function(err) {
       done(err);
@@ -194,21 +192,20 @@ function syncLayers(done) {
       delete layer.id;
       layer.collectionName = 'features' + layer._id;
 
-      Layer.Model.findByIdAndUpdate(layer._id, layer, {upsert: true, new: false}, function(err, oldLayer) {
-        if (err) return done(err);
+      Layer.Model.findByIdAndUpdate(layer._id, layer, {upsert: true, new: false})
+        .then(oldLayer => {
+          if (layer.type !== 'Feature') return done();
 
-        if (layer.type !== 'Feature') return done();
-
-        if (!oldLayer || !oldLayer.id) {
-          createCollection('features' + layer._id, function() {
-            featureLayers.push(layer);
+          if (!oldLayer || !oldLayer.id) {
+            createCollection('features' + layer._id, function() {
+              featureLayers.push(layer);
+              done();
+            });
+          } else {
+            featureLayers.push(oldLayer);
             done();
-          });
-        } else {
-          featureLayers.push(oldLayer);
-          done();
-        }
-      });
+          }
+        }, done);
     },
     function(err) {
       done(err);
@@ -229,7 +226,7 @@ function syncFeatures(done) {
       async.each(featureCollection.features, function(feature, done) {
         feature._id = feature.id;
         delete feature.id;
-        Feature.featureModel(layer).findByIdAndUpdate(feature._id, feature, {upsert: true, new: true}, done);
+        Feature.featureModel(layer).findByIdAndUpdate(feature._id, feature, {upsert: true, new: true}).then(() => done(), done);
       },
       function(err) {
         done(err);
@@ -290,7 +287,7 @@ function syncObservations(done) {
 
           observation['$push'] = {states: state};
 
-          Observation.observationModel(event).update({_id: id}, observation, {upsert: true}, done);
+          Observation.observationModel(event).updateOne({_id: id}, observation, {upsert: true}).then(() => done(), done);
         },
         function(err) {
           lastObservationTimes[event.collectionName] = lastTime;
@@ -391,10 +388,11 @@ function syncUserLocations(event, locations, done) {
     locationCollection: function(done) {
       // throw all this users locations in the location collection
       async.each(locations, function(location, done) {
-        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true, new: true}, function(err) {
-          if (err) log.error('error inserting location into locations collection', err);
-          done();
-        });
+        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true, new: true})
+          .then(() => done(), err => {
+            log.error('error inserting location into locations collection', err);
+            done();
+          });
       },
       function(err) {
         done(err);

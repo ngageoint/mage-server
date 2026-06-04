@@ -23,11 +23,9 @@ exports.initialize = function(app, callback) {
 
   var mongo = config.mongo;
   log.info('Geoserver using mongodb connection uri %s', mongo.uri);
-  mongoose.connect(mongo.uri, mongo.options, function(err) {
-    if (err) {
-      log.error('Error connecting to mongo database, please make sure mongodb is running.', err);
-      throw err;
-    }
+  mongoose.connect(mongo.uri, mongo.options).catch(err => {
+    log.error('Error connecting to mongo database, please make sure mongodb is running.', err);
+    throw err;
   });
 
   var geoserver = setupGeoserverProxy();

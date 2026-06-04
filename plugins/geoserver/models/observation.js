@@ -58,42 +58,32 @@ function createOrUpdateObservation(observation, event, user, callback) {
     new: true
   };
 
-  ObservationModel.findOneAndUpdate({_id: observation.id, 'properties.event._id': event._id}, observation, options, function(err, observation) {
-    if (err) {
+  ObservationModel.findOneAndUpdate({_id: observation.id, 'properties.event._id': event._id}, observation, options)
+    .then(observation => {
+      if (callback) callback(null, observation);
+    }, err => {
       log.error('Error creating observation', err);
-    }
-
-    if (callback) {
-      callback(err, observation);
-    }
-  });
+      if (callback) callback(err);
+    });
 }
 
 exports.createObservation = createOrUpdateObservation;
 exports.updateObservation = createOrUpdateObservation;
 
 exports.removeObservation = function(observationId, event) {
-  ObservationModel.findOneAndRemove({_id: observationId, 'properties.event._id': event._id}, function(err) {
-    if (err) {
-      log.error('Error removing observation', err);
-    }
-  });
+  ObservationModel.findOneAndDelete({_id: observationId, 'properties.event._id': event._id})
+    .catch(err => log.error('Error removing observation', err));
 };
 
 exports.removeObservations = function(event, callback) {
-  ObservationModel.remove({'properties.event._id': event._id}, function(err) {
-    if (callback) {
-      callback(err);
-    }
-  });
+  ObservationModel.deleteMany({'properties.event._id': event._id})
+    .then(() => { if (callback) callback(null); }, err => { if (callback) callback(err); });
 };
 
 exports.getLastObservation = function(event, callback) {
-
-  ObservationModel.find({'properties.event._id': event._id}, {}, {limit: 1, sort: {lastModified: -1}}, function(err, observations) {
-    if (err) return callback(err);
-
-    const observation = observations.length ? observations[0] : null;
-    callback(err, observation);
-  });
+  ObservationModel.find({'properties.event._id': event._id}, {}, {limit: 1, sort: {lastModified: -1}})
+    .then(observations => {
+      const observation = observations.length ? observations[0] : null;
+      callback(null, observation);
+    }, err => callback(err));
 };

@@ -14,16 +14,11 @@ const { mongooseLogger } = require('../../logger');
 
 // setup mongoose to talk to mongodb
 const mongodbConfig = config.mongodb;
-mongoose.connect(
-  mongodbConfig.url,
-  { server: { poolSize: mongodbConfig.poolSize } },
-  function(err) {
-    if (err) {
-      log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
-      throw err;
-    }
-  }
-);
+mongoose.connect(mongodbConfig.url, { minPoolSize: 1, maxPoolSize: 1 })
+  .catch(err => {
+    log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    throw err;
+  });
 
 
 mongoose.set('debug', function(collection, method, query, doc, options) {
@@ -113,41 +108,41 @@ function pushAttachments(done) {
         const project = { "$project": { esriId: true, lastModified: true, attachments: true } };
         const unwind = { "$unwind": "$attachments" };
         const sort = { "$sort": { "attachments.lastModified": 1 } };
-        Observation.observationModel(event).aggregate([{"$match": observationMatch}], project, sort, unwind, function(err, aggregate) {
-          if (err) return done(err);
-          log.info(aggregate.length + ' have changed');
+        Observation.observationModel(event).aggregate([{"$match": observationMatch}, project, sort, unwind])
+          .then(aggregate => {
+            log.info(aggregate.length + ' have changed');
 
-          async.each(
-            aggregate,
-            function(observation, done) {
-              if (observation.attachments.esriId) {
-                updateEsriAttachment(observation.esriId, observation.attachments, function(err) {
-                  if (err) {
-                    log.error('error updating ESRI attachment', err);
-                  }
-                  done();
-                });
-              } else {
-                createEsriAttachment(observation.esriId, observation.attachments, function(err, esriAttachmentId) {
-                  if (err) {
-                    log.error('error creating ESRI attachment', err);
-                    return done();
-                  }
+            async.each(
+              aggregate,
+              function(observation, done) {
+                if (observation.attachments.esriId) {
+                  updateEsriAttachment(observation.esriId, observation.attachments, function(err) {
+                    if (err) {
+                      log.error('error updating ESRI attachment', err);
+                    }
+                    done();
+                  });
+                } else {
+                  createEsriAttachment(observation.esriId, observation.attachments, function(err, esriAttachmentId) {
+                    if (err) {
+                      log.error('error creating ESRI attachment', err);
+                      return done();
+                    }
 
-                  const condition = { _id: observation._id, 'attachments._id': observation.attachments._id };
-                  const update = { '$set': { 'attachments.$.esriId': esriAttachmentId } };
-                  Observation.observationModel(event).update(condition, update, done);
-                });
+                    const condition = { _id: observation._id, 'attachments._id': observation.attachments._id };
+                    const update = { '$set': { 'attachments.$.esriId': esriAttachmentId } };
+                    Observation.observationModel(event).updateOne(condition, update).then(() => done(), done);
+                  });
+                }
+              },
+              function(err) {
+                if (aggregate.length > 0) {
+                  lastAttachmentTimes[event.collectionName] = aggregate[aggregate.length - 1].attachments.lastModified;
+                }
+                done(err);
               }
-            },
-            function(err) {
-              if (aggregate.length > 0) {
-                lastAttachmentTimes[event.collectionName] = aggregate[aggregate.length - 1].attachments.lastModified;
-              }
-              done(err);
-            }
-          );
-        });
+            );
+          }, err => done(err));
       },
       function(err) {
         log.info('done with attachment push', err);

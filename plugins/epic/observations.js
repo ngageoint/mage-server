@@ -13,16 +13,11 @@ const { mongooseLogger } = require('../../logger');
 
 // setup mongoose to talk to mongodb
 const mongodbConfig = config.mongodb;
-mongoose.connect(
-  mongodbConfig.url,
-  { server: { poolSize: mongodbConfig.poolSize } },
-  function(err) {
-    if (err) {
-      log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
-      throw err;
-    }
-  }
-);
+mongoose.connect(mongodbConfig.url, { minPoolSize: 1, maxPoolSize: 1 })
+  .catch(err => {
+    log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    throw err;
+  });
 
 mongoose.set('debug', function(collection, method, query, doc, options) {
   mongooseLogger.debug("%s.%s(%j, %j, %j)", collection, method, query, doc, options);
@@ -167,7 +162,7 @@ function pushObservations(done) {
                     return done();
                   }
 
-                  Observation.observationModel(event).findByIdAndUpdate(observation._id, { esriId: objectId }, { new: true }, done);
+                  Observation.observationModel(event).findByIdAndUpdate(observation._id, { esriId: objectId }, { new: true }).then(() => done(), done);
                 });
               }
             },
