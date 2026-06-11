@@ -85,7 +85,7 @@ const toNumberOrNull = (value: number | string | null | undefined): number | nul
   providedIn: 'root'
 })
 export class AdminDeviceService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getDevices(options: SearchOptions): Observable<DevicesResponse> {
     let params = setParams(options);
@@ -164,7 +164,7 @@ export class AdminDeviceService {
   }
 
   getDeviceById(deviceId: string): Observable<Device> {
-    return this.http.get<Device>(`/api/devices/${deviceId}`);
+    return this.http.get<Device>(`/api/devices/${deviceId}`, { params: new HttpParams().set('expand', 'user') });
   }
 
   updateDevice(deviceId: string, device: Partial<Device>): Observable<Device> {

@@ -8,7 +8,7 @@ import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { PagingParameters } from '../../../src/entities/entities.global'
 import _ from 'lodash'
 
-describe('mongoose adapter layer base', function() {
+describe('mongoose adapter layer base', function () {
 
   interface BaseEntity {
     id: string
@@ -38,21 +38,21 @@ describe('mongoose adapter layer base', function() {
 
   before(mongoTestBeforeAllHook())
 
-  before('create model', function() {
+  before('create model', function () {
     mongo = this.mongo!
     model = mongo.conn.model('Base', schema, collection)
     repo = new BaseMongooseRepository(model)
   })
 
-  afterEach('clear db', async function() {
-    await model.remove({})
+  afterEach('clear db', async function () {
+    await model.deleteMany({})
   })
 
   after(mongoTestAfterAllHook())
 
-  describe('repository', function() {
+  describe('repository', function () {
 
-    it('creates a record', async function() {
+    it('creates a record', async function () {
 
       const seed: Partial<BaseEntity> = {
         derp: 'sloo',
@@ -64,7 +64,7 @@ describe('mongoose adapter layer base', function() {
         id: 'ignore',
         ...seed
       })
-      const read = await mongo.conn.db.collection(model.collection.name).find().toArray()
+      const read = await mongo.conn.db!.collection(model.collection.name).find().toArray()
 
       expect(created.id).to.not.be.empty
       expect(created.id).to.not.equal('ignore')
@@ -73,7 +73,7 @@ describe('mongoose adapter layer base', function() {
       expect(read[0]).to.deep.include(seed)
     })
 
-    it('reads all records', async function() {
+    it('reads all records', async function () {
 
       const seed1: Partial<BaseEntity> = {
         derp: 'bam',
@@ -88,7 +88,7 @@ describe('mongoose adapter layer base', function() {
         noo: 22
       }
       await repo.create(seed1),
-      await repo.create(seed2)
+        await repo.create(seed2)
       const all = await repo.findAll()
 
       expect(all.length).to.equal(2)
@@ -96,7 +96,7 @@ describe('mongoose adapter layer base', function() {
       expect(all[1]).to.deep.include(seed2)
     })
 
-    it('finds a record by id', async function() {
+    it('finds a record by id', async function () {
 
       const seed1: Partial<BaseEntity> = {
         derp: 'bam',
@@ -122,7 +122,7 @@ describe('mongoose adapter layer base', function() {
       expect(found.id).to.not.equal(created[0].id)
     })
 
-    it('updates a record', async function() {
+    it('updates a record', async function () {
 
       const seed: Partial<BaseEntity> = {
         derp: 'spor',
@@ -149,7 +149,7 @@ describe('mongoose adapter layer base', function() {
       expect(beforeUpdate[0]).to.not.deep.include(Object.assign({ ...seed }, update))
     })
 
-    it('can remove properties in an update', async function() {
+    it('can remove properties in an update', async function () {
 
       const seed: Partial<BaseEntity> = {
         derp: 'spor',
@@ -171,7 +171,7 @@ describe('mongoose adapter layer base', function() {
       expect(updated).to.deep.equal(afterUpdate[0])
     })
 
-    it('deletes a record', async function() {
+    it('deletes a record', async function () {
 
       const seed: Partial<BaseEntity> = {
         derp: 'spor',
@@ -190,15 +190,15 @@ describe('mongoose adapter layer base', function() {
       expect(removed).to.deep.equal(created)
     })
 
-    it('returns null if the delete id does not exist', async function() {
+    it('returns null if the delete id does not exist', async function () {
 
       const removed = await repo.removeById(new mongoose.Types.ObjectId().toHexString())
       expect(removed).to.be.null
     })
 
-    describe('find all by id', function() {
+    describe('find all by id', function () {
 
-      it('finds records for given ids', async function() {
+      it('finds records for given ids', async function () {
 
         const seeds: Partial<BaseEntity>[] = [
           {
@@ -221,7 +221,7 @@ describe('mongoose adapter layer base', function() {
           }
         ]
         const created = await Promise.all(seeds.map(x => repo.create(x)))
-        const found = await repo.findAllByIds([ created[1].id, created[2].id ])
+        const found = await repo.findAllByIds([created[1].id, created[2].id])
 
         expect(found).to.deep.equal({
           [created[1].id]: created[1],
@@ -229,7 +229,7 @@ describe('mongoose adapter layer base', function() {
         })
       })
 
-      it('sets unfound id keys to null', async function() {
+      it('sets unfound id keys to null', async function () {
 
         const seed: Partial<BaseEntity> = {
           derp: 'nar',
@@ -238,7 +238,7 @@ describe('mongoose adapter layer base', function() {
           noo: 8
         }
         const created = await repo.create(seed)
-        const ids = [ new mongoose.Types.ObjectId().toHexString(), created.id, new mongoose.Types.ObjectId().toHexString() ]
+        const ids = [new mongoose.Types.ObjectId().toHexString(), created.id, new mongoose.Types.ObjectId().toHexString()]
         const found = await repo.findAllByIds(ids)
 
         expect(found).to.deep.equal({
@@ -248,27 +248,27 @@ describe('mongoose adapter layer base', function() {
         })
       })
 
-      it('resolves empty object without querying when id list is empty', async function() {
+      it('resolves empty object without querying when id list is empty', async function () {
 
         const mockModel = Substitute.for<mongoose.Model<BaseDocument>>()
         const disconnectedRepo = new BaseMongooseRepository<BaseDocument, BaseModel, BaseEntity>(mockModel)
         const found = await disconnectedRepo.findAllByIds([])
 
-        expect(found).to.deep.equal({})
-        mockModel.didNotReceive().find(Arg.all())
-        mockModel.didNotReceive().findById(Arg.all())
-        mockModel.didNotReceive().findOne(Arg.all())
+        expect(found).to.deep.equal({});
+        (mockModel as any).didNotReceive().find(Arg.all());
+        (mockModel as any).didNotReceive().findById(Arg.all());
+        (mockModel as any).didNotReceive().findOne(Arg.all())
       })
     })
   })
 
-  describe('query paging utility', function() {
+  describe('query paging utility', function () {
 
-    it('adds paging to a query without total count', async function() {
+    it('adds paging to a query without total count', async function () {
 
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
-        this.count = function(): mongoose.Query<number, BaseDocument> {
+      const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
+        (this as any).countDocuments = function (): mongoose.Query<number, BaseDocument> {
           return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
         }
         return baseQuery
@@ -285,16 +285,16 @@ describe('mongoose adapter layer base', function() {
 
       baseQuery.received().limit(40)
       baseQuery.received().skip(3 * 40)
-      baseQuery.didNotReceive().count(Arg.all())
+      baseQuery.didNotReceive().countDocuments(Arg.all())
     })
 
-    it('returns the total count if requested', async function() {
+    it('returns the total count if requested', async function () {
 
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
+      const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
-          count: {
-            get: () => function() {
+          countDocuments: {
+            get: () => function () {
               return Promise.resolve(999) as unknown as mongoose.Query<number, BaseDocument>
             }
           }
@@ -315,13 +315,13 @@ describe('mongoose adapter layer base', function() {
       expect(pagedQuery.totalCount).to.equal(999)
     })
 
-    it('includes total count when total count parameter is absent and page index is 0', async function() {
+    it('includes total count when total count parameter is absent and page index is 0', async function () {
 
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
+      const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
-          count: {
-            get: () => function() {
+          countDocuments: {
+            get: () => function () {
               return Promise.resolve(999) as unknown as mongoose.Query<number, BaseDocument>
             }
           }
@@ -341,13 +341,13 @@ describe('mongoose adapter layer base', function() {
       expect(pagedQuery.totalCount).to.equal(999)
     })
 
-    it('does not include total count when total count parameter is absent and page index is greater than 0', async function() {
+    it('does not include total count when total count parameter is absent and page index is greater than 0', async function () {
 
       const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
+      const BaseQuery: any = function (this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
-          count: {
-            get: () => function() {
+          countDocuments: {
+            get: () => function () {
               return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
             }
           }
@@ -367,7 +367,7 @@ describe('mongoose adapter layer base', function() {
       baseQuery.received().skip(40)
     })
 
-    it('works with total count', async function() {
+    it('works with total count', async function () {
 
       const bunchOfEntities: Partial<BaseEntity>[] = []
       let remaining = 100
@@ -389,10 +389,10 @@ describe('mongoose adapter layer base', function() {
       const pageItems = await page.query
 
       expect(pageItems.length).to.equal(10)
-      expect(pageItems.map(x => _.omit(x.toJSON(), '_id', 'id'))).to.deep.equal(bunchOfEntities.sort((a, b) =>  b.noo! - a.noo!).slice(20, 30))
+      expect(pageItems.map(x => _.omit(x.toJSON(), '_id', 'id'))).to.deep.equal(bunchOfEntities.sort((a, b) => b.noo! - a.noo!).slice(20, 30))
     })
 
-    it('works without total count', async function() {
+    it('works without total count', async function () {
 
       const bunchOfEntities: Partial<BaseEntity>[] = []
       let remaining = 100
@@ -412,7 +412,7 @@ describe('mongoose adapter layer base', function() {
 
       expect(page.totalCount).to.equal(100)
       expect(pageItems.length).to.equal(10)
-      expect(pageItems.map(x => _.omit(x.toJSON(), '_id', 'id'))).to.deep.equal(bunchOfEntities.sort((a, b) =>  b.noo! - a.noo!).slice(20, 30))
+      expect(pageItems.map(x => _.omit(x.toJSON(), '_id', 'id'))).to.deep.equal(bunchOfEntities.sort((a, b) => b.noo! - a.noo!).slice(20, 30))
     })
   })
 })

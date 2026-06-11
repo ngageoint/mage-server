@@ -41,7 +41,7 @@ describe("device create tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
@@ -53,14 +53,14 @@ describe("device create tests", function () {
   it("allows an admin to create a registered device", async function () {
     mockTokenWithPermission('CREATE_DEVICE');
 
-    const deviceId = mongoose.Types.ObjectId();
-    const uid = mongoose.Types.ObjectId();
+    const deviceId = new mongoose.Types.ObjectId();
+    const uid = new mongoose.Types.ObjectId();
 
     sinon.mock(UserOperations)
       .expects('getUserById').withArgs(userId.toHexString())
       .resolves({
         _id: userId,
-        authenticationId: mongoose.Types.ObjectId()
+        authenticationId: new mongoose.Types.ObjectId()
       });
 
     const reqDevice = {
@@ -94,18 +94,18 @@ describe("device create tests", function () {
   it("DEPRECATED: creates an unregistered device with local auth", async function () {
     mockTokenWithPermission('NO_PERMISSION');
 
-    const deviceId = mongoose.Types.ObjectId();
-    const uid = mongoose.Types.ObjectId();
+    const deviceId = new mongoose.Types.ObjectId();
+    const uid = new mongoose.Types.ObjectId();
 
     const authConfig = new AuthenticationConfigurationModel.Model({
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       name: 'local',
       settings: {}
     });
 
     const auth = new AuthenticationModel.Local({
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
       authenticationConfigurationId: authConfig
@@ -115,7 +115,7 @@ describe("device create tests", function () {
       _id: userId,
       username: 'unregisteredDeviceTest',
       displayName: 'Unregistered Device Test',
-      roleId: mongoose.Types.ObjectId(),
+      roleId: new mongoose.Types.ObjectId(),
       active: true,
       authenticationId: auth
     });
@@ -176,29 +176,29 @@ describe("device create tests", function () {
   it("should skip create unregistered device if exists", function (done) {
     mockTokenWithPermission('NO_PERMISSION');
 
-    const uid = mongoose.Types.ObjectId();
+    const uid = new mongoose.Types.ObjectId();
 
     const authConfig = new AuthenticationConfigurationModel.Model({
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       name: 'local',
       settings: {}
     });
 
     const auth = new AuthenticationModel.Local({
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
       authenticationConfigurationId: authConfig
     });
 
-    const userId = mongoose.Types.ObjectId();
+    const userId = new mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      roleId: mongoose.Types.ObjectId(),
+      roleId: new mongoose.Types.ObjectId(),
       authenticationId: auth
     });
 

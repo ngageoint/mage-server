@@ -152,9 +152,8 @@ function pullAttachmentsCallbackWhenComplete(observation, event, attachments, ca
         r.pipe(fs.createWriteStream(attachmentBase + '/' + attachment.relativePath));
         log.info('write the file for url ' + url + ' to ' + attachmentBase + '/' + attachment.relativePath);
 
-        Observation.observationModel(event).update({_id: observation._id, 'attachments._id': attachment._id}, {'attachments.$.synced': Date.now()}, function() {
-            // who cares
-        });
+        Observation.observationModel(event).updateOne({_id: observation._id, 'attachments._id': attachment._id}, {'attachments.$.synced': Date.now()})
+          .catch(() => { /* who cares */ });
 
         done();
       } else if (resp.statusCode === 404) {

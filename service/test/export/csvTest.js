@@ -9,8 +9,6 @@ const JSZip = require('jszip')
 const { Csv: CsvExporter } = require('../../lib/export/csv')
 const createToken = require('../mockToken')
 
-require('sinon-mongoose');
-
 const TokenModel = require('../../lib/models/token');
 const UserModel = require('../../lib/models/user');
 const DeviceModel = require('../../lib/models/device');
@@ -28,8 +26,8 @@ const LocationModel = mongoose.model('Location');
 stream.Writable.prototype.type = function () { };
 stream.Writable.prototype.attachment = function () { };
 
-const userId = mongoose.Types.ObjectId();
-const deviceId = mongoose.Types.ObjectId();
+const userId = new mongoose.Types.ObjectId();
+const deviceId = new mongoose.Types.ObjectId();
 
 describe("csv export tests", function () {
 
@@ -56,7 +54,7 @@ describe("csv export tests", function () {
     }
     sinon.mock(EventModel)
       .expects('findById')
-      .yields(null, event);
+      .resolves(event);
 
     sinon.mock(UserModel)
       .expects('getUserById')
@@ -118,7 +116,7 @@ describe("csv export tests", function () {
 
     sinon.mock(TeamModel)
       .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
+      .resolves([{ name: 'Team 1' }]);
 
     const writable = new TestWritableStream();
     writable.on('finish', async () => {
@@ -149,7 +147,7 @@ describe("csv export tests", function () {
 
     sinon.mock(TeamModel)
       .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
+      .resolves([{ name: 'Team 1' }]);
 
     sinon.mock(LocationModel)
       .expects('find')
@@ -201,7 +199,7 @@ describe("csv export tests", function () {
 
     sinon.mock(TeamModel)
       .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
+      .resolves([{ name: 'Team 1' }]);
 
     sinon.mock(LocationModel)
       .expects('find')
@@ -257,7 +255,7 @@ class TestLocationCursor {
   constructor() {
     this.i = 0;
     this.locations = [{
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       "eventId": 1,
       "geometry": {
         "type": "Point",

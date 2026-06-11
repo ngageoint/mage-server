@@ -24,7 +24,8 @@ var GeoServerSchema = new Schema({
 var SchemaModel = mongoose.model('Schema', GeoServerSchema);
 
 exports.createSchema = function(schema, callback) {
-  SchemaModel.findOneAndUpdate({typeName: schema.typeName}, schema, {upsert: true}, callback);
+  SchemaModel.findOneAndUpdate({typeName: schema.typeName}, schema, {upsert: true})
+    .then(result => { if (callback) callback(null, result); }, err => { if (callback) callback(err); });
 };
 
 exports.updateAttributeDescriptors = function(event, descriptors, callback) {
@@ -34,33 +35,15 @@ exports.updateAttributeDescriptors = function(event, descriptors, callback) {
     }
   };
 
-  SchemaModel.findOneAndUpdate({typeName: 'observations' + event._id}, update, callback);
+  SchemaModel.findOneAndUpdate({typeName: 'observations' + event._id}, update, {})
+    .then(result => { if (callback) callback(null, result); }, err => { if (callback) callback(err); });
 };
 
 exports.removeSchema = function(event, callback) {
-  async.parallel([
-    function(done) {
-      SchemaModel.remove({typeName: 'observations' + event._id}, function(err) {
-        if (err) {
-          log.error('Error removing observations schema', err);
-        }
-
-        done(err);
-      });
-    },
-    function(done) {
-      SchemaModel.remove({typeName: 'locations' + event._id}, function(err) {
-        if (err) {
-          log.error('Error removing locations schema', err);
-        }
-
-        done(err);
-      });
-    }
-  ], function(err) {
-    if (callback) {
-      callback(err);
-    }
-  });
-
+  Promise.all([
+    SchemaModel.deleteMany({typeName: 'observations' + event._id})
+      .catch(err => { log.error('Error removing observations schema', err); throw err; }),
+    SchemaModel.deleteMany({typeName: 'locations' + event._id})
+      .catch(err => { log.error('Error removing locations schema', err); throw err; })
+  ]).then(() => { if (callback) callback(null); }, err => { if (callback) callback(err); });
 };

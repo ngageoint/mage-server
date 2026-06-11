@@ -46,7 +46,7 @@ export class DeviceDetailsComponent implements OnInit {
     private dialog: MatDialog,
     private deviceService: AdminDeviceService,
     private adminUserService: AdminUserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const deviceId = this.route.snapshot.paramMap.get('deviceId');
@@ -148,12 +148,10 @@ export class DeviceDetailsComponent implements OnInit {
     this.saving = true;
     this.error = null;
 
-    const payload: Partial<Device> = {
+    const payload: any = {
       uid: this.deviceEditForm.uid,
       description: this.deviceEditForm.description,
-      user: this.deviceEditForm.userId
-        ? ({ id: this.deviceEditForm.userId } as any)
-        : null
+      userId: this.deviceEditForm.userId ?? null
     };
 
     this.deviceService.updateDevice(deviceId, payload).subscribe({

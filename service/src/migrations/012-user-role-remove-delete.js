@@ -6,13 +6,9 @@ exports.id = 'user-role-remove-delete';
 exports.up = function(done) {
   this.log('updating user role to remove delete permisson...');
 
-  RoleModel.updateOne({name: 'USER_ROLE'}, {$pull : {permissions: 'DELETE_OBSERVATION'}}, function(err) {
-    done(err);
-  });
+  RoleModel.updateOne({name: 'USER_ROLE'}, {$pull : {permissions: 'DELETE_OBSERVATION'}}).then(() => done(), err => done(err));
 };
 
 exports.down = function(done) {
-  RoleModel.updateOne({name: 'USER_ROLE'}, {$push : {permissions: 'DELETE_OBSERVATION'}}, function(err) {
-    done(err);
-  });
+  RoleModel.updateOne({name: 'USER_ROLE'}, {$push : {permissions: 'DELETE_OBSERVATION'}}).then(() => done(), err => done(err));
 };

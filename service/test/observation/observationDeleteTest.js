@@ -11,9 +11,6 @@ const request = require('supertest')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-
-require('sinon-mongoose');
-
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
 
@@ -44,7 +41,7 @@ describe("observation delete tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -75,7 +72,7 @@ describe("observation delete tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -86,17 +83,17 @@ describe("observation delete tests", function () {
       properties: {
         timestamp: Date.now()
       },
-      userId: mongoose.Types.ObjectId()
+      userId: new mongoose.Types.ObjectId()
     });
 
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     sinon.mock(ObservationModel)
-      .expects('update')
-      .yields(null, mockObservation);
+      .expects('updateOne')
+      .resolves({ modifiedCount: 1 });
 
     request(app)
       .post('/api/events/1/observations/' + observationId.toString() + '/states')
@@ -138,7 +135,7 @@ describe("observation delete tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -149,17 +146,17 @@ describe("observation delete tests", function () {
       properties: {
         timestamp: Date.now()
       },
-      userId: mongoose.Types.ObjectId()
+      userId: new mongoose.Types.ObjectId()
     });
 
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     sinon.mock(ObservationModel)
-      .expects('update')
-      .yields(null, mockObservation);
+      .expects('updateOne')
+      .resolves({ modifiedCount: 1 });
 
     request(app)
       .post('/api/events/1/observations/' + observationId.toString() + '/states')
@@ -200,7 +197,7 @@ describe("observation delete tests", function () {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -217,11 +214,11 @@ describe("observation delete tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     sinon.mock(ObservationModel)
-      .expects('update')
-      .yields(null, mockObservation);
+      .expects('updateOne')
+      .resolves({ modifiedCount: 1 });
 
     request(app)
       .post('/api/events/1/observations/' + observationId.toString() + '/states')
@@ -258,7 +255,7 @@ describe("observation delete tests", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -275,7 +272,7 @@ describe("observation delete tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     request(app)
       .post('/api/events/1/observations/' + observationId.toString() + '/states')
@@ -304,7 +301,7 @@ describe("observation delete tests", function () {
       .expects('getById')
       .yields(null, mockEvent);
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
 
     const ObservationModel = observationModel({
       _id: 1,
@@ -328,7 +325,7 @@ describe("observation delete tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     request(app)
       .post('/api/events/1/observations/' + observationId + '/states')
@@ -368,7 +365,7 @@ describe("observation delete tests", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -385,11 +382,11 @@ describe("observation delete tests", function () {
     sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     sinon.mock(ObservationModel)
-      .expects('update')
-      .yields(new Error("some mock error"), null);
+      .expects('updateOne')
+      .rejects(new Error("some mock error"));
 
     request(app)
       .post('/api/events/1/observations/' + observationId.toString() + '/states')

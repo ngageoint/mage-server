@@ -228,6 +228,86 @@ export class MageClientSession {
     return this.http.get<Observation>(`/api/events/${eventId}/observations/${observationId}`).then(x => x.data)
   }
 
+  favoriteObservation(eventId: MageEventId, observationId: ObservationId): Promise<AxiosResponse<Observation>> {
+    return this.http.put(`/api/events/${eventId}/observations/${observationId}/favorite`)
+  }
+
+  unfavoriteObservation(eventId: MageEventId, observationId: ObservationId): Promise<AxiosResponse<Observation>> {
+    return this.http.delete(`/api/events/${eventId}/observations/${observationId}/favorite`)
+  }
+
+  markImportant(eventId: MageEventId, observationId: ObservationId, description?: string): Promise<AxiosResponse<Observation>> {
+    return this.http.put(`/api/events/${eventId}/observations/${observationId}/important`, description ? { description } : {})
+  }
+
+  unmarkImportant(eventId: MageEventId, observationId: ObservationId): Promise<AxiosResponse<Observation>> {
+    return this.http.delete(`/api/events/${eventId}/observations/${observationId}/important`)
+  }
+
+  addObservationState(eventId: MageEventId, observationId: ObservationId, name: 'active' | 'archive'): Promise<AxiosResponse<ObservationState>> {
+    return this.http.post(`/api/events/${eventId}/observations/${observationId}/states`, { name })
+  }
+
+  listUsers(query?: Record<string, string>): Promise<AxiosResponse<User[]>> {
+    return this.http.get('/api/users', { params: query })
+  }
+
+  getUser(userId: UserId): Promise<AxiosResponse<User>> {
+    return this.http.get(`/api/users/${userId}`)
+  }
+
+  updateUser(userId: UserId, attrs: Partial<UserCreateRequest>): Promise<AxiosResponse<User>> {
+    const form = new FormData()
+    for (const [key, val] of Object.entries(attrs)) {
+      if (val != null) {
+        form.set(key, String(val))
+      }
+    }
+    return this.http.put(`/api/users/${userId}`, form)
+  }
+
+  getMyself(): Promise<AxiosResponse<User>> {
+    return this.http.get('/api/users/myself')
+  }
+
+  updateMyself(attrs: Partial<Pick<User, 'displayName' | 'email'>>): Promise<AxiosResponse<User>> {
+    const form = new FormData()
+    for (const [key, val] of Object.entries(attrs)) {
+      if (val != null) {
+        form.set(key, String(val))
+      }
+    }
+    return this.http.put('/api/users/myself', form)
+  }
+
+  createTeam(attrs: TeamCreateRequest): Promise<AxiosResponse<Team>> {
+    return this.http.post('/api/teams', attrs)
+  }
+
+  listTeams(query?: Record<string, string>): Promise<AxiosResponse<Team[]>> {
+    return this.http.get('/api/teams', { params: query })
+  }
+
+  getTeam(teamId: Team['id']): Promise<AxiosResponse<Team>> {
+    return this.http.get(`/api/teams/${teamId}`)
+  }
+
+  updateTeam(teamId: Team['id'], attrs: Partial<TeamCreateRequest>): Promise<AxiosResponse<Team>> {
+    return this.http.put(`/api/teams/${teamId}`, attrs)
+  }
+
+  deleteTeam(teamId: Team['id']): Promise<AxiosResponse<Team>> {
+    return this.http.delete(`/api/teams/${teamId}`)
+  }
+
+  addTeamMember(teamId: Team['id'], userId: UserId): Promise<AxiosResponse<Team>> {
+    return this.http.post(`/api/teams/${teamId}/users`, { id: userId })
+  }
+
+  removeTeamMember(teamId: Team['id'], userId: UserId): Promise<AxiosResponse<Team>> {
+    return this.http.delete(`/api/teams/${teamId}/users/${userId}`)
+  }
+
   postUserLocations(eventId: number, locations: Array<[lon: number, lat: number, timestamp?: number | undefined]>): Promise<AxiosResponse<UserLocation[]>> {
     const features = locations.map<geojson.Feature<geojson.Point>>(([lon, lat, timestamp]) => {
       if (typeof timestamp !== 'number') {
@@ -318,7 +398,7 @@ export function createBlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, na
   } as any
 }
 
-export interface BlobDuck extends globalThis.Blob { }
+export interface BlobDuck extends globalThis.Blob { name: string }
 
 export type ISODateString = string
 
@@ -673,6 +753,18 @@ export interface Attachment {
   height?: number
   contentStored: boolean
   url?: string
+}
+
+export interface ObservationState {
+  name: 'active' | 'archive'
+  userId?: UserId
+  timestamp?: ISODateString
+}
+
+export interface TeamCreateRequest {
+  name: string
+  description?: string
+  userIds?: UserId[]
 }
 
 export interface ObservationImportantFlag {

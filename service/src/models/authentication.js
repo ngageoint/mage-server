@@ -166,7 +166,10 @@ exports.OpenIdConnect = OpenIdConnectAuthentication;
 
 exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
   if (callback) {
-    Authentication.findOne({ id: uid, type: strategy }, callback);
+    Authentication.findOne({ id: uid, type: strategy }).then(
+      authentication => callback(null, authentication),
+      err => callback(err)
+    );
   } else {
     return Authentication.findOne({ id: uid, type: strategy });
   }
@@ -181,7 +184,7 @@ exports.getAuthenticationsByAuthConfigId = function (authConfigId) {
 };
 
 exports.countAuthenticationsByAuthConfigId = function (authConfigId) {
-  return Authentication.count({ authenticationConfigurationId: authConfigId }).exec();
+  return Authentication.countDocuments({ authenticationConfigurationId: authConfigId }).exec();
 };
 
 exports.createAuthentication = function (authentication) {
@@ -193,7 +196,7 @@ exports.createAuthentication = function (authentication) {
 
   if (authentication.type === 'local') {
     document.password = authentication.password;
-    document.security ={
+    document.security = {
       lockedUntil: null
     }
   }
@@ -206,5 +209,8 @@ exports.updateAuthentication = function (authentication) {
 };
 
 exports.removeAuthenticationById = function (authenticationId, done) {
-  Authentication.findByIdAndRemove(authenticationId, done);
+  Authentication.findByIdAndDelete(authenticationId).then(
+    r => done(null, r),
+    e => done(e)
+  );
 };

@@ -1189,7 +1189,8 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
     const fieldEntry = formEntry[field.name]
     const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
     const isUserField = userFields.has(field.name)
-    const rule = isUserField
+    const isUserSelectField = isUserField && (field.type === FormFieldType.Dropdown || field.type === FormFieldType.Radio)
+    const rule = isUserSelectField
       ? validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context)))
       : FieldTypeValidationRules[field.type]
     const resultEntry = rule(fieldValidation)

@@ -20,7 +20,7 @@ of leakage throughout the code that needs to be cleaned.  Further, pretty much
 the entire codebase lacks any dependency injection.
  */
 
- "use strict";
+"use strict";
 
 const request = require('supertest');
 const sinon = require('sinon');
@@ -39,11 +39,11 @@ const UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 
-describe("user read tests", function() {
+describe("user read tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -62,13 +62,13 @@ describe("user read tests", function() {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    const token = createToken(userId, [ permission ]);
+    const token = createToken(userId, [permission]);
     sinon.mock(TokenModel)
       .expects('getToken')
       .withArgs('12345')
@@ -76,12 +76,12 @@ describe("user read tests", function() {
     return token;
   }
 
-  it('should count users', function(done) {
+  it('should count users', function (done) {
     mockTokenWithPermission('READ_USER');
 
     sinon.mock(UserModel)
-      .expects('count')
-      .yields(null, 5);
+      .expects('countDocuments')
+      .resolves(5);
 
     request(app)
       .get('/api/users/count')
@@ -89,7 +89,7 @@ describe("user read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         should.exist(res.body);
         res.body.should.have.property('count');
         res.body.count.should.equal(5);
@@ -97,19 +97,19 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get all users', function(done) {
+  it('should get all users', function (done) {
     mockTokenWithPermission('READ_USER');
 
     const mockUsers = [{
       username: 'test1'
-    },{
+    }, {
       username: 'test2'
     }];
 
     sinon.mock(UserModel)
       .expects('find')
       .chain('exec')
-      .yields(null, mockUsers);
+      .resolves(mockUsers);
 
     request(app)
       .get('/api/users')
@@ -117,7 +117,7 @@ describe("user read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         const users = res.body;
         should.exist(users);
         users.should.be.an('array');
@@ -127,22 +127,22 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get all active users', function(done) {
+  it('should get all active users', function (done) {
     mockTokenWithPermission('READ_USER');
 
     sinon.mock(UserModel)
       .expects('find')
       .withArgs({ active: true })
       .chain('exec')
-      .yields(null, [{
+      .resolves([{
         username: 'test1'
-      },{
+      }, {
         username: 'test2'
       }]);
 
     request(app)
       .get('/api/users')
-      .query({active: 'true'})
+      .query({ active: 'true' })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -151,22 +151,22 @@ describe("user read tests", function() {
   });
 
 
-  it('should get all inactive users', function(done) {
+  it('should get all inactive users', function (done) {
     mockTokenWithPermission('READ_USER');
 
     sinon.mock(UserModel)
       .expects('find')
       .withArgs({ active: false })
       .chain('exec')
-      .yields(null, [{
+      .resolves([{
         username: 'test1'
-      },{
+      }, {
         username: 'test2'
       }]);
 
     request(app)
       .get('/api/users')
-      .query({active: 'false'})
+      .query({ active: 'false' })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -174,22 +174,22 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get all enabled users', function(done) {
+  it('should get all enabled users', function (done) {
     mockTokenWithPermission('READ_USER');
 
     sinon.mock(UserModel)
       .expects('find')
       .withArgs({ enabled: true })
       .chain('exec')
-      .yields(null, [{
+      .resolves([{
         username: 'test1'
-      },{
+      }, {
         username: 'test2'
       }]);
 
     request(app)
       .get('/api/users')
-      .query({enabled: 'true'})
+      .query({ enabled: 'true' })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -197,22 +197,22 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get all disabled users', function(done) {
+  it('should get all disabled users', function (done) {
     mockTokenWithPermission('READ_USER');
 
     sinon.mock(UserModel)
       .expects('find')
       .withArgs({ enabled: false })
       .chain('exec')
-      .yields(null, [{
+      .resolves([{
         username: 'test1'
-      },{
+      }, {
         username: 'test2'
       }]);
 
     request(app)
       .get('/api/users')
-      .query({enabled: 'false'})
+      .query({ enabled: 'false' })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -220,7 +220,7 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get all users and populate role', async function() {
+  it('should get all users and populate role', async function () {
     mockTokenWithPermission('READ_USER');
 
     sinon.mock(UserModel)
@@ -228,15 +228,15 @@ describe("user read tests", function() {
       .chain('populate', 'authenticationId')
       .chain('populate', 'roleId')
       .chain('exec')
-      .yields(null, [{
+      .resolves([{
         username: 'test1'
-      },{
+      }, {
         username: 'test2'
       }]);
 
     const res = await request(app)
       .get('/api/users')
-      .query({populate: 'roleId'})
+      .query({ populate: 'roleId' })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345');
 
@@ -245,27 +245,27 @@ describe("user read tests", function() {
     expect(Array.isArray(res.body)).to.be.true
   });
 
-  it('redacts local auth password when reading all users', async function() {
+  it('redacts local auth password when reading all users', async function () {
 
     const userDocs = [
       new UserModel({
-        _id: mongoose.Types.ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         username: 'test1',
         displayName: 'Test 1',
         authenticationId: new Authentication.Local({
-          _id: mongoose.Types.ObjectId(),
+          _id: new mongoose.Types.ObjectId(),
           password: 'hide me 1',
           previousPasswords: []
         })
       }),
       new UserModel({
-        _id: mongoose.Types.ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         username: 'test2',
         displayName: 'Test 2',
         authenticationId: new Authentication.Local({
-          _id: mongoose.Types.ObjectId(),
+          _id: new mongoose.Types.ObjectId(),
           password: 'hide me 2',
-          previousPasswords: [ 'prev 1', 'prev 2' ]
+          previousPasswords: ['prev 1', 'prev 2']
         })
       })
     ];
@@ -273,7 +273,7 @@ describe("user read tests", function() {
       .expects('find')
       .chain('populate', 'authenticationId')
       .chain('exec')
-      .yields(null, userDocs);
+      .resolves(userDocs);
     mockTokenWithPermission('READ_USER');
     const res = await request(app)
       .get('/api/users')
@@ -290,27 +290,27 @@ describe("user read tests", function() {
     expect(res.body[1].authentication).to.not.have.property('previousPasswords');
   })
 
-  it('redacts local auth password when paging all users', async function() {
+  it('redacts local auth password when paging all users', async function () {
 
     const userDocs = [
       new UserModel({
-        _id: mongoose.Types.ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         username: 'test1',
         displayName: 'Test 1',
         authenticationId: new Authentication.Local({
-          _id: mongoose.Types.ObjectId(),
+          _id: new mongoose.Types.ObjectId(),
           password: 'hide me 1',
-          previousPasswords: [ 'hide this too' ]
+          previousPasswords: ['hide this too']
         })
       }),
       new UserModel({
-        _id: mongoose.Types.ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         username: 'test2',
         displayName: 'Test 2',
         authenticationId: new Authentication.Local({
-          _id: mongoose.Types.ObjectId(),
+          _id: new mongoose.Types.ObjectId(),
           password: 'hide me 2',
-          previousPasswords: [ 'hide prev 1', 'hide prev 2' ]
+          previousPasswords: ['hide prev 1', 'hide prev 2']
         })
       })
     ];
@@ -323,7 +323,7 @@ describe("user read tests", function() {
       .returns(class {
         limit() { return this }
         skip() { return this }
-        count() { return Promise.resolve(userDocs.length) }
+        countDocuments() { return Promise.resolve(userDocs.length) }
         cursor() { return userDocs }
       });
 
@@ -341,10 +341,10 @@ describe("user read tests", function() {
   })
 
 
-  it('should get user by id', function(done) {
+  it('should get user by id', function (done) {
     mockTokenWithPermission('READ_USER');
 
-    const id = mongoose.Types.ObjectId();
+    const id = new mongoose.Types.ObjectId();
 
     sinon.mock(UserModel)
       .expects('findById')
@@ -362,7 +362,7 @@ describe("user read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -371,7 +371,7 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get myself', async function() {
+  it('should get myself', async function () {
 
     const token = mockTokenWithPermission('READ_USER');
 
@@ -388,14 +388,14 @@ describe("user read tests", function() {
     expect(res.body.role.permissions).to.deep.equal(token.user.roleId.permissions)
   });
 
-  it('should get user avatar', function(done) {
+  it('should get user avatar', function (done) {
     mockTokenWithPermission('READ_USER');
 
     mockfs({
       '/var/lib/mage/users/mock/path/avatar.jpeg': Buffer.from([8, 6, 7, 5, 3, 0, 9])
     });
 
-    const id = mongoose.Types.ObjectId();
+    const id = new mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test1',
@@ -419,16 +419,16 @@ describe("user read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /image\/jpeg/)
-      .end(function(err) {
+      .end(function (err) {
         mockfs.restore();
         done(err);
       });
   });
 
-  it('should fail to get non existant user avatar', function(done) {
+  it('should fail to get non existant user avatar', function (done) {
     mockTokenWithPermission('READ_USER');
 
-    const id = mongoose.Types.ObjectId();
+    const id = new mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test1',
@@ -454,14 +454,14 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get user icon', function(done) {
+  it('should get user icon', function (done) {
     mockTokenWithPermission('READ_USER');
 
     mockfs({
       '/var/lib/mage/users/mock/path/icon.png': Buffer.from([8, 6, 7, 5, 3, 0, 9])
     });
 
-    const id = mongoose.Types.ObjectId();
+    const id = new mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
       username: 'test1',
@@ -485,7 +485,7 @@ describe("user read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /image\/png/)
-      .end(function(err) {
+      .end(function (err) {
         mockfs.restore();
         done(err);
       });

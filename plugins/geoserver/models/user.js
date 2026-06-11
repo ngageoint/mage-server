@@ -65,21 +65,14 @@ exports.createLocations = function(locations, user, event, callback) {
     new: true
   };
 
-  UserModel.findOneAndUpdate({userId: user._id, eventId: event._id}, normalized, options, function(err) {
-    if (err) {
+  UserModel.findOneAndUpdate({userId: user._id, eventId: event._id}, normalized, options)
+    .then(() => { if (callback) callback(null); }, err => {
       console.log('Error updating users latest location', err);
-    }
-
-    if (callback) {
-      callback(err);
-    }
-  });
+      if (callback) callback(err);
+    });
 };
 
 exports.removeLocations = function(event, callback) {
-  UserModel.remove({eventId: event._id}, function(err){
-    if (callback) {
-      callback(err);
-    }
-  });
+  UserModel.deleteMany({eventId: event._id})
+    .then(() => { if (callback) callback(null); }, err => { if (callback) callback(err); });
 };

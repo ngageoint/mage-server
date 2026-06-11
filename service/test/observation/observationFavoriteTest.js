@@ -14,8 +14,6 @@ const request = require('supertest')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('sinon-mongoose');
-
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
 
@@ -23,7 +21,7 @@ describe("marking favorite observations", function () {
 
   let app;
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
 
   beforeEach(function () {
     const mockEvent = {
@@ -104,7 +102,7 @@ describe("marking favorite observations", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -121,7 +119,7 @@ describe("marking favorite observations", function () {
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match({ '$addToSet': { favoriteUserIds: userId } }), sinon.match.any)
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     request(app)
       .put(`/api/events/1/observations/${observationId}/favorite`)
@@ -154,7 +152,7 @@ describe("marking favorite observations", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -171,7 +169,7 @@ describe("marking favorite observations", function () {
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match({ '$pull': { favoriteUserIds: userId } }), sinon.match.any)
-      .yields(null, mockObservation);
+      .resolves(mockObservation);
 
     request(app)
       .delete(`/api/events/1/observations/${observationId}/favorite`)
@@ -200,7 +198,7 @@ describe("marking favorite observations", function () {
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
+    const observationId = new mongoose.Types.ObjectId();
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .never();
