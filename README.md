@@ -292,7 +292,7 @@ Optional: Build the app with plugins (arcgis and sftp)
 
 Run an instance of mongodb via Docker Desktop:
 
-    docker run -d -p 27017:27017 mongo:6.0.4
+    docker run -d -p 27017:27017 mongo:6.0.28
 
 Run the app with the `instance/config.ts` settings
 
@@ -436,7 +436,9 @@ setup allows you to mount a directory into the Mage server container from a
 provide extra functionality like [encryption](https://www.veracrypt.fr) or
 [remote mounting](https://github.com/libfuse/sshfs) transparently to the
 Docker container and Mage application.  If you don't have any requirements of
-that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
+that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) 
+There are commented-out entries in the `docker-compose.yml` file with example
+specifications of Docker-managed volumes.
 
 ### Ports
 The only port the Compose file exposes to the host by default is 4242 on the
@@ -603,7 +605,9 @@ setup allows you to mount a directory into the Mage server container from a
 provide extra functionality like [encryption](https://www.veracrypt.fr) or
 [remote mounting](https://github.com/libfuse/sshfs) transparently to the
 Docker container and Mage application.  If you don't have any requirements of
-that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
+that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) 
+There are commented-out entries in the `docker-compose.yml` file with example
+specifications of Docker-managed volumes.
 
 ### Ports
 The only port the Compose file exposes to the host by default is 4242 on the

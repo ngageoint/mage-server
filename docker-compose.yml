@@ -1,7 +1,7 @@
 services:
 
   mage-db:
-    image: mongo:6.0.27
+    image: mongo:6.0.28
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     # ports:
@@ -9,8 +9,11 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./database/data:/bitnami/mongodb
-      - ./database/log:/opt/bitnami/mongodb/logs
+      - ./database/data:/data/db
+      - ./database/log:/var/log/mongodb
+      # If you'd rather use a Docker volume than a bind mount, use a volume configuration
+      # like this instead:
+      # - mongodb-data:/data/db
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     # ports:
@@ -28,6 +31,9 @@ services:
     platform: linux/amd64
     volumes:
       - ./server/resources:/var/lib/mage
+      # If you'd rather use a Docker volume than a bind mount, use a volume configuration
+      # like this instead:
+      # - mage-server-resources:/var/lib/mage
     # Comment the ports block to disallow connections directly to the node
     # server when running the mage-web-proxy below.
     ports:
@@ -42,6 +48,11 @@ services:
       MAGE_TOKEN_EXPIRATION: "28800"
       # NOTE: default INSECURE salt value, recommend generate new UUID before deployment, **NOT** after deployment
       SFTP_PLUGIN_CONFIG_SALT: "A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"
+
+    # Uncomment this section to use Docker volumes instead of bind mounts for data directories:
+    # volumes:
+    #   "mongodb-data":
+    #   "mage-server-resources":
 
   # Uncomment the following block to enable the TLS reverse proxy.  You will
   # also need to generate the key and certificate as the README describes.
