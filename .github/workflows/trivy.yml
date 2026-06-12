@@ -1,0 +1,16 @@
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  trivy:
+    runs-edge: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs' # Scans the project file system
+          format: 'table'
+          exit-code: '1'
