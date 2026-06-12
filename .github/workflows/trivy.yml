@@ -1,4 +1,4 @@
-name: Security Scan
+name: Trivy Security Scan
 on: [push, pull_request]
 
 jobs:
@@ -8,16 +8,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepare Lockfile for Trivy
-        run: cp service/npm-shrinkwrap.json service/package-lock.json
-
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.35.0 
         with:
           scan-type: 'fs'
           format: 'table'
           output: 'trivy-report.txt'
           exit-code: '0'
+          version: 'v0.69.3' 
 
       - name: Upload Scan Report
         uses: actions/upload-artifact@v4
