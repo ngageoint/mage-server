@@ -36,7 +36,7 @@
     "@types/geojson": "7946.0.16",
     "@types/json-schema": "7.0.15",
     "@types/mime-types": "3.0.1",
-    "@xmldom/xmldom": "0.9.8",
+    "@xmldom/xmldom": "0.9.10",
     "adm-zip": "0.5.16",
     "archiver": "7.0.1",
     "async": "3.2.6",
