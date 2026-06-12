@@ -11,6 +11,14 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs' # Scans the project file system
+          scan-type: 'fs'
           format: 'table'
+          output: 'trivy-report.txt'
           exit-code: '0'
+
+      - name: Upload Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-security-report
+          path: trivy-report.txt
+          retention-days: 7
