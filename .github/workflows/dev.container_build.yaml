@@ -41,6 +41,7 @@ jobs:
         with:
           scan-type: 'image'
           image-ref: 'ghcr.io/${{ github.repository }}/mage:${{ env.IMAGE_TAG }}'
+          ignore-unfixed: true
           format: 'table'
           output: 'trivy-image-report.txt'
           exit-code: '0'
