@@ -8,6 +8,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Prepare Lockfile for Trivy
+        run: cp service/npm-shrinkwrap.json service/package-lock.json
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
