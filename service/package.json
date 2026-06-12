@@ -24,13 +24,13 @@
   ],
   "homepage": "https://www.nga.mil",
   "engines": {
-    "node": ">= 16",
+    "node": ">= 18",
     "npm": ">= 8"
   },
   "dependencies": {
     "@ngageoint/geopackage": "4.2.6",
     "@ngageoint/mongodb-migrations": "1.0.0",
-    "@node-saml/passport-saml": "4.0.4",
+    "@node-saml/passport-saml": "^5.1.0",
     "@turf/centroid": "7.2.0",
     "@turf/kinks": "7.2.0",
     "@types/geojson": "7946.0.16",
