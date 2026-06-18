@@ -45,7 +45,7 @@ describe('modu topic module', function () {
 
       const params: modu.ModuTopicParams = {
         newerThanDays: 12,
-        status: 'Active'
+        rigStatus: 'Active'
       }
 
       const req = modu.createContentRequest(params)
@@ -54,7 +54,7 @@ describe('modu topic module', function () {
       expect(req.path).toEqual('/api/publications/modu')
       expect(req.body).toBeUndefined()
 
-      expect(req.queryParams?.status).toEqual('Active')
+      expect(req.queryParams?.status).toEqual('1')
       expect(req.queryParams?.minSourceDate).toEqual('2020-07-02')
       expect(req.queryParams?.maxSourceDate).toEqual('2020-07-14')
       expect(req.queryParams?.output).toEqual('json')
