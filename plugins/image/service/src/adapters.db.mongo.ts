@@ -37,7 +37,7 @@ type UnprocessedAttachmentReferenceDocument = Record<keyof UnprocessedAttachment
 
 async function * eventStatesWithCollectionNames(conn: mongoose.Connection, eventStates: Iterable<EventProcessingState>, console: Console): AsyncIterableIterator<EventProcessingState & { collectionName: string }> {
   for (const eventState of eventStates) {
-    const found = await conn.collection('events').findOne<{ collectionName: string }>({ _id: eventState.event.id })
+    const found = await conn.collection<{ _id: number; collectionName: string }>('events').findOne({ _id: eventState.event.id })
     if (found) {
       yield { ...eventState, collectionName: found.collectionName }
     }
