@@ -12,7 +12,7 @@ prog.version('0');
 prog.command('create <name>')
   .description('generate a new migration script in the migrations directory')
   .action(name => {
-    // had to do this intead of mongodb-migrations's Migrator.create() because
+    // had to do this instead of mongodb-migrations's Migrator.create() because
     // that tries to require() all the migration files instead of just finding
     // the next ordinal to assign.  loading the migration files with require()
     // fails because they cannot load the typescript modules in the source tree.
@@ -22,7 +22,7 @@ prog.command('create <name>')
     const nextFormatted = String(next).padStart(3, '0');
     const migrationFileName = `${nextFormatted}-${name}.js`;
     const migrationPath = path.resolve(srcMigrationsDir, migrationFileName);
-    const stub = require('mongodb-migrations/lib/migration-stub')(name);
+    const stub = require('@ngageoint/mongodb-migrations/lib/migration-stub')(name);
     fs.writeFileSync(migrationPath, stub);
     console.log(`created migration stub ${migrationPath}`);
   });

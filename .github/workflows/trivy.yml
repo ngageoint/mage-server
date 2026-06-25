@@ -1,0 +1,25 @@
+name: Trivy Security Scan
+on: [push, pull_request]
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.35.0 
+        with:
+          scan-type: 'fs'
+          format: 'table'
+          output: 'trivy-report.txt'
+          exit-code: '0'
+          version: 'v0.69.3' 
+
+      - name: Upload Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-security-report
+          path: trivy-report.txt
+          retention-days: 7

@@ -94,14 +94,14 @@ export const topicDescriptor: FeedTopic = {
 
 export interface ModuTopicParams {
   newerThanDays?: number,
-  status?: 'Active' | 'Inactive'
+  rigStatus?: 'Active' | 'Inactive'
 }
 
 export interface ModuQueryParams extends ParsedUrlQuery {
   minSourceDate: string
   maxSourceDate: string
   name?: string
-  status?: 'Active' | 'Inactive'
+  status?: '1' | '2'
   navArea?: string
   subreg?: string
   output: 'json'
@@ -169,7 +169,7 @@ const formatDateQueryParam = (x: Date): string => {
 export const createContentRequest = (params?: ModuTopicParams): MsiRequest => {
   const newerThanDays = params?.newerThanDays ||
     topicDescriptor.paramsSchema?.properties?.newerThanDays.default as number
-  const status = params?.status
+  const status = params?.rigStatus === 'Active' ? '1' : params?.rigStatus === 'Inactive' ? '2' : undefined
   const maxSourceDate = new Date()
   const minSourceDate = new Date(maxSourceDate.getTime() - newerThanDays * 24 * 60 * 60 * 1000)
   const queryParams: ModuQueryParams = {

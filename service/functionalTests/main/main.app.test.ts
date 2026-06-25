@@ -1,7 +1,7 @@
 import { expect } from 'chai'
+import axios from 'axios'
 
-const request = require("request")
-  , config = require('../config/httpconfig.json')
+const config = require('../config/httpconfig.json')
   , role = require('../../lib/models/role')
   , user = require('../../lib/models/user')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
@@ -78,105 +78,76 @@ xdescribe('bootstrapping', function () {
     });
   }
 
-  function signin(userToSignin: any, done: any): void {
-    const signinOptions = {
-      url: conUrl + "/auth/local/signin",
-      method: 'POST',
-      form: {
-        username: userToSignin.username,
-        password: userToSignin.authentication.password
-      }
-    };
-    request(signinOptions, function (err: any, response: any, body: any) {
-      if (err) return done(err);
+  async function signin(userToSignin: any, done: any): Promise<void> {
+    try {
+      const signinResponse = await axios.post(conUrl + "/auth/local/signin",
+        new URLSearchParams({
+          username: userToSignin.username,
+          password: userToSignin.authentication.password
+        })
+      );
+      expect(signinResponse.status).to.equal(200);
 
-      expect(response.statusCode).to.equal(200);
-
-      const signinToken = JSON.parse(body);
-
-      const tokenOptions = {
-        url: conUrl + '/auth/token',
-        method: 'POST',
-        form: {
+      const tokenResponse = await axios.post(conUrl + '/auth/token',
+        new URLSearchParams({
           uid: userToSignin.device,
-          user: userToSignin
-        },
-        headers: { 'Authorization': 'Bearer ' + signinToken.token }
-      }
-      request(tokenOptions, function (err: any, response: any, body: any) {
-        if (err) return done(err);
-
-        expect(response.statusCode).to.equal(200);
-
-        const tokenObj = JSON.parse(body);
-        userToSignin.token = tokenObj.token;
-        done();
-      });
-    });
+          user: JSON.stringify(userToSignin)
+        }),
+        { headers: { 'Authorization': 'Bearer ' + signinResponse.data.token } }
+      );
+      expect(tokenResponse.status).to.equal(200);
+      userToSignin.token = tokenResponse.data.token;
+      done();
+    } catch (err) {
+      done(err);
+    }
   }
 
   after(function (done) {
     logout(noEditRolesUser, function (err: any) {
-      logout(adminUser, function (err2: any) {
+      logout(adminUser, function (_err2: any) {
         done();
       });
     });
   })
 
   function logout(userToLogout: any, done: any): void {
-    const logoutOptions = {
-      url: conUrl + '/api/logout',
-      method: 'POST',
-      user: {
-        _id: userToLogout._id
-      },
-      token: userToLogout.token,
+    axios.post(conUrl + '/api/logout', null, {
       headers: { 'Authorization': 'Bearer ' + userToLogout.token }
-    };
-    request(logoutOptions, function (err: any) {
+    }).then(() => {
       user.getUserByUsername(userToLogout.username, function (err: any, existingUser: any) {
         if (err) return done(err);
-
         user.deleteUser(existingUser, function (err: any) {
           done(err);
         });
       });
-    });
+    }).catch(done);
   }
 
-  it('applies authentication middleware to the web controllers', function (done) {
-    const getEventsOptions = {
-      url: conUrl + "/api/events/",
-      method: 'GET',
-      user: adminUser,
+  it('applies authentication middleware to the web controllers', async function () {
+    const eventsResponse = await axios.get(conUrl + "/api/events/", {
       headers: { 'Authorization': 'Bearer ' + adminUser.token }
-    };
+    });
+    expect(eventsResponse.status).to.equal(200);
+    expect(Array.isArray(eventsResponse.data)).to.be.true;
+    expect(eventsResponse.data.length).is.greaterThan(0);
 
-    request(getEventsOptions, function (err: any, response: any, body: any) {
-      if (err) return done(err);
-
-      expect(response.statusCode).to.equal(200);
-
-      const events = JSON.parse(body);
-      expect(Array.isArray(events)).to.be.true;
-      expect(events.length).is.greaterThan(0);
-
-      const event = events[0];
-      const updateEventOptions = {
-        url: conUrl + "/api/events/" + event.id,
-        method: 'PUT',
-        form: {
+    const event = eventsResponse.data[0];
+    try {
+      await axios.put(conUrl + "/api/events/" + event.id,
+        new URLSearchParams({
           user: JSON.stringify(noEditRolesUser),
           event: JSON.stringify(event)
-        },
-        headers: { 'Authorization': 'Bearer ' + noEditRolesUser.token }
-      };
-      request(updateEventOptions, function (err: any, response: any, body: any) {
-        if (err) return done(err);
-
-        expect(response.statusCode).to.equal(403);
-        done();
-      });
-    });
+        }),
+        { headers: { 'Authorization': 'Bearer ' + noEditRolesUser.token } }
+      );
+      throw new Error('Expected 403 but request succeeded');
+    } catch (err: any) {
+      if (err.response) {
+        expect(err.response.status).to.equal(403);
+      } else {
+        throw err;
+      }
+    }
   })
 })
