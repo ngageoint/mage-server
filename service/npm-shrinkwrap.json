@@ -8,7 +8,7 @@
       "name": "@ngageoint/mage.service",
       "version": "6.6.7",
       "dependencies": {
-        "@ngageoint/geopackage": "4.2.7",
+        "@ngageoint/geopackage": "^4.2.8",
         "@ngageoint/mongodb-migrations": "^2.0.0",
         "@node-saml/passport-saml": "^5.1.0",
         "@turf/centroid": "7.2.0",
@@ -904,9 +904,9 @@
       }
     },
     "node_modules/@ngageoint/geopackage": {
-      "version": "4.2.7",
-      "resolved": "https://registry.npmjs.org/@ngageoint/geopackage/-/geopackage-4.2.7.tgz",
-      "integrity": "sha512-iMBI+m4IvxWsV2T68QiNm7B7grJiec7gFt1EiNDZlFFjlo1le81IgUtoEmr2LrgVVYQzoe0xpdofyUYXVwq0Ng==",
+      "version": "4.2.8",
+      "resolved": "https://registry.npmjs.org/@ngageoint/geopackage/-/geopackage-4.2.8.tgz",
+      "integrity": "sha512-B9xsMT49aRiEfECKzgrpCHn1IoVD2z83XYGoSfa3sWvNisrr76K9ECrJ6MxxFOE6MSTJq/nDmhOD6dZ1Sn0SHQ==",
       "license": "MIT",
       "dependencies": {
         "@turf/bbox": "6.3.0",
@@ -935,7 +935,7 @@
         "geopackage": "cli"
       },
       "optionalDependencies": {
-        "better-sqlite3": "^9.1.1",
+        "better-sqlite3": "^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0",
         "chalk": "4.1.1",
         "inquirer": "^14.0.0"
       }
@@ -945,18 +945,6 @@
       "resolved": "https://registry.npmjs.org/@types/geojson/-/geojson-7946.0.8.tgz",
       "integrity": "sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA==",
       "license": "MIT"
-    },
-    "node_modules/@ngageoint/geopackage/node_modules/better-sqlite3": {
-      "version": "9.6.0",
-      "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-9.6.0.tgz",
-      "integrity": "sha512-yR5HATnqeYNVnkaUTf4bOP2dJSnyhP4puJN/QPRyx4YkBEEUxib422n2XzPqDEHjQQqazoYoADdAm5vE15+dAQ==",
-      "hasInstallScript": true,
-      "license": "MIT",
-      "optional": true,
-      "dependencies": {
-        "bindings": "^1.5.0",
-        "prebuild-install": "^7.1.1"
-      }
     },
     "node_modules/@ngageoint/geopackage/node_modules/wkx": {
       "version": "0.4.8",
@@ -2846,6 +2834,21 @@
       "integrity": "sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==",
       "license": "MIT"
     },
+    "node_modules/better-sqlite3": {
+      "version": "12.11.1",
+      "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-12.11.1.tgz",
+      "integrity": "sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==",
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "bindings": "^1.5.0",
+        "prebuild-install": "^7.1.1"
+      },
+      "engines": {
+        "node": "20.x || 22.x || 23.x || 24.x || 25.x || 26.x"
+      }
+    },
     "node_modules/binary-extensions": {
       "version": "2.3.0",
       "resolved": "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.3.0.tgz",
@@ -3251,9 +3254,9 @@
       }
     },
     "node_modules/chardet": {
-      "version": "2.1.1",
-      "resolved": "https://registry.npmjs.org/chardet/-/chardet-2.1.1.tgz",
-      "integrity": "sha512-PsezH1rqdV9VvyNhxxOW32/d75r01NY7TQCmOqomRo15ZSOKbpTFVsfjghxo6JloQUCGnH4k1LGu0R4yCLlWQQ==",
+      "version": "2.2.0",
+      "resolved": "https://registry.npmjs.org/chardet/-/chardet-2.2.0.tgz",
+      "integrity": "sha512-rddelWYNPRrXq6PtNEN2S3f6t9ILzvqaN5pVgi4kqt9jHQaXIial9PznB5iSPVlQSLNaaH22ItWz3EJtQ10+OA==",
       "license": "MIT",
       "optional": true
     },
