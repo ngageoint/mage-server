@@ -17,7 +17,7 @@ export interface MongoTestContext {
   readonly conn: mongoose.Connection
 }
 
-if (process.env.MONGOMS_VERSION !== 'string') {
+if (!process.env.MONGOMS_VERSION) {
   process.env.MONGOMS_VERSION = '6.0.28'
 }
 
