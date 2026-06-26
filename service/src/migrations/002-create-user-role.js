@@ -17,7 +17,7 @@ exports.up = function(done) {
 
   const userRole = {
     name: "USER_ROLE",
-    description: "The user role permits access to the event-based, observation collection and query functions, but denies permission to administrative funtions.",
+    description: "The user role permits access to the event-based, observation collection and query functions, but denies permission to administrative functions.",
     permissions: userPermissions
   };
 
