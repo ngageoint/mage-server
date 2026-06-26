@@ -28,7 +28,7 @@
     "npm": ">= 8"
   },
   "dependencies": {
-    "@ngageoint/geopackage": "4.2.7",
+    "@ngageoint/geopackage": "^4.2.8",
     "@ngageoint/mongodb-migrations": "^2.0.0",
     "@node-saml/passport-saml": "^5.1.0",
     "@turf/centroid": "7.2.0",
