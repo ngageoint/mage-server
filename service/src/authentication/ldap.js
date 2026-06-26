@@ -83,6 +83,11 @@ function escapeFilter(value) {
   });
 }
 
+// Handle multi value arrays in case a user attribute has more than one value (e.g. multiple email addresses).
+function singleValue(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 function initialize(strategy) {
   setDefaults(strategy);
   log.info('Configuring ' + strategy.title + ' authentication');
@@ -113,12 +118,12 @@ function initialize(strategy) {
       return res.status(401).send(`Invalid ${strategy.title} username/password.`);
     }
 
-    const username = profile[strategy.settings.profile.id];
+    const username = singleValue(profile[strategy.settings.profile.id]);
 
     let user;
     try {
       user = await new Promise((resolve, reject) => {
-        User.getUserByAuthenticationStrategy(strategy.type, username, (err, u) => {
+        User.getUserByAuthenticationStrategy(strategy.name, username, (err, u) => {
           if (err)
             reject(err);
           else
@@ -151,8 +156,8 @@ function initialize(strategy) {
 
       const newUserData = {
         username,
-        displayName: profile[strategy.settings.profile.displayName],
-        email: profile[strategy.settings.profile.email],
+        displayName: singleValue(profile[strategy.settings.profile.displayName]),
+        email: singleValue(profile[strategy.settings.profile.email]),
         active: false,
         roleId: role._id,
         authentication: {
