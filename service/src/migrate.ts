@@ -1,5 +1,7 @@
 import path from 'path'
-import * as migrations from '@ngageoint/mongodb-migrations'
+import { Migrator } from '@ngageoint/mongodb-migrations'
+import { Config, ResultMap } from '@ngageoint/mongodb-migrations/lib/types'
+import { MongoClientOptions } from 'mongodb'
 
 import log from './logger'
 
@@ -7,18 +9,18 @@ export const migrationCollection = 'migrations'
 
 class MigrationContext {
 
-  readonly migrator: migrations.Migrator
+  readonly migrator: Migrator
 
   private resolve: (() => any) | null = null
   private reject: ((err: any) => any) | null = null
 
-  constructor(migrationCollection: string, dbUrl: string, connOptions: migrations.MongoClientOptions) {
-    const config: migrations.MigratorConfig = {
+  constructor(migrationCollection: string, dbUrl: string, connOptions: MongoClientOptions) {
+    const config: Config = {
       collection: migrationCollection,
       url: dbUrl,
       options: connOptions,
     }
-    this.migrator = new migrations.Migrator(config, (level, msg) => {
+    this.migrator = new Migrator(config, (msg) => {
       log.info(msg)
     })
   }
@@ -33,7 +35,7 @@ class MigrationContext {
     )
   }
 
-  onFinished(err: any, results: migrations.MigrationSetResults): void {
+  onFinished(err: any, results: ResultMap | undefined): void {
     if (err) {
       log.error('database migrations failed: ', err)
       log.error('migration results:\n' + JSON.stringify(results, null, 2))
@@ -51,7 +53,7 @@ class MigrationContext {
 }
 
 // TODO: inject mongo connection; not possible with mongodb-migrations lib
-export async function runDatabaseMigrations(mongoUrl: string, mongoOptions?: migrations.MongoClientOptions): Promise<void> {
+export async function runDatabaseMigrations(mongoUrl: string, mongoOptions?: MongoClientOptions): Promise<void> {
   try {
     const migrationsDir = path.resolve(__dirname, 'migrations')
     log.info(`running database migrations in directory ${migrationsDir} ...`)
