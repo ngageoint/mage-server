@@ -6,6 +6,7 @@ export enum SftpStatus {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
   PENDING = 'PENDING',
+  SKIPPED = 'SKIPPED' /** Adding new status to show Admin obsv. was skipped for sftp loading */
 }
 
 const SftpObservationsSchema = new mongoose.Schema({
@@ -44,6 +45,7 @@ export interface SftpObservationRepository {
   isProcessed(eventId: MageEventId, observationId: ObservationId): Promise<Boolean>
   isSyncedAtLastModified(eventId: MageEventId, observationId: ObservationId, lastModified: Date): Promise<boolean>
   postStatus(eventId: MageEventId, observationId: ObservationId, status: SftpStatus, lastObservationModified?: Date): Promise<SftpAttrs | null>
+  markManySkipped(eventId: MageEventId, observationIds: ObservationId[]): Promise<void>
 }
 
 export class MongooseSftpObservationRepository implements SftpObservationRepository {
@@ -102,6 +104,18 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
     }
     const document = await this.model.findOneAndUpdate({ eventId: eventId, observationId: observationId }, update, { upsert: true })
     return document ? (document.toJSON() as unknown as SftpAttrs) : null
+  }
+
+  async markManySkipped(eventId: MageEventId, observationIds: ObservationId[]): Promise<void> {
+    if (!observationIds.length) return
+    const ops = observationIds.map(observationId => ({
+      updateOne: {
+        filter: { eventId, observationId },
+        update: { $setOnInsert: { eventId, observationId, status: SftpStatus.SKIPPED } },
+        upsert: true
+      }
+    }))
+    await this.model.bulkWrite(ops)
   }
 
 }

@@ -18,13 +18,19 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { HttpClientModule } from '@angular/common/http'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { ResetConfirmDialogComponent } from './configuration/reset-confirm-dialog.component';
+import { ObservationStatusComponent } from './observation-status/observation-status.component';
+import { SftpAdminComponent } from './sftp-admin/sftp-admin.component';
 
 @NgModule({
   declarations: [
     ConfigurationComponent,
-    ResetConfirmDialogComponent
+    ResetConfirmDialogComponent,
+    ObservationStatusComponent,
+    SftpAdminComponent,
   ],
   imports: [
     CommonModule,
@@ -46,9 +52,12 @@ import { ResetConfirmDialogComponent } from './configuration/reset-confirm-dialo
     MatRadioModule,
     MatSlideToggleModule,
     MatProgressSpinnerModule,
+    MatTabsModule,
+    MatTooltipModule,
   ],
   exports: [
-    ConfigurationComponent
+    ConfigurationComponent,
+    SftpAdminComponent,
   ]
 })
 export class SFTPModule { }

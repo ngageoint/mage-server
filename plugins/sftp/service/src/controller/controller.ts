@@ -1,6 +1,6 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEvent, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { AttachmentStore, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { AttachmentStore, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from "@ngageoint/mage.service/lib/entities/users/entities.users";
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
@@ -9,7 +9,7 @@ import { SFTPPluginConfig, defaultSFTPPluginConfig, EventFilterMode } from '../c
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import fs from 'fs';
 import path from 'path';
-import { SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
+import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
 
@@ -103,6 +103,18 @@ export class SftpController {
    * Factory to retrieve archiver based on plugin configuration
    */
   archiveFactory: ArchiverFactory
+
+  /**
+   * Timestamp (ms) when this controller instance was created. Used to prevent
+   * backfilling observations that predate the plugin start.
+   */
+  private readonly pluginStartTime: number = Date.now()
+
+  /**
+   * Tracks which event IDs have already had their pre-start observations marked
+   * SKIPPED, so the scan only runs once per process start per event.
+   */
+  private readonly startupSkipDone = new Set<number>()
 
   /**
    * Console logger
@@ -313,6 +325,30 @@ export class SftpController {
   }
 
   /**
+   * Returns all SFTP sync records for an event, with total counts per status.
+   */
+  public async getObservationStatuses(eventId: number, statusFilter?: SftpStatus[]): Promise<{ records: SftpAttrs[], counts: Record<string, number> }> {
+    const records = statusFilter?.length
+      ? await this.sftpObservationRepository.findAllByStatus(eventId, statusFilter)
+      : await this.sftpObservationRepository.findAll(eventId)
+    const everything = statusFilter?.length
+      ? await this.sftpObservationRepository.findAll(eventId)
+      : records
+    const counts: Record<string, number> = { SUCCESS: 0, FAILED: 0, PENDING: 0, SKIPPED: 0 }
+    for (const r of everything) counts[r.status] = (counts[r.status] ?? 0) + 1
+    return { records, counts }
+  }
+
+  /**
+   * Requeues observations as PENDING so the next poll cycle retries them.
+   */
+  public async requeueObservations(eventId: number, observationIds: string[]): Promise<void> {
+    for (const id of observationIds) {
+      await this.sftpObservationRepository.postStatus(eventId, id, SftpStatus.PENDING)
+    }
+  }
+
+  /**
    * Tests the connection to an SFTP server with the given configuration
    * @param config The SFTP client configuration to test
    * @returns A result object indicating success or failure with a message
@@ -446,6 +482,8 @@ export class SftpController {
   private async processEvent(event: MageEvent, configuration: SFTPPluginConfig) {
     const observationRepository = await this.observationRepository(event.id);
 
+    await this.skipMissedObservations(event, observationRepository)
+
     this.console.debug('fetching pending observations for event ' + event.name);
     const pending = await this.sftpObservationRepository.findAllByStatus(event.id, [SftpStatus.PENDING])
     for (const sftpAttrs of pending) {
@@ -456,7 +494,7 @@ export class SftpController {
     }
 
     const latestSyncedTime = await this.sftpObservationRepository.findLatestSyncedObservationTime(event.id)
-    let queryTime: number = latestSyncedTime ? latestSyncedTime.getTime() : 0
+    let queryTime: number = Math.max(latestSyncedTime?.getTime() ?? 0, this.pluginStartTime)
 
     const page: PagingParameters = {
       pageSize: configuration.pageSize,
@@ -501,6 +539,35 @@ export class SftpController {
     return filtered
   }
 
+  // Checks for any observation that predates the plugin start with no sftp record and marks them as 'SKIPPED'
+  private async skipMissedObservations(event: MageEvent, observationRepository: EventScopedObservationRepository): Promise<void> {
+    if (this.startupSkipDone.has(event.id)) return
+    this.startupSkipDone.add(event.id)
+
+    const existing = await this.sftpObservationRepository.findAll(event.id)
+    const knownIds = new Set(existing.map(r => r.observationId))
+
+    const skippedIds: string[] = []
+    const page: PagingParameters = { pageSize: 500, pageIndex: 0 }
+
+    while (true) {
+      const { items } = await observationRepository.findLastModifiedAfter(0, page)
+      if (!items.length) break
+      for (const obs of items) {
+        if (obs.lastModified.getTime() < this.pluginStartTime && !knownIds.has(obs.id)) {
+          skippedIds.push(obs.id)
+        }
+      }
+      if (items.length < page.pageSize) break
+      page.pageIndex++
+    }
+
+    if (skippedIds.length) {
+      await this.sftpObservationRepository.markManySkipped(event.id, skippedIds)
+      this.console.info(`Marked ${skippedIds.length} pre-existing observations as SKIPPED for event ${event.name}`)
+    }
+  }
+
   private async sftpObservation(
     observation: Observation,
     event: MageEvent,
@@ -514,12 +581,8 @@ export class SftpController {
     if (result instanceof ArchiveResult) {
       if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
         try {
-          const teams = await this.teamRepository.findTeamsByUserId(observation.userId);
-          // Filter out events from the teams response and teams that are not in the event
-          const newTeams = teams.filter((team) => team.teamEventId == null && event.teamIds?.map((teamId) => teamId.toString()).includes(team._id.toString()))
-          const teamNames = newTeams.length > 0 ? `${newTeams.map(team => team.name).join('_')}_` : '';
-          const user = await this.userRepository.findById(observation.userId || '')
-          const filename = (`${event.name}_${teamNames}${user?.username || observation.userId}_${observation.id}`)
+          /** File naming is just observation id to reduce clutter */
+          const filename = (`${observation.id}`)
 
           const stream = new PassThrough()
           result.archive.pipe(stream)
