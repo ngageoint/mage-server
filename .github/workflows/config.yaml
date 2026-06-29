@@ -19,7 +19,7 @@ env:
   # see https://nodejs.org/en/about/previous-releases
   # additional versions in ascending order, latest version last
   # e.g. 20 18 22
-  MAGE_NODE_VERSIONS: 24 20 22 26
+  MAGE_NODE_VERSIONS: 24 22 26
 
 jobs:
   main:
