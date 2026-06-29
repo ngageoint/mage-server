@@ -1,6 +1,6 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEvent, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { AttachmentStore, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { AttachmentStore, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from "@ngageoint/mage.service/lib/entities/users/entities.users";
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
@@ -9,7 +9,7 @@ import { SFTPPluginConfig, defaultSFTPPluginConfig, EventFilterMode } from '../c
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
 import fs from 'fs';
 import path from 'path';
-import { SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
+import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
 
@@ -327,7 +327,7 @@ export class SftpController {
   /**
    * Returns all SFTP sync records for an event, with total counts per status.
    */
-  public async getObservationStatuses(eventId: number, statusFilter?: SftpStatus[]): Promise<{ records: any[], counts: Record<string, number> }> {
+  public async getObservationStatuses(eventId: number, statusFilter?: SftpStatus[]): Promise<{ records: SftpAttrs[], counts: Record<string, number> }> {
     const records = statusFilter?.length
       ? await this.sftpObservationRepository.findAllByStatus(eventId, statusFilter)
       : await this.sftpObservationRepository.findAll(eventId)
@@ -540,12 +540,12 @@ export class SftpController {
   }
 
   // Checks for any observation that predates the plugin start with no sftp record and marks them as 'SKIPPED'
-  private async skipMissedObservations(event: MageEvent, observationRepository: any): Promise<void> {
+  private async skipMissedObservations(event: MageEvent, observationRepository: EventScopedObservationRepository): Promise<void> {
     if (this.startupSkipDone.has(event.id)) return
     this.startupSkipDone.add(event.id)
 
     const existing = await this.sftpObservationRepository.findAll(event.id)
-    const knownIds = new Set(existing.map((r: any) => r.observationId))
+    const knownIds = new Set(existing.map(r => r.observationId))
 
     const skippedIds: string[] = []
     const page: PagingParameters = { pageSize: 500, pageIndex: 0 }
