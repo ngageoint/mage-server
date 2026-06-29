@@ -209,11 +209,13 @@ exports.getUserByAuthenticationId = function (id, callback) {
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
-  Authentication.getAuthenticationByStrategy(strategy, uid, function (err, authentication) {
-    if (err || !authentication) return callback(err);
+  // Make sure we handle any orphaned authentication documents that may cause a login error
+  Authentication.getAuthenticationsByStrategy(strategy, uid).then(authentications => {
+    if (!authentications || !authentications.length) return callback(null, null);
 
-    User.findOne({ authenticationId: authentication._id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(r => callback(null, r), e => callback(e));
-  });
+    const authenticationIds = authentications.map(authentication => authentication._id);
+    User.findOne({ authenticationId: { $in: authenticationIds } }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(r => callback(null, r), e => callback(e));
+  }, err => callback(err));
 }
 
 function createQueryConditions(filter) {
@@ -308,24 +310,37 @@ function entityForDocument(doc) {
 }
 
 exports.createUser = function (user, callback) {
-  Authentication.createAuthentication(user.authentication).then(authentication => {
-    const newUser = {
-      username: user.username,
-      displayName: user.displayName,
-      email: user.email,
-      phones: user.phones,
-      active: user.active,
-      roleId: user.roleId,
-      avatar: user.avatar,
-      icon: user.icon,
-      authenticationId: authentication._id
-    };
+  // Fail fast if the username is already taken so we don't create an
+  // Authentication document that would be orphaned by the duplicate-username
+  // guard in the User pre('save') hook.
+  User.findOne({ username: user.username.toLowerCase() }).then(existing => {
+    if (existing) {
+      const error = new Error('username already exists');
+      error.status = 409;
+      return callback(error);
+    }
 
-    User.create(newUser).then(async user => {
-      await user.populate([ { path: 'roleId' }, { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } } ]);
-      callback(null, user);
+    Authentication.createAuthentication(user.authentication).then(authentication => {
+      const newUser = {
+        username: user.username,
+        displayName: user.displayName,
+        email: user.email,
+        phones: user.phones,
+        active: user.active,
+        roleId: user.roleId,
+        avatar: user.avatar,
+        icon: user.icon,
+        authenticationId: authentication._id
+      };
+
+      User.create(newUser).then(async user => {
+        await user.populate([ { path: 'roleId' }, { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } } ]);
+        callback(null, user);
+      }).catch(err => {
+        Authentication.removeAuthenticationById(authentication._id, () => callback(err));
+      });
     }).catch(err => callback(err));
-  }).catch(err => callback(err));
+  }, err => callback(err));
 };
 
 exports.updateUser = function (user, callback) {
