@@ -85,7 +85,6 @@
     "@types/adm-zip": "0.5.7",
     "@types/archiver": "5.3.4",
     "@types/async": "3.2.24",
-    "@types/bson": "1.0.11",
     "@types/busboy": "1.5.4",
     "@types/chai": "4.3.20",
     "@types/chai-as-promised": "7.1.8",
@@ -189,4 +188,3 @@
     "commander": "12.0.0"
   }
 }
-

@@ -463,6 +463,21 @@ describe("observation read tests", function () {
       .end(done);
   });
 
+  it("should reject observations request with invalid geometry", function (done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    request(app)
+      .get('/api/events/1/observations')
+      .query({ geometry: JSON.stringify({ type: 'NotAType', coordinates: [] }) })
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(400)
+      .expect(function (res) {
+        res.text.should.match(/Invalid GeoJSON geometry/);
+      })
+      .end(done);
+  });
+
   it("should get observations and filter on states", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 

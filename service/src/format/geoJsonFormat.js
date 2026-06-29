@@ -1,3 +1,5 @@
+var geojsonValidation = require('geojson-validation');
+
 var parseEnvelope = function(text) {
   var bbox = JSON.parse(text);
   if (bbox.length !== 4) {
@@ -63,8 +65,13 @@ var parseGeometry = function(type, text) {
   switch (type) {
   case 'bbox':
     return parseEnvelope(text);
-  default:
-    return [JSON.parse(text)];
+  default: {
+    const geometry = JSON.parse(text);
+    if (!geojsonValidation.isGeometryObject(geometry)) {
+      throw new Error('Invalid GeoJSON geometry: ' + text);
+    }
+    return [geometry];
+  }
   }
 };
 

@@ -68,7 +68,6 @@
         "@types/adm-zip": "0.5.7",
         "@types/archiver": "5.3.4",
         "@types/async": "3.2.24",
-        "@types/bson": "1.0.11",
         "@types/busboy": "1.5.4",
         "@types/chai": "4.3.20",
         "@types/chai-as-promised": "7.1.8",
@@ -1583,16 +1582,6 @@
       "license": "MIT",
       "dependencies": {
         "@types/connect": "*",
-        "@types/node": "*"
-      }
-    },
-    "node_modules/@types/bson": {
-      "version": "1.0.11",
-      "resolved": "https://registry.npmjs.org/@types/bson/-/bson-1.0.11.tgz",
-      "integrity": "sha512-j+UcCWI+FsbI5/FQP/Kj2CXyplWAz39ktHFkXk84h7dNblKRSoNJs95PZFRd96NQGqsPEPgeclqnznWZr14ZDA==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
         "@types/node": "*"
       }
     },
