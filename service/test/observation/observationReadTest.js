@@ -478,6 +478,53 @@ describe("observation read tests", function () {
       .end(done);
   });
 
+  it("should reject observations request with out-of-bounds coordinates", function (done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    request(app)
+      .get('/api/events/1/observations')
+      .query({ geometry: JSON.stringify({ type: 'Point', coordinates: [200, 0] }) })
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(400)
+      .expect(function (res) {
+        res.text.should.match(/out of range/);
+      })
+      .end(done);
+  });
+
+  it("should reject observations request with self-intersecting polygon", function (done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    const bowtie = { type: 'Polygon', coordinates: [[[0,0],[1,1],[1,0],[0,1],[0,0]]] };
+    request(app)
+      .get('/api/events/1/observations')
+      .query({ geometry: JSON.stringify(bowtie) })
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(400)
+      .expect(function (res) {
+        res.text.should.match(/self-intersecting/);
+      })
+      .end(done);
+  });
+
+  it("should reject observations request with unclosed polygon", function (done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    const unclosed = { type: 'Polygon', coordinates: [[[0,0],[10,0],[10,10],[0,10]]] };
+    request(app)
+      .get('/api/events/1/observations')
+      .query({ geometry: JSON.stringify(unclosed) })
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(400)
+      .expect(function (res) {
+        res.text.should.match(/Invalid GeoJSON geometry/);
+      })
+      .end(done);
+  });
+
   it("should get observations and filter on states", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 

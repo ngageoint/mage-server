@@ -1,4 +1,15 @@
 var geojsonValidation = require('geojson-validation');
+var kinks = require('@turf/kinks').default;
+var rewind = require('@turf/rewind').default;
+
+function validateCoordinateBounds(coords) {
+  if (typeof coords[0] === 'number') {
+    if (coords[0] < -180 || coords[0] > 180) throw new Error('Longitude out of range: ' + coords[0]);
+    if (coords[1] < -90  || coords[1] > 90)  throw new Error('Latitude out of range: ' + coords[1]);
+    return;
+  }
+  coords.forEach(validateCoordinateBounds);
+}
 
 var parseEnvelope = function(text) {
   var bbox = JSON.parse(text);
@@ -66,10 +77,19 @@ var parseGeometry = function(type, text) {
   case 'bbox':
     return parseEnvelope(text);
   default: {
-    const geometry = JSON.parse(text);
+    let geometry = JSON.parse(text);
+    if (Array.isArray(geometry.coordinates)) {
+      validateCoordinateBounds(geometry.coordinates);
+    }
     if (!geojsonValidation.isGeometryObject(geometry)) {
       throw new Error('Invalid GeoJSON geometry: ' + text);
     }
+    if (['Polygon', 'MultiPolygon'].includes(geometry.type)) {
+      if (kinks(geometry).features.length > 0) {
+        throw new Error('Invalid GeoJSON geometry: self-intersecting polygon');
+      }
+    }
+    geometry = rewind(geometry, { mutate: false });
     return [geometry];
   }
   }
