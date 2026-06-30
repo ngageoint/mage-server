@@ -39,7 +39,7 @@ jobs:
         run: |
           cd plugins/image/service
           npm ci --force
-          npm install --os=linux --cpu=x64 sharp
+          npm install --os=linux --cpu=x64
           rm -rf node_modules/mongoose
           npm test
 

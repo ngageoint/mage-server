@@ -7,7 +7,7 @@ exports.up = async function (done) {
 
     const settings = this.db.collection('settings');
     const result = await settings.findOneAndDelete({ type: 'security' })
-    const localSettings = result.value.settings.local;
+    const localSettings = result.settings.local;
 
     let binIcon;
     if (localSettings.icon) {

@@ -24,19 +24,19 @@
   ],
   "homepage": "https://www.nga.mil",
   "engines": {
-    "node": ">= 16",
+    "node": ">= 18",
     "npm": ">= 8"
   },
   "dependencies": {
-    "@ngageoint/geopackage": "4.2.6",
-    "@ngageoint/mongodb-migrations": "1.0.0",
-    "@node-saml/passport-saml": "4.0.4",
+    "@ngageoint/geopackage": "^4.2.8",
+    "@ngageoint/mongodb-migrations": "^2.0.0",
+    "@node-saml/passport-saml": "^5.1.0",
     "@turf/centroid": "7.2.0",
     "@turf/kinks": "7.2.0",
     "@types/geojson": "7946.0.16",
     "@types/json-schema": "7.0.15",
     "@types/mime-types": "3.0.1",
-    "@xmldom/xmldom": "0.9.8",
+    "@xmldom/xmldom": "0.9.10",
     "adm-zip": "0.5.16",
     "archiver": "7.0.1",
     "async": "3.2.6",
@@ -44,9 +44,9 @@
     "base-64": "1.0.0",
     "busboy": "1.6.0",
     "captcha-canvas": "3.4.0",
-    "cfenv": "1.2.4",
+    "cfenv": "1.2.6",
     "commander": "12.0.0",
-    "express": "4.21.2",
+    "express": "4.22.2",
     "express-session": "1.18.1",
     "file-type": "16.5.4",
     "fs-extra": "11.3.4",
@@ -54,17 +54,17 @@
     "geojson-validation": "1.0.2",
     "json2csv": "5.0.7",
     "jsonwebtoken": "9.0.2",
-    "lodash": "4.17.21",
+    "ldapts": "^8.1.8",
+    "lodash": "4.18.1",
     "mgrs": "1.0.0",
     "mime-types": "2.1.35",
     "moment": "2.30.1",
     "mongoose": "8.23.0",
-    "multer": "1.4.5-lts.1",
+    "multer": "2.2.0",
     "node-fetch": "2.7.0",
     "passport": "0.7.0",
     "passport-anonymous": "1.0.1",
     "passport-http-bearer": "1.0.1",
-    "passport-ldapauth": "3.0.1",
     "passport-local": "1.0.0",
     "passport-oauth2": "1.8.0",
     "passport-openidconnect": "0.1.2",
@@ -96,7 +96,7 @@
     "@types/json2csv": "5.0.7",
     "@types/lodash": "4.17.16",
     "@types/mocha": "7.0.2",
-    "@types/multer": "1.4.12",
+    "@types/multer": "2.1.0",
     "@types/node": "18.19.80",
     "@types/node-fetch": "2.6.12",
     "@types/passport": "1.0.17",
@@ -108,10 +108,9 @@
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
     "ajv": "6.12.6",
-    "axios": "1.8.4",
+    "axios": "1.18.1",
     "chai": "4.5.0",
     "chai-as-promised": "7.1.2",
-    "coveralls": "3.1.1",
     "cpy-cli": "5.0.0",
     "deep-equal": "2.2.3",
     "eslint": "8.57.1",
@@ -121,7 +120,7 @@
     "jszip": "3.10.1",
     "mocha": "10.8.2",
     "mock-fs": "4.14.0",
-    "mongodb-memory-server": "9.5.0",
+    "mongodb-memory-server": "^11.2.0",
     "nock": "11.9.1",
     "npm-run-all": "4.1.5",
     "nyc": "14.1.1",
@@ -168,7 +167,6 @@
     "functionalTests": "npm-run-all functionalTests:clean functionalTests:build functionalTests:run",
     "report": "nyc report",
     "coverage": "nyc mocha",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
     "migration:create": "node bin/migration.js create",
@@ -177,11 +175,6 @@
     "debug": "node --inspect-brk=9229 lib/app.js",
     "clean": "rimraf lib test-lib functionalTests-lib",
     "ci:test": "npm-run-all test:compile test:copy_resources test:copy_node_modules test:run"
-  },
-  "config": {
-    "mongodbMemoryServer": {
-      "version": "6.0.28"
-    }
   },
   "main": "bin/mage.service.js",
   "files": [
@@ -196,3 +189,4 @@
     "commander": "12.0.0"
   }
 }
+

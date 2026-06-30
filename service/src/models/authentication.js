@@ -175,6 +175,10 @@ exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
   }
 };
 
+exports.getAuthenticationsByStrategy = function (strategy, uid) {
+  return Authentication.find({ id: uid, type: strategy }).exec();
+};
+
 exports.getAuthenticationsByType = function (type) {
   return Authentication.find({ type: type }).exec();
 };

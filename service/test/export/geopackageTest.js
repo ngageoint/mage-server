@@ -85,6 +85,7 @@ describe("geopackage export tests", function () {
 
         const exporter = new GeopackageExporter(options);
         exporter.export(writable);
+        console.log('EXPORT RETURN')
     });
 });
 

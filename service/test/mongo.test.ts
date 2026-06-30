@@ -17,6 +17,10 @@ export interface MongoTestContext {
   readonly conn: mongoose.Connection
 }
 
+if (!process.env.MONGOMS_VERSION) {
+  process.env.MONGOMS_VERSION = '6.0.28'
+}
+
 /**
  * Return a function that the caller can pass to Mocha's `before()` function
  * to setup an in-memory MongoDB database for a test suite.
@@ -40,6 +44,8 @@ export function mongoTestBeforeAllHook(opts?: MongoMemoryServerOpts): () => Prom
     const server = await MongoMemoryServer.create(opts)
     const uri = server.getUri()
     const conn = await mongoose.createConnection(uri).asPromise()
+    const buildInfo = await conn.db?.command({ buildInfo: 1 })
+    console.log('mongodb memory server build info:', buildInfo)
     this.mongo = { server, uri, conn }
   }
   return setupMongoServer

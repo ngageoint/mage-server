@@ -10,9 +10,9 @@ function configure(strategy) {
   log.info('Configuring ' + strategy.title + ' authentication');
 
   const options = {
-    callbackUrl: `${strategy.redirectHost}/auth/${strategy.name}/callback`,
+    callbackUrl: `${strategy.settings.redirectHost}/auth/${strategy.name}/callback`,
     entryPoint: strategy.settings.entryPoint,
-    cert: strategy.settings.cert,
+    idpCert: strategy.settings.cert,
     issuer: strategy.settings.issuer
   }
   if (strategy.settings.privateKey) {
