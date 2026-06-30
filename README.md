@@ -436,7 +436,7 @@ setup allows you to mount a directory into the Mage server container from a
 provide extra functionality like [encryption](https://www.veracrypt.fr) or
 [remote mounting](https://github.com/libfuse/sshfs) transparently to the
 Docker container and Mage application.  If you don't have any requirements of
-that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) 
+that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
 There are commented-out entries in the `docker-compose.yml` file with example
 specifications of Docker-managed volumes.
 
@@ -605,7 +605,7 @@ setup allows you to mount a directory into the Mage server container from a
 provide extra functionality like [encryption](https://www.veracrypt.fr) or
 [remote mounting](https://github.com/libfuse/sshfs) transparently to the
 Docker container and Mage application.  If you don't have any requirements of
-that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) 
+that sort, you can modify the Compose file to use [Docker-managed volumes](https://docs.docker.com/storage/volumes/) instead of bind mounts.
 There are commented-out entries in the `docker-compose.yml` file with example
 specifications of Docker-managed volumes.
 

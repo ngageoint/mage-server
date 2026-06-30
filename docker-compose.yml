@@ -85,3 +85,8 @@ services:
 networks:
   mage.net:
     driver: bridge
+
+# Uncomment this section to use Docker volumes instead of bind mounts for data directories:
+# volumes:
+#   "mongodb-data":
+#   "mage-server-resources":
