@@ -1,9 +1,14 @@
 <form class="form" method="post" autocomplete="off">
-    <div class="modal-header">
-        <h3 class="modal-title">Log in to continue to MAGE</h3>
-    </div>
-    <div class="modal-body">
-        <authentication [api]="api" [hideSignup]="hideSignup" (onSuccess)="onSuccess()" (onFailure)="logout()">
-        </authentication>
-    </div>
+  <div class="modal-header">
+    <h3 class="modal-title">Log in to continue to MAGE</h3>
+  </div>
+  <div class="modal-body">
+    <authentication
+      [api]="api"
+      [hideSignup]="hideSignup"
+      (onSuccess)="onAuthFlowSuccess()"
+      (onFailure)="logout()"
+    >
+    </authentication>
+  </div>
 </form>

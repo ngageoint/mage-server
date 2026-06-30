@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { StateService } from '@uirouter/angular';
-import * as _ from 'underscore';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Service } from '@ngageoint/mage.web-core-lib/feed';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
-import { FeedEditState, FeedMetaData } from './feed-edit.model'
-import { FeedEditService } from './feed-edit.service'
+import { FeedEditState, FeedMetaData } from './feed-edit.model';
+import { FeedEditService } from './feed-edit.service';
 
 @Component({
   selector: 'app-feed-edit',
@@ -13,15 +12,17 @@ import { FeedEditService } from './feed-edit.service'
   providers: [FeedEditService]
 })
 export class AdminFeedEditComponent implements OnInit {
-  breadcrumbs: AdminBreadcrumb[] = [{
-    title: 'Feeds',
-    icon: 'rss_feed',
-    state: {
-      name: 'admin.feeds'
+  breadcrumbs: AdminBreadcrumb[] = [
+    {
+      title: 'Feeds',
+      icon: 'rss_feed',
+      route: ['/feeds']
     }
-  }]
+  ];
+
   step = 0;
-  hasFeedDeletePermission: boolean;
+  hasFeedDeletePermission = false;
+
   editState: FeedEditState = {
     originalFeed: null,
     availableServices: [],
@@ -32,45 +33,44 @@ export class AdminFeedEditComponent implements OnInit {
     itemPropertiesSchema: null,
     feedMetaData: null,
     preview: null
-  }
+  };
+
+  private feedId: string | null = null;
 
   constructor(
     private feedEdit: FeedEditService,
-    private stateService: StateService
+    private route: ActivatedRoute,
+    private router: Router
   ) {
-    if (this.stateService.params.feedId) {
-      this.breadcrumbs = this.breadcrumbs.concat([
-        { title: '' },
-        { title: 'Edit' }
-      ]);
-    }
-    else {
-      this.breadcrumbs.push({ title: 'New' })
+    this.feedId = this.route.snapshot.paramMap.get('feedId');
+
+    if (this.feedId) {
+      this.breadcrumbs = this.breadcrumbs.concat([{ title: '' }, { title: 'Edit' }]);
+    } else {
+      this.breadcrumbs.push({ title: 'New' });
+      console.log(this.breadcrumbs)
     }
   }
 
   ngOnInit(): void {
-    this.feedEdit.state$.subscribe(x => {
-      const nextOriginalFeed = x.originalFeed
+    this.feedEdit.state$.subscribe((x) => {
+      const nextOriginalFeed = x.originalFeed;
+
       if (nextOriginalFeed && !this.editState.originalFeed) {
         this.breadcrumbs[1] = {
           title: nextOriginalFeed.title,
-          state: {
-            name: 'admin.feed',
-            params: {
-              feedId: nextOriginalFeed.id
-            }
-          }
-        }
+          route: ['/feeds', nextOriginalFeed.id]
+        };
         this.step = 1;
       }
-      this.editState = x
-    })
-    if (this.stateService.params.feedId) {
-      this.feedEdit.editFeed(this.stateService.params.feedId)
-    }
-    else {
-      this.feedEdit.newFeed()
+
+      this.editState = x;
+    });
+
+    if (this.feedId) {
+      this.feedEdit.editFeed(this.feedId);
+    } else {
+      this.feedEdit.newFeed();
     }
   }
 
@@ -83,14 +83,12 @@ export class AdminFeedEditComponent implements OnInit {
   }
 
   serviceCreated(service: Service): void {
-    this.feedEdit.serviceCreated(service)
+    this.feedEdit.serviceCreated(service);
     this.setStep(0);
   }
 
   itemPropertiesSchemaToTitleMap(value: any): any {
-    if (!value.schema) {
-      return;
-    }
+    if (!value?.schema) return;
     return {
       name: value.schema.title,
       value: value.key
@@ -98,26 +96,26 @@ export class AdminFeedEditComponent implements OnInit {
   }
 
   onServiceSelected(serviceId: string): void {
-    this.feedEdit.selectService(serviceId)
+    this.feedEdit.selectService(serviceId);
   }
 
   onTopicSelected(topicId: string): void {
-    this.feedEdit.selectTopic(topicId)
+    this.feedEdit.selectTopic(topicId);
     if (topicId) {
       this.nextStep();
     }
   }
 
   onFetchParametersAccepted(fetchParameters: any): void {
-    this.nextStep()
+    this.nextStep();
   }
 
   onFetchParametersChanged(fetchParameters: any): void {
-    this.feedEdit.fetchParametersChanged(fetchParameters)
+    this.feedEdit.fetchParametersChanged(fetchParameters);
   }
 
   onItemPropertiesSchemaChanged(itemProperties: any): void {
-    this.feedEdit.itemPropertiesSchemaChanged(itemProperties)
+    this.feedEdit.itemPropertiesSchemaChanged(itemProperties);
   }
 
   onItemPropertiesSchemaAccepted(): void {
@@ -125,16 +123,17 @@ export class AdminFeedEditComponent implements OnInit {
   }
 
   onFeedMetaDataChanged(metaData: FeedMetaData): void {
-    this.feedEdit.feedMetaDataChanged(metaData)
+    this.feedEdit.feedMetaDataChanged(metaData);
   }
 
   onFeedMetaDataAccepted(metaData: FeedMetaData): void {
     if (metaData) {
-      this.feedEdit.feedMetaDataChanged(metaData)
+      this.feedEdit.feedMetaDataChanged(metaData);
     }
-    this.feedEdit.saveFeed().subscribe(feed => {
-      this.stateService.go('admin.feed', { feedId: feed.id })
-    })
+
+    this.feedEdit.saveFeed().subscribe((feed) => {
+      this.router.navigate(['../../feeds', feed.id], { relativeTo: this.route });
+    });
   }
 
   setStep(index: number): void {
@@ -147,9 +146,5 @@ export class AdminFeedEditComponent implements OnInit {
 
   prevStep(): void {
     this.step--;
-  }
-
-  goToFeeds(): void {
-    this.stateService.go('admin.feeds');
   }
 }

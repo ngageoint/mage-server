@@ -1,7 +1,7 @@
 services:
 
   mage-db:
-    image: mongodb/mongodb-community-server:6.0-ubi9
+    image: mongo:6.0.28
     volumes:
       - ./database/data:/data/db
       - ./database/log:/var/log/mongodb

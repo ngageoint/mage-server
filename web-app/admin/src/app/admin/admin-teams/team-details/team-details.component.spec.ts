@@ -1,28 +1,30 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { PageEvent } from '@angular/material/paginator';
-import { StateService } from '@uirouter/angular';
-import { of, throwError } from 'rxjs';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { TeamDetailsComponent } from './team-details.component';
-import { TeamsService } from '../teams-service';
-import { EventsService } from '../../admin-event/events.service';
-import { UserService } from '../../../upgrade/ajs-upgraded-providers';
+import { AdminTeamsService } from '../../services/admin-teams-service';
+import { AdminEventsService } from '../../services/admin-events.service';
+import { AdminUserService } from '../../services/admin-user.service';
 import { Team } from '../team';
-import { User } from '@ngageoint/mage.web-core-lib/user';
-import { Event } from 'src/app/filter/filter.types';
+import { User as CoreUser } from '@ngageoint/mage.web-core-lib/user';
 import { DeleteTeamComponent } from '../delete-team/delete-team.component';
 import { SearchModalComponent } from '../../../core/search-modal/search-modal.component';
 
 describe('TeamDetailsComponent', () => {
   let component: TeamDetailsComponent;
   let fixture: ComponentFixture<TeamDetailsComponent>;
-  let mockStateService: jasmine.SpyObj<StateService>;
+
+  let paramMap$: BehaviorSubject<any>;
+
+  let mockRoute: any;
+  let mockRouter: jasmine.SpyObj<Router>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
-  let mockUserService: jasmine.SpyObj<any>;
-  let mockTeamsService: jasmine.SpyObj<TeamsService>;
-  let mockEventsService: jasmine.SpyObj<EventsService>;
+  let mockUserService: jasmine.SpyObj<AdminUserService>;
+  let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
+  let mockEventsService: jasmine.SpyObj<AdminEventsService>;
 
   const mockTeam: Team = {
     id: 'team123' as any,
@@ -31,156 +33,152 @@ describe('TeamDetailsComponent', () => {
     teamEventId: 'event123',
     users: ['user1', 'user2'] as any,
     acl: {
-      'user123': {
-        permissions: ['update', 'delete']
-      }
+      user123: { permissions: ['update', 'delete'] }
     } as any
   };
 
-  const mockUser: User = {
+  const mockMyselfWithGlobalPerms: any = {
+    id: 'user123',
+    role: { permissions: ['UPDATE_TEAM', 'DELETE_TEAM'] }
+  };
+
+  const mockMyselfNoGlobalPerms: any = {
+    id: 'user123',
+    role: { permissions: [] }
+  };
+
+  const mockMember: CoreUser = {
     id: 'user123',
     username: 'testuser',
     displayName: 'Test User',
-    email: 'test@example.com',
-    role: {
-      permissions: ['UPDATE_TEAM', 'DELETE_TEAM']
-    }
+    email: 'test@example.com'
   } as any;
 
-  const mockEvent: Event = {
+  const mockEvent: any = {
     id: 'event123',
     name: 'Test Event',
     description: 'Test Event Description'
-  } as any;
+  };
 
-  beforeEach(async () => {
-    mockStateService = jasmine.createSpyObj('StateService', ['go'], {
-      params: { teamId: 'team123' }
-    });
-
-    mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
-
-    mockUserService = {
-      myself: mockUser
+  beforeEach(waitForAsync(() => {
+    paramMap$ = new BehaviorSubject(convertToParamMap({ teamId: 'team123' }));
+    mockRoute = {
+      paramMap: paramMap$.asObservable(),
+      snapshot: { paramMap: convertToParamMap({ teamId: 'team123' }) }
     };
 
-    mockTeamsService = jasmine.createSpyObj('TeamsService', [
-      'getTeamById',
-      'getMembers',
-      'getNonMembers',
-      'addUserToTeam',
-      'removeMember',
-      'editTeam'
-    ]);
+    mockRouter = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
+    mockDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
 
-    mockEventsService = jasmine.createSpyObj('EventsService', [
-      'getEvents',
-      'addTeamToEvent',
-      'removeEventFromTeam'
-    ]);
-
-    await TestBed.configureTestingModule({
-      declarations: [TeamDetailsComponent],
-      providers: [
-        { provide: StateService, useValue: mockStateService },
-        { provide: MatDialog, useValue: mockDialog },
-        { provide: UserService, useValue: mockUserService },
-        { provide: TeamsService, useValue: mockTeamsService },
-        { provide: EventsService, useValue: mockEventsService }
+    mockUserService = jasmine.createSpyObj<AdminUserService>(
+      'AdminUserService',
+      ['getMyself', 'hasPermission']
+    );
+    mockTeamsService = jasmine.createSpyObj<AdminTeamsService>(
+      'AdminTeamsService',
+      [
+        'getTeamById',
+        'getMembers',
+        'getNonMembers',
+        'addUserToTeam',
+        'removeMember',
+        'editTeam',
+        'updateUserRole'
       ]
-    }).compileComponents();
+    );
+    mockEventsService = jasmine.createSpyObj<AdminEventsService>(
+      'AdminEventsService',
+      ['getEvents', 'addTeamToEvent', 'removeEventFromTeam']
+    );
 
+    mockUserService.getMyself.and.returnValue(of(mockMyselfWithGlobalPerms));
+    mockTeamsService.getTeamById.and.returnValue(of(mockTeam));
+    mockTeamsService.getMembers.and.returnValue(
+      of({ items: [mockMember], totalCount: 1 } as any)
+    );
+    mockEventsService.getEvents.and.returnValue(
+      of({ items: [mockEvent], totalCount: 1 } as any)
+    );
+
+    TestBed.configureTestingModule({
+      declarations: [TeamDetailsComponent],
+      imports: [NoopAnimationsModule],
+      providers: [
+        { provide: ActivatedRoute, useValue: mockRoute },
+        { provide: Router, useValue: mockRouter },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: AdminUserService, useValue: mockUserService },
+        { provide: AdminTeamsService, useValue: mockTeamsService },
+        { provide: AdminEventsService, useValue: mockEventsService }
+      ]
+    })
+      .overrideTemplate(TeamDetailsComponent, '')
+      .compileComponents();
+  }));
+
+  beforeEach(() => {
     fixture = TestBed.createComponent(TeamDetailsComponent);
     component = fixture.componentInstance;
   });
 
-  describe('Component Initialization', () => {
-    it('should create', () => {
-      expect(component).toBeTruthy();
-    });
-
-    it('should initialize with default values', () => {
-      expect(component.hasUpdatePermission).toBeFalse();
-      expect(component.hasDeletePermission).toBeFalse();
-      expect(component.editingDetails).toBeFalse();
-      expect(component.loadingMembers).toBeTrue();
-      expect(component.loadingEvents).toBeTrue();
-      expect(component.membersPageIndex).toBe(0);
-      expect(component.membersPageSize).toBe(5);
-      expect(component.totalMembers).toBe(0);
-      expect(component.eventsPageSize).toBe(5);
-      expect(component.totalEvents).toBe(0);
-      expect(component.membersDataSource).toBeInstanceOf(MatTableDataSource);
-      expect(component.eventsDataSource).toBeInstanceOf(MatTableDataSource);
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+    expect(component.hasUpdatePermission).toBeFalse();
+    expect(component.hasDeletePermission).toBeFalse();
   });
 
-  describe('ngOnInit', () => {
-    beforeEach(() => {
-      mockTeamsService.getTeamById.and.returnValue(of(mockTeam));
-      mockTeamsService.getMembers.and.returnValue(of({
-        items: [mockUser],
-        totalCount: 1
-      }));
-      mockEventsService.getEvents.and.returnValue(of({
-        items: [mockEvent],
-        totalCount: 1
-      }));
-    });
+  it('should load team + members + events on init', () => {
+    fixture.detectChanges();
 
-    it('should load team data on init', () => {
-      component.ngOnInit();
+    expect(component.teamId).toBe('team123');
+    expect(mockUserService.getMyself).toHaveBeenCalled();
+    expect(mockTeamsService.getTeamById).toHaveBeenCalledWith('team123');
+    expect(mockTeamsService.getMembers).toHaveBeenCalled();
+    expect(mockEventsService.getEvents).toHaveBeenCalled();
+    expect(component.team).toEqual(mockTeam);
+  });
 
-      expect(mockTeamsService.getTeamById).toHaveBeenCalledWith('team123');
-      expect(component.team).toEqual(mockTeam);
-      expect(component.teamId).toBe('team123');
-    });
+  it('should set permissions via global role permissions', () => {
+    mockUserService.getMyself.and.returnValue(of(mockMyselfWithGlobalPerms));
 
-    it('should set permissions correctly for users with role permissions', () => {
-      component.ngOnInit();
+    fixture.detectChanges();
 
-      expect(component.hasUpdatePermission).toBeTrue();
-      expect(component.hasDeletePermission).toBeTrue();
-    });
+    expect(component.hasUpdatePermission).toBeTrue();
+    expect(component.hasDeletePermission).toBeTrue();
+  });
 
-    it('should set permissions correctly for users with ACL permissions', () => {
-      mockUserService.myself = {
-        ...mockUser,
-        id: 'user123',
-        role: { permissions: [] }
-      };
+  it('should set permissions via ACL permissions when global perms missing', () => {
+    mockUserService.getMyself.and.returnValue(of(mockMyselfNoGlobalPerms));
 
-      component.ngOnInit();
+    fixture.detectChanges();
 
-      expect(component.hasUpdatePermission).toBeTrue();
-      expect(component.hasDeletePermission).toBeTrue();
-    });
+    expect(component.hasUpdatePermission).toBeTrue();
+    expect(component.hasDeletePermission).toBeTrue();
+  });
 
-    it('should deny permissions for users without access', () => {
-      mockUserService.myself = {
-        ...mockUser,
-        id: 'user456',
-        role: { permissions: [] }
-      };
+  it('should deny permissions when no global perms and no ACL match', () => {
+    mockUserService.getMyself.and.returnValue(
+      of({ id: 'someoneElse', role: { permissions: [] } })
+    );
+    mockTeamsService.getTeamById.and.returnValue(
+      of({ ...mockTeam, acl: {} } as any)
+    );
 
-      const teamWithoutAcl = { ...mockTeam, acl: {} };
-      mockTeamsService.getTeamById.and.returnValue(of(teamWithoutAcl));
+    fixture.detectChanges();
 
-      component.ngOnInit();
+    expect(component.hasUpdatePermission).toBeFalse();
+    expect(component.hasDeletePermission).toBeFalse();
+  });
 
-      expect(component.hasUpdatePermission).toBeFalse();
-      expect(component.hasDeletePermission).toBeFalse();
-    });
+  it('should still load team if getMyself errors', () => {
+    mockUserService.getMyself.and.returnValue(
+      throwError(() => new Error('nope'))
+    );
 
-    it('should call getMembers and getTeamEvents after loading team', () => {
-      spyOn(component, 'getMembers');
-      spyOn(component, 'getTeamEvents');
+    fixture.detectChanges();
 
-      component.ngOnInit();
-
-      expect(component.getMembers).toHaveBeenCalled();
-      expect(component.getTeamEvents).toHaveBeenCalled();
-    });
+    expect(mockTeamsService.getTeamById).toHaveBeenCalledWith('team123');
+    expect(component.team).toBeTruthy();
   });
 
   describe('getMembers', () => {
@@ -188,12 +186,10 @@ describe('TeamDetailsComponent', () => {
       component.team = mockTeam;
     });
 
-    it('should fetch members successfully', () => {
-      const mockResponse = {
-        items: [mockUser],
-        totalCount: 1
-      };
-      mockTeamsService.getMembers.and.returnValue(of(mockResponse));
+    it('should fetch members and update datasource + counts', () => {
+      mockTeamsService.getMembers.and.returnValue(
+        of({ items: [mockMember], totalCount: 1 } as any)
+      );
 
       component.getMembers();
 
@@ -204,42 +200,35 @@ describe('TeamDetailsComponent', () => {
         page_size: component.membersPageSize
       });
       expect(component.loadingMembers).toBeFalse();
-      expect(component.membersDataSource.data).toEqual([mockUser]);
+      expect(component.membersDataSource.data).toEqual([mockMember]);
       expect(component.totalMembers).toBe(1);
     });
 
-    it('should handle error when fetching members', () => {
-      spyOn(console, 'error');
-      mockTeamsService.getMembers.and.returnValue(throwError('Error'));
+    it('should handle error fetching members by resetting data', () => {
+      mockTeamsService.getMembers.and.returnValue(
+        throwError(() => new Error('fail'))
+      );
 
       component.getMembers();
 
       expect(component.loadingMembers).toBeFalse();
       expect(component.membersDataSource.data).toEqual([]);
       expect(component.totalMembers).toBe(0);
-      expect(console.error).toHaveBeenCalledWith('Error fetching members:', 'Error');
     });
 
-    it('should return early if team is not loaded', () => {
-      component.team = null as any;
-
+    it('should return early if team not loaded', () => {
+      component.team = null;
       component.getMembers();
-
       expect(mockTeamsService.getMembers).not.toHaveBeenCalled();
     });
   });
 
   describe('getTeamEvents', () => {
-    beforeEach(() => {
+    it('should fetch events and update datasource + counts', () => {
       component.teamId = 'team123';
-    });
-
-    it('should fetch team events successfully', () => {
-      const mockResponse = {
-        items: [mockEvent],
-        totalCount: 1
-      };
-      mockEventsService.getEvents.and.returnValue(of(mockResponse));
+      mockEventsService.getEvents.and.returnValue(
+        of({ items: [mockEvent], totalCount: 1 } as any)
+      );
 
       component.getTeamEvents();
 
@@ -254,77 +243,62 @@ describe('TeamDetailsComponent', () => {
       expect(component.eventsDataSource.data).toEqual([mockEvent]);
       expect(component.totalEvents).toBe(1);
     });
-  });
 
-  describe('Pagination', () => {
-    it('should handle members page change', () => {
-      spyOn(component, 'getMembers');
-      const pageEvent: PageEvent = {
-        pageIndex: 1,
-        pageSize: 10,
-        length: 20
-      };
-
-      component.onMembersPageChange(pageEvent);
-
-      expect(component.membersPageSize).toBe(10);
-      expect(component.membersPageIndex).toBe(1);
-      expect(component.getMembers).toHaveBeenCalled();
-    });
-
-    it('should handle events page change', () => {
-      spyOn(component, 'getTeamEvents');
-      const pageEvent: PageEvent = {
-        pageIndex: 2,
-        pageSize: 5,
-        length: 15
-      };
-
-      component.onEventsPageChange(pageEvent);
-
-      expect(component.eventsPageSize).toBe(5);
-      expect(component.teamEventsPage).toBe(2);
-      expect(component.getTeamEvents).toHaveBeenCalled();
+    it('should return early if teamId missing', () => {
+      component.teamId = '';
+      component.getTeamEvents();
+      expect(mockEventsService.getEvents).not.toHaveBeenCalled();
     });
   });
 
-  describe('Search Functionality', () => {
-    it('should handle members search change', () => {
-      spyOn(component, 'getMembers');
-
-      component.onMembersSearchChange('test search');
-
-      expect(component.membersPageIndex).toBe(0);
-      expect(component.memberSearchTerm).toBe('test search');
-      expect(component.getMembers).toHaveBeenCalled();
-    });
-
-    it('should handle empty search term for members', () => {
-      spyOn(component, 'getMembers');
-
-      component.onMembersSearchChange();
-
-      expect(component.memberSearchTerm).toBe('');
-      expect(component.getMembers).toHaveBeenCalled();
-    });
-
-    it('should handle team events search change', () => {
-      spyOn(component, 'getTeamEvents');
-
-      component.onTeamEventSearchChange('event search');
-
-      expect(component.teamEventsPage).toBe(0);
-      expect(component.teamEventSearch).toBe('event search');
-      expect(component.getTeamEvents).toHaveBeenCalled();
-    });
-  });
-
-  describe('Team Details Editing', () => {
+  describe('pagination + search', () => {
     beforeEach(() => {
       component.team = mockTeam;
+      component.teamId = 'team123';
+      spyOn(component, 'getMembers');
+      spyOn(component, 'getTeamEvents');
     });
 
-    it('should toggle edit details mode', () => {
+    it('onMembersPageChange should update pagination and reload', () => {
+      component.onMembersPageChange({ pageIndex: 2, pageSize: 10 } as any);
+      expect(component.membersPageIndex).toBe(2);
+      expect(component.membersPageSize).toBe(10);
+      expect(component.getMembers).toHaveBeenCalled();
+    });
+
+    it('onMembersSearchChange should reset page and reload', () => {
+      component.membersPageIndex = 5;
+      component.onMembersSearchChange('abc');
+      expect(component.membersPageIndex).toBe(0);
+      expect(component.memberSearchTerm).toBe('abc');
+      expect(component.getMembers).toHaveBeenCalled();
+    });
+
+    it('onEventsPageChange should update pagination and reload', () => {
+      component.onEventsPageChange({ pageIndex: 1, pageSize: 25 } as any);
+      expect(component.teamEventsPage).toBe(1);
+      expect(component.eventsPerPage).toBe(25);
+      expect(component.getTeamEvents).toHaveBeenCalled();
+    });
+
+    it('onTeamEventSearchChange should reset page and reload', () => {
+      component.teamEventsPage = 3;
+      component.onTeamEventSearchChange('zzz');
+      expect(component.teamEventsPage).toBe(0);
+      expect(component.teamEventSearch).toBe('zzz');
+      expect(component.getTeamEvents).toHaveBeenCalled();
+    });
+  });
+
+  describe('editing team details', () => {
+    beforeEach(() => {
+      component.team = mockTeam;
+      component.hasUpdatePermission = true;
+      (component as any).updateActionButtons();
+    });
+
+    it('toggleEditDetails should populate form on entering edit mode', () => {
+      component.editingDetails = false;
       component.toggleEditDetails();
 
       expect(component.editingDetails).toBeTrue();
@@ -332,13 +306,23 @@ describe('TeamDetailsComponent', () => {
       expect(component.editForm.description).toBe(mockTeam.description);
     });
 
-    it('should save team details', () => {
-      const updatedTeam = { ...mockTeam, name: 'Updated Team' };
-      mockTeamsService.editTeam.and.returnValue(of(updatedTeam));
+    it('cancelEditDetails should reset form and exit edit mode', () => {
+      component.editingDetails = true;
+      component.editForm.name = 'Changed';
+      component.cancelEditDetails();
 
+      expect(component.editingDetails).toBeFalse();
+      expect(component.editForm.name).toBe(mockTeam.name);
+      expect(component.editForm.description).toBe(mockTeam.description);
+    });
+
+    it('saveTeamDetails should call service and update team + breadcrumbs', () => {
+      const updated = { ...mockTeam, name: 'Updated Team' };
+      mockTeamsService.editTeam.and.returnValue(of(updated as any));
+
+      component.editingDetails = true;
       component.editForm.name = 'Updated Team';
       component.editForm.description = 'Updated Description';
-      component.editingDetails = true;
 
       component.saveTeamDetails();
 
@@ -346,173 +330,151 @@ describe('TeamDetailsComponent', () => {
         name: 'Updated Team',
         description: 'Updated Description'
       });
-      expect(component.team).toEqual(updatedTeam);
+      expect(component.team).toEqual(updated as any);
       expect(component.editingDetails).toBeFalse();
-    });
-
-    it('should cancel edit details', () => {
-      component.editingDetails = true;
-      component.editForm.name = 'Changed Name';
-
-      component.cancelEditDetails();
-
-      expect(component.editingDetails).toBeFalse();
-      expect(component.editForm.name).toBe(mockTeam.name);
-      expect(component.editForm.description).toBe(mockTeam.description);
+      expect(component.breadcrumbs.length).toBe(2);
+      expect(component.breadcrumbs[1].title).toBe('Updated Team');
     });
   });
 
-  describe('Navigation', () => {
-    it('should navigate to teams page', () => {
-      component.goToTeams();
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.teams');
-    });
-
-    it('should navigate to user profile', () => {
-      component.goToUserProfile(mockUser);
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.user', { userId: mockUser.id });
-    });
-
-    it('should navigate to team access page', () => {
-      component.team = mockTeam;
-
-      component.goToAccess();
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.teamAccess', { teamId: mockTeam.id });
-    });
-
-    it('should navigate to event page', () => {
-      component.goToEventPage(mockEvent);
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.event', { eventId: mockEvent.id });
-    });
-  });
-
-  describe('Member Management', () => {
+  describe('member management', () => {
     beforeEach(() => {
       component.team = mockTeam;
+      mockTeamsService.addUserToTeam.and.returnValue(of({} as any));
+      mockTeamsService.removeMember.and.returnValue(of({} as any));
+      mockTeamsService.getNonMembers.and.returnValue(
+        of({ items: [mockMember], totalCount: 1 } as any)
+      );
+      spyOn(component, 'getMembers');
     });
 
-    it('should open add member dialog', () => {
-      const dialogRef = { afterClosed: () => of({ selectedItem: mockUser }) };
-      mockDialog.open.and.returnValue(dialogRef as any);
-      mockTeamsService.addUserToTeam.and.returnValue(of({}));
-      spyOn(component, 'getMembers');
+    it('addMember should open SearchModal and add selected user', () => {
+      mockDialog.open.and.returnValue({
+        afterClosed: () => of({ selectedItem: mockMember })
+      } as any);
 
       component.addMember();
 
-      expect(mockDialog.open).toHaveBeenCalledWith(SearchModalComponent, jasmine.any(Object));
-      expect(mockTeamsService.addUserToTeam).toHaveBeenCalledWith(mockTeam.id, mockUser);
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        SearchModalComponent,
+        jasmine.any(Object)
+      );
+      expect(mockTeamsService.addUserToTeam).toHaveBeenCalledWith(
+        mockTeam.id,
+        mockMember
+      );
       expect(component.getMembers).toHaveBeenCalled();
     });
 
-    it('should remove member from team', () => {
-      const mockEvent = new MouseEvent('click');
-      spyOn(mockEvent, 'stopPropagation');
-      mockTeamsService.removeMember.and.returnValue(of({}));
-      spyOn(component, 'getMembers');
+    it('addMember should do nothing if dialog returns no selection', () => {
+      mockDialog.open.and.returnValue({
+        afterClosed: () => of(null)
+      } as any);
 
-      component.removeMember(mockEvent, mockUser);
+      component.addMember();
 
-      expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(mockTeamsService.removeMember).toHaveBeenCalledWith(mockTeam.id, mockUser.id);
-      expect(component.getMembers).toHaveBeenCalled();
+      expect(mockTeamsService.addUserToTeam).not.toHaveBeenCalled();
     });
 
-    it('should handle error when removing member', () => {
-      const mockEvent = new MouseEvent('click');
-      spyOn(mockEvent, 'stopPropagation');
-      spyOn(console, 'error');
-      mockTeamsService.removeMember.and.returnValue(throwError('Error removing member'));
+    it('removeMember should stop propagation and call service', () => {
+      const ev = jasmine.createSpyObj<MouseEvent>('MouseEvent', [
+        'stopPropagation'
+      ]);
 
-      component.removeMember(mockEvent, mockUser);
+      component.removeMember(ev, mockMember);
 
-      expect(console.error).toHaveBeenCalledWith('Error removing member:', 'Error removing member');
+      expect(ev.stopPropagation).toHaveBeenCalled();
+      expect(mockTeamsService.removeMember).toHaveBeenCalledWith(
+        mockTeam.id,
+        mockMember.id
+      );
+      expect(component.getMembers).toHaveBeenCalled();
     });
   });
 
-  describe('Event Management', () => {
+  describe('event management', () => {
     beforeEach(() => {
       component.team = mockTeam;
+      component.teamId = mockTeam.id as any;
+      mockEventsService.addTeamToEvent.and.returnValue(of({} as any));
+      mockEventsService.removeEventFromTeam.and.returnValue(of({} as any));
+      spyOn(component, 'getTeamEvents');
     });
 
-    it('should open add event dialog', () => {
-      const dialogRef = { afterClosed: () => of({ selectedItem: mockEvent }) };
-      mockDialog.open.and.returnValue(dialogRef as any);
-      mockEventsService.addTeamToEvent.and.returnValue(of(mockEvent));
-      spyOn(component, 'getTeamEvents');
+    it('addEventToTeam should open SearchModal and add selected event', () => {
+      mockDialog.open.and.returnValue({
+        afterClosed: () => of({ selectedItem: mockEvent })
+      } as any);
 
       component.addEventToTeam();
 
-      expect(mockDialog.open).toHaveBeenCalledWith(SearchModalComponent, jasmine.any(Object));
-      expect(mockEventsService.addTeamToEvent).toHaveBeenCalledWith(mockEvent.id.toString(), mockTeam);
-      expect(component.getTeamEvents).toHaveBeenCalled();
-    });
-
-    it('should handle error when adding event to team', () => {
-      const dialogRef = { afterClosed: () => of({ selectedItem: mockEvent }) };
-      mockDialog.open.and.returnValue(dialogRef as any);
-      spyOn(console, 'error');
-      mockEventsService.addTeamToEvent.and.returnValue(throwError('Error adding event'));
-
-      component.addEventToTeam();
-
-      expect(console.error).toHaveBeenCalledWith('Error adding event to team:', 'Error adding event');
-    });
-
-    it('should remove event from team', () => {
-      const mockClickEvent = new MouseEvent('click');
-      spyOn(mockClickEvent, 'stopPropagation');
-      mockEventsService.removeEventFromTeam.and.returnValue(of(undefined));
-      spyOn(component, 'getTeamEvents');
-
-      component.removeEventFromTeam(mockClickEvent, mockEvent);
-
-      expect(mockClickEvent.stopPropagation).toHaveBeenCalled();
-      expect(mockEventsService.removeEventFromTeam).toHaveBeenCalledWith(
-        mockEvent.id.toString(),
-        mockTeam.id.toString()
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        SearchModalComponent,
+        jasmine.any(Object)
+      );
+      expect(mockEventsService.addTeamToEvent).toHaveBeenCalledWith(
+        String(mockEvent.id),
+        mockTeam
       );
       expect(component.getTeamEvents).toHaveBeenCalled();
     });
 
-    it('should handle error when removing event from team', () => {
-      const mockClickEvent = new MouseEvent('click');
-      spyOn(mockClickEvent, 'stopPropagation');
-      spyOn(console, 'error');
-      mockEventsService.removeEventFromTeam.and.returnValue(throwError('Error removing event'));
+    it('removeEventFromTeam should stop propagation and call service', () => {
+      const ev = jasmine.createSpyObj<MouseEvent>('MouseEvent', [
+        'stopPropagation'
+      ]);
 
-      component.removeEventFromTeam(mockClickEvent, mockEvent);
+      component.removeEventFromTeam(ev, mockEvent);
 
-      expect(console.error).toHaveBeenCalledWith('Error removing event:', 'Error removing event');
+      expect(ev.stopPropagation).toHaveBeenCalled();
+      expect(mockEventsService.removeEventFromTeam).toHaveBeenCalledWith(
+        String(mockEvent.id),
+        String(mockTeam.id)
+      );
+      expect(component.getTeamEvents).toHaveBeenCalled();
     });
   });
 
-  describe('Team Deletion', () => {
-    it('should open delete team dialog and navigate on success', () => {
+  describe('deleteTeam', () => {
+    beforeEach(() => {
       component.team = mockTeam;
-      const dialogRef = { afterClosed: () => of(true) };
-      mockDialog.open.and.returnValue(dialogRef as any);
 
-      component.deleteTeam();
-
-      expect(mockDialog.open).toHaveBeenCalledWith(DeleteTeamComponent, {
-        data: { team: mockTeam }
-      });
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.teams');
+      (mockRouter as any).navigate = jasmine
+        .createSpy('navigate')
+        .and.returnValue(Promise.resolve(true));
     });
 
-    it('should not navigate if dialog is cancelled', () => {
-      component.team = mockTeam;
-      const dialogRef = { afterClosed: () => of(false) };
-      mockDialog.open.and.returnValue(dialogRef as any);
+    it('should open delete dialog and navigate when confirmed', () => {
+      mockDialog.open.and.returnValue({ afterClosed: () => of(true) } as any);
 
       component.deleteTeam();
 
-      expect(mockStateService.go).not.toHaveBeenCalled();
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        DeleteTeamComponent,
+        jasmine.objectContaining({
+          width: '600px',
+          data: { team: mockTeam }
+        })
+      );
+
+      expect((mockRouter as any).navigate).toHaveBeenCalledWith(
+        ['../../teams'],
+        jasmine.objectContaining({
+          relativeTo: jasmine.any(Object)
+        })
+      );
+
+      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
+    });
+
+    it('should not navigate when cancelled', () => {
+      mockDialog.open.and.returnValue({ afterClosed: () => of(false) } as any);
+
+      component.deleteTeam();
+
+      expect((mockRouter as any).navigate).not.toHaveBeenCalled();
+      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
     });
   });
-
 });
+

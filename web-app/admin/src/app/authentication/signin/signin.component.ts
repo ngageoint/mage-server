@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
-import { UserService } from '../../upgrade/ajs-upgraded-providers';
-import { SigninEvent } from '../auth.service';
+import { UserService } from 'mage-web-app/user/user.service';
+import { SigninEvent } from '../auth.types';
 import { AuthenticationStrategy } from '../local-signin/local-signin.component';
 
 export interface ApiAuthenticationStrategies {
@@ -37,7 +37,7 @@ export class SigninComponent implements OnInit {
     thirdPartyStrategies: AuthenticationStrategy[] = [];
 
     constructor(
-        @Inject(UserService) private userService: any
+        private userService: UserService,
     ) { }
 
     ngOnInit(): void {

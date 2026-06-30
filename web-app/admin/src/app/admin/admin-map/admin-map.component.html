@@ -1,57 +1,91 @@
-<div class="page">
-  <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
 
-  <div class="page-container">
-    <div class="content">
-      <mat-card>
-        <mat-card-header>
-          <mat-icon mat-card-avatar>search</mat-icon>
-          <mat-card-title class="primary-color">Location Search</mat-card-title>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <div class="platform">
-            <div class="platform__label">Mobile</div>
-            <div class="mat-body-1 platform__description">Configure how users search for places on MAGE mobile.</div>
+<div class="container bottom-gap-l">
+  <div class="page-header">
+    <div class="header-title-section">
+      <h2 class="page-title">Map</h2>
+      <p class="page-subtitle">
+        Configure how users search for locations on mobile and web.
+      </p>
+    </div>
+  </div>
 
-            <mat-radio-group class="radio-group" [(ngModel)]="mobileSearchType">
-              <mat-radio-button color="primary" *ngFor="let mobileSearchOption of mobileSearchOptions" [value]="mobileSearchOption">
-                {{mobileSearchOption}}
-              </mat-radio-button>
-            </mat-radio-group>
+  <div class="details-section single">
+    <div class="details-card">
+      <div class="details-form">
+        <div class="form-row two-col">
+          <div class="form-field">
+            <label class="field-label">Mobile</label>
+            <div class="field-content">
+              <div class="helper-text">
+                Configure how users search for places on MAGE mobile.
+              </div>
 
-            <div *ngIf="mobileSearchType === 'NOMINATIM'">
-              <mat-form-field appearance="fill">
-                <mat-label>Nominatim URL</mat-label>
-                <input matInput type="text" placeholder="https://nominatim.openstreetmap.org" [(ngModel)]="mobileNominatimUrl" required>
-              </mat-form-field>
+              <div class="radio-stack">
+                <label class="radio-item" *ngFor="let opt of mobileSearchOptions">
+                  <input
+                    type="radio"
+                    name="mobileSearchType"
+                    [value]="opt"
+                    [(ngModel)]="mobileSearchType"
+                  />
+                  <span class="radio-text">{{ opt }}</span>
+                </label>
+              </div>
+
+              <div class="sub-card" *ngIf="mobileSearchType === 'NOMINATIM'">
+                <label class="sub-label">Nominatim URL</label>
+                <input
+                  class="form-input"
+                  type="text"
+                  placeholder="https://nominatim.openstreetmap.org"
+                  [(ngModel)]="mobileNominatimUrl"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          <div class="platform">
-            <div class="platform__label">Web</div>
-            <div class="mat-body-2 platform__description">Configure how users search for places on MAGE web.</div>
+          <div class="form-field">
+            <label class="field-label">Web</label>
+            <div class="field-content">
+              <div class="helper-text">
+                Configure how users search for places on MAGE web.
+              </div>
 
-            <mat-radio-group class="radio-group" [(ngModel)]="webSearchType">
-              <mat-radio-button color="primary" *ngFor="let webSearchOption of webSearchOptions" [value]="webSearchOption">
-                {{webSearchOption}}
-              </mat-radio-button>
-            </mat-radio-group>
+              <div class="radio-stack">
+                <label class="radio-item" *ngFor="let opt of webSearchOptions">
+                  <input
+                    type="radio"
+                    name="webSearchType"
+                    [value]="opt"
+                    [(ngModel)]="webSearchType"
+                  />
+                  <span class="radio-text">{{ opt }}</span>
+                </label>
+              </div>
 
-            <div *ngIf="webSearchType === 'NOMINATIM'">
-              <mat-form-field appearance="fill">
-                <mat-label>Nominatim URL</mat-label>
-                <input matInput type="text" placeholder="https://nominatim.openstreetmap.org" [(ngModel)]="webNominatimUrl" required>
-              </mat-form-field>
+              <div class="sub-card" *ngIf="webSearchType === 'NOMINATIM'">
+                <label class="sub-label">Nominatim URL</label>
+                <input
+                  class="form-input"
+                  type="text"
+                  placeholder="https://nominatim.openstreetmap.org"
+                  [(ngModel)]="webNominatimUrl"
+                  required
+                />
+              </div>
             </div>
           </div>
+        </div>
 
-          <button mat-flat-button color="primary" (click)="save()">
-            <mat-icon>save</mat-icon>
-            <span>Save</span>
+        <div class="form-actions">
+          <button class="action-button btn-primary" type="button" (click)="save()">
+            <i class="fa fa-save"></i>
+            Save
           </button>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   </div>
 </div>

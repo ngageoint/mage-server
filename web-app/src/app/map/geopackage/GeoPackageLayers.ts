@@ -1,6 +1,7 @@
 import { Layer, geoJSON, Map, LatLng, LeafletMouseEvent } from 'leaflet';
 import { GeoPackageLayer } from './GeoPackageLayer';
 import { Feature, Geometry } from 'geojson';
+import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 export default class GeoPackageLayers {
   visibleGeoPackageLayers: GeoPackageLayer[];
@@ -9,7 +10,7 @@ export default class GeoPackageLayers {
     public map: Map,
     public layerService: any,
     public filterService: any,
-    public localStorageService: any
+    public localStorageService: LocalStorageService
   ) {
     this.map = map;
     this.layerService = layerService;

@@ -1,8 +1,6 @@
-import { JsonSchemaFormModule } from '@ajsf/core';
+import { JsonSchemaFormModule } from '@ngageoint/vendor-ajsf-core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { JsonSchemaFormWithServiceComponent } from './json-schema.component';
-
-
 
 describe('JsonSchemaFormWithServiceComponent', () => {
   let component: JsonSchemaFormWithServiceComponent;
@@ -10,18 +8,14 @@ describe('JsonSchemaFormWithServiceComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        JsonSchemaFormModule
-      ],
-      declarations: [ JsonSchemaFormWithServiceComponent ]
-    })
-    .compileComponents();
+      imports: [JsonSchemaFormModule],
+      declarations: [JsonSchemaFormWithServiceComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(JsonSchemaFormWithServiceComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

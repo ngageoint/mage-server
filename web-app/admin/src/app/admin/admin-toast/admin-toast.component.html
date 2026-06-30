@@ -1,0 +1,16 @@
+<div class="toast-container">
+  <div class="toast-row">
+    <div class="toast-message">
+      {{ data.message }}
+    </div>
+
+    <a
+      *ngIf="data.route"
+      class="toast-link"
+      [routerLink]="data.route"
+      (click)="close()"
+    >
+      {{ data.linkText || 'View' }}
+    </a>
+  </div>
+</div>

@@ -1,109 +1,35 @@
-import { JsonSchemaFormModule } from '@ajsf/core';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatCardModule } from '@angular/material/card'
-import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { MatIconModule } from '@angular/material/icon'
-import { MatListModule } from '@angular/material/list'
-import { MatPaginatorModule } from '@angular/material/paginator'
-import { RawParams, StateOrName, StateService, TransitionOptions, TransitionPromise } from '@uirouter/angular';
-import { of } from 'rxjs';
-import { Observable } from 'rxjs/internal/Observable';
-import { FeedExpanded, ServiceType } from '@ngageoint/mage.web-core-lib/feed/feed.model';
-import { JsonSchemaModule } from '../../../../app/json-schema/json-schema.module';
-import { UserService } from '../../../../app/upgrade/ajs-upgraded-providers';
-import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { of, throwError } from 'rxjs';
+
 import { AdminServiceComponent } from './admin-service.component';
-
-class MockStateService {
-  get params(): any {
-    return {
-      serviceId: 'serviceid1234'
-    };
-  }
-  go(to: StateOrName, params?: RawParams, options?: TransitionOptions): TransitionPromise {
-    return null;
-  }
-}
-
-class MockUserService {
-  get myself(): any {
-    return {
-      role: {
-        permissions: []
-      }
-    };
-  }
-}
-
-class MdDialogMock {
-  // When the component calls this.dialog.open(...) we'll return an object
-  // with an afterClosed method that allows to subscribe to the dialog result observable.
-  open(): any {
-    return {
-      afterClosed: (): Observable<boolean> => {
-        console.log('after closed');
-        return of(true);
-      }
-    };
-  }
-};
+import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { AdminUserService } from '../../services/admin-user.service';
 
 describe('AdminServiceComponent', () => {
   let component: AdminServiceComponent;
   let fixture: ComponentFixture<AdminServiceComponent>;
-  let element: HTMLElement;
 
-  let httpMock: HttpTestingController;
+  let feedService: jasmine.SpyObj<FeedService>;
+  let adminUserService: jasmine.SpyObj<AdminUserService>;
+  let dialog: jasmine.SpyObj<MatDialog>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      providers: [{
-        provide: StateService,
-        useClass: MockStateService
-      }, {
-        provide: MatDialogRef, useValue: {}
-      }, {
-        provide: MAT_DIALOG_DATA, useValue: {}
-      }, {
-        provide: UserService,
-        useClass: MockUserService
-      }, {
-        provide: MatDialog,
-        useClass: MdDialogMock
-      }],
-      imports: [
-        MatDialogModule,
-        MatIconModule,
-        MatCardModule,
-        MatListModule,
-        MatPaginatorModule,
-        HttpClientTestingModule,
-        JsonSchemaFormModule,
-        JsonSchemaModule,
-        HttpClientTestingModule,
-        AdminBreadcrumbModule
-      ],
-      declarations: [
-        AdminServiceComponent
-      ]
-    })
-    .compileComponents();
-  }));
+  const activatedRouteStub = {
+    snapshot: {
+      paramMap: {
+        get: (key: string) => (key === 'serviceId' ? 'serviceid1234' : null)
+      }
+    }
+  };
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(AdminServiceComponent);
-    component = fixture.componentInstance;
-    httpMock = TestBed.inject(HttpTestingController);
-    fixture.detectChanges();
-  });
-
-  afterEach(() => {
-    httpMock.verify();
-  });
-
-  const serviceType: ServiceType = {
-    pluginServiceTypeId: 'test:type1',
+  const serviceTypeNonObject: any = {
     id: 'servicetype1234',
     title: 'ServiceType',
     summary: 'summary',
@@ -111,214 +37,260 @@ describe('AdminServiceComponent', () => {
       type: 'string',
       title: 'URL',
       description: 'URL of the service',
-      default: 'https://nowhere.com'
+      default: 'https://example.com'
     }
   };
 
-  const serviceTypeObjectSchema: ServiceType = {
-    pluginServiceTypeId: 'test:type2',
+  const serviceTypeObject: any = {
     id: 'servicetype1234',
     title: 'ServiceType',
     summary: 'summary',
     configSchema: {
       type: 'object',
       properties: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
+        url: {
+          type: 'string',
+          title: 'URL'
+        }
       }
     }
   };
 
-  const service = {
-    serviceType: {
-      id: 'servicetype1234',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'object',
-        properties: {
-          type: 'string',
-          title: 'URL',
-          description: 'URL of the service',
-          default: 'https://nowhere.com'
-        }
-      }
-    },
+  const service: any = {
+    id: 'serviceid1234',
     title: 'Service title',
     summary: 'service summary',
     config: 'https://example.com',
-    id: 'serviceid1234'
+    serviceType: { id: 'servicetype1234' }
   };
-  const feed: FeedExpanded = {
-    title: 'Feed 1234',
-    service: {
-      title: 'Service title',
-      summary: 'service summary',
-      config: 'https://example.com',
-      id: 'serviceid1234',
-      serviceType: {
-        pluginServiceTypeId: 'test:type2',
-        id: 'servicetype1234',
-        title: 'ServiceType',
-        summary: 'summary',
-        configSchema: {
-          type: 'object',
-          properties: {
-            type: 'string',
-            title: 'URL',
-            description: 'URL of the service',
-            default: 'https://nowhere.com'
-          }
-        }
-      }
-    },
-    topic: {
-      id: 'topic',
-      title: 'Topic'
-    },
-    summary:
-      'Feed summary 1234',
-    itemPropertiesSchema: {},
-    constantParams: { newerThanDays: 56 },
-    itemsHaveIdentity: true,
-    itemsHaveSpatialDimension: true,
-    itemPrimaryProperty: 'test1',
-    itemSecondaryProperty: 'navArea',
-    itemTemporalProperty: 'timestamp',
-    updateFrequencySeconds: 915,
-    mapStyle: {
-      icon: {
-        id: 'icon1a2b'
-      }
-    },
-    id: 'feedid1234'
-  };
+
+  const feeds: any[] = [
+    { id: 'feed1', title: 'Feed 1', service: 'serviceid1234' },
+    { id: 'feed2', title: 'Feed 2', service: 'serviceid1234' }
+  ];
+
+  beforeEach(async () => {
+    feedService = jasmine.createSpyObj('FeedService', [
+      'fetchService',
+      'fetchServiceFeeds',
+      'fetchServiceType',
+      'deleteService'
+    ]);
+
+    adminUserService = jasmine.createSpyObj('AdminUserService', ['getMyself']);
+
+    dialog = jasmine.createSpyObj('MatDialog', ['open']);
+
+    await TestBed.configureTestingModule({
+      declarations: [AdminServiceComponent],
+      providers: [
+        { provide: FeedService, useValue: feedService },
+        { provide: AdminUserService, useValue: adminUserService },
+        { provide: MatDialog, useValue: dialog },
+        { provide: ActivatedRoute, useValue: activatedRouteStub }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AdminServiceComponent);
+    component = fixture.componentInstance;
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services/serviceid1234');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush({...service});
-
-    const serviceFeedReq = httpMock.expectOne('/api/feeds/services/serviceid1234/feeds');
-    expect(serviceFeedReq.request.method).toEqual('GET');
-    serviceFeedReq.flush([{...feed}]);
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types/servicetype1234');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush({...serviceType});
-
-    expect(component.breadcrumbs[1]).toEqual({title: service.title});
   });
 
-  it('should wrap non object schemas', () => {
-    const serviceReq = httpMock.expectOne('/api/feeds/services/serviceid1234');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush({...service});
+  it('should do nothing if serviceId is missing', fakeAsync(() => {
+    const routeNoId = {
+      snapshot: {
+        paramMap: {
+          get: (_: string) => null
+        }
+      }
+    };
 
-    const serviceFeedReq = httpMock.expectOne('/api/feeds/services/serviceid1234/feeds');
-    expect(serviceFeedReq.request.method).toEqual('GET');
-    serviceFeedReq.flush([{...feed}]);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      declarations: [AdminServiceComponent],
+      providers: [
+        { provide: FeedService, useValue: feedService },
+        { provide: AdminUserService, useValue: adminUserService },
+        { provide: MatDialog, useValue: dialog },
+        { provide: ActivatedRoute, useValue: routeNoId }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types/servicetype1234');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush({...serviceType});
-    expect(component.serviceType.configSchema.type).toEqual('object');
+    const f = TestBed.createComponent(AdminServiceComponent);
+    const c = f.componentInstance;
+
+    c.ngOnInit();
+    tick();
+
+    expect(feedService.fetchService).not.toHaveBeenCalled();
+    expect(feedService.fetchServiceFeeds).not.toHaveBeenCalled();
+  }));
+
+  it('should set permissions from getMyself', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      of({ role: { permissions: ['FEEDS_CREATE_SERVICE'] } } as any)
+    );
+
+    feedService.fetchService.and.returnValue(of(service));
+    feedService.fetchServiceFeeds.and.returnValue(of(feeds as any));
+    feedService.fetchServiceType.and.returnValue(of(serviceTypeObject));
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.hasServiceEditPermission).toBeTrue();
+    expect(component.hasServiceDeletePermission).toBeTrue();
+  }));
+
+  it('should clear permissions when getMyself errors', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      throwError(() => new Error('nope'))
+    );
+
+    feedService.fetchService.and.returnValue(of(service));
+    feedService.fetchServiceFeeds.and.returnValue(of(feeds as any));
+    feedService.fetchServiceType.and.returnValue(of(serviceTypeObject));
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.hasServiceEditPermission).toBeFalse();
+    expect(component.hasServiceDeletePermission).toBeFalse();
+  }));
+
+  it('should load service + feeds, then push breadcrumb with route', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      of({ role: { permissions: [] } } as any)
+    );
+
+    feedService.fetchService.and.returnValue(of(service));
+    feedService.fetchServiceFeeds.and.returnValue(of(feeds as any));
+    feedService.fetchServiceType.and.returnValue(of(serviceTypeObject));
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.service.id).toBe('serviceid1234');
+    expect(component.feeds.length).toBe(2);
+
+    expect(component.breadcrumbs.length).toBe(2);
+    expect(component.breadcrumbs[1].title).toBe('Service title');
+
+    expect(component.breadcrumbs[1] as any).toEqual(
+      jasmine.objectContaining({
+        title: 'Service title'
+      })
+    );
+    expect((component.breadcrumbs[1] as any).route).toBeUndefined();
+  }));
+
+  it('should wrap non-object serviceType configSchema and service.config', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      of({ role: { permissions: [] } } as any)
+    );
+
+    const localService = { ...service, config: 'https://example.com' };
+
+    feedService.fetchService.and.returnValue(of(localService as any));
+    feedService.fetchServiceFeeds.and.returnValue(of([] as any));
+    feedService.fetchServiceType.and.returnValue(
+      of({ ...serviceTypeNonObject } as any)
+    );
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.serviceType.configSchema.type).toBe('object');
     expect(component.serviceType.configSchema.properties).toBeDefined();
-    expect(component.serviceType.configSchema.properties.wrapped).toBeDefined();
-    expect(component.serviceType.configSchema.properties.wrapped).toEqual(serviceType.configSchema);
-  });
+    expect(component.serviceType.configSchema.properties.wrapped).toEqual(
+      serviceTypeNonObject.configSchema
+    );
 
-  it('should not wrap object schemas', () => {
-    const serviceReq = httpMock.expectOne('/api/feeds/services/serviceid1234');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush({...service});
-
-    const serviceFeedReq = httpMock.expectOne('/api/feeds/services/serviceid1234/feeds');
-    expect(serviceFeedReq.request.method).toEqual('GET');
-    serviceFeedReq.flush([{...feed}]);
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types/servicetype1234');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush({...serviceTypeObjectSchema});
-    expect(component.serviceType.configSchema.type).toEqual('object');
-    expect(component.serviceType.configSchema.properties).toBeDefined();
-    expect(component.serviceType.configSchema.properties.wrapped).not.toBeDefined();
-    expect(component.serviceType.configSchema).toEqual(serviceTypeObjectSchema.configSchema);
-  });
-
-  it('should update the state service to go to the admin.feeds state', () => {
-    const stateService: StateService = fixture.debugElement.injector.get(StateService);
-    spyOn(stateService, 'go');
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services/serviceid1234');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush({...service});
-
-    const serviceFeedReq = httpMock.expectOne('/api/feeds/services/serviceid1234/feeds');
-    expect(serviceFeedReq.request.method).toEqual('GET');
-    serviceFeedReq.flush([{...feed}]);
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types/servicetype1234');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush({...serviceTypeObjectSchema});
-
-    component.goToFeeds();
-    expect(stateService.go).toHaveBeenCalledWith('admin.feeds');
-  });
-
-  it('should update the state service to go to the admin.feed state with the feed id', () => {
-    const stateService: StateService = fixture.debugElement.injector.get(StateService);
-    spyOn(stateService, 'go');
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services/serviceid1234');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush({...service});
-
-    const serviceFeedReq = httpMock.expectOne('/api/feeds/services/serviceid1234/feeds');
-    expect(serviceFeedReq.request.method).toEqual('GET');
-    serviceFeedReq.flush([{...feed}]);
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types/servicetype1234');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush({...serviceTypeObjectSchema});
-
-    component.goToFeed(feed);
-    expect(stateService.go).toHaveBeenCalledWith('admin.feed', { feedId: feed.id });
-  });
-
-  xit('should delete a service', () => {
-    spyOn(component.dialog, 'open').and.callThrough();
-    spyOn(component, 'goToFeeds');
-
-    const serviceReq = httpMock.expectOne({
-      url: '/api/feeds/services/serviceid1234',
-      method: 'GET'
+    expect((component.service as any).config).toEqual({
+      wrapped: 'https://example.com'
     });
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush({...service});
 
-    const serviceFeedReq = httpMock.expectOne('/api/feeds/services/serviceid1234/feeds');
-    expect(serviceFeedReq.request.method).toEqual('GET');
-    serviceFeedReq.flush([{...feed}]);
+    expect(component.serviceLoaded).toBeDefined();
+  }));
 
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types/servicetype1234');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush({...serviceTypeObjectSchema});
+  it('should not wrap object serviceType configSchema', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      of({ role: { permissions: [] } } as any)
+    );
 
-    fixture.detectChanges();
-    const deleteServiceReq = httpMock.expectOne({
-      url: '/api/feeds/services/serviceid1234',
-      method: 'DELETE'
+    const localService = { ...service, config: { url: 'https://example.com' } };
+
+    feedService.fetchService.and.returnValue(of(localService as any));
+    feedService.fetchServiceFeeds.and.returnValue(of([] as any));
+    feedService.fetchServiceType.and.returnValue(
+      of({ ...serviceTypeObject } as any)
+    );
+
+    component.ngOnInit();
+    tick();
+
+    expect(component.serviceType.configSchema).toEqual(
+      serviceTypeObject.configSchema
+    );
+    expect(
+      component.serviceType.configSchema.properties?.wrapped
+    ).toBeUndefined();
+    expect((component.service as any).config).toEqual({
+      url: 'https://example.com'
     });
-    expect(deleteServiceReq.request.method).toEqual('DELETE');
-    deleteServiceReq.flush(null);
+  }));
+
+  it('deleteService should call deleteService and history.back when confirmed', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      of({ role: { permissions: [] } } as any)
+    );
+
+    feedService.fetchService.and.returnValue(of(service));
+    feedService.fetchServiceFeeds.and.returnValue(of(feeds as any));
+    feedService.fetchServiceType.and.returnValue(of(serviceTypeObject));
+    component.ngOnInit();
+    tick();
+
+    const dialogRef = { afterClosed: () => of(true) } as any;
+    dialog.open.and.returnValue(dialogRef);
+
+    feedService.deleteService.and.returnValue(of(undefined as any));
+    spyOn(history, 'back');
+
     component.deleteService();
+    tick();
+    tick();
 
-    expect(component.dialog.open).toHaveBeenCalled();
-    expect(component.goToFeeds).toHaveBeenCalled();
-  });
+    expect(dialog.open).toHaveBeenCalled();
+    expect(feedService.deleteService).toHaveBeenCalledWith(service);
+    expect(history.back).toHaveBeenCalled();
+  }));
+
+  it('deleteService should do nothing when not confirmed', fakeAsync(() => {
+    adminUserService.getMyself.and.returnValue(
+      of({ role: { permissions: [] } } as any)
+    );
+
+    feedService.fetchService.and.returnValue(of(service));
+    feedService.fetchServiceFeeds.and.returnValue(of(feeds as any));
+    feedService.fetchServiceType.and.returnValue(of(serviceTypeObject));
+    component.ngOnInit();
+    tick();
+
+    const dialogRef = { afterClosed: () => of(false) } as any;
+    dialog.open.and.returnValue(dialogRef);
+
+    spyOn(history, 'back');
+
+    component.deleteService();
+    tick();
+
+    expect(feedService.deleteService).not.toHaveBeenCalled();
+    expect(history.back).not.toHaveBeenCalled();
+  }));
 });

@@ -1,33 +1,37 @@
-import { HttpClientModule } from '@angular/common/http';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AdminFeedDeleteComponent } from './admin-feed-delete.component';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog'
+import { Feed } from '@ngageoint/mage.web-core-lib/feed'
+import { AdminFeedDeleteComponent } from './admin-feed-delete.component'
 
 describe('AdminFeedDeleteComponent', () => {
-  let component: AdminFeedDeleteComponent;
-  let fixture: ComponentFixture<AdminFeedDeleteComponent>;
+  let component: AdminFeedDeleteComponent
+  let fixture: ComponentFixture<AdminFeedDeleteComponent>
+
+  const feedData: Feed = {
+    id: 'feed1',
+    title: 'Test Feed'
+  } as unknown as Feed
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatDialogModule, HttpClientModule],
-      providers: [{
-        provide: MatDialogRef, useValue: {}
-      }, {
-        provide: MAT_DIALOG_DATA, useValue:{}
-      }],
-      declarations: [ AdminFeedDeleteComponent ]
+      imports: [MatDialogModule, HttpClientTestingModule],
+      providers: [
+        { provide: MatDialogRef, useValue: {} },
+        { provide: MAT_DIALOG_DATA, useValue: feedData }
+      ],
+      declarations: [AdminFeedDeleteComponent]
     })
-    .compileComponents();
-  }));
+      .compileComponents()
+  }))
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AdminFeedDeleteComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    fixture = TestBed.createComponent(AdminFeedDeleteComponent)
+    component = fixture.componentInstance
+    fixture.detectChanges()
+  })
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+    expect(component).toBeTruthy()
+  })
+})

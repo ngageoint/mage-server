@@ -1,19 +1,19 @@
-import { JsonSchemaFormModule } from '@ajsf/core';
+import { JsonSchemaFormModule } from '@ngageoint/vendor-ajsf-core';
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatAutocompleteModule } from '@angular/material/autocomplete'
-import { MatCardModule } from '@angular/material/card'
-import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon'
-import { MatInputModule } from '@angular/material/input'
-import { MatListModule } from '@angular/material/list'
-import { MatSelectModule } from '@angular/material/select'
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatSelectModule } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { StateService } from '@uirouter/angular';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { BehaviorSubject, of } from 'rxjs'
 import { AdminBreadcrumbModule } from '../../../../../app/admin/admin-breadcrumb/admin-breadcrumb.module';
@@ -33,14 +33,18 @@ import { AdminFeedEditComponent } from './admin-feed-edit.component';
 import { FeedEditState, freshEditState } from './feed-edit.model'
 import { FeedEditService } from './feed-edit.service'
 
-class MockStateService {
-  get params(): any {
-    return {};
-  }
-}
-
-type MockFeedEditService = Partial<jasmine.SpyObj<FeedEditService>> & {
+type MockFeedEditService = {
   state$: BehaviorSubject<FeedEditState>
+  newFeed: jasmine.Spy
+  editFeed: jasmine.Spy
+  serviceCreated: jasmine.Spy
+  selectService: jasmine.Spy
+  selectTopic: jasmine.Spy
+  fetchParametersChanged: jasmine.Spy
+  itemPropertiesSchemaChanged: jasmine.Spy
+  feedMetaDataChanged: jasmine.Spy
+  saveFeed: jasmine.Spy
+  readonly currentState: FeedEditState
 }
 
 describe('FeedEditComponent', () => {
@@ -49,76 +53,7 @@ describe('FeedEditComponent', () => {
   let fixture: ComponentFixture<AdminFeedEditComponent>
   let mockEditService: MockFeedEditService
   let mockFeedService: jasmine.SpyObj<FeedService>
-
-  beforeEach(waitForAsync(() => {
-    mockEditService = {
-      state$: new BehaviorSubject<FeedEditState>(freshEditState()),
-      newFeed: jasmine.createSpy<FeedEditService['newFeed']>(),
-      editFeed: jasmine.createSpy<FeedEditService['editFeed']>(),
-      get currentState() {
-        return this.state$.value
-      }
-    }
-    mockFeedService = jasmine.createSpyObj<FeedService>('MockFeedService', [
-      'fetchServiceTypes',
-      'fetchServices',
-      'createService'
-    ])
-    TestBed.configureTestingModule({
-      providers: [
-        {
-          provide: StateService,
-          useClass: MockStateService
-        },
-        {
-          provide: FeedService,
-          useValue: mockFeedService
-        }
-      ],
-      imports: [
-        MatAutocompleteModule,
-        MatDividerModule,
-        MatExpansionModule,
-        MatListModule,
-        MatFormFieldModule,
-        MatCheckboxModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCardModule,
-        MatIconModule,
-        NgxMatSelectSearchModule,
-        FormsModule,
-        NgxMatSelectSearchModule,
-        ReactiveFormsModule,
-        JsonSchemaFormModule,
-        JsonSchemaModule,
-        NoopAnimationsModule,
-        MomentModule,
-        MageCommonModule,
-        StaticIconModule,
-        AdminBreadcrumbModule,
-        HttpClientTestingModule
-      ],
-      declarations: [
-        AdminFeedEditComponent,
-        AdminServiceEditComponent,
-        AdminFeedEditTopicComponent,
-        AdminFeedEditTopicConfigurationComponent,
-        AdminFeedEditConfigurationComponent,
-        AdminFeedEditItemPropertiesComponent,
-        FeedItemSummaryComponent,
-        JsonSchemaWidgetAutocompleteComponent
-      ]
-    })
-    .overrideComponent(AdminFeedEditComponent, {
-      set: {
-        providers: [
-          { provide: FeedEditService, useValue: mockEditService }
-        ]
-      }
-    })
-    .compileComponents();
-  }));
+  let routerSpy: jasmine.SpyObj<Router>
 
   const serviceTypes: ServiceType[] = [
     {
@@ -134,9 +69,89 @@ describe('FeedEditComponent', () => {
     }
   ]
 
-  beforeEach(() => {
+  beforeEach(waitForAsync(() => {
+    routerSpy = jasmine.createSpyObj<Router>('Router', ['navigate'])
+
+    mockEditService = {
+      state$: new BehaviorSubject<FeedEditState>(freshEditState()),
+      newFeed: jasmine.createSpy('newFeed'),
+      editFeed: jasmine.createSpy('editFeed'),
+      serviceCreated: jasmine.createSpy('serviceCreated'),
+      selectService: jasmine.createSpy('selectService'),
+      selectTopic: jasmine.createSpy('selectTopic'),
+      fetchParametersChanged: jasmine.createSpy('fetchParametersChanged'),
+      itemPropertiesSchemaChanged: jasmine.createSpy('itemPropertiesSchemaChanged'),
+      feedMetaDataChanged: jasmine.createSpy('feedMetaDataChanged'),
+      saveFeed: jasmine.createSpy('saveFeed').and.returnValue(of({ id: 'feed-1' })),
+      get currentState() {
+        return this.state$.value
+      }
+    }
+
+    mockFeedService = jasmine.createSpyObj<FeedService>('MockFeedService', [
+      'fetchServiceTypes',
+      'fetchServices',
+      'createService'
+    ])
+
     mockFeedService.fetchServiceTypes.and.returnValue(of(serviceTypes))
     mockFeedService.fetchServices.and.returnValue(of([]))
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: FeedService, useValue: mockFeedService },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({})
+            }
+          }
+        }
+      ],
+      imports: [
+        MatAutocompleteModule,
+        MatDividerModule,
+        MatExpansionModule,
+        MatListModule,
+        MatFormFieldModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCardModule,
+        MatIconModule,
+        NgxMatSelectSearchModule,
+        FormsModule,
+        ReactiveFormsModule,
+        JsonSchemaFormModule,
+        JsonSchemaModule,
+        NoopAnimationsModule,
+        MomentModule,
+        MageCommonModule,
+        StaticIconModule,
+        AdminBreadcrumbModule,
+        HttpClientTestingModule,
+      ],
+      declarations: [
+        AdminFeedEditComponent,
+        AdminServiceEditComponent,
+        AdminFeedEditTopicComponent,
+        AdminFeedEditTopicConfigurationComponent,
+        AdminFeedEditConfigurationComponent,
+        AdminFeedEditItemPropertiesComponent,
+        FeedItemSummaryComponent,
+        JsonSchemaWidgetAutocompleteComponent
+      ]
+    })
+      .overrideComponent(AdminFeedEditComponent, {
+        set: {
+          providers: [{ provide: FeedEditService, useValue: mockEditService }]
+        }
+      })
+      .compileComponents();
+  }));
+
+  beforeEach(() => {
     fixture = TestBed.createComponent(AdminFeedEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

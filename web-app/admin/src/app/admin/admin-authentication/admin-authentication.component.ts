@@ -1,94 +1,150 @@
-import _ from 'underscore'
-import { Component, OnInit, Inject, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
-import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
+import {
+  Component,
+  OnInit,
+  EventEmitter,
+  Output,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy
+} from '@angular/core';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { Strategy } from '../admin-authentication/admin-settings.model';
-import { MatDialog } from '@angular/material/dialog';
-import { StateService } from '@uirouter/angular';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
-import { TransitionService } from '@uirouter/core';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, Subject, takeUntil } from 'rxjs';
+import { AdminUserService } from '../services/admin-user.service';
+import { LocalStorageService } from '../../../../../../web-app/src/app/http/local-storage.service';
+import { AuthenticationConfigurationService } from '../services/admin-authentication-configuration.service';
+import { AdminTeamsService } from '../services/admin-teams-service';
+import { AdminEventsService } from '../services/admin-events.service';
+import { Router } from '@angular/router';
+
+export interface CanComponentDeactivate {
+  canDeactivate: () => boolean | Promise<boolean>;
+}
 
 @Component({
   selector: 'admin-authentication',
   templateUrl: 'admin-authentication.component.html',
   styleUrls: ['./admin-authentication.component.scss']
 })
-export class AdminAuthenticationComponent implements OnInit, OnChanges {
+export class AdminAuthenticationComponent
+  implements OnInit, OnChanges, OnDestroy, CanComponentDeactivate
+{
   @Output() saveComplete = new EventEmitter<boolean>();
   @Output() deleteComplete = new EventEmitter<boolean>();
   @Output() onDirty = new EventEmitter<boolean>();
   @Input() beginSave: any;
 
-  readonly breadcrumbs: AdminBreadcrumb[] = [{
-    title: 'Security',
-    icon: 'shield'
-  }];
+  readonly breadcrumbs: AdminBreadcrumb[] = [
+    {
+      title: 'Security',
+      icon: 'shield'
+    }
+  ];
 
   teams: any[] = [];
   events: any[] = [];
 
-  isDirty: boolean = false;
+  isDirty = false;
 
   strategies: Strategy[] = [];
 
-  readonly hasAuthConfigEditPermission: boolean;
+  hasAuthConfigEditPermission = false;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private dialog: MatDialog,
-    private stateService: StateService,
     private readonly snackBar: MatSnackBar,
-    private readonly transitionService: TransitionService,
-    @Inject(Team)
-    public team: any,
-    @Inject(Event)
-    public event: any,
-    @Inject(LocalStorageService)
-    public localStorageService: any,
-    @Inject(AuthenticationConfigurationService)
-    private authenticationConfigurationService: any,
-    @Inject(UserService)
-    private userService: { myself: { role: { permissions: Array<string> } } }) {
-    this.hasAuthConfigEditPermission = _.contains(this.userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
-  }
+    private teamsService: AdminTeamsService,
+    private eventsService: AdminEventsService,
+    public localStorageService: LocalStorageService,
+    private authenticationConfigurationService: AuthenticationConfigurationService,
+    private userService: AdminUserService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    const configsPromise = this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
-    const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
-    const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
-    this.transitionService.onExit({}, this.onUnsavedChanges, { bind: this });
-
-    Promise.all([configsPromise, teamsPromise, eventsPromise]).then(result => {
-      // Remove event teams
-      this.teams = result[1].filter(function (team: any): boolean {
-        return team.teamEventId === undefined;
+    this.userService.myself$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        this.hasAuthConfigEditPermission =
+          user?.role?.permissions?.includes('UPDATE_AUTH_CONFIG') || false;
       });
-      this.events = result[2];
 
-      const unsortedStrategies = result[0] ? result[0].data : [];
-      this.processUnsortedStrategies(unsortedStrategies);
-    }).catch(err => {
+    this.loadInitialData().catch((err) => {
       console.log(err);
     });
   }
 
-  private processUnsortedStrategies(unsortedStrategies: Strategy[]): void {
-    this.strategies = _.sortBy(unsortedStrategies, 'title');
+  private async loadInitialData(): Promise<void> {
+    const configsPromise = lastValueFrom(
+      this.authenticationConfigurationService.getAllConfigurations({
+        includeDisabled: true
+      })
+    );
 
-    this.strategies.forEach(strategy => {
-      if (strategy.settings.newUserEvents) {
-        strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
-          return this.events.some(event => event.id === id)
-        });
+    const teamsPromise = lastValueFrom(
+      this.teamsService.getTeams({
+        state: 'all',
+        populate: false
+      } as any)
+    );
+
+    const eventsPromise = lastValueFrom(
+      this.eventsService.getEvents({
+        state: 'all',
+        populate: false
+      } as any)
+    );
+
+    const [configs, teamsResult, eventsResult] = await Promise.all([
+      configsPromise,
+      teamsPromise,
+      eventsPromise
+    ]);
+
+    const teamsArray = Array.isArray(teamsResult)
+      ? teamsResult
+      : teamsResult?.items || [];
+
+    const eventsArray = Array.isArray(eventsResult)
+      ? eventsResult
+      : eventsResult?.items || [];
+
+    this.teams = (teamsArray || []).filter(
+      (team: any) => team.teamEventId === undefined
+    );
+    this.events = eventsArray || [];
+
+    const unsortedStrategies: Strategy[] =
+      (configs as any)?.data || (configs as any) || [];
+    this.processUnsortedStrategies(unsortedStrategies);
+  }
+
+  private processUnsortedStrategies(unsortedStrategies: Strategy[]): void {
+    this.strategies = (unsortedStrategies || [])
+      .slice()
+      .sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
+
+    this.strategies.forEach((strategy) => {
+      if (strategy.settings?.newUserEvents) {
+        strategy.settings.newUserEvents =
+          strategy.settings.newUserEvents.filter((id) =>
+            this.events.some((event) => event.id === id)
+          );
       }
-      if (strategy.settings.newUserTeams) {
-        // Remove any teams and events that no longer exist
-        strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
-          return this.teams.some(team => team.id === id)
-        });
+
+      if (strategy.settings?.newUserTeams) {
+        strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(
+          (id) => this.teams.some((team) => team.id === id)
+        );
       }
+
       if (strategy.icon) {
         strategy.icon = 'data:image/png;base64,' + strategy.icon;
       }
@@ -103,101 +159,133 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
 
   onAuthenticationSaved(status: boolean): void {
     if (status) {
-      this.snackBar.open('Authentication successfully saved', null, {
-        duration: 2000,
+      this.snackBar.open('Authentication successfully saved', undefined, {
+        duration: 2000
       });
     } else {
-      this.snackBar.open('1 or more authentications failed to save correctly', null, {
-        duration: 2000,
-      });
-    };
+      this.snackBar.open(
+        '1 or more authentications failed to save correctly',
+        undefined,
+        { duration: 2000 }
+      );
+    }
     this.isDirty = false;
   }
 
   onAuthenticationDeleted(status: boolean): void {
     if (status) {
-      this.snackBar.open('Authentication successfully deleted', null, {
-        duration: 2000,
+      this.snackBar.open('Authentication successfully deleted', undefined, {
+        duration: 2000
       });
     } else {
-      this.snackBar.open('Failed to delete authentication', null, {
-        duration: 2000,
+      this.snackBar.open('Failed to delete authentication', undefined, {
+        duration: 2000
       });
-    };
+    }
     this.isDirty = false;
   }
 
-  save(): void {
-    console.log('Saving authentication configurations');
-    const promises = [];
-    this.strategies.forEach(strategy => {
-      if (strategy.isDirty) {
-        promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-      }
-    });
+  async save(): Promise<void> {
+    try {
+      const dirty = this.strategies.filter((s) => (s as any).isDirty);
+      await Promise.all(
+        dirty.map((strategy) =>
+          lastValueFrom(
+            this.authenticationConfigurationService.updateConfiguration(strategy)
+          )
+        )
+      );
 
-    Promise.all(promises).then(() => {
-      return this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
-    }).then(strategies => {
-      this.processUnsortedStrategies(strategies.data);
+      const refreshed = await lastValueFrom(
+        this.authenticationConfigurationService.getAllConfigurations({
+          includeDisabled: true
+        })
+      );
+
+      const strategies = (refreshed as any)?.data || (refreshed as any) || [];
+      this.processUnsortedStrategies(strategies);
       this.onAuthenticationSaved(true);
-    }).catch(err => {
+    } catch (err) {
       console.log(err);
-      this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then((newStrategies: { data: Strategy[]; }) => {
-        this.processUnsortedStrategies(newStrategies.data);
-        this.onAuthenticationSaved(false);
-      }).catch((err2: any) => {
+
+      try {
+        const refreshed = await lastValueFrom(
+          this.authenticationConfigurationService.getAllConfigurations({
+            includeDisabled: true
+          })
+        );
+        const strategies =
+          (refreshed as any)?.data || (refreshed as any) || [];
+        this.processUnsortedStrategies(strategies);
+      } catch (err2) {
         console.log(err2);
-        this.onAuthenticationSaved(false);
-      });
-    });
-    this.isDirty = false;
+      }
+
+      this.onAuthenticationSaved(false);
+    } finally {
+      this.isDirty = false;
+    }
   }
 
   deleteStrategy(strategy: Strategy): void {
-    this.dialog.open(AuthenticationDeleteComponent, {
-      width: '500px',
-      data: strategy,
-      autoFocus: false
-    }).afterClosed().subscribe(result => {
-      if (result === 'delete') {
-        this.authenticationConfigurationService.getAllConfigurations().then(configs => {
-          this.processUnsortedStrategies(configs.data);
-          this.onAuthenticationDeleted(true);
-        }).catch((err: any) => {
-          console.error(err);
+    this.dialog
+      .open(AuthenticationDeleteComponent, {
+        width: '500px',
+        data: strategy,
+        autoFocus: false
+      })
+      .afterClosed()
+      .subscribe(async (result) => {
+        if (result === 'delete') {
+          try {
+            const refreshed = await lastValueFrom(
+              this.authenticationConfigurationService.getAllConfigurations({
+                includeDisabled: true
+              })
+            );
+            const strategies =
+              (refreshed as any)?.data || (refreshed as any) || [];
+            this.processUnsortedStrategies(strategies);
+            this.onAuthenticationDeleted(true);
+          } catch (err) {
+            console.error(err);
+            this.onAuthenticationDeleted(false);
+          }
+        } else if (result === 'error') {
           this.onAuthenticationDeleted(false);
-        });
-      } else if (result === 'error') {
-        this.onAuthenticationDeleted(false);
-      }
-    });
+        }
+      });
   }
-
-  createAuthentication(): void {
-    this.stateService.go('admin.authenticationCreate')
-  }
-
+  
   onAuthenticationToggled(strategy: Strategy): void {
-    strategy.isDirty = true;
+    (strategy as any).isDirty = true;
     this.isDirty = true;
+  }
+
+  canDeactivate(): boolean | Promise<boolean> {
+    return this.onUnsavedChanges();
   }
 
   async onUnsavedChanges(): Promise<boolean> {
     if (this.isDirty) {
       const ref = this.dialog.open(AdminSettingsUnsavedComponent);
+      const result = await lastValueFrom(ref.afterClosed());
 
-      const result_2 = await lastValueFrom(ref.afterClosed());
       let discard = true;
-      if (result_2) {
-        discard = result_2.discard;
+      if (result) {
+        discard = result.discard;
       }
       if (discard) {
         this.isDirty = false;
       }
-      return await Promise.resolve(discard);
+      return discard;
     }
 
-    return Promise.resolve(true);
+    return true;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { MatTableDataSource } from '@angular/material/table';
-import { PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
 
 export interface SearchModalColumn {
     key: string;

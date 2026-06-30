@@ -1,25 +1,35 @@
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
 .attachment-field {
-  border-radius: 4px 4px 0 0;
-  background-color: rgb(245, 245, 245);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  border-radius: 8px;
+  background: #ffffff;
   margin-bottom: 16px;
+  overflow: hidden;
 }
 
-.attachment-field__underline {
-  width: 100%;
-  pointer-events: none;
-  transform: scaleY(1.0001);
-  bottom: 1.34375em;
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.4);
+.attachment-field__header {
+  padding: 12px 16px 0 16px;
+  background: #ffffff;
 }
 
 .attachment-field__label {
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.125;
+  font-size: $font-xs;
+  font-weight: 500;
+  line-height: 1.2;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.attachment-field__body {
   padding: 12px 16px 8px 16px;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  color: rgba(0, 0, 0, 0.6)
+  background: #ffffff;
 }
 
 .no-attachments {
@@ -27,38 +37,82 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 194px;
-  background-color: #F5F5F5
+  min-height: 194px;
+  border: 1px dashed rgba(0, 0, 0, 0.16);
+  border-radius: 8px;
+  background-color: #f8f9fb;
 }
 
 .no-attachments__icon {
-  font-size: 60px;
-  width: 60px;
-  height: 60px;
+  font-size: 56px;
+  width: 56px;
+  height: 56px;
   margin-bottom: 8px;
-  color: rgba(0, 0, 0, .4);
+  color: rgba(0, 0, 0, 0.35);
 }
 
 .no-attachments__text {
-  font-size: 24px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, .4)
+  font-size: $font-lg;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.45);
 }
 
 .edit-attachments__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
-// Need this to override bootstrap, can be removed when bootstrap is removed
-input[type="file"] { 
+.edit-attachments__item {
+  min-width: 0;
+  position: relative;
+  height: clamp(150px, 28vw, 210px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e5e5e5;
+}
+
+.edit-attachments__item--full {
+  grid-column: 1 / -1;
+}
+
+.edit-attachments__item>observation-attachment,
+.edit-attachments__item>attachment-upload {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+input[type='file'] {
   display: none;
 }
 
 .attachment-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 16px 16px 16px;
+  background: #ffffff;
 }
 
 .add__button {
-  margin: 8px;
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: $font-sm;
+  font-weight: 600;
+  text-transform: none;
+}
+
+@media (max-width: 700px) {
+  .edit-attachments__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-attachments__item--full {
+    grid-column: auto;
+  }
+
+  .edit-attachments__item {
+    height: clamp(140px, 50vw, 200px);
+  }
 }

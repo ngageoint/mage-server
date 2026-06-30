@@ -1,7 +1,21 @@
-<div class="banner banner-header" *ngIf=" type==='header' && banner.showHeader">
-    {{ banner.headerText }}
+<div
+  class="banner banner-header"
+  *ngIf="type === 'header' && banner.showHeader"
+  [ngStyle]="{
+    backgroundColor: banner.headerBackgroundColor,
+    color: banner.headerTextColor
+  }"
+>
+  {{ banner.headerText }}
 </div>
 
-<div class="banner" *ngIf="type === 'footer' && banner.showFooter">
-    {{ banner.footerText }}
+<div
+  class="banner banner-footer"
+  *ngIf="type === 'footer' && banner.showFooter"
+  [ngStyle]="{
+    backgroundColor: banner.footerBackgroundColor,
+    color: banner.footerTextColor
+  }"
+>
+  {{ banner.footerText }}
 </div>

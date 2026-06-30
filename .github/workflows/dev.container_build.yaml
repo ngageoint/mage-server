@@ -36,6 +36,24 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository }}/mage:$IMAGE_TAG .
 
+      - name: Scan the docker image with Trivy
+        uses: aquasecurity/trivy-action@v0.35.0 
+        with:
+          scan-type: 'image'
+          image-ref: 'ghcr.io/${{ github.repository }}/mage:${{ env.IMAGE_TAG }}'
+          ignore-unfixed: true
+          format: 'table'
+          output: 'trivy-image-report.txt'
+          exit-code: '0'
+          version: 'v0.69.3'
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-security-report
+          path: trivy-image-report.txt
+          retention-days: 7
+
       - name: Push Image
         if: github.ref =='refs/heads/test' || github.ref =='refs/heads/develop'
         run: |

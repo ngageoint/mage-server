@@ -39,8 +39,9 @@
 
 .attachment__delete {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
 }
 
 .media__crop {

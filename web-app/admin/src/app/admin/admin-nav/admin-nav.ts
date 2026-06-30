@@ -1,5 +1,16 @@
-import { Component, Inject, Input, SimpleChanges, EventEmitter, Output } from '@angular/core';
-import { UserService } from '../../upgrade/ajs-upgraded-providers';
+import {
+  Component,
+  Input,
+  SimpleChanges,
+  EventEmitter,
+  Output,
+  OnInit,
+  OnDestroy,
+  OnChanges
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { AdminUserService } from '../services/admin-user.service';
+import { Subject, takeUntil } from 'rxjs';
 
 interface PluginTab {
   id: string;
@@ -9,94 +20,156 @@ interface PluginTab {
 }
 
 @Component({
-  selector: 'app-admin-nav',
+  selector: 'app-admin-side-nav',
   templateUrl: './admin-nav.html',
-  styleUrls: ['./admin-nav.scss']
+  styleUrls: ['./admin-nav.scss'],
+  host: {
+    '[class.has-header-banner]': 'hasHeaderBanner'
+  }
 })
-export class AdminNavComponent {
-  @Input() stateName!: string;
+export class AdminNavComponent implements OnInit, OnDestroy, OnChanges {
+  @Input() hasHeaderBanner = false;
+  @Input() stateName: string = '';
   @Input() inactiveUsers: any[] = [];
   @Input() unregisteredDevices: any[] = [];
   @Input() pluginTabs: PluginTab[] = [];
   @Input() token: string = '';
   @Output() pluginActiveChange = new EventEmitter<boolean>();
 
-  private $state: any;
   drawerOpen = false;
 
   navItems = [
-    { label: 'Dashboard', state: 'admin.dashboard', icon: 'fa fa-dashboard', count: 0 },
-    { label: 'Users', state: 'admin.users', icon: 'fa fa-user', count: 0 },
-    { label: 'Teams', state: 'admin.teams', icon: 'fa fa-users' },
-    { label: 'Events', state: 'admin.events', icon: 'fa fa-calendar' },
-    { label: 'Devices', state: 'admin.devices', icon: 'fa fa-mobile-phone icon-fix', count: 0 },
-    { label: 'Layers', state: 'admin.layers', icon: 'fa fa-map' },
-    { label: 'Feeds', state: 'admin.feeds', icon: 'fa fa-rss' },
-    { label: 'Map', state: 'admin.map', icon: 'fa fa-globe' },
-    { label: 'Security', state: 'admin.security', icon: 'fa fa-shield', permission: 'UPDATE_SETTINGS' },
-    { label: 'Settings', state: 'admin.settings', icon: 'fa fa-wrench', permission: 'UPDATE_SETTINGS' },
+    {
+      label: 'Dashboard',
+      route: '/dashboard',
+      icon: 'fa fa-dashboard',
+      count: 0
+    },
+    { label: 'Users', route: '/users', icon: 'fa fa-user', count: 0 },
+    { label: 'Teams', route: '/teams', icon: 'fa fa-users' },
+    { label: 'Events', route: '/events', icon: 'fa fa-calendar' },
+    {
+      label: 'Devices',
+      route: '/devices',
+      icon: 'fa fa-mobile-phone icon-fix',
+      count: 0
+    },
+    { label: 'Layers', route: '/layers', icon: 'fa fa-map' },
+    { label: 'Feeds', route: '/feeds', icon: 'fa fa-rss' },
+    { label: 'Map', route: '/map', icon: 'fa fa-globe' },
+    {
+      label: 'Security',
+      route: '/security',
+      icon: 'fa fa-shield',
+      permission: 'UPDATE_SETTINGS'
+    },
+    {
+      label: 'Settings',
+      route: '/settings',
+      icon: 'fa fa-wrench',
+      permission: 'UPDATE_SETTINGS'
+    }
   ];
 
+  private destroy$ = new Subject<void>();
+  private permissions: string[] = [];
+
   constructor(
-    @Inject(UserService) private userService: any,
-    @Inject('$injector') private $injector: any
-  ) {
-    this.$state = this.$injector.get('$state');
+    private adminUserService: AdminUserService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.adminUserService
+      .checkLoggedInUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+
+    this.adminUserService.myself$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        this.permissions = user?.role?.permissions ?? [];
+      });
   }
 
-  private parseInput<T>(input: T | string, name: string): T {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private parseInput<T>(input: T | string): T {
     if (typeof input === 'string') {
-      try { return JSON.parse(input); }
-      catch { return [] as unknown as T; }
+      try {
+        return JSON.parse(input);
+      } catch {
+        return [] as unknown as T;
+      }
     }
     return input;
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    this.pluginTabs = this.parseInput(this.pluginTabs, 'pluginTabs');
-    this.unregisteredDevices = this.parseInput(this.unregisteredDevices, 'unregisteredDevices');
-    this.inactiveUsers = this.parseInput(this.inactiveUsers, 'inactiveUsers');
+  ngOnChanges(_changes: SimpleChanges): void {
+    this.pluginTabs = this.parseInput(this.pluginTabs);
+    this.unregisteredDevices = this.parseInput(this.unregisteredDevices);
+    this.inactiveUsers = this.parseInput(this.inactiveUsers);
 
-    const dashboardItem = this.navItems.find(i => i.state === 'admin.dashboard');
-    const usersItem = this.navItems.find(i => i.state === 'admin.users');
-    const devicesItem = this.navItems.find(i => i.state === 'admin.devices');
+    const dashboardItem = this.navItems.find((i) => i.route === '/dashboard');
+    const usersItem = this.navItems.find((i) => i.route === '/users');
+    const devicesItem = this.navItems.find((i) => i.route === '/devices');
 
-    dashboardItem.count = (this.unregisteredDevices.length + this.inactiveUsers.length);
-    usersItem.count = this.inactiveUsers.length;
-    devicesItem.count = this.unregisteredDevices.length;
+    if (dashboardItem) {
+      dashboardItem.count =
+        (this.unregisteredDevices?.length ?? 0) +
+        (this.inactiveUsers?.length ?? 0);
+    }
+    if (usersItem) {
+      usersItem.count = this.inactiveUsers?.length ?? 0;
+    }
+    if (devicesItem) {
+      devicesItem.count = this.unregisteredDevices?.length ?? 0;
+    }
 
     const isPluginActive =
       Array.isArray(this.pluginTabs) &&
-      this.pluginTabs.some((p) => p.state === this.stateName);
+      this.pluginTabs.some((p) => this.router.url.includes(p.state));
 
     this.pluginActiveChange.emit(isPluginActive);
   }
 
   hasPermission(permission: string): boolean {
-    return this.userService.myself?.role?.permissions?.includes(permission);
+    return this.adminUserService.hasPermission(permission);
   }
 
-  onClick(route: string): void {
-    if (this.stateName !== route) {
-      this.$state.go(route);
-      this.closeDrawer();
-    }
+  pluginRouterLink(plugin: PluginTab): any[] {
+    return ['/plugins', plugin.id];
   }
 
-  toggleDrawer(): void { this.drawerOpen = !this.drawerOpen; }
-  closeDrawer(): void { this.drawerOpen = false; }
+  toggleDrawer(): void {
+    this.drawerOpen = !this.drawerOpen;
+  }
+
+  closeDrawer(): void {
+    this.drawerOpen = false;
+  }
 
   get pluginActive(): boolean {
-    return Array.isArray(this.pluginTabs) && this.pluginTabs.some(p => p.state === this.stateName);
+    return (
+      Array.isArray(this.pluginTabs) &&
+      this.pluginTabs.some((p) => this.router.url.includes(p.state))
+    );
   }
 
   get pluginBreadcrumbs() {
     if (!this.pluginActive) return [];
-    const plugin = this.pluginTabs.find(p => p.state === this.stateName);
+    const plugin = this.pluginTabs.find((p) =>
+      this.router.url.includes(p.state)
+    );
 
     return [
-      { title: plugin.title, iconClass: plugin?.icon?.className || "fa fa-plug" }
+      {
+        title: plugin?.title ?? 'Plugin',
+        iconClass: plugin?.icon?.className || 'fa fa-plug'
+      }
     ];
   }
-
 }

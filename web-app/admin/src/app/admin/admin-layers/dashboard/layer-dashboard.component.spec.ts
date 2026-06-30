@@ -1,20 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
-import { StateService } from '@uirouter/angular';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 
 import { LayerDashboardComponent } from './layer-dashboard.component';
 import { LayersService, Layer } from '../layers.service';
-import { UserService } from 'admin/src/app/upgrade/ajs-upgraded-providers';
-import { PageEvent } from '@angular/material/paginator';
+import { AdminUserService } from '../../services/admin-user.service';
+import { AdminToastService } from '../../services/admin-toast.service';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('LayerDashboardComponent', () => {
   let component: LayerDashboardComponent;
   let fixture: ComponentFixture<LayerDashboardComponent>;
   let mockLayersService: jasmine.SpyObj<LayersService>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
-  let mockStateService: jasmine.SpyObj<StateService>;
-  let mockUserService: any;
+  let mockUserService: { getMyself: jasmine.Spy };
+  let router: Router;
+  let toastSpy: jasmine.SpyObj<AdminToastService>;
 
   const mockLayers: Layer[] = [
     {
@@ -43,32 +49,39 @@ describe('LayerDashboardComponent', () => {
   ];
 
   beforeEach(async () => {
-    mockLayersService = jasmine.createSpyObj('LayersService', ['getLayers', 'deleteLayer']);
+    mockLayersService = jasmine.createSpyObj('LayersService', [
+      'getLayers',
+      'deleteLayer'
+    ]);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
-    mockStateService = jasmine.createSpyObj('StateService', ['go']);
+    toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
+
     mockUserService = {
-      myself: {
-        role: {
-          permissions: ['CREATE_LAYER', 'UPDATE_LAYER', 'DELETE_LAYER']
-        }
-      }
+      getMyself: jasmine.createSpy('getMyself')
     };
 
     mockLayersService.getLayers.and.returnValue(of(mockLayers));
+    mockUserService.getMyself.and.returnValue(
+      of({
+        role: { permissions: ['CREATE_LAYER', 'UPDATE_LAYER', 'DELETE_LAYER'] }
+      })
+    );
 
     await TestBed.configureTestingModule({
+      imports: [RouterTestingModule, MatPaginatorModule, NoopAnimationsModule],
       declarations: [LayerDashboardComponent],
       providers: [
         { provide: LayersService, useValue: mockLayersService },
         { provide: MatDialog, useValue: mockDialog },
-        { provide: StateService, useValue: mockStateService },
-        { provide: UserService, useValue: mockUserService }
-      ]
-    })
-      .compileComponents();
+        { provide: AdminUserService, useValue: mockUserService },
+        { provide: AdminToastService, useValue: toastSpy }
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LayerDashboardComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
   });
 
   it('should create', () => {
@@ -82,13 +95,20 @@ describe('LayerDashboardComponent', () => {
       expect(component.hasLayerCreatePermission).toBe(true);
       expect(component.hasLayerEditPermission).toBe(true);
       expect(component.hasLayerDeletePermission).toBe(true);
-      expect(mockLayersService.getLayers).toHaveBeenCalledWith({ includeUnavailable: true });
+      expect(mockLayersService.getLayers).toHaveBeenCalledWith({
+        includeUnavailable: true
+      });
       expect(component.layers.length).toBe(3);
       expect(component.filteredLayers.length).toBe(3);
     });
 
     it('should set permissions to false when user has no permissions', () => {
-      mockUserService.myself.role.permissions = [];
+      mockUserService.getMyself.and.returnValue(
+        of({
+          role: { permissions: [] }
+        })
+      );
+
       fixture.detectChanges();
 
       expect(component.hasLayerCreatePermission).toBe(false);
@@ -97,7 +117,20 @@ describe('LayerDashboardComponent', () => {
     });
 
     it('should handle missing user permissions gracefully', () => {
-      mockUserService.myself = null;
+      mockUserService.getMyself.and.returnValue(of(null));
+
+      fixture.detectChanges();
+
+      expect(component.hasLayerCreatePermission).toBe(false);
+      expect(component.hasLayerEditPermission).toBe(false);
+      expect(component.hasLayerDeletePermission).toBe(false);
+    });
+
+    it('should set permissions to false when getMyself errors', () => {
+      mockUserService.getMyself.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+
       fixture.detectChanges();
 
       expect(component.hasLayerCreatePermission).toBe(false);
@@ -113,7 +146,12 @@ describe('LayerDashboardComponent', () => {
 
     it('should fetch and update layers', () => {
       const newLayers: Layer[] = [
-        { id: 4, name: 'New Layer', type: 'Imagery', state: 'available' }
+        {
+          id: 4,
+          name: 'New Layer',
+          type: 'Imagery',
+          state: 'available'
+        } as Layer
       ];
       mockLayersService.getLayers.and.returnValue(of(newLayers));
 
@@ -126,11 +164,16 @@ describe('LayerDashboardComponent', () => {
 
     it('should handle error when fetching layers', () => {
       spyOn(console, 'error');
-      mockLayersService.getLayers.and.returnValue(throwError(() => new Error('Fetch error')));
+      mockLayersService.getLayers.and.returnValue(
+        throwError(() => new Error('Fetch error'))
+      );
 
       component.refreshLayers();
 
-      expect(console.error).toHaveBeenCalledWith('Error fetching layers:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching layers:',
+        jasmine.any(Error)
+      );
     });
   });
 
@@ -189,7 +232,9 @@ describe('LayerDashboardComponent', () => {
       component.onTypeFilterChange('offline');
 
       expect(component.filteredLayers.length).toBe(2);
-      expect(component.filteredLayers.every(l => l.type !== 'Imagery')).toBe(true);
+      expect(component.filteredLayers.every((l) => l.type !== 'Imagery')).toBe(
+        true
+      );
     });
 
     it('should show all layers when filter is "all"', () => {
@@ -247,6 +292,7 @@ describe('LayerDashboardComponent', () => {
     });
 
     it('should update total layers count', () => {
+      fixture.detectChanges();
       expect(component.totalLayers).toBe(3);
 
       component.layerSearch = 'imagery';
@@ -316,49 +362,68 @@ describe('LayerDashboardComponent', () => {
     });
   });
 
-  // describe('layer creation', () => {
-  //   beforeEach(() => {
-  //     fixture.detectChanges();
-  //   });
+  describe('layer creation', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
 
-  //   it('should open create layer dialog', () => {
-  //     const mockDialogRef = {
-  //       afterClosed: () => of(null)
-  //     };
-  //     mockDialog.open.and.returnValue(mockDialogRef as any);
+    it('should open create layer dialog', () => {
+      const mockDialogRef = {
+        afterClosed: () => of(null)
+      };
+      mockDialog.open.and.returnValue(mockDialogRef as any);
 
-  //     component.newLayer();
+      component.newLayer();
 
-  //     expect(mockDialog.open).toHaveBeenCalled();
-  //   });
+      expect(mockDialog.open).toHaveBeenCalled();
+    });
 
-  //   it('should refresh and navigate after creating layer', () => {
-  //     const newLayer: Layer = { id: 5, name: 'New Layer', type: 'Imagery', state: 'available' };
-  //     const mockDialogRef = {
-  //       afterClosed: () => of(newLayer)
-  //     };
-  //     mockDialog.open.and.returnValue(mockDialogRef as any);
-  //     spyOn(component, 'refreshLayers');
+    it('should refresh and toast after creating layer', () => {
+      const newLayer: Layer = {
+        id: 5,
+        name: 'New Layer',
+        type: 'Imagery',
+        state: 'available'
+      } as Layer;
+      const mockDialogRef = {
+        afterClosed: () => of(newLayer)
+      };
+      mockDialog.open.and.returnValue(mockDialogRef as any);
+      spyOn(component, 'refreshLayers');
 
-  //     component.newLayer();
+      component.newLayer();
 
-  //     expect(component.refreshLayers).toHaveBeenCalled();
-  //     expect(mockStateService.go).toHaveBeenCalledWith('admin.layer', { layerId: 5 });
-  //   });
+      expect(toastSpy.show).toHaveBeenCalled();
+      expect(component.refreshLayers).toHaveBeenCalled();
+    });
 
-  //   it('should not navigate if dialog is cancelled', () => {
-  //     const mockDialogRef = {
-  //       afterClosed: () => of(null)
-  //     };
-  //     mockDialog.open.and.returnValue(mockDialogRef as any);
-  //     spyOn(component, 'refreshLayers');
+    it('should not toast if dialog is cancelled', () => {
+      const mockDialogRef = {
+        afterClosed: () => of(null)
+      };
+      mockDialog.open.and.returnValue(mockDialogRef as any);
+      spyOn(component, 'refreshLayers');
 
-  //     component.newLayer();
+      component.newLayer();
 
-  //     expect(component.refreshLayers).not.toHaveBeenCalled();
-  //     expect(mockStateService.go).not.toHaveBeenCalled();
-  //   });
-  // });
+      expect(toastSpy.show).not.toHaveBeenCalled();
+      expect(component.refreshLayers).not.toHaveBeenCalled();
+    });
+
+    it('should not toast if dialog returns a layer without id', () => {
+      const mockDialogRef = {
+        afterClosed: () =>
+          of({ name: 'No Id', type: 'Imagery', state: 'available' } as Layer)
+      };
+      mockDialog.open.and.returnValue(mockDialogRef as any);
+      spyOn(component, 'refreshLayers');
+
+      component.newLayer();
+
+      expect(toastSpy.show).not.toHaveBeenCalled();
+      expect(component.refreshLayers).not.toHaveBeenCalled();
+    });
+  });
 
   describe('responsive layout', () => {
     beforeEach(() => {

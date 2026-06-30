@@ -89,6 +89,7 @@
   position: absolute;
   bottom: 16px;
   right: 16px;
+  z-index: 1;
 }
 
 .extended-fab-button {
@@ -110,7 +111,7 @@
   }
 }
 
-:host .extended-fab-button > ::ng-deep.mat-button-wrapper {
+:host .extended-fab-button> ::ng-deep.mat-button-wrapper {
   padding: unset;
 }
 

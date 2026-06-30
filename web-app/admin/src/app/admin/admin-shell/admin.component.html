@@ -1,0 +1,20 @@
+<app-admin-side-nav
+  [stateName]="stateName"
+  [inactiveUsers]="inactiveUsers"
+  [unregisteredDevices]="unregisteredDevices"
+  [pluginTabs]="pluginTabs"
+  [token]="token"
+  (pluginActiveChange)="pluginActiveChanged($event)"
+  [hasHeaderBanner]="hasHeaderBanner"
+>
+</app-admin-side-nav>
+
+<div *ngIf="pluginActive">
+  <admin-breadcrumb></admin-breadcrumb>
+</div>
+
+<div class="admin-main">
+  <div class="admin-main-content" #adminMainContent>
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
+import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
-import { TransitionService } from '@uirouter/core';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -25,11 +24,10 @@ export class AdminSettingsComponent implements OnInit {
 
   constructor(
     private readonly dialog: MatDialog,
-    private readonly snackBar: MatSnackBar,
-    private readonly transitionService: TransitionService) { }
+    private readonly snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
-    this.transitionService.onExit({}, this.onUnsavedChanges, { bind: this });
   }
 
   save(): void {
@@ -41,15 +39,7 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   onBannerSaved(status: boolean): void {
-    if (status) {
-      this.snackBar.open('Banner successfully saved', null, {
-        duration: 2000,
-      });
-    } else {
-      this.snackBar.open('Failed to save banner', null, {
-        duration: 2000,
-      });
-    };
+    this.snackBar.open(status ? 'Banner successfully saved' : 'Failed to save banner', undefined, { duration: 2000 });
     this.isBannerDirty = false;
   }
 
@@ -58,15 +48,7 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   onDisclaimerSaved(status: boolean): void {
-    if (status) {
-      this.snackBar.open('Disclaimer successfully saved', null, {
-        duration: 2000,
-      });
-    } else {
-      this.snackBar.open('Failed to save disclaimer', null, {
-        duration: 2000,
-      });
-    };
+    this.snackBar.open(status ? 'Disclaimer successfully saved' : 'Failed to save disclaimer', undefined, { duration: 2000 });
     this.isDisclaimerDirty = false;
   }
 
@@ -75,15 +57,7 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   onContactInfoSaved(status: boolean): void {
-    if (status) {
-      this.snackBar.open('Contact info successfully saved', null, {
-        duration: 2000,
-      });
-    } else {
-      this.snackBar.open('Failed to save contact info', null, {
-        duration: 2000,
-      });
-    };
+    this.snackBar.open(status ? 'Contact info successfully saved' : 'Failed to save contact info', undefined, { duration: 2000 });
     this.isContactInfoDirty = false;
   }
 
@@ -92,23 +66,20 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   async onUnsavedChanges(): Promise<boolean> {
-    if (this.isDirty()) {
-      const ref = this.dialog.open(AdminSettingsUnsavedComponent);
+    if (!this.isDirty()) return true;
 
-      const result_2 = await lastValueFrom(ref.afterClosed());
-      let discard = true;
-      if (result_2) {
-        discard = result_2.discard;
-      }
-      if (discard) {
-        this.isAuthenticationDirty = false;
-        this.isBannerDirty = false;
-        this.isDisclaimerDirty = false;
-        this.isContactInfoDirty = false;
-      }
-      return await Promise.resolve(discard);
+    const ref = this.dialog.open(AdminSettingsUnsavedComponent);
+    const result = await lastValueFrom(ref.afterClosed());
+
+    const discard = result ? !!result.discard : true;
+
+    if (discard) {
+      this.isAuthenticationDirty = false;
+      this.isBannerDirty = false;
+      this.isDisclaimerDirty = false;
+      this.isContactInfoDirty = false;
     }
 
-    return Promise.resolve(true);
+    return discard;
   }
 }

@@ -22,21 +22,17 @@
 }
 
 .general-error-message {
-    background-color: #ffebee;
-    border-left: 4px solid #b00020;
+    background-color: #fff4f4;
+    border-left: 4px solid #d32f2f;
     color: #b00020;
     padding: 12px 16px;
     margin-top: 16px;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
-
-    i {
-        font-size: 16px;
-    }
-}
+  }  
 
 .has-error .mdc-notched-outline__leading,
 .has-error .mdc-notched-outline__notch,
@@ -145,8 +141,41 @@ p {
 .primary-button {
     background-color: #1976d2;
     color: white;
-
+    border-radius: 24px;
+    padding: 10px 24px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    transition:
+      background-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 100ms ease;
+  
     &:hover {
-        background-color: #1565c0;
+      background-color: #1565c0;
+      box-shadow: 0 6px 14px rgba(25, 118, 210, 0.35);
     }
-}
+  
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+  
+  .return-to-login-button {
+    background-color: transparent;
+    color: #6200ee;
+    border: 1px solid #6200ee;
+    border-radius: 24px;
+    padding: 8px 20px;
+  }
+  
+
+.device-id-container {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow:
+      0 10px 24px rgba(0, 0, 0, 0.1);
+  }
+  

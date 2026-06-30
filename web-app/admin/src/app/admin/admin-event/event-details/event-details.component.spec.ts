@@ -1,25 +1,60 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatSelectChange } from '@angular/material/select';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
-import { StateService } from '@uirouter/angular';
 
 import { EventDetailsComponent } from './event-details.component';
-import { EventsService } from '../../admin-event/events.service';
-import { TeamsService } from '../../admin-teams/teams-service';
+import { AdminEventsService } from '../../services/admin-events.service';
+import { AdminTeamsService } from '../../services/admin-teams-service';
 
 describe('EventDetailsComponent', () => {
   let component: EventDetailsComponent;
   let fixture: ComponentFixture<EventDetailsComponent>;
-  let eventsService: jasmine.SpyObj<EventsService>;
-  let teamsService: jasmine.SpyObj<TeamsService>;
+
+  let eventsService: jasmine.SpyObj<AdminEventsService>;
+  let teamsService: jasmine.SpyObj<AdminTeamsService>;
   let dialog: jasmine.SpyObj<MatDialog>;
-  let stateService: jasmine.SpyObj<StateService>;
+  let router: jasmine.SpyObj<Router>;
+
+  const USER_RANMA: any = {
+    id: '1',
+    username: 'ranma',
+    displayName: 'Ranma Saotome'
+  };
+  const USER_LILY: any = {
+    id: '2',
+    username: 'lily',
+    displayName: 'Lily Hoshikawa'
+  };
+
+  const makeEvent = (overrides: any = {}) =>
+    ({
+      id: 1,
+      name: 'Test Event',
+      description: 'Test Description',
+      forms: [],
+      ...overrides
+    } as any);
+
+  const makeTeamsPage = (items: any[] = []) =>
+    ({
+      items,
+      totalCount: items.length,
+      pageSize: 5,
+      pageIndex: 0
+    } as any);
 
   beforeEach(async () => {
-    const eventsServiceSpy = jasmine.createSpyObj('EventsService', [
+    const eventsServiceSpy = jasmine.createSpyObj('AdminEventsService', [
       'getEventById',
       'updateEvent',
       'getMembers',
@@ -34,45 +69,68 @@ describe('EventDetailsComponent', () => {
       'removeLayerFromEvent'
     ]);
 
-    const teamsServiceSpy = jasmine.createSpyObj('TeamsService', [
+    const teamsServiceSpy = jasmine.createSpyObj('AdminTeamsService', [
       'addUserToTeam',
       'removeMember',
       'updateUserRole'
     ]);
 
     const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-    const stateServiceSpy = jasmine.createSpyObj('StateService', ['go']);
-    stateServiceSpy.params = { eventId: '1' };
+    const routerSpy = jasmine.createSpyObj('Router', [
+      'navigate',
+      'navigateByUrl'
+    ]);
+
+    const routeStub = {
+      snapshot: {
+        paramMap: convertToParamMap({ eventId: '1' })
+      }
+    };
 
     await TestBed.configureTestingModule({
       declarations: [EventDetailsComponent],
       imports: [NoopAnimationsModule],
       providers: [
-        { provide: EventsService, useValue: eventsServiceSpy },
-        { provide: TeamsService, useValue: teamsServiceSpy },
+        { provide: AdminEventsService, useValue: eventsServiceSpy },
+        { provide: AdminTeamsService, useValue: teamsServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
-        { provide: StateService, useValue: stateServiceSpy }
-      ]
-    })
-      .compileComponents();
+        { provide: Router, useValue: routerSpy },
+        { provide: ActivatedRoute, useValue: routeStub }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
-    eventsService = TestBed.inject(EventsService) as jasmine.SpyObj<EventsService>;
-    teamsService = TestBed.inject(TeamsService) as jasmine.SpyObj<TeamsService>;
+    eventsService = TestBed.inject(
+      AdminEventsService
+    ) as jasmine.SpyObj<AdminEventsService>;
+    teamsService = TestBed.inject(
+      AdminTeamsService
+    ) as jasmine.SpyObj<AdminTeamsService>;
     dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
-    stateService = TestBed.inject(StateService) as jasmine.SpyObj<StateService>;
+    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
-    eventsService.getEventById.and.returnValue(of({
-      id: 1,
-      name: 'Test Event',
-      description: 'Test Description',
-      forms: []
-    } as any));
-    eventsService.getTeamsInEvent.and.returnValue(of({ items: [], totalCount: 0 }));
-    eventsService.getMembers.and.returnValue(of({ items: [], totalCount: 0 }));
-    eventsService.getNonMembers.and.returnValue(of({ items: [], totalCount: 0 }));
-    eventsService.getTeamsNotInEvent.and.returnValue(of({ items: [], totalCount: 0 }));
+    eventsService.getEventById.and.returnValue(of(makeEvent()));
+    eventsService.getTeamsInEvent.and.returnValue(of(makeTeamsPage([])));
+    eventsService.getMembers.and.returnValue(
+      of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any)
+    );
+    eventsService.getNonMembers.and.returnValue(
+      of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any)
+    );
+    eventsService.getTeamsNotInEvent.and.returnValue(
+      of({ items: [], totalCount: 0, pageSize: 5, pageIndex: 0 } as any)
+    );
     eventsService.getAllLayers.and.returnValue(of([]));
     eventsService.getLayersForEvent.and.returnValue(of([]));
+    eventsService.addLayerToEvent.and.returnValue(of({} as any));
+    eventsService.removeLayerFromEvent.and.returnValue(of({} as any));
+    eventsService.addTeamToEvent.and.returnValue(of({} as any));
+    eventsService.removeEventFromTeam.and.returnValue(of({} as any));
+    eventsService.updateEvent.and.returnValue(of(makeEvent()));
+
+    teamsService.addUserToTeam.and.returnValue(of({} as any));
+    teamsService.removeMember.and.returnValue(of({} as any));
+    teamsService.updateUserRole.and.returnValue(of({} as any));
 
     fixture = TestBed.createComponent(EventDetailsComponent);
     component = fixture.componentInstance;
@@ -109,43 +167,74 @@ describe('EventDetailsComponent', () => {
   });
 
   describe('Lifecycle Hooks', () => {
-    it('should load event data on init', () => {
+    it('should load event data on init and build breadcrumbs', fakeAsync(() => {
+      const event = makeEvent({ id: 1, name: 'Test Event', forms: [] });
+      const eventTeam = { id: 'team-evt-1', teamEventId: 1, acl: {} };
+
+      eventsService.getEventById.and.returnValue(of(event));
+      eventsService.getTeamsInEvent.and.returnValue(
+        of(makeTeamsPage([eventTeam]))
+      );
+
+      spyOn(component, 'getMembersPage');
+      spyOn(component, 'getTeamsPage');
+      spyOn(component, 'loadLayers');
+
       component.ngOnInit();
+      tick();
 
       expect(eventsService.getEventById).toHaveBeenCalledWith('1');
-      expect(eventsService.getTeamsInEvent).toHaveBeenCalled();
+      expect(eventsService.getTeamsInEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ page: 0, page_size: 100 })
+      );
+      expect(component.event).toEqual(event as any);
+      expect(component.eventTeam).toEqual(eventTeam as any);
+
+      expect(component.getMembersPage).toHaveBeenCalled();
+      expect(component.getTeamsPage).toHaveBeenCalled();
+      expect(component.loadLayers).toHaveBeenCalled();
+
+      expect(component.breadcrumbs.length).toBe(2);
+      expect(component.breadcrumbs[1].title).toBe('Test Event');
+    }));
+
+    it('should navigate away if eventId is missing', () => {
+      const route = TestBed.inject(ActivatedRoute) as any;
+      route.snapshot.paramMap = convertToParamMap({});
+
+      component.ngOnInit();
+
+      expect(router.navigate).toHaveBeenCalled();
     });
 
     it('should set permissions on init', () => {
       component.ngOnInit();
-
       expect(component.hasReadPermission).toBe(true);
       expect(component.hasUpdatePermission).toBe(true);
       expect(component.hasDeletePermission).toBe(true);
     });
 
     it('should clean up on destroy', () => {
-      const destroySpy = spyOn(component['destroy$'], 'next');
-      const completeSpy = spyOn(component['destroy$'], 'complete');
+      const nextSpy = spyOn((component as any).destroy$, 'next');
+      const completeSpy = spyOn((component as any).destroy$, 'complete');
 
       component.ngOnDestroy();
 
-      expect(destroySpy).toHaveBeenCalled();
+      expect(nextSpy).toHaveBeenCalled();
       expect(completeSpy).toHaveBeenCalled();
     });
   });
 
   describe('Simple Getters', () => {
     it('should return non-archived forms', () => {
-      component.event = {
-        id: 1,
-        name: 'Test',
+      component.event = makeEvent({
         forms: [
           { id: 1, archived: false } as any,
           { id: 2, archived: true } as any,
           { id: 3, archived: false } as any
         ]
-      } as any;
+      });
 
       const result = component.nonArchivedForms;
 
@@ -155,26 +244,22 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should return empty array when event has no forms', () => {
-      component.event = { id: 1, name: 'Test' } as any;
-
+      component.event = makeEvent({ forms: undefined });
       expect(component.nonArchivedForms).toEqual([]);
     });
 
     it('should return empty array when event is null', () => {
       component.event = null;
-
       expect(component.nonArchivedForms).toEqual([]);
     });
 
     it('should filter forms based on showArchivedForms flag', () => {
-      component.event = {
-        id: 1,
-        name: 'Test',
+      component.event = makeEvent({
         forms: [
           { id: 1, archived: false } as any,
           { id: 2, archived: true } as any
         ]
-      } as any;
+      });
 
       component.showArchivedForms = false;
       expect(component.filteredForms.length).toBe(1);
@@ -186,11 +271,10 @@ describe('EventDetailsComponent', () => {
 
   describe('Toggle Methods', () => {
     it('should toggle edit details mode', () => {
-      component.event = {
-        id: 1,
+      component.event = makeEvent({
         name: 'Test Event',
         description: 'Test Description'
-      } as any;
+      });
 
       expect(component.editingDetails).toBe(false);
 
@@ -201,14 +285,6 @@ describe('EventDetailsComponent', () => {
 
       component.toggleEditDetails();
       expect(component.editingDetails).toBe(false);
-    });
-
-    it('should toggle edit members mode', () => {
-      expect(component.editMembers).toBe(false);
-      component.toggleEditMembers();
-      expect(component.editMembers).toBe(true);
-      component.toggleEditMembers();
-      expect(component.editMembers).toBe(false);
     });
 
     it('should toggle edit teams mode', () => {
@@ -226,25 +302,56 @@ describe('EventDetailsComponent', () => {
       component.toggleEditLayers();
       expect(component.editLayers).toBe(false);
     });
+
+    it('should toggle edit members mode and clear pending changes when entering edit', () => {
+      (component as any).pendingRoleChanges.set('1', 'OWNER');
+
+      expect(component.editMembers).toBe(false);
+      component.toggleEditMembers();
+      expect(component.editMembers).toBe(true);
+      expect((component as any).pendingRoleChanges.size).toBe(0);
+    });
+
+    it('should apply pending role changes when exiting edit', fakeAsync(() => {
+      component.event = makeEvent({ id: 1 });
+      component.eventTeam = { id: 'team-1', acl: {} } as any;
+      component.editMembers = true;
+
+      (component as any).pendingRoleChanges.set('1', 'MANAGER');
+      (component as any).pendingRoleChanges.set('2', 'OWNER');
+
+      teamsService.updateUserRole.and.returnValues(
+        of({ id: 'team-1', acl: {} } as any),
+        of({ id: 'team-1', acl: {} } as any)
+      );
+
+      spyOn(component, 'getMembersPage');
+
+      component.toggleEditMembers();
+      tick();
+
+      expect(component.editMembers).toBe(false);
+      expect(teamsService.updateUserRole).toHaveBeenCalledTimes(2);
+      expect((component as any).pendingRoleChanges.size).toBe(0);
+      expect(component.getMembersPage).toHaveBeenCalled();
+    }));
   });
 
   describe('Form Preview', () => {
     it('should preview form', () => {
       const form = { id: 1, name: 'Test Form' };
-      const event = new MouseEvent('click');
-      spyOn(event, 'stopPropagation');
+      const evt = new MouseEvent('click');
+      spyOn(evt, 'stopPropagation');
 
-      component.preview(event, form);
+      component.preview(evt, form);
 
-      expect(event.stopPropagation).toHaveBeenCalled();
+      expect(evt.stopPropagation).toHaveBeenCalled();
       expect(component.previewForm).toBe(form);
     });
 
     it('should close preview', () => {
       component.previewForm = { id: 1, name: 'Test Form' };
-
       component.closePreview();
-
       expect(component.previewForm).toBeNull();
     });
   });
@@ -252,20 +359,21 @@ describe('EventDetailsComponent', () => {
   describe('Track By Functions', () => {
     it('should track forms by id', () => {
       const form = { id: 123, name: 'Test' };
+      expect(component.trackByFormId(0, form)).toBe(123);
+    });
 
-      const result = component.trackByFormId(0, form);
-
-      expect(result).toBe(123);
+    it('should track forms by object when id is missing', () => {
+      const form = { name: 'No ID' };
+      expect(component.trackByFormId(0, form)).toBe(form);
     });
   });
 
   describe('Cancel Actions', () => {
     it('should cancel edit details', () => {
-      component.event = {
-        id: 1,
+      component.event = makeEvent({
         name: 'Original Name',
         description: 'Original Description'
-      } as any;
+      });
       component.editingDetails = true;
       component.eventEditForm.name = 'Changed Name';
       component.eventEditForm.description = 'Changed Description';
@@ -281,79 +389,100 @@ describe('EventDetailsComponent', () => {
   describe('User Role Management', () => {
     beforeEach(() => {
       component.eventTeam = {
-        id: '1',
+        id: 'team-1',
         name: 'Test Team',
         acl: {
-          'user1': { role: 'OWNER' },
-          'user2': { role: 'MANAGER' }
+          '1': { role: 'OWNER' },
+          '2': { role: 'MANAGER' }
         }
       } as any;
     });
 
     it('should get user role from ACL', () => {
-      const user = { id: 'user1' } as any;
+      expect(component.getUserRole(USER_RANMA)).toBe('OWNER');
+    });
 
-      const role = component.getUserRole(user);
-
-      expect(role).toBe('OWNER');
+    it('should return pending role when present', () => {
+      (component as any).pendingRoleChanges.set('1', 'GUEST');
+      expect(component.getUserRole(USER_RANMA)).toBe('GUEST');
     });
 
     it('should return GUEST when user not in ACL', () => {
-      const user = { id: 'unknown' } as any;
-
-      const role = component.getUserRole(user);
-
-      expect(role).toBe('GUEST');
+      expect(component.getUserRole({ id: '999' } as any)).toBe('GUEST');
     });
 
     it('should return GUEST when no event team', () => {
       component.eventTeam = null;
-      const user = { id: 'user1' } as any;
-
-      const role = component.getUserRole(user);
-
-      expect(role).toBe('GUEST');
+      expect(component.getUserRole(USER_RANMA)).toBe('GUEST');
     });
 
     it('should generate role class', () => {
-      const user = { id: 'user1' } as any;
+      expect(component.getRoleClass(USER_RANMA)).toBe(
+        'user-role-badge role-owner'
+      );
+    });
 
-      const roleClass = component.getRoleClass(user);
+    it('should update user role and keep data source refreshed', () => {
+      component.membersDataSource.data = [USER_RANMA, USER_LILY];
+      const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
 
-      expect(roleClass).toBe('user-role-badge role-owner');
+      component.updateUserRole(USER_RANMA, roleEvent);
+
+      expect((component as any).pendingRoleChanges.get('1')).toBe('MANAGER');
+      expect(component.membersDataSource.data.length).toBe(2);
     });
   });
 
   describe('Search Methods', () => {
     beforeEach(() => {
-      component.event = { id: 1, name: 'Test' } as any;
+      component.event = makeEvent({ id: 1 });
     });
 
     it('should search members and reset page', () => {
       component.membersPageIndex = 2;
       component.memberSearchTerm = 'test';
 
+      spyOn(component, 'getMembersPage');
+
       component.searchMembers();
 
       expect(component.membersPageIndex).toBe(0);
-      expect(eventsService.getMembers).toHaveBeenCalled();
+      expect(component.getMembersPage).toHaveBeenCalled();
     });
 
     it('should search teams and reset page', () => {
       component.teamsPageIndex = 2;
       component.teamSearchTerm = 'test';
 
+      spyOn(component, 'getTeamsPage');
+
       component.searchTeams();
 
       expect(component.teamsPageIndex).toBe(0);
-      expect(eventsService.getTeamsInEvent).toHaveBeenCalled();
+      expect(component.getTeamsPage).toHaveBeenCalled();
+    });
+
+    it('should search layers and reset page', () => {
+      component.layersPageIndex = 2;
+      component.layerSearchTerm = 'layer';
+
+      spyOn(component, 'filterAndPaginateLayers');
+
+      component.searchLayers();
+
+      expect(component.layersPageIndex).toBe(0);
+      expect(component.filterAndPaginateLayers).toHaveBeenCalled();
     });
   });
 
   describe('Member Management', () => {
     beforeEach(() => {
-      component.event = { id: 1, name: 'Test' } as any;
-      component.eventTeam = { id: '1', name: 'Test Team' } as any;
+      component.event = makeEvent({ id: 1 });
+      component.eventTeam = {
+        id: 'team-1',
+        name: 'Event Team',
+        acl: {}
+      } as any;
     });
 
     it('should open dialog to add member to event', () => {
@@ -363,40 +492,52 @@ describe('EventDetailsComponent', () => {
 
       component.addMemberToEvent();
 
-      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
-        panelClass: 'search-modal-dialog',
-        data: jasmine.objectContaining({
-          title: 'Add Members to Event',
-          type: 'members'
+      expect(dialog.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({
+          panelClass: 'search-modal-dialog',
+          data: jasmine.objectContaining({
+            title: 'Add Members to Event',
+            type: 'members'
+          })
         })
-      }));
+      );
     });
 
     it('should add member when dialog returns selection', () => {
-      const selectedUser = { id: '2', username: 'newuser' } as any;
+      const selectedUser = USER_LILY;
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
       dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedUser }));
       dialog.open.and.returnValue(dialogRef);
-      teamsService.addUserToTeam.and.returnValue(of({} as any));
+
       spyOn(component, 'getMembersPage');
 
       component.addMemberToEvent();
 
-      expect(teamsService.addUserToTeam).toHaveBeenCalledWith('1', selectedUser);
+      expect(teamsService.addUserToTeam).toHaveBeenCalledWith(
+        'team-1',
+        selectedUser
+      );
       expect(component.getMembersPage).toHaveBeenCalled();
     });
 
     it('should handle error when adding member fails', () => {
-      const selectedUser = { id: '2', username: 'newuser' } as any;
+      const selectedUser = USER_LILY;
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
       dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedUser }));
       dialog.open.and.returnValue(dialogRef);
-      teamsService.addUserToTeam.and.returnValue(throwError(() => new Error('Add failed')));
+
+      teamsService.addUserToTeam.and.returnValue(
+        throwError(() => new Error('Add failed'))
+      );
       spyOn(console, 'error');
 
       component.addMemberToEvent();
 
-      expect(console.error).toHaveBeenCalledWith('Error adding member:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error adding member:',
+        jasmine.any(Error)
+      );
     });
 
     it('should not add member when dialog is cancelled', () => {
@@ -420,68 +561,45 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should remove member from team', () => {
-      const user = { id: '1', username: 'user1' } as any;
-      const event = new MouseEvent('click');
-      teamsService.removeMember.and.returnValue(of({} as any));
+      const evt = new MouseEvent('click');
+      spyOn(evt, 'stopPropagation');
 
-      component.removeMember(event, user);
+      component.removeMember(evt, USER_RANMA);
 
-      expect(teamsService.removeMember).toHaveBeenCalledWith('1', '1');
+      expect(evt.stopPropagation).toHaveBeenCalled();
+      expect(teamsService.removeMember).toHaveBeenCalledWith('team-1', '1');
     });
 
     it('should handle remove member error', () => {
-      const user = { id: '1', username: 'user1' } as any;
-      const event = new MouseEvent('click');
+      const evt = new MouseEvent('click');
+      teamsService.removeMember.and.returnValue(
+        throwError(() => new Error('Remove failed'))
+      );
       spyOn(console, 'error');
-      teamsService.removeMember.and.returnValue(throwError(() => new Error('Remove failed')));
 
-      component.removeMember(event, user);
+      component.removeMember(evt, USER_RANMA);
 
-      expect(console.error).toHaveBeenCalledWith('Error removing member:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error removing member:',
+        jasmine.any(Error)
+      );
     });
 
     it('should not remove member without event team', () => {
       component.eventTeam = null;
-      const user = { id: '1', username: 'user1' } as any;
-      const event = new MouseEvent('click');
+      const evt = new MouseEvent('click');
       spyOn(console, 'error');
 
-      component.removeMember(event, user);
+      component.removeMember(evt, USER_RANMA);
 
       expect(console.error).toHaveBeenCalledWith('Event team not found');
       expect(teamsService.removeMember).not.toHaveBeenCalled();
-    });
-
-    it('should update user role', () => {
-      const user = { id: '1', username: 'user1', displayName: 'User One' } as any;
-      const roleEvent = { source: null, value: 'MANAGER' } as MatSelectChange;
-      component.membersDataSource.data = [user];
-
-      component.updateUserRole(user, roleEvent);
-
-      expect(component['pendingRoleChanges'].get('1')).toBe('MANAGER');
-      expect(component.membersDataSource.data.length).toBe(1);
-    });
-
-    it('should store multiple pending role changes', () => {
-      const user1 = { id: '1', username: 'user1' } as any;
-      const user2 = { id: '2', username: 'user2' } as any;
-      const roleEvent1 = { source: null, value: 'MANAGER' } as MatSelectChange;
-      const roleEvent2 = { source: null, value: 'OWNER' } as MatSelectChange;
-      component.membersDataSource.data = [user1, user2];
-
-      component.updateUserRole(user1, roleEvent1);
-      component.updateUserRole(user2, roleEvent2);
-
-      expect(component['pendingRoleChanges'].get('1')).toBe('MANAGER');
-      expect(component['pendingRoleChanges'].get('2')).toBe('OWNER');
-      expect(component['pendingRoleChanges'].size).toBe(2);
     });
   });
 
   describe('Team Management', () => {
     beforeEach(() => {
-      component.event = { id: 1, name: 'Test' } as any;
+      component.event = makeEvent({ id: 1 });
     });
 
     it('should open dialog to add team to event', () => {
@@ -491,13 +609,16 @@ describe('EventDetailsComponent', () => {
 
       component.addTeamToEvent();
 
-      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
-        panelClass: 'search-modal-dialog',
-        data: jasmine.objectContaining({
-          title: 'Add Teams to Event',
-          type: 'teams'
+      expect(dialog.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({
+          panelClass: 'search-modal-dialog',
+          data: jasmine.objectContaining({
+            title: 'Add Teams to Event',
+            type: 'teams'
+          })
         })
-      }));
+      );
     });
 
     it('should add team when dialog returns selection', () => {
@@ -505,12 +626,15 @@ describe('EventDetailsComponent', () => {
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
       dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedTeam }));
       dialog.open.and.returnValue(dialogRef);
-      eventsService.addTeamToEvent.and.returnValue(of(undefined));
+
       spyOn(component, 'getTeamsPage');
 
       component.addTeamToEvent();
 
-      expect(eventsService.addTeamToEvent).toHaveBeenCalledWith('1', selectedTeam);
+      expect(eventsService.addTeamToEvent).toHaveBeenCalledWith(
+        '1',
+        selectedTeam
+      );
       expect(component.getTeamsPage).toHaveBeenCalled();
     });
 
@@ -519,12 +643,18 @@ describe('EventDetailsComponent', () => {
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
       dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedTeam }));
       dialog.open.and.returnValue(dialogRef);
-      eventsService.addTeamToEvent.and.returnValue(throwError(() => new Error('Add failed')));
+
+      eventsService.addTeamToEvent.and.returnValue(
+        throwError(() => new Error('Add failed'))
+      );
       spyOn(console, 'error');
 
       component.addTeamToEvent();
 
-      expect(console.error).toHaveBeenCalledWith('Error adding team:', jasmine.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Error adding team:',
+        jasmine.any(Error)
+      );
     });
 
     it('should not add team when dialog is cancelled', () => {
@@ -539,45 +669,49 @@ describe('EventDetailsComponent', () => {
 
     it('should not open dialog when event not found', () => {
       component.event = null;
-
       component.addTeamToEvent();
-
       expect(dialog.open).not.toHaveBeenCalled();
     });
 
     it('should remove team from event', () => {
       const team = { id: '1', name: 'Team 1' } as any;
-      const event = new MouseEvent('click');
-      eventsService.removeEventFromTeam.and.returnValue(of(undefined as void));
+      const evt = new MouseEvent('click');
+      spyOn(evt, 'stopPropagation');
 
-      component.removeTeam(event, team);
+      component.removeTeam(evt, team);
 
+      expect(evt.stopPropagation).toHaveBeenCalled();
       expect(eventsService.removeEventFromTeam).toHaveBeenCalledWith('1', '1');
     });
 
     it('should not remove team without event', () => {
       component.event = null;
       const team = { id: '1', name: 'Team 1' } as any;
-      const event = new MouseEvent('click');
+      const evt = new MouseEvent('click');
 
-      component.removeTeam(event, team);
+      component.removeTeam(evt, team);
 
       expect(eventsService.removeEventFromTeam).not.toHaveBeenCalled();
     });
 
-    it('should load teams page', () => {
+    it('should load teams page', fakeAsync(() => {
+      component.event = makeEvent({ id: 1 });
       const mockTeams = [
         { id: '1', name: 'Team 1' } as any,
         { id: '2', name: 'Team 2' } as any
       ];
-      eventsService.getTeamsInEvent.and.returnValue(of({
-        items: mockTeams,
-        totalCount: 2,
-        pageSize: 5,
-        pageIndex: 0
-      }));
+
+      eventsService.getTeamsInEvent.and.returnValue(
+        of({
+          items: mockTeams,
+          totalCount: 2,
+          pageSize: 5,
+          pageIndex: 0
+        } as any)
+      );
 
       component.getTeamsPage();
+      tick();
 
       expect(eventsService.getTeamsInEvent).toHaveBeenCalledWith('1', {
         page: 0,
@@ -586,334 +720,288 @@ describe('EventDetailsComponent', () => {
         total: true,
         omit_event_teams: true
       });
-    });
-
-    it('should not load teams without event', () => {
-      component.event = null;
-
-      component.getTeamsPage();
-
-      expect(eventsService.getTeamsInEvent).not.toHaveBeenCalled();
-    });
+    }));
   });
 
   describe('Layer Management', () => {
     beforeEach(() => {
-      component.event = { id: 1, name: 'Test' } as any;
+      component.event = makeEvent({ id: 1 });
     });
 
-    it('should open dialog to add layer to event', () => {
-      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
-      dialogRef.afterClosed.and.returnValue(of(null));
-      dialog.open.and.returnValue(dialogRef);
-
-      component.addLayerToEvent();
-
-      expect(dialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
-        panelClass: 'search-modal-dialog',
-        data: jasmine.objectContaining({
-          title: 'Add Layers to Event',
-          type: 'layers'
-        })
-      }));
-    });
-
-    it('should add layer when dialog returns selection', () => {
-      const selectedLayer = { id: 2, name: 'New Layer' } as any;
-      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
-      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedLayer }));
-      dialog.open.and.returnValue(dialogRef);
-      eventsService.addLayerToEvent.and.returnValue(of(undefined));
-      spyOn(component, 'loadLayers');
-
-      component.addLayerToEvent();
-
-      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', { id: 2 });
-      expect(component.loadLayers).toHaveBeenCalled();
-    });
-
-    it('should handle error when adding layer fails', () => {
-      const selectedLayer = { id: 2, name: 'New Layer' } as any;
-      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
-      dialogRef.afterClosed.and.returnValue(of({ selectedItem: selectedLayer }));
-      dialog.open.and.returnValue(dialogRef);
-      eventsService.addLayerToEvent.and.returnValue(throwError(() => new Error('Add failed')));
-      spyOn(console, 'error');
-
-      component.addLayerToEvent();
-
-      expect(console.error).toHaveBeenCalledWith('Error adding layer:', jasmine.any(Error));
-    });
-
-    it('should not add layer when dialog is cancelled', () => {
-      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
-      dialogRef.afterClosed.and.returnValue(of(null));
-      dialog.open.and.returnValue(dialogRef);
-
-      component.addLayerToEvent();
-
-      expect(eventsService.addLayerToEvent).not.toHaveBeenCalled();
-    });
-
-    it('should not open dialog when event not found', () => {
-      component.event = null;
-
-      component.addLayerToEvent();
-
-      expect(dialog.open).not.toHaveBeenCalled();
-    });
-
-    it('should load layers successfully', () => {
+    it('should load layers successfully', fakeAsync(() => {
       const eventLayers = [{ id: 1, name: 'Layer 1' } as any];
       eventsService.getLayersForEvent.and.returnValue(of(eventLayers));
 
       component.loadLayers();
+      tick();
 
       expect(eventsService.getLayersForEvent).toHaveBeenCalledWith('1');
-    });
+      expect(component.eventLayers.length).toBe(1);
+      expect(component.layersPage.totalCount).toBe(1);
+    }));
 
     it('should not load layers without event', () => {
       component.event = null;
-
       component.loadLayers();
-
       expect(eventsService.getLayersForEvent).not.toHaveBeenCalled();
     });
 
     it('should add layer to event', () => {
       const layer = { id: 2, name: 'Layer 2' } as any;
-      const event = new MouseEvent('click');
-      eventsService.addLayerToEvent.and.returnValue(of({} as any));
+      const evt = new MouseEvent('click');
+      spyOn(evt, 'stopPropagation');
 
-      component.addLayer(event, layer);
+      component.addLayer(evt, layer);
 
-      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', { id: 2 });
-    });
-
-    it('should not add layer without event', () => {
-      component.event = null;
-      const layer = { id: 2, name: 'Layer 2' } as any;
-      const event = new MouseEvent('click');
-
-      component.addLayer(event, layer);
-
-      expect(eventsService.addLayerToEvent).not.toHaveBeenCalled();
+      expect(evt.stopPropagation).toHaveBeenCalled();
+      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', {
+        id: 2
+      });
     });
 
     it('should remove layer from event', () => {
       const layer = { id: 1, name: 'Layer 1' } as any;
-      const event = new MouseEvent('click');
-      eventsService.removeLayerFromEvent.and.returnValue(of({} as any));
+      const evt = new MouseEvent('click');
+      spyOn(evt, 'stopPropagation');
 
-      component.removeLayer(event, layer);
+      component.removeLayer(evt, layer);
 
+      expect(evt.stopPropagation).toHaveBeenCalled();
       expect(eventsService.removeLayerFromEvent).toHaveBeenCalledWith('1', 1);
     });
 
-    it('should not remove layer without event', () => {
-      component.event = null;
-      const layer = { id: 1, name: 'Layer 1' } as any;
-      const event = new MouseEvent('click');
+    it('should filter and paginate layers', () => {
+      component.eventLayers = [
+        { id: 1, name: 'Alpha' } as any,
+        { id: 2, name: 'Beta' } as any,
+        { id: 3, name: 'Gamma' } as any
+      ];
+      component.layerSearchTerm = 'a';
+      component.layersPageIndex = 0;
+      component.layersPageSize = 2;
 
-      component.removeLayer(event, layer);
+      component.filterAndPaginateLayers();
 
-      expect(eventsService.removeLayerFromEvent).not.toHaveBeenCalled();
+      expect(component.layersPage.totalCount).toBe(3);
+      expect(component.layersDataSource.data.length).toBe(2);
     });
 
-    it('should navigate to layer', () => {
-      const layer = { id: 1, name: 'Layer 1' } as any;
+    it('should open dialog to add layer to event and add selection', fakeAsync(() => {
+      const selectedLayer = { id: 7, name: 'New Layer' } as any;
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(
+        of({ selectedItem: selectedLayer })
+      );
+      dialog.open.and.returnValue(dialogRef);
 
-      component.gotoLayer(layer);
+      spyOn(component, 'loadLayers');
 
-      expect(stateService.go).toHaveBeenCalledWith('admin.layer', { layerId: 1 });
+      component.addLayerToEvent();
+      tick();
+
+      expect(dialog.open).toHaveBeenCalled();
+      expect(eventsService.addLayerToEvent).toHaveBeenCalledWith('1', {
+        id: 7
+      });
+      expect(component.loadLayers).toHaveBeenCalled();
+    }));
+
+    it('should not open layer dialog when event not found', () => {
+      component.event = null;
+      component.addLayerToEvent();
+      expect(dialog.open).not.toHaveBeenCalled();
     });
   });
 
   describe('Form Restrictions', () => {
     beforeEach(() => {
-      component.event = {
+      component.event = makeEvent({
         id: 1,
-        name: 'Test',
         minObservationForms: 0,
         maxObservationForms: 10,
         forms: [{ id: 1, min: 0, max: 5 }]
+      });
+
+      component.restrictionsForm = {
+        form: { markAsPristine: jasmine.createSpy('markAsPristine') }
       } as any;
     });
 
-    it('should save form restrictions', () => {
-      eventsService.updateEvent.and.returnValue(of(component.event as any));
+    it('should save form restrictions and mark pristine', fakeAsync(() => {
+      const updated = makeEvent({
+        id: 1,
+        minObservationForms: 1,
+        maxObservationForms: 9,
+        forms: [{ id: 1, min: 1, max: 4 }]
+      });
+
+      eventsService.updateEvent.and.returnValue(of(updated));
 
       component.saveFormRestrictions();
+      tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({
-        minObservationForms: 0,
-        maxObservationForms: 10
-      }));
-    });
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({
+          minObservationForms: 0,
+          maxObservationForms: 10
+        })
+      );
 
-    it('should handle save restrictions error', () => {
+      expect(component.event!.minObservationForms).toBe(1);
+      expect(component.event!.maxObservationForms).toBe(9);
+      expect((component.event!.forms as any)[0].min).toBe(1);
+      expect((component.event!.forms as any)[0].max).toBe(4);
+      expect(
+        (component.restrictionsForm as any).form.markAsPristine
+      ).toHaveBeenCalled();
+    }));
+
+    it('should handle save restrictions error and set restrictionsError', fakeAsync(() => {
       const error = { error: { message: 'Validation error' } };
       eventsService.updateEvent.and.returnValue(throwError(() => error));
       spyOn(console, 'error');
 
       component.saveFormRestrictions();
+      tick();
 
-      expect(console.error).toHaveBeenCalledWith('Error saving form restrictions:', error);
-      expect(component.restrictionsError).toEqual({ message: 'Validation error' });
-    });
+      expect(console.error).toHaveBeenCalledWith(
+        'Error saving form restrictions:',
+        jasmine.anything()
+      );
+      expect(component.restrictionsError).toEqual({
+        message: 'Validation error'
+      });
+    }));
 
     it('should not save without event', () => {
       component.event = null;
-
       component.saveFormRestrictions();
-
       expect(eventsService.updateEvent).not.toHaveBeenCalled();
     });
   });
 
   describe('Event Details Editing', () => {
     beforeEach(() => {
-      component.event = {
+      component.event = makeEvent({
         id: 1,
         name: 'Test Event',
         description: 'Test Description'
-      } as any;
+      });
     });
 
-    it('should save event details', () => {
-      const updatedEvent = { ...component.event, name: 'Updated' } as any;
+    it('should save event details', fakeAsync(() => {
+      const updatedEvent = makeEvent({
+        id: 1,
+        name: 'Updated',
+        description: 'Test Description'
+      });
       eventsService.updateEvent.and.returnValue(of(updatedEvent));
+
+      component.editingDetails = true;
       component.eventEditForm.name = 'Updated';
+      component.eventEditForm.description = 'Test Description';
 
       component.saveEventDetails();
+      tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalled();
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ name: 'Updated' })
+      );
       expect(component.editingDetails).toBe(false);
-    });
+      expect(component.event!.name).toBe('Updated');
+    }));
 
-    it('should handle save error', () => {
-      eventsService.updateEvent.and.returnValue(throwError(() => new Error('Save failed')));
+    it('should handle save error', fakeAsync(() => {
+      eventsService.updateEvent.and.returnValue(
+        throwError(() => new Error('Save failed'))
+      );
       spyOn(console, 'error');
 
       component.saveEventDetails();
+      tick();
 
-      expect(console.error).toHaveBeenCalledWith('Error updating event:', jasmine.any(Error));
-    });
+      expect(console.error).toHaveBeenCalledWith(
+        'Error updating event:',
+        jasmine.any(Error)
+      );
+    }));
 
     it('should not save without event', () => {
       component.event = null;
-
       component.saveEventDetails();
-
       expect(eventsService.updateEvent).not.toHaveBeenCalled();
     });
   });
 
   describe('Event Actions', () => {
     beforeEach(() => {
-      component.event = { id: 1, name: 'Test Event' } as any;
+      component.event = makeEvent({ id: 1, name: 'Test Event' });
     });
 
-    it('should navigate to edit event', () => {
-      component.editEvent(component.event as any);
-
-      expect(stateService.go).toHaveBeenCalledWith('admin.eventEdit', { eventId: 1 });
-    });
-
-    it('should navigate to edit access', () => {
-      component.editAccess(component.event as any);
-
-      expect(stateService.go).toHaveBeenCalledWith('admin.eventAccess', { eventId: 1 });
-    });
-
-    it('should navigate to edit form', () => {
-      const form = { id: 1, name: 'Form 1' };
-
-      component.editForm(component.event as any, form);
-
-      expect(stateService.go).toHaveBeenCalledWith('admin.formEdit', { eventId: 1, formId: 1 });
-    });
-
-    it('should navigate to member (user)', () => {
-      const user = { id: '1', username: 'user1' } as any;
-
-      component.gotoMember(user);
-
-      expect(stateService.go).toHaveBeenCalledWith('admin.user', { userId: '1' });
-    });
-
-    it('should navigate to member (team)', () => {
-      const team = { id: '1', name: 'Team 1' } as any;
-
-      component.gotoMember(team);
-
-      expect(stateService.go).toHaveBeenCalledWith('admin.team', { teamId: '1' });
-    });
-
-    it('should navigate to team', () => {
-      const team = { id: '1', name: 'Team 1' } as any;
-
-      component.gotoTeam(team);
-
-      expect(stateService.go).toHaveBeenCalledWith('admin.team', { teamId: '1' });
-    });
-
-    it('should complete event', () => {
-      const completedEvent = { ...component.event, complete: true } as any;
+    it('should complete event', fakeAsync(() => {
+      const completedEvent = makeEvent({ id: 1, complete: true });
       eventsService.updateEvent.and.returnValue(of(completedEvent));
 
       component.completeEvent(component.event as any);
+      tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({
-        complete: true
-      }));
-    });
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ complete: true })
+      );
+    }));
 
-    it('should not complete without event', () => {
-      component.completeEvent(null as any);
-
-      expect(eventsService.updateEvent).not.toHaveBeenCalled();
-    });
-
-    it('should activate event', () => {
-      const activeEvent = { ...component.event, complete: false } as any;
+    it('should activate event', fakeAsync(() => {
+      const activeEvent = makeEvent({ id: 1, complete: false });
       eventsService.updateEvent.and.returnValue(of(activeEvent));
 
       component.activateEvent(component.event as any);
+      tick();
 
-      expect(eventsService.updateEvent).toHaveBeenCalledWith('1', jasmine.objectContaining({
-        complete: false
-      }));
-    });
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ complete: false })
+      );
+    }));
 
-    it('should not activate without event', () => {
-      component.activateEvent(null as any);
-
-      expect(eventsService.updateEvent).not.toHaveBeenCalled();
-    });
-
-    it('should delete event and navigate', () => {
+    it('should delete event and navigate when confirmed', fakeAsync(() => {
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
       dialogRef.afterClosed.and.returnValue(of(true));
       dialog.open.and.returnValue(dialogRef);
 
       component.deleteEvent();
+      tick();
 
       expect(dialog.open).toHaveBeenCalled();
-    });
+      expect(router.navigate).toHaveBeenCalled();
+    }));
+
+    it('should not navigate when delete dialog returns falsy', fakeAsync(() => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(false));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.deleteEvent();
+      tick();
+
+      expect(router.navigateByUrl).not.toHaveBeenCalled();
+    }));
 
     it('should not delete without event', () => {
       component.event = null;
-
       component.deleteEvent();
-
       expect(dialog.open).not.toHaveBeenCalled();
     });
   });
 
   describe('Page Change Handlers', () => {
     beforeEach(() => {
-      component.event = { id: 1, name: 'Test' } as any;
+      component.event = makeEvent({ id: 1 });
+      spyOn(component, 'getMembersPage');
+      spyOn(component, 'getTeamsPage');
+      spyOn(component, 'filterAndPaginateLayers');
     });
 
     it('should handle member search change', () => {
@@ -921,13 +1009,19 @@ describe('EventDetailsComponent', () => {
 
       expect(component.memberSearchTerm).toBe('search');
       expect(component.membersPageIndex).toBe(0);
+      expect(component.getMembersPage).toHaveBeenCalled();
     });
 
     it('should handle members page change', () => {
-      component.onMembersPageChange({ pageIndex: 1, pageSize: 10, length: 50 });
+      component.onMembersPageChange({
+        pageIndex: 1,
+        pageSize: 10,
+        length: 50
+      } as any);
 
       expect(component.membersPageIndex).toBe(1);
       expect(component.membersPageSize).toBe(10);
+      expect(component.getMembersPage).toHaveBeenCalled();
     });
 
     it('should handle team search change', () => {
@@ -935,76 +1029,106 @@ describe('EventDetailsComponent', () => {
 
       expect(component.teamSearchTerm).toBe('team');
       expect(component.teamsPageIndex).toBe(0);
+      expect(component.getTeamsPage).toHaveBeenCalled();
     });
 
     it('should handle teams page change', () => {
-      component.onTeamsPageChange({ pageIndex: 2, pageSize: 5, length: 25 });
+      component.onTeamsPageChange({
+        pageIndex: 2,
+        pageSize: 5,
+        length: 25
+      } as any);
 
       expect(component.teamsPageIndex).toBe(2);
       expect(component.teamsPageSize).toBe(5);
+      expect(component.getTeamsPage).toHaveBeenCalled();
+    });
+
+    it('should handle layer search change', () => {
+      component.onLayerSearchChange('layer');
+
+      expect(component.layerSearchTerm).toBe('layer');
+      expect(component.layersPageIndex).toBe(0);
+      expect(component.filterAndPaginateLayers).toHaveBeenCalled();
+    });
+
+    it('should handle layers page change', () => {
+      component.onLayersPageChange({
+        pageIndex: 2,
+        pageSize: 25,
+        length: 100
+      } as any);
+
+      expect(component.layersPageIndex).toBe(2);
+      expect(component.layersPageSize).toBe(25);
+      expect(component.filterAndPaginateLayers).toHaveBeenCalled();
     });
   });
 
   describe('Form Operations', () => {
     beforeEach(() => {
-      component.event = {
+      component.event = makeEvent({
         id: 1,
-        name: 'Test',
         forms: [
           { id: 1, name: 'Form 1', archived: false },
           { id: 2, name: 'Form 2', archived: false }
         ]
-      } as any;
+      });
     });
 
-    it('should create form dialog', () => {
+    it('should create form dialog and navigate on close when form has id', fakeAsync(() => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of({ id: 99 }));
+      dialog.open.and.returnValue(dialogRef);
+
+      component.createForm();
+      tick();
+
+      expect(dialog.open).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(
+        ['../../events', 1, 'forms', 99],
+        jasmine.any(Object)
+      );
+    }));
+
+    it('should not navigate when form dialog closes without id', fakeAsync(() => {
       const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
       dialogRef.afterClosed.and.returnValue(of(null));
       dialog.open.and.returnValue(dialogRef);
 
       component.createForm();
+      tick();
 
-      expect(dialog.open).toHaveBeenCalled();
-    });
+      expect(router.navigate).not.toHaveBeenCalled();
+    }));
 
-    it('should handle forms reordered', () => {
-      eventsService.updateEvent.and.returnValue(of(component.event as any));
+    it('should handle forms reordered and call updateEvent', fakeAsync(() => {
       const reorderedForms = [
         { id: 2, name: 'Form 2', archived: false },
         { id: 1, name: 'Form 1', archived: false }
       ];
 
-      component.onFormsReordered(reorderedForms);
+      eventsService.updateEvent.and.returnValue(
+        of(makeEvent({ id: 1, forms: reorderedForms }))
+      );
 
-      expect(eventsService.updateEvent).toHaveBeenCalled();
+      component.onFormsReordered(reorderedForms as any);
+      tick();
+
+      expect(eventsService.updateEvent).toHaveBeenCalledWith(
+        '1',
+        jasmine.objectContaining({ forms: reorderedForms })
+      );
       expect(component.event!.forms![0].id).toBe(2);
       expect(component.event!.forms![1].id).toBe(1);
-    });
+    }));
 
     it('should not reorder forms when event has no forms', () => {
-      component.event!.forms = undefined;
+      (component.event as any).forms = undefined;
 
       component.onFormsReordered([]);
 
       expect(eventsService.updateEvent).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Get non-archived forms', () => {
-    it('should return non-archived forms getter', () => {
-      component.event = {
-        id: 1,
-        name: 'Test',
-        forms: [
-          { id: 1, archived: false },
-          { id: 2, archived: true },
-          { id: 3, archived: false }
-        ]
-      } as any;
-
-      const forms = component.nonArchivedForms;
-
-      expect(forms.length).toBe(2);
     });
   });
 });

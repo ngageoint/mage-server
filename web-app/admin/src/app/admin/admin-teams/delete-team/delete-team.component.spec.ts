@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { DeleteTeamComponent } from './delete-team.component';
-import { TeamsService } from '../teams-service';
-import { UserService } from 'admin/src/app/upgrade/ajs-upgraded-providers';
+import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../team';
+import { AdminUserService } from '../../services/admin-user.service';
 
 describe('DeleteTeamComponent', () => {
   let component: DeleteTeamComponent;
   let fixture: ComponentFixture<DeleteTeamComponent>;
   let mockDialogRef: jasmine.SpyObj<MatDialogRef<DeleteTeamComponent>>;
-  let mockTeamsService: jasmine.SpyObj<TeamsService>;
+  let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
   let mockUserService: jasmine.SpyObj<any>;
 
   const mockTeam: Team = {
@@ -29,7 +29,6 @@ describe('DeleteTeamComponent', () => {
   };
 
   beforeEach(async () => {
-    // Create spies for dependencies
     mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
     mockTeamsService = jasmine.createSpyObj('TeamsService', ['deleteTeam']);
     mockUserService = jasmine.createSpyObj('UserService', ['deleteUser']);
@@ -40,8 +39,8 @@ describe('DeleteTeamComponent', () => {
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { team: mockTeam } },
-        { provide: TeamsService, useValue: mockTeamsService },
-        { provide: UserService, useValue: mockUserService }
+        { provide: AdminTeamsService, useValue: mockTeamsService },
+        { provide: AdminUserService, useValue: mockUserService }
       ]
     }).compileComponents();
 
@@ -202,11 +201,11 @@ describe('DeleteTeamComponent', () => {
 
     it('should call deleteUser for each user in the team', () => {
       (component as any).deleteUsers();
-
+    
       expect(mockUserService.deleteUser).toHaveBeenCalledTimes(2);
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.users![0]);
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.users![1]);
-    });
+      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.users![0].id);
+      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.users![1].id);
+    });    
 
     it('should close dialog with team after all users are deleted successfully', () => {
       (component as any).deleteUsers();
@@ -226,7 +225,6 @@ describe('DeleteTeamComponent', () => {
     });
 
     it('should handle mixed success and failure of user deletions', () => {
-      // First user deletion succeeds, second fails
       mockUserService.deleteUser.and.returnValues(
         of({}),
         throwError(() => new Error('Failed'))

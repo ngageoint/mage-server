@@ -159,9 +159,7 @@
                             type="text"
                             [value]="iconMetadata.text"
                             maxlength="2"
-                            (input)="
-                              onCreateTextChanged($any($event.target).value)
-                            "
+                            (input)="onCreateTextChanged($any($event.target).value)"
                             placeholder="AB"
                           />
                         </div>
@@ -171,9 +169,7 @@
                             class="form-input color-input"
                             type="color"
                             [value]="iconMetadata.color || '#007bff'"
-                            (input)="
-                              onCreateColorChanged($any($event.target).value)
-                            "
+                            (input)="onCreateColorChanged($any($event.target).value)"
                           />
                         </div>
                       </div>
@@ -219,9 +215,7 @@
                   >
                     <div class="map-icon-section-title">No Icon</div>
                     <div class="map-icon-none">
-                      <span class="field-value text-muted"
-                        >No icon selected</span
-                      >
+                      <span class="field-value text-muted">No icon selected</span>
                     </div>
                   </div>
                 </div>
@@ -233,9 +227,7 @@
         <div class="form-field" *ngIf="user.authentication?.type === 'local'">
           <label class="field-label">Username</label>
           <div class="field-content">
-            <span *ngIf="!isEditingUser" class="field-value">{{
-              user.username
-            }}</span>
+            <span *ngIf="!isEditingUser" class="field-value">{{ user.username }}</span>
             <input
               *ngIf="isEditingUser"
               type="text"
@@ -251,9 +243,7 @@
         <div class="form-field">
           <label class="field-label">Display Name</label>
           <div class="field-content">
-            <span *ngIf="!isEditingUser" class="field-value">{{
-              user.displayName
-            }}</span>
+            <span *ngIf="!isEditingUser" class="field-value">{{ user.displayName }}</span>
             <input
               *ngIf="isEditingUser"
               type="text"
@@ -269,9 +259,7 @@
         <div class="form-field" *ngIf="user.email || isEditingUser">
           <label class="field-label">Email</label>
           <div class="field-content">
-            <span *ngIf="!isEditingUser" class="field-value">{{
-              user.email
-            }}</span>
+            <span *ngIf="!isEditingUser" class="field-value">{{ user.email }}</span>
             <input
               *ngIf="isEditingUser"
               type="email"
@@ -283,15 +271,12 @@
           </div>
         </div>
 
-        <div
-          class="form-field"
-          *ngIf="(user.phones && user.phones[0]) || isEditingUser"
-        >
+        <div class="form-field" *ngIf="(user.phones && user.phones[0]) || isEditingUser">
           <label class="field-label">Phone</label>
           <div class="field-content">
-            <span *ngIf="!isEditingUser" class="field-value">{{
-              user.phones && user.phones[0] ? user.phones[0].number : ''
-            }}</span>
+            <span *ngIf="!isEditingUser" class="field-value">
+              {{ user.phones && user.phones[0] ? user.phones[0].number : '' }}
+            </span>
             <input
               *ngIf="isEditingUser"
               type="tel"
@@ -307,9 +292,7 @@
         <div class="form-field">
           <label class="field-label">Role</label>
           <div class="field-content">
-            <span *ngIf="!isEditingUser" class="field-value">{{
-              user.role?.name
-            }}</span>
+            <span *ngIf="!isEditingUser" class="field-value">{{ user.role?.name }}</span>
             <select
               *ngIf="isEditingUser && canEditRole"
               class="form-input"
@@ -320,9 +303,9 @@
                 {{ role.name }}
               </option>
             </select>
-            <span *ngIf="isEditingUser && !canEditRole" class="field-value">{{
-              user.role?.name
-            }}</span>
+            <span *ngIf="isEditingUser && !canEditRole" class="field-value">
+              {{ user.role?.name }}
+            </span>
           </div>
         </div>
 
@@ -346,11 +329,7 @@
 
         <div
           class="form-field"
-          *ngIf="
-            isEditingUser &&
-            user.authentication?.type === 'local' &&
-            canUpdatePassword
-          "
+          *ngIf="isEditingUser && user.authentication?.type === 'local' && canUpdatePassword"
         >
           <div class="field-content">
             <button
@@ -386,10 +365,7 @@
                   />
                   <div
                     class="helper-text"
-                    *ngIf="
-                      pwForm.submitted &&
-                      pwForm.controls.password?.errors?.required
-                    "
+                    *ngIf="pwForm.submitted && pwForm.controls.password?.errors?.required"
                   >
                     Password is required.
                   </div>
@@ -408,21 +384,13 @@
                   />
                   <div
                     class="helper-text"
-                    *ngIf="
-                      pwForm.submitted &&
-                      pwForm.controls.passwordconfirm?.errors?.required
-                    "
+                    *ngIf="pwForm.submitted && pwForm.controls.passwordconfirm?.errors?.required"
                   >
                     Confirmation is required.
                   </div>
                   <div
                     class="helper-text"
-                    *ngIf="
-                      pwForm.submitted &&
-                      newPassword &&
-                      newPasswordConfirm &&
-                      newPassword !== newPasswordConfirm
-                    "
+                    *ngIf="pwForm.submitted && newPassword && newPasswordConfirm && newPassword !== newPasswordConfirm"
                   >
                     Passwords do not match.
                   </div>
@@ -456,11 +424,7 @@
                 <button
                   class="action-button btn-primary"
                   type="submit"
-                  [disabled]="
-                    updatingPassword ||
-                    pwForm.invalid ||
-                    newPassword !== newPasswordConfirm
-                  "
+                  [disabled]="updatingPassword || pwForm.invalid || newPassword !== newPasswordConfirm"
                 >
                   <i class="fa fa-save"></i>
                   Save Password
@@ -517,7 +481,7 @@
               access MAGE.
             </p>
             <button
-              class="action-button btn-success"
+              class="action-button btn-success btn-right"
               (click)="activateUser(user)"
             >
               <i class="fa fa-check"></i> Activate
@@ -527,7 +491,7 @@
       </div>
 
       <div
-        class="danger-zone-card warning"
+        class="danger-zone-card warning btn-right"
         *ngIf="user.active && hasUserEditPermission && !isSelf"
       >
         <h3 class="danger-zone-title">
@@ -544,7 +508,7 @@
           }}
         </p>
         <button
-          class="action-button"
+          class="action-button btn-right"
           [ngClass]="user.enabled ? 'btn-warning' : 'btn-success'"
           (click)="user.enabled ? disableUser(user) : enableUser(user)"
         >
@@ -564,7 +528,7 @@
           will be unrecoverable.
         </p>
         <button
-          class="action-button btn-danger"
+          class="action-button btn-danger btn-right"
           (click)="confirmDeleteUser(user)"
         >
           <i class="fa fa-trash-o"></i> Delete
@@ -576,7 +540,6 @@
   <hr />
 
   <div class="sections-container">
-    <!-- Teams Section -->
     <div class="section-card">
       <div class="table-wrapper mat-elevation-z2">
         <div class="section-table-title">User Teams</div>
@@ -601,7 +564,10 @@
           >
             <ng-container matColumnDef="teamContent">
               <td mat-cell *matCellDef="let team" class="table-row-content">
-                <div class="row-item" (click)="gotoTeam(team)">
+                <div
+                  class="row-item pointer"
+                  [routerLink]="['../../teams', team.id]"
+                >
                   <div class="row-icon">
                     <i class="fa fa-users"></i>
                   </div>
@@ -617,7 +583,7 @@
                   >
                     <button
                       class="action-button btn-danger btn-sm"
-                      (click)="removeUserFromTeam($event, team)"
+                      (click)="$event.stopPropagation(); removeUserFromTeam($event, team)"
                       title="Remove from Team"
                     >
                       <i class="fa fa-trash"></i>
@@ -665,7 +631,6 @@
       </div>
     </div>
 
-    <!-- Events Section -->
     <div class="section-card">
       <div class="table-wrapper mat-elevation-z2">
         <div class="section-table-title">User Events</div>
@@ -689,7 +654,10 @@
           >
             <ng-container matColumnDef="eventContent">
               <td mat-cell *matCellDef="let event" class="table-row-content">
-                <div class="row-item" (click)="gotoEvent(event)">
+                <div
+                  class="row-item pointer"
+                  [routerLink]="['../../events', event.id]"
+                >
                   <div class="row-icon">
                     <i class="fa fa-calendar"></i>
                   </div>

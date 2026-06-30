@@ -1,4 +1,8 @@
-.opacity > mat-label {
+.opacity {
+  padding-right: 24px;
+}
+
+.opacity>mat-label {
   display: block;
 }
 
@@ -28,11 +32,11 @@ mat-form-field {
   margin-left: -8px;
 }
 
-.style-actions > button {
+.style-actions>button {
   padding: 0 8px;
 }
 
-.style-actions > .mat-button > span  {
+.style-actions>.mat-button>span {
   background: yellowgreen;
 }
 

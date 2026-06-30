@@ -2,6 +2,18 @@ import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entitie
 import { ArchiveFormat, CompletionAction, TriggerRule } from '../format/entities.format';
 
 /**
+ * Determines how the events list is applied when filtering which events to sync.
+ * - All: Sync all active events
+ * - Include: Sync only events selected
+ * - Exclude: Sync all events except those selected
+ */
+export enum EventFilterMode {
+  All = 'all',
+  Include = 'include',
+  Exclude = 'exclude'
+}
+
+/**
  * Contains various configuration values used by the plugin.
  */
 export interface SFTPPluginConfig {
@@ -22,7 +34,12 @@ export interface SFTPPluginConfig {
   pageSize: number
 
   /**
-   * Events in which to SFTP observations
+   * Determines how the event sync filters events
+   */
+  eventFilterMode: EventFilterMode
+
+  /**
+   * Events to include or exclude based on eventFilterMode
    */
   events: Array<MageEventId>
 
@@ -49,15 +66,22 @@ export interface SFTPPluginConfig {
    */
   sftpClient: {
     host: string,
+    port: number,
     path: string,
     username: string
   }
+
+  /**
+   * Whether a private key file exists for SFTP authentication
+   */
+  hasPrivateKey?: boolean
 }
 
 export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
   enabled: false,
   interval: 60,
   pageSize: 100,
+  eventFilterMode: EventFilterMode.All,
   events: [],
   archiveFormat: ArchiveFormat.GeoJSON,
   completionAction: CompletionAction.None,
@@ -67,6 +91,7 @@ export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
   },
   sftpClient: {
     host: '',
+    port: 22,
     path: '',
     username: ''
   }

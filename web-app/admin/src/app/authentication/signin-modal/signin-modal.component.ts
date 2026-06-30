@@ -1,38 +1,44 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AuthService } from '../auth.service';
-import { UserService } from '../../upgrade/ajs-upgraded-providers';
+import { UserService } from 'mage-web-app/user/user.service';
+import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { Api } from '../signin/signin.component';
 
-export interface SigninModalData {
-    api: Api;
-}
-
 @Component({
-    selector: 'signin-modal',
-    templateUrl: './signin-modal.component.html',
-    styleUrls: ['./signin-modal.component.scss']
+  selector: 'signin-modal',
+  templateUrl: './signin-modal.component.html',
+  styleUrls: ['./signin-modal.component.scss']
 })
 export class SigninModalComponent {
-    api: Api;
-    hideSignup = true;
+  api: Api;
+  hideSignup = true;
 
-    constructor(
-        public dialogRef: MatDialogRef<SigninModalComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: SigninModalData,
-        private authService: AuthService,
-        @Inject(UserService) private userService: any
-    ) {
-        this.api = data.api;
+  constructor(
+    public dialogRef: MatDialogRef<SigninModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private authService: AuthService,
+    private userService: UserService,
+    private localStorageService: LocalStorageService
+  ) {
+    this.api = data.api;
+  }
+  
+  onAuthFlowSuccess(): void {
+    const token = this.localStorageService.getToken();
+
+    if (token) {
+      this.authService.loginConfirmed({ token });
+    } else {
+      this.authService.loginConfirmed();
     }
 
-    onSuccess(): void {
-        this.authService.loginConfirmed();
-        this.dialogRef.close({ success: true });
-    }
+    this.dialogRef.close({ success: true });
+  }
 
-    logout(): void {
-        this.userService.logout();
-        this.dialogRef.close({ logout: true });
-    }
+  logout(): void {
+    this.userService.logout();
+    this.authService.logout();
+    this.dialogRef.close({ logout: true });
+  }
 }

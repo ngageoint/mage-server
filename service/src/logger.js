@@ -13,7 +13,7 @@ const log = winston.createLogger({
     splat(),
     printf(({ timestamp, level, message, ...meta }) => {
       const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
-      return `${timestamp} [${level.toUpperCase()}] ${message} ${metaString}`;
+      return `${timestamp} [${String(level).toUpperCase()}] ${message} ${metaString}`;
     })
   ),
   transports: [new winston.transports.Console()],
@@ -33,11 +33,11 @@ const mongooseLogger = winston.createLogger({
   transports: [new winston.transports.Console()],
 });
 
-// export both
+// export both (default-style import in TS will get this object)
 module.exports = {
   info: (msg, meta) => log.info(msg, meta),
   warn: (msg, meta) => log.warn(msg, meta),
   error: (msg, meta) => log.error(msg, meta),
   debug: (msg, meta) => log.debug(msg, meta),
-  mongooseLogger, // use this in adapters/db files
+  mongooseLogger,
 };

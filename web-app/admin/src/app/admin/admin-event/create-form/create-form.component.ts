@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialog as MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { EventsService } from '../events.service';
-import { Event } from 'src/app/filter/filter.types';
+import { AdminEventsService } from '../../services/admin-events.service';
+import { Event } from '../../../../../../src/app/filter/filter.types';
 import { Field } from '../helpers/observation-feed-helper';
 import { deriveUserFieldNames, prepareFormPayload } from '../helpers/form-field-utils';
 
@@ -35,8 +35,7 @@ export class CreateFormDialogComponent {
         { name: 'dropdown', title: 'Select' },
         { name: 'geometry', title: 'Location' },
         { name: 'attachment', title: 'Attachment' },
-        { name: 'userDropdown', title: 'User Select' },
-        { name: 'hidden', title: 'Hidden' }
+        { name: 'userDropdown', title: 'User Select' }
     ];
 
     attachmentAllowedTypes = [
@@ -49,7 +48,7 @@ export class CreateFormDialogComponent {
         public dialogRef: MatDialogRef<CreateFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { event: Event },
         private fb: FormBuilder,
-        private eventsService: EventsService
+        private eventsService: AdminEventsService
     ) {
         const randomColor = '#' + ('000000' + Math.floor(Math.random() * 0xFFFFFF).toString(16)).slice(-6);
 

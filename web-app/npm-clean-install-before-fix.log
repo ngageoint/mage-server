@@ -1,0 +1,21 @@
+npm error code ERESOLVE
+npm error ERESOLVE unable to resolve dependency tree
+npm error
+npm error While resolving: @ngageoint/mage.web-app@6.6.0
+npm error Found: @angular/flex-layout@15.0.0-beta.42
+npm error node_modules/@angular/flex-layout
+npm error   @angular/flex-layout@"15.0.0-beta.42" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peer @angular/flex-layout@">=14.0.0-beta.40" from @ajsf/material@0.8.0
+npm error node_modules/@ajsf/material
+npm error   @ajsf/material@"0.8.0" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /Users/ryancarpenter/.npm/_logs/2026-04-21T16_08_22_635Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /Users/ryancarpenter/.npm/_logs/2026-04-21T16_08_22_635Z-debug-0.log

@@ -2,10 +2,10 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
-import * as moment from 'moment'
+import moment from 'moment';
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { LocalStorageService } from '../../http/local-storage.service';
 import { MapService } from '../../map/map.service';

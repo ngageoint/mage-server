@@ -10,10 +10,11 @@ import { UserService } from 'src/app/user/user.service';
 import { EventService } from 'src/app/event/event.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatRippleModule } from '@angular/material/core';
+import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 
-class MockMapService {}
+class MockMapService { }
 
 class MockUserService {
   myself = {
@@ -115,7 +116,8 @@ describe('ObservationListItemComponent', () => {
         NoopAnimationsModule,
         MatIconModule,
         MatCardModule,
-        MatRippleModule
+        MatRippleModule,
+        MatSnackBarModule
       ],
       providers: [
         {

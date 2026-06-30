@@ -1,343 +1,398 @@
 <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
 
 <div class="loading-overlay" *ngIf="loading && !layer">
-    <mat-spinner></mat-spinner>
-    <p>Loading layer details...</p>
+  <mat-spinner></mat-spinner>
+  <p>Loading layer details...</p>
 </div>
 
 <div class="error-container" *ngIf="error && !layer">
-    <mat-icon color="warn">error</mat-icon>
-    <p>{{ error }}</p>
-    <button mat-raised-button color="primary" (click)="ngOnInit()">Retry</button>
+  <mat-icon color="warn">error</mat-icon>
+  <p>{{ error }}</p>
+  <button mat-raised-button color="primary" (click)="ngOnInit()">Retry</button>
 </div>
 
 <div class="container" *ngIf="layer && !loading">
-    <div class="page-header">
-        <div class="header-title-section">
-            <h2 class="page-title">{{ layer.name }}</h2>
-        </div>
-        <div class="header-actions" *ngIf="hasLayerEditPermission">
-            <button class="action-button" [ngClass]="editingDetails ? 'btn-primary' : ''" (click)="toggleEditDetails()">
-                <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
-                {{editingDetails ? 'Cancel' : 'Edit Layer'}}
-            </button>
-            <button class="action-button" *ngIf="isLayerFileBased()" (click)="downloadLayer()"
-                [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating">
-                <i class="fa fa-download"></i>
-                Download
-            </button>
-        </div>
+  <div class="page-header">
+    <div class="header-title-section">
+      <h2 class="page-title">{{ layer.name }}</h2>
     </div>
 
-    <div class="details-section" [class.full-width]="editingDetails">
-        <div class="details-card" [class.full-width]="editingDetails">
-            <div class="details-form">
-                <div class="form-field">
-                    <label class="field-label">Name:</label>
-                    <div class="field-content">
-                        <span *ngIf="!editingDetails" class="field-value">{{ layer.name }}</span>
-                        <input *ngIf="editingDetails" type="text" class="form-input" [(ngModel)]="layerEditForm.name"
-                            placeholder="Layer name">
-                    </div>
-                </div>
+    <div class="header-actions" *ngIf="hasLayerEditPermission">
+      <button
+        class="action-button"
+        [ngClass]="editingDetails ? 'btn-primary' : ''"
+        (click)="toggleEditDetails()"
+      >
+        <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
+        {{ editingDetails ? 'Cancel' : 'Edit Layer' }}
+      </button>
 
-                <div class="form-field">
-                    <label class="field-label">Description:</label>
-                    <div class="field-content">
-                        <span *ngIf="!editingDetails" class="field-value">{{ layer.description || 'No description'
-                            }}</span>
-                        <textarea *ngIf="editingDetails" class="form-input" rows="3"
-                            [(ngModel)]="layerEditForm.description" placeholder="Layer description"></textarea>
-                    </div>
-                </div>
+      <button
+        class="action-button"
+        *ngIf="isLayerFileBased()"
+        (click)="downloadLayer()"
+        [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating"
+      >
+        <i class="fa fa-download"></i>
+        Download
+      </button>
+    </div>
+  </div>
 
-                <div class="form-field">
-                    <span class="field-label">Type</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.type }}</span>
-                    </div>
-                </div>
+  <div class="details-section" [class.full-width]="editingDetails">
+    <div class="details-card" [class.full-width]="editingDetails">
+      <div class="details-form">
+        <div class="form-field">
+          <label class="field-label">Name:</label>
+          <div class="field-content">
+            <span *ngIf="!editingDetails" class="field-value">{{ layer.name }}</span>
+            <input
+              *ngIf="editingDetails"
+              type="text"
+              class="form-input"
+              [(ngModel)]="layerEditForm.name"
+              placeholder="Layer name"
+            />
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.type === 'Imagery'">
-                    <div class="field-content">
-                        <span *ngIf="!editingDetails" class="field-label">Base Layer</span>
-                        <span *ngIf="!editingDetails" class="field-value">{{ layer.base }}</span>
-                        <label *ngIf="editingDetails" class="checkbox-label"
-                            style="display: flex; align-items: center;">
-                            <input type="checkbox" [(ngModel)]="layerEditForm.base" style="margin-right: 8px;" />
-                            <span class="field-label" style="margin: 0;">Base Layer</span>
-                        </label>
-                    </div>
-                </div>
+        <div class="form-field">
+          <label class="field-label">Description:</label>
+          <div class="field-content">
+            <span *ngIf="!editingDetails" class="field-value">{{ layer.description || 'No description' }}</span>
+            <textarea
+              *ngIf="editingDetails"
+              class="form-input"
+              rows="3"
+              [(ngModel)]="layerEditForm.description"
+              placeholder="Layer description"
+            ></textarea>
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.type === 'Imagery' && !editingDetails">
-                    <span class="field-label">Format</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.format }}</span>
-                    </div>
-                </div>
+        <div class="form-field">
+          <span class="field-label">Type</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.type }}</span>
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.type === 'Imagery'">
-                    <span class="field-label">URL</span>
-                    <div class="field-content">
-                        <span *ngIf="!editingDetails" class="field-value">{{ layer.url }}</span>
-                        <div *ngIf="editingDetails" class="imagery-edit-section">
-                            <mage-imagery-layer-settings [config]="imageryConfig"
-                                [existingWmsLayers]="selectedWmsLayersString"
-                                (configChange)="onImageryConfigChange($event)"
-                                (wmsLayersSelected)="onWmsLayersSelected($event)">
-                            </mage-imagery-layer-settings>
-                        </div>
-                    </div>
-                </div>
+        <div class="form-field" *ngIf="layer.type === 'Imagery'">
+          <div class="field-content">
+            <span *ngIf="!editingDetails" class="field-label">Base Layer</span>
+            <span *ngIf="!editingDetails" class="field-value">{{ layer.base }}</span>
 
-                <!-- Non-editing WMS display -->
+            <label
+              *ngIf="editingDetails"
+              class="checkbox-label"
+              style="display: flex; align-items: center;"
+            >
+              <input type="checkbox" [(ngModel)]="layerEditForm.base" style="margin-right: 8px;" />
+              <span class="field-label" style="margin: 0;">Base Layer</span>
+            </label>
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
-                    <span class="field-label">Layers</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.wms?.layers }}</span>
-                    </div>
-                </div>
+        <div class="form-field" *ngIf="layer.type === 'Imagery' && !editingDetails">
+          <span class="field-label">Format</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.format }}</span>
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
-                    <span class="field-label">Styles</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.wms?.styles }}</span>
-                    </div>
-                </div>
+        <div class="form-field" *ngIf="layer.type === 'Imagery'">
+          <span class="field-label">URL</span>
+          <div class="field-content">
+            <span *ngIf="!editingDetails" class="field-value">{{ layer.url }}</span>
 
-                <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
-                    <span class="field-label">WMS Format</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.wms?.format }}</span>
-                    </div>
-                </div>
+            <div *ngIf="editingDetails" class="imagery-edit-section">
+              <mage-imagery-layer-settings
+                [config]="imageryConfig"
+                [existingWmsLayers]="selectedWmsLayersString"
+                (configChange)="onImageryConfigChange($event)"
+                (wmsLayersSelected)="onWmsLayersSelected($event)"
+              >
+              </mage-imagery-layer-settings>
+            </div>
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
-                    <span class="field-label">Transparent</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.wms?.transparent }}</span>
-                    </div>
-                </div>
+        <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+          <span class="field-label">Layers</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.wms?.layers }}</span>
+          </div>
+        </div>
 
-                <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
-                    <span class="field-label">Version</span>
-                    <div class="field-content">
-                        <span class="field-value">{{ layer.wms?.version }}</span>
-                    </div>
-                </div>
-                <div class="form-actions" *ngIf="editingDetails">
-                    <button class="action-button btn-primary" (click)="saveLayerDetails()">
-                        <i class="fa fa-save"></i> Save
+        <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+          <span class="field-label">Styles</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.wms?.styles }}</span>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+          <span class="field-label">WMS Format</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.wms?.format }}</span>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+          <span class="field-label">Transparent</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.wms?.transparent }}</span>
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="layer.format === 'WMS' && layer.type === 'Imagery'">
+          <span class="field-label">Version</span>
+          <div class="field-content">
+            <span class="field-value">{{ layer.wms?.version }}</span>
+          </div>
+        </div>
+
+        <div class="form-actions" *ngIf="editingDetails">
+          <button class="action-button btn-primary" (click)="saveLayerDetails()">
+            <i class="fa fa-save"></i> Save
+          </button>
+          <button class="action-button" (click)="cancelEditDetails()">
+            <i class="fa fa-times"></i> Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="hasLayerDeletePermission && !editingDetails" class="danger-zone-card">
+      <h3 class="danger-zone-title">Delete Layer</h3>
+      <p class="danger-zone-description">
+        Deleting a layer will remove all information. This cannot be undone,
+        and all layer data will be unrecoverable.
+      </p>
+      <button class="action-button btn-danger btn-right" (click)="deleteLayer()">
+        <mat-icon>delete</mat-icon>
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="layer.invalid" class="section-card validation-errors">
+    <h3 class="section-title">GeoPackage Validation Errors</h3>
+    <div class="error-list">
+      <div *ngFor="let error of layer.invalid.errors" class="error-item">
+        <span *ngIf="error.warning" class="warning-message">
+          <i class="fa fa-exclamation-triangle"></i>
+          {{ error.error }}
+        </span>
+        <span *ngIf="error.fatal" class="error-message">
+          <i class="fa fa-ban"></i>
+          {{ error.error }}
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="layer.state === 'unavailable'" class="danger-zone-card">
+      <h3 class="danger-zone-title">Proceed With Layer Creation</h3>
+      <p class="danger-zone-description">
+        The GeoPackage used to create this layer is invalid.
+        This layer is not currently available to any user of MAGE. You may proceed with the creation of this
+        layer, but be aware doing so
+        <strong>may result in unintended consequences including app and server crashes.</strong>
+      </p>
+      <button class="action-button btn-warning" (click)="confirmCreateLayer()">
+        <i class="fa fa-exclamation-triangle"></i>
+        Proceed With Layer Creation
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="layer.type === 'GeoPackage' && layer.state === 'processing'" class="section-card processing-section">
+    <div class="processing-info">
+      <h3 class="processing-title">
+        <i class="fa fa-spinner fa-spin"></i> Processing
+      </h3>
+      <p class="processing-description">
+        The GeoPackage file is being optimized for maximum performance across all MAGE clients. This includes
+        indexing the feature layers and processing the tile layers for quick access.
+      </p>
+
+      <div *ngFor="let status of layer.processing" class="processing-status">
+        <h5 class="status-header">
+          <i *ngIf="status.complete" class="fa fa-check"></i>
+          <span *ngIf="status.type === 'tile'">"{{ status.layer }}" layer optimization</span>
+          <span *ngIf="status.type === 'feature'">"{{ status.layer }}" layer index</span>
+        </h5>
+
+        <div *ngIf="!status.total" class="progress-bar-container">
+          <div class="progress-bar" [class.active]="!status.complete">
+            <div class="progress-bar-fill" [class.complete]="status.complete" style="width: 100%">
+              <span *ngIf="!status.complete">{{ status.description }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="status.total" class="progress-bar-container">
+          <div class="progress-bar">
+            <div class="progress-bar-fill" [style.width.%]="(status.count / status.total) * 100">
+              {{ status.count }} of {{ status.total }} {{ status.type }}s
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="layer.state === 'available'"
+    class="two-column-container"
+    [class.single-column]="!(layer.type === 'Feature' && hasLayerEditPermission)"
+  >
+    <div class="section-card">
+      <div class="table-wrapper mat-elevation-z2">
+        <div class="section-table-title">Events</div>
+
+        <div class="integrated-navbar">
+          <mage-card-navbar
+            [title]="'Events'"
+            [isSearchable]="true"
+            [searchPlaceholder]="'Search events...'"
+            (searchTermChanged)="onEventSearchChange($event)"
+            (searchCleared)="onEventSearchChange()"
+            [actionButtons]="eventActionButtons"
+          >
+          </mage-card-navbar>
+        </div>
+
+        <div class="table-scroll">
+          <table
+            mat-table
+            [class.mat-table]="true"
+            [dataSource]="eventsDataSource"
+            class="mat-table-no-header"
+            *ngIf="eventsPage.totalCount > 0 && !loadingEvents"
+          >
+            <ng-container matColumnDef="content">
+              <td mat-cell *matCellDef="let event" class="table-row-content">
+                <!-- HTML navigation (no stinky redirect fn) -->
+                <div class="row-item" [routerLink]="['../events', event.id]">
+                  <div class="row-icon">
+                    <i class="fa fa-calendar"></i>
+                  </div>
+
+                  <div class="row-info">
+                    <div class="row-primary">{{ event.name }}</div>
+                    <div class="row-secondary" *ngIf="event.description">{{ event.description }}</div>
+                  </div>
+
+                  <div class="row-actions" *ngIf="hasLayerEditPermission && editEvents">
+                    <button
+                      class="action-button btn-danger btn-sm"
+                      (click)="removeEventFromLayer(event, $event)"
+                      title="Remove Event"
+                    >
+                      <i class="fa fa-trash"></i>
+                      Remove
                     </button>
-                    <button class="action-button" (click)="cancelEditDetails()">
-                        <i class="fa fa-times"></i> Cancel
-                    </button>
+                  </div>
                 </div>
+              </td>
+            </ng-container>
+
+            <tr mat-row *matRowDef="let row; columns: eventsDisplayedColumns;" class="pointer"></tr>
+          </table>
+
+          <div class="empty-state" *ngIf="eventsPage.totalCount === 0 && !loadingEvents">
+            <div class="empty-state-content">
+              <i class="fa fa-calendar empty-state-icon"></i>
+              <div class="empty-state-text">No events for {{ layer?.name }}</div>
             </div>
+          </div>
         </div>
 
-        <div *ngIf="hasLayerDeletePermission && !editingDetails" class="danger-zone-card">
-            <h3 class="danger-zone-title">Delete Layer</h3>
-            <p class="danger-zone-description">
-                Deleting a layer will remove all information. This cannot be undone,
-                and all layer data will be unrecoverable.
-            </p>
-            <button class="action-button btn-danger" (click)="deleteLayer()">
-                <mat-icon>delete</mat-icon>
-                Delete
-            </button>
+        <mat-paginator
+          [length]="eventsPage.totalCount || 0"
+          [pageSize]="eventsPageSize"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onEventsPageChange($event)"
+        >
+        </mat-paginator>
+
+        <div class="loading-overlay" *ngIf="loadingEvents">
+          <div class="loading-content">
+            <div class="loading-text">Loading</div>
+            <i class="fa fa-spinner fa-spin loading-spinner"></i>
+          </div>
         </div>
+      </div>
     </div>
 
-    <div *ngIf="layer.invalid" class="section-card validation-errors">
-        <h3 class="section-title">GeoPackage Validation Errors</h3>
-        <div class="error-list">
-            <div *ngFor="let error of layer.invalid.errors" class="error-item">
-                <span *ngIf="error.warning" class="warning-message">
-                    <i class="fa fa-exclamation-triangle"></i>
-                    {{ error.error }}
-                </span>
-                <span *ngIf="error.fatal" class="error-message">
-                    <i class="fa fa-ban"></i>
-                    {{ error.error }}
-                </span>
-            </div>
+    <div *ngIf="layer.type === 'Feature' && hasLayerEditPermission" class="section-card">
+      <h3 class="section-title">Add KML or KMZ Data</h3>
+
+      <div *ngIf="completedUploads.length > 0" class="completed-uploads-section">
+        <h4 class="completed-uploads-title">Upload Results:</h4>
+
+        <div *ngFor="let status of completedUploads">
+          <div *ngIf="!status.error" class="upload-status">
+            <i
+              class="fa fa-check-circle"
+              [class.text-success]="(status.features || 0) > 0"
+              [class.text-warning]="(status.features || 0) === 0"
+            ></i>
+            <span [class.text-danger]="(status.features || 0) === 0">
+              Created {{ status.features || 0 }} Features From File {{ status.name }}
+            </span>
+          </div>
+
+          <div *ngIf="status.error" class="upload-error">
+            <i class="fa fa-exclamation-triangle"></i>
+            {{ status.name }}: {{ status.error }}
+          </div>
+        </div>
+      </div>
+
+      <div class="upload-item" *ngFor="let upload of uploads; let i = index">
+        <div class="upload-placeholder">
+          <input type="file" accept=".kml,.kmz,.zip" (change)="onFileSelected($event, i)" [disabled]="isUploading" />
+          <button
+            *ngIf="uploads.length > 1"
+            class="action-button btn-sm btn-danger"
+            (click)="removeUploadFile(i)"
+            [disabled]="isUploading || upload.uploading"
+            style="margin-left: 10px;"
+          >
+            <i class="fa fa-times"></i> Remove
+          </button>
         </div>
 
-        <div *ngIf="layer.state === 'unavailable'" class="danger-zone-card">
-            <h3 class="danger-zone-title">Proceed With Layer Creation</h3>
-            <p class="danger-zone-description">
-                The GeoPackage used to create this layer is invalid.
-                This layer is not currently available to any user of MAGE. You may proceed with the creation of this
-                layer, but be aware doing so
-                <strong>may result in unintended consequences including app and server crashes.</strong>
-            </p>
-            <button class="action-button btn-warning" (click)="confirmCreateLayer()">
-                <i class="fa fa-exclamation-triangle"></i>
-                Proceed With Layer Creation
-            </button>
+        <div *ngIf="upload.file && !upload.error" class="upload-info">
+          <i class="fa fa-file"></i>
+          {{ upload.file.name }} ({{ (upload.file.size / 1024).toFixed(2) }} KB)
+          <span *ngIf="upload.uploading" class="upload-progress">
+            <i class="fa fa-spinner fa-spin"></i> Uploading...
+          </span>
         </div>
+
+        <div *ngIf="upload.error" class="upload-error">
+          <i class="fa fa-exclamation-triangle"></i> {{ upload.error }}
+        </div>
+      </div>
+
+      <div class="upload-actions">
+        <button class="action-button" (click)="addUploadFile()" [disabled]="isUploading">
+          <i class="fa fa-plus"></i> Add KML/KMZ File
+        </button>
+
+        <button class="action-button btn-primary" (click)="confirmUpload()" [disabled]="isUploading">
+          <i class="fa" [ngClass]="isUploading ? 'fa-spinner fa-spin' : 'fa-upload'"></i>
+          {{ isUploading ? 'Uploading...' : 'Upload File(s)' }}
+        </button>
+      </div>
     </div>
+  </div>
 
-    <div *ngIf="layer.type === 'GeoPackage' && layer.state === 'processing'" class="section-card processing-section">
-        <div class="processing-info">
-            <h3 class="processing-title">
-                <i class="fa fa-spinner fa-spin"></i> Processing
-            </h3>
-            <p class="processing-description">
-                The GeoPackage file is being optimized for maximum performance across all MAGE clients. This includes
-                indexing the feature layers and processing the tile layers for quick access.
-            </p>
-
-            <div *ngFor="let status of layer.processing" class="processing-status">
-                <h5 class="status-header">
-                    <i *ngIf="status.complete" class="fa fa-check"></i>
-                    <span *ngIf="status.type === 'tile'">
-                        "{{ status.layer }}" layer optimization
-                    </span>
-                    <span *ngIf="status.type === 'feature'">
-                        "{{ status.layer }}" layer index
-                    </span>
-                </h5>
-
-                <div *ngIf="!status.total" class="progress-bar-container">
-                    <div class="progress-bar" [class.active]="!status.complete">
-                        <div class="progress-bar-fill" [class.complete]="status.complete" style="width: 100%">
-                            <span *ngIf="!status.complete">{{ status.description }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div *ngIf="status.total" class="progress-bar-container">
-                    <div class="progress-bar">
-                        <div class="progress-bar-fill" [style.width.%]="(status.count / status.total) * 100">
-                            {{ status.count }} of {{ status.total }} {{ status.type }}s
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="layer.state === 'available'" class="two-column-container"
-        [class.single-column]="!(layer.type === 'Feature' && hasLayerEditPermission)">
-        <div class="section-card">
-            <div class="table-wrapper mat-elevation-z2">
-                <div class="section-table-title">Events</div>
-                <div class="integrated-navbar">
-                    <mage-card-navbar [title]="'Events'" [isSearchable]="true" [searchPlaceholder]="'Search events...'"
-                        (searchTermChanged)="onEventSearchChange($event)" (searchCleared)="onEventSearchChange()"
-                        [actionButtons]="eventActionButtons">
-                    </mage-card-navbar>
-                </div>
-
-                <div class="table-scroll">
-                    <table mat-table [class.mat-table]="true" [dataSource]="eventsDataSource"
-                        class="mat-table-no-header" *ngIf="eventsPage.totalCount > 0 && !loadingEvents">
-                        <ng-container matColumnDef="content">
-                            <td mat-cell *matCellDef="let event" class="table-row-content">
-                                <div class="row-item" (click)="gotoEvent(event)">
-                                    <div class="row-icon">
-                                        <i class="fa fa-calendar"></i>
-                                    </div>
-                                    <div class="row-info">
-                                        <div class="row-primary">{{ event.name }}</div>
-                                        <div class="row-secondary" *ngIf="event.description">{{ event.description }}
-                                        </div>
-                                    </div>
-                                    <div class="row-actions" *ngIf="hasLayerEditPermission && editEvents">
-                                        <button class="action-button btn-danger btn-sm"
-                                            (click)="removeEventFromLayer(event, $event)" title="Remove Event">
-                                            <i class="fa fa-trash"></i>
-                                            Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </ng-container>
-
-                        <tr mat-row *matRowDef="let row; columns: eventsDisplayedColumns;" class="pointer"></tr>
-                    </table>
-
-                    <div class="empty-state" *ngIf="eventsPage.totalCount === 0 && !loadingEvents">
-                        <div class="empty-state-content">
-                            <i class="fa fa-calendar empty-state-icon"></i>
-                            <div class="empty-state-text">No events for {{ layer?.name }}</div>
-                        </div>
-                    </div>
-                </div>
-                <mat-paginator [length]="eventsPage.totalCount" [pageSize]="eventsPageSize"
-                    [pageSizeOptions]="pageSizeOptions" (page)="onEventsPageChange($event)">
-                </mat-paginator>
-
-                <div class="loading-overlay" *ngIf="loadingEvents">
-                    <div class="loading-content">
-                        <div class="loading-text">Loading</div>
-                        <i class="fa fa-spinner fa-spin loading-spinner"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div *ngIf="layer.type === 'Feature' && hasLayerEditPermission" class="section-card">
-            <h3 class="section-title">Add KML or KMZ Data</h3>
-
-            <div *ngIf="completedUploads.length > 0" class="completed-uploads-section">
-                <h4 class="completed-uploads-title">Upload Results:</h4>
-                <div *ngFor="let status of completedUploads">
-                    <div *ngIf="!status.error" class="upload-status">
-                        <i class="fa fa-check-circle" [class.text-success]="status.features > 0"
-                            [class.text-warning]="status.features === 0"></i>
-                        <span [class.text-danger]="status.features === 0">
-                            Created {{ status.features }} Features From File {{ status.name }}
-                        </span>
-                    </div>
-                    <div *ngIf="status.error" class="upload-error">
-                        <i class="fa fa-exclamation-triangle"></i>
-                        {{ status.name }}: {{ status.error }}
-                    </div>
-                </div>
-            </div>
-
-            <div class="upload-item" *ngFor="let upload of uploads; let i = index">
-                <div class="upload-placeholder">
-                    <input type="file" accept=".kml,.kmz,.zip" (change)="onFileSelected($event, i)"
-                        [disabled]="isUploading" />
-                    <button *ngIf="uploads.length > 1" class="action-button btn-sm btn-danger"
-                        (click)="removeUploadFile(i)" [disabled]="isUploading || upload.uploading"
-                        style="margin-left: 10px;">
-                        <i class="fa fa-times"></i> Remove
-                    </button>
-                </div>
-
-                <div *ngIf="upload.file && !upload.error" class="upload-info">
-                    <i class="fa fa-file"></i> {{ upload.file.name }} ({{ (upload.file.size / 1024).toFixed(2) }} KB)
-                    <span *ngIf="upload.uploading" class="upload-progress">
-                        <i class="fa fa-spinner fa-spin"></i> Uploading...
-                    </span>
-                </div>
-
-                <div *ngIf="upload.error" class="upload-error">
-                    <i class="fa fa-exclamation-triangle"></i> {{ upload.error }}
-                </div>
-            </div>
-
-            <div class="upload-actions">
-                <button class="action-button" (click)="addUploadFile()" [disabled]="isUploading">
-                    <i class="fa fa-plus"></i> Add KML/KMZ File
-                </button>
-                <button class="action-button btn-primary" (click)="confirmUpload()" [disabled]="isUploading">
-                    <i class="fa" [ngClass]="isUploading ? 'fa-spinner fa-spin' : 'fa-upload'"></i>
-                    {{ isUploading ? 'Uploading...' : 'Upload File(s)' }}
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="layer.state === 'available'" class="section-card">
-        <h3 class="section-title">Layer Preview</h3>
-        <mage-layer-preview [layer]="layer"></mage-layer-preview>
-    </div>
+  <div *ngIf="layer.state === 'available'" class="section-card">
+    <h3 class="section-title">Layer Preview</h3>
+    <mage-layer-preview [layer]="layer"></mage-layer-preview>
+  </div>
 </div>

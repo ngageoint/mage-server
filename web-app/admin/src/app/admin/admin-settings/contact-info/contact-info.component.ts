@@ -1,73 +1,81 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
-import { Settings } from "../../../../app/upgrade/ajs-upgraded-providers";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges
+} from '@angular/core';
+import { SettingsService } from '../../../../../src/app/services/settings.service';
+import { take } from 'rxjs/operators';
 
 @Component({
-    selector: 'contact-info',
-    templateUrl: 'contact-info.component.html',
-    styleUrls: ['./contact-info.component.scss']
+  selector: 'contact-info',
+  templateUrl: 'contact-info.component.html',
+  styleUrls: ['./contact-info.component.scss']
 })
 export class ContactInfoComponent implements OnInit, OnChanges {
-    @Output() saveComplete = new EventEmitter<boolean>();
-    @Output() onDirty = new EventEmitter<boolean>();
-    @Input() beginSave: any;
+  @Output() saveComplete = new EventEmitter<boolean>();
+  @Output() onDirty = new EventEmitter<boolean>();
+  @Input() beginSave: any;
 
-    oldEmail: string;
-    oldPhone: string;
-    oldShowDevContact: boolean;
-    isDirty = false;
+  oldEmail: string;
+  oldPhone: string;
+  oldShowDevContact: boolean;
+  isDirty = false;
 
-    contactinfo = {
-        phone: '',
-        email: '',
-        showDevContact: false,
-    }
+  contactinfo = {
+    phone: '',
+    email: '',
+    showDevContact: false
+  };
 
-    constructor(
-        @Inject(Settings) private settings) { }
+  constructor(private settingsService: SettingsService) {}
 
-    ngOnInit(): void {
-        const settingsPromise = this.settings.query().$promise;
+  ngOnInit(): void {
+    this.settingsService
+      .get('contactinfo')
+      .pipe(take(1))
+      .subscribe({
+        next: (res: any) => {
+          const loaded = res?.settings ?? res ?? null;
 
-        settingsPromise.then(result => {
-            const settings: any = {};
+          if (loaded) {
+            this.contactinfo = {
+              ...this.contactinfo,
+              ...loaded
+            };
+          }
 
-            result.forEach(element => {
-                settings[element.type] = {};
-                Object.keys(element).forEach(key => {
-                    if (key !== 'type') {
-                        settings[element.type][key] = element[key];
-                    }
-                });
-            });
-
-            this.contactinfo = settings.contactinfo ? settings.contactinfo.settings : this.contactinfo;
-
-            this.oldEmail = this.contactinfo.email;
-            this.oldPhone = this.contactinfo.phone;
-            this.oldShowDevContact = this.contactinfo.showDevContact;
-        }).catch(err => {
-            console.log(err);
-        });
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.beginSave && !changes.beginSave.firstChange) {
-            if (this.isDirty) {
-                this.save();
-            }
+          this.oldEmail = this.contactinfo.email;
+          this.oldPhone = this.contactinfo.phone;
+          this.oldShowDevContact = this.contactinfo.showDevContact;
+        },
+        error: (err) => {
+          console.log(err);
         }
-    }
+      });
+  }
 
-    setDirty(status: boolean): void {
-        this.isDirty = status;
-        this.onDirty.emit(this.isDirty);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.beginSave && !changes.beginSave.firstChange) {
+      if (this.isDirty) this.save();
     }
+  }
 
-    save(): void {
-        this.settings.update({ type: 'contactinfo' }, this.contactinfo, () => {
-            this.saveComplete.emit(true);
-        }, () => {
-            this.saveComplete.emit(false);
-        });
-    }
+  setDirty(status: boolean): void {
+    this.isDirty = status;
+    this.onDirty.emit(this.isDirty);
+  }
+
+  save(): void {
+    this.settingsService
+      .update('contactinfo', this.contactinfo)
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.saveComplete.emit(true),
+        error: () => this.saveComplete.emit(false)
+      });
+  }
 }

@@ -1,26 +1,27 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule as MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TeamDashboardComponent } from './dashboard/team-dashboard.component';
 import { CreateTeamDialogComponent } from './create-team/create-team.component';
-import { TeamsService } from './teams-service';
-import { EventsService } from '../admin-event/events.service';
+import { AdminEventsService } from '../services/admin-events.service';
 import { TeamDetailsComponent } from './team-details/team-details.component';
 import { CoreModule } from '../../core/core.module';
 import { DeleteTeamComponent } from './delete-team/delete-team.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
+import { AdminTeamsService } from '../services/admin-teams-service';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
     declarations: [
@@ -46,14 +47,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         MatProgressSpinnerModule,
         AdminBreadcrumbModule,
         MatTooltipModule,
+        RouterModule
     ],
     providers: [
-        TeamsService,
-        EventsService
+        AdminTeamsService,
+        AdminEventsService
     ],
-    entryComponents: [
-        CreateTeamDialogComponent,
-        DeleteTeamComponent
-    ]
 })
 export class AdminTeamsModule { }

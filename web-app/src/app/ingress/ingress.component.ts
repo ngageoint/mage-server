@@ -1,14 +1,14 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
-import { Api, AuthenticationStrategy } from '../api/api.entity'
-import { UserService } from '../user/user.service'
-import { AuthorizationEvent } from './authorization/authorization.component'
-import { LocalStorageService } from '../http/local-storage.service'
-import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component'
-import { animate, style, transition, trigger } from '@angular/animations'
-import { SignupEvent } from './authentication/@types/signup'
-import { User } from 'core-lib-src/user'
-import { InitializedEvent } from './intialize/initialize.component'
-import * as _ from 'underscore'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Api, AuthenticationStrategy } from '../api/api.entity';
+import { UserService } from '../user/user.service';
+import { AuthorizationEvent } from './authorization/authorization.component';
+import { LocalStorageService } from '../http/local-storage.service';
+import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { SignupEvent } from './authentication/@types/signup';
+import { User } from 'core-lib-src/user';
+import { InitializedEvent } from './intialize/initialize.component';
+import * as _ from 'underscore';
 
 enum IngressState {
   Initialize,
@@ -22,47 +22,47 @@ enum IngressState {
 }
 
 class Ingress {
-  state: IngressState
+  state: IngressState;
 }
 
 class Signin extends Ingress {
-  state = IngressState.Signin
+  state = IngressState.Signin;
 }
 
 class Signup extends Ingress {
-  state = IngressState.Signup
+  state = IngressState.Signup;
 }
 
 class Authenticated extends Ingress {
-  state = IngressState.Authorization
-  readonly authenticationToken: string
+  state = IngressState.Authorization;
+  readonly authenticationToken: string;
 
   constructor(authenticationToken: string) {
-    super()
-    this.authenticationToken = authenticationToken
+    super();
+    this.authenticationToken = authenticationToken;
   }
 }
 
 class Authorized extends Ingress {
-  state = IngressState.Disclaimer
-  readonly apiToken: string
+  state = IngressState.Disclaimer;
+  readonly apiToken: string;
 
   constructor(apiToken: string) {
-    super()
-    this.apiToken = apiToken
+    super();
+    this.apiToken = apiToken;
   }
 }
 
 class ActiveAccount extends Ingress {
-  state = IngressState.ActiveAccount
+  state = IngressState.ActiveAccount;
 }
 
 class InactiveAccount extends Ingress {
-  state = IngressState.InactiveAccount
+  state = IngressState.InactiveAccount;
 }
 
 class Initialize extends Ingress {
-  state = IngressState.Initialize
+  state = IngressState.Initialize;
 }
 
 @Component({
@@ -76,7 +76,7 @@ class Initialize extends Ingress {
     trigger('slide', [
       transition(':enter', [
         style({ transform: 'translateX(100%)' }),
-        animate('250ms', style({ transform: 'translateX(0%)', opacity: 1 })),
+        animate('250ms', style({ transform: 'translateX(0%)', opacity: 1 }))
       ]),
       transition(':leave', [
         animate('250ms', style({ transform: 'translateX(-100%)', opacity: 0 }))
@@ -85,89 +85,88 @@ class Initialize extends Ingress {
   ]
 })
 export class IngressComponent implements OnChanges {
-  @Input() api: Api
-  @Input() landing: boolean
-  @Output() complete = new EventEmitter<void>()
+  @Input() api: Api;
+  @Input() landing: boolean;
+  @Output() complete = new EventEmitter<void>();
 
-  public readonly IngressState: typeof IngressState = IngressState
+  public readonly IngressState: typeof IngressState = IngressState;
 
-  ingress: Ingress = new Signin()
-  strategy: any
-  thirdPartyStrategies: any
-  localAuthenticationStrategy: any
+  ingress: Ingress = new Signin();
+  strategy: any;
+  thirdPartyStrategies: any;
+  localAuthenticationStrategy: any;
 
   constructor(
     private userService: UserService,
     private localStorageService: LocalStorageService
-  ) { }
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.api?.currentValue?.initial === true) {
-      this.ingress = new Initialize()
+      this.ingress = new Initialize();
     }
   }
 
   localStrategyFilter(_strategy: AuthenticationStrategy, name: string) {
-    return name === 'local'
+    return name === 'local';
   }
 
   getAuthenticationToken(): string | undefined {
-    return (this.ingress as Authenticated)?.authenticationToken
+    return (this.ingress as Authenticated)?.authenticationToken;
   }
 
   onSignup(): void {
-    this.ingress = new Signup()
+    this.ingress = new Signup();
   }
 
   signup($event: SignupEvent): void {
     if ($event.reason === 'signup') {
-      this.ingress = $event.user.active ? new ActiveAccount() : new InactiveAccount()
+      this.ingress = $event.user.active ? new ActiveAccount() : new InactiveAccount();
     } else {
-      this.ingress = new Signin()
+      this.ingress = new Signin();
     }
   }
 
-  onAuthenticated($event: { user: User, token: string }) {
-    // NOTE: using null causes a 500, instead using any non-empty string forces the code to be re-entered
+  onAuthenticated($event: { user: User; token: string }) {
     this.userService.authorize($event.token, 'refresh').subscribe({
       next: (response) => {
-        this.authorized(response.token)
+        this.authorized(response.token);
       },
       error: () => {
-        this.ingress = new Authenticated($event.token)
+        this.ingress = new Authenticated($event.token);
       }
-    })
+    });
   }
 
   onAuthorized($event: AuthorizationEvent) {
-    this.authorized($event.token)
+    this.authorized($event.token);
   }
 
   private authorized(token: string) {
     if (this.api.disclaimer?.show === true) {
-      this.ingress = new Authorized(token)
+      this.ingress = new Authorized(token);
     } else {
-      this.localStorageService.setToken(token)
-      this.complete.emit()
+      this.localStorageService.setToken(token);
+      this.complete.emit();
     }
   }
 
   onDisclaimer($event: DiscalimeCloseEvent) {
     if ($event.reason === DiscalimerCloseReason.ACCEPT) {
-      const ingress = this.ingress as Authorized
-      this.localStorageService.setToken(ingress.apiToken)
-      this.complete.emit()
+      const ingress = this.ingress as Authorized;
+      this.localStorageService.setToken(ingress.apiToken);
+      this.complete.emit();
     } else {
-      this.ingress = new Signin()
+      this.ingress = new Signin();
     }
   }
 
   onAccountStatus(): void {
-    this.ingress = new Signin()
+    this.ingress = new Signin();
   }
 
   onInitialized($event: InitializedEvent): void {
-    this.localStorageService.setToken($event.token)
-    this.complete.emit()
+    this.localStorageService.setToken($event.token);
+    this.complete.emit();
   }
 }

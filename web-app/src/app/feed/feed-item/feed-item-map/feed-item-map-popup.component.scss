@@ -1,10 +1,14 @@
-.mat-list-base {
-  padding: 0px;
+.item {
+  min-height: 72px;
+  width: 100%;
+  cursor: pointer;
 }
 
-.mat-list-icon {
-  border-radius: unset !important;
-  height: unset !important;
+:host ::ng-deep .item .mdc-list-item__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .mat-body-1 {
@@ -16,22 +20,11 @@
 }
 
 .overline {
-  font: 500 10px/24px Roboto, "Helvetica Neue", sans-serif;
-  font-size: 10px !important;
+  font: 500 10px/1.2 Roboto, "Helvetica Neue", sans-serif;
   text-transform: uppercase;
   opacity: .60;
 }
 
 .action {
   color: rgba(0, 0, 0, 0.6);
-}
-
-.no-content {
-  flex: 1;
-  font-size: 24px;
-  padding-left: 16px;
-}
-
-.no-content > span {
-  opacity: .6;
 }

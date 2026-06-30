@@ -8,6 +8,7 @@ import {
   Inject,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   QueryList,
@@ -23,25 +24,18 @@ import {
   Validators,
 } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
-import { first } from "rxjs/operators";
-import {
-  EventService,
-  FilterService,
-  LocalStorageService,
-  MapService,
-  ObservationService,
-  UserService,
-} from "../../../app/upgrade/ajs-upgraded-providers";
+import { first, Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 import { ObservationEditFormPickerComponent } from "./observation-edit-form-picker.component";
-import * as moment from "moment";
+import moment from 'moment';
 import { ObservationEditDiscardComponent } from "./observation-edit-discard/observation-edit-discard.component";
 import {
-  MatSnackBar,
-  MatSnackBarRef,
-  SimpleSnackBar,
+  MatSnackBar as MatSnackBar,
+  MatSnackBarRef as MatSnackBarRef,
+  SimpleSnackBar as SimpleSnackBar,
 } from "@angular/material/snack-bar";
 import { MatIconRegistry } from "@angular/material/icon";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog as MatDialog } from "@angular/material/dialog";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import {
   AttachmentService,
@@ -50,7 +44,13 @@ import {
 } from "../attachment/attachment.service";
 import { FileUpload } from "../attachment/attachment-upload/attachment-upload.component";
 import { AttachmentAction } from "./observation-edit-attachment/observation-edit-attachment-action";
-import { Observation } from "src/app/filter/filter.types";
+import { Observation, Event } from "src/app/filter/filter.types";
+import { AdminEventsService } from "../../admin/services/admin-events.service";
+import { LocalStorageService } from "src/app/http/local-storage.service";
+import { AdminUserService } from "../../admin/services/admin-user.service";
+import { MapService } from "src/app/map/map.service";
+import { FilterService } from "src/app/filter/filter.service";
+import { ObservationService } from "src/app/observation/observation.service";
 
 export type ObservationFormControl = UntypedFormControl & { definition: any };
 
@@ -77,7 +77,7 @@ export type ObservationFormControl = UntypedFormControl & { definition: any };
     ]),
   ],
 })
-export class ObservationEditComponent implements OnInit, OnChanges {
+export class ObservationEditComponent implements OnInit, OnChanges, OnDestroy {
   @Input() preview: boolean;
   @Input() observation: Observation;
   attachments = [];
@@ -126,6 +126,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   formRemoveSnackbar: MatSnackBarRef<SimpleSnackBar>;
 
+  private destroy$ = new Subject<void>();
+  private currentUser: any | null = null;
+
   constructor(
     sanitizer: DomSanitizer,
     matIconRegistry: MatIconRegistry,
@@ -135,12 +138,12 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     private snackBar: MatSnackBar,
     private attachmentService: AttachmentService,
     @Inject(DOCUMENT) private document: Document,
-    @Inject(MapService) private mapService: any,
-    @Inject(UserService) private userService: any,
-    @Inject(FilterService) private filterService: any,
-    @Inject(EventService) private eventService: any,
+    private mapService: MapService,
+    private filterService: FilterService,
+    private eventService: AdminEventsService,
+    private adminUserService: AdminUserService,
     @Inject(ObservationService) private observationService: any,
-    @Inject(LocalStorageService) private localStorageService: any
+    private localStorageService: LocalStorageService
   ) {
     matIconRegistry.addSvgIcon(
       "handle",
@@ -153,56 +156,82 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       this.formOptions.expand = true;
     }
 
-    this.canDeleteObservation =
-      this.observation.id !== "new" &&
-      (this.hasEventUpdatePermission() ||
-        this.isCurrentUsersObservation() ||
-        this.hasUpdatePermissionsInEventAcl());
+    this.adminUserService.myself$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((u) => {
+        this.currentUser = u;
 
-    this.attachmentService.upload$.subscribe((event) =>
-      this.onAttachmentUpload(event)
-    );
+        this.canDeleteObservation =
+          this.observation.id !== "new" &&
+          (this.hasEventUpdatePermission() ||
+            this.isCurrentUsersObservation() ||
+            this.hasUpdatePermissionsInEventAcl());
+      });
+
+    this.attachmentService.upload$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => this.onAttachmentUpload(event));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.observation && changes.observation.currentValue) {
-      this.event = this.eventService.getEventById(this.observation.eventId);
-      this.formDefinitions = this.eventService
-        .getFormsForEvent(this.event)
-        .reduce((map, form) => {
-          map[form.id] = form;
-          return map;
-        }, {});
+      this.eventService
+        .getEventById(String(this.observation.eventId))
+        .pipe(first())
+        .subscribe({
+          next: (event) => {
+            this.event = event;
 
-      this.isNewObservation = this.observation.id === "new";
-      this.initialObservation = JSON.parse(JSON.stringify(this.observation));
+            const forms = (event as any)?.forms || [];
+            this.formDefinitions = forms.reduce((map: any, form: any) => {
+              map[form.id] = form;
+              return map;
+            }, {});
 
-      if (this.observation.style) {
-        this.geometryStyle = JSON.parse(JSON.stringify(this.observation.style));
-      }
+            this.isNewObservation = this.observation.id === "new";
+            this.initialObservation = JSON.parse(
+              JSON.stringify(this.observation)
+            );
 
-      if (this.isNewObservation) {
-        this.mapService.addFeaturesToLayer([this.observation], "observations");
-      }
+            if (this.observation.style) {
+              this.geometryStyle = JSON.parse(
+                JSON.stringify(this.observation.style)
+              );
+            }
 
-      this.toFormGroup(this.observation);
-      this.updatePrimarySecondary();
+            if (this.isNewObservation) {
+              this.mapService.addFeaturesToLayer(
+                [this.observation],
+                "observations"
+              );
+            }
+
+            this.toFormGroup(this.observation);
+            this.updatePrimarySecondary();
+          },
+          error: (err) => {
+            this.error = { message: err?.message || "Error loading event" };
+          },
+        });
     }
   }
 
   hasEventUpdatePermission(): boolean {
-    return this.userService.myself.role.permissions.includes(
-      "DELETE_OBSERVATION"
-    );
+    return this.adminUserService.hasPermission("DELETE_OBSERVATION");
   }
 
   isCurrentUsersObservation(): boolean {
-    return this.observation.userId === this.userService.myself.id;
+    return this.observation.userId === this.currentUser?.id;
   }
 
   hasUpdatePermissionsInEventAcl(): boolean {
     const myAccess =
-      this.filterService.getEvent().acl[this.userService.myself.id] || {};
+      this.filterService.getEvent().acl[this.currentUser?.id] || {};
     const aclPermissions = myAccess["permissions"] || [];
     return aclPermissions.includes("update");
   }
@@ -224,7 +253,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
     const formArray = new UntypedFormArray([]);
     const observationForms = observation.properties.forms || [];
-    observationForms.forEach((observationForm) => {
+    observationForms.forEach((observationForm: any) => {
       const formDefinition = this.formDefinitions[observationForm.formId];
       const fieldGroup = new UntypedFormGroup({
         id: new UntypedFormControl(observationForm.id),
@@ -232,9 +261,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       });
 
       formDefinition.fields
-        .filter((field) => !field.archived)
-        .sort((a, b) => a.id - b.id)
-        .forEach((field) => {
+        .filter((field: any) => !field.archived)
+        .sort((a: any, b: any) => a.id - b.id)
+        .forEach((field: any) => {
           const value = this.isNewObservation
             ? field.value
             : observationForm[field.name];
@@ -280,7 +309,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       let primaryFieldValue;
       if (primaryFormGroup.contains(definition.primaryFeedField)) {
         this.primaryField = definition.fields.find(
-          (field) => field.name === definition.primaryFeedField
+          (field: any) => field.name === definition.primaryFeedField
         );
         primaryFieldValue = primaryFormGroup.get(
           definition.primaryFeedField
@@ -290,7 +319,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       let secondaryFieldValue;
       if (primaryFormGroup.contains(definition.secondaryFeedField)) {
         this.secondaryField = definition.fields.find(
-          (field) => field.name === definition.secondaryFeedField
+          (field: any) => field.name === definition.secondaryFeedField
         );
         secondaryFieldValue = primaryFormGroup.get(
           definition.secondaryFeedField
@@ -337,8 +366,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       delete form.id;
     }
 
-    this.eventService.saveObservation(form).then(
-      (observation) => {
+    this.observationService.saveObservation(form).then(
+      (observation: any) => {
         // If this feature was added to the map as a new observation, remove it
         // as the event service will add it back to the map based on it new id
         // if it passes the current filter.
@@ -350,11 +379,11 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         this.observation = observation;
         this.formGroup.get("id").setValue(observation.id);
 
-        form.properties.forms.forEach((form) => {
+        form.properties.forms.forEach((form: any) => {
           const formDefinition = this.formDefinitions[form.formId];
           Object.keys(form).forEach((fieldName) => {
             const fieldDefinition = formDefinition.fields.find(
-              (field) => field.name === fieldName
+              (field: any) => field.name === fieldName
             );
             const value = form[fieldName];
             if (
@@ -362,9 +391,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
               fieldDefinition.type === "attachment" &&
               Array.isArray(value)
             ) {
-              value.forEach((fieldAttachment) => {
+              value.forEach((fieldAttachment: any) => {
                 const attachment = observation.attachments.find(
-                  (attachment) => {
+                  (attachment: any) => {
                     return (
                       !attachment.url &&
                       attachment.name === fieldAttachment.name &&
@@ -392,7 +421,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
           this.close.emit(this.observation);
         }
       },
-      (err) => {
+      (err: any) => {
         this.formGroup.markAllAsTouched();
 
         if (id === "new") {
@@ -401,7 +430,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
         this.saving = false;
         this.error = {
-          message: err.data.message,
+          message: err?.data?.message,
         };
       }
     );
@@ -472,9 +501,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         });
 
         form.fields
-          .filter((field) => !field.archived)
-          .sort((a, b) => a.id - b.id)
-          .forEach((field) => {
+          .filter((field: any) => !field.archived)
+          .sort((a: any, b: any) => a.id - b.id)
+          .forEach((field: any) => {
             const fieldControl = new UntypedFormControl(
               field.value,
               field.required ? Validators.required : null
@@ -536,13 +565,13 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   private onAttachmentUpload(event: AttachmentUploadEvent): void {
     switch (event.status) {
       case AttachmentUploadStatus.COMPLETE: {
-        this.eventService.addAttachmentToObservation(
+        this.observationService.addAttachmentToObservation(
           this.observation,
           event.response
         );
 
         this.uploads = this.uploads.filter(
-          (attachment) => attachment.id !== event.upload.attachmentId
+          (attachment: any) => attachment.id !== event.upload.attachmentId
         );
         if (this.uploads.length === 0) {
           this.saving = false;
@@ -562,12 +591,12 @@ export class ObservationEditComponent implements OnInit, OnChanges {
           const formDefinition = this.formDefinitions[formId];
           Object.keys(formGroup.controls).forEach((fieldName) => {
             const fieldDefinition = formDefinition.fields.find(
-              (field) => field.name === fieldName
+              (field: any) => field.name === fieldName
             );
             if (fieldDefinition && fieldDefinition.type === "attachment") {
               let attachments = formGroup.get(fieldName).value || [];
               attachments = attachments.filter(
-                (attachment) =>
+                (attachment: any) =>
                   attachment.attachmentId !== event.upload.attachmentId
               );
               formGroup.get(fieldName).setValue(attachments);

@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { UserService } from "../user/user.service";
 import { LocalStorageService } from "../http/local-storage.service";
-import * as moment from "moment";
+import moment from 'moment';
 import * as _ from "lodash";
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import {

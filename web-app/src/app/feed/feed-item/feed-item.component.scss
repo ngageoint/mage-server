@@ -1,88 +1,92 @@
 @use '@angular/material' as mat;
 @import "variables.scss";
 
+:host {
+  display: block;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+
 mat-toolbar {
   background-color: white;
+  color: mat.get-color-from-palette($app-primary);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  gap: 8px;
 }
 
 .title {
   flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   color: mat.get-color-from-palette($app-primary);
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .feed-item {
   position: absolute;
   top: 64px;
+  right: 0;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  box-sizing: border-box;
   overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .feed-item__card {
-  margin: 8px;
   position: relative;
   overflow: hidden;
-}
-
-.mat-list-base {
-  padding: 0px;
-}
-
-.mat-list-icon {
-  color: rgba(0, 0, 0, 0.54);
-  border-radius: unset !important;
-}
-
-.mat-card-avatar {
-  border-radius: unset;
-  flex-shrink: unset;
-  object-fit: contain;
-  margin-bottom: 16px;
-  font-size: 40px;
-}
-
-.mat-card {
-  border-radius: unset;
-}
-
-.mat-body-1 {
-  opacity: .60;
-}
-
-.mat-body-2 {
-  opacity: .87;
-}
-
-.card-content {
-  position: absolute;
-  top: 64px;
-  bottom: 0;
-  width: 100%;
-  overflow-y: auto;
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .card-header {
   display: flex;
   flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 16px 8px 16px;
 }
 
 .card-header-text {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+}
+
+.card-avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon,
+  mage-static-icon-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  mat-icon {
+    font-size: 40px;
+    line-height: 40px;
+  }
 }
 
 .card-overline {
   font: 500 10px/12px Roboto, "Helvetica Neue", sans-serif;
-  font-size: 10px !important;
   text-transform: uppercase;
-  opacity: .60;
+  opacity: 0.6;
   margin-bottom: 8px;
-}
-
-.card-actions {
-  padding: 8px 0;
+  letter-spacing: 0.04em;
 }
 
 .card-title {
@@ -95,29 +99,60 @@ mat-toolbar {
 
 .card-subtitle {
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.60);
-  margin-bottom: 16px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.card-actions {
+  padding: 8px 8px 12px 8px;
+}
+
+.section-title {
+  padding: 16px 16px 0 16px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.property-row:last-child mat-divider {
+  display: none;
 }
 
 .item {
   padding: 16px;
   background: white;
   width: 100%;
+  box-sizing: border-box;
 }
 
-.mat-card-image {
-  height: 200px;
-  width: calc(100% + 32px);
-  margin: 0 -16px;
+.property-key {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.6;
+  margin-bottom: 4px;
 }
 
-.map {
-  position: absolute;
-  height: 200px;
-  width: 100%;
-  background: blue;
-  z-index: 0;
+.property-value {
+  font-size: 14px;
+  opacity: 0.87;
+}
+
+mat-card-content {
+  padding-bottom: 0;
 }

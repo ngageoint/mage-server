@@ -1,6 +1,13 @@
-import { Component, Output, EventEmitter, AfterViewInit, ElementRef, ViewChildren, QueryList, Input } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  AfterViewInit,
+  ElementRef,
+  ViewChild,
+  Input
+} from '@angular/core';
 import { DomEvent } from 'leaflet';
-import { MatButton } from '@angular/material/button';
 
 export enum LocationState {
   Off,
@@ -18,24 +25,39 @@ export interface LocationEvent {
   styleUrls: ['./location.component.scss']
 })
 export class LocationComponent implements AfterViewInit {
-  @ViewChildren(MatButton, { read: ElementRef }) buttons: QueryList<ElementRef>;
+  @ViewChild('locateButton') locateButton!: ElementRef<HTMLElement>;
+  @ViewChild('broadcastButton') broadcastButton!: ElementRef<HTMLElement>;
 
-  @Input() state: LocationState
-  @Output() stageChange = new EventEmitter<LocationEvent>()
+  @Input() state: LocationState;
+  @Output() stageChange = new EventEmitter<LocationEvent>();
 
-  LocationState = LocationState
+  LocationState = LocationState;
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.buttons.first.nativeElement)
-    DomEvent.disableClickPropagation(this.buttons.last.nativeElement)
+    if (this.locateButton?.nativeElement) {
+      DomEvent.disableClickPropagation(this.locateButton.nativeElement);
+    }
+
+    if (this.broadcastButton?.nativeElement) {
+      DomEvent.disableClickPropagation(this.broadcastButton.nativeElement);
+    }
   }
 
   onLocate(): void {
-    this.stageChange.emit({ state: this.state === LocationState.Off ? LocationState.Locate : LocationState.Off })
+    this.stageChange.emit({
+      state:
+        this.state === LocationState.Off
+          ? LocationState.Locate
+          : LocationState.Off
+    });
   }
 
   onBroadcast(): void {
-    this.stageChange.emit({ state: this.state === LocationState.Broadcast ? LocationState.Locate : LocationState.Broadcast })
+    this.stageChange.emit({
+      state:
+        this.state === LocationState.Broadcast
+          ? LocationState.Locate
+          : LocationState.Broadcast
+    });
   }
-
 }

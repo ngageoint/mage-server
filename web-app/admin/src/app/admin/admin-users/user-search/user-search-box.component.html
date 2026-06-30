@@ -1,12 +1,14 @@
 <div class="user-search-container">
   <div class="input-with-clear">
     <label class="field-label">Point of Contact</label>
+
     <input
       type="text"
       class="form-input"
       [placeholder]="placeholder"
       [(ngModel)]="userText"
       (ngModelChange)="onUserInput($event)"
+      autocomplete="off"
     />
 
     <button
@@ -18,6 +20,7 @@
     >
       ×
     </button>
+
     <div class="suggestions" *ngIf="searchResults?.length && userText">
       <div
         class="suggestion-item"

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Banner } from '../setttings/settings.service';
+import { Banner } from '../settings/settings.service';
 
 @Component({
   selector: 'banner',

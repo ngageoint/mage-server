@@ -5,7 +5,7 @@
     <button
       mat-stroked-button
       color="primary"
-      (click)="$event.stopPropagation(); createAuthentication()"
+      [routerLink]="['../security/new']"
       *ngIf="hasAuthConfigEditPermission"
     >
       <mat-icon>add</mat-icon>New Authentication

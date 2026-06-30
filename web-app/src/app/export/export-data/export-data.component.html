@@ -14,12 +14,13 @@
 
         <div class="mat-subheading-2">Export Format</div>
         <div class="export-format">
-          <mat-chip-list [(ngModel)]="exportFormat">
-            <mat-chip *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)"
+          <mat-chip-listbox class="export-format__chips" [(ngModel)]="exportFormat"
+            [hideSingleSelectionIndicator]="true">
+            <mat-chip-option *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)"
               color="primary">
               {{format}}
-            </mat-chip>
-          </mat-chip-list>
+            </mat-chip-option>
+          </mat-chip-listbox>
         </div>
 
 

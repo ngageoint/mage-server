@@ -36,9 +36,10 @@ export class AdminAuthenticationSettingsComponent {
      * @param isDirty 
      */
     setDirty(isDirty: boolean): void {
+        if (!this.strategy) return;
         this.strategy.isDirty = isDirty;
         this.onStrategyDirty(isDirty);
-    }
+      }      
 
     /**
      * Called by children
@@ -49,9 +50,13 @@ export class AdminAuthenticationSettingsComponent {
     }
 
     userReqAdminChanged(): void {
-        if (this.strategy.settings.usersReqAdmin.enabled) {
-            this.strategy.settings.newUserEvents = [];
-            this.strategy.settings.newUserTeams = [];
+        const settings = this.strategy?.settings;
+        if (!settings) return;
+      
+        if (settings.usersReqAdmin?.enabled) {
+          settings.newUserEvents = [];
+          settings.newUserTeams = [];
         }
-    }
+      }
+      
 }

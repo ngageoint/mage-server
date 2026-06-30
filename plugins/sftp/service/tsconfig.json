@@ -1,15 +1,17 @@
 {
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],
+  "exclude": ["node_modules", "lib", "dist"],
   "compilerOptions": {
     "strict": true,
     "outDir": "lib",
-    "target": "es2015",
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "sourceMap": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": ["jasmine", "node"],
+    "skipLibCheck": true
   }
 }

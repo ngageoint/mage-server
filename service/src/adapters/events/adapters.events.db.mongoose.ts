@@ -34,7 +34,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   }
 
   async findActiveEvents(): Promise<MageEventAttrs[]> {
-    const docs: legacy.MageEventDocument[] = await this.model.find({ complete: { $in: [ null, false ] }}).exec()
+    const docs: legacy.MageEventDocument[] = await this.model.find({ complete: { $in: [null, false] } }).exec()
     return docs.map(this.entityForDocument)
   }
 
@@ -63,7 +63,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   }
 
   async removeFeedsFromEvents(...feeds: FeedId[]): Promise<number> {
-    const updated = await this.model.updateMany({}, { $pull: { feedIds: { $in: feeds }}})
+    const updated = await this.model.updateMany({}, { $pull: { feedIds: { $in: feeds } } })
     return updated.modifiedCount
   }
 
@@ -87,7 +87,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return teamDocs.map((x: mongoose.Document) => {
       const team = x.toJSON()
       team.id = team.id.toHexString()
-      delete team.__v
+      delete (team as any).__v
       return team
     })
   }

@@ -35,3 +35,24 @@
         }
     }
 }
+
+:host {
+    width: 100%;
+    display: block;
+    position: relative;
+  }
+  
+  .banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .banner-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10001;
+  }
+  

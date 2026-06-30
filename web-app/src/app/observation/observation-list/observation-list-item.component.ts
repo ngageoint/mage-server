@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
-import * as moment from 'moment'
+import moment from 'moment';
 import { MatRipple } from '@angular/material/core';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { animate, style, transition, trigger } from '@angular/animations'
 import { FeedPanelService } from '../../feed-panel/feed-panel.service'
 import { MapService } from '../../map/map.service';
@@ -41,7 +42,7 @@ export class ObservationListItemComponent implements OnChanges {
   importantEditor: {
     open: boolean,
     description?: string
-  } = { open: false}
+  } = { open: false }
 
   // TODO: define some types for these
   observationForm: any
@@ -55,7 +56,8 @@ export class ObservationListItemComponent implements OnChanges {
     private userService: UserService,
     private eventService: EventService,
     private localStorageService: LocalStorageService,
-    private feedPanelService: FeedPanelService) { }
+    private feedPanelService: FeedPanelService,
+    private snackBar: MatSnackBar) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.event?.currentValue || changes.form?.currentValue || changes.observation?.currentValue) {
@@ -70,16 +72,26 @@ export class ObservationListItemComponent implements OnChanges {
 
   toggleFavorite(): void {
     if (this.isUserFavorite) {
-      this.eventService.removeObservationFavorite(this.observation).subscribe(observation => {
-        this.observation.favoriteUserIds = observation.favoriteUserIds
-        this.isUserFavorite = false
-        this.updateFavorites()
+      this.eventService.removeObservationFavorite(this.observation).subscribe({
+        next: observation => {
+          this.observation.favoriteUserIds = observation.favoriteUserIds
+          this.isUserFavorite = false
+          this.updateFavorites()
+        },
+        error: () => {
+          this.snackBar.open('Failed to remove observation from favorites.', null, { duration: 4000 })
+        }
       })
     } else {
-      this.eventService.addObservationFavorite(this.observation).subscribe(observation => {
-        this.observation.favoriteUserIds = observation.favoriteUserIds
-        this.isUserFavorite = true
-        this.updateFavorites()
+      this.eventService.addObservationFavorite(this.observation).subscribe({
+        next: observation => {
+          this.observation.favoriteUserIds = observation.favoriteUserIds
+          this.isUserFavorite = true
+          this.updateFavorites()
+        },
+        error: () => {
+          this.snackBar.open('Failed to add observation to favorites.', null, { duration: 4000 })
+        }
       })
     }
   }

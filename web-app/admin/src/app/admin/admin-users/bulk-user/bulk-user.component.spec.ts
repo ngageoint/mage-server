@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as Papa from 'papaparse';
 import { BulkUserComponent } from './bulk-user.component';
 import { Role } from '../user';
 import { Team } from '../../admin-teams/team';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('BulkUserComponent', () => {
   let component: BulkUserComponent;
@@ -18,15 +18,17 @@ describe('BulkUserComponent', () => {
   let closeSpy: jasmine.Spy;
 
   const mockDialogRef = {
-    close: (_?: any) => {}
+    close: (_?: any) => { }
   } as unknown as MatDialogRef<BulkUserComponent>;
+
   const roles: Role[] = [
     { id: '1', name: 'Role A', permissions: [] },
     { id: '2', name: 'Role B', permissions: [] }
   ];
+
   const teams: Team[] = [
     {
-      id: 10,
+      id: "10",
       name: 'Team X',
       description: '',
       teamEventId: '',
@@ -34,7 +36,7 @@ describe('BulkUserComponent', () => {
       acl: undefined
     },
     {
-      id: 11,
+      id: "11",
       name: 'Team Y',
       description: '',
       teamEventId: '',
@@ -42,6 +44,15 @@ describe('BulkUserComponent', () => {
       acl: undefined
     }
   ];
+
+  const makeFileChangeEvent = (file: File): Event => {
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', {
+      value: [file],
+      writable: false
+    });
+    return { target: input } as unknown as Event;
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -52,7 +63,7 @@ describe('BulkUserComponent', () => {
         MatSelectModule,
         MatIconModule,
         MatTableModule,
-        BrowserAnimationsModule
+        NoopAnimationsModule
       ],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
@@ -85,21 +96,23 @@ describe('BulkUserComponent', () => {
     ];
     const row = ['user1', 'User One', 'u1@example.com', '555-0001', 'pass1'];
 
-    spyOn(Papa, 'parse').and.callFake((_: any, cfg: Papa.ParseConfig) => {
-      (cfg.complete as any)({ data: [header, row] });
+    spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
+      const config = cfg as Papa.ParseConfig<string[]>;
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
     const file = new File(['csv'], 'data.csv', { type: 'text/csv' });
-    const ev = { target: { files: [file] } } as any;
-    component.onFileChange(ev);
+    component.onFileChange(makeFileChangeEvent(file));
 
     expect(component.filename).toBe('data.csv');
     expect(component.columns).toEqual(header);
     expect(component.displayedColumns).toEqual(['team', 'role', ...header]);
     expect(component.users.length).toBe(1);
     expect((component.users[0] as any)['Username']).toBe('user1');
-    expect((component.users[0] as any).team?.id).toBe(11);
-    expect((component.users[0] as any).role?.id).toBe("1");
+    expect((component.users[0] as any).team?.id).toBe("11");
+    expect((component.users[0] as any).role?.id).toBe('1');
     expect(component.unmappedFields.length).toBe(0);
   });
 
@@ -109,13 +122,14 @@ describe('BulkUserComponent', () => {
     const header = ['Username', 'Display Name', 'Email'];
     const row = ['user2', 'User Two', 'u2@example.com'];
 
-    spyOn(Papa, 'parse').and.callFake((_: any, cfg: Papa.ParseConfig) => {
-      (cfg.complete as any)({ data: [header, row] });
+    spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
+      const config = cfg as Papa.ParseConfig<string[]>;
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
-    component.onFileChange({
-      target: { files: [new File(['x'], 'x.csv')] }
-    } as any);
+    component.onFileChange(makeFileChangeEvent(new File(['x'], 'x.csv')));
 
     const missing = component.unmappedFields.map((f) => f.value).sort();
     expect(missing).toEqual(['password']);
@@ -128,13 +142,14 @@ describe('BulkUserComponent', () => {
     const header = ['username', 'displayname', 'password'];
     const row = ['user3', 'User Three', 'pass3'];
 
-    spyOn(Papa, 'parse').and.callFake((_: any, cfg: Papa.ParseConfig) => {
-      (cfg.complete as any)({ data: [header, row] });
+    spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
+      const config = cfg as Papa.ParseConfig<string[]>;
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
-    component.onFileChange({
-      target: { files: [new File(['y'], 'y.csv')] }
-    } as any);
+    component.onFileChange(makeFileChangeEvent(new File(['y'], 'y.csv')));
 
     expect(component.unmappedFields.length).toBe(0);
 
@@ -163,22 +178,25 @@ describe('BulkUserComponent', () => {
     const rowB = ['userB', 'User B', 'pB'];
 
     const parseSpy = spyOn(Papa, 'parse').and.callFake(
-      (_: any, cfg: Papa.ParseConfig) => {
-        (cfg.complete as any)({ data: [header, rowA] });
+      (_: any, cfg: unknown) => {
+        const config = cfg as Papa.ParseConfig<string[]>;
+        (config.complete as any)({ data: [header, rowA] } as Papa.ParseResult<
+          string[]
+        >);
       }
     );
 
-    component.onFileChange({
-      target: { files: [new File(['a'], 'a.csv')] }
-    } as any);
+    component.onFileChange(makeFileChangeEvent(new File(['a'], 'a.csv')));
     expect(component.users.length).toBe(1);
 
-    parseSpy.and.callFake((_: any, cfg: Papa.ParseConfig) => {
-      (cfg.complete as any)({ data: [header, rowB] });
+    parseSpy.and.callFake((_: any, cfg: unknown) => {
+      const config = cfg as Papa.ParseConfig<string[]>;
+      (config.complete as any)({ data: [header, rowB] } as Papa.ParseResult<
+        string[]
+      >);
     });
-    component.onFileChange({
-      target: { files: [new File(['b'], 'b.csv')] }
-    } as any);
+
+    component.onFileChange(makeFileChangeEvent(new File(['b'], 'b.csv')));
 
     expect(component.users.length).toBe(2);
     const ids = component.users.map((u: any) => u['Username']).sort();
@@ -198,21 +216,22 @@ describe('BulkUserComponent', () => {
     ];
     const row = ['user9', 'User Nine', 'u9@example.com', '555-9999', 'p9'];
 
-    spyOn(Papa, 'parse').and.callFake((_: any, cfg: Papa.ParseConfig) => {
-      (cfg.complete as any)({ data: [header, row] });
+    spyOn(Papa, 'parse').and.callFake((_: any, cfg: unknown) => {
+      const config = cfg as Papa.ParseConfig<string[]>;
+      (config.complete as any)({ data: [header, row] } as Papa.ParseResult<
+        string[]
+      >);
     });
 
-    component.onFileChange({
-      target: { files: [new File(['z'], 'z.csv')] }
-    } as any);
+    component.onFileChange(makeFileChangeEvent(new File(['z'], 'z.csv')));
     component.onSubmit();
 
     expect(closeSpy).toHaveBeenCalledTimes(1);
     const { users, selectedRole, selectedTeam } =
       closeSpy.calls.mostRecent().args[0];
 
-    expect(selectedRole.id).toBe("1");
-    expect(selectedTeam.id).toBe(10);
+    expect(selectedRole.id).toBe('1');
+    expect(selectedTeam.id).toBe("10");
     expect(users[0]).toEqual(
       jasmine.objectContaining({
         username: 'user9',
@@ -221,8 +240,8 @@ describe('BulkUserComponent', () => {
         phone: '555-9999',
         password: 'p9',
         passwordconfirm: 'p9',
-        roleId: "1",
-        team: 10,
+        roleId: '1',
+        team: "10",
         avatar: null,
         icon: null,
         iconMetadata: null

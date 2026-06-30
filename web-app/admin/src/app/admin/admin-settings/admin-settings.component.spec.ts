@@ -1,125 +1,45 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {
+  MatSnackBar as MatSnackBar,
+  MatSnackBarModule as MatSnackBarModule
+} from '@angular/material/snack-bar';
+import {
+  MatDialog as MatDialog,
+  MatDialogModule as MatDialogModule
+} from '@angular/material/dialog';
+import { of } from 'rxjs';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AdminSettingsComponent } from './admin-settings.component';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatSnackBarModule, MatSnackBar, MatSnackBarDismiss } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatListModule } from '@angular/material/list';
-import { MatCardModule } from '@angular/material/card';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { FormsModule } from '@angular/forms';
-import { MatChipsModule } from '@angular/material/chips';
-import { LocalStorageService, Settings, Team, Event, AuthenticationConfigurationService, UserService } from '../../../app/upgrade/ajs-upgraded-providers';
-import { Subject, Observable } from 'rxjs';
-import { StateService, TransitionService } from '@uirouter/core';
-
-class MockSnackbarRef {
-  private readonly afterDismissedObservable = new Subject<MatSnackBarDismiss>()
-
-  afterDismissed(): Observable<MatSnackBarDismiss> {
-    return this.afterDismissedObservable
-  }
-
-  dismiss(): void {
-    this.afterDismissedObservable.next({ dismissedByAction: false })
-    this.afterDismissedObservable.complete()
-  }
-
-  dismissWithAction(): void {
-    this.afterDismissedObservable.next({ dismissedByAction: true })
-    this.afterDismissedObservable.complete()
-  }
-}
-
-class MockSnackbar {
-  private snackbarRef = new MockSnackbarRef()
-
-  get _openedSnackBarRef(): any {
-    return this.snackbarRef
-  }
-
-  open(): any {
-    return this.snackbarRef
-  }
-}
-
-class MockSettings {
-  query(): any {
-    return { $promise: Promise.resolve({}) };
-  }
-}
-
-class MockTeam {
-  query(): any {
-    return { $promise: Promise.resolve([]) };
-  }
-}
-
-class MockEvent {
-  query(): any {
-    return { $promise: Promise.resolve([]) };
-  }
-}
-
-class MockAuthenticationConfigurationService {
-  getAllConfigurations(): Promise<any> {
-    return Promise.resolve({
-      data: []
-    });
-  }
-}
-
-class MockStateService {
-
-}
-
-class MockTransitionService {
-  onExit(a: any, b: any, c: any): void {
-
-  }
-
-}
+import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
 
 describe('AdminSettingsComponent', () => {
   let component: AdminSettingsComponent;
   let fixture: ComponentFixture<AdminSettingsComponent>;
+  let dialog: jasmine.SpyObj<MatDialog>;
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(waitForAsync(() => {
-    const mockLocalStorageService = { getToken: (): string => '1' };
-    const mockDialogRef = { close: (): void => { } };
-    const mockUserService = { myself: { role: { permissions: ['UPDATE_AUTH_CONFIG'] } } };
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
-        MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
-        NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule,
-        MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, FormsModule, MatChipsModule],
-      providers: [
-        { provide: LocalStorageService, useValue: mockLocalStorageService },
-        { provide: Settings, useClass: MockSettings },
-        { provide: Team, useClass: MockTeam },
-        { provide: Event, useClass: MockEvent },
-        { provide: AuthenticationConfigurationService, useClass: MockAuthenticationConfigurationService },
-        { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MatSnackBar, useClass: MockSnackbar },
-        { provide: UserService, useValue: mockUserService },
-        { provide: StateService, useClass: MockStateService },
-        { provide: TransitionService, useClass: MockTransitionService }
+      imports: [
+        NoopAnimationsModule,
+        MatDialogModule,
+        MatSnackBarModule,
+        MatTabsModule,
+        MatIconModule
       ],
-      declarations: [AdminSettingsComponent]
+      declarations: [AdminSettingsComponent],
+      providers: [
+        { provide: MatDialog, useValue: dialog },
+        { provide: MatSnackBar, useValue: snackBar }
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   }));
 
@@ -131,5 +51,165 @@ describe('AdminSettingsComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('save should reset onSave object', () => {
+    const prev = component.onSave;
+    component.save();
+    expect(component.onSave).not.toBe(prev);
+  });
+
+  it('isDirty should return false when nothing dirty', () => {
+    component.isBannerDirty = false;
+    component.isDisclaimerDirty = false;
+    component.isAuthenticationDirty = false;
+    component.isContactInfoDirty = false;
+    expect(component.isDirty()).toBe(false);
+  });
+
+  it('isDirty should return true when any dirty', () => {
+    component.isContactInfoDirty = true;
+    expect(component.isDirty()).toBe(true);
+  });
+
+  it('onBannerDirty should set flag', () => {
+    component.onBannerDirty(true);
+    expect(component.isBannerDirty).toBe(true);
+  });
+
+  it('onDisclaimerDirty should set flag', () => {
+    component.onDisclaimerDirty(true);
+    expect(component.isDisclaimerDirty).toBe(true);
+  });
+
+  it('onContactInfoDirty should set flag', () => {
+    component.onContactInfoDirty(true);
+    expect(component.isContactInfoDirty).toBe(true);
+  });
+
+  it('onBannerSaved should show success snack and clear dirty', () => {
+    component.isBannerDirty = true;
+    component.onBannerSaved(true);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Banner successfully saved',
+      undefined,
+      { duration: 2000 }
+    );
+    expect(component.isBannerDirty).toBe(false);
+  });
+
+  it('onBannerSaved should show failure snack and clear dirty', () => {
+    component.isBannerDirty = true;
+    component.onBannerSaved(false);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Failed to save banner',
+      undefined,
+      { duration: 2000 }
+    );
+    expect(component.isBannerDirty).toBe(false);
+  });
+
+  it('onDisclaimerSaved should show success snack and clear dirty', () => {
+    component.isDisclaimerDirty = true;
+    component.onDisclaimerSaved(true);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Disclaimer successfully saved',
+      undefined,
+      { duration: 2000 }
+    );
+    expect(component.isDisclaimerDirty).toBe(false);
+  });
+
+  it('onDisclaimerSaved should show failure snack and clear dirty', () => {
+    component.isDisclaimerDirty = true;
+    component.onDisclaimerSaved(false);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Failed to save disclaimer',
+      undefined,
+      { duration: 2000 }
+    );
+    expect(component.isDisclaimerDirty).toBe(false);
+  });
+
+  it('onContactInfoSaved should show success snack and clear dirty', () => {
+    component.isContactInfoDirty = true;
+    component.onContactInfoSaved(true);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Contact info successfully saved',
+      undefined,
+      { duration: 2000 }
+    );
+    expect(component.isContactInfoDirty).toBe(false);
+  });
+
+  it('onContactInfoSaved should show failure snack and clear dirty', () => {
+    component.isContactInfoDirty = true;
+    component.onContactInfoSaved(false);
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Failed to save contact info',
+      undefined,
+      { duration: 2000 }
+    );
+    expect(component.isContactInfoDirty).toBe(false);
+  });
+
+  it('onUnsavedChanges should return true without opening dialog when not dirty', async () => {
+    component.isBannerDirty = false;
+    component.isDisclaimerDirty = false;
+    component.isAuthenticationDirty = false;
+    component.isContactInfoDirty = false;
+
+    const result = await component.onUnsavedChanges();
+
+    expect(result).toBe(true);
+    expect(dialog.open).not.toHaveBeenCalled();
+  });
+
+  it('onUnsavedChanges should return false when user chooses stay', async () => {
+    component.isBannerDirty = true;
+
+    dialog.open.and.returnValue({
+      afterClosed: () => of({ discard: false })
+    } as any);
+
+    const result = await component.onUnsavedChanges();
+
+    expect(dialog.open).toHaveBeenCalledWith(AdminSettingsUnsavedComponent);
+    expect(result).toBe(false);
+    expect(component.isBannerDirty).toBe(true);
+  });
+
+  it('onUnsavedChanges should discard and reset flags when user chooses discard', async () => {
+    component.isBannerDirty = true;
+    component.isDisclaimerDirty = true;
+    component.isAuthenticationDirty = true;
+    component.isContactInfoDirty = true;
+
+    dialog.open.and.returnValue({
+      afterClosed: () => of({ discard: true })
+    } as any);
+
+    const result = await component.onUnsavedChanges();
+
+    expect(dialog.open).toHaveBeenCalledWith(AdminSettingsUnsavedComponent);
+    expect(result).toBe(true);
+    expect(component.isBannerDirty).toBe(false);
+    expect(component.isDisclaimerDirty).toBe(false);
+    expect(component.isAuthenticationDirty).toBe(false);
+    expect(component.isContactInfoDirty).toBe(false);
+  });
+
+  it('onUnsavedChanges should discard by default when dialog result is undefined', async () => {
+    component.isBannerDirty = true;
+
+    dialog.open.and.returnValue({
+      afterClosed: () => of(undefined)
+    } as any);
+
+    const result = await component.onUnsavedChanges();
+
+    expect(dialog.open).toHaveBeenCalledWith(AdminSettingsUnsavedComponent);
+    expect(result).toBe(true);
+    expect(component.isBannerDirty).toBe(false);
   });
 });

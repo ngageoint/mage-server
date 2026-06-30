@@ -1,4 +1,4 @@
-import { JsonSchemaFormService, JsonSchemaFormComponent } from '@ajsf/core';
+import { JsonSchemaFormService, JsonSchemaFormComponent } from '@ngageoint/vendor-ajsf-core';
 import { Component } from '@angular/core';
 
 /**

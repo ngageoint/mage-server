@@ -16,9 +16,9 @@ var TeamSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   teamEventId: { type: Number, ref: 'Event' },
-  userIds: [{type: Schema.Types.ObjectId, ref: 'User'}],
+  userIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   acl: {}
-},{
+}, {
   minimize: false
 });
 
@@ -42,12 +42,12 @@ function rolesWithPermission(permission) {
   return roles;
 }
 
-TeamSchema.pre('remove', function(next) {
+TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   var team = this;
 
   if (!team.teamEventId) return next();
 
-  Event.getById(team.teamEventId, function(err, event) {
+  Event.getById(team.teamEventId, function (err, event) {
     if (err) return next(err);
 
     if (event) {
@@ -60,26 +60,24 @@ TeamSchema.pre('remove', function(next) {
   });
 });
 
-TeamSchema.pre('remove', function(next) {
+TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   var team = this;
   Event.removeTeamFromEvents(team, next);
 });
 
-TeamSchema.pre('save', function(next) {
+TeamSchema.pre('save', function (next) {
   var team = this;
-  Team.findOne({ name: new RegExp('^' + team.name + '$', 'i') }, function (err, possibleDuplicate) {
-    if (err) {
-      return next(err);
-    }
-
-    if (possibleDuplicate && !possibleDuplicate._id.equals(team._id)) {
-      const error = new Error('Team already exists');
-      error.status = 409;
-      return next(error);
-    }
-
-    next();
-  })
+  Team.findOne({ name: new RegExp('^' + team.name + '$', 'i') }).then(
+    possibleDuplicate => {
+      if (possibleDuplicate && !possibleDuplicate._id.equals(team._id)) {
+        const error = new Error('Team already exists');
+        error.status = 409;
+        return next(error);
+      }
+      next();
+    },
+    err => next(err)
+  );
 })
 
 function transform(team, ret, options) {
@@ -87,11 +85,11 @@ function transform(team, ret, options) {
   delete ret._id;
 
   if (team.populated('userIds')) {
-    ret.users = userTransformer.transform(ret.userIds, {path: options.path});
+    ret.users = userTransformer.transform(ret.userIds, { path: options.path });
     delete ret.userIds;
   } else {
     let objectIdStrings = new Set();
-    for(var i = 0; i < ret.userIds.length; i++) {
+    for (var i = 0; i < ret.userIds.length; i++) {
       let objectId = ret.userIds[i].toString();
       objectIdStrings.add(objectId);
     }
@@ -128,13 +126,13 @@ TeamSchema.set("toJSON", {
 var Team = mongoose.model('Team', TeamSchema);
 exports.TeamModel = Team;
 
-exports.userHasAclPermission = function(team, userId, permission) {
-  return team.acl[userId] && rolesWithPermission(permission).some(function(role) {
+exports.userHasAclPermission = function (team, userId, permission) {
+  return team.acl[userId] && rolesWithPermission(permission).some(function (role) {
     return role === team.acl[userId];
   });
 };
 
-exports.getTeamById = function(id, options, callback) {
+exports.getTeamById = function (id, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -150,7 +148,7 @@ exports.getTeamById = function(id, options, callback) {
       }
     }];
 
-    rolesWithPermission(options.access.permission).forEach(function(role) {
+    rolesWithPermission(options.access.permission).forEach(function (role) {
       var access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
@@ -161,11 +159,11 @@ exports.getTeamById = function(id, options, callback) {
 
   var query = Team.findOne(conditions);
 
-  if(options.populate == null || options.populate == 'true') {
+  if (options.populate == null || options.populate == 'true') {
     query = query.populate('userIds');
   }
 
-  query.exec(callback);
+  query.exec().then(r => callback(null, r), e => callback(e));
 };
 
 exports.getMembers = async function (teamId, options) {
@@ -216,7 +214,7 @@ exports.getMembers = async function (teamId, options) {
 
     const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
     if (includeTotalCount) {
-      page.totalCount = await User.Model.count(params);
+      page.totalCount = await User.Model.countDocuments(params);
     }
 
     return page;
@@ -273,7 +271,7 @@ exports.getNonMembers = async function (teamId, options) {
 
     const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
     if (includeTotalCount) {
-      page.totalCount = await User.Model.count(params);
+      page.totalCount = await User.Model.countDocuments(params);
     }
 
     return page;
@@ -282,17 +280,18 @@ exports.getNonMembers = async function (teamId, options) {
   }
 };
 
-exports.teamsForUserInEvent = function(user, event, callback) {
+exports.teamsForUserInEvent = function (user, event, callback) {
   var conditions = {
-    _id: {$in: event.teamIds},
+    _id: { $in: event.teamIds },
     userIds: user._id
   };
-  Team.find(conditions, function(err, teams) {
-    callback(err, teams);
-  });
+  Team.find(conditions).then(
+    teams => callback(null, teams),
+    err => callback(err)
+  );
 };
 
-exports.count = function(options, callback) {
+exports.count = function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -305,7 +304,7 @@ exports.count = function(options, callback) {
         '$in': [options.access.user._id]
       }
     }];
-    rolesWithPermission(options.access.permission).forEach(function(role) {
+    rolesWithPermission(options.access.permission).forEach(function (role) {
       var access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
@@ -314,12 +313,13 @@ exports.count = function(options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Team.count(conditions, function(err, count) {
-    callback(err, count);
-  });
+  Team.countDocuments(conditions).then(
+    count => callback(null, count),
+    err => callback(err)
+  );
 };
 
-exports.getTeams = async function(options, callback) {
+exports.getTeams = async function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -338,7 +338,7 @@ exports.getTeams = async function(options, callback) {
   }
   try {
     if (options.userId) {
-      conditions.userIds = { $in: [ options.userId ] };
+      conditions.userIds = { $in: [options.userId] };
     }
     else if (Array.isArray(options.withMembers)) {
       conditions.userIds = { $in: options.withMembers.map(mongoose.Types.ObjectId) };
@@ -360,7 +360,7 @@ exports.getTeams = async function(options, callback) {
         '$in': [options.access.user._id]
       }
     }];
-    rolesWithPermission(options.access.permission).forEach(function(role) {
+    rolesWithPermission(options.access.permission).forEach(function (role) {
       const access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
@@ -405,9 +405,10 @@ exports.getTeams = async function(options, callback) {
       callback(err);
     }
   } else {
-    baseQuery.exec(function (err, teams) {
-      callback(err, teams);
-    });
+    baseQuery.exec().then(
+      teams => callback(null, teams),
+      err => callback(err)
+    );
   }
 };
 
@@ -427,29 +428,28 @@ function createQueryConditions(filter) {
   return conditions;
 };
 
-exports.createTeam = function(team, user, callback) {
+exports.createTeam = function (team, user, callback) {
   var create = {
     name: team.name,
     description: team.description
   };
 
   if (team.users) {
-    create.userIds = team.users.map(function(user) { return new mongoose.Types.ObjectId(user.id); });
+    create.userIds = team.users.map(function (user) { return new mongoose.Types.ObjectId(user.id); });
   }
 
   create.acl = {};
   create.acl[user._id.toString()] = 'OWNER';
 
-  Team.create(create, function(err, team) {
-    if (err) return callback(err);
-
-    Team.populate(team, {path: 'userIds'}, callback);
-  });
+  Team.create(create).then(async team => {
+    await Team.populate(team, { path: 'userIds' });
+    callback(null, team);
+  }).catch(err => callback(err));
 };
 
-exports.createTeamForEvent = function(event, user, callback) {
+exports.createTeamForEvent = function (event, user, callback) {
   async.waterfall([
-    function(done) {
+    function (done) {
       var team = {
         name: event.name,
         description: "This team belongs specifically to event '" + event.name + "' and cannot be deleted.",
@@ -459,17 +459,23 @@ exports.createTeamForEvent = function(event, user, callback) {
 
       team.acl[user._id.toString()] = 'OWNER';
 
-      Team.create(team, done);
+      Team.create(team).then(
+        team => done(null, team),
+        err => done(err)
+      );
     },
-    function(team, done) {
-      Event.addTeam(event, {id: team._id }, function(err) {
+    function (team, done) {
+      Event.addTeam(event, { id: team._id }, function (err) {
         done(err, team);
       });
     }
-  ], function(err, team) {
+  ], function (err, team) {
     if (err) return callback(err);
 
-    Team.populate(team, {path: 'userIds'}, callback);
+    Team.populate(team, { path: 'userIds' }).then(
+      team => callback(null, team),
+      err => callback(err)
+    );
   });
 };
 
@@ -478,50 +484,50 @@ exports.getTeamForEvent = function (event) {
 };
 
 // TODO: should this do something with ACL?
-exports.updateTeam = function(id, update, callback) {
+exports.updateTeam = function (id, update, callback) {
   if (update.users) {
-    update.userIds = update.users.map(function(user) { return new mongoose.Types.ObjectId(user.id); });
-    Team.findByIdAndUpdate(id, update, {new: true, populate: 'userIds'}, callback);
+    update.userIds = update.users.map(function (user) { return new mongoose.Types.ObjectId(user.id); });
+    Team.findByIdAndUpdate(id, update, { new: true, populate: 'userIds' }).then(r => callback(null, r), e => callback(e));
   } else if (update.userIds) {
-    let objectIds = update.userIds.map(function(id) { return new mongoose.Types.ObjectId(id); });
+    let objectIds = update.userIds.map(function (id) { return new mongoose.Types.ObjectId(id); });
     update.userIds = objectIds;
-    Team.findByIdAndUpdate(id, update, {new: true}, callback);
+    Team.findByIdAndUpdate(id, update, { new: true }).then(r => callback(null, r), e => callback(e));
   } else {
-    Team.findByIdAndUpdate(id, update, {new: true, populate: 'userIds'}, callback);
+    Team.findByIdAndUpdate(id, update, { new: true, populate: 'userIds' }).then(r => callback(null, r), e => callback(e));
   }
 };
 
-exports.deleteTeam = function(team, callback) {
-  team.remove(function(err) {
-    callback(err, team);
-  });
+exports.deleteTeam = function (team, callback) {
+  team.deleteOne().then(() => callback(null, team), err => callback(err));
 };
 
-exports.addUser = function(team, user, callback) {
+exports.addUser = function (team, user, callback) {
   var update = {
     $addToSet: {
       userIds: new mongoose.Types.ObjectId(user.id)
     }
   };
 
-  Team.findByIdAndUpdate(team._id, update, function(err, team) {
-    callback(err, team);
-  });
+  Team.findByIdAndUpdate(team._id, update).then(
+    team => callback(null, team),
+    err => callback(err)
+  );
 };
 
-exports.removeUser = function(team, user, callback) {
+exports.removeUser = function (team, user, callback) {
   var update = {
     $pull: {
       userIds: { $in: [new mongoose.Types.ObjectId(user.id)] }
     }
   };
 
-  Team.findByIdAndUpdate(team._id, update, function(err, team) {
-    callback(err, team);
-  });
+  Team.findByIdAndUpdate(team._id, update).then(
+    team => callback(null, team),
+    err => callback(err)
+  );
 };
 
-exports.updateUserInAcl = function(teamId, userId, role, callback) {
+exports.updateUserInAcl = function (teamId, userId, role, callback) {
   // validate userId
   var err;
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -540,39 +546,39 @@ exports.updateUserInAcl = function(teamId, userId, role, callback) {
   var update = {};
   update['acl.' + userId.toString()] = role;
 
-  Team.findOneAndUpdate({_id: teamId}, update, {new: true}, callback);
+  Team.findOneAndUpdate({ _id: teamId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
-exports.updateUserInAclForEventTeam = function(eventId, userId, role, callback) {
+exports.updateUserInAclForEventTeam = function (eventId, userId, role, callback) {
   var update = {};
   update['acl.' + userId.toString()] = role;
 
-  Team.findOneAndUpdate({teamEventId: eventId}, update, {new: true}, callback);
+  Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
-exports.removeUserFromAcl = function(teamId, userId, callback) {
+exports.removeUserFromAcl = function (teamId, userId, callback) {
   var update = {
     $unset: {}
   };
   update.$unset['acl.' + userId.toString()] = true;
 
-  Team.findByIdAndUpdate(teamId, update, {new: true}, callback);
+  Team.findByIdAndUpdate(teamId, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
-exports.removeUserFromAclForEventTeam = function(eventId, userId, callback) {
+exports.removeUserFromAclForEventTeam = function (eventId, userId, callback) {
   var update = {
     $unset: {}
   };
   update.$unset['acl.' + userId.toString()] = true;
 
-  Team.findOneAndUpdate({teamEventId: eventId}, update, {new: true}, callback);
+  Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
-exports.removeUserFromAllAcls = function(user, callback) {
+exports.removeUserFromAllAcls = function (user, callback) {
   var update = {
     $unset: {}
   };
   update.$unset['acl.' + user._id.toString()] = true;
 
-  Team.updateMany({}, update, {new: true}, callback);
+  Team.updateMany({}, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };

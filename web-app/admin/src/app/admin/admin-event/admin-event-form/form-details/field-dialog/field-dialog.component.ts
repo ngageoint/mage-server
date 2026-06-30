@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Field } from '../../../helpers/observation-feed-helper';
 
 export interface FieldDialogData {
-    fieldTypes: { name: string; title: string; hidden?: boolean }[];
+    fieldTypes: { name: string; title: string }[];
     attachmentAllowedTypes: { name: string; title: string }[];
     isMemberField?: boolean;
     editMode?: boolean;
@@ -65,16 +65,16 @@ export class FieldDialogComponent {
         }
 
         if (this.field.type === 'attachment') {
-            if (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0) {
-                this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
+            if (!this.field.allowedAttachmentTypes) {
+                this.field.allowedAttachmentTypes = [];
             }
         }
     }
 
     onFieldTypeChange(newType: string): void {
         if (newType === 'attachment') {
-            if (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0) {
-                this.field.allowedAttachmentTypes = this.data.attachmentAllowedTypes.map(type => type.name);
+            if (!this.field.allowedAttachmentTypes) {
+                this.field.allowedAttachmentTypes = [];
             }
         }
     }
@@ -88,14 +88,11 @@ export class FieldDialogComponent {
             return false;
         }
 
-        const newFieldName = this.field.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-
         return this.data.existingFields.some(f => {
             if (this.isEditMode && f.id === this.data.existingField?.id) {
                 return false;
             }
-            const existingName = f.name || f.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            return existingName === newFieldName;
+            return f.title === this.field.title;
         });
     }
 
@@ -106,10 +103,12 @@ export class FieldDialogComponent {
         if (this.isFieldNameDuplicate()) {
             return false;
         }
-        if (this.field.type === 'attachment') {
-            return this.field.allowedAttachmentTypes && this.field.allowedAttachmentTypes.length > 0;
-        }
         return true;
+    }
+
+    hasNoAttachmentTypes(): boolean {
+        return this.field.type === 'attachment' &&
+            (!this.field.allowedAttachmentTypes || this.field.allowedAttachmentTypes.length === 0);
     }
 
     onSave(): void {

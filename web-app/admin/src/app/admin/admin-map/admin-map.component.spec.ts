@@ -1,54 +1,87 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { AdminMapComponent } from './admin-map.component';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, ViewChild } from '@angular/core';
-import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { AdminMapComponent } from './admin-map.component';
+import { MapSettingsService } from '../../../app/map/settings/map.settings.service';
 
 @Component({
-  selector: `host-component`,
+  selector: 'host-component',
   template: `<mage-admin-map></mage-admin-map>`
 })
 class TestHostComponent {
-  @ViewChild(AdminMapComponent) component: AdminMapComponent;
+  @ViewChild(AdminMapComponent) component!: AdminMapComponent;
 }
 
 describe('AdminMapComponent', () => {
   let component: AdminMapComponent;
-  let hostComponent: TestHostComponent
+  let hostComponent: TestHostComponent;
   let fixture: ComponentFixture<TestHostComponent>;
+  let mockMapSettingsService: jasmine.SpyObj<MapSettingsService>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [MatInputModule, MatSnackBarModule, HttpClientTestingModule, NoopAnimationsModule],
+  beforeEach(async () => {
+    mockMapSettingsService = jasmine.createSpyObj<MapSettingsService>(
+      'MapSettingsService',
+      ['getMapSettings', 'updateMapSettings']
+    );
+
+    mockMapSettingsService.getMapSettings.and.returnValue(
+      of({
+        webSearchType: 'NONE',
+        mobileSearchType: 'NONE',
+        webNominatimUrl: '',
+        mobileNominatimUrl: ''
+      } as any)
+    );
+
+    mockMapSettingsService.updateMapSettings.and.returnValue(of({} as any));
+
+    await TestBed.configureTestingModule({
+      imports: [
+        MatInputModule,
+        MatSnackBarModule,
+        HttpClientTestingModule,
+        NoopAnimationsModule,
+        FormsModule
+      ],
       declarations: [AdminMapComponent, TestHostComponent],
-      schemas: []
-    })
-      .compileComponents()
-  }));
+      providers: [
+        { provide: MapSettingsService, useValue: mockMapSettingsService }
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
+    }).compileComponents();
+  });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TestHostComponent)
-    hostComponent = fixture.componentInstance
+    fixture = TestBed.createComponent(TestHostComponent);
+    hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component
-  })
-
+    component = hostComponent.component;
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show error on invalid and touched', async () => {
-    component.webSearchType = 'NOMINATIM'
+  it('should show web nominatim url input when web search type is NOMINATIM', async () => {
+    component.webSearchType = 'NOMINATIM';
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
-    fixture.detectChanges()
-    await fixture.whenStable()
+    const webNominatimInput = fixture.debugElement.query(
+      By.css(
+        'input.form-input[placeholder="https://nominatim.openstreetmap.org"]'
+      )
+    );
 
-    const webNominatimUrlInput = fixture.debugElement.query(By.directive(MatInput))
-    expect(webNominatimUrlInput).not.toBeNull()
-  })
+    expect(webNominatimInput).toBeTruthy();
+  });
 });

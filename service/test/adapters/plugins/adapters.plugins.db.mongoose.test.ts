@@ -15,33 +15,33 @@ interface TestState {
   }
 }
 
-describe('mongoose plugin state repository', function() {
+describe('mongoose plugin state repository', function () {
 
   let mongo: MongoMemoryServer
   let conn: mongoose.Connection
   let repo: MongoosePluginStateRepository<TestState>
   let pluginId: string
 
-  before(async function() {
+  before(async function () {
     mongo = await MongoMemoryServer.create()
     conn = await mongoose.createConnection(mongo.getUri())
   })
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     pluginId = uniqid('@test/')
     repo = new MongoosePluginStateRepository(pluginId, mongoose)
   })
 
-  afterEach(async function() {
-    await repo.model.remove({})
+  afterEach(async function () {
+    await repo.model.deleteMany({})
   })
 
-  after(async function() {
+  after(async function () {
     await conn.close();
     await mongo.stop()
   })
 
-  it('creates a model for the plugin id', async function() {
+  it('creates a model for the plugin id', async function () {
 
     const name = `plugin_state_${pluginId}`
 
@@ -57,9 +57,9 @@ describe('mongoose plugin state repository', function() {
     expect(repo2.model).to.equal(repo.model)
   })
 
-  describe('saving the first state', function() {
+  describe('saving the first state', function () {
 
-    it('puts the first state', async function() {
+    it('puts the first state', async function () {
 
       const state: TestState = {
         foo: uniqid(),
@@ -76,7 +76,7 @@ describe('mongoose plugin state repository', function() {
       })
     })
 
-    it('patches the first state', async function() {
+    it('patches the first state', async function () {
 
       const state: TestState = {
         foo: uniqid(),
@@ -94,20 +94,20 @@ describe('mongoose plugin state repository', function() {
     })
   })
 
-  describe('getting the state', function() {
+  describe('getting the state', function () {
 
-    it('gets null before the first save', async function() {
+    it('gets null before the first save', async function () {
 
       const state = await repo.get()
       expect(state).to.be.null
     })
 
-    it('gets the saved state', async function() {
+    it('gets the saved state', async function () {
 
       const state: TestState = {
         foo: uniqid(),
         bar: 22,
-        loo: [ { gar: 1 }, { gar: 2 } ],
+        loo: [{ gar: 1 }, { gar: 2 }],
         noo: { zar: false, goo: '' }
       }
       const saved = await repo.put(state)
@@ -117,9 +117,9 @@ describe('mongoose plugin state repository', function() {
     })
   })
 
-  describe('patching the state', function() {
+  describe('patching the state', function () {
 
-    it('patches shallow keys', async function() {
+    it('patches shallow keys', async function () {
 
       const orig: TestState = {
         foo: uniqid(),
@@ -144,7 +144,7 @@ describe('mongoose plugin state repository', function() {
       })
     })
 
-    it('unsets undefined keys', async function() {
+    it('unsets undefined keys', async function () {
 
       const orig: TestState = {
         foo: uniqid(),

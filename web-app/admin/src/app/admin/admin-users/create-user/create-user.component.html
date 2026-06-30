@@ -4,156 +4,178 @@
   </div>
 
   <div class="modal-body">
-    <mat-form-field appearance="fill">
-      <mat-label class="required">Display Name</mat-label>
-      <input matInput type="text" formControlName="displayName" />
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Display Name</mat-label>
+        <input matInput type="text" formControlName="displayName" />
+      </mat-form-field>
+
       <div
-        class="password-error-popover"
+        class="error-popover"
         *ngIf="
           signup.controls.displayName.invalid &&
           signup.controls.displayName.touched
         "
       >
-        <mat-error *ngIf="signup.controls.displayName.hasError('required')">
-          Display name is required
-        </mat-error>
+        Display name is required
       </div>
-    </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label class="required">Username</mat-label>
-      <input matInput type="text" formControlName="username" />
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput type="text" formControlName="username" />
+      </mat-form-field>
+
       <div
-        class="password-error-popover"
+        class="error-popover"
         *ngIf="
           signup.controls.username.invalid && signup.controls.username.touched
         "
       >
-        <mat-error *ngIf="signup.controls.username.hasError('required')">
+        <div *ngIf="signup.controls.username.hasError('required')">
           Username is required
-        </mat-error>
-        <mat-error *ngIf="signup.controls.username.hasError('exists')">
+        </div>
+        <div *ngIf="signup.controls.username.hasError('exists')">
           Username already exists
-        </mat-error>
+        </div>
       </div>
-    </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" formControlName="email" />
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+      </mat-form-field>
+
       <div
-        class="password-error-popover"
+        class="error-popover"
         *ngIf="signup.controls.email.invalid && signup.controls.email.touched"
       >
-        <mat-error *ngIf="signup.controls.username.hasError('email')">
+        <div *ngIf="signup.controls.email.hasError('email')">
           Enter a valid email.
-        </mat-error>
+        </div>
       </div>
-    </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Phone</mat-label>
-      <input matInput type="tel" formControlName="phone" />
-    </mat-form-field>
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Phone</mat-label>
+        <input matInput type="tel" formControlName="phone" />
+      </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label class="required">Role</mat-label>
-      <mat-select formControlName="selectedRole">
-        <mat-option *ngFor="let role of roles" [value]="role.id">
-          {{ role.name }}
-        </mat-option>
-      </mat-select>
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="selectedRole">
+          <mat-option *ngFor="let role of roles" [value]="role.id">
+            {{ role.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
       <div
-        class="password-error-popover"
+        class="error-popover"
         *ngIf="
           signup.controls.selectedRole.invalid &&
           signup.controls.selectedRole.touched
         "
       >
-        <mat-error *ngIf="signup.controls.selectedRole.hasError('required')">
-          Role is required
-        </mat-error>
+        Role is required
       </div>
-    </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Password</mat-label>
-      <input
-        matInput
-        [type]="showPassword ? 'text' : 'password'"
-        placeholder="Password"
-        formControlName="password"
-      />
-      <button
-        mat-icon-button
-        type="button"
-        matSuffix
-        (click)="showPassword = !showPassword"
-      >
-        <mat-icon>{{
-          showPassword ? 'visibility_off' : 'visibility'
-        }}</mat-icon>
-      </button>
-      <button
-        mat-icon-button
-        matTooltip="{{ passwordTooltipText }}"
-        matTooltipClass="tooltip-wide"
-        matSuffix
-        type="button"
-      >
-        <mat-icon>info</mat-icon>
-      </button>
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Password"
+          formControlName="password"
+        />
+
+        <button
+          mat-icon-button
+          type="button"
+          matSuffix
+          (click)="showPassword = !showPassword"
+        >
+          <mat-icon>
+            {{ showPassword ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+
+        <button
+          mat-icon-button
+          type="button"
+          matSuffix
+          [matTooltip]="passwordTooltipText"
+          matTooltipClass="tooltip-wide"
+        >
+          <mat-icon>info</mat-icon>
+        </button>
+      </mat-form-field>
+
       <div
-        class="password-error-popover"
+        class="error-popover"
         *ngIf="
           signup.controls.password.invalid && signup.controls.password.touched
         "
       >
-        <mat-error *ngIf="signup.controls.password.errors as errors">
-          <div *ngFor="let msg of getPasswordErrorMessages(errors)">
-            {{ msg }}
-          </div>
-        </mat-error>
+        <div
+          *ngFor="
+            let msg of getPasswordErrorMessages(signup.controls.password.errors)
+          "
+        >
+          {{ msg }}
+        </div>
       </div>
-    </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Confirm Password</mat-label>
-      <input
-        matInput
-        [type]="showConfirmPassword ? 'text' : 'password'"
-        placeholder="Confirm Password"
-        formControlName="passwordconfirm"
-      />
-      <button
-        mat-icon-button
-        type="button"
-        matSuffix
-        (click)="showConfirmPassword = !showConfirmPassword"
-      >
-        <mat-icon>{{
-          showConfirmPassword ? 'visibility_off' : 'visibility'
-        }}</mat-icon>
-      </button>
+    <div class="field-shell">
+      <mat-form-field appearance="fill">
+        <mat-label>Confirm Password</mat-label>
+        <input
+          matInput
+          [type]="showConfirmPassword ? 'text' : 'password'"
+          placeholder="Confirm Password"
+          formControlName="passwordconfirm"
+        />
+
+        <button
+          mat-icon-button
+          type="button"
+          matSuffix
+          (click)="showConfirmPassword = !showConfirmPassword"
+        >
+          <mat-icon>
+            {{ showConfirmPassword ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+      </mat-form-field>
+
       <div
-        class="password-error-popover"
+        class="error-popover"
         *ngIf="
           signup.controls.passwordconfirm.invalid &&
           signup.controls.passwordconfirm.touched
         "
       >
-        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('required')">
+        <div *ngIf="signup.controls.passwordconfirm.hasError('required')">
           Password confirmation is required
-        </mat-error>
-        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('match')">
+        </div>
+        <div *ngIf="signup.controls.passwordconfirm.hasError('match')">
           Passwords must match
-        </mat-error>
+        </div>
       </div>
-    </mat-form-field>
+    </div>
 
     <div class="password-strength">
       <div class="mat-body-1">Password Strength</div>
       <div class="mat-body-2">{{ passwordStrength?.text }}</div>
+
       <mat-progress-bar
         mode="determinate"
         [value]="passwordStrength?.value"
@@ -165,6 +187,7 @@
     <div class="avatar-icon-wrapper">
       <div class="avatar-section">
         <label>Avatar</label>
+
         <div class="avatar-upload">
           <label class="avatar-preview clickable-avatar">
             <img
@@ -173,15 +196,16 @@
               class="avatar-image"
               alt="Avatar Preview"
             />
+
             <div *ngIf="!avatarPreviewUrl" class="avatar-placeholder">
               <span class="plus-sign">+</span>
             </div>
+
             <input
               type="file"
               accept="image/*"
               (change)="onAvatarChanged($event)"
               [disabled]="saving"
-              hidden
             />
           </label>
 
@@ -189,6 +213,7 @@
             <div class="filename">
               {{ selectedAvatarFileName || 'No file selected' }}
             </div>
+
             <button
               *ngIf="avatarPreviewUrl"
               type="button"
@@ -203,17 +228,19 @@
       </div>
 
       <div class="icon-section">
-        <mat-form-field appearance="fill">
-          <mat-label>Map Icon</mat-label>
-          <mat-select
-            formControlName="iconType"
-            (selectionChange)="onIconTypeChanged()"
-          >
-            <mat-option value="none">None</mat-option>
-            <mat-option value="create">Create</mat-option>
-            <mat-option value="upload">Upload</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <div class="field-shell">
+          <mat-form-field appearance="fill">
+            <mat-label>Map Icon</mat-label>
+            <mat-select
+              formControlName="iconType"
+              (selectionChange)="onIconTypeChanged()"
+            >
+              <mat-option value="none">None</mat-option>
+              <mat-option value="create">Create</mat-option>
+              <mat-option value="upload">Upload</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
 
         <div
           *ngIf="signup.get('iconType')?.value === 'create'"
@@ -225,17 +252,26 @@
               [src]="iconPreviewUrl"
               width="44"
               height="44"
+              alt="Icon Preview"
             />
           </div>
-          <mat-form-field appearance="fill" class="create-field">
-            <mat-label>Initials</mat-label>
-            <input matInput maxlength="2" formControlName="iconInitials" />
-          </mat-form-field>
 
-          <mat-form-field appearance="outline" class="create-field color-field">
-            <mat-label>Color</mat-label>
-            <input matInput type="color" formControlName="iconColor" />
-          </mat-form-field>
+          <div class="field-shell">
+            <mat-form-field appearance="fill" class="create-field">
+              <mat-label>Initials</mat-label>
+              <input matInput maxlength="2" formControlName="iconInitials" />
+            </mat-form-field>
+          </div>
+
+          <div class="field-shell">
+            <mat-form-field
+              appearance="outline"
+              class="create-field color-field"
+            >
+              <mat-label>Color</mat-label>
+              <input matInput type="color" formControlName="iconColor" />
+            </mat-form-field>
+          </div>
         </div>
 
         <div *ngIf="signup.get('iconType')?.value === 'upload'">
@@ -245,8 +281,10 @@
               [src]="iconPreviewUrl"
               width="44"
               height="44"
+              alt="Icon Preview"
             />
           </div>
+
           <input
             type="file"
             accept="image/*"
@@ -265,14 +303,17 @@
       (click)="cancelModal()"
       [disabled]="saving"
     >
-      <i class="fa fa-times"></i> Cancel
+      <i class="fa fa-times"></i>
+      Cancel
     </button>
+
     <button
       type="submit"
       class="action-button btn-primary"
       [disabled]="signup.invalid || saving || passwordErrorMessages.length > 0"
     >
-      <i class="fa fa-save"></i> Save User
+      <i class="fa fa-save"></i>
+      Save User
     </button>
   </div>
 </form>

@@ -1,21 +1,21 @@
-const express = require("express")
-  , crypto = require('crypto')
-  , session = require('express-session')
-  , fs = require('fs')
-  , passport = require('passport')
-  , path = require('path')
-  , config = require('./config.js')
-  , provision = require('./provision')
-  , log = require('./logger')
-  , api = require('./api')
-  , env = require('./environment/env')
-  , yaml = require('yaml')
-  , AuthenticationInitializer = require('./authentication');
+const express = require('express'),
+  crypto = require('crypto'),
+  session = require('express-session'),
+  fs = require('fs'),
+  passport = require('passport'),
+  path = require('path'),
+  config = require('./config.js'),
+  provision = require('./provision'),
+  log = require('./logger'),
+  api = require('./api'),
+  env = require('./environment/env'),
+  yaml = require('yaml'),
+  AuthenticationInitializer = require('./authentication');
 
 const app = express();
 app.use(function(req, res, next) {
   req.getRoot = function() {
-    return req.protocol + "://" + req.get('host');
+    return req.protocol + '://' + req.get('host');
   };
 
   req.getPath = function() {
@@ -23,7 +23,10 @@ app.use(function(req, res, next) {
   };
 
   if (process.env.MAGE_HTTP_DEBUG === 'true') {
-    console.debug(`[HTTP REQUEST] ${req.method} ${req.getPath()}\n`, req.rawHeaders)
+    console.debug(
+      `[HTTP REQUEST] ${req.method} ${req.getPath()}\n`,
+      req.rawHeaders
+    );
   }
 
   return next();
@@ -40,8 +43,9 @@ app.set('view engine', 'pug');
 
 const jsonOptions = { limit: '16mb', strict: false };
 app.use(
-    express.json(jsonOptions),
-    express.urlencoded( { ...jsonOptions, extended: true }));
+  express.json(jsonOptions),
+  express.urlencoded({ ...jsonOptions, extended: true })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -54,25 +58,77 @@ app.get('/api/docs/openapi.yaml', async function(req, res) {
   });
 });
 app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
-app.use('/private',
+app.use(
+  '/private',
   passport.authenticate('bearer'),
-  express.static(path.join(__dirname, 'private')));
+  express.static(path.join(__dirname, 'private'))
+);
 
 // Configure authentication
-const authentication = AuthenticationInitializer.initialize(app, passport, provision);
+const authentication = AuthenticationInitializer.initialize(
+  app,
+  passport,
+  provision
+);
 
 // Configure routes
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
 require('./routes')(app, { authentication });
 
+const adminDist = path.join(__dirname, '..', '..', 'web-app', 'dist', 'admin');
+
+app.use(
+  '/admin',
+  express.static(adminDist, {
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      const rel = path.relative(adminDist, filePath).replace(/\\/g, '/');
+
+      if (rel === 'index.html') {
+        res.setHeader(
+          'Cache-Control',
+          'no-store, no-cache, must-revalidate, max-age=0'
+        );
+        return;
+      }
+
+      if (
+        /\.(?:js|css|woff2?|ttf|eot|ico|png|jpg|jpeg|gif|svg)$/.test(filePath)
+      ) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return;
+      }
+
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  })
+);
+
+app.get('/admin/*', (req, res) => {
+  res.setHeader(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, max-age=0'
+  );
+  res.sendFile(path.join(adminDist, 'index.html'));
+});
+
 // Express requires a 4 parameter function callback, do not remove unused next parameter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use(function(err, req, res, next) {
-
-  log.error('\n-----\nunhandled error during request\n', req.method, req.path, err, '\n-----')
+  log.error(
+    '\n-----\nunhandled error during request\n',
+    req.method,
+    req.path,
+    err,
+    '\n-----'
+  );
 
   const status = err.status || 500;
-  let msg = status === 500 ? 'Internal server error, please contact MAGE administrator.' : err.message;
+  let msg =
+    status === 500
+      ? 'Internal server error, please contact MAGE administrator.'
+      : err.message;
   if (err.name === 'ValidationError') {
     msg = {
       message: err.message,

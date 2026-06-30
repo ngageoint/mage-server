@@ -14,6 +14,7 @@
         class="action-button"
         [ngClass]="editingDetails ? 'btn-primary' : ''"
         (click)="toggleEditDetails()"
+        [disabled]="saving"
       >
         <i class="fa" [ngClass]="editingDetails ? 'fa-times' : 'fa-edit'"></i>
         {{ editingDetails ? 'Cancel' : 'Edit Device' }}
@@ -111,6 +112,7 @@
         <button
           class="action-button btn-success"
           (click)="registerDevice(device)"
+          [disabled]="saving"
         >
           <i class="fa fa-play-circle"></i> Register
         </button>
@@ -128,6 +130,7 @@
         <button
           class="action-button btn-warning"
           (click)="unregisterDevice(device)"
+          [disabled]="saving"
         >
           <i class="fa fa-check-circle"></i> Unregister
         </button>
@@ -142,6 +145,7 @@
         <button
           class="action-button btn-danger"
           (click)="confirmDeleteDevice()"
+          [disabled]="saving"
         >
           <i class="fa fa-trash-o"></i> Delete
         </button>

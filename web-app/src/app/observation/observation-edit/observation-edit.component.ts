@@ -25,15 +25,15 @@ import {
 import { DomSanitizer } from "@angular/platform-browser";
 import { first } from "rxjs/operators";
 import { ObservationEditFormPickerComponent } from "./observation-edit-form-picker.component";
-import * as moment from "moment";
+import moment from 'moment';
 import { ObservationEditDiscardComponent } from "./observation-edit-discard/observation-edit-discard.component";
 import {
-  MatSnackBar,
-  MatSnackBarRef,
-  SimpleSnackBar,
+  MatSnackBar as MatSnackBar,
+  MatSnackBarRef as MatSnackBarRef,
+  SimpleSnackBar as SimpleSnackBar,
 } from "@angular/material/snack-bar";
 import { MatIconRegistry } from "@angular/material/icon";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog as MatDialog } from "@angular/material/dialog";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import {
   AttachmentService,

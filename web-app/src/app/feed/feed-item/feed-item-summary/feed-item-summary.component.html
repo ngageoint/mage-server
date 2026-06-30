@@ -1,13 +1,16 @@
 <mat-list-item class="item" (click)="onItemSelect()">
-  <mat-icon *ngIf="!iconUrl" matListIcon color="primary">place</mat-icon>
-  <mage-static-icon-img *ngIf="feed?.icon" [iconRef]="feed.icon" matListIcon></mage-static-icon-img>
-  <span *ngIf="hasContent" matLine class="overline">{{timestamp | moment}}</span>
-  <span *ngIf="hasContent" matLine class="mat-body-2">{{primary || "&nbsp;"}}</span>
-  <span *ngIf="hasContent" matLine class="mat-body-1">{{secondary || "&nbsp;"}}</span>
+  <mat-icon *ngIf="!iconUrl" matListItemIcon class="item__icon" color="primary">place</mat-icon>
+  <mage-static-icon-img *ngIf="feed?.icon" [iconRef]="feed.icon" matListItemIcon
+    class="item__icon"></mage-static-icon-img>
 
-  <div class="no-content">
-    <span *ngIf="!hasContent" matLine>No Content</span>
-    <span *ngIf="!hasContent" matLine></span>
-    <span *ngIf="!hasContent" matLine></span>
-  </div>
+  <ng-container *ngIf="hasContent; else noContent">
+    <span matListItemTitle class="item__timestamp">{{timestamp | moment}}</span>
+    <span matListItemLine class="item__primary">{{primary || "&nbsp;"}}</span>
+    <span matListItemLine class="item__secondary">{{secondary || "&nbsp;"}}</span>
+  </ng-container>
+
+  <ng-template #noContent>
+    <span matListItemTitle class="item__primary">No Content</span>
+    <span matListItemLine class="item__secondary">&nbsp;</span>
+  </ng-template>
 </mat-list-item>

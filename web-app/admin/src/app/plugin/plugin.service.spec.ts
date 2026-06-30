@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http'
 import { Compiler, Injector } from '@angular/core'
 import { of } from 'rxjs'
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'
+import { LocalStorageService } from 'src/app/http/local-storage.service'
 import { PluginsById, PluginService } from './plugin.service'
 import { SystemJS } from './systemjs.service'
 
@@ -21,27 +21,35 @@ describe('PluginService', () => {
     import: jasmine.Spy<SystemJS.Context['import']>
   }
   const token = String(Date.now())
-  const localStorageService: LocalStorageService = {
-    getToken() { return token }
-  }
+  
+  let localStorageService: jasmine.SpyObj<LocalStorageService>;
+
   let service: PluginService
 
   beforeEach(() => {
-
     system = {
       register: jasmine.createSpy('SystemJS.Context.register'),
       import: jasmine.createSpy('SystemJS.Context.import')
     }
+  
     mockClient = {
       get: jasmine.createSpy('HttpClient.get')
     }
+  
+    injector = {
+      get: jasmine.createSpy('Injector.get')
+    }
+  
+    localStorageService = jasmine.createSpyObj<LocalStorageService>('LocalStorageService', ['getToken'])
+    localStorageService.getToken.and.returnValue(token)
+  
     service = new PluginService(
       mockClient as unknown as HttpClient,
       injector as unknown as Injector,
       system as unknown as SystemJS.Registry,
       localStorageService
     )
-  })
+  })  
 
   it('registers shared libraries', async () => {
 

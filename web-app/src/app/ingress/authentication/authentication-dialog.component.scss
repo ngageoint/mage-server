@@ -1,4 +1,216 @@
-.ingress {
+@import 'variables.scss';
+
+$font-xl: 32px;
+$font-lg: 18px;
+$font-md: 16px;
+$font-sm: 14px;
+$font-xs: 12px;
+
+:host {
+  display: block;
   width: 100%;
-  height: 100%;
+}
+
+:host ::ng-deep .mat-mdc-dialog-container,
+:host ::ng-deep mat-dialog-container {
+  overflow: hidden !important;
+  max-height: 90vh !important;
+  width: 100% !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 16px !important;
+}
+
+:host ::ng-deep .mat-mdc-dialog-surface,
+:host ::ng-deep .mdc-dialog__surface {
+  width: 100% !important;
+  max-width: 720px !important;
+  min-width: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.dialog-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+}
+
+.dialog-header {
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: $font-lg;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111827;
+  letter-spacing: 0;
+}
+
+.dialog-content {
+  padding: 24px;
+  overflow-y: auto;
+  background: #ffffff;
+  min-height: 0;
+}
+
+.ingress {
+  display: block;
+  width: 100%;
+}
+
+.authorize {
+  display: flex;
+  justify-content: flex-end;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+:host ::ng-deep .authorization {
+  display: flex;
+  flex-direction: column;
+  gap: 16px !important;
+  overflow: visible;
+  width: 100%;
+}
+
+:host ::ng-deep .header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-bottom: 8px;
+}
+
+:host ::ng-deep .container {
+  height: auto !important;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .state {
+  position: relative !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 100%;
+}
+
+:host ::ng-deep ingress,
+:host ::ng-deep authentication,
+:host ::ng-deep local-signin {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+:host ::ng-deep form,
+:host ::ng-deep .signin-container,
+:host ::ng-deep .local-signin-container,
+:host ::ng-deep .signin-form,
+:host ::ng-deep .form-fields,
+:host ::ng-deep .form-field,
+:host ::ng-deep .username-row,
+:host ::ng-deep .password-row,
+:host ::ng-deep .input-row,
+:host ::ng-deep .form-row {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .mat-mdc-form-field,
+:host ::ng-deep .mat-form-field,
+:host ::ng-deep .mat-mdc-text-field-wrapper,
+:host ::ng-deep .mat-form-field-flex,
+:host ::ng-deep .mat-mdc-form-field-infix,
+:host ::ng-deep .mat-form-field-infix,
+:host ::ng-deep input,
+:host ::ng-deep .mat-mdc-input-element,
+:host ::ng-deep .mat-input-element {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .mat-mdc-form-field-infix,
+:host ::ng-deep .mat-form-field-infix {
+  min-width: 0 !important;
+}
+
+:host ::ng-deep .mat-mdc-text-field-wrapper,
+:host ::ng-deep .mat-form-field-flex {
+  min-height: 48px;
+  align-items: center;
+}
+
+:host ::ng-deep .mat-mdc-input-element,
+:host ::ng-deep .mat-input-element,
+:host ::ng-deep input {
+  font-size: $font-sm;
+}
+
+:host ::ng-deep label,
+:host ::ng-deep .mat-mdc-floating-label,
+:host ::ng-deep .mat-form-field-label {
+  font-size: $font-sm;
+}
+
+:host ::ng-deep button,
+:host ::ng-deep .mat-mdc-button,
+:host ::ng-deep .mat-mdc-raised-button,
+:host ::ng-deep .mat-mdc-unelevated-button,
+:host ::ng-deep .mat-mdc-outlined-button {
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: $font-sm;
+  font-weight: 600;
+  text-transform: none;
+}
+
+@media (max-width: 600px) {
+  :host ::ng-deep .mat-mdc-dialog-surface,
+  :host ::ng-deep .mdc-dialog__surface {
+    max-width: 100% !important;
+    border-radius: 12px !important;
+  }
+
+  .dialog-modal {
+    border-radius: 12px;
+  }
+
+  .dialog-header {
+    padding: 18px 20px;
+  }
+
+  .dialog-content {
+    padding: 20px;
+  }
 }

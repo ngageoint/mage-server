@@ -5,7 +5,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
 import { ActivatedRoute } from '@angular/router';
 import { User } from 'core-lib-src/user';
-import { Banners, SettingsService } from '../setttings/settings.service';
+import { Banners, SettingsService } from '../settings/settings.service';
 import * as _ from 'underscore';
 import { UserService } from '../user/user.service';
 import { MageEvent } from '@ngageoint/mage.web-core-lib/event';
@@ -62,7 +62,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onFilterChanged(filter: any) {
-    this.event = filter.event?.added?.length ? filter.event.added[0] : null
+    if (filter.event?.added?.length) {
+      this.event = filter.event.added[0]
+    } else if (filter.event?.removed?.length) {
+      this.event = null
+    }
   }
 
   onAddObservation($event) {

@@ -1,180 +1,279 @@
-import environment from './environment/env'
-import log, { mongooseLogger } from './logger'
-import { InjectableServices, integratePluginHooks } from './main.impl/main.impl.plugins'
-import httpLib from 'http'
-import fs from 'fs-extra'
-import mongoose from 'mongoose'
-import express from 'express'
-import util from 'util'
+import environment from './environment/env';
+import log from './logger';
+import {
+  InjectableServices,
+  integratePluginHooks
+} from './main.impl/main.impl.plugins';
+import httpLib from 'http';
+import fs from 'fs-extra';
+import mongoose from 'mongoose';
+import express from 'express';
+import util from 'util';
 import apiConfig from './config';
-import { MongooseFeedServiceTypeRepository, FeedServiceTypeIdentityModel, MongooseFeedServiceRepository, FeedServiceModel, MongooseFeedRepository, FeedModel } from './adapters/feeds/adapters.feeds.db.mongoose'
-import { waitForDefaultMongooseConnection } from './adapters/adapters.db.mongoose'
-import { FeedServiceTypeRepository, FeedServiceRepository, FeedRepository } from './entities/feeds/entities.feeds'
-import * as feedsApi from './app.api/feeds/app.api.feeds'
-import * as feedsImpl from './app.impl/feeds/app.impl.feeds'
-import * as eventsApi from './app.api/events/app.api.events'
-import * as eventsImpl from './app.impl/events/app.impl.events'
-import * as observationsApi from './app.api/observations/app.api.observations'
-import * as observationsImpl from './app.impl/observations/app.impl.observations'
-import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds'
-import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web'
-import { WebAppRequestFactory } from './adapters/adapters.controllers.web'
-import { AppRequest, AppRequestContext } from './app.api/app.api.global'
-import { UserDocument } from './models/user'
-import SimpleIdFactory from './adapters/adapters.simple_id_factory'
-import { JsonSchemaService, JsonValidator, JSONSchema4 } from './entities/entities.json_types'
-import { MageEventModel, MongooseMageEventRepository } from './adapters/events/adapters.events.db.mongoose'
-import { MageEvent, MageEventId, MageEventRepository } from './entities/events/entities.events'
-import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web'
-import { MongooseStaticIconRepository, StaticIconModel } from './adapters/icons/adapters.icons.db.mongoose'
-import { StaticIconRepository } from './entities/icons/entities.icons'
-import { FileSystemIconContentStore } from './adapters/icons/adapters.icons.content_store.file_system'
-import { StaticIconRoutes, StaticIconsAppLayer } from './adapters/icons/adapters.icons.controllers.web'
-import { ListStaticIcons, GetStaticIcon, GetStaticIconContent } from './app.impl/icons/app.impl.icons'
-import { RoleBasedStaticIconPermissionService } from './permissions/permissions.icons'
-import { PluginUrlScheme } from './adapters/url_schemes/adapters.url_schemes.plugin'
-import { WebUIPluginRoutes } from './adapters/web_ui_plugins/adapters.web_ui_plugins.controllers.web'
-import { InitPluginHook, InjectionToken, PluginStateRepositoryToken } from './plugins.api'
-import { MageEventRepositoryToken } from './plugins.api/plugins.api.events'
-import { FeedRepositoryToken, FeedServiceRepositoryToken, FeedServiceTypeRepositoryToken, FeedsAppServiceTokens } from './plugins.api/plugins.api.feeds'
-import { UserRepositoryToken } from './plugins.api/plugins.api.users'
-import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
-import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
-import { UserRepository, UserExpanded } from './entities/users/entities.users'
-import { EnvironmentService } from './entities/systemInfo/entities.systemInfo'
-import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
-import { UsersAppLayer, UsersRoutes } from './adapters/users/adapters.users.controllers.web'
-import { SearchUsers } from './app.impl/users/app.impl.users'
-import { RoleBasedUsersPermissionService } from './permissions/permissions.users'
-import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose'
-import path from 'path'
-import { MageEventDocument } from './models/event'
-import { parseAcceptLanguageHeader } from './entities/entities.i18n'
-import { ObservationRoutes, ObservationWebAppRequestFactory } from './adapters/observations/adapters.observations.controllers.web'
-import { UserWithRole } from './permissions/permissions.role-based.base'
-import { AttachmentStore, EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
-import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose'
-import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adapters.observations.attachment_store.file_system'
-import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
-import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
-import { EventEmitter } from 'events'
-import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
-import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
-import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
-import Settings from "./models/setting";
-import AuthenticationConfiguration from "./models/authenticationconfiguration";
-import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
-import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
-import { RoleBasedSystemInfoPermissionService } from './permissions/permissions.systemInfo'
-import { SettingsAppLayer, SettingsRoutes } from './adapters/settings/adapters.settings.controllers.web'
-import { MongooseSettingsRepository, SettingsModel } from './adapters/settings/adapters.settings.db.mongoose'
-import { FetchMapSettings, UpdateMapSettings } from './app.impl/settings/app.impl.settings'
-import { RoleBasedMapPermissionService } from './permissions/permissions.settings'
-import { SettingRepository } from './entities/settings/entities.settings'
-
+import {
+  MongooseFeedServiceTypeRepository,
+  FeedServiceTypeIdentityModel,
+  MongooseFeedServiceRepository,
+  FeedServiceModel,
+  MongooseFeedRepository,
+  FeedModel
+} from './adapters/feeds/adapters.feeds.db.mongoose';
+import { waitForDefaultMongooseConnection } from './adapters/adapters.db.mongoose';
+import {
+  FeedServiceTypeRepository,
+  FeedServiceRepository,
+  FeedRepository
+} from './entities/feeds/entities.feeds';
+import * as feedsApi from './app.api/feeds/app.api.feeds';
+import * as feedsImpl from './app.impl/feeds/app.impl.feeds';
+import * as eventsApi from './app.api/events/app.api.events';
+import * as eventsImpl from './app.impl/events/app.impl.events';
+import * as observationsApi from './app.api/observations/app.api.observations';
+import * as observationsImpl from './app.impl/observations/app.impl.observations';
+import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds';
+import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
+import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
+import { AppRequest, AppRequestContext } from './app.api/app.api.global';
+import { UserDocument } from './models/user';
+import SimpleIdFactory from './adapters/adapters.simple_id_factory';
+import {
+  JsonSchemaService,
+  JsonValidator,
+  JSONSchema4
+} from './entities/entities.json_types';
+import {
+  MageEventModel,
+  MongooseMageEventRepository
+} from './adapters/events/adapters.events.db.mongoose';
+import {
+  MageEvent,
+  MageEventId,
+  MageEventRepository
+} from './entities/events/entities.events';
+import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web';
+import {
+  MongooseStaticIconRepository,
+  StaticIconModel
+} from './adapters/icons/adapters.icons.db.mongoose';
+import { StaticIconRepository } from './entities/icons/entities.icons';
+import { FileSystemIconContentStore } from './adapters/icons/adapters.icons.content_store.file_system';
+import {
+  StaticIconRoutes,
+  StaticIconsAppLayer
+} from './adapters/icons/adapters.icons.controllers.web';
+import {
+  ListStaticIcons,
+  GetStaticIcon,
+  GetStaticIconContent
+} from './app.impl/icons/app.impl.icons';
+import { RoleBasedStaticIconPermissionService } from './permissions/permissions.icons';
+import { PluginUrlScheme } from './adapters/url_schemes/adapters.url_schemes.plugin';
+import { WebUIPluginRoutes } from './adapters/web_ui_plugins/adapters.web_ui_plugins.controllers.web';
+import {
+  InitPluginHook,
+  InjectionToken,
+  PluginStateRepositoryToken
+} from './plugins.api';
+import { MageEventRepositoryToken } from './plugins.api/plugins.api.events';
+import {
+  FeedRepositoryToken,
+  FeedServiceRepositoryToken,
+  FeedServiceTypeRepositoryToken,
+  FeedsAppServiceTokens
+} from './plugins.api/plugins.api.feeds';
+import { UserRepositoryToken } from './plugins.api/plugins.api.users';
+import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons';
+import {
+  UserModel,
+  MongooseUserRepository
+} from './adapters/users/adapters.users.db.mongoose';
+import { UserRepository, UserExpanded } from './entities/users/entities.users';
+import { EnvironmentService } from './entities/systemInfo/entities.systemInfo';
+import {
+  WebRoutesHooks,
+  GetAppRequestContext
+} from './plugins.api/plugins.api.web';
+import {
+  UsersAppLayer,
+  UsersRoutes
+} from './adapters/users/adapters.users.controllers.web';
+import { SearchUsers } from './app.impl/users/app.impl.users';
+import { RoleBasedUsersPermissionService } from './permissions/permissions.users';
+import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose';
+import path from 'path';
+import { MageEventDocument } from './models/event';
+import { parseAcceptLanguageHeader } from './entities/entities.i18n';
+import {
+  ObservationRoutes,
+  ObservationWebAppRequestFactory
+} from './adapters/observations/adapters.observations.controllers.web';
+import { UserWithRole } from './permissions/permissions.role-based.base';
+import {
+  AttachmentStore,
+  EventScopedObservationRepository,
+  ObservationRepositoryForEvent
+} from './entities/observations/entities.observations';
+import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose';
+import {
+  FileSystemAttachmentStoreInitError,
+  intializeAttachmentStore
+} from './adapters/observations/adapters.observations.attachment_store.file_system';
+import {
+  AttachmentStoreToken,
+  ObservationRepositoryToken
+} from './plugins.api/plugins.api.observations';
+import {
+  GetDbConnection,
+  MongooseDbConnectionToken
+} from './plugins.api/plugins.api.db';
+import { EventEmitter } from 'events';
+import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service';
+import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo';
+import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo';
+import Settings from './models/setting';
+import AuthenticationConfiguration from './models/authenticationconfiguration';
+import AuthenticationConfigurationTransformer from './transformers/authenticationconfiguration';
+import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web';
+import { RoleBasedSystemInfoPermissionService } from './permissions/permissions.systemInfo';
+import {
+  SettingsAppLayer,
+  SettingsRoutes
+} from './adapters/settings/adapters.settings.controllers.web';
+import {
+  MongooseSettingsRepository,
+  SettingsModel
+} from './adapters/settings/adapters.settings.db.mongoose';
+import {
+  FetchMapSettings,
+  UpdateMapSettings
+} from './app.impl/settings/app.impl.settings';
+import { RoleBasedMapPermissionService } from './permissions/permissions.settings';
+import { SettingRepository } from './entities/settings/entities.settings';
 
 export interface MageService {
-  webController: express.Application
-  server: httpLib.Server
-  open(): this
+  webController: express.Application;
+  server: httpLib.Server;
+  open(): this;
 }
 
 /**
  * The Express Application will emit this event when
  */
-export const MageReadyEvent = 'comingOfMage'
+export const MageReadyEvent = 'comingOfMage';
 export type BootConfig = {
   plugins: {
     /**
      * An array of service plugin package names
      */
-    servicePlugins?: string[]
+    servicePlugins?: string[];
     /**
      * An array of web app plugin package names
      */
-    webUIPlugins?: string[]
-  }
-}
+    webUIPlugins?: string[];
+  };
+};
 
-let service: MageService | null = null
+let service: MageService | null = null;
 
 export const boot = async function(config: BootConfig): Promise<MageService> {
   if (service) {
-    return service as MageService
+    return service as MageService;
   }
 
-  mongoose.set('debug', function (collection: any, method: any, ...methodArgs: any[]) {
+  const mongooseLogger = log.mongooseLogger;
+
+  mongoose.set('debug', function(
+    collection: any,
+    method: any,
+    ...methodArgs: any[]
+  ) {
     const formatter = (arg: any): string => {
-      return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ')
-    }
-    mongooseLogger.debug(`${collection}.${method}(${methodArgs.map(formatter).join(', ')})`)
-  })
-  
+      return util
+        .inspect(arg, false, 10, true)
+        .replace(/\n/g, '')
+        .replace(/\s{2,}/g, ' ');
+    };
 
-  mongoose.Error.messages.general.required = "{PATH} is required."
+    mongooseLogger.debug(
+      `${collection}.${method}(${methodArgs.map(formatter).join(', ')})`
+    );
+  });
 
-  log.info('Starting MAGE Server ...')
+  mongoose.Error.messages.general.required = '{PATH} is required.';
+
+  log.info('Starting MAGE Server ...');
 
   // Create directory for storing media attachments
-  const attachmentBase = environment.attachmentBaseDirectory
-  log.info(`creating attachments directory at ${attachmentBase}`)
+  const attachmentBase = environment.attachmentBaseDirectory;
+  log.info(`creating attachments directory at ${attachmentBase}`);
   try {
-    await fs.mkdirp(attachmentBase)
-  }
-  catch (err) {
-    log.error(`error creating attachments directory ${attachmentBase}: `, err)
-    throw err
+    await fs.mkdirp(attachmentBase);
+  } catch (err) {
+    log.error(`error creating attachments directory ${attachmentBase}: `, err);
+    throw err;
   }
 
-  const iconBase = environment.iconBaseDirectory
-  log.info(`creating icon directory at ${iconBase}`)
+  const iconBase = environment.iconBaseDirectory;
+  log.info(`creating icon directory at ${iconBase}`);
   try {
-    await fs.mkdirp(iconBase)
-  }
-  catch (err) {
-    log.error(`error creating icon directory ${iconBase}: `, err)
-    throw err
+    await fs.mkdirp(iconBase);
+  } catch (err) {
+    log.error(`error creating icon directory ${iconBase}: `, err);
+    throw err;
   }
 
-  const dbLayer = await initDatabase()
-  const repos = await initRepositories(dbLayer, config)
-  const appLayer = await initAppLayer(repos)
-  const { webController, addPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
-  const routesForPluginId: {[pluginId: string]: WebRoutesHooks } = {}
-  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
-    routesForPluginId[pluginId] = initPluginRoutes
-  }
+  const dbLayer = await initDatabase();
+  const repos = await initRepositories(dbLayer, config);
+  const appLayer = await initAppLayer(repos);
+  const { webController, addPluginRoutes } = await initWebLayer(
+    repos,
+    appLayer,
+    config.plugins?.webUIPlugins || []
+  );
+
+  const routesForPluginId: { [pluginId: string]: WebRoutesHooks } = {};
+  const collectPluginRoutesToSort = (
+    pluginId: string,
+    initPluginRoutes: WebRoutesHooks
+  ): void => {
+    routesForPluginId[pluginId] = initPluginRoutes;
+  };
+
   const globalScopeServices = new Map<InjectionToken<any>, any>([
-    [ FeedServiceTypeRepositoryToken, repos.feeds.serviceTypeRepo ],
-    [ FeedServiceRepositoryToken, repos.feeds.serviceRepo ],
-    [ FeedRepositoryToken, repos.feeds.feedRepo ],
-    [ MageEventRepositoryToken, repos.events.eventRepo ],
-    [ ObservationRepositoryToken, repos.observations.obsRepoFactory ],
-    [ AttachmentStoreToken, repos.observations.attachmentStore ],
-    [ StaticIconRepositoryToken, repos.icons.staticIconRepo ],
-    [ UserRepositoryToken, repos.users.userRepo ],
-    [ FeedsAppServiceTokens.CreateFeed, appLayer.feeds.createFeed ],
-    [ FeedsAppServiceTokens.UpdateFeed, appLayer.feeds.updateFeed ],
-    [ FeedsAppServiceTokens.DeleteFeed, appLayer.feeds.deleteFeed ],
-  ])
+    [FeedServiceTypeRepositoryToken, repos.feeds.serviceTypeRepo],
+    [FeedServiceRepositoryToken, repos.feeds.serviceRepo],
+    [FeedRepositoryToken, repos.feeds.feedRepo],
+    [MageEventRepositoryToken, repos.events.eventRepo],
+    [ObservationRepositoryToken, repos.observations.obsRepoFactory],
+    [AttachmentStoreToken, repos.observations.attachmentStore],
+    [StaticIconRepositoryToken, repos.icons.staticIconRepo],
+    [UserRepositoryToken, repos.users.userRepo],
+    [FeedsAppServiceTokens.CreateFeed, appLayer.feeds.createFeed],
+    [FeedsAppServiceTokens.UpdateFeed, appLayer.feeds.updateFeed],
+    [FeedsAppServiceTokens.DeleteFeed, appLayer.feeds.deleteFeed]
+  ]);
+
   for (const pluginId of config.plugins?.servicePlugins || []) {
-    console.info(`loading plugin ${pluginId}...`)
-    const pluginScopeServices = new Map<InjectionToken<any>, any>()
-    const injectService: InjectableServices = <Service>(token: InjectionToken<Service>) => {
+    console.info(`loading plugin ${pluginId}...`);
+    const pluginScopeServices = new Map<InjectionToken<any>, any>();
+
+    const injectService: InjectableServices = <Service>(
+      token: InjectionToken<Service>
+    ) => {
       // TODO: hack for now but could be better
       if (token === PluginStateRepositoryToken) {
-        let stateRepo = pluginScopeServices.get(PluginStateRepositoryToken)
+        let stateRepo = pluginScopeServices.get(PluginStateRepositoryToken);
         if (!stateRepo) {
-          stateRepo = new MongoosePluginStateRepository(pluginId, mongoose)
-          pluginScopeServices.set(PluginStateRepositoryToken, stateRepo)
+          stateRepo = new MongoosePluginStateRepository(pluginId, mongoose);
+          pluginScopeServices.set(PluginStateRepositoryToken, stateRepo);
         }
-        return stateRepo
+        return stateRepo;
+      } else if (token === MongooseDbConnectionToken) {
+        return dbLayer.connectionFactoryForPlugin(pluginId);
       }
-      else if (token === MongooseDbConnectionToken) {
-        return dbLayer.connectionFactoryForPlugin(pluginId)
-      }
-      return globalScopeServices.get(token)
-    }
+      return globalScopeServices.get(token);
+    };
+
     try {
       /*
       TODO: may need to switch to require.resolve() or custom api to load
@@ -182,124 +281,165 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
       docker/container deployments with a base mage instance image and an
       externally-mounted plugins directory.
       */
-      const initPlugin: InitPluginHook = await import(pluginId)
-      await integratePluginHooks(pluginId, initPlugin, injectService, collectPluginRoutesToSort)
-    }
-    catch (err) {
-      console.error(`error loading plugin ${pluginId}`, err)
+      const initPlugin: InitPluginHook = await import(pluginId);
+      await integratePluginHooks(
+        pluginId,
+        initPlugin,
+        injectService,
+        collectPluginRoutesToSort
+      );
+    } catch (err) {
+      console.error(`error loading plugin ${pluginId}`, err);
     }
   }
-  const pluginRoutePathsDescending = Object.keys(routesForPluginId).sort().reverse()
+
+  const pluginRoutePathsDescending = Object.keys(routesForPluginId)
+    .sort()
+    .reverse();
+
   for (const pluginId of pluginRoutePathsDescending) {
-    addPluginRoutes(pluginId, routesForPluginId[pluginId])
+    addPluginRoutes(pluginId, routesForPluginId[pluginId]);
   }
 
   try {
-    await import('./schedule').then(jobSchedule => jobSchedule.initialize())
-  }
-  catch (err) {
-    throw new Error('error initializing scheduled tasks: ' + err)
+    await import('./schedule').then(jobSchedule => jobSchedule.initialize());
+  } catch (err) {
+    throw new Error('error initializing scheduled tasks: ' + err);
   }
 
-  const server = httpLib.createServer(webController)
+  const server = httpLib.createServer(webController);
   service = {
     webController,
     server,
     open(): MageService {
       server.listen(environment.port, environment.address, () => {
-        log.info(`MAGE Server listening at address ${environment.address} on port ${environment.port}`)
-        webController.emit(MageReadyEvent, service)
-      })
-      return this
+        log.info(
+          `MAGE Server listening at address ${environment.address} on port ${environment.port}`
+        );
+        webController.emit(MageReadyEvent, service);
+      });
+      return this;
     }
-  }
-  return service
-}
+  };
+
+  return service;
+};
 
 type DatabaseLayer = {
-  conn: mongoose.Connection
-  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection
+  conn: mongoose.Connection;
+  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection;
   feeds: {
-    feedServiceTypeIdentity: FeedServiceTypeIdentityModel
-    feedService: FeedServiceModel
-    feed: FeedModel
-  }
+    feedServiceTypeIdentity: FeedServiceTypeIdentityModel;
+    feedService: FeedServiceModel;
+    feed: FeedModel;
+  };
   events: {
-    event: MageEventModel
-  }
+    event: MageEventModel;
+  };
   icons: {
-    staticIcon: StaticIconModel
-  },
+    staticIcon: StaticIconModel;
+  };
   users: {
-    user: UserModel
-  },
+    user: UserModel;
+  };
   settings: {
-    setting: SettingsModel
-  }
-}
+    setting: SettingsModel;
+  };
+};
 
 type AppLayer = {
   events: {
-    addFeedToEvent: eventsApi.AddFeedToEvent
-    listEventFeeds: eventsApi.ListEventFeeds
-    removeFeedFromEvent: eventsApi.RemoveFeedFromEvent
-    fetchFeedContent: feedsApi.FetchFeedContent
-  },
+    addFeedToEvent: eventsApi.AddFeedToEvent;
+    listEventFeeds: eventsApi.ListEventFeeds;
+    removeFeedFromEvent: eventsApi.RemoveFeedFromEvent;
+    fetchFeedContent: feedsApi.FetchFeedContent;
+  };
   observations: {
-    allocateObservationId: observationsApi.AllocateObservationId
-    saveObservation: observationsApi.SaveObservation
-    storeAttachmentContent: observationsApi.StoreAttachmentContent
-    readAttachmentContent: observationsApi.ReadAttachmentContent
-  },
+    allocateObservationId: observationsApi.AllocateObservationId;
+    saveObservation: observationsApi.SaveObservation;
+    storeAttachmentContent: observationsApi.StoreAttachmentContent;
+    readAttachmentContent: observationsApi.ReadAttachmentContent;
+  };
   feeds: {
-    jsonSchemaService: JsonSchemaService
-    permissionService: feedsApi.FeedsPermissionService
-    listServiceTypes: feedsApi.ListFeedServiceTypes
-    previewTopics: feedsApi.PreviewTopics
-    createService: feedsApi.CreateFeedService
-    listServices: feedsApi.ListFeedServices
-    getService: feedsApi.GetFeedService
-    listTopics: feedsApi.ListServiceTopics
-    previewFeed: feedsApi.PreviewFeed
-    createFeed: feedsApi.CreateFeed
-    listAllFeeds: feedsApi.ListAllFeeds
-    listServiceFeeds: feedsApi.ListServiceFeeds
-    deleteService: feedsApi.DeleteFeedService
-    getFeed: feedsApi.GetFeed
-    updateFeed: feedsApi.UpdateFeed
-    deleteFeed: feedsApi.DeleteFeed
-  },
-  icons: StaticIconsAppLayer,
-  users: UsersAppLayer,
-  systemInfo: SystemInfoAppLayer,
-  settings: SettingsAppLayer,
-}
+    jsonSchemaService: JsonSchemaService;
+    permissionService: feedsApi.FeedsPermissionService;
+    listServiceTypes: feedsApi.ListFeedServiceTypes;
+    previewTopics: feedsApi.PreviewTopics;
+    createService: feedsApi.CreateFeedService;
+    listServices: feedsApi.ListFeedServices;
+    getService: feedsApi.GetFeedService;
+    listTopics: feedsApi.ListServiceTopics;
+    previewFeed: feedsApi.PreviewFeed;
+    createFeed: feedsApi.CreateFeed;
+    listAllFeeds: feedsApi.ListAllFeeds;
+    listServiceFeeds: feedsApi.ListServiceFeeds;
+    deleteService: feedsApi.DeleteFeedService;
+    getFeed: feedsApi.GetFeed;
+    updateFeed: feedsApi.UpdateFeed;
+    deleteFeed: feedsApi.DeleteFeed;
+  };
+  icons: StaticIconsAppLayer;
+  users: UsersAppLayer;
+  systemInfo: SystemInfoAppLayer;
+  settings: SettingsAppLayer;
+};
 
 async function initDatabase(): Promise<DatabaseLayer> {
-  const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo
-  const conn = await waitForDefaultMongooseConnection(mongoose, uri, connectTimeout, connectRetryDelay, options).then(() => mongoose.connection)
-  const PluginConnectionFactory = function PluginConnectionFactory(pluginId: string): GetDbConnection {
-    const pluginMongoose = new mongoose.Mongoose()
+  const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo;
+
+  const conn = await waitForDefaultMongooseConnection(
+    mongoose,
+    uri,
+    connectTimeout,
+    connectRetryDelay,
+    options
+  ).then(() => mongoose.connection);
+
+  const PluginConnectionFactory = function PluginConnectionFactory(
+    pluginId: string
+  ): GetDbConnection {
+    const pluginMongoose = new mongoose.Mongoose();
     // TODO: add event listeners to plugin connections to log how plugins are using the connection
     // TODO: bufferCommands probably exists on mongoose 5+ types. 4 supports the option, but the typedefs don't
-    const pluginOptions: mongoose.ConnectOptions & { bufferCommands: boolean } = {
+    const pluginOptions: mongoose.ConnectOptions & {
+      bufferCommands: boolean;
+    } = {
       ...options,
       minPoolSize: 5,
       maxPoolSize: 5,
       bufferCommands: false,
       autoIndex: false
-    }
+    };
+
     return () => {
-      console.info(`get db connection for plugin ${pluginId}`)
-      return waitForDefaultMongooseConnection(pluginMongoose, uri, connectTimeout, connectRetryDelay, pluginOptions).then(() => pluginMongoose.connection)
-    }
-  }
+      console.info(`get db connection for plugin ${pluginId}`);
+      return waitForDefaultMongooseConnection(
+        pluginMongoose,
+        uri,
+        connectTimeout,
+        connectRetryDelay,
+        pluginOptions
+      ).then(() => pluginMongoose.connection);
+    };
+  };
+
   // TODO: transition legacy model initialization
   // TODO: inject connection to migrations
   // TODO: explore performing migrations without mongoose models because current models may not be compatible with past migrations
-  require('./models').initializeModels()
-  const migrate = await import('./migrate')
-  await migrate.runDatabaseMigrations(uri, options)
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models').initializeModels();
+
+  const migrate = await import('./migrate');
+  await migrate.runDatabaseMigrations(uri, options);
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const eventModel = require('./models/event').Model;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const userModel = require('./models/user').Model;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const settingModel = require('./models/setting').Model;
+
   return {
     conn,
     connectionFactoryForPlugin: PluginConnectionFactory,
@@ -309,85 +449,108 @@ async function initDatabase(): Promise<DatabaseLayer> {
       feed: FeedModel(conn)
     },
     events: {
-      event: require('./models/event').Model
+      event: eventModel
     },
     icons: {
       staticIcon: StaticIconModel(conn)
     },
     users: {
-      user: require('./models/user').Model
+      user: userModel
     },
     settings: {
-      setting: require('./models/setting').Model
+      setting: settingModel
     }
-  }
+  };
 }
 
 type Repositories = {
   events: {
-    eventRepo: MageEventRepository
-  },
+    eventRepo: MageEventRepository;
+  };
   observations: {
-    obsRepoFactory: ObservationRepositoryForEvent,
-    attachmentStore: AttachmentStore
-  }
+    obsRepoFactory: ObservationRepositoryForEvent;
+    attachmentStore: AttachmentStore;
+  };
   feeds: {
-    serviceTypeRepo: FeedServiceTypeRepository,
-    serviceRepo: FeedServiceRepository,
-    feedRepo: FeedRepository
-  },
+    serviceTypeRepo: FeedServiceTypeRepository;
+    serviceRepo: FeedServiceRepository;
+    feedRepo: FeedRepository;
+  };
   icons: {
-    staticIconRepo: StaticIconRepository
-  },
+    staticIconRepo: StaticIconRepository;
+  };
   users: {
-    userRepo: UserRepository
-  },
-  enviromentInfo: EnvironmentService,
+    userRepo: UserRepository;
+  };
+  enviromentInfo: EnvironmentService;
   settings: {
-    settingRepo: SettingRepository
-  },
-}
+    settingRepo: SettingRepository;
+  };
+};
 
-  // TODO: the real thing
+// TODO: the real thing
 const jsonSchemaService: JsonSchemaService = {
-  async validateSchema(schema: JSONSchema4): Promise<JsonValidator> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async validateSchema(_schema: JSONSchema4): Promise<JsonValidator> {
     return {
       validate: async () => null
-    }
+    };
   }
-}
+};
 
-const DomainEvents = new EventEmitter({ captureRejections: true })
-  .on('error', err => {
-    console.error('uncaught error in domain event handler:', err)
-  })
+const DomainEvents = new EventEmitter({ captureRejections: true }).on(
+  'error',
+  (err: unknown) => {
+    console.error('uncaught error in domain event handler:', err);
+  }
+);
 
-async function initRepositories(models: DatabaseLayer, config: BootConfig): Promise<Repositories> {
-  const serviceTypeRepo = new MongooseFeedServiceTypeRepository(models.feeds.feedServiceTypeIdentity)
-  const serviceRepo = new MongooseFeedServiceRepository(models.feeds.feedService)
-  const feedRepo = new MongooseFeedRepository(models.feeds.feed, new SimpleIdFactory())
-  const eventRepo = new MongooseMageEventRepository(models.events.event)
+async function initRepositories(
+  models: DatabaseLayer,
+  config: BootConfig
+): Promise<Repositories> {
+  const serviceTypeRepo = new MongooseFeedServiceTypeRepository(
+    models.feeds.feedServiceTypeIdentity
+  );
+  const serviceRepo = new MongooseFeedServiceRepository(
+    models.feeds.feedService
+  );
+  const feedRepo = new MongooseFeedRepository(
+    models.feeds.feed,
+    new SimpleIdFactory()
+  );
+  const eventRepo = new MongooseMageEventRepository(models.events.event);
   const staticIconRepo = new MongooseStaticIconRepository(
     models.icons.staticIcon,
     new SimpleIdFactory(),
     new FileSystemIconContentStore(),
-    [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
-  const userRepo = new MongooseUserRepository(models.users.user)
-  const settingRepo = new MongooseSettingsRepository(models.settings.setting)
-  const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
-  const systemInfoService = new EnvironmentServiceImpl(models.conn)
+    [new PluginUrlScheme(config.plugins?.servicePlugins || [])]
+  );
+  const userRepo = new MongooseUserRepository(models.users.user);
+  const settingRepo = new MongooseSettingsRepository(models.settings.setting);
+  const attachmentStore = await intializeAttachmentStore(
+    environment.attachmentBaseDirectory
+  );
+  const systemInfoService = new EnvironmentServiceImpl(models.conn);
+
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
-    throw attachmentStore
+    throw attachmentStore;
   }
+
   return {
     feeds: {
-      serviceTypeRepo, serviceRepo, feedRepo
+      serviceTypeRepo,
+      serviceRepo,
+      feedRepo
     },
     events: {
       eventRepo
     },
     observations: {
-      obsRepoFactory: createObservationRepositoryFactory(eventRepo, DomainEvents),
+      obsRepoFactory: createObservationRepositoryFactory(
+        eventRepo,
+        DomainEvents
+      ),
       attachmentStore
     },
     icons: {
@@ -399,18 +562,19 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     enviromentInfo: systemInfoService,
     settings: {
       settingRepo
-    },
-  }
+    }
+  };
 }
 
 async function initAppLayer(repos: Repositories): Promise<AppLayer> {
-  const events = await initEventsAppLayer(repos)
-  const observations = await initObservationsAppLayer(repos)
-  const icons = await initIconsAppLayer(repos)
-  const feeds = await initFeedsAppLayer(repos)
-  const users = await initUsersAppLayer(repos)
-  const systemInfo = initSystemInfoAppLayer(repos)
-  const settings = await initSettingsAppLayer(repos)
+  const events = await initEventsAppLayer(repos);
+  const observations = await initObservationsAppLayer(repos);
+  const icons = await initIconsAppLayer(repos);
+  const feeds = await initFeedsAppLayer(repos);
+  const users = await initUsersAppLayer(repos);
+  const systemInfo = initSystemInfoAppLayer(repos);
+  const settings = await initSettingsAppLayer(repos);
+
   return {
     events,
     observations,
@@ -418,68 +582,174 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
     icons,
     users,
     systemInfo,
-    settings,
-  }
+    settings
+  };
 }
 
-async function initUsersAppLayer(repos: Repositories): Promise<AppLayer['users']> {
-  const usersPermissions = new RoleBasedUsersPermissionService()
-  const searchUsers = SearchUsers(repos.users.userRepo, usersPermissions)
+async function initUsersAppLayer(
+  repos: Repositories
+): Promise<AppLayer['users']> {
+  const usersPermissions = new RoleBasedUsersPermissionService();
+  const searchUsers = SearchUsers(repos.users.userRepo, usersPermissions);
   return {
     searchUsers
-  }
+  };
 }
 
-async function initEventsAppLayer(repos: Repositories): Promise<AppLayer['events']> {
-  const eventPermissions = await import('./permissions/permissions.events')
-  const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(repos.events.eventRepo, eventPermissions.defaultEventPermissionsService)
+async function initEventsAppLayer(
+  repos: Repositories
+): Promise<AppLayer['events']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(
+    repos.events.eventRepo,
+    eventPermissions.defaultEventPermissionsService
+  );
+
   return {
-    addFeedToEvent: eventsImpl.AddFeedToEvent(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo),
-    listEventFeeds: eventsImpl.ListEventFeeds(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo, repos.feeds.feedRepo),
-    removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo),
-    fetchFeedContent: feedsImpl.FetchFeedContent(eventFeedsPermissions, repos.feeds.serviceTypeRepo, repos.feeds.serviceRepo, repos.feeds.feedRepo, jsonSchemaService)
-  }
+    addFeedToEvent: eventsImpl.AddFeedToEvent(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventRepo
+    ),
+    listEventFeeds: eventsImpl.ListEventFeeds(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventRepo,
+      repos.feeds.feedRepo
+    ),
+    removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventRepo
+    ),
+    fetchFeedContent: feedsImpl.FetchFeedContent(
+      eventFeedsPermissions,
+      repos.feeds.serviceTypeRepo,
+      repos.feeds.serviceRepo,
+      repos.feeds.feedRepo,
+      jsonSchemaService
+    )
+  };
 }
 
-async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['observations']> {
-  const eventPermissions = await import('./permissions/permissions.events')
-  const obsPermissions = await import('./permissions/permissions.observations')
-  const obsPermissionsService = new obsPermissions.ObservationPermissionsServiceImpl(eventPermissions.defaultEventPermissionsService)
-  observationsImpl.registerDeleteRemovedAttachmentsHandler(DomainEvents, repos.observations.attachmentStore)
+async function initObservationsAppLayer(
+  repos: Repositories
+): Promise<AppLayer['observations']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const obsPermissions = await import('./permissions/permissions.observations');
+  const obsPermissionsService =
+    new obsPermissions.ObservationPermissionsServiceImpl(
+      eventPermissions.defaultEventPermissionsService
+    );
+
+  observationsImpl.registerDeleteRemovedAttachmentsHandler(
+    DomainEvents,
+    repos.observations.attachmentStore
+  );
+
   return {
-    allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
-    saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo),
-    storeAttachmentContent: observationsImpl.StoreAttachmentContent(obsPermissionsService, repos.observations.attachmentStore),
-    readAttachmentContent: observationsImpl.ReadAttachmentContent(obsPermissionsService, repos.observations.attachmentStore)
-  }
+    allocateObservationId: observationsImpl.AllocateObservationId(
+      obsPermissionsService
+    ),
+    saveObservation: observationsImpl.SaveObservation(
+      obsPermissionsService,
+      repos.users.userRepo
+    ),
+    storeAttachmentContent: observationsImpl.StoreAttachmentContent(
+      obsPermissionsService,
+      repos.observations.attachmentStore
+    ),
+    readAttachmentContent: observationsImpl.ReadAttachmentContent(
+      obsPermissionsService,
+      repos.observations.attachmentStore
+    )
+  };
 }
 
 function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
-  const permissions = new RoleBasedStaticIconPermissionService()
+  const permissions = new RoleBasedStaticIconPermissionService();
   return {
     getIcon: GetStaticIcon(permissions, repos.icons.staticIconRepo),
     getIconContent: GetStaticIconContent(permissions, repos.icons.staticIconRepo),
     listIcons: ListStaticIcons(permissions)
-  }
+  };
 }
 
 function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
-  const { serviceTypeRepo, serviceRepo, feedRepo } = repos.feeds
-  const permissionService = new PreFetchedUserRoleFeedsPermissionService()
-  const listServiceTypes = feedsImpl.ListFeedServiceTypes(permissionService, serviceTypeRepo)
-  const previewTopics = feedsImpl.PreviewTopics(permissionService, serviceTypeRepo)
-  const createService = feedsImpl.CreateFeedService(permissionService, serviceTypeRepo, serviceRepo)
-  const listServices = feedsImpl.ListFeedServices(permissionService, serviceTypeRepo, serviceRepo)
-  const getService = feedsImpl.GetFeedService(permissionService, serviceTypeRepo, serviceRepo)
-  const listTopics = feedsImpl.ListServiceTopics(permissionService, serviceTypeRepo, serviceRepo)
-  const previewFeed = feedsImpl.PreviewFeed(permissionService, serviceTypeRepo, serviceRepo, jsonSchemaService, repos.icons.staticIconRepo)
-  const createFeed = feedsImpl.CreateFeed(permissionService, serviceTypeRepo, serviceRepo, feedRepo, jsonSchemaService, repos.icons.staticIconRepo)
-  const listAllFeeds = feedsImpl.ListAllFeeds(permissionService, feedRepo)
-  const listServiceFeeds = feedsImpl.ListServiceFeeds(permissionService, serviceRepo, feedRepo)
-  const deleteService = feedsImpl.DeleteFeedService(permissionService, serviceRepo, feedRepo, repos.events.eventRepo)
-  const getFeed = feedsImpl.GetFeed(permissionService, serviceTypeRepo, serviceRepo, feedRepo)
-  const updateFeed = feedsImpl.UpdateFeed(permissionService, serviceTypeRepo, serviceRepo, feedRepo, repos.icons.staticIconRepo)
-  const deleteFeed = feedsImpl.DeleteFeed(permissionService, feedRepo, repos.events.eventRepo)
+  const { serviceTypeRepo, serviceRepo, feedRepo } = repos.feeds;
+  const permissionService = new PreFetchedUserRoleFeedsPermissionService();
+
+  const listServiceTypes = feedsImpl.ListFeedServiceTypes(
+    permissionService,
+    serviceTypeRepo
+  );
+  const previewTopics = feedsImpl.PreviewTopics(
+    permissionService,
+    serviceTypeRepo
+  );
+  const createService = feedsImpl.CreateFeedService(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo
+  );
+  const listServices = feedsImpl.ListFeedServices(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo
+  );
+  const getService = feedsImpl.GetFeedService(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo
+  );
+  const listTopics = feedsImpl.ListServiceTopics(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo
+  );
+  const previewFeed = feedsImpl.PreviewFeed(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo,
+    jsonSchemaService,
+    repos.icons.staticIconRepo
+  );
+  const createFeed = feedsImpl.CreateFeed(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo,
+    feedRepo,
+    jsonSchemaService,
+    repos.icons.staticIconRepo
+  );
+  const listAllFeeds = feedsImpl.ListAllFeeds(permissionService, feedRepo);
+  const listServiceFeeds = feedsImpl.ListServiceFeeds(
+    permissionService,
+    serviceRepo,
+    feedRepo
+  );
+  const deleteService = feedsImpl.DeleteFeedService(
+    permissionService,
+    serviceRepo,
+    feedRepo,
+    repos.events.eventRepo
+  );
+  const getFeed = feedsImpl.GetFeed(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo,
+    feedRepo
+  );
+  const updateFeed = feedsImpl.UpdateFeed(
+    permissionService,
+    serviceTypeRepo,
+    serviceRepo,
+    feedRepo,
+    repos.icons.staticIconRepo
+  );
+  const deleteFeed = feedsImpl.DeleteFeed(
+    permissionService,
+    feedRepo,
+    repos.events.eventRepo
+  );
+
   return {
     jsonSchemaService,
     permissionService,
@@ -496,13 +766,13 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
     deleteService,
     getFeed,
     updateFeed,
-    deleteFeed,
-  }
+    deleteFeed
+  };
 }
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
-  const permissionsService = new RoleBasedSystemInfoPermissionService()
-  const versionInfo = apiConfig.api.version
+  const permissionsService = new RoleBasedSystemInfoPermissionService();
+  const versionInfo = apiConfig.api.version;
   return {
     readSystemInfo: CreateReadSystemInfo(
       repos.enviromentInfo,
@@ -513,191 +783,239 @@ function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
       permissionsService
     ),
     permissionsService
-  }
+  };
 }
 
-async function initSettingsAppLayer(repos: Repositories): Promise<AppLayer['settings']> {
-  const mapPermissions = new RoleBasedMapPermissionService()
-  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions)
-  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions)
+async function initSettingsAppLayer(
+  repos: Repositories
+): Promise<AppLayer['settings']> {
+  const mapPermissions = new RoleBasedMapPermissionService();
+  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions);
+  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions);
   return {
     getMapSettings,
     updateMapSettings
-  }
+  };
 }
 
 interface MageEventRequestContext extends AppRequestContext<UserDocument> {
-  event: MageEventDocument | MageEvent | undefined
+  event: MageEventDocument | MageEvent | undefined;
 }
 
-const observationEventScopeKey = 'observationEventScope' as const
+const observationEventScopeKey = 'observationEventScope' as const;
 
 async function initWebLayer(
   repos: Repositories,
   app: AppLayer,
   webUIPlugins: string[]
-): Promise<{ webController: express.Application, addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void }> {
+): Promise<{
+  webController: express.Application;
+  addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void;
+}> {
   // load routes the old way
-  const webLayer = await import('./express')
-  const webController = webLayer.app
-  const webAuth = webLayer.auth
-  const appRequestFactory: WebAppRequestFactory = <Params>(req: express.Request, params: Params): AppRequest<UserDocument, MageEventRequestContext> & Params => {
+  const webLayer = await import('./express');
+  const webController = webLayer.app;
+  const webAuth = webLayer.auth;
+
+  const appRequestFactory: WebAppRequestFactory = <Params>(
+    req: express.Request,
+    params: Params
+  ): AppRequest<UserDocument, MageEventRequestContext> & Params => {
     return {
       ...params,
       context: {
         ...baseAppRequestContext(req),
-        event: req.event || req.eventEntity
+        event: (req as any).event || (req as any).eventEntity
       }
-    }
-  }
-  const bearerAuth = webAuth.passport.authenticate('bearer')
+    };
+  };
 
-  const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory)
-  webController.use('/api/settings', [
-    bearerAuth,
-    settingsRoutes
-  ])
+  const bearerAuth = webAuth.passport.authenticate('bearer');
 
-  const usersRoutes = UsersRoutes(app.users, appRequestFactory)
-  /*
-  TODO: cannot mount at /api/users/search because the /api/users/:userId route
-  comes first and catches the request.  when old routes move to new sub-router,
-  ensure this and the web client changes appropriately
-  */
-  webController.use('/api/next-users', [
-    bearerAuth,
-    usersRoutes
-  ])
-  const feedsRoutes = FeedsRoutes(app.feeds, appRequestFactory)
-  webController.use('/api/feeds', [
-    bearerAuth,
-    feedsRoutes
-  ])
-  const iconsRoutes = StaticIconRoutes(app.icons, appRequestFactory)
-  webController.use('/api/icons', [
-    bearerAuth,
-    iconsRoutes
-  ])
-  const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
-  webController.use('/api', [
-    systemInfoRoutes
-  ])
-  const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
+  const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory);
+  webController.use('/api/settings', [bearerAuth, settingsRoutes]);
+
+  const usersRoutes = UsersRoutes(app.users, appRequestFactory);
+  webController.use('/api/next-users', [bearerAuth, usersRoutes]);
+
+  const feedsRoutes = FeedsRoutes(app.feeds, appRequestFactory);
+  webController.use('/api/feeds', [bearerAuth, feedsRoutes]);
+
+  const iconsRoutes = StaticIconRoutes(app.icons, appRequestFactory);
+  webController.use('/api/icons', [bearerAuth, iconsRoutes]);
+
+  const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory);
+  webController.use('/api', [systemInfoRoutes]);
+
+  const observationRequestFactory: ObservationWebAppRequestFactory = <
+    Params extends object | undefined
+  >(
+    req: express.Request,
+    params: Params
+  ) => {
     const context: observationsApi.ObservationRequestContext = {
       ...baseAppRequestContext(req),
       mageEvent: req[observationEventScopeKey]!.mageEvent,
-      userId: req.user.id,
-      deviceId: req.provisionedDeviceId,
+      userId: (req.user as any).id,
+      deviceId: (req as any).provisionedDeviceId,
       observationRepository: req[observationEventScopeKey]!.observationRepository
-    }
-    return { ...params, context }
-  }
-  const observationsRoutes = ObservationRoutes(app.observations, repos.observations.attachmentStore, observationRequestFactory)
+    };
+    return { ...params, context };
+  };
+
+  const observationsRoutes = ObservationRoutes(
+    app.observations,
+    repos.observations.attachmentStore,
+    observationRequestFactory
+  );
+
   webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
     bearerAuth,
     ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),
     observationsRoutes
-  ])
-  const eventFeedsRoutes = EventFeedsRoutes({ ...app.events, eventRepo: repos.events.eventRepo }, appRequestFactory)
-  webController.use('/api/events', [
-    bearerAuth,
-    eventFeedsRoutes
-  ])
+  ]);
 
-  /*
-  no /api prefix here, because this is not really part of the service api. the
-  only reason this is here is because there is currently no clean way to apply
-  authentication outside of this service main module. an ideal clean
-  architecture would decouple the authentication services from this service
-  module and its express/passport middleware, but that will require a larger
-  effort to refactor.
-  */
-  const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins)
+  const eventFeedsRoutes = EventFeedsRoutes(
+    { ...app.events, eventRepo: repos.events.eventRepo },
+    appRequestFactory
+  );
+  webController.use('/api/events', [bearerAuth, eventFeedsRoutes]);
+
+  const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
+    req,
+    _res,
+    next
+  ): void => {
+    const token =
+      typeof req.query.access_token === 'string'
+        ? req.query.access_token
+        : null;
+
+    if (token && !req.headers.authorization) {
+      req.headers.authorization = `Bearer ${token}`;
+    }
+
+    next();
+  };
+
+  const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
+
+  const uiPluginsAuth: express.RequestHandler = (req, res, next): void => {
+    if (req.user) {
+      next();
+      return;
+    }
+    bearerAuth(req, res, next);
+  };
+
   webController.use('/ui_plugins', [
-    bearerAuth,
+    uiPluginsAccessTokenToAuthHeader,
+    uiPluginsAuth,
     webUiPluginRoutes
-  ])
-  /*
-   TODO: maybe a better approach would be to setup a global root middleware
-   that creates the app request context for every incoming http request and
-   sets a property on the express/node http request object
-   */
-  const pluginAppRequestContext: GetAppRequestContext = (req: express.Request) => {
+  ]);
+
+  const pluginAppRequestContext: GetAppRequestContext = (
+    req: express.Request
+  ): AppRequestContext<UserExpanded> => {
     return {
       requestToken: Symbol(),
-      requestingPrincipal() {
-        /*
-        TODO: this should ideally change so that the existing passport login
-        middleware applies the entity form of a user on the request rather than
-        the mongoose document instance
-        */
-        return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
+      requestingPrincipal(): UserExpanded {
+        return {
+          ...(req.user as any).toJSON(),
+          id: (req.user as any)._id.toHexString()
+        } as UserExpanded;
       },
-      locale() {
+      locale(): Readonly<{
+        languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
+      }> {
         return Object.freeze({
-          languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
-        })
+          languagePreferences: parseAcceptLanguageHeader(
+            req.headers['accept-language']
+          )
+        });
       }
-    }
-  }
+    };
+  };  
+
   try {
-    const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json')
-    const webAppPath = path.dirname(webappPackagePath)
-    webController.use(express.static(path.join(webAppPath, 'app')))
-    webController.use('/admin', express.static(path.join(webAppPath, 'admin')))
+    const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
+    const webAppPath = path.dirname(webappPackagePath);
+    webController.use(express.static(path.join(webAppPath, 'app')));
+    webController.use('/admin', express.static(path.join(webAppPath, 'admin')));
+  } catch (err) {
+    console.warn('failed to load mage web app package', err);
   }
-  catch (err) {
-    console.warn('failed to load mage web app package', err)
-  }
+
   return {
     webController,
-    addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
+    addPluginRoutes: (
+      pluginId: string,
+      initPluginRoutes: WebRoutesHooks
+    ): void => {
       if (initPluginRoutes.webRoutes.public) {
-        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext)
-        webController.use(`/plugins/${pluginId}`, [routes])
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext);
+        webController.use(`/plugins/${pluginId}`, [routes]);
       }
 
       if (initPluginRoutes.webRoutes.protected) {
-        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext)
-        webController.use(`/plugins/${pluginId}`, [bearerAuth, routes])
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext);
+        webController.use(`/plugins/${pluginId}`, [bearerAuth, routes]);
       }
     }
-  }
-}
- 
-function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
-  return {
-    requestToken: Symbol(),
-    requestingPrincipal() {
-      return req.user as UserWithRole
-    },
-    locale() {
-      return Object.freeze({
-        languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
-      })
-    }
-  }
+  };
 }
 
-function ensureObservationEventScope(eventRepo: MageEventRepository, createObsRepo: ObservationRepositoryForEvent) {
-  return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const eventIdFromPath = req.params[observationEventScopeKey]
-    const eventId: MageEventId = parseInt(eventIdFromPath)
-    const mageEvent = Number.isInteger(eventId) ? await eventRepo.findById(eventId) : null
-    if (mageEvent) {
-      const observationRepository = await createObsRepo(mageEvent.id)
-      req[observationEventScopeKey] = { mageEvent, observationRepository }
-      return next()
+function baseAppRequestContext(
+  req: express.Request
+): AppRequestContext<UserWithRole> {
+  return {
+    requestToken: Symbol(),
+    requestingPrincipal(): UserWithRole {
+      return req.user as UserWithRole;
+    },
+    locale(): Readonly<{
+      languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
+    }> {
+      return Object.freeze({
+        languagePreferences: parseAcceptLanguageHeader(
+          req.headers['accept-language']
+        )
+      });
     }
-    res.status(404).json(`event not found: ${eventIdFromPath}`)
-  }
+  };
+}
+
+function ensureObservationEventScope(
+  eventRepo: MageEventRepository,
+  createObsRepo: ObservationRepositoryForEvent
+): express.RequestHandler {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<void> => {
+    const eventIdFromPath = req.params[observationEventScopeKey];
+    const eventId: MageEventId = parseInt(eventIdFromPath);
+    const mageEvent = Number.isInteger(eventId)
+      ? await eventRepo.findById(eventId)
+      : null;
+
+    if (mageEvent) {
+      const observationRepository = await createObsRepo(mageEvent.id);
+      req[observationEventScopeKey] = { mageEvent, observationRepository };
+      next();
+      return;
+    }
+
+    res.status(404).json(`event not found: ${eventIdFromPath}`);
+  };
 }
 
 declare module 'express' {
   interface Request {
     [observationEventScopeKey]?: {
-      mageEvent: MageEvent,
-      observationRepository: EventScopedObservationRepository
-    }
+      mageEvent: MageEvent;
+      observationRepository: EventScopedObservationRepository;
+    };
   }
 }

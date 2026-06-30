@@ -1,5 +1,9 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
-import { LocalStorageService, UserService } from '../../../app/upgrade/ajs-upgraded-providers';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { take } from 'rxjs/operators';
+
+import { LocalStorageService } from 'src/app/http/local-storage.service';
+import { AdminUserService } from '../../admin/services/admin-user.service';
+
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 
 @Component({
@@ -8,48 +12,54 @@ import { AttachmentAction } from '../observation-edit/observation-edit-attachmen
   styleUrls: ['./attachment.component.scss']
 })
 export class AttachmentComponent implements OnInit {
-  @Input() attachment: any
-  @Input() clickable: boolean
-  @Input() edit: boolean
-  @Input() label: string | boolean
+  @Input() attachment: any;
+  @Input() clickable: boolean;
+  @Input() edit: boolean;
+  @Input() label: string | boolean;
 
-  @Output() delete = new EventEmitter<void>()
+  @Output() delete = new EventEmitter<void>();
 
-  canEdit: boolean
-  token: string
+  canEdit: boolean;
+  token: string;
 
-  mimeTypes = {
-    'png': 'image',
-    'jpg': 'image',
-    'jpeg': 'image',
-    'mp4': 'video',
-    'mov': 'video'
-  }
+  mimeTypes: Record<string, string> = {
+    png: 'image',
+    jpg: 'image',
+    jpeg: 'image',
+    mp4: 'video',
+    mov: 'video'
+  };
 
-  actions: typeof AttachmentAction = AttachmentAction
+  actions: typeof AttachmentAction = AttachmentAction;
 
   constructor(
-    @Inject(UserService) private userService: any,
-    @Inject(LocalStorageService) localStorageService: any) {
-    this.token = localStorageService.getToken()
+    private adminUserService: AdminUserService,
+    private localStorageService: LocalStorageService
+  ) {
+    this.token = this.localStorageService.getToken();
   }
 
   ngOnInit(): void {
-    this.canEdit = this.userService.amAdmin && this.edit
+    this.adminUserService.isAdmin$
+      .pipe(take(1))
+      .subscribe((isAdmin) => {
+        this.canEdit = !!isAdmin && !!this.edit;
+      });
   }
 
   deleteAttachment(): void {
-    this.delete.emit()
+    this.delete.emit();
   }
 
   contentType(): string {
-    if (this.attachment.contentType) {
-      const types = this.attachment.contentType.split('/')
-      return types.length ? types[0] : ''
-    } else {
-      const extension = this.attachment.name.substr(this.attachment.name.lastIndexOf('.') + 1)
-      const mimeType = this.mimeTypes[extension]
-      return mimeType ? mimeType : ''
+    if (this.attachment?.contentType) {
+      const types = this.attachment.contentType.split('/');
+      return types.length ? types[0] : '';
     }
+
+    const name = String(this.attachment?.name ?? '');
+    const lastDot = name.lastIndexOf('.');
+    const extension = lastDot >= 0 ? name.substring(lastDot + 1).toLowerCase() : '';
+    return this.mimeTypes[extension] || '';
   }
 }

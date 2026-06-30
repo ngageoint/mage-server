@@ -9,4 +9,5 @@ export type Device = {
         displayName: string;
         id: string;
     }
+    iconClass?: string;
 }

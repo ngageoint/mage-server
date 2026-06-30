@@ -5,18 +5,19 @@ import { AdminDashboardComponent } from './admin-dashboard';
 import { LoginsModule } from '../../logins/logins.module';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatListModule } from '@angular/material/list';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
+import { MatListModule as MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatNativeDateModule } from '@angular/material/core';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule as MatTableModule } from '@angular/material/table';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [AdminDashboardComponent],
@@ -37,7 +38,8 @@ import { MatTableModule } from '@angular/material/table';
     MatAutocompleteModule,
     MatNativeDateModule,
     MatTableModule,
-    AdminBreadcrumbModule
+    AdminBreadcrumbModule,
+    RouterModule
   ],
   exports: [AdminDashboardComponent],
 })

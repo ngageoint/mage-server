@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 export interface Team {
-    id: ObjectId;
+    id: string;
     name: string;
     description: string;
     teamEventId: number | string;

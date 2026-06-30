@@ -3,6 +3,7 @@
 
 .container {
   height: 100%;
+  width: 35vw;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -12,7 +13,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: end;
+  justify-content: flex-end;
   height: 30vh;
 }
 
@@ -35,7 +36,7 @@
 .actions {
   display: flex;
   flex-direction: row;
-  justify-content: start;
+  justify-content: flex-start;
   width: 100%;
   gap: 16px;
 }

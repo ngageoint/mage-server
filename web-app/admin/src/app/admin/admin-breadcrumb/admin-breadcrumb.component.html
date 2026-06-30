@@ -1,24 +1,29 @@
 <div class="admin-breadcrumbs mat-elevation-z1">
   <ng-container *ngFor="let breadcrumb of breadcrumbs; index as i">
     <mat-icon *ngIf="breadcrumb.icon">{{ breadcrumb.icon }}</mat-icon>
+
     <i
       *ngIf="breadcrumb.iconClass"
       [ngClass]="breadcrumb.iconClass.split(' ')"
       aria-hidden="true"
     ></i>
+
     <div>
-      <span
+      <a
+        *ngIf="breadcrumb.route && (breadcrumb.route | slice:0:1).length; else activeBreadcrumb"
         class="admin-breadcrumb"
-        [ngClass]="{
-          'admin-breadcrumb--active': breadcrumb.state === undefined
-        }"
-        (click)="goToBreadcrumb(breadcrumb)"
+        [routerLink]="breadcrumb.route"
       >
         {{ breadcrumb.title }}
-      </span>
+      </a>
+
+      <ng-template #activeBreadcrumb>
+        <span class="admin-breadcrumb admin-breadcrumb--active">
+          {{ breadcrumb.title }}
+        </span>
+      </ng-template>
     </div>
-    <div *ngIf="i < breadcrumbs.length - 1">
-      <span class="admin-breadcrumb__separator">/</span>
-    </div>
+
+    <span *ngIf="i < breadcrumbs.length - 1" class="admin-breadcrumb__separator">/</span>
   </ng-container>
 </div>

@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DevicesService } from '../devices.service';
-import { Device } from 'admin/src/@types/dashboard/devices-dashboard';
+import { AdminDeviceService } from '../../services/admin-device.service';
+import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { User } from '../../admin-users/user';
 
 /**
@@ -22,7 +22,7 @@ export class CreateDeviceDialogComponent {
     public dialogRef: MatDialogRef<CreateDeviceDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { device: Partial<Device> },
     private fb: FormBuilder,
-    private devicesService: DevicesService
+    private devicesService: AdminDeviceService
   ) {
     this.deviceForm = this.fb.group({
       uid: [data.device?.uid ?? '', [Validators.required]],

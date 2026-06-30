@@ -23,8 +23,7 @@ module.exports.up = function (done) {
           $each: feedsPermissions
         }
       }
-    },
-    done)
+    }).then(() => done(), err => done(err))
 };
 
 module.exports.down = function (done) {
@@ -36,6 +35,5 @@ module.exports.down = function (done) {
       $pullAll: {
         permissions: feedsPermissions
       }
-    },
-    done)
+    }).then(() => done(), err => done(err))
 };

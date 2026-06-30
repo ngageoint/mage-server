@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { TeamsService } from '../teams-service';
+import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../team';
 
 /**
@@ -21,7 +21,7 @@ export class CreateTeamDialogComponent {
         public dialogRef: MatDialogRef<CreateTeamDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { team: Partial<Team> },
         private fb: FormBuilder,
-        private teamsService: TeamsService
+        private teamsService: AdminTeamsService
     ) {
         this.teamForm = this.fb.group({
             name: [data.team.name || '', [Validators.required]],

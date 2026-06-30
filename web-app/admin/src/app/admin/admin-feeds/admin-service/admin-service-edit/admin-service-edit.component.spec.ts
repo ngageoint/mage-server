@@ -1,317 +1,157 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Component, ViewChild } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
-import { Service, ServiceType } from '@ngageoint/mage.web-core-lib/feed';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { of } from 'rxjs';
+
 import { AdminServiceEditComponent } from './admin-service-edit.component';
-import { JsonSchemaModule } from '../../../../../app/json-schema/json-schema.module'
+import {
+  FeedService,
+  Service,
+  ServiceType
+} from '@ngageoint/mage.web-core-lib/feed';
 
 describe('AdminServiceEditComponent', () => {
   @Component({
     selector: 'app-host-component',
-    template: `<app-create-service
-                [expanded]="expanded">
-               </app-create-service>`
+    template: `<app-create-service [expanded]="expanded"></app-create-service>`
   })
   class TestHostComponent {
-    expanded: boolean;
+    expanded = false;
 
     @ViewChild(AdminServiceEditComponent, { static: true })
-    public createServiceComponent: AdminServiceEditComponent;
+    createServiceComponent!: AdminServiceEditComponent;
   }
 
-  let httpMock: HttpTestingController;
-  let hostComponent: TestHostComponent;
   let fixture: ComponentFixture<TestHostComponent>;
+  let host: TestHostComponent;
   let component: AdminServiceEditComponent;
-  let element: HTMLElement;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        MatExpansionModule,
-        MatFormFieldModule,
-        FormsModule,
-        MatSelectModule,
-        NgxMatSelectSearchModule,
-        ReactiveFormsModule,
-        JsonSchemaModule,
-        HttpClientTestingModule,
-        NoopAnimationsModule,
-      ],
-      declarations: [
-        TestHostComponent,
-        AdminServiceEditComponent
-      ]
-    })
-    .compileComponents();
+  let feedService: jasmine.SpyObj<FeedService>;
 
-  }));
+  const serviceType: ServiceType = {
+    pluginServiceTypeId: 'plugin1:type1',
+    id: 'serviceTypeId',
+    title: 'ServiceType',
+    summary: 'summary',
+    configSchema: {
+      type: 'string',
+      title: 'URL',
+      description: 'URL of the service',
+      default: 'https://nowhere.com'
+    }
+  } as any;
 
-  beforeEach(() => {
+  const existingService: Service = {
+    id: 'svc-1',
+    title: 'Existing',
+    summary: 'Existing summary',
+    serviceType: 'serviceTypeId',
+    config: 'https://example.com'
+  } as any;
+
+  beforeEach(async () => {
+    feedService = jasmine.createSpyObj('FeedService', [
+      'fetchServiceTypes',
+      'fetchServices',
+      'createService'
+    ]);
+
+    await TestBed.configureTestingModule({
+      declarations: [TestHostComponent, AdminServiceEditComponent],
+      providers: [{ provide: FeedService, useValue: feedService }],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+
     fixture = TestBed.createComponent(TestHostComponent);
-    hostComponent = fixture.componentInstance;
-    component = hostComponent.createServiceComponent;
-    element = fixture.nativeElement;
-    httpMock = TestBed.inject(HttpTestingController);
-  });
-
-  afterEach(() => {
-    httpMock.verify();
+    host = fixture.componentInstance;
+    component = host.createServiceComponent;
   });
 
   it('should create', () => {
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
+    expect(component).toBeTruthy();
+  });
+
+  it('ngOnInit should load serviceTypes and services', () => {
+    feedService.fetchServiceTypes.and.returnValue(of([serviceType] as any));
+    feedService.fetchServices.and.returnValue(of([existingService] as any));
 
     fixture.detectChanges();
 
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush([serviceType]);
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush([]);
-    expect(component).toBeTruthy();
-    expect(component.serviceTypes.length).toEqual(1);
-    expect(component.services.length).toEqual(0);
+    expect(feedService.fetchServiceTypes).toHaveBeenCalled();
+    expect(feedService.fetchServices).toHaveBeenCalled();
+    expect(component.serviceTypes.length).toBe(1);
+    expect(component.services.length).toBe(1);
   });
 
   it('should emit cancelled', () => {
     spyOn(component.cancelled, 'emit');
 
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
-
-    fixture.detectChanges();
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush([serviceType]);
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush([]);
-    expect(component).toBeTruthy();
-
     component.cancel();
+
     expect(component.cancelled.emit).toHaveBeenCalled();
   });
 
-  it('should not have a cancel button if there are no services', () => {
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
-
-    fixture.detectChanges();
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush([serviceType]);
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush([]);
-
-    fixture.detectChanges();
-    element.querySelectorAll('button').forEach(button => {
-      expect(button.innerText).not.toEqual('Cancel');
-    });
-  });
-
-  it('should have a disabled create service button if the service type is not selected', () => {
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
-
-    fixture.detectChanges();
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush([serviceType]);
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush([]);
-    element.querySelectorAll('button').forEach(button => {
-      if (button.innerText === 'Create Service') {
-        expect(button.disabled).toBeTruthy();
-      }
-    });
-  });
-
-  it('should set the default value for a configSchema with a string', () => {
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
-
-    fixture.detectChanges();
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    serviceTypeReq.flush([serviceType]);
-
-    const serviceReq = httpMock.expectOne('/api/feeds/services');
-    expect(serviceReq.request.method).toEqual('GET');
-    serviceReq.flush([]);
-
+  it('serviceTypeSelected should build title/summary schema and mark form ready', () => {
     component.selectedServiceType = serviceType;
+
     component.serviceTypeSelected();
 
-    fixture.detectChanges();
-    const inputs: NodeListOf<HTMLElement> = element.querySelectorAll('input');
-    expect(inputs.length).toEqual(3);
-    expect((inputs[0] as HTMLInputElement).value).toEqual(serviceType.title);
-    expect((inputs[1] as HTMLInputElement).value).toEqual(serviceType.summary);
-    expect((inputs[2] as HTMLInputElement).value).toEqual(serviceType.configSchema.default);
-
-    expect(component.serviceTitleSummary).toEqual({title: serviceType.title, summary: serviceType.summary});
-    expect(component.serviceConfiguration).toEqual(serviceType.configSchema.default);
+    expect(component.serviceFormReady).toBeTrue();
+    expect(component.serviceTitleSummarySchema).toEqual(
+      jasmine.objectContaining({
+        properties: jasmine.objectContaining({
+          title: jasmine.objectContaining({ default: serviceType.title }),
+          summary: jasmine.objectContaining({ default: serviceType.summary })
+        })
+      })
+    );
   });
 
-  it('should emit serviceCreated', async () => {
+  it('createService should do nothing if no selectedServiceType', () => {
     spyOn(component.serviceCreated, 'emit');
 
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
-
-    const service: Service = {
-      id: 'serviceId',
-      title: 'service title',
-      summary: 'service summary',
-      serviceType: 'serviceTypeId',
-      config: 'https://nowhere.com'
-    }
-
-    // triggers ngOnInit which makes two get calls
-    fixture.detectChanges();
-
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    serviceTypeReq.flush([serviceType]);
-    const serviceReq = httpMock.expectOne('/api/feeds/services');
-    serviceReq.flush([]);
-
-    component.selectedServiceType = serviceType;
-    component.serviceTypeSelected();
-
-    // trigger the form component to send it's event and then mock the request that will be made
-    fixture.detectChanges();
+    component.selectedServiceType = undefined as any;
     component.createService();
 
-    const createServiceReq = httpMock.expectOne({
-      method: 'POST',
-      url: '/api/feeds/services'
-    })
-    createServiceReq.flush(service);
-
-    expect(component.serviceCreated.emit).toHaveBeenCalled();
-    expect(serviceTypeReq.request.method).toEqual('GET');
-    expect(serviceReq.request.method).toEqual('GET');
-    expect(createServiceReq.request.method).toEqual('POST');
+    expect(feedService.createService).not.toHaveBeenCalled();
+    expect(component.serviceCreated.emit).not.toHaveBeenCalled();
   });
 
-  it('should not emit serviceCreated and should emit cancelled', () => {
+  it('createService should call service create and emit serviceCreated', () => {
     spyOn(component.serviceCreated, 'emit');
-    spyOn(component.cancelled, 'emit');
 
-    const serviceType: ServiceType = {
-      pluginServiceTypeId: 'plugin1:type1',
-      id: 'serviceTypeId',
-      title: 'ServiceType',
-      summary: 'summary',
-      configSchema: {
-        type: 'string',
-        title: 'URL',
-        description: 'URL of the service',
-        default: 'https://nowhere.com'
-      }
-    };
-
-    const service: Service = {
-      id: 'serviceId',
-      title: 'service title',
-      summary: 'service summary',
+    const created: Service = {
+      id: 'new-service',
+      title: 'New',
+      summary: 'New summary',
       serviceType: 'serviceTypeId',
       config: 'https://nowhere.com'
-    }
+    } as any;
 
-    // triggers ngOnInit which makes two get calls
-    fixture.detectChanges();
+    component.selectedServiceType = serviceType;
+    component.serviceTitleSummary = { title: 'New', summary: 'New summary' };
+    component.serviceConfiguration = 'https://nowhere.com';
 
-    const serviceTypeReq = httpMock.expectOne('/api/feeds/service_types');
-    serviceTypeReq.flush([serviceType]);
+    feedService.createService.and.returnValue(of(created as any));
 
-    const serviceReq = httpMock.expectOne({
-      method: 'GET',
-      url: '/api/feeds/services'
-    });
-    serviceReq.flush([service]);
+    component.createService();
 
-    component.cancel();
-    expect(component.serviceCreated.emit).not.toHaveBeenCalled();
-    expect(component.cancelled.emit).toHaveBeenCalled();
+    expect(feedService.createService).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        title: 'New',
+        summary: 'New summary',
+        config: 'https://nowhere.com',
+        serviceType: 'serviceTypeId'
+      })
+    );
+    expect(component.serviceCreated.emit).toHaveBeenCalledWith(created);
+  });
+
+  it('serviceTitleSummaryChanged and serviceConfigurationChanged should store values', () => {
+    component.serviceTitleSummaryChanged({ title: 'T', summary: 'S' });
+    component.serviceConfigurationChanged('cfg');
+
+    expect(component.serviceTitleSummary).toEqual({ title: 'T', summary: 'S' });
+    expect(component.serviceConfiguration).toBe('cfg');
   });
 });

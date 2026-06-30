@@ -16,7 +16,7 @@ mat-icon {
   display: flex;
   flex-direction: column;
   align-items: start;
-  justify-content: end;
+  justify-content: flex-end;
   opacity: 1;
   cursor: pointer;
   background-color: mat.get-color-from-palette($app-primary);

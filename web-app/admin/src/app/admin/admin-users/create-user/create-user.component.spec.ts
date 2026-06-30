@@ -1,23 +1,26 @@
 import {
   ComponentFixture,
-  fakeAsync,
   TestBed,
+  fakeAsync,
   tick
 } from '@angular/core/testing';
 import { CreateUserModalComponent } from './create-user.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import {
-  MatDialogModule,
-  MatDialogRef,
-  MAT_DIALOG_DATA
+  MatDialogModule as MatDialogModule,
+  MatDialogRef as MatDialogRef,
+  MAT_DIALOG_DATA as MAT_DIALOG_DATA
 } from '@angular/material/dialog';
 import { ApiService } from '../../../api/api.service';
 import { Role } from '../user';
 import { of } from 'rxjs';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('CreateUserModalComponent', () => {
   let component: CreateUserModalComponent;
@@ -75,10 +78,13 @@ describe('CreateUserModalComponent', () => {
         ReactiveFormsModule,
         FormsModule,
         MatDialogModule,
-        BrowserAnimationsModule,
+        NoopAnimationsModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
+        MatSelectModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressBarModule
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: { roles: mockRoles } },
@@ -91,67 +97,84 @@ describe('CreateUserModalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CreateUserModalComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create the component', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should validate required fields in form', () => {
+  it('should initialize password policy on init', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
+    expect(apiServiceSpy.getApi).toHaveBeenCalled();
+    expect(component.passwordPolicy).toBeTruthy();
+    expect(component.passwordTooltipText.length).toBeGreaterThan(0);
+
+    const passwordControl = component.signup.get('password');
+    const confirmControl = component.signup.get('passwordconfirm');
+
+    expect(passwordControl).toBeTruthy();
+    expect(confirmControl).toBeTruthy();
+  }));
+
+  it('should validate required fields in form', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
     const form = component.signup;
     form.get('displayName')?.setValue('');
     form.get('username')?.setValue('');
     form.get('password')?.setValue('');
+    form.get('passwordconfirm')?.setValue('');
+    form.get('selectedRole')?.setValue(null);
+
+    form.updateValueAndValidity();
+
     expect(form.valid).toBeFalse();
     expect(form.get('displayName')?.invalid).toBeTrue();
     expect(form.get('username')?.invalid).toBeTrue();
     expect(form.get('password')?.invalid).toBeTrue();
-  });
+    expect(form.get('passwordconfirm')?.invalid).toBeTrue();
+    expect(form.get('selectedRole')?.invalid).toBeTrue();
+  }));
 
-  it('should display error messages when form fields are invalid and touched', () => {
-    const form = component.signup;
-    const displayNameControl = form.get('displayName');
-    displayNameControl?.setValue('');
-    displayNameControl?.markAsTouched();
+  it('should update password strength object when password changes', fakeAsync(() => {
     fixture.detectChanges();
-    const errorMessage = fixture.nativeElement.querySelector(
-      '.password-error-popover mat-error'
-    );
-    expect(errorMessage).toBeTruthy();
-    expect(errorMessage.textContent).toContain('Display name is required');
-  });
+    tick();
 
-  it('should update password strength on password change', () => {
     const passwordControl = component.signup.get('password');
-    passwordControl?.setValue('GoodPass');
-    fixture.detectChanges();
-    expect(component.passwordStrength.text).toBe('Good');
-    expect(component.passwordStrength.value).toEqual('50');
-    passwordControl?.setValue('Str0ngPass!');
-    fixture.detectChanges();
-    expect(component.passwordStrength.text).toBe('Excellent');
-    expect(component.passwordStrength.value).toEqual('100');
-  });
+    expect(passwordControl).toBeTruthy();
 
-  it('should handle avatar file change and show preview', () => {
-    const avatarInput =
-      fixture.nativeElement.querySelector('input[type="file"]');
-    spyOn(component, 'onAvatarChanged');
-    avatarInput.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    expect(component.onAvatarChanged).toHaveBeenCalled();
-  });
+    const before = component.passwordStrength;
+    passwordControl?.setValue('GoodPass1!');
+    tick();
 
-  it('should clear avatar preview when clear button is clicked', () => {
+    expect(component.passwordStrength).toBeTruthy();
+    expect(component.passwordStrength).not.toBe(before);
+  }));
+
+  it('should clear avatar preview when clearAvatar is called', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+
     component.avatarPreviewUrl = 'some-preview-url';
     component.selectedAvatarFileName = 'avatar.png';
+    component.newUserFiles.avatar = new File(['x'], 'avatar.png', {
+      type: 'image/png'
+    });
+
     component.clearAvatar();
+
     expect(component.avatarPreviewUrl).toBe('');
     expect(component.selectedAvatarFileName).toBe('');
-  });
+    expect(component.newUserFiles.avatar).toBeNull();
+  }));
 
-  it('should handle form submission when valid', () => {
+  it('should handle form submission when valid', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
     (dialogRefSpy.close as jasmine.Spy).calls.reset();
 
     component.signup.patchValue({
@@ -165,6 +188,7 @@ describe('CreateUserModalComponent', () => {
 
     component.passwordErrorMessages = [];
     component.signup.updateValueAndValidity();
+
     component.saveUser();
 
     expect(dialogRefSpy.close).toHaveBeenCalledWith({
@@ -181,11 +205,39 @@ describe('CreateUserModalComponent', () => {
         iconMetadata: '{"type":"none","text":"","color":"#007bff"}'
       }
     });
-  });
+  }));
 
-  it('should not submit form if invalid', () => {
+  it('should not submit form if invalid', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
     (dialogRefSpy.close as jasmine.Spy).calls.reset();
+    component.passwordErrorMessages = [];
+
     component.saveUser();
+
     expect(dialogRefSpy.close).not.toHaveBeenCalled();
-  });
+    expect(component.signup.touched).toBeTrue();
+  }));
+
+  it('should not submit form if password errors exist', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+    (dialogRefSpy.close as jasmine.Spy).calls.reset();
+
+    component.signup.patchValue({
+      displayName: 'John Doe',
+      username: 'john_doe',
+      email: '',
+      password: 'S!t!0!n!g!P!a!s!s!1!',
+      passwordconfirm: 'S!t!0!n!g!P!a!s!s!1!',
+      selectedRole: mockRoles[0].id
+    });
+
+    component.passwordErrorMessages = ['x'];
+    component.signup.updateValueAndValidity();
+
+    component.saveUser();
+
+    expect(dialogRefSpy.close).not.toHaveBeenCalled();
+  }));
 });

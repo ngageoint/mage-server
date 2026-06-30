@@ -13,45 +13,43 @@ import { FeedServiceType } from '../../../lib/entities/feeds/entities.feeds'
 import { Json, JsonObject } from '../../../src/entities/entities.json_types'
 import { EntityIdFactory } from '../../../lib/entities/entities.global'
 
-describe('feeds repositories', function() {
+describe('feeds repositories', function () {
 
   let mongo: MongoMemoryServer
   let uri: string
   let conn: mongoose.Connection
 
-  before(async function() {
+  before(async function () {
     mongo = await MongoMemoryServer.create()
     uri = mongo.getUri()
   })
 
-  beforeEach(async function() {
-    conn = await mongoose.createConnection(uri, {
-      promiseLibrary: Promise
-    })
+  beforeEach(async function () {
+    conn = await mongoose.createConnection(uri).asPromise()
   })
 
-  afterEach(async function() {
+  afterEach(async function () {
     await conn.close()
   })
 
-  after(async function() {
+  after(async function () {
     await mongo.stop()
   })
 
-  describe('service type repository', function() {
+  describe('service type repository', function () {
 
     const collection = 'feed_service_types'
     let model: FeedServiceTypeIdentityModel
     let repo: MongooseFeedServiceTypeRepository
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       //TODO remove cast to any
       model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection) as any
       repo = new MongooseFeedServiceTypeRepository(model)
     })
 
-    afterEach(async function() {
-      await model.remove({})
+    afterEach(async function () {
+      await model.deleteMany({})
     })
 
     const serviceType: FeedServiceType & {
@@ -102,7 +100,7 @@ describe('feeds repositories', function() {
       ]
     }
 
-    it('assigns a persistent id to a plugin feed service type', async function() {
+    it('assigns a persistent id to a plugin feed service type', async function () {
 
       const registered = await repo.register(serviceType.moduleName, serviceType)
       const read = await model.find()
@@ -117,7 +115,7 @@ describe('feeds repositories', function() {
       })
     })
 
-    it('finds all service types', async function() {
+    it('finds all service types', async function () {
 
       const anotherServiceType: FeedServiceType = {
         id: FeedServiceTypeUnregistered,
@@ -155,7 +153,7 @@ describe('feeds repositories', function() {
       })
     })
 
-    it('retains rich behaviors of persisted service types', async function() {
+    it('retains rich behaviors of persisted service types', async function () {
 
       const registered = await repo.register(serviceType.moduleName, serviceType)
       const found = await repo.findById(registered.id)
@@ -167,7 +165,7 @@ describe('feeds repositories', function() {
       expect(topics).to.deep.equal(serviceType.topics)
     })
 
-    it('registers service types idempotently', async function() {
+    it('registers service types idempotently', async function () {
 
       const first = await repo.register(serviceType.moduleName, serviceType)
       const second = await repo.register(serviceType.moduleName, serviceType)
@@ -175,7 +173,7 @@ describe('feeds repositories', function() {
       expect(second).to.equal(first)
     })
 
-    it('assigns persistent ids consistently across restarts', async function() {
+    it('assigns persistent ids consistently across restarts', async function () {
 
       const previouslyRegisteredIdentity = await model.create({
         moduleName: serviceType.moduleName,
@@ -195,27 +193,27 @@ describe('feeds repositories', function() {
   })
 
 
-  describe('feed service repository', function() {
+  describe('feed service repository', function () {
 
     const collection = 'test_feed_services'
     let model: FeedServiceModel
     let repo: FeedServiceRepository
 
-    beforeEach(function() {
+    beforeEach(function () {
       //TODO remove cast to any
       model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection) as any
       repo = new MongooseFeedServiceRepository(model)
     })
 
-    afterEach(async function() {
-      await model.remove({})
+    afterEach(async function () {
+      await model.deleteMany({})
     })
 
-    it('does what base repository can do', async function() {
+    it('does what base repository can do', async function () {
       expect(repo).to.be.instanceOf(BaseMongooseRepository)
     })
 
-    it('returns service type id as string', async function() {
+    it('returns service type id as string', async function () {
       const stub: FeedServiceCreateAttrs = {
         serviceType: (new mongoose.Types.ObjectId()).toHexString(),
         title: 'No Object IDs',
@@ -233,7 +231,7 @@ describe('feeds repositories', function() {
       expect(fetched?.serviceType).to.equal(created.serviceType)
     })
 
-    it('omits version key from json', async function() {
+    it('omits version key from json', async function () {
 
       const stub: FeedServiceCreateAttrs = {
         serviceType: (new mongoose.Types.ObjectId()).toHexString(),
@@ -251,27 +249,27 @@ describe('feeds repositories', function() {
     })
   })
 
-  describe('feed repository', function() {
+  describe('feed repository', function () {
 
     const collection = 'test_feeds'
     let model: FeedModel
     let repo: FeedRepository
     let idFactory: SubstituteOf<EntityIdFactory>
 
-    beforeEach(function() {
+    beforeEach(function () {
       //TODO remove cast to any
       model = conn.model(FeedsModels.Feed, FeedSchema, collection) as any
       idFactory = Sub.for<EntityIdFactory>()
       repo = new MongooseFeedRepository(model, idFactory)
     })
 
-    afterEach(async function() {
-      await model.remove({})
+    afterEach(async function () {
+      await model.deleteMany({})
     })
 
-    describe('creating a feed', function() {
+    describe('creating a feed', function () {
 
-      it('saves the feed', async function() {
+      it('saves the feed', async function () {
 
         const nextId = `feed:test:${Date.now()}`
         idFactory.nextId().resolves(nextId)
@@ -324,11 +322,11 @@ describe('feeds repositories', function() {
       })
     })
 
-    describe('updating a feed', function() {
+    describe('updating a feed', function () {
 
-      describe('applying put semantics', async function() {
+      describe('applying put semantics', async function () {
 
-        it('replaces properties', async function() {
+        it('replaces properties', async function () {
 
           const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
             id: uniqid(),
@@ -403,7 +401,7 @@ describe('feeds repositories', function() {
           expect(updatedDoc?.toJSON()).to.deep.equal(updatedAttrs)
         })
 
-        it('removes keys omitted from update', async function() {
+        it('removes keys omitted from update', async function () {
 
           const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
             id: uniqid(),
@@ -453,7 +451,7 @@ describe('feeds repositories', function() {
           expect(updatedDoc?.toJSON()).to.deep.equal(updated)
         })
 
-        it('cannot modify service and topic', async function() {
+        it('cannot modify service and topic', async function () {
 
           const origAttrs: Feed = Object.freeze({
             id: uniqid(),
@@ -485,9 +483,9 @@ describe('feeds repositories', function() {
       })
     })
 
-    describe('finding all feeds', function() {
+    describe('finding all feeds', function () {
 
-      it('returns all the feeds', async function() {
+      it('returns all the feeds', async function () {
 
         const feedStubs: FeedCreateAttrs[] = [
           {
@@ -526,7 +524,7 @@ describe('feeds repositories', function() {
         ]
         const createdDocs = await Promise.all(feedStubs.map(x => model.create(Object.assign({ ...x }, { _id: x.id }))))
         const createdEntities = createdDocs.map(x => x.toJSON())
-        const fetched = _.sortBy(await repo.findAll(), [ 'id' ])
+        const fetched = _.sortBy(await repo.findAll(), ['id'])
 
         expect(createdEntities).to.have.deep.members(feedStubs)
         expect(fetched).to.have.deep.members(feedStubs)
@@ -534,9 +532,9 @@ describe('feeds repositories', function() {
       })
     })
 
-    describe('finding feeds for ids', function() {
+    describe('finding feeds for ids', function () {
 
-      it('returns all the feeds for the given ids', async function() {
+      it('returns all the feeds for the given ids', async function () {
 
         const feeds: Feed[] = []
         idFactory.nextId().resolves('0', '1', '2')
@@ -561,7 +559,7 @@ describe('feeds repositories', function() {
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
         }))
-        const fetched = await repo.findAllByIds([ '0', '2' ])
+        const fetched = await repo.findAllByIds(['0', '2'])
 
         expect(fetched).to.deep.equal({
           '0': feeds[0],
@@ -569,7 +567,7 @@ describe('feeds repositories', function() {
         })
       })
 
-      it('returns feed with object ids as strings', async function() {
+      it('returns feed with object ids as strings', async function () {
 
         const stub: FeedCreateAttrs = {
           service: (new mongoose.Types.ObjectId()).toHexString(),
@@ -590,7 +588,7 @@ describe('feeds repositories', function() {
         expect(fetched?.service).to.equal(created.service)
       })
 
-      it('omits version key from json', async function() {
+      it('omits version key from json', async function () {
 
         const stub: FeedCreateAttrs = {
           service: (new mongoose.Types.ObjectId()).toHexString(),
@@ -610,13 +608,13 @@ describe('feeds repositories', function() {
       })
     })
 
-    describe('finding feeds that reference a service', async function() {
+    describe('finding feeds that reference a service', async function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         idFactory.nextId().mimicks(async () => uniqid())
       })
 
-      it('finds the feeds with a service id', async function() {
+      it('finds the feeds with a service id', async function () {
 
         const service = (new mongoose.Types.ObjectId()).toHexString()
         const serviceFeeds: Feed[] = await Promise.all([
@@ -664,10 +662,10 @@ describe('feeds repositories', function() {
         expect(found).to.have.length(3)
         expect(found).to.have.deep.members(serviceFeeds)
         expect(found).not.to.have.deep.members(otherFeeds)
-        expect(all).to.have.deep.members([ ...otherFeeds, ...serviceFeeds ])
+        expect(all).to.have.deep.members([...otherFeeds, ...serviceFeeds])
       })
 
-      it('returns an empty list when no feeds reference the service', async function() {
+      it('returns an empty list when no feeds reference the service', async function () {
 
         const otherFeeds: Feed[] = await Promise.all([
           repo.create({
@@ -693,9 +691,9 @@ describe('feeds repositories', function() {
       })
     })
 
-    describe('removing a feed by id', function() {
+    describe('removing a feed by id', function () {
 
-      it('removes the feed for the id', async function() {
+      it('removes the feed for the id', async function () {
 
         const stub: FeedCreateAttrs = Object.freeze({
           service: (new mongoose.Types.ObjectId()).toHexString(),
@@ -719,13 +717,13 @@ describe('feeds repositories', function() {
       })
     })
 
-    describe('removing feeds by service id', async function() {
+    describe('removing feeds by service id', async function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         idFactory.nextId().mimicks(async () => uniqid())
       })
 
-      it('removes only the feeds that reference the service id and returns them', async function() {
+      it('removes only the feeds that reference the service id and returns them', async function () {
 
         const service = (new mongoose.Types.ObjectId()).toHexString()
         const serviceFeeds: Feed[] = await Promise.all([
@@ -764,13 +762,13 @@ describe('feeds repositories', function() {
         const removed = await repo.removeByServiceId(service)
         const allAfterRemove = await repo.findAll()
 
-        expect(allBeforeRemove).to.have.deep.members([ ...serviceFeeds, ...otherFeeds ])
+        expect(allBeforeRemove).to.have.deep.members([...serviceFeeds, ...otherFeeds])
         expect(removed).to.have.length(2)
         expect(removed).to.have.deep.members(serviceFeeds)
         expect(allAfterRemove).to.have.deep.members(otherFeeds)
       })
 
-      it('removes nothing when no feeds reference the service', async function() {
+      it('removes nothing when no feeds reference the service', async function () {
 
         const otherFeeds: Feed[] = await Promise.all([
           repo.create({

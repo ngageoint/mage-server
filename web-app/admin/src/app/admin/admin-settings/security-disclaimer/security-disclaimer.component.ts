@@ -1,70 +1,75 @@
-import { Component, OnInit, Inject, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Disclaimer } from './security-disclaimer.model';
-import { Settings } from '../../../../app/upgrade/ajs-upgraded-providers';
-
-@Component({
-    selector: 'security-disclaimer',
-    templateUrl: 'security-disclaimer.component.html',
-    styleUrls: ['./security-disclaimer.component.scss']
-})
-export class SecurityDisclaimerComponent implements OnInit, OnChanges {
+import {
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+  } from "@angular/core";
+  import { take } from "rxjs/operators";
+  import { Disclaimer } from "./security-disclaimer.model";
+  import { SettingsService } from '../../../../../src/app/services/settings.service';
+  
+  @Component({
+    selector: "security-disclaimer",
+    templateUrl: "security-disclaimer.component.html",
+    styleUrls: ["./security-disclaimer.component.scss"]
+  })
+  export class SecurityDisclaimerComponent implements OnInit, OnChanges {
     @Output() saveComplete = new EventEmitter<boolean>();
     @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
+  
     disclaimer: Disclaimer = {
-        show: false,
-        title: '',
-        text: ''
-    }
-
+      show: false,
+      title: "",
+      text: ""
+    };
+  
     isDirty = false;
-
-    constructor(
-        @Inject(Settings)
-        public settings: any) {
-    }
-
+  
+    constructor(private settingsService: SettingsService) {}
+  
     ngOnInit(): void {
-        const settingsPromise = this.settings.query().$promise;
-
-        settingsPromise.then(result => {
-            const settings: any = {};
-
-            result.forEach(element => {
-                settings[element.type] = {};
-                Object.keys(element).forEach(key => {
-                    if (key !== 'type') {
-                        settings[element.type][key] = element[key];
-                    }
-                });
-            });
-
-            this.disclaimer = settings.disclaimer ? settings.disclaimer.settings : this.disclaimer;
-        }).catch(err => {
-            console.log(err);
-        });
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.beginSave && !changes.beginSave.firstChange) {
-            if (this.isDirty) {
-                this.save();
+      this.settingsService
+        .get("disclaimer")
+        .pipe(take(1))
+        .subscribe({
+          next: (res: any) => {
+            const loaded = res?.settings ?? res ?? null;
+            if (loaded) {
+              this.disclaimer = {
+                ...this.disclaimer,
+                ...loaded
+              };
             }
-        }
-    }
-
-    setDirty(status: boolean): void {
-        this.isDirty = status;
-        this.onDirty.emit(this.isDirty);
-    }
-
-    private save(): void {
-        this.settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
-            this.saveComplete.emit(true);
-        }, () => {
-            this.saveComplete.emit(false);
+          },
+          error: (err) => console.log(err)
         });
-
-        this.setDirty(false);
     }
-}
+  
+    ngOnChanges(changes: SimpleChanges): void {
+      if (changes.beginSave && !changes.beginSave.firstChange) {
+        if (this.isDirty) this.save();
+      }
+    }
+  
+    setDirty(status: boolean): void {
+      this.isDirty = status;
+      this.onDirty.emit(this.isDirty);
+    }
+  
+    private save(): void {
+      this.settingsService
+        .update("disclaimer", this.disclaimer)
+        .pipe(take(1))
+        .subscribe({
+          next: () => this.saveComplete.emit(true),
+          error: () => this.saveComplete.emit(false)
+        });
+  
+      this.setDirty(false);
+    }
+  }
+  

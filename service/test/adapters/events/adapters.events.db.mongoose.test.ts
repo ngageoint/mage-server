@@ -61,9 +61,9 @@ describe('event mongoose repository', function () {
   })
 
   afterEach(async function () {
-    await model.remove({})
+    await model.deleteMany({})
     // Also clean up teams that were created for events
-    await TeamModel.remove({})
+    await TeamModel.deleteMany({})
   })
 
   describe('finding events by id', function () {
@@ -78,8 +78,8 @@ describe('event mongoose repository', function () {
   describe('finding active events', function () {
 
     beforeEach('clear all events', async function () {
-      await model.remove({})
-      await TeamModel.remove({})
+      await model.deleteMany({})
+      await TeamModel.deleteMany({})
     })
 
     it('finds events whose complete key is false', async function () {
@@ -218,7 +218,7 @@ describe('event mongoose repository', function () {
       const feedIds = Object.freeze([uniqid(), uniqid()])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [...feedIds]
-      typedEventDoc = await typedEventDoc.save() as MageEventDocument
+      typedEventDoc = await typedEventDoc.save() as unknown as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -232,7 +232,7 @@ describe('event mongoose repository', function () {
       const feedIds = Object.freeze([uniqid(), uniqid(), uniqid()])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [...feedIds]
-      typedEventDoc = await typedEventDoc.save() as MageEventDocument
+      typedEventDoc = await typedEventDoc.save() as unknown as unknown as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0], feedIds[2])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -246,7 +246,7 @@ describe('event mongoose repository', function () {
       const feedIds = Object.freeze([uniqid(), uniqid(), uniqid()])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [...feedIds]
-      typedEventDoc = await typedEventDoc.save() as MageEventDocument
+      typedEventDoc = await typedEventDoc.save() as unknown as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, uniqid())
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -271,7 +271,7 @@ describe('event mongoose repository', function () {
       const feedIds = Object.freeze([uniqid(), uniqid(), uniqid()])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [...feedIds]
-      typedEventDoc = await typedEventDoc.save() as MageEventDocument
+      typedEventDoc = await typedEventDoc.save() as unknown as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[2], uniqid())
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -285,7 +285,7 @@ describe('event mongoose repository', function () {
       const feedIds = Object.freeze([uniqid(), uniqid(), uniqid()])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [...feedIds]
-      typedEventDoc = await typedEventDoc.save() as MageEventDocument
+      typedEventDoc = await typedEventDoc.save() as unknown as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id - 1, feedIds[0])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -330,7 +330,7 @@ describe('event mongoose repository', function () {
       const updatedEventDocs = await model.find({ _id: { $in: eventDocs.map(x => x._id) } })
       expect(updateCount).to.equal(2)
       expect(updatedEventDocs).to.have.length(3)
-      const byId = _.keyBy(updatedEventDocs.map(x => x.toJSON() as MageEventAttrs), 'id')
+      const byId = _.keyBy(updatedEventDocs.map(x => x.toJSON() as unknown as MageEventAttrs), 'id')
       expect(byId[eventDocs[0].id]).to.deep.include(
         {
           id: eventDocs[0]._id,
@@ -394,16 +394,16 @@ describe('event mongoose repository', function () {
             uniqid()
           ]
         })
-      ]) as MageEventDocument[]
+      ]) as unknown as MageEventDocument[]
       // re-fetch to get teamIds array populated
       const idsFilter = { _id: { $in: created.map(x => x._id) } }
-      const fetched = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as MageEventAttrs), 'name')
+      const fetched = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as unknown as MageEventAttrs), 'name')
       expect(Object.keys(fetched)).to.have.length(4)
 
       const updateCount = await repo.removeFeedsFromEvents(...feedIds)
       expect(updateCount).to.equal(3)
 
-      const updated = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as MageEventAttrs), 'name')
+      const updated = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as unknown as MageEventAttrs), 'name')
       for (const nameNum of [1, 2, 3, 4]) {
         const name = `Remove Feeds ${nameNum}`
         const createdEvent = fetched[name]
@@ -452,7 +452,7 @@ describe('event mongoose repository', function () {
           }))
       }))
       eventDoc.teamIds = teamDocs.map(x => x._id)
-      eventDoc = await eventDoc.save() as MageEventDocument
+      eventDoc = await eventDoc.save() as unknown as MageEventDocument
       const fetchedTeams = await repo.findTeamsInEvent(eventDoc.id)
 
       expect(fetchedTeams).to.deep.equal(teams)

@@ -292,7 +292,7 @@ Optional: Build the app with plugins (arcgis and sftp)
 
 Run an instance of mongodb via Docker Desktop:
 
-    docker run -d -p 27017:27017 mongo:6.0.27
+    docker run -d -p 27017:27017 mongo:6.0.28
 
 Run the app with the `instance/config.ts` settings
 

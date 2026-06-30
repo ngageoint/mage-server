@@ -1,1 +1,10 @@
-<ng-content></ng-content>
+<div class="application">
+    <banner *ngIf="myself" class="banner" [type]="'header'"></banner>
+  
+    <admin-navigation></admin-navigation>
+  
+    <router-outlet></router-outlet>
+  
+    <banner *ngIf="myself" class="banner" [type]="'footer'"></banner>
+  </div>
+  

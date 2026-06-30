@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Service, Feed } from '@ngageoint/mage.web-core-lib/feed';
 
 type ServiceWithFeeds = {
@@ -17,7 +17,7 @@ export class AdminServiceDeleteComponent {
   service: Service
   feeds: Feed[]
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: ServiceWithFeeds) {
+  constructor( @Inject(MAT_DIALOG_DATA) public data: ServiceWithFeeds) {
     this.service = data.service
     this.feeds = data.feeds
   }

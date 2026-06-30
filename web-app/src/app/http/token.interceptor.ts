@@ -1,9 +1,17 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpContextToken, HttpStatusCode, HttpErrorResponse } from '@angular/common/http';
-import { catchError, Observable, Subject, switchMap, throwError } from 'rxjs';
+import {
+  HttpInterceptor,
+  HttpRequest,
+  HttpHandler,
+  HttpEvent,
+  HttpContextToken,
+  HttpStatusCode,
+  HttpErrorResponse
+} from '@angular/common/http';
+import { catchError, Observable, ReplaySubject, switchMap, throwError, take } from 'rxjs';
 import { LocalStorageService } from './local-storage.service';
 import { AuthenticationDialogComponent } from '../ingress/authentication/authentication-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { UserService } from '../user/user.service';
 
 export const BYPASS_TOKEN = new HttpContextToken(() => false);
@@ -12,8 +20,8 @@ export const BYPASS_TOKEN = new HttpContextToken(() => false);
   providedIn: 'root'
 })
 export class TokenInterceptorService implements HttpInterceptor {
-  isRefreshingToken: boolean = false
-  tokenSubject: Subject<void> = new Subject<void>()
+  private isRefreshingToken = false;
+  private tokenSubject = new ReplaySubject<void>(1);
 
   constructor(
     public dialog: MatDialog,
@@ -22,45 +30,52 @@ export class TokenInterceptorService implements HttpInterceptor {
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const bypassToken = req.context.get(BYPASS_TOKEN) === true
-    if (bypassToken) {
+    if (req.context.get(BYPASS_TOKEN) === true) {
       return next.handle(req);
     }
 
-    if (req.url.startsWith('/api/')) {
-      return next.handle(this.tokenRequest(req)).pipe(
-        catchError((error) => {
-          if (error instanceof HttpErrorResponse) {
-            if (error.status === HttpStatusCode.Unauthorized) {
-              this.userService.setUser(null)
-              if (!this.isRefreshingToken) {
-                this.isRefreshingToken = true
-                this.dialog.open(AuthenticationDialogComponent, {
-                  width: '600px',
-                  disableClose: true,
-                  autoFocus: false
-                }).afterClosed().subscribe(() => {
-                  this.isRefreshingToken = false
-                  this.tokenSubject.next()
-                })
-              }
-              
-              return this.tokenSubject.pipe(
-                switchMap(() => next.handle(this.tokenRequest(req)))
-              )
-            }
+    if (!req.url.startsWith('/api/') && !req.url.startsWith('/plugins/')) {
+      return next.handle(req);
+    }
+
+    return next.handle(this.tokenRequest(req)).pipe(
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized) {
+          this.userService.setUser(null);
+
+          if (!this.isRefreshingToken) {
+            this.isRefreshingToken = true;
+            this.tokenSubject = new ReplaySubject<void>(1);
+
+            this.dialog.open(AuthenticationDialogComponent, {
+              width: '600px',
+              maxHeight: '90vh',
+              disableClose: true,
+              autoFocus: false
+            }).afterClosed().subscribe(() => {
+              this.isRefreshingToken = false;
+              this.tokenSubject.next();
+              this.tokenSubject.complete();
+            });
           }
 
-          return throwError(() => error)
-        })
-      )
-    } else {
-      return next.handle(req)
-    }
+          return this.tokenSubject.pipe(
+            take(1),
+            switchMap(() => next.handle(this.tokenRequest(req)))
+          );
+        }
+
+        return throwError(() => error);
+      })
+    );
   }
 
-  tokenRequest(req: HttpRequest<any>): HttpRequest<any> {
-    const token = this.localStorageService.getToken()
-    return req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
+  private tokenRequest(req: HttpRequest<any>): HttpRequest<any> {
+    const token = this.localStorageService.getToken();
+    if (!token) return req;
+
+    return req.clone({
+      headers: req.headers.set('Authorization', `Bearer ${token}`)
+    });
   }
 }

@@ -1,39 +1,77 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.edit-location {
+  padding: 0 16px;
+}
+
 .chip-type {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .chip-type__label {
   margin-right: 16px;
+  white-space: nowrap;
   font: 500 14px/28px Roboto, "Helvetica Neue", sans-serif;
   color: rgba(0, 0, 0, 0.6);
 }
 
 .coordinates {
   display: flex;
-  margin: 0 -8px;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-start;
 }
 
 .coordinate {
-  flex-grow: 1;
-  flex-basis: 0;
-  padding: 0 8px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 mat-form-field {
   width: 100%;
+  min-width: 0;
 }
 
 ::ng-deep .mat-form-field-infix {
   width: auto;
 }
 
+::ng-deep .mat-mdc-form-field,
+::ng-deep .mat-mdc-text-field-wrapper,
+::ng-deep .mat-mdc-form-field-infix {
+  min-width: 0;
+}
+
+::ng-deep mat-chip-option .mat-mdc-chip-graphic {
+  display: none !important;
+  width: 0 !important;
+}
+
+::ng-deep mat-chip-option .mdc-evolution-chip__action--primary {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+
 .edit-location__actions {
   display: flex;
   justify-content: flex-end;
+  margin-top: 0;
+  padding-bottom: 0;
 }
 
-.edit-location__actions > button + button {
+.edit-location__actions>button+button {
   margin-left: 8px;
+}
+
+@media (max-width: 700px) {
+  .coordinates {
+    flex-direction: column;
+    gap: 0;
+  }
 }

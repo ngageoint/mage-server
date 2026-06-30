@@ -1,18 +1,25 @@
-import { Component, OnInit, Inject, ViewChild, ElementRef } from '@angular/core';
-import { StateService } from '@uirouter/angular';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { HttpClient } from '@angular/common/http';
+
 import { LayersService, Layer } from '../layers.service';
-import { EventsService } from '../../admin-event/events.service';
-import { LocalStorageService, UserService } from '../../../upgrade/ajs-upgraded-providers';
+import { AdminEventsService } from '../../services/admin-events.service';
+import { LocalStorageService } from '../../../../../../../web-app/src/app/http/local-storage.service'
+import { AdminUserService } from '../../services/admin-user.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { CardActionButton } from '../../../core/card-navbar/card-navbar.component';
-import { SearchModalComponent, SearchModalData, SearchModalResult, SearchModalColumn } from '../../../core/search-modal/search-modal.component';
+import {
+  SearchModalComponent,
+  SearchModalData,
+  SearchModalResult,
+  SearchModalColumn
+} from '../../../core/search-modal/search-modal.component';
 import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
-import { Event } from 'src/app/filter/filter.types';
+import { Event } from '../../../../../../src/app/filter/filter.types';
 import { Observable } from 'rxjs';
 import { ImageryLayerConfig } from '../imagery-layer-settings/imagery-layer-settings.component';
 
@@ -51,11 +58,11 @@ export class LayerDetailsComponent implements OnInit {
     {
       title: 'Layers',
       icon: 'map',
-      state: { name: 'admin.layers' }
+      route: ['../']
     }
   ];
 
-  layer: Layer;
+  layer?: Layer;
   layerEvents: Event[] = [];
   nonLayerEvents: Event[] = [];
   urlLayers: UrlLayer[] = [];
@@ -74,15 +81,14 @@ export class LayerDetailsComponent implements OnInit {
   eventActionButtons: CardActionButton[] = [];
 
   uploads: UploadItem[] = [{}];
-  uploadConfirmed = false;
   uploadStatuses: { [key: number]: UploadStatus } = {};
   completedUploads: UploadStatus[] = [];
-  uploadMessage = '';
-  fileUploadUrl = '';
   isUploading = false;
 
   hasLayerEditPermission = false;
   hasLayerDeletePermission = false;
+
+  private myself: any | null = null;
 
   editingDetails = false;
   layerEditForm = {
@@ -101,35 +107,47 @@ export class LayerDetailsComponent implements OnInit {
   };
   selectedWmsLayersString: string = '';
 
-  @ViewChild('previewMapContainer') previewMapContainer: ElementRef;
-
   constructor(
-    private stateService: StateService,
+    private route: ActivatedRoute,
+    private router: Router,
     private layersService: LayersService,
-    private eventsService: EventsService,
+    private eventsService: AdminEventsService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private http: HttpClient,
-    @Inject(LocalStorageService) private localStorageService: any,
-    @Inject(UserService) private userService: any
-  ) { }
+    private localStorageService: LocalStorageService,
+    private adminUserService: AdminUserService
+  ) {}
 
   ngOnInit(): void {
-    const layerId = this.stateService.params.layerId;
+    const layerId = this.route.snapshot.paramMap.get('layerId');
     if (!layerId) {
       console.error('No layerId found in route params');
+      this.error = 'No layer id provided.';
+      this.loading = false;
       return;
     }
 
-    const permissions = this.userService.myself?.role?.permissions || [];
-    this.hasLayerEditPermission = permissions.includes('UPDATE_LAYER');
-    this.hasLayerDeletePermission = permissions.includes('DELETE_LAYER');
+    this.adminUserService.getMyself().subscribe({
+      next: (myself) => {
+        this.myself = myself;
 
-    this.fileUploadUrl = `/api/layers/${layerId}/kml?access_token=${this.localStorageService.getToken()}`;
+        const permissions: string[] = myself?.role?.permissions || [];
+        this.hasLayerEditPermission = permissions.includes('UPDATE_LAYER');
+        this.hasLayerDeletePermission = permissions.includes('DELETE_LAYER');
+
+        this.updateActionButtons();
+      },
+      error: () => {
+        this.myself = null;
+        this.hasLayerEditPermission = false;
+        this.hasLayerDeletePermission = false;
+
+        this.updateActionButtons();
+      }
+    });
 
     this.loadLayer(layerId);
-
-    this.updateActionButtons();
   }
 
   private loadLayer(layerId: string): void {
@@ -138,9 +156,11 @@ export class LayerDetailsComponent implements OnInit {
       next: (layer) => {
         this.layer = layer;
         this.loading = false;
-        this.breadcrumbs.push({
-          title: layer.name || 'Layer Details'
-        });
+
+        this.breadcrumbs = [
+          this.breadcrumbs[0],
+          { title: layer.name || 'Layer Details' }
+        ];
 
         if (this.layer.state !== 'available') {
           setTimeout(() => this.checkLayerProcessingStatus(), 1000);
@@ -152,28 +172,36 @@ export class LayerDetailsComponent implements OnInit {
       error: (error) => {
         console.error('Error loading layer:', error);
         this.loading = false;
-        this.error = error.message || 'Failed to load layer';
-        this.snackBar.open('Error loading layer: ' + this.error, 'Close', { duration: 5000 });
+        this.error = error?.message || 'Failed to load layer';
+        this.snackBar.open('Error loading layer: ' + this.error, 'Close', {
+          duration: 5000
+        });
       }
     });
   }
 
   private updateUrlLayers(): void {
+    if (!this.layer) {
+      this.urlLayers = [];
+      return;
+    }
+
+    const token = this.localStorageService.getToken();
     const mapping: UrlLayer[] = [];
+
     if (this.layer.tables) {
-      this.layer.tables.forEach(table => {
+      this.layer.tables.forEach((table) => {
         mapping.push({
           table: table.name,
-          url: `/api/layers/${this.layer.id}/${table.name}/{z}/{x}/{y}.png?access_token=${this.localStorageService.getToken()}`
+          url: `/api/layers/${this.layer!.id}/${table.name}/{z}/{x}/{y}.png?access_token=${token}`
         });
       });
     }
+
     this.urlLayers = mapping;
   }
 
-  /**
-   * Configures action buttons for events section.
-   */
+  /** Configures action buttons for events section. */
   private updateActionButtons(): void {
     this.eventActionButtons = [];
 
@@ -192,14 +220,14 @@ export class LayerDetailsComponent implements OnInit {
     }
   }
 
-  /**
-   * Loads paginated events for the current layer using server-side pagination.
-   */
+  /** Loads paginated events for the current layer using server-side pagination. */
   getEventsPage(): void {
     if (!this.layer?.id) {
       this.loadingEvents = false;
       return;
     }
+
+    this.loadingEvents = true;
 
     const searchOptions: any = {
       page: this.eventsPageIndex,
@@ -215,16 +243,13 @@ export class LayerDetailsComponent implements OnInit {
       next: (response) => {
         const layerEvents = response.items || [];
 
-        if (this.eventsPageIndex === 0) {
-          this.layerEvents = layerEvents;
-        }
-
         this.eventsPage = {
           items: layerEvents,
           totalCount: response.totalCount || layerEvents.length,
           pageSize: this.eventsPageSize,
           pageIndex: this.eventsPageIndex
         };
+
         this.eventsDataSource.data = layerEvents;
         this.loadingEvents = false;
       },
@@ -236,59 +261,39 @@ export class LayerDetailsComponent implements OnInit {
     });
   }
 
-  /**
-   * Handles event search input changes.
-   */
   onEventSearchChange(searchTerm?: string): void {
     this.eventSearchTerm = searchTerm || '';
     this.eventsPageIndex = 0;
     this.getEventsPage();
   }
 
-  /**
-   * Handles event pagination changes.
-   */
   onEventsPageChange(event: PageEvent): void {
     this.eventsPageIndex = event.pageIndex;
     this.eventsPageSize = event.pageSize;
     this.getEventsPage();
   }
 
-  /**
-   * Toggles event edit mode and updates action buttons.
-   */
   toggleEditEvents(): void {
     this.editEvents = !this.editEvents;
     this.updateActionButtons();
   }
 
-  /**
-   * Navigates to event details page.
-   */
-  gotoEvent(event: Event): void {
-    this.stateService.go('admin.event', { eventId: event.id });
-  }
-
-  /**
-   * Opens search dialog to add events to layer.
-   */
   addEventToLayer(): void {
-    if (!this.layer?.id) {
-      return;
-    }
+    if (!this.layer?.id) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Events to Layer',
         searchPlaceholder: 'Search for events to add...',
         type: 'events',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return new Observable(observer => {
+          return new Observable((observer) => {
             const searchOptions: any = {
-              page: page,
+              page,
               page_size: pageSize,
-              excludeLayerId: String(this.layer.id)
+              excludeLayerId: String(this.layer!.id)
             };
 
             if (searchTerm) {
@@ -298,17 +303,22 @@ export class LayerDetailsComponent implements OnInit {
             this.eventsService.getEvents(searchOptions).subscribe({
               next: (response) => {
                 let filteredEvents = response.items || [];
-                if (!this.userService.myself?.role?.permissions?.includes('UPDATE_EVENT')) {
-                  filteredEvents = filteredEvents.filter(event => {
-                    const permissions = event.acl?.[this.userService.myself.id]?.permissions || [];
-                    return permissions.includes('update');
+
+                const myPerms: string[] = this.myself?.role?.permissions || [];
+                const canUpdateAnyEvent = myPerms.includes('UPDATE_EVENT');
+                const myId = this.myself?.id;
+
+                if (!canUpdateAnyEvent) {
+                  filteredEvents = filteredEvents.filter((ev) => {
+                    const aclPerms = myId ? (ev.acl?.[myId]?.permissions || []) : [];
+                    return aclPerms.includes('update');
                   });
                 }
 
                 observer.next({
                   items: filteredEvents,
                   totalCount: response.totalCount || filteredEvents.length,
-                  pageSize: pageSize,
+                  pageSize,
                   pageIndex: page
                 });
                 observer.complete();
@@ -335,14 +345,13 @@ export class LayerDetailsComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result && result.selectedItem && this.layer?.id) {
+      if (result?.selectedItem && this.layer?.id) {
         const selectedEvent = result.selectedItem;
-        console.log('Adding layer to selected event:', selectedEvent);
 
         this.eventsService.addLayerToEvent(String(selectedEvent.id), { id: this.layer.id }).subscribe({
           next: () => {
             this.getEventsPage();
-            this.snackBar.open(`Layer added to event: ${selectedEvent.name}`, null, { duration: 2000 });
+            this.snackBar.open(`Layer added to event: ${selectedEvent.name}`, undefined, { duration: 2000 });
           },
           error: (error) => {
             console.error('Error adding layer to event:', error);
@@ -353,33 +362,30 @@ export class LayerDetailsComponent implements OnInit {
     });
   }
 
-  /**
-   * Removes layer from event.
-   */
   removeEventFromLayer(event: Event, mouseEvent?: MouseEvent): void {
-    if (mouseEvent) {
-      mouseEvent.stopPropagation();
-    }
+    if (!this.layer?.id) return;
+    mouseEvent?.stopPropagation();
 
-    this.eventsService.removeLayerFromEvent(event.id.toString(), this.layer.id)
-      .subscribe({
-        next: () => {
-          this.getEventsPage();
-          this.snackBar.open('Layer removed from event', null, { duration: 2000 });
-        },
-        error: (error) => {
-          console.error('Error removing layer from event:', error);
-          this.snackBar.open('Error removing layer from event', 'Close', { duration: 5000 });
-        }
-      });
+    this.eventsService.removeLayerFromEvent(event.id.toString(), this.layer.id).subscribe({
+      next: () => {
+        this.getEventsPage();
+        this.snackBar.open('Layer removed from event', undefined, { duration: 2000 });
+      },
+      error: (error) => {
+        console.error('Error removing layer from event:', error);
+        this.snackBar.open('Error removing layer from event', 'Close', { duration: 5000 });
+      }
+    });
   }
 
   toggleEditDetails(): void {
-    if (!this.editingDetails) {
-      this.layerEditForm.name = this.layer?.name || '';
-      this.layerEditForm.description = this.layer?.description || '';
+    if (!this.layer) return;
 
-      if (this.layer?.type === 'Imagery') {
+    if (!this.editingDetails) {
+      this.layerEditForm.name = this.layer.name || '';
+      this.layerEditForm.description = this.layer.description || '';
+
+      if (this.layer.type === 'Imagery') {
         this.layerEditForm.format = this.layer.format || 'XYZ';
         this.layerEditForm.base = !!this.layer.base;
 
@@ -393,30 +399,25 @@ export class LayerDetailsComponent implements OnInit {
 
         if (this.layer.format === 'WMS' && this.layer.wms?.layers) {
           this.selectedWmsLayersString = this.layer.wms.layers;
+        } else {
+          this.selectedWmsLayersString = '';
         }
       }
     }
+
     this.editingDetails = !this.editingDetails;
   }
 
-  /**
-   * Handles imagery config changes from the helper component
-   */
   onImageryConfigChange(config: ImageryLayerConfig): void {
     this.imageryConfig = config;
   }
 
-  /**
-   * Handles WMS layer selection changes from the helper component
-   */
   onWmsLayersSelected(layers: string): void {
     this.selectedWmsLayersString = layers;
   }
 
   saveLayerDetails(): void {
-    if (!this.layer?.id) {
-      return;
-    }
+    if (!this.layer?.id) return;
 
     const updatedLayer: any = {
       name: this.layerEditForm.name,
@@ -440,49 +441,52 @@ export class LayerDetailsComponent implements OnInit {
       }
     }
 
-    this.layersService.updateLayer(String(this.layer.id), updatedLayer)
-      .subscribe({
-        next: (updated) => {
-          this.layer = { ...this.layer, ...updated };
-          this.editingDetails = false;
-          this.snackBar.open('Layer updated successfully', null, { duration: 2000 });
-        },
-        error: (error) => {
-          console.error('Error updating layer:', error);
-          const errorMessage = error.error?.message || error.message || 'Unknown error';
-          this.snackBar.open('Error updating layer: ' + errorMessage, 'Close', { duration: 5000 });
-        }
-      });
+    this.layersService.updateLayer(String(this.layer.id), updatedLayer).subscribe({
+      next: (updated) => {
+        this.layer = { ...this.layer!, ...updated };
+        this.editingDetails = false;
+        this.snackBar.open('Layer updated successfully', undefined, { duration: 2000 });
+      },
+      error: (error) => {
+        console.error('Error updating layer:', error);
+        const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+        this.snackBar.open('Error updating layer: ' + errorMessage, 'Close', { duration: 5000 });
+      }
+    });
   }
 
   cancelEditDetails(): void {
-    this.editingDetails = false;
-    this.layerEditForm.name = this.layer?.name || '';
-    this.layerEditForm.description = this.layer?.description || '';
-  }
+    if (!this.layer) return;
 
-  editLayer(): void {
-    this.stateService.go('admin.layerEdit', { layerId: this.layer.id });
+    this.editingDetails = false;
+    this.layerEditForm.name = this.layer.name || '';
+    this.layerEditForm.description = this.layer.description || '';
   }
 
   deleteLayer(): void {
+    if (!this.layer) return;
+
     const dialogRef = this.dialog.open(DeleteLayerComponent, {
+      width: '600px',
       data: { layer: this.layer }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.snackBar.open('Layer deleted successfully', 'Close', { duration: 3000 });
-        this.stateService.go('admin.layers');
+
+        this.router.navigate(['../../layers'], { relativeTo: this.route });
       }
     });
   }
 
   isLayerFileBased(): boolean {
-    return this.layer && !!this.layer.file;
+    return !!this.layer?.file;
   }
 
   downloadLayer(): void {
+    if (!this.layer?.id || !this.layer.file) return;
+
     const accessToken = this.localStorageService.getToken();
     const downloadURL = `/api/layers/${this.layer.id}/file?access_token=${accessToken}`;
 
@@ -509,12 +513,11 @@ export class LayerDetailsComponent implements OnInit {
       const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
       if (!validExtensions.includes(fileExtension)) {
-        this.uploads[index].error = `Invalid file type. Please upload a KML or KMZ file.`;
+        this.uploads[index].error = `Invalid file type. Please upload a KML, KMZ, or ZIP file.`;
         this.snackBar.open(this.uploads[index].error, 'Close', { duration: 5000 });
         return;
       }
 
-      // 50MB in bytes
       const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
         this.uploads[index].error = `File size exceeds 50MB limit.`;
@@ -528,7 +531,9 @@ export class LayerDetailsComponent implements OnInit {
   }
 
   confirmUpload(): void {
-    const filesSelected = this.uploads.filter(u => u.file).length;
+    const filesSelected = this.uploads.filter((u) => u.file).length;
+
+    if (!this.layer) return;
 
     if (filesSelected === 0) {
       this.snackBar.open('Please select at least one file to upload', 'Close', { duration: 3000 });
@@ -536,7 +541,11 @@ export class LayerDetailsComponent implements OnInit {
     }
 
     if (this.layer.type !== 'Feature') {
-      this.snackBar.open(`Cannot upload to layer of type "${this.layer.type}". Only Feature (Static) layers support file uploads.`, 'Close', { duration: 5000 });
+      this.snackBar.open(
+        `Cannot upload to layer of type "${this.layer.type}". Only Feature (Static) layers support file uploads.`,
+        'Close',
+        { duration: 5000 }
+      );
       return;
     }
 
@@ -546,66 +555,75 @@ export class LayerDetailsComponent implements OnInit {
     let errorCount = 0;
 
     this.completedUploads = [];
+
     this.uploads.forEach((upload, index) => {
-      if (upload.file) {
-        uploadCount++;
-        upload.uploading = true;
-        upload.error = undefined;
+      if (!upload.file) return;
 
-        this.uploadFile(upload.file, index).subscribe({
-          next: (response) => {
-            upload.uploading = false;
-            successCount++;
+      uploadCount++;
+      upload.uploading = true;
+      upload.error = undefined;
 
-            const fileInfo = response.files && response.files[0];
-            const featuresCreated = fileInfo ? fileInfo.features : 0;
+      this.uploadFile(upload.file).subscribe({
+        next: (response) => {
+          upload.uploading = false;
+          successCount++;
 
-            upload.uploadStatus = {
-              name: upload.file.name,
-              features: featuresCreated
-            };
+          const fileInfo = response.files && response.files[0];
+          const featuresCreated = fileInfo ? fileInfo.features : 0;
 
-            this.uploadStatuses[index] = upload.uploadStatus;
+          upload.uploadStatus = {
+            name: upload.file!.name,
+            features: featuresCreated
+          };
 
-            if (successCount + errorCount === uploadCount) {
-              this.onAllUploadsComplete(successCount, errorCount);
-            }
-          },
-          error: (error) => {
-            upload.uploading = false;
-            let errorMessage = 'Upload failed';
+          this.uploadStatuses[index] = upload.uploadStatus;
 
-            if (typeof error.error === 'string' && error.error.trim()) {
-              errorMessage = error.error;
-            } else if (error.error?.message) {
-              errorMessage = error.error.message;
-            } else if (error.message) {
-              errorMessage = error.message;
-            } else if (error.statusText) {
-              errorMessage = error.statusText;
-            }
-
-            if (error.status && error.status !== 0) {
-              errorMessage = `${error.status}: ${errorMessage}`;
-            }
-
-            upload.error = `${upload.file.name}: ${errorMessage}`;
-            upload.uploadStatus = {
-              name: upload.file.name,
-              error: errorMessage
-            };
-            errorCount++;
-            this.snackBar.open(`Failed to upload ${upload.file.name}: ${errorMessage}`, 'Close', { duration: 8000 });
-            if (successCount + errorCount === uploadCount) {
-              this.onAllUploadsComplete(successCount, errorCount);
-            }
+          if (successCount + errorCount === uploadCount) {
+            this.onAllUploadsComplete(successCount, errorCount);
           }
-        });
-      }
+        },
+        error: (error) => {
+          upload.uploading = false;
+
+          let errorMessage = 'Upload failed';
+          if (typeof error.error === 'string' && error.error.trim()) {
+            errorMessage = error.error;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          } else if (error.statusText) {
+            errorMessage = error.statusText;
+          }
+
+          if (error.status && error.status !== 0) {
+            errorMessage = `${error.status}: ${errorMessage}`;
+          }
+
+          upload.error = `${upload.file!.name}: ${errorMessage}`;
+          upload.uploadStatus = {
+            name: upload.file!.name,
+            error: errorMessage
+          };
+          errorCount++;
+
+          this.snackBar.open(`Failed to upload ${upload.file!.name}: ${errorMessage}`, 'Close', { duration: 8000 });
+
+          if (successCount + errorCount === uploadCount) {
+            this.onAllUploadsComplete(successCount, errorCount);
+          }
+        }
+      });
     });
   }
 
-  private uploadFile(file: File, index: number): Observable<any> {
+  private uploadFile(file: File): Observable<any> {
+    if (!this.layer?.id) {
+      return new Observable((observer) => {
+        observer.error(new Error('No layer loaded'));
+      });
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -617,17 +635,17 @@ export class LayerDetailsComponent implements OnInit {
     this.isUploading = false;
 
     const successfulUploads = this.uploads
-      .filter(upload => upload.uploadStatus)
-      .map(upload => upload.uploadStatus);
+      .filter((upload) => upload.uploadStatus)
+      .map((upload) => upload.uploadStatus!);
 
     this.completedUploads = [...this.completedUploads, ...successfulUploads];
 
     if (successCount > 0 && errorCount === 0) {
       this.snackBar.open(`Successfully uploaded ${successCount} file(s)`, 'Close', { duration: 3000 });
-      this.layer = { ...this.layer, _timestamp: Date.now() } as any;
+      this.layer = { ...(this.layer as any), _timestamp: Date.now() };
     } else if (successCount > 0 && errorCount > 0) {
       this.snackBar.open(`Uploaded ${successCount} file(s), ${errorCount} failed`, 'Close', { duration: 5000 });
-      this.layer = { ...this.layer, _timestamp: Date.now() } as any;
+      this.layer = { ...(this.layer as any), _timestamp: Date.now() };
     }
 
     this.uploads = [{}];
@@ -644,12 +662,15 @@ export class LayerDetailsComponent implements OnInit {
   }
 
   confirmCreateLayer(): void {
-    this.snackBar.open('Creating layer...', null, { duration: 2000 });
+    this.snackBar.open('Creating layer...', undefined, { duration: 2000 });
     setTimeout(() => this.checkLayerProcessingStatus(), 1500);
   }
 
   private checkLayerProcessingStatus(): void {
-    this.layersService.getLayerById(this.stateService.params.layerId).subscribe(layer => {
+    const layerId = this.route.snapshot.paramMap.get('layerId');
+    if (!layerId) return;
+
+    this.layersService.getLayerById(layerId).subscribe((layer) => {
       this.layer = layer;
       this.updateUrlLayers();
 
@@ -659,4 +680,3 @@ export class LayerDetailsComponent implements OnInit {
     });
   }
 }
-

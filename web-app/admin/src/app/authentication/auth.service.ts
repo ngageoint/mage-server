@@ -1,69 +1,34 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { HttpRequestBufferService } from '../services/http-request-buffer.service';
+import { AuthLoginData } from './auth.types';
 
-export interface AuthLoginData {
-    token: string;
-    newUser?: boolean;
-}
-
-export interface SigninEvent {
-    user: any;
-    token: string;
-    strategy: string;
-}
-
-/**
- * Angular service that wraps the AngularJS authService functionality.
- * This service handles authentication login confirmation and HTTP buffer retry logic.
- * 
- * TODO: Update this service when the migration from AngularJS to Angular is complete.
- */
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-    private loginData: AuthLoginData | null = null;
-    private listenerInitialized = false;
-    private _$injector: any;
+  private loginData$ = new BehaviorSubject<AuthLoginData | null>(null);
 
-    constructor(
-        private injector: Injector
-    ) { }
+  constructor(private buffer: HttpRequestBufferService) {}
 
-    private get $injector(): any {
-        if (!this._$injector) {
-            this._$injector = this.injector.get('$injector');
-        }
-        return this._$injector;
-    }
+  setLoginData(data: AuthLoginData | null): void {
+    this.loginData$.next(data);
+  }
 
-    private get $rootScope(): any {
-        return this.$injector.get('$rootScope');
-    }
+  getLoginData(): AuthLoginData | null {
+    return this.loginData$.value;
+  }
 
-    private get httpBuffer(): any {
-        return this.$injector.get('httpBuffer');
-    }
+  /**
+   * Call this after a successful login.
+   * This retries any buffered 401 requests.
+   */
+  loginConfirmed(data?: AuthLoginData): void {
+    if (data) this.setLoginData(data);
 
-    private initializeListener(): void {
-        if (this.listenerInitialized) return;
-        this.listenerInitialized = true;
+    this.buffer.retryAll();
+  }
 
-        this.$rootScope.$on('event:auth-login', (_event: any, data: AuthLoginData) => {
-            this.loginData = data;
-        });
-    }
-
-    /**
-     * @param configUpdater an optional function to update the config before retrying
-     */
-    loginConfirmed(configUpdater?: (config: any) => any): void {
-        this.initializeListener();
-        const updater = configUpdater || ((config: any) => config);
-        this.$rootScope.$broadcast('event:auth-loginConfirmed', this.loginData);
-        if (this.loginData && !this.loginData.newUser) {
-            this.httpBuffer.retryAll(updater);
-        } else {
-            this.httpBuffer.retryAllGets(updater);
-        }
-    }
+  logout(): void {
+    this.setLoginData(null);
+    this.buffer.clear();
+  }
 }

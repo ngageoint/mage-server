@@ -176,9 +176,14 @@ Observation.prototype.validate = function (observation) {
     let fieldsMessage = "";
     const fieldsError = {};
 
-    formDefinitions[formEntry.formId].fields
+    const formDefinition = formDefinitions[formEntry.formId];
+    const userFieldNames = new Set(formDefinition.userFields || []);
+    formDefinition.fields
       .filter((fieldDefinition) => !fieldDefinition.archived)
       .forEach((fieldDefinition) => {
+        // User fields have dynamically populated choices that are not stored in the
+        // form definition, so skip choice-based validation for those fields.
+        if (userFieldNames.has(fieldDefinition.name)) return;
         const field = fieldFactory.createField(
           fieldDefinition,
           formEntry,

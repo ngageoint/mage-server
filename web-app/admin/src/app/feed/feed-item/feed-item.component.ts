@@ -1,7 +1,7 @@
 import { Component, Input, Inject, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed, StyledFeature } from '@ngageoint/mage.web-core-lib/feed';
 import { MomentPipe } from '../../../app/moment/moment.pipe';
-import { MapService } from '../../../app/upgrade/ajs-upgraded-providers';
+import { MapService } from 'src/app/map/map.service';
 
 @Component({
   selector: 'feed-item',

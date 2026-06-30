@@ -1,14 +1,12 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { StateService } from '@uirouter/angular';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import {
-  DeviceService,
-  UserService
-} from '../../../upgrade/ajs-upgraded-providers';
 import { DeleteDeviceComponent } from '../delete-device/delete-device.component';
-import { Device } from 'admin/src/@types/dashboard/devices-dashboard';
+import { Device } from '../../../../@types/dashboard/devices-dashboard';
 import { User } from '../../admin-users/user';
+import { AdminUserService } from '../../services/admin-user.service';
+import { AdminDeviceService } from '../../services/admin-device.service';
 
 @Component({
   selector: 'mage-device-details',
@@ -28,7 +26,7 @@ export class DeviceDetailsComponent implements OnInit {
     {
       title: 'Devices',
       iconClass: 'fa fa-mobile',
-      state: { name: 'admin.devices' }
+      route: ['../devices']
     }
   ];
 
@@ -39,52 +37,87 @@ export class DeviceDetailsComponent implements OnInit {
   deviceEditForm: {
     uid?: string;
     description?: string;
-    userAgent?: string;
     userId?: string;
-    userDisplayName?: string;
   } = {};
 
   constructor(
-    public stateService: StateService,
+    private route: ActivatedRoute,
+    private router: Router,
     private dialog: MatDialog,
-    @Inject(DeviceService) private deviceService: any,
-    @Inject(UserService) private userService: any
-  ) {}
+    private deviceService: AdminDeviceService,
+    private adminUserService: AdminUserService
+  ) { }
 
   ngOnInit(): void {
-    const deviceId = this.stateService.params.deviceId;
-    if (!deviceId) return;
+    const deviceId = this.route.snapshot.paramMap.get('deviceId');
+    if (!deviceId) {
+      this.error = 'Missing deviceId route param';
+      return;
+    }
 
     this.hasUpdatePermission =
-      this.userService.myself?.role?.permissions?.includes('UPDATE_DEVICE') ||
-      false;
+      this.adminUserService.hasPermission('UPDATE_DEVICE');
 
     this.hasDeletePermission =
-      this.userService.myself?.role?.permissions?.includes('DELETE_DEVICE') ||
-      false;
+      this.adminUserService.hasPermission('DELETE_DEVICE');
 
-    this.deviceService.getDevice(deviceId).then((device: Device) => {
-      this.device = device;
-      this.breadcrumbs.push({ title: device?.uid || 'Device' });
+    this.loadDevice(deviceId);
+  }
 
-      this.currentUserDisplayName = device?.user?.displayName || null;
-      this.selectedUserDisplayName = null;
+  private loadDevice(deviceId: string): void {
+    this.deviceService.getDeviceById(deviceId).subscribe({
+      next: (device: Device) => {
+        this.applyDevice(device);
+      },
+      error: () => {
+        this.error = 'Failed to load device';
+      }
+    });
+  }
 
-      this.resetEditForm();
+  private applyDevice(device: Device): void {
+    this.device = device;
+    this.breadcrumbs = [
+      {
+        title: 'Devices',
+        iconClass: 'fa fa-mobile',
+        route: ['../']
+      },
+      { title: device?.uid || 'Device' }
+    ];
+
+    this.currentUserDisplayName = device?.user?.displayName || null;
+    this.selectedUserDisplayName = null;
+
+    this.resetEditForm();
+  }
+
+  private reloadDevice(): void {
+    if (!this.device?.id) return;
+
+    const deviceId = this.device.id;
+    this.deviceService.getDeviceById(deviceId).subscribe({
+      next: (d: Device) => {
+        this.applyDevice(d);
+      },
+      error: () => {
+        this.error = 'Failed to reload device';
+      }
     });
   }
 
   toggleEditDetails(): void {
-    if (this.editingDetails) {
-      this.cancelEditDetails();
-    } else {
-      this.editingDetails = true;
-      this.resetEditForm();
-    }
+    this.editingDetails ? this.cancelEditDetails() : this.startEdit();
+  }
+
+  private startEdit(): void {
+    this.editingDetails = true;
+    this.resetEditForm();
   }
 
   private resetEditForm(): void {
     if (!this.device) return;
+
     this.deviceEditForm = {
       uid: this.device.uid,
       description: this.device.description,
@@ -108,71 +141,104 @@ export class DeviceDetailsComponent implements OnInit {
   }
 
   saveDeviceDetails(): void {
-    if (!this.device?.id) return;
+    if (!this.device?.id || this.saving) return;
+
+    const deviceId = this.device.id;
 
     this.saving = true;
     this.error = null;
 
     const payload: any = {
       uid: this.deviceEditForm.uid,
-      name: (this.device as any).name,
       description: this.deviceEditForm.description,
-      userId: this.deviceEditForm.userId || null
+      userId: this.deviceEditForm.userId ?? null
     };
 
-    const updated: any = {
-      ...this.device,
-      uid: this.deviceEditForm.uid,
-      description: this.deviceEditForm.description,
-      userId: this.deviceEditForm.userId || null,
-      name: (this.device as any).name
-    };
-
-    this.deviceService.updateDevice(updated).then(
-      () => {
+    this.deviceService.updateDevice(deviceId, payload).subscribe({
+      next: () => {
         this.editingDetails = false;
         this.saving = false;
-
-        this.deviceService.getDevice(this.device!.id).then((d: Device) => {
-          this.device = d;
-          this.currentUserDisplayName = d?.user?.displayName || null;
-          this.resetEditForm();
-        });
+        this.reloadDevice();
       },
-      (err: any) => {
-        this.error =
-          err?.responseText || err?.data || 'Failed to update device';
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to update device';
         this.saving = false;
       }
-    );
+    });
   }
 
   registerDevice(device: Device): void {
-    device.registered = true;
-    this.deviceService.updateDevice(device);
+    if (!device?.id || this.saving) return;
+
+    this.saving = true;
+    this.error = null;
+
+    this.deviceService.updateDevice(device.id, { registered: true }).subscribe({
+      next: (updated) => {
+
+        if (updated) this.applyDevice(updated);
+
+        this.saving = false;
+        this.reloadDevice();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to register device';
+        this.saving = false;
+      }
+    });
   }
 
   unregisterDevice(device: Device): void {
-    device.registered = false;
-    this.deviceService.updateDevice(device);
+    if (!device?.id || this.saving) return;
+
+    this.saving = true;
+    this.error = null;
+
+    this.deviceService.updateDevice(device.id, { registered: false }).subscribe({
+      next: (updated) => {
+
+        if (updated) this.applyDevice(updated);
+
+        this.saving = false;
+        this.reloadDevice();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to unregister device';
+        this.saving = false;
+      }
+    });
   }
 
   confirmDeleteDevice(): void {
     if (!this.device) return;
 
     const dialogRef = this.dialog.open(DeleteDeviceComponent, {
+      width: '600px',
       data: { device: this.device }
     });
 
     dialogRef.afterClosed().subscribe((result?: { confirmed?: boolean }) => {
-      if (result?.confirmed) this.deleteDevice();
+      if (result?.confirmed) {
+        this.deleteDevice();
+      }
     });
   }
 
   private deleteDevice(): void {
-    if (!this.device) return;
-    this.deviceService.deleteDevice(this.device).then(() => {
-      this.stateService.go('admin.devices');
+    if (!this.device?.id || this.saving) return;
+
+    this.saving = true;
+    this.error = null;
+
+    this.deviceService.deleteDevice(this.device.id).subscribe({
+      next: () => {
+        this.saving = false;
+        this.router.navigate(['/../../devices'], { relativeTo: this.route });
+      },
+      error: () => {
+        this.error = 'Failed to delete device';
+        this.saving = false;
+      }
     });
   }
 

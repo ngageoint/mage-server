@@ -123,7 +123,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "app:build"
+            "buildTarget": "app:build"
           }
         },
         "test": {
@@ -195,10 +195,10 @@
               }
             ],
             "styles": [
-              "admin/src/ng1/vendor/bootstrap/css/bootstrap.min.css",
+              "admin/src/vendor/bootstrap/css/bootstrap.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/@ngageoint/md-date-time-picker/dist/css/mdDateTimePicker.css",
-              "admin/src/ng1/vendor/material-design-icons/icons.css",
+              "admin/src/vendor/material-design-icons/icons.css",
               "admin/src/styles.scss"
             ],
             "stylePreprocessorOptions": {
@@ -287,7 +287,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "admin:build"
+            "buildTarget": "admin:build"
           }
         },
         "test": {
@@ -437,21 +437,21 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "core-lib-showcase:build"
+            "buildTarget": "core-lib-showcase:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "core-lib-showcase:build:production"
+              "buildTarget": "core-lib-showcase:build:production"
             },
             "development": {
-              "browserTarget": "core-lib-showcase:build:development"
+              "buildTarget": "core-lib-showcase:build:development"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "core-lib-showcase:build"
+            "buildTarget": "core-lib-showcase:build"
           }
         },
         "test": {
@@ -488,6 +488,5 @@
   },
   "cli": {
     "analytics": false
-  },
-  "defaultProject": "app"
+  }
 }

@@ -1,13 +1,9 @@
 @use '@angular/material' as mat;
-@import "variables.scss";
+@import 'variables.scss';
 
 .page {
-  background-color: #F0F0F0;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  min-height: 100%;
+  background-color: #f0f0f0;
   overflow-y: auto;
 }
 
@@ -15,30 +11,28 @@
   display: flex;
   flex-direction: row;
   padding: 16px;
-  background-color: white;
+  background-color: #ffffff;
 }
 
 .heading {
   display: flex;
   flex-direction: column;
-  background-color: white;
+  background-color: #ffffff;
   margin-top: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   z-index: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .heading__content {
   display: flex;
   flex-direction: row;
-  padding: 32px 16px;
-}
-
-.heading__content {
-  display: flex;
-  flex-direction: row;
+  align-items: flex-start;
+  padding: 32px 24px 20px;
 }
 
 .heading__icon {
+  flex: 0 0 auto;
   color: mat.get-color-from-palette($app-primary);
   margin-right: 16px;
   font-size: 40px;
@@ -46,25 +40,46 @@
   width: 40px;
 }
 
-.heading__actions {
-  margin-left: 16px;
-  margin-bottom: 16px;
-}
-
-.heading__action {
-  margin-right: 16px;
-}
-
 .heading__info {
   flex: 1;
+  min-width: 0;
 }
 
 .heading__title {
-  color: rgba(0, 0, 0, .87)
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  margin-bottom: 6px;
 }
 
 .heading__summary {
-  color: rgba(0, 0, 0, .6)
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.heading__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 24px 20px;
+}
+
+.heading__action {
+  margin-left: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 42px;
+
+  mat-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    margin-right: 6px;
+    line-height: 22px;
+  }
 }
 
 .content {
@@ -72,49 +87,129 @@
   margin: 16px;
 }
 
-.row__card {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  margin: -8px;
+.content__layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.column__card {
-  flex-direction: column;
-  display: flex;
-  flex: 1;
-  margin: 8px;
-}
-
-.column__config {
-  flex-direction: column;
-  display: flex;
-  flex: 1;
-  margin: 8px;
-}
-
-.column__feeds {
-  flex-direction: column;
-  display: flex;
-  flex: 2;
-  margin: 8px;
+.content__column {
   min-width: 0;
 }
 
-@media screen and (max-width: 1200px) {
-  .column__config {
-    flex-basis: 100%;
-  }
-
-  .column__feeds {
-    flex-basis: 100%;
-  }
-}
-
 .content__card {
-  width: 100%
+  width: 100%;
+  border-radius: 8px;
+  background-color: #ffffff;
 }
 
-mat-card-header {
+.content__card-header {
+  padding: 20px 20px 12px;
+}
+
+.content__card-title {
   color: mat.get-color-from-palette($app-primary);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.content__card-content {
+  padding: 0 20px 20px;
+}
+
+.feed-list {
+  padding: 0;
+}
+
+.feed-list__item {
+  height: auto !important;
+  min-height: 72px;
+  padding: 8px 0;
+}
+
+.feed-list__icon {
+  color: mat.get-color-from-palette($app-primary);
+  margin-right: 16px !important;
+  margin-top: 27px !important;
+}
+
+.feed-list__title {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.feed-list__summary {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.feed-list__empty {
+  padding: 24px 0;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  text-align: center;
+}
+
+.feed-paginator {
+  margin-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.primary-color {
+  color: mat.get-color-from-palette($app-primary);
+}
+
+:host ::ng-deep mage-json-schema-form {
+  display: block;
+}
+
+:host ::ng-deep mage-json-schema-form .mat-mdc-form-field {
+  width: 100%;
+}
+
+:host ::ng-deep mage-json-schema-form .mat-mdc-text-field-wrapper {
+  background-color: #ffffff;
+}
+
+:host ::ng-deep .content__card .mat-mdc-card-header-text {
+  margin: 0;
+}
+
+:host ::ng-deep .feed-list__item .mdc-list-item__content {
+  padding: 4px 0;
+}
+
+@media screen and (max-width: 1200px) {
+  .content__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .heading__content {
+    padding: 24px 16px 16px;
+  }
+
+  .heading__actions {
+    padding: 0 16px 16px;
+  }
+
+  .content {
+    margin: 12px;
+  }
+
+  .content__card-header {
+    padding: 16px 16px 8px;
+  }
+
+  .content__card-content {
+    padding: 0 16px 16px;
+  }
 }

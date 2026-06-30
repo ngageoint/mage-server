@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
-import * as moment from 'moment';
+import moment from 'moment';
 import { MapService } from '../../map/map.service';
 
 @Component({

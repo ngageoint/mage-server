@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import {Location} from '@angular/common';
 
@@ -22,7 +22,7 @@ export class AboutComponent implements OnInit {
 
   constructor(
     private _location: Location,
-    @Inject(ApiService) public apiService: ApiService,
+    public apiService: ApiService,
   ) {}
 
   ngOnInit(): void {

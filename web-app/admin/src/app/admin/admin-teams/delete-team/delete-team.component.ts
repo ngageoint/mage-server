@@ -1,9 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Observable, forkJoin } from 'rxjs';
 import { Team } from '../team';
-import { TeamsService } from '../teams-service';
-import { UserService } from 'admin/src/app/upgrade/ajs-upgraded-providers';
+import { AdminTeamsService } from '../../services/admin-teams-service';
+import { AdminUserService } from '../../services/admin-user.service';
 
 /**
  * Modal component for confirming team deletion.
@@ -25,22 +25,18 @@ export class DeleteTeamComponent implements OnInit {
    * @param dialogRef - Reference to the dialog for closing and returning results
    * @param data - Injected data containing the team to delete
    * @param teamsService - Service for team operations
-   * @param UserService - Service for user operations
+   * @param adminUserService - Service for user operations
    */
   constructor(
     public dialogRef: MatDialogRef<DeleteTeamComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { team: Team },
-    private teamsService: TeamsService,
-    @Inject(UserService) private UserService
+    private teamsService: AdminTeamsService,
+    private adminUserService: AdminUserService
   ) {
     this.team = data.team;
   }
 
-  /**
-   * Component initialization lifecycle hook.
-   */
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   /**
    * Deletes the team and optionally its users if the option is selected.
@@ -81,11 +77,16 @@ export class DeleteTeamComponent implements OnInit {
       return;
     }
 
-    const deletePromises: Observable<any>[] = users.map(user =>
-      this.UserService.deleteUser(user)
-    );
+    const deleteRequests: Observable<any>[] = users
+      .filter(u => !!u?.id)
+      .map(u => this.adminUserService.deleteUser(String(u.id)));
 
-    forkJoin(deletePromises).subscribe({
+    if (deleteRequests.length === 0) {
+      this.dialogRef.close(this.team);
+      return;
+    }
+
+    forkJoin(deleteRequests).subscribe({
       next: () => {
         this.dialogRef.close(this.team);
       },

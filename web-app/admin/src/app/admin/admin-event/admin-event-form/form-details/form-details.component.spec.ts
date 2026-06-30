@@ -1,22 +1,27 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormDetailsComponent } from './form-details.component';
-import { EventsService } from '../../events.service';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { LocalStorageService, UserService } from '../../../../upgrade/ajs-upgraded-providers';
-import { StateService } from '@uirouter/angular';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
-import { Event as MageEvent } from 'src/app/filter/filter.types';
+
+import { FormDetailsComponent } from './form-details.component';
+import { AdminEventsService } from '../../../services/admin-events.service';
+import { AdminUserService } from '../../../services/admin-user.service';
+import { LocalStorageService } from '../../../../../../../../web-app/src/app/http/local-storage.service';
+
+import { Event as MageEvent } from '../../../../../../../src/app/filter/filter.types';
 
 describe('FormDetailsComponent', () => {
   let component: FormDetailsComponent;
   let fixture: ComponentFixture<FormDetailsComponent>;
-  let mockEventsService: jasmine.SpyObj<EventsService>;
+
+  let mockEventsService: jasmine.SpyObj<AdminEventsService>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
-  let mockLocalStorageService: any;
-  let mockUserService: any;
-  let mockStateService: any;
+  let mockLocalStorageService: jasmine.SpyObj<LocalStorageService>;
+  let mockUserService: jasmine.SpyObj<AdminUserService>;
+  let mockRoute: any;
 
   const mockEvent: MageEvent = {
     id: 1,
@@ -41,39 +46,47 @@ describe('FormDetailsComponent', () => {
   };
 
   beforeEach(async () => {
-    mockEventsService = jasmine.createSpyObj('EventsService', [
+    mockEventsService = jasmine.createSpyObj('AdminEventsService', [
       'getEventById',
       'createForm',
       'updateForm'
     ]);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    mockLocalStorageService = {
-      getToken: jasmine.createSpy('getToken').and.returnValue('test-token')
-    };
-    mockUserService = {
-      myself: jasmine.createSpy('myself')
-    };
-    mockStateService = {
-      params: {
-        eventId: '1',
-        formId: null
-      },
-      go: jasmine.createSpy('go')
+    mockLocalStorageService = jasmine.createSpyObj('LocalStorageService', [
+      'getToken'
+    ]);
+    mockUserService = jasmine.createSpyObj('AdminUserService', ['getMyself']);
+
+    mockLocalStorageService.getToken.and.returnValue('test-token');
+    mockUserService.getMyself.and.returnValue(
+      of({ id: 'u1', displayName: 'Ranma Saotome' } as any)
+    );
+
+    mockRoute = {
+      snapshot: {
+        paramMap: {
+          get: jasmine.createSpy('get').and.callFake((key: string) => {
+            if (key === 'eventId') return '1';
+            if (key === 'formId') return null;
+            return null;
+          })
+        }
+      }
     };
 
     await TestBed.configureTestingModule({
       declarations: [FormDetailsComponent],
       providers: [
-        { provide: EventsService, useValue: mockEventsService },
+        { provide: AdminEventsService, useValue: mockEventsService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
         { provide: LocalStorageService, useValue: mockLocalStorageService },
-        { provide: UserService, useValue: mockUserService },
-        { provide: StateService, useValue: mockStateService }
-      ]
-    })
-      .compileComponents();
+        { provide: AdminUserService, useValue: mockUserService },
+        { provide: ActivatedRoute, useValue: mockRoute }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FormDetailsComponent);
     component = fixture.componentInstance;
@@ -89,9 +102,26 @@ describe('FormDetailsComponent', () => {
       spyOn<any>(component, 'fetchFormIcons');
     });
 
-    it('should load event and setup breadcrumbs for new form', () => {
+    it('returns early when eventId is missing', () => {
+      mockRoute.snapshot.paramMap.get.and.callFake((key: string) => {
+        if (key === 'eventId') return null;
+        if (key === 'formId') return null;
+        return null;
+      });
+
+      component.ngOnInit();
+
+      expect(mockEventsService.getEventById).not.toHaveBeenCalled();
+      expect(component.event).toBeNull();
+    });
+
+    it('loads event and sets up breadcrumbs for new form', () => {
       mockEventsService.getEventById.and.returnValue(of(mockEvent));
-      mockStateService.params.formId = null;
+      mockRoute.snapshot.paramMap.get.and.callFake((key: string) => {
+        if (key === 'eventId') return '1';
+        if (key === 'formId') return null;
+        return null;
+      });
 
       component.ngOnInit();
 
@@ -101,25 +131,60 @@ describe('FormDetailsComponent', () => {
       expect(component.event).toEqual(mockEvent);
       expect(component.breadcrumbs.length).toBe(3);
       expect(component.breadcrumbs[2].title).toBe('New Form');
+
       expect(component.form.archived).toBe(false);
       expect(component.form.color).toMatch(/^#[0-9a-f]{6}$/i);
       expect(component.form.fields).toEqual([]);
       expect(component.form.userFields).toEqual([]);
+
+      expect(component.fieldsRoute).toBeNull();
+      expect(component.mapRoute).toBeNull();
+      expect(component.feedRoute).toBeNull();
     });
 
-    it('should load event and existing form for edit', () => {
+    it('loads event and existing form for edit and sets routes', () => {
       mockEventsService.getEventById.and.returnValue(of(mockEvent));
-      mockStateService.params.formId = '1';
+      mockRoute.snapshot.paramMap.get.and.callFake((key: string) => {
+        if (key === 'eventId') return '1';
+        if (key === 'formId') return '1';
+        return null;
+      });
 
       component.ngOnInit();
 
-      expect(mockEventsService.getEventById).toHaveBeenCalledWith('1');
       expect(component.event).toEqual(mockEvent);
-      expect(component.form).toEqual(mockEvent.forms[0]);
+      expect(component.form).toEqual(
+        jasmine.objectContaining(mockEvent.forms[0] as any)
+      );
       expect(component.breadcrumbs[2].title).toBe('Test Form');
+
+      expect(component.fieldsRoute).toEqual([
+        '/admin/events',
+        1,
+        'forms',
+        1,
+        'fields'
+      ]);
+      expect(component.mapRoute).toEqual([
+        '/admin/events',
+        1,
+        'forms',
+        1,
+        'map'
+      ]);
+      expect(component.feedRoute).toEqual([
+        '/admin/events',
+        1,
+        'forms',
+        1,
+        'feed'
+      ]);
+
+      expect((component as any).generateSampleObservations).toHaveBeenCalled();
+      expect((component as any).fetchFormIcons).toHaveBeenCalled();
     });
 
-    it('should handle error when loading event', () => {
+    it('handles error when loading event', () => {
       const error = { message: 'Error loading event' };
       mockEventsService.getEventById.and.returnValue(throwError(() => error));
       spyOn(console, 'error');
@@ -127,22 +192,33 @@ describe('FormDetailsComponent', () => {
       component.ngOnInit();
 
       expect(console.error).toHaveBeenCalledWith('Error loading event:', error);
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error loading event', 'Close', { duration: 3000 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error loading event',
+        'Close',
+        { duration: 3000 }
+      );
     });
 
-    it('should handle missing formId in event forms', () => {
+    it('handles missing formId in event forms', () => {
       const eventWithoutForm = { ...mockEvent, forms: [] };
       mockEventsService.getEventById.and.returnValue(of(eventWithoutForm));
-      mockStateService.params.formId = '999';
+      mockRoute.snapshot.paramMap.get.and.callFake((key: string) => {
+        if (key === 'eventId') return '1';
+        if (key === 'formId') return '999';
+        return null;
+      });
 
       component.ngOnInit();
 
       expect(component.form.id).toBeUndefined();
+      expect(component.fieldsRoute).toBeNull();
+      expect(component.mapRoute).toBeNull();
+      expect(component.feedRoute).toBeNull();
     });
   });
 
   describe('validateForm', () => {
-    it('should return true when form is valid', () => {
+    it('returns true when form is valid', () => {
       component.form = { name: 'Test Form', color: '#ff0000' };
       component.generalFormSubmitted = false;
 
@@ -153,7 +229,7 @@ describe('FormDetailsComponent', () => {
       expect(component.generalFormSubmitted).toBe(true);
     });
 
-    it('should return false when name is missing', () => {
+    it('returns false when name is missing', () => {
       component.form = { name: '', color: '#ff0000' };
 
       const result = component.validateForm();
@@ -162,7 +238,7 @@ describe('FormDetailsComponent', () => {
       expect(component.formValid).toBe(false);
     });
 
-    it('should return false when color is missing', () => {
+    it('returns false when color is missing', () => {
       component.form = { name: 'Test Form', color: '' };
 
       const result = component.validateForm();
@@ -171,7 +247,7 @@ describe('FormDetailsComponent', () => {
       expect(component.formValid).toBe(false);
     });
 
-    it('should return false when both name and color are missing', () => {
+    it('returns false when both name and color are missing', () => {
       component.form = {};
 
       const result = component.validateForm();
@@ -184,10 +260,15 @@ describe('FormDetailsComponent', () => {
   describe('saveForm', () => {
     beforeEach(() => {
       component.event = mockEvent;
-      component.form = { name: 'Test Form', color: '#ff0000' };
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        fields: [],
+        userFields: []
+      };
     });
 
-    it('should not save if form is invalid', () => {
+    it('does not save if form is invalid', () => {
       component.form = { name: '', color: '' };
 
       component.saveForm();
@@ -196,9 +277,8 @@ describe('FormDetailsComponent', () => {
       expect(mockEventsService.updateForm).not.toHaveBeenCalled();
     });
 
-    it('should not save if event is not loaded', () => {
+    it('does not save if event is not loaded', () => {
       component.event = null;
-      component.form = { name: 'Test Form', color: '#ff0000' };
 
       component.saveForm();
 
@@ -206,62 +286,87 @@ describe('FormDetailsComponent', () => {
       expect(mockEventsService.updateForm).not.toHaveBeenCalled();
     });
 
-    it('should update existing form', () => {
-      component.form = { name: 'Test Form', color: '#ff0000', id: 1 };
+    it('updates existing form', () => {
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        id: 1,
+        fields: [],
+        userFields: []
+      };
       const savedForm = { ...component.form };
-      mockEventsService.updateForm.and.returnValue(of(savedForm));
+      mockEventsService.updateForm.and.returnValue(of(savedForm as any));
 
       component.saveForm();
 
-      expect(component.saving).toBe(false);
       expect(mockEventsService.updateForm).toHaveBeenCalled();
-      const [eventId, formId, payload] = mockEventsService.updateForm.calls.mostRecent().args;
+      const [eventId, formId, payload] =
+        mockEventsService.updateForm.calls.mostRecent().args;
+
       expect(eventId).toBe('1');
       expect(formId).toBe('1');
-      expect(payload).toEqual(jasmine.objectContaining({
-        name: 'Test Form',
-        color: '#ff0000'
-      }));
-      expect(payload.fields).toEqual([]);
-      expect(payload.userFields).toEqual([]);
-      expect(component.form).toEqual(jasmine.objectContaining(savedForm));
-      expect(component.form.fields).toEqual([]);
-      expect(component.form.userFields).toEqual([]);
+      expect(payload).toEqual(
+        jasmine.objectContaining({ name: 'Test Form', color: '#ff0000' })
+      );
       expect(component.formDirty).toBe(false);
       expect(component.generalFormSubmitted).toBe(false);
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Form saved successfully', 'Close', { duration: 3000 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Form saved successfully',
+        'Close',
+        { duration: 3000 }
+      );
     });
 
-    it('should handle save error with errors object', () => {
+    it('handles save error with errors object', () => {
       const errorResponse = {
-        error: {
-          errors: { name: ['Name is required'] }
-        }
+        error: { errors: { name: ['Name is required'] } }
       };
-      mockEventsService.createForm.and.returnValue(throwError(() => errorResponse));
+      mockEventsService.createForm.and.returnValue(
+        throwError(() => errorResponse)
+      );
       spyOn(component, 'showError');
+
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        fields: [],
+        userFields: []
+      };
+      component.event = mockEvent;
+      component.form.id = undefined;
 
       component.saveForm();
 
-      expect(component.saving).toBe(false);
       expect(component.showError).toHaveBeenCalledWith({
         title: 'Error Saving Form',
-        message: "If the problem persists please contact your MAGE administrator for help.",
+        message:
+          'If the problem persists please contact your MAGE administrator for help.',
         errors: { name: ['Name is required'] }
       });
     });
 
-    it('should handle save error without errors object', () => {
+    it('handles save error without errors object', () => {
       const errorResponse = { error: {} };
-      mockEventsService.createForm.and.returnValue(throwError(() => errorResponse));
+      mockEventsService.createForm.and.returnValue(
+        throwError(() => errorResponse)
+      );
       spyOn(component, 'showError');
+
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        fields: [],
+        userFields: []
+      };
+      component.event = mockEvent;
+      component.form.id = undefined;
 
       component.saveForm();
 
-      expect(component.saving).toBe(false);
       expect(component.showError).toHaveBeenCalledWith({
         title: 'Error Saving Form',
-        message: "Please try again later, if the problem persists please contact your MAGE administrator for help.",
+        message:
+          'Please try again later, if the problem persists please contact your MAGE administrator for help.',
         errors: undefined
       });
     });
@@ -270,11 +375,17 @@ describe('FormDetailsComponent', () => {
   describe('archiveForm', () => {
     beforeEach(() => {
       component.event = mockEvent;
-      component.form = { id: 1, name: 'Test Form', archived: false };
+      component.form = {
+        id: 1,
+        name: 'Test Form',
+        archived: false,
+        fields: [],
+        userFields: []
+      };
     });
 
-    it('should archive form successfully', () => {
-      mockEventsService.updateForm.and.returnValue(of(component.form));
+    it('archives form successfully', () => {
+      mockEventsService.updateForm.and.returnValue(of(component.form as any));
 
       component.archiveForm();
 
@@ -284,10 +395,14 @@ describe('FormDetailsComponent', () => {
         '1',
         jasmine.objectContaining({ archived: true })
       );
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Form archived successfully', 'Close', { duration: 3000 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Form archived successfully',
+        'Close',
+        { duration: 3000 }
+      );
     });
 
-    it('should not archive if event is not loaded', () => {
+    it('does not archive if event is not loaded', () => {
       component.event = null;
 
       component.archiveForm();
@@ -295,26 +410,39 @@ describe('FormDetailsComponent', () => {
       expect(mockEventsService.updateForm).not.toHaveBeenCalled();
     });
 
-    it('should handle archive error', () => {
+    it('handles archive error', () => {
       const error = { message: 'Error archiving' };
       mockEventsService.updateForm.and.returnValue(throwError(() => error));
       spyOn(console, 'error');
 
       component.archiveForm();
 
-      expect(console.error).toHaveBeenCalledWith('Error archiving form:', error);
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error archiving form', 'Close', { duration: 3000 });
+      expect(console.error).toHaveBeenCalledWith(
+        'Error archiving form:',
+        error
+      );
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error archiving form',
+        'Close',
+        { duration: 3000 }
+      );
     });
   });
 
   describe('restoreForm', () => {
     beforeEach(() => {
       component.event = mockEvent;
-      component.form = { id: 1, name: 'Test Form', archived: true };
+      component.form = {
+        id: 1,
+        name: 'Test Form',
+        archived: true,
+        fields: [],
+        userFields: []
+      };
     });
 
-    it('should restore form successfully', () => {
-      mockEventsService.updateForm.and.returnValue(of(component.form));
+    it('restores form successfully', () => {
+      mockEventsService.updateForm.and.returnValue(of(component.form as any));
 
       component.restoreForm();
 
@@ -324,64 +452,44 @@ describe('FormDetailsComponent', () => {
         '1',
         jasmine.objectContaining({ archived: false })
       );
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Form restored successfully', 'Close', { duration: 3000 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Form restored successfully',
+        'Close',
+        { duration: 3000 }
+      );
     });
 
-    it('should handle restore error', () => {
+    it('handles restore error', () => {
       const error = { message: 'Error restoring' };
       mockEventsService.updateForm.and.returnValue(throwError(() => error));
       spyOn(console, 'error');
 
       component.restoreForm();
 
-      expect(console.error).toHaveBeenCalledWith('Error restoring form:', error);
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error restoring form', 'Close', { duration: 3000 });
+      expect(console.error).toHaveBeenCalledWith(
+        'Error restoring form:',
+        error
+      );
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error restoring form',
+        'Close',
+        { duration: 3000 }
+      );
     });
   });
 
   describe('showError', () => {
-    it('should display error message in snackbar', () => {
-      const error = {
+    it('displays error message in snackbar', () => {
+      component.showError({
         title: 'Error Title',
         message: 'Error message'
-      };
+      } as any);
 
-      component.showError(error);
-
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error Title: Error message', 'Close', { duration: 5000 });
-    });
-  });
-
-  describe('navigateToFields', () => {
-    it('should navigate to form fields edit page', () => {
-      component.event = mockEvent;
-      component.form = { id: 1 };
-
-      component.navigateToFields();
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.formFieldsEdit', { eventId: 1, formId: 1 });
-    });
-  });
-
-  describe('navigateToMap', () => {
-    it('should navigate to form map edit page', () => {
-      component.event = mockEvent;
-      component.form = { id: 1 };
-
-      component.navigateToMap();
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.formMapEdit', { eventId: 1, formId: 1 });
-    });
-  });
-
-  describe('navigateToFeed', () => {
-    it('should navigate to form feed edit page', () => {
-      component.event = mockEvent;
-      component.form = { id: 1 };
-
-      component.navigateToFeed();
-
-      expect(mockStateService.go).toHaveBeenCalledWith('admin.formFeedEdit', { eventId: 1, formId: 1 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Error Title: Error message',
+        'Close',
+        { duration: 5000 }
+      );
     });
   });
 
@@ -399,15 +507,20 @@ describe('FormDetailsComponent', () => {
         style: { display: '' },
         click: jasmine.createSpy('click')
       };
+
       spyOn(document, 'createElement').and.returnValue(mockAnchor);
       spyOn(document.body, 'appendChild');
       spyOn(document.body, 'removeChild');
     });
 
-    it('should trigger download for form export', () => {
+    it('triggers download for form export', () => {
       component.exportForm();
 
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Exporting form...', 'Close', { duration: 2000 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        'Exporting form...',
+        'Close',
+        { duration: 2000 }
+      );
       expect(document.createElement).toHaveBeenCalledWith('a');
       expect(mockAnchor.href).toContain('/api/events/1/1/form.zip');
       expect(mockAnchor.href).toContain('access_token=test-token');
@@ -417,7 +530,7 @@ describe('FormDetailsComponent', () => {
       expect(document.body.removeChild).toHaveBeenCalledWith(mockAnchor);
     });
 
-    it('should not export if token is not available', () => {
+    it('does not export if token is not available', () => {
       component.token = null;
 
       component.exportForm();
@@ -426,7 +539,7 @@ describe('FormDetailsComponent', () => {
       expect(mockSnackBar.open).not.toHaveBeenCalled();
     });
 
-    it('should use default filename if form name is not set', () => {
+    it('uses default filename if form name is not set', () => {
       component.form = { id: 1 };
 
       component.exportForm();

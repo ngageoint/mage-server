@@ -1,11 +1,11 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule as MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { ContactModule } from '../contact/contact.module';
 import { LocalSigninComponent } from './local-signin/local-signin.component';
@@ -18,43 +18,43 @@ import { AuthenticationComponent } from './authentication/authentication.compone
 import { SigninModalComponent } from './signin-modal/signin-modal.component';
 
 @NgModule({
-    declarations: [
-        LocalSigninComponent,
-        IdpSigninComponent,
-        LdapSigninComponent,
-        LocalSignupComponent,
-        SigninComponent,
-        AuthorizeComponent,
-        AuthenticationComponent,
-        SigninModalComponent
-    ],
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatDialogModule,
-        MatButtonModule,
-        MatIconModule,
-        MatProgressBarModule,
-        MatSnackBarModule,
-        ContactModule
-    ],
-    exports: [
-        LocalSigninComponent,
-        IdpSigninComponent,
-        LdapSigninComponent,
-        LocalSignupComponent,
-        SigninComponent,
-        AuthorizeComponent,
-        AuthenticationComponent,
-        SigninModalComponent
-    ],
-    providers: [
-        {
-            provide: '$stateParams',
-            useFactory: (i: any) => i.get('$stateParams'),
-            deps: ['$injector']
-        }
-    ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  declarations: [
+    LocalSigninComponent,
+    IdpSigninComponent,
+    LdapSigninComponent,
+    LocalSignupComponent,
+    SigninComponent,
+    AuthorizeComponent,
+    AuthenticationComponent,
+    SigninModalComponent
+  ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatSnackBarModule,
+    ContactModule
+  ],
+  exports: [
+    LocalSigninComponent,
+    IdpSigninComponent,
+    LdapSigninComponent,
+    LocalSignupComponent,
+    SigninComponent,
+    AuthorizeComponent,
+    AuthenticationComponent,
+    SigninModalComponent
+  ],
+  providers: [
+    {
+      provide: 'httpBuffer',
+      useFactory: (i: any) => i.get('httpBuffer'),
+      deps: ['$injector']
+    }
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AuthenticationModule { }
+export class AuthenticationModule {}

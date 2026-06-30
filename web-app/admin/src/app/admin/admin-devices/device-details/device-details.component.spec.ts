@@ -1,40 +1,52 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { of, Subject } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
-import { StateService } from '@uirouter/angular';
-import { MatDialog } from '@angular/material/dialog';
-import { DeviceService, UserService } from '../../../upgrade/ajs-upgraded-providers';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { DeviceDetailsComponent } from './device-details.component';
+import { AdminDeviceService } from '../../services/admin-device.service';
+import { AdminUserService } from '../../services/admin-user.service';
+import { Device } from '../../../../@types/dashboard/devices-dashboard';
 
 describe('DeviceDetailsComponent', () => {
   let fixture: ComponentFixture<DeviceDetailsComponent>;
   let component: DeviceDetailsComponent;
 
-  let stateService: any;
+  let route: any;
+  let router: any;
   let dialog: any;
   let deviceService: any;
-  let userService: any;
+  let adminUserService: any;
 
-  const makeDevice = (overrides: any = {}) => ({
-    id: 'dev-1',
-    uid: 'UID-123',
-    description: 'Test device',
-    userAgent: 'Mozilla/5.0',
-    appVersion: 'Native',
-    registered: false,
-    user: {
-      id: 'user-1',
-      displayName: 'Alice'
-    },
-    ...overrides
-  });
+  const makeDevice = (overrides: Partial<Device> = {}) =>
+    ({
+      id: 'dev-1',
+      uid: 'UID-123',
+      description: 'Test device',
+      userAgent: 'Mozilla/5.0',
+      appVersion: 'Native',
+      registered: false,
+      user: {
+        id: 'user-1',
+        displayName: 'Lily Hoshikawa'
+      },
+      ...overrides
+    } as any as Device);
 
   beforeEach(async () => {
-    stateService = {
-      params: { deviceId: 'dev-1' },
-      go: jasmine.createSpy('go')
+    route = {
+      snapshot: {
+        paramMap: {
+          get: jasmine.createSpy('get').and.returnValue('dev-1')
+        }
+      }
+    };
+
+    router = {
+      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true))
     };
 
     dialog = {
@@ -42,24 +54,23 @@ describe('DeviceDetailsComponent', () => {
     };
 
     deviceService = {
-      getDevice: jasmine.createSpy('getDevice'),
+      getDeviceById: jasmine.createSpy('getDeviceById'),
       updateDevice: jasmine.createSpy('updateDevice'),
       deleteDevice: jasmine.createSpy('deleteDevice')
     };
 
-    userService = {
-      myself: {
-        role: { permissions: [] as string[] }
-      }
+    adminUserService = {
+      hasPermission: jasmine.createSpy('hasPermission').and.returnValue(false)
     };
 
     await TestBed.configureTestingModule({
       declarations: [DeviceDetailsComponent],
       providers: [
-        { provide: StateService, useValue: stateService },
+        { provide: ActivatedRoute, useValue: route },
+        { provide: Router, useValue: router },
         { provide: MatDialog, useValue: dialog },
-        { provide: DeviceService, useValue: deviceService },
-        { provide: UserService, useValue: userService }
+        { provide: AdminDeviceService, useValue: deviceService },
+        { provide: AdminUserService, useValue: adminUserService }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -68,25 +79,31 @@ describe('DeviceDetailsComponent', () => {
     component = fixture.componentInstance;
   });
 
+  it('should create component', () => {
+    expect(component).toBeTruthy();
+  });
+
   describe('ngOnInit', () => {
-    it('does nothing if deviceId is missing', fakeAsync(() => {
-      stateService.params.deviceId = undefined;
-      deviceService.getDevice.and.returnValue(Promise.resolve(makeDevice()));
+    it('sets error and returns if deviceId is missing', () => {
+      route.snapshot.paramMap.get.and.returnValue(null);
 
       component.ngOnInit();
-      tick();
 
-      expect(deviceService.getDevice).not.toHaveBeenCalled();
+      expect(component.error).toBe('Missing deviceId route param');
+      expect(deviceService.getDeviceById).not.toHaveBeenCalled();
       expect(component.device).toBeNull();
-    }));
+    });
 
-    it('sets permissions from user role', fakeAsync(() => {
-      userService.myself.role.permissions = ['UPDATE_DEVICE'];
-      deviceService.getDevice.and.returnValue(Promise.resolve(makeDevice()));
+    it('sets permissions from adminUserService', fakeAsync(() => {
+      adminUserService.hasPermission.and.callFake((perm: string) => perm === 'UPDATE_DEVICE');
+
+      deviceService.getDeviceById.and.returnValue(of(makeDevice()));
 
       component.ngOnInit();
       tick();
 
+      expect(adminUserService.hasPermission).toHaveBeenCalledWith('UPDATE_DEVICE');
+      expect(adminUserService.hasPermission).toHaveBeenCalledWith('DELETE_DEVICE');
       expect(component.hasUpdatePermission).toBeTrue();
       expect(component.hasDeletePermission).toBeFalse();
     }));
@@ -95,18 +112,34 @@ describe('DeviceDetailsComponent', () => {
       const d = makeDevice({
         uid: 'UID-999',
         description: 'Hello',
-        user: { id: 'u2', displayName: 'Bea' }
+        user: { id: 'u2', displayName: 'Kikunojo' } as any
       });
-      deviceService.getDevice.and.returnValue(Promise.resolve(d));
+
+      deviceService.getDeviceById.and.returnValue(of(d));
 
       component.ngOnInit();
       tick();
 
       expect(component.device).toEqual(d);
-      expect(component.currentUserDisplayName).toBe('Bea');
+      expect(component.currentUserDisplayName).toBe('Kikunojo');
       expect(component.deviceEditForm.uid).toBe('UID-999');
       expect(component.deviceEditForm.description).toBe('Hello');
       expect(component.deviceEditForm.userId).toBe('u2');
+      expect(component.selectedUserDisplayName).toBeNull();
+
+      expect(component.breadcrumbs.length).toBe(2);
+      expect(component.breadcrumbs[0].title).toBe('Devices');
+      expect(component.breadcrumbs[1].title).toBe('UID-999');
+    }));
+
+    it('sets error when device load fails', fakeAsync(() => {
+      deviceService.getDeviceById.and.returnValue(throwError(() => new Error('nope')));
+
+      component.ngOnInit();
+      tick();
+
+      expect(component.error).toBe('Failed to load device');
+      expect(component.device).toBeNull();
     }));
   });
 
@@ -121,16 +154,17 @@ describe('DeviceDetailsComponent', () => {
       expect(component.editingDetails).toBeTrue();
     });
 
-    it('toggleEditDetails exits edit mode', () => {
+    it('toggleEditDetails exits edit mode (cancel)', () => {
       component.editingDetails = true;
       component.toggleEditDetails();
       expect(component.editingDetails).toBeFalse();
+      expect(component.error).toBeNull();
     });
 
     it('onUserSelected sets user', () => {
-      component.onUserSelected({ id: 'u9', displayName: 'Zoe' } as any);
+      component.onUserSelected({ id: 'u9', displayName: 'Hana' } as any);
       expect(component.deviceEditForm.userId).toBe('u9');
-      expect(component.selectedUserDisplayName).toBe('Zoe');
+      expect(component.selectedUserDisplayName).toBe('Hana');
     });
 
     it('onUserSelected clears user', () => {
@@ -142,50 +176,61 @@ describe('DeviceDetailsComponent', () => {
 
   describe('saveDeviceDetails', () => {
     it('returns early without device id', () => {
-      component.device = { ...makeDevice(), id: undefined } as any;
+      component.device = makeDevice({ id: undefined as any });
       component.saveDeviceDetails();
       expect(deviceService.updateDevice).not.toHaveBeenCalled();
     });
 
-    it('updates device successfully', fakeAsync(() => {
-      const original = makeDevice({ id: 'dev-1', uid: 'UID-123', description: 'Old', user: { id: 'u1', displayName: 'Alice' } });
-      const refreshed = makeDevice({ id: 'dev-1', uid: 'UID-NEW', description: 'New', user: { id: 'u2', displayName: 'Bea' } });
+    it('updates device successfully and reloads', fakeAsync(() => {
+      const original = makeDevice({
+        id: 'dev-1',
+        uid: 'UID-123',
+        description: 'Old',
+        user: { id: 'u1', displayName: 'Lily Hoshikawa' } as any
+      })
+    
+      const refreshed = makeDevice({
+        id: 'dev-1',
+        uid: 'UID-NEW',
+        description: 'New',
+        user: { id: 'u2', displayName: 'Kikunojo' } as any
+      })
+    
+      component.device = original
+      component.hasUpdatePermission = true
+      component.editingDetails = true
+    
+      component.deviceEditForm.uid = 'UID-NEW'
+      component.deviceEditForm.description = 'New'
+      component.deviceEditForm.userId = 'u2'
+    
+      deviceService.updateDevice.and.returnValue(of({}).pipe(delay(0)))
+      deviceService.getDeviceById.and.returnValue(of(refreshed))
+    
+      component.saveDeviceDetails()
+    
+      expect(component.saving).toBeTrue()
+    
+      tick(0)
+    
+      expect(deviceService.updateDevice).toHaveBeenCalledWith('dev-1', jasmine.any(Object))
+      expect(component.editingDetails).toBeFalse()
+      expect(component.saving).toBeFalse()
+      expect(component.device?.uid).toBe('UID-NEW')
+      expect(component.currentUserDisplayName).toBe('Kikunojo')
+      expect(component.deviceEditForm.uid).toBe('UID-NEW')
+      expect(component.deviceEditForm.description).toBe('New')
+      expect(component.deviceEditForm.userId).toBe('u2')
+      expect(component.selectedUserDisplayName).toBeNull()
+    }))
 
-      (original as any).name = 'Device Name';
-      (refreshed as any).name = 'Device Name';
-
-      component.device = original;
+    it('handles update error message and resets saving', fakeAsync(() => {
+      component.device = makeDevice({ id: 'dev-1' });
       component.editingDetails = true;
-      component.deviceEditForm.uid = 'UID-NEW';
-      component.deviceEditForm.description = 'New';
-      component.deviceEditForm.userId = 'u2';
 
-      deviceService.updateDevice.and.returnValue(Promise.resolve(true));
-      deviceService.getDevice.and.returnValue(Promise.resolve(refreshed));
-
-      component.saveDeviceDetails();
-      expect(component.saving).toBeTrue();
-
-      tick();
-      tick();
-
-      expect(component.editingDetails).toBeFalse();
-      expect(component.saving).toBeFalse();
-      expect(component.device?.uid).toBe('UID-NEW');
-      expect(component.currentUserDisplayName).toBe('Bea');
-      expect(component.deviceEditForm.uid).toBe('UID-NEW');
-      expect(component.deviceEditForm.description).toBe('New');
-      expect(component.deviceEditForm.userId).toBe('u2');
-      expect(component.selectedUserDisplayName).toBeNull();
-    }));
-
-    it('handles update error (responseText)', fakeAsync(() => {
-      const d = makeDevice({ id: 'dev-1' });
-      (d as any).name = 'Device Name';
-      component.device = d;
-      component.editingDetails = true;
-
-      deviceService.updateDevice.and.returnValue(Promise.reject({ responseText: 'Bad stuff happened' }));
+      deviceService.updateDevice.and.returnValue(
+        throwError(() => ({ error: { message: 'Bad stuff happened' } }))
+      );
 
       component.saveDeviceDetails();
       tick();
@@ -195,36 +240,48 @@ describe('DeviceDetailsComponent', () => {
       expect(component.editingDetails).toBeTrue();
     }));
 
-    it('handles update error (data) and default message', fakeAsync(() => {
-      const d = makeDevice({ id: 'dev-1' });
-      (d as any).name = 'Device Name';
-      component.device = d;
+    it('handles update error default message', fakeAsync(() => {
+      component.device = makeDevice({ id: 'dev-1' });
 
-      deviceService.updateDevice.and.returnValue(Promise.reject({ data: 'Nope' }));
+      deviceService.updateDevice.and.returnValue(throwError(() => ({})));
+
       component.saveDeviceDetails();
       tick();
-      expect(component.error).toBe('Nope');
 
-      deviceService.updateDevice.and.returnValue(Promise.reject({}));
-      component.saveDeviceDetails();
-      tick();
       expect(component.error).toBe('Failed to update device');
+      expect(component.saving).toBeFalse();
     }));
   });
 
   describe('register / unregister', () => {
     it('registerDevice', () => {
-      const d = makeDevice({ registered: false });
-      component.registerDevice(d as any);
-      expect(d.registered).toBeTrue();
-      expect(deviceService.updateDevice).toHaveBeenCalledWith(d);
+      const d = makeDevice({ id: 'dev-1', registered: false });
+      deviceService.updateDevice.and.returnValue(of({}));
+
+      component.registerDevice(d);
+
+      expect(deviceService.updateDevice).toHaveBeenCalledWith('dev-1', { registered: true });
     });
 
     it('unregisterDevice', () => {
-      const d = makeDevice({ registered: true });
-      component.unregisterDevice(d as any);
-      expect(d.registered).toBeFalse();
-      expect(deviceService.updateDevice).toHaveBeenCalledWith(d);
+      const d = makeDevice({ id: 'dev-1', registered: true });
+      deviceService.updateDevice.and.returnValue(of({}));
+
+      component.unregisterDevice(d);
+
+      expect(deviceService.updateDevice).toHaveBeenCalledWith('dev-1', { registered: false });
+    });
+
+    it('registerDevice returns early without id', () => {
+      const d = makeDevice({ id: undefined as any });
+      component.registerDevice(d);
+      expect(deviceService.updateDevice).not.toHaveBeenCalled();
+    });
+
+    it('unregisterDevice returns early without id', () => {
+      const d = makeDevice({ id: undefined as any });
+      component.unregisterDevice(d);
+      expect(deviceService.updateDevice).not.toHaveBeenCalled();
     });
   });
 
@@ -239,25 +296,24 @@ describe('DeviceDetailsComponent', () => {
       const d = makeDevice({ id: 'dev-1' });
       component.device = d;
 
-      const subject = new Subject<any>();
       dialog.open.and.returnValue({
-        afterClosed: () => subject.asObservable()
+        afterClosed: () => of({ confirmed: true })
       });
 
-      deviceService.deleteDevice.and.returnValue(Promise.resolve(true));
+      deviceService.deleteDevice.and.returnValue(of({}));
 
       component.confirmDeleteDevice();
-      subject.next({ confirmed: true });
-      subject.complete();
-
       tick();
 
-      expect(deviceService.deleteDevice).toHaveBeenCalledWith(d);
-      expect(stateService.go).toHaveBeenCalledWith('admin.devices');
+      expect(deviceService.deleteDevice).toHaveBeenCalledWith('dev-1');
+      expect(router.navigate).toHaveBeenCalledWith(
+        ['/../../devices'],
+        jasmine.any(Object)
+      );
     }));
 
     it('does not delete when not confirmed', fakeAsync(() => {
-      component.device = makeDevice();
+      component.device = makeDevice({ id: 'dev-1' });
 
       dialog.open.and.returnValue({
         afterClosed: () => of({ confirmed: false })
@@ -267,7 +323,23 @@ describe('DeviceDetailsComponent', () => {
       tick();
 
       expect(deviceService.deleteDevice).not.toHaveBeenCalled();
-      expect(stateService.go).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
+    }));
+
+    it('sets error when delete fails', fakeAsync(() => {
+      component.device = makeDevice({ id: 'dev-1' });
+
+      dialog.open.and.returnValue({
+        afterClosed: () => of({ confirmed: true })
+      });
+
+      deviceService.deleteDevice.and.returnValue(throwError(() => new Error('nope')));
+
+      component.confirmDeleteDevice();
+      tick();
+
+      expect(component.error).toBe('Failed to delete device');
+      expect(router.navigate).not.toHaveBeenCalled();
     }));
   });
 

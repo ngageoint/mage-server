@@ -10,8 +10,6 @@ const request = require('supertest')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('sinon-mongoose');
-
 describe("device read tests", function () {
 
   let app;
@@ -39,7 +37,7 @@ describe("device read tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
