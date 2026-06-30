@@ -1,0 +1,127 @@
+<div class="obs-status">
+
+  <!-- Controls -->
+  <div class="controls">
+    <mat-form-field appearance="outline" class="event-select">
+      <mat-label>Event</mat-label>
+      <mat-select [(ngModel)]="selectedEventId" (ngModelChange)="onEventChange()">
+        <mat-option *ngFor="let event of events" [value]="event.id">{{ event.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="filter-buttons" *ngIf="selectedEventId">
+      <button mat-stroked-button
+        [class.filter-active]="activeFilters.size === 0"
+        (click)="activeFilters.clear(); applyFilter()">
+        ALL
+      </button>
+      <button mat-stroked-button *ngFor="let s of statuses"
+        [class.filter-active]="isFilterActive(s)"
+        [class]="'filter-btn-' + s.toLowerCase()"
+        (click)="toggleFilter(s)">
+        {{ s }}
+      </button>
+    </div>
+
+    <button mat-icon-button class="refresh-btn" *ngIf="selectedEventId" (click)="refresh()" matTooltip="Refresh">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- Empty / no event selected -->
+  <div class="empty-state" *ngIf="!selectedEventId">
+    <mat-icon>inbox</mat-icon>
+    <p>Select an event to view upload records</p>
+  </div>
+
+  <ng-container *ngIf="selectedEventId">
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <span class="summary-chip success">
+        <span class="dot"></span>{{ counts['SUCCESS'] }} Success
+      </span>
+      <span class="summary-chip failed">
+        <span class="dot"></span>{{ counts['FAILED'] }} Failed
+      </span>
+      <span class="summary-chip pending">
+        <span class="dot"></span>{{ counts['PENDING'] }} Pending
+      </span>
+      <span class="summary-chip skipped">
+        <span class="dot"></span>{{ counts['SKIPPED'] }} Skipped
+      </span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="isLoading">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container" *ngIf="!isLoading">
+      <table mat-table [dataSource]="filteredRecords" class="obs-table">
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-chip" [class]="row.status.toLowerCase()">
+              <span class="dot"></span>{{ row.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="observationId">
+          <th mat-header-cell *matHeaderCellDef>Observation ID</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="obs-id" [matTooltip]="row.observationId">{{ truncateId(row.observationId) }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lastModified">
+          <th mat-header-cell *matHeaderCellDef>Last Modified</th>
+          <td mat-cell *matCellDef="let row">{{ row.lastObservationModified | date:'MMM d, HH:mm' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="syncedAt">
+          <th mat-header-cell *matHeaderCellDef>Uploaded At</th>
+          <td mat-cell *matCellDef="let row">{{ row.updatedAt | date:'MMM d, HH:mm' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <button *ngIf="row.status !== 'PENDING'" mat-stroked-button class="sync-btn" (click)="syncOne(row)" [disabled]="isSyncing(row)">
+              <mat-spinner *ngIf="isSyncing(row)" diameter="16" class="inline-spinner"></mat-spinner>
+              <span *ngIf="!isSyncing(row) && row.status === 'FAILED'">Retry</span>
+              <span *ngIf="!isSyncing(row) && row.status === 'SKIPPED'">Send</span>
+              <span *ngIf="!isSyncing(row) && row.status === 'SUCCESS'">Resend</span>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div class="empty-state" *ngIf="filteredRecords.length === 0">
+        <mat-icon>check_circle_outline</mat-icon>
+        <p>No records match the current filter</p>
+      </div>
+    </div>
+
+    <!-- Bulk actions -->
+    <div class="bulk-actions" *ngIf="!isLoading">
+      <button mat-stroked-button class="bulk-btn failed-btn"
+        [disabled]="counts['FAILED'] === 0"
+        (click)="syncAllFailed()">
+        Retry All Failed ({{ counts['FAILED'] }})
+      </button>
+      <button mat-stroked-button class="bulk-btn skipped-btn"
+        [disabled]="counts['SKIPPED'] === 0"
+        (click)="syncAllSkipped()">
+        Send All Skipped ({{ counts['SKIPPED'] }})
+      </button>
+    </div>
+
+  </ng-container>
+</div>

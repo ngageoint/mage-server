@@ -53,6 +53,20 @@ export interface PluginStatus {
 
 export type MageEventId = number
 
+export interface SftpObservationRecord {
+  eventId: number
+  observationId: string
+  status: string
+  lastObservationModified?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ObservationStatusResponse {
+  records: SftpObservationRecord[]
+  counts: Record<string, number>
+}
+
 /**
  * Contains various configuration values used by the plugin.
  */

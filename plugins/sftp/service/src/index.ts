@@ -1,6 +1,7 @@
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
 import { SFTPPluginConfig } from './configuration/SFTPPluginConfig'
 import { SftpController } from './controller/controller'
+import { SftpStatus } from './adapters/adapters.sftp.mongoose'
 import { MongooseDbConnectionToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api'
 import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web'
@@ -17,7 +18,7 @@ const consoleOverrides = logMethods.reduce((overrides, fn) => {
     ...overrides,
     [fn]: {
       writable: false,
-      value: (...args: any[]) => {
+      value: (...args: unknown[]) => {
         globalThis.console[fn](new Date().toISOString(), '-', logPrefix, ...args)
       }
     }
@@ -200,6 +201,40 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               } catch (error) {
                 console.error('Error getting events:', error)
                 res.status(500).json([])
+              }
+            })
+
+          routes.route('/observations')
+            .get(async (req, res, _next) => {
+              try {
+                const eventId = parseInt(req.query['eventId'] as string)
+                if (isNaN(eventId)) {
+                  return res.status(400).json({ error: 'eventId query param is required' })
+                }
+                const statusParam = req.query['status'] as string | undefined
+                const statusFilter = statusParam
+                  ? statusParam.split(',').filter((s): s is SftpStatus => Object.values(SftpStatus).includes(s as SftpStatus))
+                  : undefined
+                const result = await controller.getObservationStatuses(eventId, statusFilter)
+                res.json(result)
+              } catch (error) {
+                console.error('Error getting observation statuses:', error)
+                res.status(500).json({ records: [], counts: {} })
+              }
+            })
+
+          routes.route('/observations/sync')
+            .post(async (req, res, _next) => {
+              try {
+                const { eventId, observationIds } = req.body
+                if (!eventId || !Array.isArray(observationIds)) {
+                  return res.status(400).json({ error: 'eventId and observationIds[] are required' })
+                }
+                await controller.requeueObservations(eventId, observationIds)
+                res.json({ queued: observationIds.length })
+              } catch (error) {
+                console.error('Error requeueing observations:', error)
+                res.status(500).json({ queued: 0 })
               }
             })
 
