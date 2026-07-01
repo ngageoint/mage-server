@@ -33,6 +33,7 @@
     "@node-saml/passport-saml": "^5.1.0",
     "@turf/centroid": "7.2.0",
     "@turf/kinks": "7.2.0",
+    "@turf/rewind": "^7.3.5",
     "@types/geojson": "7946.0.16",
     "@types/json-schema": "7.0.15",
     "@types/mime-types": "3.0.1",
@@ -85,7 +86,6 @@
     "@types/adm-zip": "0.5.7",
     "@types/archiver": "5.3.4",
     "@types/async": "3.2.24",
-    "@types/bson": "1.0.11",
     "@types/busboy": "1.5.4",
     "@types/chai": "4.3.20",
     "@types/chai-as-promised": "7.1.8",
@@ -189,4 +189,3 @@
     "commander": "12.0.0"
   }
 }
-

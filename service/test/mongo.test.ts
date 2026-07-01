@@ -18,7 +18,7 @@ export interface MongoTestContext {
 }
 
 if (!process.env.MONGOMS_VERSION) {
-  process.env.MONGOMS_VERSION = '6.0.28'
+  process.env.MONGOMS_VERSION = '8.0.26'
 }
 
 /**
