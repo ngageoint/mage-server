@@ -8,17 +8,14 @@ const locationLimit = config.server.locationServices.userCollectionLocationLimit
 
 // Creates the Schema for FFT Locations
 const CappedLocationSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User' },
-  eventId: { type: Number, required: false, sparse: true, ref: 'Event' },
+  userId: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
+  eventId: { type: Number, required: false, ref: 'Event' },
   locations: [Location.Model.schema]
 }, {
   versionKey: false
 });
 
-// TODO: this seems superfluous - probably remove because there's already an index on eventId in the field definition
-CappedLocationSchema.index({ 'eventId': 1 });
-// TODO: this seems superflous because there's already an index on properties.timestamp in LocationSchema. do child-schema indexes get created on parent collections?
-CappedLocationSchema.index({ 'locations.properties.timestamp': 1 });
+CappedLocationSchema.index({ 'eventId': 1 }, { sparse: true });
 CappedLocationSchema.index({ 'locations.properties.timestamp': 1, 'eventId': 1 });
 
 const transform = function (userLocation, ret) {

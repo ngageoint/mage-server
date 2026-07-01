@@ -260,7 +260,11 @@ module.exports = function (app, security) {
 
     const geometry = req.query.geometry;
     if (geometry) {
-      parameters.filter.geometries = geometryFormat.parse("geometry", geometry);
+      try {
+        parameters.filter.geometries = geometryFormat.parse("geometry", geometry);
+      } catch (err) {
+        return res.status(400).send(err.message);
+      }
     }
 
     const states = req.query.states;

@@ -50,8 +50,8 @@ const AttachmentSchema = new Schema({
 const ObservationSchema = new Schema({
   type: { type: String, enum: ['Feature'], required: true },
   lastModified: { type: Date, required: false },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true },
-  deviceId: { type: Schema.Types.ObjectId, required: false, sparse: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+  deviceId: { type: Schema.Types.ObjectId, required: false },
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
@@ -72,8 +72,8 @@ const ObservationSchema = new Schema({
 
 ObservationSchema.index({ geometry: '2dsphere' });
 ObservationSchema.index({ lastModified: 1 });
-ObservationSchema.index({ userId: 1 });
-ObservationSchema.index({ deviceId: 1 });
+ObservationSchema.index({ userId: 1 }, { sparse: true });
+ObservationSchema.index({ deviceId: 1 }, { sparse: true });
 ObservationSchema.index({ 'properties.timestamp': 1 });
 ObservationSchema.index({ 'states.name': 1 });
 ObservationSchema.index({ 'attachments.lastModified': 1 });
