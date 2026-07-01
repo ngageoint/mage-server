@@ -341,10 +341,12 @@ exports.getTeams = async function (options, callback) {
       conditions.userIds = { $in: [options.userId] };
     }
     else if (Array.isArray(options.withMembers)) {
-      conditions.userIds = { $in: options.withMembers.map(mongoose.Types.ObjectId) };
+      console.log('withMembers', options.withMembers)
+      conditions.userIds = { $in: options.withMembers.map(id => new mongoose.Types.ObjectId(String(id))) };
     }
     else if (Array.isArray(options.withoutMembers)) {
-      conditions.userIds = { $nin: options.withoutMembers.map(mongoose.Types.ObjectId) };
+      console.log('withoutMembers', options.withoutMembers)
+      conditions.userIds = { $nin: options.withoutMembers.map(id => new mongoose.Types.ObjectId(String(id))) };
     }
   }
   catch (err) {

@@ -2,7 +2,7 @@ var api = require('../api')
   , Zip = require('adm-zip')
   , log = require('winston')
   , archiver = require('archiver')
-  , walk = require('walk')
+  , fs = require('fs/promises')
   , path = require('path')
   , Team = require('../models/team');
 
@@ -184,25 +184,34 @@ Form.prototype.importIcons = function (file, form, callback) {
     });
 
     // for each file in each directory
-    var walker = walk.walk(iconPath);
-    walker.on("file", function (filePath, stat, next) {
-      var primary = null;
-      var variant = null;
-      var regex = new RegExp(iconPath + path.sep + "+(.*)");
-      var match = regex.exec(filePath);
-      // TODO: what if there's a slash in the select field value?
-      if (match && match[1]) {
-        var variants = match[1].split("/");
-        primary = variants.shift();
-        variant = variants.shift();
-      }
+    fs.readdir(iconPath, { recursive: true, withFileTypes: true }).then(function (entries) {
+      return entries.reduce(function (chain, entry) {
+        if (!entry.isFile()) {
+          return chain;
+        }
+        return chain.then(function () {
+          var primary = null;
+          var variant = null;
+          var regex = new RegExp(iconPath + path.sep + "+(.*)");
+          var match = regex.exec(entry.parentPath);
+          // TODO: what if there's a slash in the select field value?
+          if (match && match[1]) {
+            var variants = match[1].split("/");
+            primary = variants.shift();
+            variant = variants.shift();
+          }
 
-      new api.Icon(event._id, form._id, primary, variant).add({ name: stat.name }, function (err) {
-        next(err);
-      });
-    });
-    walker.on("end", function () {
+          return new Promise(function (resolve, reject) {
+            new api.Icon(event._id, form._id, primary, variant).add({ name: entry.name }, function (err) {
+              err ? reject(err) : resolve();
+            });
+          });
+        });
+      }, Promise.resolve());
+    }).then(function () {
       callback(null);
+    }, function (err) {
+      callback(err);
     });
   } else {
     callback(null);
