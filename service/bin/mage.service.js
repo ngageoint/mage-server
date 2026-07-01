@@ -48,8 +48,6 @@ const options = [
   new Option('--security-dir <string>').env('MAGE_SECURITY_DIR').default('/var/lib/mage/security'),
   new Option('--temp-dir <string>').env('MAGE_TEMP_DIR').default('/tmp'),
   new Option('--user-dir <string>').env('MAGE_USER_DIR').default('/var/lib/mage/users'),
-  new Option('--sftp-key-dir <string>').env('MAGE_SFTP_KEY_DIR').default('/var/lib/mage/sftp-keys'),
-  new Option('--sftp-key-file <string>').env('MAGE_SFTP_KEY_FILE').default('/var/lib/mage/sftp-keys/mage-sftp-key'),
   new Option('--export-sweep-interval <number>').env('MAGE_EXPORT_SWEEP_INTERVAL').default(28800, '8 hours').argParser(x => parseInt(x)),
   new Option('--export-ttl <number>').env('MAGE_EXPORT_TTL').default(259200, '72 hours').argParser(x => parseInt(x)),
   new Option('--token-expiration <number>').env('MAGE_TOKEN_EXPIRATION').default(28800, '8 hours').argParser(x => parseInt(x)),
