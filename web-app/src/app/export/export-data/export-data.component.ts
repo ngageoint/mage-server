@@ -151,6 +151,7 @@ export class ExportDataComponent implements OnInit {
 
 		this.exportService.export(exportRequest).subscribe((response: ExportResponse) => {
 			this.snackBar.open('Export Started', null, { duration: 3000 });
+			this.exportService.notifyOnComplete(response.id);
 		});
 
 		this.close.emit();

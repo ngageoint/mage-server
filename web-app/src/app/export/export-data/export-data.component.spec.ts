@@ -94,6 +94,10 @@ class MockExportService {
     return of({ id: retry.id });
   }
 
+  notifyOnComplete(exportId: string): void {
+    // no-op for tests
+  }
+
   deleteExport(id: string): Observable<{ id: string }> {
     return of({ id });
   }

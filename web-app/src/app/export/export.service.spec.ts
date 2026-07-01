@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { ExportService, Export } from './export.service';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ExportService', () => {
   let httpClient: HttpClient;
@@ -10,7 +12,7 @@ describe('ExportService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [ExportService],
-      imports: [HttpClientTestingModule]
+      imports: [HttpClientTestingModule, MatSnackBarModule, NoopAnimationsModule]
     });
 
     // Inject the http service and test controller for each test
