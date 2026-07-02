@@ -1,6 +1,6 @@
 <div>
   <mat-card appearance="outlined" class="d-flow-root">
-    <mat-card-title-group class="w-100">
+    <mat-card-header class="w-100">
       <div class="arcEvent__info">
         <mat-card-title>Events</mat-card-title>
         <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
@@ -17,7 +17,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-    </mat-card-title-group>
+    </mat-card-header>
     <mat-card-content>
       <section class="arc-event-sync event-card">
         <div *ngIf="!model.events.length">
