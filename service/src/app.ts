@@ -1,5 +1,6 @@
 import environment from './environment/env';
 import log from './logger';
+import { Logger } from './entities/entities.logging';
 import {
   InjectableServices,
   integratePluginHooks
@@ -573,7 +574,10 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const feeds = await initFeedsAppLayer(repos);
   const users = await initUsersAppLayer(repos);
   const systemInfo = initSystemInfoAppLayer(repos);
-  const settings = await initSettingsAppLayer(repos);
+  const settings = await initSettingsAppLayer(
+    repos,
+    log.child({ component: 'settings' })
+  );
 
   return {
     events,
@@ -787,11 +791,12 @@ function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
 }
 
 async function initSettingsAppLayer(
-  repos: Repositories
+  repos: Repositories,
+  logger: Logger
 ): Promise<AppLayer['settings']> {
   const mapPermissions = new RoleBasedMapPermissionService();
-  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions);
-  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions);
+  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions, logger);
+  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions, logger);
   return {
     getMapSettings,
     updateMapSettings
