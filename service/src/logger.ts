@@ -9,7 +9,7 @@ const { combine, timestamp, errors, splat, printf, colorize } = winston.format
  *   rootLogger.child({ component: 'settings' })
  */
 export const rootLogger: winston.Logger = winston.createLogger({
-  level: 'info',
+  level: process.env.MAGE_LOG_LEVEL || 'info',
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     errors({ stack: true }),
@@ -45,13 +45,14 @@ export const info = rootLogger.info.bind(rootLogger)
 export const warn = rootLogger.warn.bind(rootLogger)
 export const error = rootLogger.error.bind(rootLogger)
 export const debug = rootLogger.debug.bind(rootLogger)
+export const child = (meta: Record<string, unknown>): Logger => rootLogger.child(meta)
 
 const log = {
   info,
   warn,
   error,
   debug,
-  child: (meta: Record<string, unknown>): Logger => rootLogger.child(meta),
+  child,
   mongooseLogger,
   rootLogger,
 }

@@ -49,6 +49,9 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+const { httpRequestLogging } = require('./adapters/adapters.logging.http');
+app.use(httpRequestLogging(log.child({ component: 'http' })));
 app.get('/api/docs/openapi.yaml', async function(req, res) {
   const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
   fs.readFile(docPath, (err, contents) => {
