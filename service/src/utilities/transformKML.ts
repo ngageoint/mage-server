@@ -1,4 +1,3 @@
-var xpath = require('xpath');
 import { DOMParser, Document } from '@xmldom/xmldom';
 
 interface KmlStyle {
@@ -29,7 +28,7 @@ function kml(docString: string, images: Record<string, string> = {}): KmlFeature
     const styleIndex = getStyles(document, images);
 
     // Pull all placemarks regards of depth level
-    const placemarks = xpath.select("//*[local-name()='Placemark']", document) as Element[];
+    const placemarks = Array.from(getElementsByNamespace(document, 'Placemark'));
 
     return placemarks.map((placemark) => {
         return getPlacemark(placemark, styleIndex, images);
@@ -192,7 +191,7 @@ function getStyles(node: Document, images: Record<string, string> = {}): Record<
     const styleMaps = getElementsByNamespace(node, 'StyleMap');
     for (let i = 0; i < styleMaps.length; i++) {
         const styleMap = styleMaps[i];
-        const pairs = xpath.select("*[local-name()='Pair']", styleMap) as Element[];
+        const pairs = getElementsByNamespace(styleMap, 'Pair');
         for (let p = 0; p < pairs.length; p++) {
             const key = getElementsByNamespace(pairs[p], 'key');
             if (key) {
