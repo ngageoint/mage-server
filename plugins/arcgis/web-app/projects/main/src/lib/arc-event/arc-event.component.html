@@ -60,10 +60,10 @@
           </ng-container>
         </mat-list>
       </section>
-      <section>
-        <button mat-flat-button color="primary" matDialogClose (click)="saveChanges()" class="save-button">SAVE</button>
-      </section>
     </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-flat-button color="primary" (click)="saveChanges()">SAVE</button>
+    </mat-card-actions>
   </mat-card>
 
   <ng-template #editEventDialog let-data>
