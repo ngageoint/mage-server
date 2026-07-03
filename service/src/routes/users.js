@@ -685,7 +685,6 @@ module.exports = function(app, security) {
   // logout
   app.post('/api/logout', isAuthenticated('bearer'), function(req, res, next) {
     if (req.user) {
-      log.info('logout w/ user', req.user._id.toString());
       new api.User().logout(req.token, function(err) {
         if (err) return next(err);
         res.status(200).json({ success: true });

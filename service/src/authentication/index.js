@@ -96,6 +96,14 @@ class AuthenticationInitializer {
         new api.User().login(req.user, req.provisionedDevice, options, function (err, token) {
           if (err) return next(err);
 
+          log.info('user signed in', {
+            user: req.user.username,
+            userId: req.user._id.toString(),
+            deviceUid: req.provisionedDevice ? req.provisionedDevice.uid : undefined,
+            signInTime: new Date().toISOString(),
+            tokenExpiration: token.expirationDate
+          });
+
           authenticationApiAppender.append(config.api).then(api => {
             res.json({
               token: token.token,
