@@ -100,6 +100,8 @@ class AuthenticationInitializer {
             user: req.user.username,
             userId: req.user._id.toString(),
             deviceUid: req.provisionedDevice ? req.provisionedDevice.uid : undefined,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
             signInTime: new Date().toISOString(),
             tokenExpiration: token.expirationDate
           });
