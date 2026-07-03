@@ -18,6 +18,7 @@ describe('http request logging middleware', () => {
       error: sinon.spy()
     };
     app = express();
+    app.use(express.json());
     app.use(httpRequestLogging(logger));
     // simulate passport populating req.user during route handling
     app.use('/api/authed', (req, res) => {
@@ -65,6 +66,29 @@ describe('http request logging middleware', () => {
     const [message, meta] = logger.info.firstCall.args;
     expect(message).to.equal('POST /auth/local/signin');
     expect(meta.user).to.equal('anonymous');
+  });
+
+  it('logs the attempted username on unauthenticated signin requests', async () => {
+    await supertest(app)
+      .post('/auth/local/signin')
+      .send({ username: 'joe', password: 'hunter2' })
+      .expect(200);
+
+    const [, meta] = logger.info.firstCall.args;
+    expect(meta.user).to.equal('anonymous');
+    expect(meta.attemptedUser).to.equal('joe');
+    expect(JSON.stringify(meta)).to.not.contain('hunter2');
+  });
+
+  it('does not log an attempted username for authenticated requests', async () => {
+    await supertest(app)
+      .post('/api/authed/thing')
+      .send({ username: 'spoofed' })
+      .expect(200);
+
+    const [, meta] = logger.info.firstCall.args;
+    expect(meta.user).to.equal('admin');
+    expect(meta.attemptedUser).to.be.undefined;
   });
 
   it('redacts access_token query parameters from the logged url', async () => {

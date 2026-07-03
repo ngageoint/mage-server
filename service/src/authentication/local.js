@@ -73,6 +73,7 @@ function initialize() {
         if (err) return next(err);
 
         if (!user) return res.status(401).send(info.message);
+        req.user = user;
 
         tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
           .then(token => {

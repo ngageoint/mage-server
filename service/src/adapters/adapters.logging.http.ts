@@ -25,7 +25,13 @@ export function httpRequestLogging(log: Logger): express.RequestHandler {
       const principal = req.user as { id?: string, username?: string } | undefined
       const user = principal?.username ?? 'anonymous'
       const message = `${req.method} ${sanitizeUrl(req.originalUrl)}`
-      const meta = { user, userId: principal?.id, status: res.statusCode, duration: Date.now() - start }
+      const meta: Record<string, unknown> = { user, userId: principal?.id, status: res.statusCode, duration: Date.now() - start }
+      if (!principal) {
+        const attempted = (req.body as { username?: unknown } | undefined)?.username
+        if (typeof attempted === 'string' && attempted) {
+          meta.attemptedUser = attempted
+        }
+      }
       if (mutatingMethods.has(req.method)) {
         log.info(message, meta)
       }
