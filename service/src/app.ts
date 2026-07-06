@@ -34,7 +34,7 @@ import * as observationsImpl from './app.impl/observations/app.impl.observations
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds';
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
-import { AppRequest, AppRequestContext } from './app.api/app.api.global';
+import { AppRequest, AppRequestContext, logPermissionDenials } from './app.api/app.api.global';
 import { UserDocument } from './models/user';
 import SimpleIdFactory from './adapters/adapters.simple_id_factory';
 import {
@@ -203,6 +203,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   mongoose.Error.messages.general.required = '{PATH} is required.';
 
   log.info('Starting MAGE Server ...');
+
+  logPermissionDenials(log.child({ component: 'permissions' }));
 
   // Create directory for storing media attachments
   const attachmentBase = environment.attachmentBaseDirectory;

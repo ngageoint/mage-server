@@ -32,7 +32,10 @@ export function httpRequestLogging(log: Logger): express.RequestHandler {
           meta.attemptedUser = attempted
         }
       }
-      if (mutatingMethods.has(req.method)) {
+      if (res.statusCode === 401 || res.statusCode === 403) {
+        log.warn(message, meta)
+      }
+      else if (mutatingMethods.has(req.method)) {
         log.info(message, meta)
       }
       else {

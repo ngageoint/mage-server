@@ -1,6 +1,17 @@
 import { MageError, PermissionDeniedError } from './app.api.errors'
 import { JsonObject } from '../entities/entities.json_types'
 import { LanguageTag, Locale } from '../entities/entities.i18n'
+import { Logger, NoopLogger } from '../entities/entities.logging'
+
+let permissionDeniedLog: Logger = NoopLogger
+
+/**
+ * Register the logger that records every failed permission check that flows
+ * through [withPermission].
+ */
+export function logPermissionDenials(log: Logger): void {
+  permissionDeniedLog = log
+}
 
 export interface AppRequestContext<Principal = unknown> {
   /**
@@ -100,6 +111,8 @@ export async function withPermission<Success, KnownErrors>(
   op: (...args: any[]) => Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors | PermissionDeniedError>>> {
   const denied = await permissionCheck
   if (denied) {
+    const { subject, permission, object } = denied.data
+    permissionDeniedLog.warn('permission denied', { subject, permission, object })
     return AppResponse.error<PermissionDeniedError>(denied)
   }
   return await AppResponse.resultOf<Success, KnownErrors>(op())

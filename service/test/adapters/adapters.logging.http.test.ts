@@ -99,6 +99,29 @@ describe('http request logging middleware', () => {
     expect(message).to.equal('POST /api/authed/attachment?access_token=[REDACTED]&size=2');
   });
 
+  it('logs unauthorized responses at warn', async () => {
+    app = express();
+    app.use(httpRequestLogging(logger));
+    app.get('/api/admin/thing', (req, res) => {
+      req.user = { id: 'user123', username: 'basicUser' } as any;
+      res.sendStatus(403);
+    });
+    app.post('/api/other', (req, res) => res.sendStatus(401));
+
+    await supertest(app).get('/api/admin/thing').expect(403);
+    await supertest(app).post('/api/other').expect(401);
+
+    expect(logger.warn.calledTwice).to.be.true;
+    expect(logger.info.called).to.be.false;
+    expect(logger.debug.called).to.be.false;
+    const [getMessage, getMeta] = logger.warn.firstCall.args;
+    expect(getMessage).to.equal('GET /api/admin/thing');
+    expect(getMeta.user).to.equal('basicUser');
+    expect(getMeta.status).to.equal(403);
+    const [, postMeta] = logger.warn.secondCall.args;
+    expect(postMeta.status).to.equal(401);
+  });
+
   it('logs anonymous when no user is on the request', async () => {
     await supertest(app).post('/api/open').expect(200);
 
