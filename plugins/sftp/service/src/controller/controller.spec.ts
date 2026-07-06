@@ -133,6 +133,9 @@ describe('automated processing', () => {
     } as unknown as mongoose.Connection;
 
     attachmentStore = jasmine.createSpyObj<AttachmentStore>('attachmentStore', ['readContent', 'readThumbnailContent'])
+
+    spyOn(MongooseSftpObservationRepository.prototype, 'findAll').and.resolveTo([])
+    spyOn(MongooseSftpObservationRepository.prototype, 'markManySkipped').and.resolveTo(undefined)
   })
 
   afterEach(() => {
@@ -222,8 +225,8 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(2)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event2.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
+    expect(eventObservationRepositories.get(event2.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
   })
 
   it('processes pending observations with success', async () => {
@@ -290,7 +293,7 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
   })
@@ -362,7 +365,7 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
   })
@@ -431,7 +434,7 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
   })
@@ -499,7 +502,7 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
     expect(archiverSpy.createArchive).toHaveBeenCalled()
@@ -561,7 +564,7 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
     expect(postStatusSpy).toHaveBeenCalledTimes(1)
     expect(postStatusSpy).toHaveBeenCalledWith(event1.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
     expect(archiverSpy.createArchive).toHaveBeenCalled()
@@ -622,7 +625,7 @@ describe('automated processing', () => {
 
     expect(eventRepository.findActiveEvents).toHaveBeenCalledTimes(1)
     expect(findAllSpy).toHaveBeenCalledTimes(1)
-    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(1)
+    expect(eventObservationRepositories.get(event1.id)?.findLastModifiedAfter).toHaveBeenCalledTimes(2)
     expect(postStatusSpy).toHaveBeenCalledTimes(0)
     expect(archiverSpy.createArchive).toHaveBeenCalledTimes(0)
   })

@@ -19,13 +19,13 @@
         "@types/mime-types": "3.0.1",
         "@xmldom/xmldom": "0.9.10",
         "adm-zip": "0.5.16",
-        "archiver": "7.0.1",
+        "archiver": "^7.0.1",
         "async": "3.2.6",
         "async-lock": "1.4.1",
         "base-64": "1.0.0",
         "busboy": "1.6.0",
         "captcha-canvas": "3.4.0",
-        "cfenv": "1.2.6",
+        "cfenv": "^1.2.6",
         "commander": "12.0.0",
         "express": "4.22.2",
         "express-session": "1.18.1",
@@ -65,7 +65,7 @@
       "devDependencies": {
         "@fluffy-spoon/substitute": "1.208.0",
         "@types/adm-zip": "0.5.7",
-        "@types/archiver": "5.3.4",
+        "@types/archiver": "^7.0.0",
         "@types/async": "3.2.24",
         "@types/busboy": "1.5.4",
         "@types/chai": "4.3.20",
@@ -102,7 +102,6 @@
         "mocha": "10.8.2",
         "mock-fs": "4.14.0",
         "mongodb-memory-server": "^11.2.0",
-        "nock": "11.9.1",
         "npm-run-all": "4.1.5",
         "nyc": "14.1.1",
         "openapi-enforcer": "1.23.0",
@@ -113,7 +112,7 @@
         "sinon-chai": "3.7.0",
         "sinon-mongoose": "2.3.0",
         "supertest": "6.3.4",
-        "typescript": "4.9.5"
+        "typescript": "^5.9.3"
       },
       "engines": {
         "node": ">= 18.20",
@@ -1646,9 +1645,9 @@
       }
     },
     "node_modules/@types/archiver": {
-      "version": "5.3.4",
-      "resolved": "https://registry.npmjs.org/@types/archiver/-/archiver-5.3.4.tgz",
-      "integrity": "sha512-Lj7fLBIMwYFgViVVZHEdExZC3lVYsl+QL0VmdNdIzGZH544jHveYWij6qdnBgJQDnR7pMKliN9z2cPZFEbhyPw==",
+      "version": "7.0.0",
+      "resolved": "https://registry.npmjs.org/@types/archiver/-/archiver-7.0.0.tgz",
+      "integrity": "sha512-/3vwGwx9n+mCQdYZ2IKGGHEFL30I96UgBlk8EtRDDFQ9uxM1l4O5Ci6r00EMAkiDaTqD9DQ6nVrWRICnBPtzzg==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -6788,13 +6787,6 @@
       "dev": true,
       "license": "MIT"
     },
-    "node_modules/json-stringify-safe": {
-      "version": "5.0.1",
-      "resolved": "https://registry.npmjs.org/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz",
-      "integrity": "sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==",
-      "dev": true,
-      "license": "ISC"
-    },
     "node_modules/json2csv": {
       "version": "5.0.7",
       "resolved": "https://registry.npmjs.org/json2csv/-/json2csv-5.0.7.tgz",
@@ -7954,36 +7946,6 @@
       "license": "MIT",
       "dependencies": {
         "isarray": "0.0.1"
-      }
-    },
-    "node_modules/nock": {
-      "version": "11.9.1",
-      "resolved": "https://registry.npmjs.org/nock/-/nock-11.9.1.tgz",
-      "integrity": "sha512-U5wPctaY4/ar2JJ5Jg4wJxlbBfayxgKbiAeGh+a1kk6Pwnc2ZEuKviLyDSG6t0uXl56q7AALIxoM6FJrBSsVXA==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "debug": "^4.1.0",
-        "json-stringify-safe": "^5.0.1",
-        "lodash": "^4.17.13",
-        "mkdirp": "^0.5.0",
-        "propagate": "^2.0.0"
-      },
-      "engines": {
-        "node": ">= 8.0"
-      }
-    },
-    "node_modules/nock/node_modules/mkdirp": {
-      "version": "0.5.6",
-      "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.5.6.tgz",
-      "integrity": "sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "minimist": "^1.2.6"
-      },
-      "bin": {
-        "mkdirp": "bin/cmd.js"
       }
     },
     "node_modules/node-abi": {
@@ -9567,16 +9529,6 @@
       "license": "MIT",
       "dependencies": {
         "asap": "~2.0.3"
-      }
-    },
-    "node_modules/propagate": {
-      "version": "2.0.1",
-      "resolved": "https://registry.npmjs.org/propagate/-/propagate-2.0.1.tgz",
-      "integrity": "sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==",
-      "dev": true,
-      "license": "MIT",
-      "engines": {
-        "node": ">= 8"
       }
     },
     "node_modules/proxy-addr": {
@@ -11821,9 +11773,9 @@
       "license": "MIT"
     },
     "node_modules/typescript": {
-      "version": "4.9.5",
-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz",
-      "integrity": "sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==",
+      "version": "5.9.3",
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
       "dev": true,
       "license": "Apache-2.0",
       "bin": {
@@ -11831,7 +11783,7 @@
         "tsserver": "bin/tsserver"
       },
       "engines": {
-        "node": ">=4.2.0"
+        "node": ">=14.17"
       }
     },
     "node_modules/uid-safe": {
