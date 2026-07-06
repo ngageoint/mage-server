@@ -1,6 +1,8 @@
 module.exports = function(app, security) {
   const Team = require('../models/team')
+    , UserModel = require('../models/user')
     , access = require('../access')
+    , log = require('../logger').child({ component: 'teams' })
     , pageinfoTransformer = require('../transformers/pageinfo')
     , passport = security.authentication.passport;
 
@@ -39,6 +41,26 @@ module.exports = function(app, security) {
     };
 
     next();
+  }
+
+  function logMembershipChange(req, userId, action) {
+    UserModel.getUserById(userId, function(err, member) {
+      const meta = {
+        user: member ? member.username : undefined,
+        userId: String(userId)
+      };
+      meta[action + 'By'] = req.user.username;
+      meta[action + 'Time'] = new Date().toISOString();
+      const preposition = action === 'added' ? 'to' : 'from';
+      if (req.team.teamEventId) {
+        meta.eventId = req.team.teamEventId;
+        log.info(`user ${action} ${preposition} event`, meta);
+      } else {
+        meta.team = req.team.name;
+        meta.teamId = req.team._id.toString();
+        log.info(`user ${action} ${preposition} team`, meta);
+      }
+    });
   }
 
   // Create a new team
@@ -201,7 +223,13 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.addUser(req.team, req.body, function(err, team) {
-        if (err) return next(err);
+        if (err) 
+          return next(err);
+
+        const wasMember = team.userIds.some(id => id.toString() === String(req.body.id));
+        if (!wasMember) {
+          logMembershipChange(req, req.body.id, 'added');
+        }
 
         res.json(team);
       });
@@ -213,7 +241,13 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.removeUser(req.team, {id: req.params.id}, function(err, team) {
-        if (err) return next(err);
+        if (err) 
+          return next(err);
+
+        const wasMember = team.userIds.some(id => id.toString() === String(req.params.id));
+        if (wasMember) {
+          logMembershipChange(req, req.params.id, 'removed');
+        }
 
         res.json(team);
       });
