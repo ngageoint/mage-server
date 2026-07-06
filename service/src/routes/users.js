@@ -2,7 +2,7 @@ module.exports = function(app, security) {
   const crypto = require('crypto'),
     BearerStrategy = require('passport-http-bearer').Strategy,
     hasher = require('../utilities/pbkdf2')(),
-    log = require('winston'),
+    log = require('../logger').child({ component: 'users' }),
     fs = require('fs-extra'),
     Role = require('../models/role'),
     Authentication = require('../models/authentication'),
@@ -535,24 +535,31 @@ module.exports = function(app, security) {
       if (req.param('displayName')) user.displayName = req.param('displayName');
       if (req.param('email')) user.email = req.param('email');
 
+      let activated = false;
       if (req.param('active') === true || req.param('active') === 'true') {
+        activated = !user.active;
         user.active = true;
       }
 
+      let disabled = false;
       if (req.param('enabled') === true || req.param('enabled') === 'true') {
         user.enabled = true;
       } else if (
         req.param('enabled') === false ||
         req.param('enabled') === 'false'
       ) {
+        disabled = user.enabled !== false;
         user.enabled = false;
       }
 
       // Need UPDATE_USER_ROLE to change a users role
+      let roleChanged = false;
       if (
         req.param('roleId') &&
         access.userHasPermission(req.user, 'UPDATE_USER_ROLE')
       ) {
+        const currentRoleId = user.roleId && user.roleId._id ? user.roleId._id.toString() : String(user.roleId);
+        roleChanged = req.param('roleId') !== currentRoleId;
         user.roleId = req.param('roleId');
       }
 
@@ -570,6 +577,36 @@ module.exports = function(app, security) {
       const [icon] = files.icon || [];
       new api.User().update(user, { avatar, icon }, function(err, updatedUser) {
         if (err) return next(err);
+
+        if (activated) {
+          log.info('user account activated', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            activatedBy: req.user.username,
+            activatedTime: new Date().toISOString()
+          });
+        }
+
+        if (disabled) {
+          log.info('user account disabled', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            disabledBy: req.user.username,
+            disabledTime: new Date().toISOString()
+          });
+        }
+
+        if (roleChanged) {
+          const newRole = updatedUser.roleId;
+          log.info('user role changed', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            newRole: newRole && newRole.name ? newRole.name : String(newRole),
+            newRoleId: newRole && newRole._id ? newRole._id.toString() : String(newRole),
+            changedBy: req.user.username,
+            changedTime: new Date().toISOString()
+          });
+        }
 
         updatedUser = userTransformer.transform(updatedUser, {
           path: req.getRoot()
@@ -623,8 +660,16 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('DELETE_USER'),
     function(req, res, next) {
-      new api.User().delete(req.userParam, function(err) {
+      const user = req.userParam;
+      new api.User().delete(user, function(err) {
         if (err) return next(err);
+
+        log.info('user account deleted', {
+          user: user.username,
+          userId: user._id.toString(),
+          deletedBy: req.user.username,
+          deletedTime: new Date().toISOString()
+        });
 
         res.sendStatus(204);
       });

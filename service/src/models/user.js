@@ -12,6 +12,7 @@ const mongoose = require('mongoose')
   , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
+  , log = require('../logger').child({ component: 'users' })
   , { pageQuery } = require('../adapters/base/adapters.base.db.mongoose')
   , { pageOf } = require('../entities/entities.global')
   , FilterParser = require('../utilities/filterParser');
@@ -369,12 +370,28 @@ exports.invalidLogin = async function (user) {
       await user.save();
 
       authentication.security = {};
+
+      log.warn('user account disabled after exceeding maximum account lockouts', {
+        user: user.username,
+        userId: user._id.toString(),
+        invalidLoginAttempts,
+        numberOfTimesLocked,
+        disabledTime: new Date().toISOString()
+      });
     } else {
       authentication.security = {
         locked: true,
         numberOfTimesLocked: numberOfTimesLocked,
         lockedUntil: moment().add(accountLock.interval, 'seconds').toDate()
       };
+
+      log.warn('user account locked after invalid login attempts', {
+        user: user.username,
+        userId: user._id.toString(),
+        invalidLoginAttempts,
+        numberOfTimesLocked,
+        lockedUntil: authentication.security.lockedUntil.toISOString()
+      });
     }
   } else {
     authentication.security.invalidLoginAttempts = invalidLoginAttempts;
