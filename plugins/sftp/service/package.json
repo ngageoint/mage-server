@@ -37,7 +37,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.6.0",
+    "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta",
     "express": "^4.21.2",
     "mongoose": "^8.0.0"
   },
