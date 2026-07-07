@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import type { PageEvent } from '@angular/material/paginator';
 import moment from 'moment';
 import { of } from 'rxjs';
@@ -7,7 +8,7 @@ import { catchError } from 'rxjs/operators';
 
 import { User } from '../admin-users/user';
 import { Device, platformLabel as getDevicePlatformLabel, deviceIconName } from '../../entities/device/device';
-import { LoginFilter, LoginPage } from '../../entities/login/login';
+import { LoginFilter, LoginPage, Login } from '../../entities/login/login';
 
 import { DeviceService } from '../admin-devices/device.service';
 import { UserPagingService } from '../services/user-paging.service';
@@ -27,6 +28,7 @@ export class LoginsComponent implements OnInit {
   private loginService = inject(LoginService);
   private userPagingService = inject(UserPagingService);
   private deviceService = inject(DeviceService);
+  private router = inject(Router);
 
   login = {
     startDateOpened: false,
@@ -264,6 +266,20 @@ export class LoginsComponent implements OnInit {
 
   fromNow(timestamp: string | Date): string {
     return moment(timestamp).fromNow();
+  }
+
+  goToUser(event: MouseEvent, login: Login): void {
+    event.stopPropagation();
+    if (!login.user?.id) return;
+
+    this.router.navigate(['/admin/users', login.user.id]);
+  }
+
+  goToDevice(event: MouseEvent, login: Login): void {
+    event.stopPropagation();
+    if (!login.device?.id) return;
+
+    this.router.navigate(['/admin/devices', login.device.id]);
   }
 
 }

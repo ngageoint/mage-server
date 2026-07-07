@@ -11,10 +11,6 @@ mat-card-title {
   margin-bottom: 16px;
 }
 
-mat-nav-list {
-  --mat-list-list-item-leading-icon-color: var(--mat-sys-on-surface-variant);
-}
-
 mat-paginator {
   --mat-paginator-container-background-color: var(--mat-sys-surface-container);
 }
@@ -39,6 +35,12 @@ mat-paginator {
   position: relative;
   min-height: 160px;
   padding: 0 20px;
+}
+
+.login-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .login-date {

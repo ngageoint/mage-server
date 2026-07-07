@@ -200,7 +200,7 @@ export class DeviceDetailsComponent implements OnInit {
     this.deviceService.deleteDevice(this.device.id).subscribe({
       next: () => {
         this.saving = false;
-        this.router.navigate(['/../../devices'], { relativeTo: this.route });
+        this.router.navigate(['/admin/devices']);
       },
       error: () => {
         this.error = 'Failed to delete device';

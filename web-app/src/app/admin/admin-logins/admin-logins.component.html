@@ -48,20 +48,36 @@
   </div>
 
   <div class="list-content">
-    <mat-nav-list>
-      <mat-list-item *ngFor="let login of loginPage?.logins || []"
-        [routerLink]="login.user?.id ? [userId || deviceId ? '../../users' : '../users', login.user.id] : null">
-        <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
+    <mat-list>
+      <mat-list-item *ngFor="let login of loginPage?.logins || []">
+        <span matListItemLine class="login-date">{{ fromNow(login.timestamp) }}</span>
         <span matListItemTitle>{{ login.user?.displayName || 'Unknown User' }}</span>
         <span matListItemLine>{{ platformLabel(login.device) }} · {{ login.device?.userAgent || 'Unknown' }}</span>
-        <span matListItemMeta class="login-date">{{ fromNow(login.timestamp) }}</span>
+        <span matListItemMeta class="login-actions">
+          <button
+            matIconButton
+            *ngIf="login.user?.id"
+            (click)="goToUser($event, login)"
+            aria-label="View User"
+          >
+            <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
+          </button>
+          <button
+            matIconButton
+            *ngIf="login.device?.id"
+            (click)="goToDevice($event, login)"
+            aria-label="View Device"
+          >
+            <mat-icon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
+          </button>
+        </span>
       </mat-list-item>
 
       <div class="empty-state" *ngIf="!loginPage || loginPage.logins.length === 0">
         <mat-icon>login</mat-icon>
         <span class="empty-desc">No login history found</span>
       </div>
-    </mat-nav-list>
+    </mat-list>
   </div>
 
   <mat-paginator
