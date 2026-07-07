@@ -1,13 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { ObservationService } from './observation.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Observation Service', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ObservationService],
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [ObservationService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
   });
 
   afterEach(() => {

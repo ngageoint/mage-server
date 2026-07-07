@@ -3,6 +3,7 @@ import { AboutComponent } from './about.component';
 import { ApiService } from '../api/api.service';
 import { of } from 'rxjs';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -11,8 +12,9 @@ describe('AboutComponent', () => {
   let fixture: ComponentFixture<AboutComponent>;
   let mockApiService: jasmine.SpyObj<ApiService>;
   let mockLocation: jasmine.SpyObj<Location>;
+  let mockRouter: jasmine.SpyObj<Router>;
 
-  const MOCK_VERSION = { major: 1, minor: 2, micro: 3 };
+  const MOCK_VERSION = { major: 1, minor: 2, patch: 3 };
   const MOCK_APK = 'app.apk';
   const MOCK_NODE_VERSION = 'v18.0.0';
   const MOCK_MONGO_VERSION = '5.0.0';
@@ -32,7 +34,7 @@ describe('AboutComponent', () => {
   };
 
   const MOCK_API_RESPONSE_NO_CONTACT = {
-    version: { major: 2, minor: 1, micro: 0 },
+    version: { major: 2, minor: 1, patch: 0 },
     apk: 'another.apk',
     environment: {
       nodeVersion: 'v20.0.0',
@@ -44,13 +46,15 @@ describe('AboutComponent', () => {
   beforeEach(waitForAsync(() => {
     mockApiService = jasmine.createSpyObj('ApiService', ['getApi']);
     mockLocation = jasmine.createSpyObj('Location', ['back']);
+    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     TestBed.configureTestingModule({
       imports: [MatToolbarModule, MatIconModule],
       declarations: [AboutComponent],
       providers: [
         { provide: ApiService, useValue: mockApiService },
-        { provide: Location, useValue: mockLocation }
+        { provide: Location, useValue: mockLocation },
+        { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
   }));
@@ -70,7 +74,7 @@ describe('AboutComponent', () => {
     component.ngOnInit();
 
     expect(mockApiService.getApi).toHaveBeenCalled();
-    expect(component.mageVersion).toEqual(MOCK_VERSION);
+    expect(component.apiVersion).toEqual(MOCK_VERSION);
     expect(component.apk).toBe(MOCK_APK);
     expect(component.nodeVersion).toBe(MOCK_NODE_VERSION);
     expect(component.mongoVersion).toBe(MOCK_MONGO_VERSION);
@@ -84,7 +88,7 @@ describe('AboutComponent', () => {
 
     component.ngOnInit();
 
-    expect(component.mageVersion).toEqual(MOCK_API_RESPONSE_NO_CONTACT.version);
+    expect(component.apiVersion).toEqual(MOCK_API_RESPONSE_NO_CONTACT.version);
     expect(component.apk).toBe(MOCK_API_RESPONSE_NO_CONTACT.apk);
     expect(component.nodeVersion).toBe(
       MOCK_API_RESPONSE_NO_CONTACT.environment.nodeVersion
@@ -97,8 +101,19 @@ describe('AboutComponent', () => {
     expect(component.showDevContact).toBeFalse();
   });
 
-  it('should go back on onBack call', () => {
+  it('should go back on onBack call when navigation history exists', () => {
+    spyOnProperty(window.history, 'state', 'get').and.returnValue({ navigationId: 2 });
+
     component.onBack();
+
     expect(mockLocation.back).toHaveBeenCalled();
+  });
+
+  it('should navigate home on onBack call when no navigation history exists', () => {
+    spyOnProperty(window.history, 'state', 'get').and.returnValue({ navigationId: 1 });
+
+    component.onBack();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['home']);
   });
 });

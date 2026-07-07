@@ -1,8 +1,6 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
 
 :host ::ng-deep a {
-  color: mat.get-color-from-palette($app-warn);
+  color: var(--mat-sys-error);
   cursor: pointer;
   text-decoration: underline;
 }
@@ -12,25 +10,6 @@ mat-form-field {
   margin-bottom: 8px;
 }
 
-.auth-button {
-  width: 100%;
-}
-
-.signup {
-  display: flex;
-  margin-top: 32px;
-  justify-content: center;
-  gap: 8px;
-}
-
-.signup-text {
-  opacity: 60%;
-}
-
-.signup-button {
-  cursor: pointer;
-  color: $primary;
-}
 
 .error-container {
   overflow: hidden;
@@ -42,9 +21,10 @@ mat-form-field {
   align-items: center;
   gap: 8px;
   margin-top: 24px;
-  color: mat.get-color-from-palette($app-warn);
+  color: var(--mat-sys-error);
   border-radius: 4px;
-  padding: 0 16px;
+  border: 1px solid var(--mat-sys-error);
+  padding: 16px;
 }
 
 .error__icon {

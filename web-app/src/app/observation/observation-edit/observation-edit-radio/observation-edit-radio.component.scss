@@ -1,8 +1,6 @@
-// Undo Bootstrap styles
-:host ::ng-deep label {
-  max-width: unset;
-  margin-bottom: unset;
-  font-weight: unset
+label {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .radio-group {
@@ -12,13 +10,9 @@
   margin-bottom: 16px;
 }
 
-.radio-button {
-  margin: 5px;
-}
-
-.mat-error {
-  font-size: 75%;
-  margin-top: 8px;
+mat-error {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-error);
+  margin-top: 4px;
   margin-left: 28px;
-  height: 14px;
 }

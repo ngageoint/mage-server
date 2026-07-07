@@ -5,9 +5,10 @@ import { UserService } from '../../../user/user.service'
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
 
 @Component({
-  selector: 'ldap-authentication',
-  templateUrl: './ldap-authentication.component.html',
-  styleUrls: ['./ldap-authentication.component.scss']
+    selector: 'ldap-authentication',
+    templateUrl: './ldap-authentication.component.html',
+    styleUrls: ['./ldap-authentication.component.scss'],
+    standalone: false
 })
 export class LdapAuthenticationComponent {
   @Input() api: Api

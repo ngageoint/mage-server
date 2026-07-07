@@ -1,0 +1,132 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+  <div class="nav-actions">
+    <button matButton="outlined" type="button" (click)="cancelled.emit()" [disabled]="saving">
+      <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+      Cancel
+    </button>
+    <button matButton="filled" type="button" (click)="saveUser()" [disabled]="saving">
+      <mat-icon fontSet="material-symbols-outlined">{{ saving ? 'progress_activity' : 'save' }}</mat-icon>
+      Save
+    </button>
+  </div>
+</admin-breadcrumb>
+
+<div class="user-page">
+<mat-card appearance="outlined" class="details-card">
+  <div class="detail-row media-row">
+    <span class="detail-label">Avatar</span>
+    <div class="media-edit">
+      <ng-container *ngIf="avatarPreviewUrl || user.avatarUrl; else noAvatar">
+        <img [src]="avatarPreviewUrl || userAvatarImgUrl" width="64" height="64" class="avatar-image">
+      </ng-container>
+      <ng-template #noAvatar>
+        <div class="avatar-placeholder">
+          <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
+        </div>
+      </ng-template>
+
+      <input #avatarFile [hidden]="true" type="file" accept="image/*" (change)="onAvatarChanged($event)" [disabled]="saving">
+      <button matButton="outlined" type="button" (click)="avatarFile.click()" [disabled]="saving">
+        <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
+        Change Avatar
+      </button>
+    </div>
+  </div>
+
+  <div class="detail-row media-row">
+    <span class="detail-label">Map Icon</span>
+    <div class="icon-edit">
+      <div class="icon-preview">
+        <ng-container [ngSwitch]="iconMetadata.type">
+          <img *ngSwitchCase="'upload'" [src]="iconPreviewUrl || userIconImgUrl" width="64" height="64" class="map-icon-thumb">
+          <canvas *ngSwitchCase="'create'" #mapIconCanvas width="64" height="64" class="map-icon-thumb"></canvas>
+          <div *ngSwitchDefault class="icon-placeholder">No icon</div>
+        </ng-container>
+      </div>
+
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="icon-type-field">
+        <mat-label>Icon Type</mat-label>
+        <mat-select [(ngModel)]="iconMetadata.type" (selectionChange)="iconTypeChanged()" [disabled]="saving">
+          <mat-option value="none">None</mat-option>
+          <mat-option value="create">Create</mat-option>
+          <mat-option value="upload">Upload</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <ng-container [ngSwitch]="iconMetadata.type">
+        <div class="icon-create-fields" *ngSwitchCase="'create'">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="initials-field">
+            <mat-label>Initials</mat-label>
+            <input matInput maxlength="2" [value]="iconMetadata.text" (input)="onCreateTextChanged($any($event.target).value)" placeholder="AB" [disabled]="saving">
+          </mat-form-field>
+          <div class="color-field">
+            <label>Color</label>
+            <input type="color" [value]="iconMetadata.color || '#007bff'" (input)="onCreateColorChanged($any($event.target).value)" [disabled]="saving">
+          </div>
+        </div>
+
+        <div class="icon-upload-actions" *ngSwitchCase="'upload'">
+          <input #iconFile [hidden]="true" type="file" accept="image/*" (change)="onIconChanged($event)" [disabled]="saving">
+          <button matButton="outlined" type="button" (click)="iconFile.click()" [disabled]="saving">
+            <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
+            Choose Image
+          </button>
+          <button matButton="outlined" type="button" class="remove-icon-button" (click)="removeIcon()" [disabled]="saving">
+            <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+            Remove
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="detail-row-pair">
+    <div class="detail-row">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" *ngIf="user.authentication?.type === 'local'">
+        <mat-label>Username</mat-label>
+        <input matInput [(ngModel)]="editUser.username" [disabled]="saving" required placeholder="Username">
+      </mat-form-field>
+    </div>
+
+    <div class="detail-row">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+        <mat-label>Display Name</mat-label>
+        <input matInput [(ngModel)]="editUser.displayName" [disabled]="saving" required placeholder="Display Name">
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="detail-row-pair">
+    <div class="detail-row">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [(ngModel)]="editUser.email" [disabled]="saving" placeholder="Email Address">
+      </mat-form-field>
+    </div>
+
+    <div class="detail-row">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+        <mat-label>Phone</mat-label>
+        <input matInput type="tel" [value]="getPhoneNumber()" [disabled]="saving" (input)="updatePhoneNumber($any($event.target).value)" placeholder="Phone Number">
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="detail-row-pair">
+    <div class="detail-row">
+      <span class="detail-label">Role</span>
+      <span class="detail-value" *ngIf="!canEditRole">{{ user.role?.name }}</span>
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" *ngIf="canEditRole">
+        <mat-select [(ngModel)]="editUser.selectedRole" [disabled]="saving">
+          <mat-option *ngFor="let role of roles" [value]="role">{{ role.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="error-alert" *ngIf="error">
+    <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+</mat-card>
+</div>

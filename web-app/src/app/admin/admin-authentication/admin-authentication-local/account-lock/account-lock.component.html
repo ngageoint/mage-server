@@ -1,0 +1,44 @@
+<h3 class="section-title">Account Lock</h3>
+
+<mat-form-field appearance="fill">
+  <mat-label>Account Lock</mat-label>
+  <mat-select [(ngModel)]="strategy.settings.accountLock.enabled" [ngModelOptions]="{standalone: true}"
+    (selectionChange)="setDirty(true)">
+    <mat-option *ngFor="let choice of accountLockChoices" [value]="choice.value">{{ choice.title }}</mat-option>
+  </mat-select>
+  <mat-hint>MAGE can lock user accounts after a number of invalid login attempts for a certain amount of time.</mat-hint>
+</mat-form-field>
+
+<ng-container *ngIf="strategy.settings.accountLock.enabled">
+  <p class="field-label">Account Lockout Threshold</p>
+  <mat-form-field appearance="fill">
+    <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.threshold"
+      [ngModelOptions]="{standalone: true}" (input)="setDirty(true)">
+    <mat-hint>Number of invalid login attempts after which the user's account will be locked.</mat-hint>
+  </mat-form-field>
+
+  <p class="field-label">Account Lockout Interval (Seconds)</p>
+  <mat-form-field appearance="fill">
+    <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.interval"
+      [ngModelOptions]="{standalone: true}" (input)="setDirty(true)">
+    <mat-hint>Amount of time in seconds a user's account will remain locked after reaching the lockout threshold.</mat-hint>
+  </mat-form-field>
+
+  <p class="field-label">Enable Max Lockout</p>
+  <mat-form-field appearance="fill">
+    <mat-label>Max Lockout</mat-label>
+    <mat-select [(ngModel)]="maxLock.enabled" [ngModelOptions]="{standalone: true}" (selectionChange)="setDirty(true)">
+      <mat-option *ngFor="let choice of maxLockChoices" [value]="choice.value">{{ choice.title }}</mat-option>
+    </mat-select>
+    <mat-hint>MAGE can disable user accounts if a user locks their account a certain number of times.</mat-hint>
+  </mat-form-field>
+
+  <ng-container *ngIf="maxLock.enabled">
+    <p class="field-label">Max Lockout Threshold</p>
+    <mat-form-field appearance="fill">
+      <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.max"
+        [ngModelOptions]="{standalone: true}" (input)="setDirty(true)">
+      <mat-hint>Number of times a user account can be locked before it is disabled. Disabled accounts must be re-enabled by an admin.</mat-hint>
+    </mat-form-field>
+  </ng-container>
+</ng-container>

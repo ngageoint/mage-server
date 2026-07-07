@@ -16,9 +16,10 @@ interface SelectField {
 }
 
 @Component({
-  selector: 'observation-edit-dropdown',
-  templateUrl: './observation-edit-select.component.html',
-  styleUrls: ['./observation-edit-select.component.scss']
+    selector: 'observation-edit-dropdown',
+    templateUrl: './observation-edit-select.component.html',
+    styleUrls: ['./observation-edit-select.component.scss'],
+    standalone: false
 })
 export class ObservationEditSelectComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup

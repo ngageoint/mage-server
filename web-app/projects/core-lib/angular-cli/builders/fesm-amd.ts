@@ -2,10 +2,10 @@ import * as path from 'path'
 import { executeNgPackagrBuilder } from '@angular-devkit/build-angular'
 import { BuilderContext, BuilderOutput, createBuilder } from '@angular-devkit/architect'
 import { rollup } from 'rollup'
-import { discoverPackages as ngPackagrDiscoverPackages } from 'ng-packagr/lib/ng-package/discover-packages'
+import { discoverPackages as ngPackagrDiscoverPackages } from 'ng-packagr/src/lib/ng-package/discover-packages'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import { NgPackage } from 'ng-packagr/lib/ng-package/package'
+import { NgPackage } from 'ng-packagr/src/lib/ng-package/package'
 import { writeFile } from 'fs/promises'
 
 interface BuildInfo {
@@ -55,7 +55,7 @@ async function ngPackagrThenAmd(options: any, context: BuilderContext): Promise<
 
   try {
     ngPackagrResult = await firstValueFromSubscribable(
-      executeNgPackagrBuilder(options, context) as unknown as MinimalSubscribable<BuilderOutput>
+      executeNgPackagrBuilder(options, context as any) as unknown as MinimalSubscribable<BuilderOutput>
     )
   } catch (err) {
     const message = err instanceof Error ? err.stack || err.message : String(err)
@@ -118,7 +118,7 @@ async function rollupFesmToAmd(buildInfo: BuildInfo): Promise<BuilderOutput> {
       input: fesm2022Path,
       plugins: [
         nodeResolve({
-          resolveOnly: moduleId => {
+          resolveOnly: (moduleId: string) => {
             const external = false
               || moduleId.startsWith('@angular/')
               || moduleId.startsWith('@ng-select/')

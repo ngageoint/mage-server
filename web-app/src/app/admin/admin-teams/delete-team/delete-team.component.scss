@@ -1,0 +1,46 @@
+mat-checkbox {
+  display: block;
+  margin: 12px 0;
+}
+
+.danger-zone {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-error);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.danger-zone-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: var(--mat-sys-title-medium-size);
+  font-weight: 600;
+  color: var(--mat-sys-error);
+}
+
+.danger-zone-description {
+  margin: 0;
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+mat-dialog-actions {
+  justify-content: flex-end;
+}
+
+.delete-button {
+  color: var(--mat-sys-error);
+}

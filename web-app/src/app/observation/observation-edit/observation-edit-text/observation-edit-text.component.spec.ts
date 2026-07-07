@@ -9,8 +9,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ObservationEditTextComponent } from './observation-edit-text.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-text [field]="field"></observation-edit-text>`
+    selector: `host-component`,
+    template: `<observation-edit-text [field]="field"></observation-edit-text>`,
+    standalone: false
 })
 class TestHostComponent {
 

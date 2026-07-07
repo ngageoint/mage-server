@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { Api } from '../api/api.entity';
-import { ApiService } from 'admin/src/app/api/api.service';
+import { ApiService } from 'mage-web-app/api/api.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'landing',
-  templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.scss'],
+    selector: 'landing',
+    templateUrl: './landing.component.html',
+    styleUrls: ['./landing.component.scss'],
+    standalone: false
 })
 export class LandingComponent {
   api: Api

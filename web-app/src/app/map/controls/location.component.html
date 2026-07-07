@@ -1,7 +1,7 @@
 <div class="location">
   <button
     #locateButton
-    mat-mini-fab
+    matMiniFab
     class="map-control-fab"
     [ngClass]="{ 'is-active': state !== LocationState.Off }"
     matTooltip="Show Your Location"
@@ -15,7 +15,7 @@
 
   <button
     #broadcastButton
-    mat-mini-fab
+    matMiniFab
     class="map-control-fab"
     [ngClass]="{ 'is-active': state === LocationState.Broadcast }"
     matTooltip="Report Your Location"

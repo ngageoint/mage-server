@@ -1,6 +1,6 @@
-.mat-body-1 {
-  font: 400 14px/24px Roboto, "Helvetica Neue", sans-serif; 
-  color: rgba(0, 0, 0, .60);
+.title {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
   margin-bottom: 6px;
 }
 
@@ -15,4 +15,9 @@
   justify-content: flex-end;
   margin-top: 4px;
   margin-right: 4px;
+}
+
+.location__coords {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }

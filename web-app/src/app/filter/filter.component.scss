@@ -6,6 +6,11 @@ mat-button {
   width: 100%;
 }
 
+datetime-picker {
+  display: block;
+  width: 100%;
+}
+
 .content {
   height: 100%;
   display: flex;
@@ -40,9 +45,8 @@ mat-button {
 
 .datetime {
   width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px;
-  gap: 24px;
+  display: flex;
+  gap: 8px;
   align-items: start;
 }
 
@@ -50,12 +54,6 @@ mat-button {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-datetime-picker {
-  display: block;
-  width: 100%;
 }
 
 .timezone {
@@ -66,7 +64,6 @@ datetime-picker {
 }
 
 .timezone__button {
-  width: 160px;
   white-space: nowrap;
 }
 

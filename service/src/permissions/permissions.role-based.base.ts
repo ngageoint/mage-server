@@ -4,6 +4,10 @@ import { AppRequestContext } from '../app.api/app.api.global'
 import { PermissionDeniedError, permissionDenied } from '../app.api/app.api.errors'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
 
+export type AnonymousUser = {
+  roleId?: never
+}
+
 /**
  * TODO: This should not be statically linked to the Mongoose Document type but
  * for now this is the quick and dirty way because the legacy web adapter layer
@@ -13,12 +17,16 @@ export type UserWithRole = UserDocument & {
   roleId: RoleDocument
 }
 
-export function ensureContextUserHasPermission(context: AppRequestContext<UserWithRole>, permission: AnyPermission): null | PermissionDeniedError {
+export function ensureContextUserHasPermission(context: AppRequestContext<UserWithRole | AnonymousUser>, permission: AnyPermission): null | PermissionDeniedError {
   const user = context.requestingPrincipal()
-  const role = user.roleId
-  if (role.permissions.includes(permission)) {
-    return null
-  }
+  if (user.roleId) {
+    const role = user.roleId
+    if (role.permissions.includes(permission)) {
+      return null
+    }
 
-  return permissionDenied(permission, user.username)
+    return permissionDenied(permission, user.username)
+  } else {
+    return permissionDenied(permission, 'anonymous')
+  }
 }

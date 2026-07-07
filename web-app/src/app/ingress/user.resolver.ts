@@ -12,7 +12,7 @@ export class UserResolver  {
     _route: ActivatedRouteSnapshot,
     _state: RouterStateSnapshot
   ): Observable<Api> {
-    return this.service.getMyself().pipe(
+    return this.service.getMyself({ suppressAuthDialog: true }).pipe(
       catchError(() => {
         return of(null)
       })

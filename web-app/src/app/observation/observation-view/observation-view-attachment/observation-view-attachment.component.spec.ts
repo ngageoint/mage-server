@@ -4,8 +4,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ObservationViewAttachmentComponent } from './observation-view-attachment.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-view-attachment [attachments]="attachments"></observation-view-attachment>`
+    selector: `host-component`,
+    template: `<observation-view-attachment [attachments]="attachments"></observation-view-attachment>`,
+    standalone: false
 })
 class TestHostComponent {
   attachments = []

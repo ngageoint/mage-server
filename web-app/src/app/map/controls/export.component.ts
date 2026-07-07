@@ -9,9 +9,10 @@ import {
 import { DomEvent } from 'leaflet';
 
 @Component({
-  selector: 'map-control-export',
-  templateUrl: './export.component.html',
-  styleUrls: ['./export.component.scss']
+    selector: 'map-control-export',
+    templateUrl: './export.component.html',
+    styleUrls: ['./export.component.scss'],
+    standalone: false
 })
 export class ExportControlComponent implements AfterViewInit {
   @ViewChild('exportButton') button!: ElementRef<HTMLElement>;

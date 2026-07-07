@@ -1,8 +1,6 @@
-<div class="header">
-  <mat-icon>refresh</mat-icon>
-  <div class="mat-body-2">Update Frequency</div>
-</div>
 <mat-form-field>
+  <mat-label>Update Frequency</mat-label>
+  <mat-icon matIconPrefix>refresh</mat-icon>
   <mat-select [(value)]="pollingOption" (selectionChange)="updatePollingInterval($event)" [compareWith]="compareOption">
     <mat-option *ngFor="let option of pollingOptions" [value]="option">
       {{option.title}}

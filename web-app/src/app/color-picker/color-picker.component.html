@@ -1,63 +1,38 @@
-<div class="picker-shell" (click)="$event.stopPropagation()">
-  <div class="swatch" (click)="open()">
-    <mat-form-field dense appearance="outline">
-      <mat-label>{{ label }}</mat-label>
-      <input
-        matInput
-        class="swatch-input"
-        type="text"
-        value=" "
-        readonly="true"
-      />
-    </mat-form-field>
-
-    <div class="checkboard">
-      <color-checkboard></color-checkboard>
-      <div class="swatch-color" [style.background]="background"></div>
-    </div>
+<div class="swatch" #swatchEl (click)="open()">
+  <mat-form-field appearance="outline">
+    <mat-label>{{ label }}</mat-label>
+    <input matInput class="swatch-input" type="text" value=" " readonly="true" />
+  </mat-form-field>
+  <div class="checkboard">
+    <color-checkboard></color-checkboard>
+    <div class="swatch-color" [style.background]="background"></div>
   </div>
+</div>
 
-  <mat-card *ngIf="showColorPicker" class="picker-popover">
+<ng-template #pickerTemplate>
+  <mat-card appearance="elevated" class="picker-panel">
     <div class="color">
       <div class="saturation">
-        <color-saturation
-          [hsl]="hsl"
-          [hsv]="hsv"
-          (onChange)="handleValueChange($event)"
-        ></color-saturation>
+        <color-saturation [hsl]="hsl" [hsv]="hsv" (onChange)="handleValueChange($event)"></color-saturation>
       </div>
       <div class="color-controls">
         <div class="sliders">
           <div class="hue">
-            <color-hue
-              direction="horizontal"
-              [radius]="2"
-              [hsl]="hsl"
-              (onChange)="handleValueChange($event)"
-            ></color-hue>
+            <color-hue direction="horizontal" [radius]="2" [hsl]="hsl" (onChange)="handleValueChange($event)"></color-hue>
           </div>
           <div class="alpha">
-            <color-alpha
-              [radius]="2"
-              [rgb]="rgb"
-              [hsl]="hsl"
-              (onChange)="handleValueChange($event)"
-            ></color-alpha>
+            <color-alpha [radius]="2" [rgb]="rgb" [hsl]="hsl" (onChange)="handleValueChange($event)"></color-alpha>
           </div>
         </div>
         <div class="active-color">
           <color-checkboard></color-checkboard>
-          <div
-            class="sketch-active"
-            [style.background]="activeBackground"
-          ></div>
+          <div class="sketch-active" [style.background]="activeBackground"></div>
         </div>
       </div>
     </div>
-
     <div class="actions">
-      <button mat-button type="button" (click)="cancel()">CANCEL</button>
-      <button mat-button type="button" (click)="ok()">OK</button>
+      <button matButton type="button" (click)="cancel()">Cancel</button>
+      <button matButton type="button" (click)="ok()">Ok</button>
     </div>
   </mat-card>
-</div>
+</ng-template>

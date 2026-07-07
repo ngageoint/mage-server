@@ -1,12 +1,4 @@
-@use '@angular/material' as mat;
-@import 'variables.scss';
-
 :host {
-  display: block;
-}
-
-.picker-shell {
-  position: relative;
   display: block;
 }
 
@@ -16,10 +8,6 @@
   flex-direction: column;
   margin-bottom: 16px;
   cursor: pointer;
-}
-
-:host ::ng-deep .mat-form-field-wrapper {
-  padding-bottom: unset;
 }
 
 .swatch-input {
@@ -40,23 +28,17 @@
   bottom: 0;
   right: 0;
   left: 0;
-  border-radius: 4px;
+  border-radius: var(--mat-sys-corner-extra-small);
   cursor: pointer;
 }
 
-.picker-popover {
-  position: absolute;
-  top: calc(100% - 22px);
-  left: 0;
-  z-index: 1000;
+.picker-panel {
   display: flex;
   flex-direction: column;
   padding: 8px;
   margin: 0;
   min-width: 280px;
   max-width: min(320px, 100vw - 32px);
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .color {
@@ -107,9 +89,8 @@
   right: 0;
   bottom: 0;
   left: 0;
-  border-radius: 2px;
-  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset,
-    rgba(0, 0, 0, 0.25) 0 0 4px inset;
+  border-radius: var(--mat-sys-corner-extra-small);
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset, rgba(0, 0, 0, 0.25) 0 0 4px inset;
 }
 
 .actions {

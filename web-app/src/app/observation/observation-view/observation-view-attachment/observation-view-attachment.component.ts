@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'observation-view-attachment',
-  templateUrl: './observation-view-attachment.component.html',
-  styleUrls: ['./observation-view-attachment.component.scss']
+    selector: 'observation-view-attachment',
+    templateUrl: './observation-view-attachment.component.html',
+    styleUrls: ['./observation-view-attachment.component.scss'],
+    standalone: false
 })
 export class ObservationViewAttachmentComponent {
   private _attachments: any[];

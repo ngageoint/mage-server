@@ -1,7 +1,7 @@
 <div>
   <div [ngSwitch]="preview">
     <div *ngSwitchCase="previewType.LOADING">
-      <mat-spinner [color]="'primary'"></mat-spinner>
+      <mat-spinner></mat-spinner>
     </div>
     <div *ngSwitchCase="previewType.IMAGE">
       <img class="upload-preview" [src]="attachment?.preview" />
@@ -28,7 +28,7 @@
 </div>
 
 <div class="upload-delete" *ngIf="preview !== previewType.LOADING">
-  <button mat-mini-fab color="warn" (click)="removeAttachment(attachment?.id)" [disabled]="attachment?.action === actions.DELETE">
+  <button matMiniFab class="warn" (click)="removeAttachment(attachment?.id)" [disabled]="attachment?.action === actions.DELETE">
     <mat-icon>delete</mat-icon>
   </button>
 </div>

@@ -1,0 +1,122 @@
+<nav class="side-nav">
+  <a class="nav-item" routerLink="./dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    <mat-icon fontSet="material-symbols-outlined">analytics</mat-icon>
+    <span class="nav-label">Dashboard</span>
+  </a>
+
+  <div class="nav-group">
+    <button class="nav-group-header" (click)="identitiesExpanded = !identitiesExpanded">
+      <span class="nav-group-title">Identity and Access</span>
+      <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="identitiesExpanded">expand_more</mat-icon>
+    </button>
+    <div class="nav-group-content" [class.collapsed]="!identitiesExpanded">
+      <div>
+        <a class="nav-item nav-item--child" routerLink="./users" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
+          <span class="nav-label" [matBadge]="inactiveUsers.length" matBadgeSize="small" [matBadgeHidden]="!inactiveUsers.length">Users</span>
+        </a>
+        <a class="nav-item nav-item--child" routerLink="./teams" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">groups</mat-icon>
+          <span class="nav-label">Teams</span>
+        </a>
+        <a class="nav-item nav-item--child" routerLink="./devices" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">devices</mat-icon>
+          <span class="nav-label" [matBadge]="unregisteredDevices.length" matBadgeSize="small" [matBadgeHidden]="!unregisteredDevices.length">Devices</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <button class="nav-group-header" (click)="environmentExpanded = !environmentExpanded">
+      <span class="nav-group-title">Environment</span>
+      <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="environmentExpanded">expand_more</mat-icon>
+    </button>
+    <div class="nav-group-content" [class.collapsed]="!environmentExpanded">
+      <div>
+        <a class="nav-item nav-item--child" routerLink="./events" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">event</mat-icon>
+          <span class="nav-label">Events</span>
+        </a>
+        <a class="nav-item nav-item--child" routerLink="./layers" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">layers</mat-icon>
+          <span class="nav-label">Layers</span>
+        </a>
+        <a class="nav-item nav-item--child" routerLink="./feeds" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">rss_feed</mat-icon>
+          <span class="nav-label">Feeds</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <button class="nav-group-header" (click)="searchExpanded = !searchExpanded">
+      <span class="nav-group-title">Search</span>
+      <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="searchExpanded">expand_more</mat-icon>
+    </button>
+    <div class="nav-group-content" [class.collapsed]="!searchExpanded">
+      <div>
+        <a class="nav-item nav-item--child" routerLink="./map" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">public</mat-icon>
+          <span class="nav-label">Places</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <button class="nav-group-header" (click)="securityExpanded = !securityExpanded">
+      <span class="nav-group-title">Security</span>
+      <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="securityExpanded">expand_more</mat-icon>
+    </button>
+    <div class="nav-group-content" [class.collapsed]="!securityExpanded">
+      <div>
+        <a class="nav-item nav-item--child" routerLink="./security" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">lock</mat-icon>
+          <span class="nav-label">Authentication</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <button class="nav-group-header" (click)="settingsExpanded = !settingsExpanded">
+      <span class="nav-group-title">Settings</span>
+      <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="settingsExpanded">expand_more</mat-icon>
+    </button>
+    <div class="nav-group-content" [class.collapsed]="!settingsExpanded">
+      <div>
+        <a class="nav-item nav-item--child" routerLink="./banner" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">page_header</mat-icon>
+          <span class="nav-label">Banner</span>
+        </a>
+        <a class="nav-item nav-item--child" routerLink="./disclaimer" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">verified</mat-icon>
+          <span class="nav-label">Disclaimer</span>
+        </a>
+        <a class="nav-item nav-item--child" routerLink="./contact" routerLinkActive="active">
+          <mat-icon fontSet="material-symbols-outlined">contact_support</mat-icon>
+          <span class="nav-label">Contact Info</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group" *ngIf="pluginTabs.length > 0">
+    <button class="nav-group-header" (click)="pluginsExpanded = !pluginsExpanded">
+      <span class="nav-group-title">Plugins</span>
+      <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="pluginsExpanded">expand_more</mat-icon>
+    </button>
+    <div class="nav-group-content" [class.collapsed]="!pluginsExpanded">
+      <div>
+        <a class="nav-item nav-item--child" *ngFor="let plugin of pluginTabs" [routerLink]="['./plugins', plugin.id]" routerLinkActive="active">
+          <img *ngIf="plugin.icon?.path" class="nav-plugin-icon" [src]="'/ui_plugins/' + plugin.id + '/' + plugin.icon.path" [alt]="plugin.title" />
+          <mat-icon *ngIf="plugin.icon?.matIconName" fontSet="material-symbols-outlined">{{ plugin.icon.matIconName }}</mat-icon>
+          <mat-icon *ngIf="!plugin.icon?.path && !plugin.icon?.matIconName" fontSet="material-symbols-outlined">extension</mat-icon>
+          <span class="nav-label">{{ plugin.title }}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>

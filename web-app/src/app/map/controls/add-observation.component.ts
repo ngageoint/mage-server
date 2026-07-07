@@ -2,9 +2,10 @@ import { Component, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild }
 import { DomEvent } from 'leaflet';
 
 @Component({
-  selector: 'map-control-add-observation',
-  templateUrl: './add-observation.component.html',
-  styleUrls: ['./add-observation.component.scss']
+    selector: 'map-control-add-observation',
+    templateUrl: './add-observation.component.html',
+    styleUrls: ['./add-observation.component.scss'],
+    standalone: false
 })
 export class AddObservationComponent implements AfterViewInit {
   @ViewChild('addObservationButton') button!: ElementRef<HTMLElement>;

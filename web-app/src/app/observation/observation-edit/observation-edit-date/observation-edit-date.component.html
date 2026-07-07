@@ -1,6 +1,6 @@
 <div class="datetime">
   <div class="date">
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="fill">
       <mat-label>{{ definition.title }} Date</mat-label>
       <input matInput [matDatepicker]="datePicker" [(ngModel)]="date" [required]="definition.required"
         (ngModelChange)="onDate()" #dateModel="ngModel" autocomplete="off" />
@@ -18,17 +18,15 @@
   </div>
 
   <div class="time">
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="fill">
       <mat-label>
         {{ definition.title }} Time
         {{ timeZone === 'gmt' ? '(GMT)' : '(Local)' }}
       </mat-label>
-      <input matInput #timeInput type="time" step="60" [(ngModel)]="time" (ngModelChange)="onTime()"
-        #timeModel="ngModel" autocomplete="off" />
-      <button mat-icon-button matSuffix type="button" aria-label="Open time selector" (click)="openTimePicker($event)">
-        <mat-icon>schedule</mat-icon>
-      </button>
-      <mat-error *ngIf="timeInvalid">Invalid time</mat-error>
+      <input matInput [matTimepicker]="timePicker" [(ngModel)]="timeValue"
+        (ngModelChange)="onTime()" autocomplete="off" />
+      <mat-timepicker-toggle matSuffix [for]="timePicker"></mat-timepicker-toggle>
+      <mat-timepicker #timePicker interval="30m"></mat-timepicker>
     </mat-form-field>
   </div>
 </div>

@@ -2,29 +2,30 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
 @Component({
-  selector: 'map-control-layers',
-  templateUrl: './layers-control.component.html',
-  styleUrls: ['./layers-control.component.scss'],
-  animations: [
-    trigger('rotatedState', [
-      state('default', style({ transform: 'rotate(0)', opacity: 1 })),
-      state('rotated', style({
-        transform: 'rotate(90deg)',
-        opacity: 0
-      })),
-      transition('rotated => default', animate('200ms ease-out')),
-      transition('default => rotated', animate('200ms ease-in'))
-    ]),
-    trigger('rotatedStateClose', [
-      state('default', style({ transform: 'rotate(0deg)', opacity: 0 })),
-      state('rotated', style({
-        transform: 'rotate(90deg)',
-        opacity: 1
-      })),
-      transition('rotated => default', animate('200ms ease-in')),
-      transition('default => rotated', animate('200ms ease-out'))
-    ])
-  ]
+    selector: 'map-control-layers',
+    templateUrl: './layers-control.component.html',
+    styleUrls: ['./layers-control.component.scss'],
+    animations: [
+        trigger('rotatedState', [
+            state('default', style({ transform: 'rotate(0)', opacity: 1 })),
+            state('rotated', style({
+                transform: 'rotate(90deg)',
+                opacity: 0
+            })),
+            transition('rotated => default', animate('200ms ease-out')),
+            transition('default => rotated', animate('200ms ease-in'))
+        ]),
+        trigger('rotatedStateClose', [
+            state('default', style({ transform: 'rotate(0deg)', opacity: 0 })),
+            state('rotated', style({
+                transform: 'rotate(90deg)',
+                opacity: 1
+            })),
+            transition('rotated => default', animate('200ms ease-in')),
+            transition('default => rotated', animate('200ms ease-out'))
+        ])
+    ],
+    standalone: false
 })
 export class LayersControlComponent {
   @Output() onLayerPanelToggle = new EventEmitter<void>();

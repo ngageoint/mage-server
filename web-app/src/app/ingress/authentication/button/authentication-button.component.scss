@@ -5,6 +5,7 @@
 .authentication-button-container {
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 8px;
   margin: 0 -16px;
 }
@@ -16,7 +17,6 @@
   margin: 2px;
   width: 36px;
   border-radius: 2px;
-  background-color: white;
 }
 
 .authentication-button__image {
@@ -26,7 +26,6 @@
   margin: 2px;
   height: 28px;
   border-radius: 2px;
-  background-color: white;
 }
 
 .authentication-button__text {

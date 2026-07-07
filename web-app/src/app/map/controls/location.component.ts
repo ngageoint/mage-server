@@ -20,9 +20,10 @@ export interface LocationEvent {
 }
 
 @Component({
-  selector: 'map-control-location',
-  templateUrl: './location.component.html',
-  styleUrls: ['./location.component.scss']
+    selector: 'map-control-location',
+    templateUrl: './location.component.html',
+    styleUrls: ['./location.component.scss'],
+    standalone: false
 })
 export class LocationComponent implements AfterViewInit {
   @ViewChild('locateButton') locateButton!: ElementRef<HTMLElement>;

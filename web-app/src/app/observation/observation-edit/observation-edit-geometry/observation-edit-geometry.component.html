@@ -15,7 +15,7 @@
 
   </div>
 
-  <div class="geometry__underline"></div>
+  <div class="geometry__underline" [ngClass]="{'geometry__underline--active': edit}"></div>
   
   <div class="geometry-help">
     <span class="geometry-help__text" *ngIf="mapFeature && mapFeature.geometry">{{mapFeature.geometry | geometry:5}}</span>

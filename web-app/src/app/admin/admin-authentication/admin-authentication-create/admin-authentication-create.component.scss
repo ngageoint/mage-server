@@ -1,0 +1,38 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.create-page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  width: 100%;
+  max-width: 1000px;
+  min-width: 480px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.summary-title {
+  font-size: var(--mat-sys-title-medium-size);
+  font-weight: var(--mat-sys-title-medium-weight);
+  color: var(--mat-sys-on-surface);
+  margin: 0 0 12px;
+}
+
+.no-type-hint {
+  padding: 8px 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.step-content {
+  margin-top: 16px;
+}

@@ -4,9 +4,10 @@ import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 
 @Component({
-  selector: 'user-list',
-  templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss']
+    selector: 'user-list',
+    templateUrl: './user-list.component.html',
+    styleUrls: ['./user-list.component.scss'],
+    standalone: false
 })
 export class UserListComponent implements OnInit, OnDestroy {
 

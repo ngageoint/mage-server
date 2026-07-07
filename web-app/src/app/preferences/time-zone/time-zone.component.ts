@@ -8,9 +8,10 @@ interface TimeZoneOption {
 }
 
 @Component({
-  selector: 'time-zone',
-  templateUrl: './time-zone.component.html',
-  styleUrls: ['./time-zone.component.scss']
+    selector: 'time-zone',
+    templateUrl: './time-zone.component.html',
+    styleUrls: ['./time-zone.component.scss'],
+    standalone: false
 })
 export class TimeZoneComponent implements OnInit {
 

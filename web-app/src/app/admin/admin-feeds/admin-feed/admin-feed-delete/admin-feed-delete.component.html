@@ -1,0 +1,15 @@
+<div class="dialog-title" mat-dialog-title>
+  <span>Delete {{feed.title}}?</span>
+</div>
+
+<div mat-dialog-content>
+  <p class="info-hint">
+    <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+    The service attached to this feed will NOT be deleted.
+  </p>
+</div>
+
+<mat-dialog-actions align="end">
+  <button matButton [mat-dialog-close]="false">Cancel</button>
+  <button matButton="filled" class="delete-button" [mat-dialog-close]="true">Delete</button>
+</mat-dialog-actions>

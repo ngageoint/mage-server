@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+mat-toolbar {
+  background-color: var(--mat-sys-primary);
+  color: #ffffff;
+  --mat-icon-button-icon-color: #ffffff;
+}
+
+
+.menu-button {
+  display: none;
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .menu-button {
+    display: inline-flex;
+  }
+}
+
+.admin-navbar-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}

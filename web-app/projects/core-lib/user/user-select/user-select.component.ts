@@ -9,18 +9,19 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators'
 import { X } from '@angular/cdk/keycodes'
 
 @Component({
-  selector: 'mage-user-select',
-  templateUrl: './user-select.component.html',
-  styleUrls: [
-    './user-select.component.scss'
-  ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => UserSelectComponent)
-    }
-  ]
+    selector: 'mage-user-select',
+    templateUrl: './user-select.component.html',
+    styleUrls: [
+        './user-select.component.scss'
+    ],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: forwardRef(() => UserSelectComponent)
+        }
+    ],
+    standalone: false
 })
 export class UserSelectComponent implements OnInit, OnChanges, AfterViewInit, ControlValueAccessor {
 

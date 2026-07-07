@@ -1,0 +1,70 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+  <div class="nav-actions" *ngIf="service">
+    <button *ngIf="hasServiceDeletePermission" matButton="outlined" type="button" class="delete-button" (click)="deleteService()">
+      <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+    </button>
+  </div>
+</admin-breadcrumb>
+
+<div class="service-page" *ngIf="service && serviceType; else loading">
+  <mat-card appearance="outlined" class="details-card">
+    <div class="service-header">
+      <div class="service-icon-placeholder">
+        <mat-icon fontSet="material-symbols-outlined">cloud_queue</mat-icon>
+      </div>
+      <div class="service-info">
+        <span class="service-name">{{ service.title }}</span>
+        <span class="service-summary">{{ service.summary }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row" *ngFor="let entry of configEntries">
+      <span class="detail-label">{{ entry.label }}</span>
+      <span class="detail-value">{{ entry.value }}</span>
+    </div>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="content-card">
+    <mat-card-header class="card-header">
+      <mat-card-title>Feeds</mat-card-title>
+    </mat-card-header>
+
+    <div class="list-content">
+      <mat-nav-list *ngIf="feeds?.length; else noFeeds">
+        <ng-container
+          *ngFor="
+            let feed of feeds
+              | slice
+                : feedPage * itemsPerPage
+                : (feedPage + 1) * itemsPerPage
+          "
+        >
+          <mat-list-item [routerLink]="['/admin/feeds', feed.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">rss_feed</mat-icon>
+            <div matListItemTitle>{{ feed.title }}</div>
+            <div matListItemLine>{{ feed.summary }}</div>
+          </mat-list-item>
+        </ng-container>
+      </mat-nav-list>
+
+      <ng-template #noFeeds>
+        <div class="empty-state">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">rss_feed</mat-icon>
+          <div class="empty-state-text">No feeds configured.</div>
+        </div>
+      </ng-template>
+    </div>
+
+    <mat-paginator
+      [length]="feeds.length"
+      [pageSize]="itemsPerPage"
+      (page)="feedPage = $event.pageIndex"
+    ></mat-paginator>
+  </mat-card>
+</div>
+
+<ng-template #loading>
+  <div class="loading-page">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+</ng-template>

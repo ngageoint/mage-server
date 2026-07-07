@@ -1,14 +1,8 @@
-// Undo bootstrap label style, can remove when bootstrap is gone
-::ng-deep label {
-  font-weight: unset;
-  margin-bottom: unset;
-}
-
-.mat-error {
-  font-size: 75%;
-  margin-top: 8px;
+mat-error {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-error);
+  margin-top: 4px;
   margin-left: 24px;
-  height: 14px;
 }
 
 .checkbox-content {

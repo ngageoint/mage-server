@@ -1,0 +1,47 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="map-page">
+  <mat-card appearance="elevated" class="map-card">
+    <mat-card-header>
+      <mat-card-title>Place Name Search</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="helper-text">Configure how users search for locations on mobile and web.</p>
+      <form #mapForm="ngForm">
+      <div class="search-grid">
+        <div class="search-section">
+          <h3 class="section-title">Mobile</h3>
+          <mat-radio-group name="mobileSearchType" [(ngModel)]="mobileSearchType" class="radio-group">
+            <mat-radio-button *ngFor="let opt of mobileSearchOptions" [value]="opt">{{ opt }}</mat-radio-button>
+          </mat-radio-group>
+          <mat-form-field *ngIf="mobileSearchType === 'NOMINATIM'" appearance="fill">
+            <mat-label>Nominatim URL</mat-label>
+            <input matInput name="mobileNominatimUrl" [(ngModel)]="mobileNominatimUrl" #mobileUrl="ngModel"
+              required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
+            <mat-error *ngIf="mobileUrl.hasError('required')">URL is required</mat-error>
+            <mat-error *ngIf="mobileUrl.hasError('pattern')">Must be a valid URL starting with http:// or https://</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="search-section">
+          <h3 class="section-title">Web</h3>
+          <mat-radio-group name="webSearchType" [(ngModel)]="webSearchType" class="radio-group">
+            <mat-radio-button *ngFor="let opt of webSearchOptions" [value]="opt">{{ opt }}</mat-radio-button>
+          </mat-radio-group>
+          <mat-form-field *ngIf="webSearchType === 'NOMINATIM'" appearance="fill">
+            <mat-label>Nominatim URL</mat-label>
+            <input matInput name="webNominatimUrl" [(ngModel)]="webNominatimUrl" #webUrl="ngModel"
+              required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
+            <mat-error *ngIf="webUrl.hasError('required')">URL is required</mat-error>
+            <mat-error *ngIf="webUrl.hasError('pattern')">Must be a valid URL starting with http:// or https://</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      </form>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <div class="card-actions">
+      <button matButton="filled" (click)="save()">Save</button>
+    </div>
+  </mat-card>
+</div>

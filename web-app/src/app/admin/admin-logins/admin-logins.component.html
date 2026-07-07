@@ -1,0 +1,90 @@
+<mat-card appearance="outlined" class="logins-shell">
+  <mat-card-header>
+    <mat-card-title>Logins</mat-card-title>
+  </mat-card-header>
+
+  <div class="filter-section">
+    <mat-form-field *ngIf="!userId">
+      <mat-label>User</mat-label>
+      <input matInput [(ngModel)]="userText" (ngModelChange)="onUserSearchChange($event)"
+        [matAutocomplete]="userAuto" />
+      <button matSuffix matIconButton *ngIf="userText" (click)="onClearUserInput()" type="button">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-autocomplete #userAuto (optionSelected)="selectUser($event.option.value)">
+        <mat-option *ngFor="let u of loginSearchResults" [value]="u">
+          {{ u.displayName }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="!deviceId">
+      <mat-label>Device</mat-label>
+      <input matInput [(ngModel)]="deviceText" (ngModelChange)="onDeviceSearchChange($event)"
+        [matAutocomplete]="deviceAuto" />
+      <button matSuffix matIconButton *ngIf="deviceText" (click)="onClearDeviceInput()" type="button">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-autocomplete #deviceAuto (optionSelected)="selectDevice($event.option.value)">
+        <mat-option *ngFor="let d of loginDeviceSearchResults" [value]="d">
+          {{ d?.uid || d?.userAgent || 'Unknown Device' }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Start Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="login.startDate" (ngModelChange)="dateFilterChanged()" />
+      <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>End Date</mat-label>
+      <input matInput [matDatepicker]="endPicker" [(ngModel)]="login.endDate" (ngModelChange)="dateFilterChanged()" />
+      <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+  </div>
+
+  <div class="list-content">
+    <mat-list>
+      <mat-list-item *ngFor="let login of loginPage?.logins || []">
+        <span matListItemLine class="login-date">{{ fromNow(login.timestamp) }}</span>
+        <span matListItemTitle>{{ login.user?.displayName || 'Unknown User' }}</span>
+        <span matListItemLine>{{ platformLabel(login.device) }} · {{ login.device?.userAgent || 'Unknown' }}</span>
+        <span matListItemMeta class="login-actions">
+          <button
+            matIconButton
+            *ngIf="login.user?.id"
+            (click)="goToUser($event, login)"
+            aria-label="View User"
+          >
+            <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
+          </button>
+          <button
+            matIconButton
+            *ngIf="login.device?.id"
+            (click)="goToDevice($event, login)"
+            aria-label="View Device"
+          >
+            <mat-icon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
+          </button>
+        </span>
+      </mat-list-item>
+
+      <div class="empty-state" *ngIf="!loginPage || loginPage.logins.length === 0">
+        <mat-icon>login</mat-icon>
+        <span class="empty-desc">No login history found</span>
+      </div>
+    </mat-list>
+  </div>
+
+  <mat-paginator
+    [length]="(loginPageIndex + (hasNext ? 2 : 1)) * +loginResultsLimit"
+    [pageSize]="+loginResultsLimit"
+    [pageIndex]="loginPageIndex"
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    (page)="onLoginPage($event)">
+  </mat-paginator>
+</mat-card>

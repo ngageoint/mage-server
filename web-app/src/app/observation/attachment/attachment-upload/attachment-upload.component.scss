@@ -51,6 +51,12 @@
   top: 8px;
   right: 8px;
   z-index: 2;
+
+  button.warn {
+    --mat-fab-small-container-color: var(--mat-sys-error);
+    --mat-fab-small-foreground-color: var(--mat-sys-on-error);
+    --mat-fab-small-state-layer-color: var(--mat-sys-on-error);
+  }
 }
 
 .preview-container {

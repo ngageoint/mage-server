@@ -1,5 +1,11 @@
-.application {
+:host {
   display: flex;
   flex-direction: column;
-  height: 100%;
+}
+
+.application {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }

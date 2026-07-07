@@ -4,18 +4,19 @@ import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { trigger, style, transition, animate } from '@angular/animations';
 
 @Component({
-  selector: 'layer-content',
-  templateUrl: './layer-content.component.html',
-  styleUrls: ['./layer-content.component.scss'],
-  animations: [
-    trigger('visibility', [
-      transition(':enter', [
-        style({ height: 0, opacity: 0 }),
-        animate('225ms', style({ height: '*', opacity: 1 }))
-      ]),
-      transition(':leave', [animate('225ms', style({ height: 0, opacity: 0 }))])
-    ])
-  ]
+    selector: 'layer-content',
+    templateUrl: './layer-content.component.html',
+    styleUrls: ['./layer-content.component.scss'],
+    animations: [
+        trigger('visibility', [
+            transition(':enter', [
+                style({ height: 0, opacity: 0 }),
+                animate('225ms', style({ height: '*', opacity: 1 }))
+            ]),
+            transition(':leave', [animate('225ms', style({ height: 0, opacity: 0 }))])
+        ])
+    ],
+    standalone: false
 })
 export class LayerContentComponent {
   @Input() layer: any;

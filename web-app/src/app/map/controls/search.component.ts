@@ -25,9 +25,10 @@ export interface SearchEvent {
 }
 
 @Component({
-  selector: 'map-control-search',
-  templateUrl: './search.component.html',
-  styleUrls: ['./search.component.scss']
+    selector: 'map-control-search',
+    templateUrl: './search.component.html',
+    styleUrls: ['./search.component.scss'],
+    standalone: false
 })
 export class SearchComponent implements AfterViewInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;

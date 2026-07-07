@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { PasswordStrength, passwordStrengthScores } from '../../entities/entities.password';
+import { PasswordStrength, passwordStrengthScores } from '../../entities/password/password';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import { InitializeService } from './initialize.service';
@@ -14,20 +14,21 @@ export interface InitializedEvent {
 }
 
 @Component({
-  selector: 'initialize',
-  templateUrl: './initialize.component.html',
-  styleUrls: ['./initialize.component.scss'],
-  animations: [
-    trigger('slide', [
-      transition(':enter', [
-        style({ 'height': '0px', opacity: 0 }),
-        animate('250ms ease-out', style({ 'height': '*', opacity: 1 })),
-      ]),
-      transition(":leave", [
-        animate('250ms ease-out', style({ 'height': '0px', opacity: 0 })),
-      ])
-    ]),
-  ]
+    selector: 'initialize',
+    templateUrl: './initialize.component.html',
+    styleUrls: ['./initialize.component.scss'],
+    animations: [
+        trigger('slide', [
+            transition(':enter', [
+                style({ 'height': '0px', opacity: 0 }),
+                animate('250ms ease-out', style({ 'height': '*', opacity: 1 })),
+            ]),
+            transition(":leave", [
+                animate('250ms ease-out', style({ 'height': '0px', opacity: 0 })),
+            ])
+        ]),
+    ],
+    standalone: false
 })
 export class InitializeComponent implements OnInit {
   @Output() initialized = new EventEmitter<InitializedEvent>()

@@ -1,4 +1,4 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { Component } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
@@ -8,10 +8,12 @@ import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
 import { StaticIcon, StaticIconReference } from '../static-icon.model'
 import { StaticIconService } from '../static-icon.service'
 import { StaticIconFormFieldComponent } from './static-icon-form-field.component'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @Component({
-  selector: 'test-host',
-  template: `<form [formGroup]="form"><mage-static-icon-form-field formControlName="icon"></mage-static-icon-form-field></form>`
+    selector: 'test-host',
+    template: `<form [formGroup]="form"><mage-static-icon-form-field formControlName="icon"></mage-static-icon-form-field></form>`,
+    standalone: false
 })
 class TestHostComponent {
 
@@ -35,23 +37,22 @@ describe('StaticIconFormFieldComponent', () => {
     iconService.fetchIconByReference.and.returnValue(of(null))
 
     TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        ReactiveFormsModule,
-        MageCommonModule,
-        HttpClientTestingModule
-      ],
-      declarations: [
+    declarations: [
         StaticIconFormFieldComponent,
         TestHostComponent
-      ],
-      providers: [
+    ],
+    imports: [FormsModule,
+        ReactiveFormsModule,
+        MageCommonModule],
+    providers: [
         {
-          provide: StaticIconService,
-          useValue: iconService
-        }
-      ]
-    })
+            provide: StaticIconService,
+            useValue: iconService
+        },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+})
     .compileComponents()
   }))
 

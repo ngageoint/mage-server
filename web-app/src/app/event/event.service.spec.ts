@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { EventService } from './event.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Event Service Tests', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [EventService],
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [EventService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
   });
 
   afterEach(() => {

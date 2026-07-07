@@ -1,7 +1,7 @@
 import { Layer, geoJSON, Map, LatLng, LeafletMouseEvent } from 'leaflet';
 import { GeoPackageLayer } from './GeoPackageLayer';
 import { Feature, Geometry } from 'geojson';
-import { LocalStorageService } from 'src/app/http/local-storage.service';
+import { SessionService } from 'src/app/http/session.service';
 
 export default class GeoPackageLayers {
   visibleGeoPackageLayers: GeoPackageLayer[];
@@ -10,12 +10,12 @@ export default class GeoPackageLayers {
     public map: Map,
     public layerService: any,
     public filterService: any,
-    public localStorageService: LocalStorageService
+    public sessionService: SessionService
   ) {
     this.map = map;
     this.layerService = layerService;
     this.filterService = filterService;
-    this.localStorageService = localStorageService;
+    this.sessionService = sessionService;
     this.visibleGeoPackageLayers = [];
 
     this.map.on('click', this.mapClickEventHandler.bind(this));
@@ -26,7 +26,7 @@ export default class GeoPackageLayers {
   createGeoPackageLayer(table, id, pane): Layer {
     const filteredEvent = this.filterService.getEvent();
     const layer = new GeoPackageLayer('api/events/' + filteredEvent.id + '/layers/' + id + '/' + table.name + '/{z}/{x}/{y}.png', {
-      token: this.localStorageService.getToken(),
+      token: this.sessionService.getToken(),
       minZoom: table.minZoom,
       maxZoom: table.maxZoom,
       layerId: id,

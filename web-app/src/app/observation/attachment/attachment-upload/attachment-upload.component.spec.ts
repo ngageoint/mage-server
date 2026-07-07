@@ -1,8 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AttachUploadComponent } from './attachment-upload.component';
 import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('AttachUploadComponent', () => {
   let component: AttachUploadComponent;
@@ -10,9 +11,10 @@ describe('AttachUploadComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MatProgressSpinnerModule],
-      declarations: [AttachUploadComponent]
-    })
+    declarations: [AttachUploadComponent],
+    imports: [MatProgressSpinnerModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     .compileComponents();
   }));
 

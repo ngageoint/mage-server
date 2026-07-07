@@ -10,13 +10,14 @@ import { MatListModule as MatListModule } from '@angular/material/list';
 import { MapClipComponent } from 'src/app/map/clip/clip.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-form
+    selector: `host-component`,
+    template: `<observation-edit-form
     [formGroup]="formGroup"
     [definition]="definition"
     [geometryStyle]="geometryStyle"
     [options]="options"
-  ></observation-edit-form>`
+  ></observation-edit-form>`,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({});

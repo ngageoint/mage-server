@@ -2,9 +2,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AuthenticationStrategy } from '../../../api/api.entity';
 import { UserService } from '../../../user/user.service';
 @Component({
-  selector: 'idp-authentication',
-  templateUrl: './idp-authentication.component.html',
-  styleUrls: ['./idp-authentication.component.scss']
+    selector: 'idp-authentication',
+    templateUrl: './idp-authentication.component.html',
+    styleUrls: ['./idp-authentication.component.scss'],
+    standalone: false
 })
 export class IdpAuthenticationComponent {
   @Input() strategy: AuthenticationStrategy

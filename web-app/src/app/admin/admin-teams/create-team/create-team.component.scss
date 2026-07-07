@@ -1,0 +1,28 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 400px;
+}
+
+.server-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--mat-sys-corner-small);
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font-size: var(--mat-sys-body-medium-size);
+  margin-bottom: 16px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}

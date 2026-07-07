@@ -1,0 +1,91 @@
+<form [formGroup]="signup" (ngSubmit)="saveUser()">
+  <h2 mat-dialog-title>Create New User</h2>
+
+  <mat-dialog-content>
+    <div *ngIf="serverError()" class="server-error">
+      <mat-icon>error_outline</mat-icon>
+      {{ serverError() }}
+    </div>
+
+    <div class="form-grid">
+
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" />
+        <mat-error *ngIf="signup.controls.username.hasError('required')">Username is required</mat-error>
+        <mat-error *ngIf="signup.controls.username.hasError('exists')">Username already exists</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Display Name</mat-label>
+        <input matInput formControlName="displayName" />
+        <mat-error *ngIf="signup.controls.displayName.hasError('required')">Display name is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+        <mat-error *ngIf="signup.controls.email.hasError('email')">Enter a valid email</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Phone</mat-label>
+        <input matInput type="tel" formControlName="phone" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="selectedRole">
+          <mat-option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="signup.controls.selectedRole.hasError('required')">Role is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" />
+        <button matIconButton matSuffix type="button" (click)="showPassword = !showPassword">
+          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <button matIconButton matSuffix type="button" [matTooltip]="passwordTooltipText" matTooltipClass="tooltip-wide">
+          <mat-icon>info</mat-icon>
+        </button>
+        <mat-error *ngFor="let msg of getPasswordErrorMessages(signup.controls.password.errors)">{{ msg }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput [type]="showConfirmPassword ? 'text' : 'password'" formControlName="passwordconfirm" />
+        <button matIconButton matSuffix type="button" (click)="showConfirmPassword = !showConfirmPassword">
+          <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
+        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('match')">Passwords must match</mat-error>
+      </mat-form-field>
+
+      <div class="password-strength full-width">
+        <div class="strength-header">
+          <span class="strength-label">Password Strength</span>
+          <span class="strength-text">{{ passwordStrength?.text }}</span>
+        </div>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="passwordStrength?.value"
+          [ngStyle]="{ '--password-bar-color': passwordStrength?.color }"
+          class="strength-bar">
+        </mat-progress-bar>
+      </div>
+
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button matButton type="button" (click)="cancelModal()" [disabled]="saving()">Cancel</button>
+    <button
+      matButton="filled"
+      type="submit"
+      [disabled]="signup.invalid || saving() || passwordErrorMessages.length > 0">
+      Create User
+    </button>
+  </mat-dialog-actions>
+</form>

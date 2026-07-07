@@ -8,9 +8,10 @@ import { By } from '@angular/platform-browser'
 import { ObservationEditRadioComponent } from './observation-edit-radio.component'
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-radio [definition]="definition" [formGroup]="formGroup"></observation-edit-radio>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: `host-component`,
+    template: `<observation-edit-radio [definition]="definition" [formGroup]="formGroup"></observation-edit-radio>`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({

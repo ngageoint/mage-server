@@ -1,0 +1,20 @@
+<div class="error-alert" *ngIf="error">
+  <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+  <span>{{ error }}</span>
+</div>
+
+<mage-user-details-view
+  *ngIf="user && !isEditingUser"
+  [user]="user"
+  [breadcrumbs]="breadcrumbs"
+  (editRequested)="toggleEditUser()"
+  (userChanged)="onUserChanged($event)"
+></mage-user-details-view>
+
+<mage-user-details-edit
+  *ngIf="user && isEditingUser"
+  [user]="user"
+  [breadcrumbs]="breadcrumbs"
+  (saved)="onUserSaved($event)"
+  (cancelled)="onEditCancelled()"
+></mage-user-details-edit>

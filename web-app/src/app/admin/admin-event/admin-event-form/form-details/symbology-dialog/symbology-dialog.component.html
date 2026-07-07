@@ -1,0 +1,72 @@
+<h2 mat-dialog-title>
+  Map Symbology<span *ngIf="data.primary"> — {{ data.primary }}<span *ngIf="data.variant"> / {{ data.variant }}</span></span>
+</h2>
+
+<mat-dialog-content>
+  <div class="symbology-content">
+
+    <div class="icon-section">
+      <div class="section-label">Point Icon</div>
+      <div class="icon-upload">
+        <div class="icon-preview" *ngIf="iconPreview">
+          <img [src]="iconPreview" alt="Icon preview" />
+        </div>
+        <div class="icon-preview placeholder" *ngIf="!iconPreview">
+          <mat-icon fontSet="material-symbols-outlined">place</mat-icon>
+        </div>
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput style="display: none" />
+        <button matButton="outlined" type="button" (click)="fileInput.click()">
+          <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
+          Upload Icon
+        </button>
+      </div>
+    </div>
+
+    <div class="style-configuration">
+      <div class="style-group">
+        <div class="section-label">Line Style</div>
+        <div class="color-field">
+          <input type="color" class="color-swatch-input" [(ngModel)]="style.stroke" aria-label="Line color">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+            <mat-label>Line Color</mat-label>
+            <input matInput type="text" [(ngModel)]="style.stroke" />
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+          <mat-label>Line Opacity</mat-label>
+          <input matInput type="number" step="0.1" min="0" max="1" [(ngModel)]="style.strokeOpacity" required />
+          <mat-hint>0.0 – 1.0</mat-hint>
+          <mat-error>Must be between 0.0 and 1.0</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+          <mat-label>Line Width</mat-label>
+          <input matInput type="number" step="1" min="0" [(ngModel)]="style.strokeWidth" required />
+          <mat-error>Must be greater than 0</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="style-group">
+        <div class="section-label">Fill Style</div>
+        <div class="color-field">
+          <input type="color" class="color-swatch-input" [(ngModel)]="style.fill" aria-label="Fill color">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+            <mat-label>Fill Color</mat-label>
+            <input matInput type="text" [(ngModel)]="style.fill" />
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+          <mat-label>Fill Opacity</mat-label>
+          <input matInput type="number" step="0.1" min="0" max="1" [(ngModel)]="style.fillOpacity" required />
+          <mat-hint>0.0 – 1.0</mat-hint>
+          <mat-error>Must be between 0.0 and 1.0</mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton type="button" (click)="onCancel()">Cancel</button>
+  <button matButton="filled" type="button" (click)="onSave()">Save</button>
+</mat-dialog-actions>

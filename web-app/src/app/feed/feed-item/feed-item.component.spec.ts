@@ -38,7 +38,8 @@ class MockMapService {
 }
 
 @Component({
-  template: '<feed-item [feed]="feed" [item]="item"></feed-item>'
+    template: '<feed-item [feed]="feed" [item]="item"></feed-item>',
+    standalone: false
 })
 class TestHostComponent {
   feed: Feed = {

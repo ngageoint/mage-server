@@ -9,11 +9,8 @@
       <mat-select [(ngModel)]="currentUserPage">
         <mat-option
           *ngFor="let userPage of userPages; index as i; trackBy: trackByPageId"
-          [value]="i"
-        >
-          {{
-            userPage[0]?.location?.properties?.timestamp | moment : 'fromNow'
-          }}
+          [value]="i">
+          {{ userPage[0]?.location?.properties?.timestamp | moment : 'fromNow' }}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -21,14 +18,12 @@
 
   <div class="page-container">
     <ng-container
-      *ngFor="let user of userPages[currentUserPage]; trackBy: trackByUserId"
-    >
+      *ngFor="let user of userPages[currentUserPage]; trackBy: trackByUserId">
       <div class="feed-user">
         <user-list-item
           [user]="user"
           followable="true"
-          [follow]="followUserId"
-        ></user-list-item>
+          [follow]="followUserId"></user-list-item>
       </div>
     </ng-container>
   </div>

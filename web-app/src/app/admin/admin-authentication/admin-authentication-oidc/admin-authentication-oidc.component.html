@@ -1,0 +1,86 @@
+<div class="oidc-settings">
+  <h3 class="section-title">Credentials</h3>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Client Identifier</mat-label>
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientID"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Obtained from the OpenID server when you register your app. Not considered secret.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Client Secret</mat-label>
+    <input matInput type="password" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientSecret"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Obtained from the OpenID server when you register your app. Keep this secret.</mat-hint>
+  </mat-form-field>
+
+  <h3 class="section-title">URLs</h3>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Authorization URL</mat-label>
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.authorizationURL"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Endpoint to obtain authorization grant from the resource owner.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Token URL</mat-label>
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.tokenURL"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Endpoint to exchange an authorization grant for an access token.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>User Profile URL</mat-label>
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.profileURL"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Endpoint accessed after obtaining an access token to retrieve user information (API server).</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Issuer URL</mat-label>
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.issuer"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Endpoint of your identity provider — the entity that issues a set of claims.</mat-hint>
+  </mat-form-field>
+
+  <h3 class="section-title">Access</h3>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Scope</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.scope"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Scope values indicating which parts of the user's account to access (comma-separated). Must include 'openid'.</mat-hint>
+  </mat-form-field>
+
+  <mat-accordion class="advanced-section">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Advanced</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <h4 class="subsection-title">User Profile</h4>
+      <mat-form-field appearance="fill">
+        <mat-label>Profile ID Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id"
+          (ngModelChange)="setDirty(true)">
+        <mat-hint>The id property returned in the user profile. Default: 'sub'.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Display Name Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName"
+          (ngModelChange)="setDirty(true)">
+        <mat-hint>The display name property returned in the user profile. Default: 'name'.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email Name Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.email"
+          (ngModelChange)="setDirty(true)">
+        <mat-hint>The email property returned in the user profile. Default: 'email'.</mat-hint>
+      </mat-form-field>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

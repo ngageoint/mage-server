@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>{{statusTitle}}</h2>
 <mat-dialog-content>
-    <div [innerHTML]="statusMessage" class="mat-body"></div>
+  <div [innerHTML]="statusMessage"></div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button color="primary" (click)="close()" cdkFocusInitial>OK</button>
+  <button matButton (click)="close()" cdkFocusInitial>OK</button>
 </mat-dialog-actions>

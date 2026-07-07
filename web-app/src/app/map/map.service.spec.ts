@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { MapService } from './map.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Map Service Tests', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [MapService],
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [MapService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
   });
 
   afterEach(() => {

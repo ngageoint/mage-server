@@ -1,20 +1,12 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpContextToken,
-  HttpStatusCode,
-  HttpErrorResponse
-} from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpContextToken, HttpStatusCode, HttpErrorResponse } from '@angular/common/http';
 import { catchError, Observable, ReplaySubject, switchMap, throwError, take } from 'rxjs';
-import { LocalStorageService } from './local-storage.service';
 import { AuthenticationDialogComponent } from '../ingress/authentication/authentication-dialog.component';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { UserService } from '../user/user.service';
+import { SessionService } from './session.service';
 
 export const BYPASS_TOKEN = new HttpContextToken(() => false);
+export const SUPPRESS_AUTH_DIALOG = new HttpContextToken(() => false);
 
 @Injectable({
   providedIn: 'root'
@@ -25,8 +17,7 @@ export class TokenInterceptorService implements HttpInterceptor {
 
   constructor(
     public dialog: MatDialog,
-    private userService: UserService,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService,
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -34,14 +25,18 @@ export class TokenInterceptorService implements HttpInterceptor {
       return next.handle(req);
     }
 
-    if (!req.url.startsWith('/api/') && !req.url.startsWith('/plugins/')) {
+    if (req.url !== '/api' && !req.url.startsWith('/api/') && !req.url.startsWith('/plugins/')) {
       return next.handle(req);
     }
 
     return next.handle(this.tokenRequest(req)).pipe(
       catchError((error: unknown) => {
         if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized) {
-          this.userService.setUser(null);
+          this.sessionService.clearSession()
+
+          if (req.context.get(SUPPRESS_AUTH_DIALOG) === true) {
+            return throwError(() => error);
+          }
 
           if (!this.isRefreshingToken) {
             this.isRefreshingToken = true;
@@ -71,7 +66,7 @@ export class TokenInterceptorService implements HttpInterceptor {
   }
 
   private tokenRequest(req: HttpRequest<any>): HttpRequest<any> {
-    const token = this.localStorageService.getToken();
+    const token = this.sessionService.getToken();
     if (!token) return req;
 
     return req.clone({

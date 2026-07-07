@@ -1,0 +1,66 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+  <div class="nav-actions" *ngIf="device && hasDeletePermission">
+    <button matButton="outlined" class="delete-device-button" (click)="confirmDeleteDevice()">
+      <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+    </button>
+  </div>
+</admin-breadcrumb>
+
+<div class="device-page" *ngIf="device">
+  <div class="error-alert" *ngIf="error">
+    <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <mat-card appearance="outlined" class="details-card">
+    <div class="device-header">
+      <div class="media-content">
+        <div class="device-icon-placeholder">
+          <mat-icon fontSet="material-symbols-outlined">{{ iconClass(device) }}</mat-icon>
+        </div>
+      </div>
+
+      <div class="device-info">
+        <div class="device-id-row">
+          <span class="device-id">{{ currentUserDisplayName || 'No Associated User' }}</span>
+          <span class="status-badge" [ngClass]="device.registered ? 'status-badge-active' : 'status-badge-inactive'">
+            {{ device.registered ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="device-description">{{ device.userAgent || '—' }}</div>
+      </div>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Device ID</span>
+      <span class="detail-value">{{ device.uid }}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="device.description">
+      <span class="detail-label">Description</span>
+      <span class="detail-value">{{ device.description }}</span>
+    </div>
+
+    <mat-divider class="section-divider" *ngIf="hasUpdatePermission"></mat-divider>
+
+    <div class="device-actions" *ngIf="hasUpdatePermission">
+      <button matButton="outlined" type="button" (click)="editDeviceDetails()">
+        <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+        Edit Device
+      </button>
+
+      <div class="status-content">
+        <button matButton="outlined" (click)="toggleRegistration()" [disabled]="saving">
+          <mat-icon fontSet="material-symbols-outlined">{{ registerToggleIcon }}</mat-icon>
+          {{ registerToggleLabel }}
+        </button>
+        <mat-icon
+          class="info-icon"
+          fontSet="material-symbols-outlined"
+          [matTooltip]="registerToggleHelpText">info</mat-icon>
+      </div>
+    </div>
+  </mat-card>
+
+  <mage-logins [deviceId]="device?.id"></mage-logins>
+</div>

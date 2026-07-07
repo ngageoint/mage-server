@@ -4,7 +4,7 @@
 }
 
 .icon__active {
-  color: var(--mdc-theme-primary, #1E88E5);
+  color: var(--mat-sys-primary);
 }
 
 .img {
@@ -17,7 +17,7 @@
 }
 
 .img__active {
-  background-color: var(--mdc-theme-primary, #1E88E5);
+  background-color: var(--mat-sys-primary);
 }
 
 .tab {
@@ -38,7 +38,7 @@
 }
 
 .tab--title__active {
-  color: var(--mdc-theme-primary, #1E88E5);
+  color: var(--mat-sys-primary);
 }
 
 .tab>mat-icon {

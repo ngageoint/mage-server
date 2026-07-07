@@ -4,9 +4,10 @@ import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 
 @Component({
-  selector: 'app-observation-edit-form-picker',
-  templateUrl: './observation-edit-form-picker.component.html',
-  styleUrls: ['./observation-edit-form-picker.component.scss']
+    selector: 'app-observation-edit-form-picker',
+    templateUrl: './observation-edit-form-picker.component.html',
+    styleUrls: ['./observation-edit-form-picker.component.scss'],
+    standalone: false
 })
 export class ObservationEditFormPickerComponent {
   forms: any[]
@@ -24,7 +25,4 @@ export class ObservationEditFormPickerComponent {
     this.bottomSheetRef.dismiss(form)
   }
 
-  cancel(): void {
-    this.bottomSheetRef.dismiss()
-  }
 }

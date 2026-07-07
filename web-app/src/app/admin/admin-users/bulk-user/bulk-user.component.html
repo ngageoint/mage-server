@@ -1,0 +1,170 @@
+<h2 mat-dialog-title>Import Users</h2>
+
+<mat-dialog-content>
+  <!-- Configure phase -->
+  <ng-container *ngIf="phase() === 'configure'">
+    <div class="form-grid">
+      <mat-form-field appearance="fill">
+        <mat-label>Team</mat-label>
+        <mat-select [(ngModel)]="selectedTeam" name="selectedTeam">
+          <mat-option *ngFor="let team of teams" [value]="team">{{ team.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Role</mat-label>
+        <mat-select [(ngModel)]="selectedRole" name="selectedRole">
+          <mat-option *ngFor="let role of roles" [value]="role">{{ role.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="field-status-card">
+      <div class="field-status-section">
+        <span class="field-status-label">Required</span>
+        <div class="field-status-list">
+          <span *ngFor="let opt of requiredFieldOptions" class="field-chip">
+            <mat-icon *ngIf="filename() && isFieldMapped(opt.value)" class="chip-icon mapped-icon">check_circle</mat-icon>
+            <mat-icon *ngIf="filename() && !isFieldMapped(opt.value)" class="chip-icon error-icon">error_outline</mat-icon>
+            {{ opt.title }}
+          </span>
+        </div>
+      </div>
+      <div class="field-status-section">
+        <span class="field-status-label">Optional</span>
+        <div class="field-status-list">
+          <span *ngFor="let opt of optionalFieldOptions" class="field-chip">
+            <mat-icon *ngIf="filename() && isFieldMapped(opt.value)" class="chip-icon mapped-icon">check_circle</mat-icon>
+            <mat-icon *ngIf="filename() && !isFieldMapped(opt.value)" class="chip-icon warning-icon">warning_amber</mat-icon>
+            {{ opt.title }}
+          </span>
+        </div>
+      </div>
+      <div class="field-status-upload">
+        <input
+          type="file"
+          #csvFileInput
+          (change)="onFileChange($event)"
+          accept=".csv"
+          [disabled]="!selectedRole"
+          style="display:none" />
+        <button
+          matButton="outlined"
+          type="button"
+          (click)="csvFileInput.click()"
+          [disabled]="!selectedRole"
+          [matTooltip]="!selectedRole ? 'Please select a role before uploading a file' : ''">
+          <mat-icon>upload_file</mat-icon>
+          Choose CSV
+        </button>
+        <span *ngIf="filename()" class="filename">{{ filename() }}</span>
+        <span *ngIf="!filename()" class="field-status-hint">
+          Column names don't need to match — you can map each column after uploading.
+        </span>
+      </div>
+    </div>
+
+    <div class="table-wrapper" *ngIf="users().length">
+      <table mat-table [dataSource]="users()">
+        <ng-container matColumnDef="team">
+          <th mat-header-cell *matHeaderCellDef>Team</th>
+          <td mat-cell *matCellDef="let user">{{ user.team?.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let user">{{ user.role?.name }}</td>
+        </ng-container>
+
+        <ng-container *ngFor="let column of columns(); let i = index" [matColumnDef]="column">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="column-map-trigger" [matMenuTriggerFor]="colMenu">
+              <mat-icon class="chip-icon mapped-icon" *ngIf="getMappedField(i)">check_circle</mat-icon>
+              <mat-icon class="chip-icon warn-icon" *ngIf="!getMappedField(i)">warning_amber</mat-icon>
+              <span>{{ getMappedField(i) ? getFieldTitle(getMappedField(i)) : column }}</span>
+              <mat-icon class="chevron-icon">arrow_drop_down</mat-icon>
+            </div>
+            <mat-menu #colMenu="matMenu">
+              <button mat-menu-item (click)="onColumnSelect(null, i)">— unmapped —</button>
+              <button mat-menu-item *ngFor="let opt of columnOptions" (click)="onColumnSelect(opt.value, i)">
+                {{ opt.title }}
+              </button>
+            </mat-menu>
+          </th>
+          <td mat-cell *matCellDef="let user">{{ user[column] }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+      </table>
+    </div>
+  </ng-container>
+
+  <!-- Importing phase -->
+  <div class="import-progress" *ngIf="phase() === 'importing'">
+    <div class="import-warning">
+      <mat-icon>warning</mat-icon>
+      <span>Do not refresh or leave the page while the import is in progress.</span>
+    </div>
+    <div class="import-progress-section">
+      <div class="import-progress-counts">
+        <span>{{ bulkProgress().completed }} / {{ bulkProgress().total }} complete</span>
+        <span *ngIf="bulkProgress().failed > 0" class="import-failed-count">
+          <mat-icon>error</mat-icon>{{ bulkProgress().failed }} failed
+        </span>
+      </div>
+      <mat-progress-bar
+        mode="determinate"
+        [value]="successPercent()"
+        class="import-progress-bar">
+      </mat-progress-bar>
+    </div>
+    <p *ngIf="isFinalizing()" class="import-finalizing">Finalizing import… please wait.</p>
+  </div>
+
+  <!-- Done phase -->
+  <div class="import-done" *ngIf="phase() === 'done'">
+    <div class="import-success-summary" *ngIf="successCount() > 0">
+      <mat-icon class="done-icon">check_circle</mat-icon>
+      <span>{{ successCount() }} user(s) imported successfully.</span>
+    </div>
+    <ng-container *ngIf="bulkErrors().length > 0">
+      <div class="import-error-summary">
+        <mat-icon>error</mat-icon>
+        <span>{{ bulkErrors().length }} user(s) failed to import.</span>
+      </div>
+      <div class="error-scroll">
+        <table class="error-table">
+          <thead><tr><th>Username</th><th>Email</th><th>Error</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let e of bulkErrors()">
+              <td>{{ e.user.username }}</td>
+              <td>{{ e.user.email }}</td>
+              <td>{{ e.error }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ng-container *ngIf="phase() === 'configure'">
+    <button matButton (click)="onClose()">Cancel</button>
+    <button
+      matButton="filled"
+      (click)="onSubmit()"
+      [disabled]="!filename() || unmappedFields().length > 0"
+      [matTooltip]="!filename() ? 'Please select a file for import' : unmappedFields().length ? 'Map all required fields before importing' : ''">
+      <mat-icon>upload</mat-icon>
+      Import
+    </button>
+  </ng-container>
+  <ng-container *ngIf="phase() === 'done'">
+    <button matButton="outlined" *ngIf="bulkErrors().length" (click)="downloadErrorCSV()">
+      <mat-icon>download</mat-icon>Download Errors
+    </button>
+    <button matButton="filled" (click)="onClose()">Done</button>
+  </ng-container>
+</mat-dialog-actions>

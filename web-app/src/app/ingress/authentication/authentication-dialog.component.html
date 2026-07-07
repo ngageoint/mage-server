@@ -1,11 +1,5 @@
-<div class="dialog-modal">
-  <div class="dialog-header">
-    <h3 class="dialog-title">Please signin to continue to Mage</h3>
-  </div>
+<h3 mat-dialog-title>{{dialogTitle}}</h3>
 
-  <div class="dialog-content">
-    <div class="ingress">
-      <ingress [landing]="false" [api]="api" (complete)="onIngress()"></ingress>
-    </div>
-  </div>
-</div>
+<mat-dialog-content>
+  <ingress [landing]="false" [api]="api" (complete)="onIngress()" (cancel)="onCancel()" (title)="dialogTitle = $event"></ingress>
+</mat-dialog-content>

@@ -6,9 +6,10 @@ import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MapService } from '../../../map/map.service';
 
 @Component({
-  selector: 'feed-item-summary',
-  templateUrl: './feed-item-summary.component.html',
-  styleUrls: ['./feed-item-summary.component.scss']
+    selector: 'feed-item-summary',
+    templateUrl: './feed-item-summary.component.html',
+    styleUrls: ['./feed-item-summary.component.scss'],
+    standalone: false
 })
 export class FeedItemSummaryComponent implements OnChanges {
   @Input() feed: Feed;

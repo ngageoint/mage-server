@@ -1,0 +1,30 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="settings-page">
+  <mat-card appearance="elevated" class="settings-card">
+    <mat-card-content>
+      <div class="helper-text">
+        <mat-icon>info</mat-icon>
+        Show a disclaimer after login that users must accept before entering MAGE. Applies to all clients — Android, iOS, and Web.
+      </div>
+
+      <div class="show-section">
+        <mat-slide-toggle [(ngModel)]="disclaimer.show" (change)="setDirty(true)">Show Disclaimer</mat-slide-toggle>
+      </div>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Disclaimer Title</mat-label>
+        <input matInput [(ngModel)]="disclaimer.title" [disabled]="!disclaimer.show" (input)="setDirty(true)" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+        <mat-label>Disclaimer Text</mat-label>
+        <textarea matInput [(ngModel)]="disclaimer.text" [disabled]="!disclaimer.show" rows="6" (input)="setDirty(true)"></textarea>
+      </mat-form-field>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <div class="card-actions">
+      <button matButton="filled" (click)="save()">Save</button>
+    </div>
+  </mat-card>
+</div>
