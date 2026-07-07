@@ -15,7 +15,7 @@ COPY web-app/package*.json ./
 RUN npm install
 COPY web-app/ ./
 RUN npm run build
-RUN npm pack ./dist
+RUN npm pack ./dist/app
 
 # FROM node:22 AS build-arcwebplugin
 # # Build arcgis service plugin
