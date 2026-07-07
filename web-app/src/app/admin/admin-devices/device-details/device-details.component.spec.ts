@@ -248,10 +248,7 @@ describe('DeviceDetailsComponent', () => {
       tick();
 
       expect(deviceService.deleteDevice).toHaveBeenCalledWith('dev-1');
-      expect(router.navigate).toHaveBeenCalledWith(
-        ['/../../devices'],
-        jasmine.any(Object)
-      );
+      expect(router.navigate).toHaveBeenCalledWith(['/admin/devices']);
     }));
 
     it('does not delete when not confirmed', fakeAsync(() => {
