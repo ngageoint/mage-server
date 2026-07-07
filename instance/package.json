@@ -30,6 +30,6 @@
     "@ngageoint/mage.sftp.service": "../plugins/sftp/service",
     "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
     "@ngageoint/mage.service": "../service",
-    "@ngageoint/mage.web-app": "../web-app/dist"
+    "@ngageoint/mage.web-app": "../web-app/dist/app"
   }
 }

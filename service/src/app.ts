@@ -950,13 +950,12 @@ async function initWebLayer(
         });
       }
     };
-  };  
+  };
 
   try {
-    const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
-    const webAppPath = path.dirname(webappPackagePath);
-    webController.use(express.static(path.join(webAppPath, 'app')));
-    webController.use('/admin', express.static(path.join(webAppPath, 'admin')));
+    const webAppPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
+    const webAppPath = path.dirname(webAppPackagePath);
+    webController.use(express.static(webAppPath));
   } catch (err) {
     console.warn('failed to load mage web app package', err);
   }

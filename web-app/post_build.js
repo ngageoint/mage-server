@@ -16,11 +16,11 @@ delete packageDesc.private;
 delete packageDesc.scripts;
 delete packageDesc.dependencies;
 delete packageDesc.devDependencies;
-delete packageDesc.main;
-packageDesc.files = ['app', 'admin'];
+packageDesc.main = 'main.js';
+packageDesc.files = ['*'];
 packageDesc.peerDependencies = {
   '@ngageoint/mage.service': `^${packageDesc.version}`
 };
-const outputPathDir = path.resolve(process.cwd(), "dist");
+const outputPathDir = path.resolve(process.cwd(), 'dist', 'app');
 const packageDescPath = path.join(outputPathDir, 'package.json');
 fs.writeFileSync(packageDescPath, JSON.stringify(packageDesc, null, 2));
