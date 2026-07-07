@@ -24,8 +24,8 @@
   ],
   "homepage": "https://www.nga.mil",
   "engines": {
-    "node": ">= 18.20",
-    "npm": ">= 8"
+    "node": ">= 22.0.0",
+    "npm": ">= 10.0.0"
   },
   "dependencies": {
     "@ngageoint/geopackage": "^4.2.8",
@@ -95,7 +95,6 @@
     "@types/lodash": "4.17.16",
     "@types/mocha": "7.0.2",
     "@types/multer": "2.1.0",
-    "@types/node": "18.19.80",
     "@types/node-fetch": "2.6.12",
     "@types/passport": "1.0.17",
     "@types/sinon": "9.0.11",
