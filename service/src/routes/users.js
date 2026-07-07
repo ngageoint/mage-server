@@ -188,6 +188,14 @@ module.exports = function(app, security) {
       new api.User()
         .create(user, { avatar, icon })
         .then(newUser => {
+          log.info('user account created', {
+            user: newUser.username,
+            displayName: newUser.displayName,
+            role: newUser.roleId && newUser.roleId.name ? newUser.roleId.name : String(newUser.roleId),
+            createdBy: req.user.username,
+            createdTime: new Date().toISOString()
+          });
+
           newUser = userTransformer.transform(newUser, { path: req.getRoot() });
           res.json(newUser);
         })
