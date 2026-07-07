@@ -78,7 +78,6 @@
         "@types/lodash": "4.17.16",
         "@types/mocha": "7.0.2",
         "@types/multer": "2.1.0",
-        "@types/node-fetch": "2.6.12",
         "@types/passport": "1.0.17",
         "@types/sinon": "9.0.11",
         "@types/sinon-chai": "3.2.12",
@@ -1847,17 +1846,6 @@
       "license": "MIT",
       "dependencies": {
         "undici-types": "~5.26.4"
-      }
-    },
-    "node_modules/@types/node-fetch": {
-      "version": "2.6.12",
-      "resolved": "https://registry.npmjs.org/@types/node-fetch/-/node-fetch-2.6.12.tgz",
-      "integrity": "sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "@types/node": "*",
-        "form-data": "^4.0.0"
       }
     },
     "node_modules/@types/passport": {
