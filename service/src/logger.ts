@@ -28,7 +28,7 @@ void _structuralCheck
 
 // a dedicated logger for mongoose
 export const mongooseLogger = winston.createLogger({
-  level: 'debug',
+  level: process.env.MONGOOSE_LOG_LEVEL || 'info',
   format: combine(
     colorize({ all: true }),
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
