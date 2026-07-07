@@ -107,7 +107,7 @@ import {
   ObservationRoutes,
   ObservationWebAppRequestFactory
 } from './adapters/observations/adapters.observations.controllers.web';
-import { AnonymousUser, UserWithRole } from './permissions/permissions.role-based.base';
+import { UserWithRole } from './permissions/permissions.role-based.base';
 import {
   AttachmentStore,
   EventScopedObservationRepository,
@@ -830,37 +830,22 @@ async function initWebLayer(
     };
   };
 
-  const bearerAuthentication = webAuth.passport.authenticate('bearer');
-
-  // Attempts bearer authentication but never rejects the request - if a valid
-  // token is present req.user is populated, otherwise req.user is set to an
-  // AnonymousUser so routes can return a reduced/redacted response.
-  const optionalBearerAuthentication: (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => void = (req, res, next) => {
-    webAuth.passport.authenticate('bearer', { session: false }, (err: any, user: UserWithRole) => {
-      if (err) return next(err)
-      req.user = user as UserWithRole || {} as AnonymousUser
-      next()
-    })(req, res, next)
-  }
+  const bearerAuth = webAuth.passport.authenticate('bearer');
 
   const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory);
-  webController.use('/api/settings', [bearerAuthentication, settingsRoutes]);
+  webController.use('/api/settings', [bearerAuth, settingsRoutes]);
 
   const usersRoutes = UsersRoutes(app.users, appRequestFactory);
-  webController.use('/api/next-users', [bearerAuthentication, usersRoutes]);
+  webController.use('/api/next-users', [bearerAuth, usersRoutes]);
 
   const feedsRoutes = FeedsRoutes(app.feeds, appRequestFactory);
-  webController.use('/api/feeds', [bearerAuthentication, feedsRoutes]);
+  webController.use('/api/feeds', [bearerAuth, feedsRoutes]);
 
   const iconsRoutes = StaticIconRoutes(app.icons, appRequestFactory);
-  webController.use('/api/icons', [bearerAuthentication, iconsRoutes]);
+  webController.use('/api/icons', [bearerAuth, iconsRoutes]);
 
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory);
-  webController.use('/api', [optionalBearerAuthentication, systemInfoRoutes]);
+  webController.use('/api', [systemInfoRoutes]);
 
   const observationRequestFactory: ObservationWebAppRequestFactory = <
     Params extends object | undefined
@@ -885,7 +870,7 @@ async function initWebLayer(
   );
 
   webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
-    bearerAuthentication,
+    bearerAuth,
     ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),
     observationsRoutes
   ]);
@@ -894,7 +879,7 @@ async function initWebLayer(
     { ...app.events, eventRepo: repos.events.eventRepo },
     appRequestFactory
   );
-  webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
+  webController.use('/api/events', [bearerAuth, eventFeedsRoutes]);
 
   const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
     req,
@@ -920,7 +905,7 @@ async function initWebLayer(
       next();
       return;
     }
-    bearerAuthentication(req, res, next);
+    bearerAuth(req, res, next);
   };
 
   webController.use('/ui_plugins', [
@@ -973,7 +958,7 @@ async function initWebLayer(
 
       if (initPluginRoutes.webRoutes.protected) {
         const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext);
-        webController.use(`/plugins/${pluginId}`, [bearerAuthentication, routes]);
+        webController.use(`/plugins/${pluginId}`, [bearerAuth, routes]);
       }
     }
   };
@@ -985,7 +970,7 @@ function baseAppRequestContext(
   return {
     requestToken: Symbol(),
     requestingPrincipal(): UserWithRole {
-      return req.user as UserWithRole || {} as AnonymousUser
+      return req.user as UserWithRole;
     },
     locale(): Readonly<{
       languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
