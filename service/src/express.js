@@ -4,7 +4,6 @@ const express = require('express'),
   fs = require('fs'),
   passport = require('passport'),
   path = require('path'),
-  config = require('./config.js'),
   provision = require('./provision'),
   log = require('./logger'),
   api = require('./api'),
@@ -35,7 +34,6 @@ app.use(function(req, res, next) {
 const secret = crypto.randomBytes(64).toString('hex');
 app.use(session({ secret }));
 
-app.set('config', config);
 app.enable('trust proxy');
 
 app.set('views', path.join(__dirname, 'views'));

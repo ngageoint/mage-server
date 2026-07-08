@@ -1,0 +1,19 @@
+<h2 mat-dialog-title>Delete "{{ data.user?.displayName || data.user?.username }}"?</h2>
+
+<mat-dialog-content>
+    <p>This user will be permanently deleted, including all associated location data. This action cannot be undone.</p>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button matButton type="button" (click)="cancel()" cdkFocusInitial data-testid="cancel-button">Cancel</button>
+    <button
+        matButton
+        type="button"
+        class="delete-button"
+        (click)="confirmDelete()"
+        data-testid="delete-button"
+    >
+        <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+        Delete User
+    </button>
+</mat-dialog-actions>

@@ -1,0 +1,201 @@
+<div class="saml-settings">
+  <h3 class="section-title">Identity Provider (IdP)</h3>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Entry Point</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.entryPoint"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Location of the IdP. This can be the location of the single sign-on identity provider.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Issuer</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.issuer"
+      (ngModelChange)="setDirty(true)">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Redirect Host</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.redirectHost"
+      (ngModelChange)="setDirty(true)">
+  </mat-form-field>
+
+  <h3 class="section-title">Security</h3>
+  <h4 class="subsection-title">Certificates</h4>
+
+  <mat-form-field appearance="fill">
+    <mat-label>IdP Public Signing Certificate</mat-label>
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.cert"
+      (ngModelChange)="setDirty(true)" rows="4"></textarea>
+    <mat-hint>The public signing certificate used to validate the signatures of incoming SAML responses.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Private Key</mat-label>
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.privateKey"
+      (ngModelChange)="setDirty(true)" rows="4"></textarea>
+    <mat-hint>Private key used to sign requests. Supports well-formatted PEM or single-line.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Decryption Private Key</mat-label>
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.decryptionPvk"
+      (ngModelChange)="setDirty(true)" rows="4"></textarea>
+    <mat-hint>Private key used to decrypt encrypted assertions. Supports well-formatted PEM or single-line.</mat-hint>
+  </mat-form-field>
+
+  <h4 class="subsection-title">Signing</h4>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Signature Algorithm</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.signatureAlgorithm" (selectionChange)="setDirty(true)">
+      <mat-option *ngFor="let algorithm of signatureAlgorithms" [value]="algorithm.value">
+        {{ algorithm.viewValue }}
+      </mat-option>
+    </mat-select>
+    <mat-hint>Signature algorithm for signing requests. Default: SHA-1.</mat-hint>
+  </mat-form-field>
+
+  <h3 class="section-title">Validation</h3>
+  <h4 class="subsection-title">Issuer</h4>
+
+  <mat-form-field appearance="fill">
+    <mat-label>IdP Issuer</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.idpIssuer"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>The IdP issuer will be validated for incoming logout requests and responses.</mat-hint>
+  </mat-form-field>
+
+  <h4 class="subsection-title">InResponseTo</h4>
+
+  <div class="toggle-field">
+    <mat-slide-toggle [disabled]="!editable" [(ngModel)]="strategy.settings.validateInResponseTo"
+      (change)="setDirty(true)">Validate InResponseTo</mat-slide-toggle>
+    <p class="toggle-hint">InResponseTo will be validated from incoming SAML responses.</p>
+  </div>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Request ID Expiration Period</mat-label>
+    <input matInput type="number" [readonly]="!editable" [(ngModel)]="strategy.settings.requestIdExpirationPeriodMs"
+      (ngModelChange)="setDirty(true)">
+    <span matSuffix class="suffix-label">ms</span>
+    <mat-hint>Expiration time for a Request ID in a SAML request. Default: 8 hours (28800000 ms).</mat-hint>
+  </mat-form-field>
+
+  <h3 class="section-title">Logout</h3>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Logout URL</mat-label>
+    <input matInput type="url" [readonly]="!editable" [(ngModel)]="strategy.settings.logoutUrl"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Base address for logout requests. Default: Entry Point.</mat-hint>
+  </mat-form-field>
+
+  <h3 class="section-title">Additional SAML Parameters</h3>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Audience</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.audience"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Expected response audience.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Identifier Format</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.identifierFormat"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Name identifier format to request from the identity provider.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Clock Skew</mat-label>
+    <input matInput type="number" [readonly]="!editable" [(ngModel)]="strategy.settings.acceptedClockSkewMs"
+      (ngModelChange)="setDirty(true)">
+    <span matSuffix class="suffix-label">ms</span>
+    <mat-hint>Acceptable clock skew between client and server for NotBefore/NotOnOrAfter checks. -1 disables. Default: 0.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Attribute Consuming Service Index</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.attributeConsumingServiceIndex"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Instructs the IDP which attribute set to attach to the response.</mat-hint>
+  </mat-form-field>
+
+  <div class="toggle-field">
+    <mat-slide-toggle [disabled]="!editable" [(ngModel)]="strategy.settings.disableRequestedAuthnContext"
+      (change)="setDirty(true)">Disable Requested Authentication Context</mat-slide-toggle>
+    <p class="toggle-hint">Do not request a specific authentication context. Known to help when authenticating against Active Directory (AD FS) servers.</p>
+  </div>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Authentication Context</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.authnContext"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Name identifier format to request auth context.</mat-hint>
+  </mat-form-field>
+
+  <div class="toggle-field">
+    <mat-slide-toggle [disabled]="!editable" [(ngModel)]="strategy.settings.forceAuthn"
+      (change)="setDirty(true)">Force Authentication</mat-slide-toggle>
+    <p class="toggle-hint">The IdP will force re-authentication of the user, even if they possess a valid session.</p>
+  </div>
+
+  <div class="toggle-field">
+    <mat-slide-toggle [disabled]="!editable" [(ngModel)]="strategy.settings.skipRequestCompression"
+      (change)="setDirty(true)">Skip Request Compression</mat-slide-toggle>
+    <p class="toggle-hint">The request from the service provider will not be compressed.</p>
+  </div>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Authentication Request Binding</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.authnRequestBinding"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>If set to HTTP-POST, will request authentication via HTTP POST binding. Default: HTTP Redirect.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>RAC Comparison</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.RACComparison" (selectionChange)="setDirty(true)">
+      <mat-option *ngFor="let rac of racs" [value]="rac.value">{{ rac.viewValue }}</mat-option>
+    </mat-select>
+    <mat-hint>Requested Authentication Context comparison type. Default: Exact.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Provider Name</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.providerName"
+      (ngModelChange)="setDirty(true)">
+    <mat-hint>Human-readable name of the requester for use by the presenter's user agent or the identity provider.</mat-hint>
+  </mat-form-field>
+
+  <mat-accordion class="advanced-section">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Advanced</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <h4 class="subsection-title">User Profile</h4>
+      <mat-form-field appearance="fill">
+        <mat-label>Profile ID Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id"
+          (ngModelChange)="setDirty(true)">
+        <mat-hint>The id property returned in the user profile. Default: 'uid'.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Display Name Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName"
+          (ngModelChange)="setDirty(true)">
+        <mat-hint>The display name property returned in the user profile. Default: 'email'.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email Name Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.email"
+          (ngModelChange)="setDirty(true)">
+        <mat-hint>The email property returned in the user profile. Default: 'email'.</mat-hint>
+      </mat-form-field>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

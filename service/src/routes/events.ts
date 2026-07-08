@@ -337,6 +337,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       function updateEvent(form: FormDocument, callback: any): void {
         form.name = req.param('name');
         form.color = req.param('color');
+        form.description = req.param('description');
         new api.Event(req.event).addForm(form, function (err: any, form: FormDocument) {
           callback(err, form);
         });

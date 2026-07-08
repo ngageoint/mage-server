@@ -10,9 +10,10 @@ export interface ReorderEvent {
 }
 
 @Component({
-  selector: 'map-layers-panel',
-  templateUrl: './layers.component.html',
-  styleUrls: ['./layers.component.scss']
+    selector: 'map-layers-panel',
+    templateUrl: './layers.component.html',
+    styleUrls: ['./layers.component.scss'],
+    standalone: false
 })
 export class LayersComponent {
   @Input() mageLayers: [any];

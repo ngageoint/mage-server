@@ -6,7 +6,8 @@ import * as DMS from './geometry-dms'
 import { LocalStorageService } from '../http/local-storage.service'
 
 @Pipe({
-  name: 'geometry'
+    name: 'geometry',
+    standalone: false
 })
 export class GeometryPipe implements PipeTransform {
 

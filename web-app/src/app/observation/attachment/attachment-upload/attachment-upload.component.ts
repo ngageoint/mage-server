@@ -21,9 +21,10 @@ enum PreviewType {
 }
 
 @Component({
-  selector: 'attachment-upload',
-  templateUrl: './attachment-upload.component.html',
-  styleUrls: ['./attachment-upload.component.scss']
+    selector: 'attachment-upload',
+    templateUrl: './attachment-upload.component.html',
+    styleUrls: ['./attachment-upload.component.scss'],
+    standalone: false
 })
 export class AttachUploadComponent implements OnChanges {
   @Input() attachment: FileUpload

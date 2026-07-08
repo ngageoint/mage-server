@@ -15,19 +15,20 @@ import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
 import { PasswordPolicy, SignupEvent } from '../@types/signup';
-import { PasswordStrength } from '../../../entities/entities.password';
+import { PasswordStrength } from '../../../entities/password/password';
 
 import {
   createPasswordPolicyValidator,
   confirmPasswordValidator,
   evaluatePasswordStrength,
   getPasswordTooltip
-} from 'admin/src/app/shared/utils/password.utils';
+} from 'mage-web-app/password/password';
 
 @Component({
-  selector: 'signup',
-  templateUrl: './signup.component.html',
-  styleUrls: ['./signup.component.scss']
+    selector: 'signup',
+    templateUrl: './signup.component.html',
+    styleUrls: ['./signup.component.scss'],
+    standalone: false
 })
 export class SignupComponent {
   @Output() complete = new EventEmitter<SignupEvent>();

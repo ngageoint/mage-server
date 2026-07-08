@@ -7,21 +7,22 @@ import { StaticIconService } from '../static-icon.service'
 
 
 @Component({
-  selector: 'mage-static-icon-form-field',
-  templateUrl: './static-icon-form-field.component.html',
-  styleUrls: ['./static-icon-form-field.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: StaticIconFormFieldComponent
-    },
-    {
-      provide: NG_VALIDATORS,
-      multi: true,
-      useExisting: StaticIconFormFieldComponent
-    },
-  ]
+    selector: 'mage-static-icon-form-field',
+    templateUrl: './static-icon-form-field.component.html',
+    styleUrls: ['./static-icon-form-field.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: StaticIconFormFieldComponent
+        },
+        {
+            provide: NG_VALIDATORS,
+            multi: true,
+            useExisting: StaticIconFormFieldComponent
+        },
+    ],
+    standalone: false
 })
 export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, ControlValueAccessor, Validator {
 

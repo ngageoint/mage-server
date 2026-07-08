@@ -8,9 +8,10 @@ interface TextareaField {
 }
 
 @Component({
-  selector: 'observation-edit-textarea',
-  templateUrl: './observation-edit-textarea.component.html',
-  styleUrls: ['./observation-edit-textarea.component.scss']
+    selector: 'observation-edit-textarea',
+    templateUrl: './observation-edit-textarea.component.html',
+    styleUrls: ['./observation-edit-textarea.component.scss'],
+    standalone: false
 })
 export class ObservationEditTextareaComponent {
   @Input() formGroup: UntypedFormGroup

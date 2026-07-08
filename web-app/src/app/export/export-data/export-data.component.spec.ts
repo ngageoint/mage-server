@@ -1,4 +1,4 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
@@ -37,6 +37,7 @@ import { FilterService } from 'src/app/filter/filter.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 class MockExportService {
   getExports(): Observable<any> {
@@ -141,8 +142,8 @@ describe('ExportDataComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [
-        NoopAnimationsModule,
+    declarations: [ExportDialogComponent, ExportDataComponent],
+    imports: [NoopAnimationsModule,
         MatPaginatorModule,
         MatSortModule,
         MatSnackBarModule,
@@ -151,7 +152,6 @@ describe('ExportDataComponent', () => {
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
-        HttpClientTestingModule,
         NoopAnimationsModule,
         MatCheckboxModule,
         MatListModule,
@@ -167,15 +167,15 @@ describe('ExportDataComponent', () => {
         MatOptionModule,
         BrowserModule,
         CommonModule,
-        MatDialogModule 
-      ],
-      providers: [
+        MatDialogModule],
+    providers: [
         { provide: ExportService, useClass: MockExportService },
         { provide: FilterService, useValue: mockFilterService },
-        { provide: MatSnackBar, useClass: MockSnackbar }
-      ],
-      declarations: [ExportDialogComponent, ExportDataComponent]
-    }).compileComponents();
+        { provide: MatSnackBar, useClass: MockSnackbar },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+}).compileComponents();
   }));
 
   beforeEach(() => {

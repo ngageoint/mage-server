@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-  selector: 'observation-edit-geometry-map',
-  templateUrl: './observation-edit-geometry-map.component.html',
-  styleUrls: ['./observation-edit-geometry-map.component.scss']
+    selector: 'observation-edit-geometry-map',
+    templateUrl: './observation-edit-geometry-map.component.html',
+    styleUrls: ['./observation-edit-geometry-map.component.scss'],
+    standalone: false
 })
 export class ObservationEditGeometryMapComponent {
   @Input() feature: any

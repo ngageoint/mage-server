@@ -4,9 +4,10 @@ import moment from 'moment';
 import { MapService } from '../../map/map.service';
 
 @Component({
-  selector: 'user-popup',
-  templateUrl: './user-popup.component.html',
-  styleUrls: ['./user-popup.component.scss']
+    selector: 'user-popup',
+    templateUrl: './user-popup.component.html',
+    styleUrls: ['./user-popup.component.scss'],
+    standalone: false
 })
 export class UserPopupComponent implements OnInit, OnChanges {
   @Input() userWithLocation: any;

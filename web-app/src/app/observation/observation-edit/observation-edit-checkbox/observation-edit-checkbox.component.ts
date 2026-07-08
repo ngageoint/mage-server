@@ -10,9 +10,10 @@ interface CheckboxField {
 }
 
 @Component({
-  selector: 'observation-edit-checkbox',
-  templateUrl: './observation-edit-checkbox.component.html',
-  styleUrls: ['./observation-edit-checkbox.component.scss']
+    selector: 'observation-edit-checkbox',
+    templateUrl: './observation-edit-checkbox.component.html',
+    styleUrls: ['./observation-edit-checkbox.component.scss'],
+    standalone: false
 })
 export class ObservationEditCheckboxComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup

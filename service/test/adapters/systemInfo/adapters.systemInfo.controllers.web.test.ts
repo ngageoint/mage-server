@@ -63,10 +63,11 @@ describe('SystemInfo web controller', () => {
 		initial: true,
         disclaimer: {},
         contactInfo: {},
+        serverVersion: '1.2.3',
         version: {
           major: 1,
           minor: 2,
-          micro: 3
+          patch: 3
         }
       };
       appLayer

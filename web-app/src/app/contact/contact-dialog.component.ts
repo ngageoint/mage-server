@@ -8,6 +8,7 @@ import { ApiService } from "../api/api.service";
     selector: 'contact-dialog',
     templateUrl: 'contact-dialog.component.html',
     styleUrls: ['./contact-dialog.component.scss'],
+    standalone: false
 })
 export class ContactDialogComponent  {
     statusTitle: string;

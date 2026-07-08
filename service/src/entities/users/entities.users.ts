@@ -16,6 +16,7 @@ export interface User {
   phones: Phone[]
   roleId: string
   authenticationId: string
+  avatar?: Avatar
   // TODO: the rest of the properties
 }
 

@@ -1,0 +1,17 @@
+
+.dialog-content {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.75);
+  padding-top: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialog-actions button {
+  color: var(--mat-sys-primary);
+}

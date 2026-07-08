@@ -64,7 +64,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
     return {
       webRoutes: {
-        protected: (requestContext: GetAppRequestContext) => {
+        protected: (requestContext: GetAppRequestContext): express.Router => {
           const routes = express.Router()
             .use(express.json())
             .use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {

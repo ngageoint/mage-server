@@ -15,25 +15,26 @@ export interface ExportTimeOption {
 }
 
 @Component({
-	selector: 'export-data',
-	templateUrl: 'export-data.component.html',
-	styleUrls: ['./export-data.component.scss'],
-	animations: [
-		trigger('expand', [
-			transition(':enter', [
-				style({ height: 0, opacity: 0 }),
-				animate('250ms', style({ height: '*', opacity: 1 })),
-			]),
-			transition(':leave', [
-				animate('250ms', style({ height: 0, opacity: 0, overflow: 'hidden' }))
-			])
-		]),
-		trigger('rotate', [
-			state('true', style({ transform: 'rotate(180deg)' })),
-			state('false', style({ transform: 'rotate(0)' })),
-			transition('* <=> *', animate('300ms ease-out'))
-		])
-	]
+    selector: 'export-data',
+    templateUrl: 'export-data.component.html',
+    styleUrls: ['./export-data.component.scss'],
+    animations: [
+        trigger('expand', [
+            transition(':enter', [
+                style({ height: 0, opacity: 0 }),
+                animate('250ms', style({ height: '*', opacity: 1 })),
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ height: 0, opacity: 0, overflow: 'hidden' }))
+            ])
+        ]),
+        trigger('rotate', [
+            state('true', style({ transform: 'rotate(180deg)' })),
+            state('false', style({ transform: 'rotate(0)' })),
+            transition('* <=> *', animate('300ms ease-out'))
+        ])
+    ],
+    standalone: false
 })
 export class ExportDataComponent implements OnInit {
 

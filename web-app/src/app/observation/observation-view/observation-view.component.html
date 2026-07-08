@@ -1,11 +1,11 @@
 <div>
   <mat-toolbar>
     <mat-toolbar-row class="navigation">
-      <button mat-icon-button color="primary" (click)="onClose()">
+      <button matIconButton (click)="onClose()">
         <mat-icon>arrow_back</mat-icon>
       </button>
 
-      <button *ngIf="canEdit" mat-button color="primary" (click)="editObservation()">EDIT</button>
+      <button *ngIf="canEdit" matButton (click)="editObservation()">EDIT</button>
     </mat-toolbar-row>
   </mat-toolbar>
 
@@ -17,127 +17,101 @@
           <div>
             <span class="item-important--overline">Flagged By {{observation?.important?.user?.displayName}}</span>
           </div>
-          <div class="item-important--description">
-            {{observation?.important?.description}}
-          </div>
+          <div class="item-important--description">{{observation?.important?.description}}</div>
         </div>
       </div>
 
-      <div class="item-header">
-        <div class="item-header-content">
-          <div class="item-overline">
-            <div>
+      <mat-card-content>
+        <div class="item-header">
+          <div class="item-header-content">
+            <div class="item-overline">
               <span>{{observation?.user?.displayName}}</span>
               <span>·</span>
               <span>{{observation?.properties?.timestamp | moment}}</span>
             </div>
-          </div>
 
-          <div *ngIf="primaryFeedField.value">
-            <div class="item-header-text">
+            <div *ngIf="primaryFeedField.value" class="item-header-text">
               <span [ngSwitch]="primaryFeedField.field?.type">
-                <span *ngSwitchCase="'geometry'">
-                  {{primaryFeedField?.value | geometry:5}}
-                </span>
-                <span *ngSwitchDefault>
-                  {{primaryFeedField?.value}}
-                </span>
+                <span *ngSwitchCase="'geometry'">{{primaryFeedField?.value | geometry:5}}</span>
+                <span *ngSwitchDefault>{{primaryFeedField?.value}}</span>
               </span>
             </div>
-          </div>
 
-          <div *ngIf="secondaryFeedField.value">
-            <div class="item-subhead">
+            <div *ngIf="secondaryFeedField.value" class="item-subhead">
               <span [ngSwitch]="secondaryFeedField.field?.type">
-                <span *ngSwitchCase="'geometry'">
-                  {{secondaryFeedField?.value | geometry:5}}
-                </span>
-                <span *ngSwitchDefault>
-                  {{secondaryFeedField?.value}}
-                </span>
+                <span *ngSwitchCase="'geometry'">{{secondaryFeedField?.value | geometry:5}}</span>
+                <span *ngSwitchDefault>{{secondaryFeedField?.value}}</span>
               </span>
             </div>
           </div>
+
+          <div *ngIf="!observation?.noGeometry" class="item-thumbnail">
+            <img [src]="observation.style.iconUrl" />
+          </div>
         </div>
 
-        <div *ngIf="!observation?.noGeometry" class="item-thumbnail">
-          <img [src]="observation.style.iconUrl" />
+        <div *ngIf="!observation?.noGeometry" class="item-map">
+          <div class="item-map__view">
+            <map-clip [feature]="observation"></map-clip>
+          </div>
         </div>
-      </div>
 
-      <div *ngIf="!observation?.noGeometry" class="item-map">
-        <div class="item-map__view">
-          <map-clip [feature]="observation"></map-clip>
+        <div *ngIf="!observation?.noGeometry" class="item-location">
+          <button matButton (click)="onObservationLocationClick()" class="actions__location-button">
+            <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
+          </button>
+          <span class="item-location-accuracy" *ngIf="observation?.properties?.accuracy">
+            <span class="item-location-provider">{{observation.properties?.provider}} </span>
+            <span>&#177;</span>
+            <span> {{observation.properties?.accuracy | number:'0.0-5'}}m</span>
+          </span>
         </div>
-      </div>
 
-      <div *ngIf="!observation?.noGeometry" class="item-location">
-        <button mat-button color="primary" (click)="onObservationLocationClick()" class="actions__location-button">
-          <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
-        </button>
-        <span class="item-location-accuracy" *ngIf="observation?.properties?.accuracy">
-          <span class="item-location-provider">{{observation.properties?.provider}} </span>
-          <span>&#177;</span>
-          <span> {{observation.properties?.accuracy | number:'0.0-5'}}m</span>
-        </span>
-      </div>
-
-      <div *ngIf="observation?.noGeometry" class="item-no-geometry">
-        <span>This observation does not have geometry data</span>
-      </div>
-
-      <mat-divider></mat-divider>
-
-      <div *ngIf="importantEditor.open" class="important" @important>
-        <mat-form-field appearance="outline" class="important__text">
-          <mat-label>Important Description</mat-label>
-          <textarea matInput [(ngModel)]="importantEditor.description"></textarea>
-        </mat-form-field>
-        <div class="important__actions">
-          <button mat-button color="primary" (click)="clearImportant()">{{observation?.important ? 'Remove' :
-            'Cancel'}}</button>
-          <button mat-flat-button color="primary" (click)="markAsImportant()"
-            class="important__actions--confirm">{{observation?.important ? 'Update' : 'Flag As Important'}}</button>
+        <div *ngIf="observation?.noGeometry" class="item-no-geometry">
+          <span>This observation does not have geometry data</span>
         </div>
-      </div>
+
+        <mat-divider></mat-divider>
+
+        <div *ngIf="importantEditor.open" class="important" @important>
+          <mat-form-field appearance="outline" class="important__text">
+            <mat-label>Important Description</mat-label>
+            <textarea matInput [(ngModel)]="importantEditor.description"></textarea>
+          </mat-form-field>
+          <div class="important__actions">
+            <button matButton (click)="clearImportant()">{{observation?.important ? 'Remove' : 'Cancel'}}</button>
+            <button matButton="filled" (click)="markAsImportant()" class="important__actions--confirm">{{observation?.important ? 'Update' : 'Flag As Important'}}</button>
+          </div>
+        </div>
+      </mat-card-content>
 
       <mat-card-actions>
-        <div class="actions">
-          <div *ngIf="observation?.favoriteUserIds?.length" class="favorites" (click)="showFavoriteUsers()" matRipple
-            matRippleCentered="true" matRippleUnbounded="true">
-            <span class="favorites__count">{{observation?.favoriteUserIds?.length}}</span>
-            <span class="favorites__label">{{observation?.favoriteUserIds?.length === 1 ? "FAVORITE":
-              "FAVORITES"}}</span>
-          </div>
-          <div class="actions-icons">
-            <div *ngIf="canEditImportant">
-              <button mat-icon-button (click)="onFlagAsImportant()" class="actions--inactive"
-                [ngClass]="{'actions__important--active': observation.important}" matTooltip="Flag As Important"
-                matTooltipPosition="above">
-                <mat-icon>{{observation.important ? 'flag' : 'outlined_flag'}}</mat-icon>
-              </button>
-            </div>
+        <button matButton *ngIf="observation?.favoriteUserIds?.length" (click)="showFavoriteUsers()" class="favorites">
+          <mat-icon>favorite</mat-icon>
+          {{observation?.favoriteUserIds?.length}} {{observation?.favoriteUserIds?.length === 1 ? 'favorite' : 'favorites'}}
+        </button>
+        <div class="actions-icons">
+          <button *ngIf="canEditImportant" matIconButton (click)="onFlagAsImportant()"
+            [ngClass]="{'actions__important--active': observation.important}"
+            matTooltip="Flag As Important" matTooltipPosition="above">
+            <mat-icon>{{observation.important ? 'flag' : 'outlined_flag'}}</mat-icon>
+          </button>
 
-            <div class="actions__favorite">
-              <button mat-icon-button (click)="toggleFavorite()" class="actions--inactive"
-                [ngClass]="{'actions__favorite--active': isUserFavorite}" matTooltip="Add To Favorites"
-                matTooltipPosition="above">
-                <mat-icon>{{isUserFavorite ? 'favorite' : 'favorite_border'}}</mat-icon>
-              </button>
-              <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
-            </div>
+          <button matIconButton (click)="toggleFavorite()"
+            [ngClass]="{'actions__favorite--active': isUserFavorite}"
+            matTooltip="Add To Favorites" matTooltipPosition="above">
+            <mat-icon>{{isUserFavorite ? 'favorite' : 'favorite_border'}}</mat-icon>
+          </button>
 
-            <button *ngIf="canEdit" mat-icon-button (click)="onOptions()" class="actions--inactive">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-          </div>
+          <button *ngIf="canEdit" matIconButton (click)="onOptions()">
+            <mat-icon>more_vert</mat-icon>
+          </button>
         </div>
       </mat-card-actions>
     </mat-card>
 
     <div class="form-card" *ngFor="let form of observationForm?.forms; let i = index">
-      <observation-view-form [form]="form" [attachments]="observation.attachments"
-        [expand]="i === 0"></observation-view-form>
+      <observation-view-form [form]="form" [attachments]="observation.attachments" [expand]="i === 0"></observation-view-form>
     </div>
   </div>
 </div>

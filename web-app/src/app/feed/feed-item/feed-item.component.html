@@ -1,22 +1,22 @@
 <mat-toolbar>
-  <button mat-icon-button color="primary" (click)="close()">
+  <button matIconButton (click)="close()">
     <mat-icon>arrow_back</mat-icon>
   </button>
 
-  <span class="title">{{ feed?.title }}</span>
+  <span *ngIf="primary" class="title">{{ primary }}</span>
 </mat-toolbar>
 
 <div class="feed-item">
   <mat-card class="feed-item__card">
     <div class="card-header">
       <div class="card-header-text">
-        <div class="card-overline">{{ date }}</div>
-        <div class="card-title">{{ primary }}</div>
-        <div class="card-subtitle">{{ secondary }}</div>
+        <div *ngIf="date" class="card-overline">{{ date }}</div>
+        <div *ngIf="primary" class="card-title">{{ primary }}</div>
+        <div *ngIf="secondary" class="card-subtitle">{{ secondary }}</div>
       </div>
 
       <div class="card-avatar">
-        <mat-icon *ngIf="!feed.icon" color="primary">place</mat-icon>
+        <mat-icon *ngIf="!feed.icon">place</mat-icon>
         <mage-static-icon-img *ngIf="feed.icon" [iconRef]="feed.icon"></mage-static-icon-img>
       </div>
     </div>
@@ -26,7 +26,7 @@
     </div>
 
     <div class="card-actions">
-      <button mat-button color="primary" (click)="onLocationClick()">
+      <button matButton (click)="onLocationClick()">
         <mat-icon>gps_fixed</mat-icon>
         <span>{{ item?.geometry | geometry:5 }}</span>
       </button>
@@ -34,16 +34,15 @@
   </mat-card>
 
   <mat-card class="feed-item__card">
-    <div class="section-title">Properties</div>
+    <mat-card-header>
+      <mat-card-title>Properties</mat-card-title>
+    </mat-card-header>
 
-    <mat-card-content>
-      <div *ngFor="let property of properties" class="property-row">
-        <div class="item">
-          <div class="property-key">{{ property.key }}</div>
-          <div class="property-value">{{ property.value }}</div>
-        </div>
-        <mat-divider></mat-divider>
-      </div>
-    </mat-card-content>
+    <mat-list>
+      <mat-list-item *ngFor="let property of properties">
+        <span matListItemTitle class="prop-key">{{ property.key }}</span>
+        <span matListItemLine class="prop-value">{{ property.value }}</span>
+      </mat-list-item>
+    </mat-list>
   </mat-card>
 </div>

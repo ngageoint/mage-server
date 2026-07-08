@@ -1,13 +1,14 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatRipple } from '@angular/material/core';
 import { MapService } from '../../map/map.service';
-import { LocalStorageService } from '../../http/local-storage.service';
+import { SessionService } from '../../http/session.service';
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 
 @Component({
-  selector: 'user-list-item',
-  templateUrl: './user-list-item.component.html',
-  styleUrls: ['./user-list-item.component.scss']
+    selector: 'user-list-item',
+    templateUrl: './user-list-item.component.html',
+    styleUrls: ['./user-list-item.component.scss'],
+    standalone: false
 })
 export class UserListItemComponent {
   @Input() user: any
@@ -24,9 +25,9 @@ export class UserListItemComponent {
   constructor(
     private feedPanelService: FeedPanelService,
     private mapService: MapService,
-    localStorageService: LocalStorageService) {
+    sessionService: SessionService) {
     this.followingUser = mapService.followedFeature
-    this.token = localStorageService.getToken()
+    this.token = sessionService.getToken()
   }
 
   followUser(event): void {

@@ -1,0 +1,65 @@
+<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+<div class="settings-page">
+  <mat-card appearance="elevated" class="settings-card">
+    <mat-card-content>
+      <div class="helper-text">
+        <mat-icon>info</mat-icon>
+        Provide contact details so users can reach an administrator to enable accounts, register devices, or report issues.
+      </div>
+
+      <mat-form-field appearance="fill">
+        <mat-label>MAGE Administrator E-Mail</mat-label>
+        <mat-icon matPrefix>mail</mat-icon>
+        <input matInput type="email" [(ngModel)]="contactinfo.email" (input)="setDirty(true)" />
+        <button *ngIf="contactinfo.email" matSuffix matIconButton type="button"
+          (click)="contactinfo.email = ''; setDirty(true)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>MAGE Administrator Phone</mat-label>
+        <mat-icon matPrefix>phone</mat-icon>
+        <input matInput type="tel" [(ngModel)]="contactinfo.phone" (input)="setDirty(true)" />
+        <button *ngIf="contactinfo.phone" matSuffix matIconButton type="button"
+          (click)="contactinfo.phone = ''; setDirty(true)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <div class="contact-toggle">
+        <mat-checkbox [(ngModel)]="contactinfo.showDevContact" (change)="setDirty(true)">
+          Show NGA Contact Information on About page
+        </mat-checkbox>
+
+        <button matIconButton [matMenuTriggerFor]="contactInfoMenu" aria-label="Contact info help" type="button">
+          <mat-icon>info</mat-icon>
+        </button>
+
+        <mat-menu #contactInfoMenu="matMenu" class="contact-menu" [overlapTrigger]="false">
+          <div class="menu-panel-content">
+            <div class="menu-title">
+              NGA Support Contact
+            </div>
+            <mat-divider class="menu-divider"></mat-divider>
+            <div class="contact-details">
+              <div class="contact-item">
+                <mat-icon fontSet="material-symbols-outlined">phone</mat-icon>
+                <span>+1-571-557-1121</span>
+              </div>
+              <div class="contact-item">
+                <mat-icon fontSet="material-symbols-outlined">mail</mat-icon>
+                <a href="mailto:magesuitesupport@nga.mil">magesuitesupport&#64;nga.mil</a>
+              </div>
+            </div>
+          </div>
+        </mat-menu>
+      </div>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <div class="card-actions">
+      <button matButton="filled" (click)="save()">Save</button>
+    </div>
+  </mat-card>
+</div>

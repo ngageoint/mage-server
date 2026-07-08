@@ -8,9 +8,10 @@ interface PollingOption {
 }
 
 @Component({
-  selector: 'polling-interval',
-  templateUrl: './polling-interval.component.html',
-  styleUrls: ['./polling-interval.component.scss']
+    selector: 'polling-interval',
+    templateUrl: './polling-interval.component.html',
+    styleUrls: ['./polling-interval.component.scss'],
+    standalone: false
 })
 export class PollingIntervalComponent implements OnInit, OnDestroy  {
   pollingOptions: PollingOption[] = [{

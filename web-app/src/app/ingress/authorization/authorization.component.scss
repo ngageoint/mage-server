@@ -1,5 +1,3 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
 
 :host {
   width: 100%;
@@ -20,16 +18,24 @@
   height: 30vh;
 }
 
+.authorization.compact {
+  gap: 16px;
+
+  .header {
+    height: auto;
+    align-items: flex-start;
+  }
+}
+
 .header__title {
-  font: 400 34px / 40px Roboto, "Helvetica Neue", sans-serif;
-  color: $primary;
+  font: var(--mat-sys-headline-large);
+  color: var(--mat-sys-primary);
   margin-bottom: 16px;
 }
 
 .header__message {
-  font: 400 16px / 20px Roboto,"Helvetica Neue",sans-serif;
-  margin-bottom: 32px;
-  opacity: 60%;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .authorize {

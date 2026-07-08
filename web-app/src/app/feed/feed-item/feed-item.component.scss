@@ -1,20 +1,21 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
-
 :host {
   display: block;
   position: relative;
   height: 100%;
   min-height: 0;
+  --mat-card-elevated-container-color: #ffffff;
 }
 
 mat-toolbar {
   background-color: white;
-  color: mat.get-color-from-palette($app-primary);
   position: sticky;
   top: 0;
   z-index: 2;
   gap: 8px;
+
+  button {
+    color: var(--mat-sys-primary);
+  }
 }
 
 .title {
@@ -22,9 +23,8 @@ mat-toolbar {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: mat.get-color-from-palette($app-primary);
-  font-size: 18px;
-  font-weight: 500;
+  color: var(--mat-sys-primary);
+  font: var(--mat-sys-title-large);
 }
 
 .feed-item {
@@ -53,7 +53,7 @@ mat-toolbar {
   flex-direction: row;
   align-items: flex-start;
   gap: 16px;
-  padding: 16px 16px 8px 16px;
+  padding: 16px 16px 8px;
 }
 
 .card-header-text {
@@ -68,6 +68,7 @@ mat-toolbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: var(--mat-sys-primary);
 
   mat-icon,
   mage-static-icon-img {
@@ -82,36 +83,32 @@ mat-toolbar {
 }
 
 .card-overline {
-  font: 500 10px/12px Roboto, "Helvetica Neue", sans-serif;
-  text-transform: uppercase;
-  opacity: 0.6;
-  margin-bottom: 8px;
-  letter-spacing: 0.04em;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .card-title {
-  font: 500 20px/32px Roboto, "Helvetica Neue", sans-serif;
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 8px;
 }
 
 .card-subtitle {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.6);
-  margin-bottom: 0;
-  white-space: nowrap;
-  overflow: hidden;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
   text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .card-image {
-  width: 100%;
   height: 200px;
   position: relative;
   overflow: hidden;
-  background: #e5e7eb;
+  background: var(--mat-sys-surface-variant);
+  margin: 0 -16px;
 }
 
 .map {
@@ -121,38 +118,29 @@ mat-toolbar {
 }
 
 .card-actions {
-  padding: 8px 8px 12px 8px;
+  padding: 8px;
+
+  button {
+    color: var(--mat-sys-primary);
+  }
 }
 
-.section-title {
-  padding: 16px 16px 0 16px;
-  font-size: 18px;
-  font-weight: 500;
+mat-card-header {
+  margin-bottom: 0;
 }
 
-.property-row:last-child mat-divider {
-  display: none;
+mat-card-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
 }
 
-.item {
-  padding: 16px;
-  background: white;
-  width: 100%;
-  box-sizing: border-box;
+.prop-key {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
-.property-key {
-  font-size: 14px;
-  font-weight: 500;
-  opacity: 0.6;
-  margin-bottom: 4px;
+.prop-value {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
 }
 
-.property-value {
-  font-size: 14px;
-  opacity: 0.87;
-}
-
-mat-card-content {
-  padding-bottom: 0;
-}

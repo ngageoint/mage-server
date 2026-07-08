@@ -17,7 +17,7 @@ consuming project does not supply compatible Angular libraries.
 
 There are some hangups with that strategy, though, as of version 14 of the Angular suite of packages.
 1. One of Mage's dependencies, `@ajsf/material`, requires `rxjs` `^7.0.0`, but `@angular-devkit/*` libraries pin `rxjs`
-   to `6.6.7`, which causes TypeScript type conflicts at build time for this DevKit library.  There are presently
+   to `6.6.0`, which causes TypeScript type conflicts at build time for this DevKit library.  There are presently
    some undesirable `any` casts to overcome the `rxjs` type conflicts.  This should be fixed after upgrading to the
    latest Angular, currently 17, whose `@angular-devkit/core` package pins `rxjs` to `7.8.1`.
 1. This library tries to reference a dev dependency on `rollup` through `../node_modules/rollup`.  This relative path

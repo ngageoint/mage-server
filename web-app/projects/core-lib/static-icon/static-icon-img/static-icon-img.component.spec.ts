@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { StaticIconImgComponent } from './static-icon-img.component';
 import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
-import { HttpClientModule } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 
 describe('StaticIconImgComponent', () => {
   let component: StaticIconImgComponent;
@@ -10,12 +10,10 @@ describe('StaticIconImgComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ StaticIconImgComponent ],
-      imports: [
-        HttpClientModule,
-        MageCommonModule
-      ]
-    })
+    declarations: [StaticIconImgComponent],
+    imports: [MageCommonModule],
+    providers: [provideHttpClient(withInterceptorsFromDi())]
+})
     .compileComponents();
   }));
 

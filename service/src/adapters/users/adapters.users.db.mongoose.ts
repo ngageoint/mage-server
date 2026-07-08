@@ -24,6 +24,7 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
         const json = doc.toJSON()
         return {
           ...json,
+          avatar: doc.avatar,
           id: doc._id.toHexString(),
           roleId: idString(doc.roleId),
           authenticationId: idString(doc.authenticationId)

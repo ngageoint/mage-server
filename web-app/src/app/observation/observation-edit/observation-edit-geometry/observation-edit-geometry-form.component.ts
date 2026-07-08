@@ -10,8 +10,9 @@ import { MapService } from '../../../map/map.service'
 import { GeometryService } from '../../../geometry/geometry.service'
 
 @Directive({
-  selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
-  providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }]
+    selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
+    providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }],
+    standalone: false
 })
 export class MGRSValidatorDirective implements Validator {
 
@@ -31,8 +32,9 @@ export class MGRSValidatorDirective implements Validator {
 }
 
 @Directive({
-  selector: '[dmsValidation][formControlName],[dmsValidation][formControl],[dmsValidation][ngModel]',
-  providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }]
+    selector: '[dmsValidation][formControlName],[dmsValidation][formControl],[dmsValidation][ngModel]',
+    providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }],
+    standalone: false
 })
 export class DMSValidatorDirective implements Validator {
 
@@ -58,13 +60,14 @@ type CoordinateSystemKey = 'wgs84' | 'mgrs' | 'dms'
 type DMSFormValue = Partial<{ [DimensionKey.Latitude]: string, [DimensionKey.Longitude]: string }>
 
 @Component({
-  selector: 'observation-edit-geometry-form',
-  templateUrl: './observation-edit-geometry-form.component.html',
-  styleUrls: ['./observation-edit-geometry-form.component.scss'],
-  providers: [
-    { provide: NG_VALIDATORS,  useExisting: MGRSValidatorDirective, multi: true },
-    { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }
-  ]
+    selector: 'observation-edit-geometry-form',
+    templateUrl: './observation-edit-geometry-form.component.html',
+    styleUrls: ['./observation-edit-geometry-form.component.scss'],
+    providers: [
+        { provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true },
+        { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }
+    ],
+    standalone: false
 })
 export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
 

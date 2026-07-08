@@ -18,6 +18,7 @@ import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkb
 import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatTimepickerModule } from '@angular/material/timepicker'
 import { MatMomentDateModule } from '@angular/material-moment-adapter'
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -54,18 +55,17 @@ import { LayersControlComponent } from '../map/controls/layers-control.component
 import { MapComponent } from '../map/map.component';
 import { LayerHeaderComponent } from '../map/layers/layer-header.component';
 import { LayerContentComponent } from '../map/layers/layer-content.component';
-import { ColorPickerComponent } from '../color-picker/color-picker.component';
+import { ColorPickerModule } from '../color-picker/color-picker.module';
 import { ExportComponent } from '../export/export.component';
 import { ExportDialogComponent } from '../export/export-dialog.component'
 
-import { MapClipComponent } from '../map/clip/clip.component';
+import { MapClipModule } from '../map/clip/map-clip.module';
 import { GeometryModule } from '../geometry/geometry.module';
 import { ObservationDeleteComponent } from '../observation/observation-delete/observation-delete.component';
 import { ObservationListItemComponent } from '../observation/observation-list/observation-list-item.component';
 import { MomentModule } from '../moment/moment.module';
-import { AttachmentComponent } from '../observation/attachment/attachment.component';
-import { FilenamePipe } from '../filename/filename.pipe';
-import { AttachUploadComponent } from '../observation/attachment/attachment-upload/attachment-upload.component';
+import { ObservationAttachmentModule } from '../observation/attachment/observation-attachment.module';
+
 import { ObservationViewFormComponent } from '../observation/observation-view/observation-view-form.component';
 import { ObservationViewComponent } from '../observation/observation-view/observation-view.component';
 import { ObservationFavoritesComponent } from '../observation/observation-favorites/observation-favorites.component';
@@ -88,21 +88,9 @@ import {
 import {
   DMSValidatorDirective,
   MGRSValidatorDirective,
-  ObservationEditCheckboxComponent,
-  ObservationEditDateComponent,
-  ObservationEditSelectComponent,
-  ObservationEditEmailComponent,
-  ObservationEditGeometryComponent,
-  ObservationEditGeometryFormComponent,
-  ObservationEditGeometryMapComponent,
-  ObservationEditMultiselectComponent,
-  ObservationEditNumberComponent,
-  ObservationEditRadioComponent,
-  ObservationEditTextComponent,
-  ObservationEditTextareaComponent,
-  ObservationEditFormComponent,
   ObservationEditComponent
 } from '../observation/observation-edit/observation-edit';
+import { ObservationEditModule } from '../observation/observation-edit/observation-edit.module';
 
 import { FeedItemComponent } from '../feed/feed-item/feed-item.component';
 import { FeedItemMapPopupComponent } from '../feed/feed-item/feed-item-map/feed-item-map-popup.component';
@@ -117,8 +105,6 @@ import { ObservationOptionsComponent } from '../observation/observation-view/obs
 import { ObservationEditFormPickerComponent } from '../observation/observation-edit/observation-edit-form-picker.component';
 import { ObservationEditDiscardComponent } from '../observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
 import { ObservationViewAttachmentComponent } from '../observation/observation-view/observation-view-attachment/observation-view-attachment.component';
-import { ObservationEditAttachmentComponent } from '../observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
-import { ObservationEditPasswordComponent } from '../observation/observation-edit/observation-edit-password/observation-edit-password.component';
 import { ObservationViewPasswordComponent } from '../observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from '../observation/observation-view/observation-view-password/password.pipe';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
@@ -135,16 +121,17 @@ import { PasswordResetSuccessDialog } from '../user/password/password-reset-succ
 import { HomeComponent } from '..//home/home.component';
 import { RouterModule, Routes } from '@angular/router';
 import { UserResolver } from '../ingress/user.resolver';
+import { HomeGuard } from '../ingress/home-guard.service';
 import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
 import { IngressModule } from '../ingress/ingress.module';
 import { FilterControlComponent } from '../map/controls/filter.component';
 import { ExportControlComponent } from '../map/controls/export.component';
-import { BannerModule } from '../banner/banner.module';
 import { MatMenuModule as MatMenuModule } from '@angular/material/menu';
 
 const routes: Routes = [{
   path: '',
   component: HomeComponent,
+  canActivate: [HomeGuard],
   resolve: {
     user: UserResolver
   }
@@ -152,7 +139,7 @@ const routes: Routes = [{
 
 @NgModule({
   declarations: [],
-  imports: [],
+  imports: [MatTimepickerModule],
   exports: [
     AlphaModule,
     CheckboardModule,
@@ -170,6 +157,7 @@ const routes: Routes = [{
     MatCheckboxModule,
     MatChipsModule,
     MatDatepickerModule,
+    MatTimepickerModule,
     MatMomentDateModule,
     MatDialogModule,
     MatExpansionModule,
@@ -205,9 +193,6 @@ class AngularModule { }
 @NgModule({
   declarations: [
     AddObservationComponent,
-    AttachmentComponent,
-    AttachUploadComponent,
-    ColorPickerComponent,
     ContactDialogComponent,
     CoordinateSystemComponent,
     DatetimePickerComponent,
@@ -221,7 +206,6 @@ class AngularModule { }
     FeedListComponent,
     FeedPanelComponent,
     FeedPanelTabComponent,
-    FilenamePipe,
     FilterComponent,
     FilterControlComponent,
     HomeComponent,
@@ -230,31 +214,16 @@ class AngularModule { }
     LayersComponent,
     LayersControlComponent,
     LocationComponent,
-    MapClipComponent,
     MapComponent,
     MapComponent,
     MGRSValidatorDirective,
+
     NavigationComponent,
     NoExportsComponent,
     ObservationDeleteComponent,
-    ObservationEditAttachmentComponent,
-    ObservationEditCheckboxComponent,
     ObservationEditComponent,
-    ObservationEditDateComponent,
     ObservationEditDiscardComponent,
-    ObservationEditEmailComponent,
-    ObservationEditFormComponent,
     ObservationEditFormPickerComponent,
-    ObservationEditGeometryComponent,
-    ObservationEditGeometryFormComponent,
-    ObservationEditGeometryMapComponent,
-    ObservationEditMultiselectComponent,
-    ObservationEditNumberComponent,
-    ObservationEditPasswordComponent,
-    ObservationEditRadioComponent,
-    ObservationEditSelectComponent,
-    ObservationEditTextareaComponent,
-    ObservationEditTextComponent,
     ObservationFavoritesComponent,
     ObservationListComponent,
     ObservationListItemComponent,
@@ -285,11 +254,14 @@ class AngularModule { }
   ],
   imports: [
     AngularModule,
-    BannerModule,
+    ColorPickerModule,
     FeedItemSummaryModule,
     GeometryModule,
+    MapClipModule,
     IngressModule,
     MomentModule,
+    ObservationAttachmentModule,
+    ObservationEditModule,
     StaticIconModule,
     UserAvatarModule,
     InputMaskModule.forRoot(),

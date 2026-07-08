@@ -4,9 +4,10 @@ import { Feature } from 'geojson';
 import { Subscription } from 'rxjs'
 
 @Component({
-  selector: 'feed-list',
-  templateUrl: './feed-list.component.html',
-  styleUrls: ['./feed-list.component.scss']
+    selector: 'feed-list',
+    templateUrl: './feed-list.component.html',
+    styleUrls: ['./feed-list.component.scss'],
+    standalone: false
 })
 export class FeedListComponent implements OnChanges {
   @Input() feed: Feed

@@ -4,9 +4,9 @@ import { SignupComponent } from './signup.component';
 import { ApiService } from '../../../api/api.service';
 import { UserService } from '../../../user/user.service';
 import { of, throwError } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { User } from 'core-lib-src/user';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { PasswordPolicy } from '../@types/signup';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
@@ -93,10 +93,8 @@ describe('SignupComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [SignupComponent],
-      imports: [
-        ReactiveFormsModule,
-        HttpClientTestingModule,
+    declarations: [SignupComponent],
+    imports: [ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
         MatIconModule,
@@ -104,13 +102,14 @@ describe('SignupComponent', () => {
         MatProgressBarModule,
         CommonModule,
         BrowserModule,
-        NoopAnimationsModule
-      ],
-      providers: [
+        NoopAnimationsModule],
+    providers: [
         { provide: ApiService, useValue: mockApiService },
-        { provide: UserService, useValue: mockUserService }
-      ]
-    }).compileComponents();
+        { provide: UserService, useValue: mockUserService },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+}).compileComponents();
 
     fixture = TestBed.createComponent(SignupComponent);
     component = fixture.componentInstance;

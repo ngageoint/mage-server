@@ -2,8 +2,9 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { RegisteredStaticIconReference, contentPathOfIcon } from '../static-icon.model'
 
 @Component({
-  selector: 'mage-static-icon-img',
-  template: `<mage-xhr-img [src]="iconPath"></mage-xhr-img>`,
+    selector: 'mage-static-icon-img',
+    template: `<mage-xhr-img [src]="iconPath"></mage-xhr-img>`,
+    standalone: false
 })
 export class StaticIconImgComponent implements OnInit, OnChanges {
 

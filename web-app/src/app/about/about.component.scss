@@ -1,80 +1,75 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
+:host {
+  --mat-card-elevated-container-color: #ffffff;
+}
 
-$content-padding: 32px;
-$mobile-padding: 16px;
+mat-toolbar {
+  background-color: var(--mat-sys-primary);
+  color: #ffffff;
 
-.content {
-  width: 84%;
-  padding: $content-padding 8vw;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  @media (max-width: 600px) {
-    padding: $mobile-padding 5vw;
-    gap: 10px;
+  mat-icon {
+    color: #ffffff;
   }
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+}
+
+.navigation-title {
+  margin-left: 16px;
+  font: var(--mat-sys-title-medium);
 }
 
 .container {
+  padding: 16px 8vw;
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  width: 100%;
-}
-
-.title {
-  font-size: 1.5rem;
-  font-weight: 500;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
 
   @media (max-width: 600px) {
-    font-size: 1.25rem;
+    padding: 16px 5vw;
   }
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
+mat-card-header {
+  margin-bottom: 16px;
 }
 
-.section-title {
+mat-card-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: mat.get-color-from-palette($app-primary);
-  border-bottom: 2px solid mat.get-color-from-palette($app-primary);
-  padding-bottom: 4px;
-}
-
-.section-icon {
-  font-size: 1.4rem;
-  color: mat.get-color-from-palette($app-primary);
+  color: var(--mat-sys-primary);
 }
 
 .section-text {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #444;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
+
+  & + .section-text {
+    margin-top: 12px;
+  }
 
   a {
-    color: mat.get-color-from-palette($app-primary);
-    text-decoration: underline;
+    color: var(--mat-sys-primary);
   }
 }
 
 .app-store {
   display: flex;
-  gap: 50px;
+  gap: 40px;
   align-items: center;
   flex-wrap: wrap;
-  margin: 0 auto;
+  margin-top: 16px;
 
   @media (max-width: 600px) {
     justify-content: center;
+    gap: 24px;
   }
 }
 
@@ -89,37 +84,62 @@ $mobile-padding: 16px;
 .system-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
-  margin: 0 auto;
+  gap: 16px;
 
   div {
-    font-size: 0.95rem;
-    color: #333;
-    background: #f6f6f6;
-    padding: 8px 12px;
-    border-radius: 6px;
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface-variant);
+    background: var(--mat-sys-surface-variant);
+    padding: 8px 16px;
+    border-radius: 8px;
   }
 
   .label {
-    font-weight: 600;
-    margin-right: 4px;
-    display: inline-block;
+    font: var(--mat-sys-label-large);
+    margin-right: 6px;
+  }
+}
+
+.sub-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 32px;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.sub-label {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.contact-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  & + .contact-group {
+    margin-top: 16px;
   }
 }
 
 .contact-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 80px;
+  gap: 16px;
 
   div {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.95rem;
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface);
 
     a {
-      color: mat.get-color-from-palette($app-primary);
+      color: var(--mat-sys-primary);
     }
   }
 }

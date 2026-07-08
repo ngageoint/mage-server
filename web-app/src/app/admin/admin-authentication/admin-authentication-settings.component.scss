@@ -1,0 +1,16 @@
+mat-form-field {
+  width: 100%;
+}
+
+.settings-section-title {
+  font-size: var(--mat-sys-title-small-size);
+  font-weight: var(--mat-sys-title-small-weight);
+  color: var(--mat-sys-on-surface);
+  margin: 16px 0 8px;
+}
+
+.field-label {
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 4px;
+}

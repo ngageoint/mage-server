@@ -18,8 +18,9 @@ import { MapLayerService } from './layer.service';
 import { Component, ViewChild } from '@angular/core';
 
 @Component({
-  selector: `host-component`,
-  template: `<layer-content [layer]="layer"></layer-content>`
+    selector: `host-component`,
+    template: `<layer-content [layer]="layer"></layer-content>`,
+    standalone: false
 })
 class TestHostComponent {
   layer = {

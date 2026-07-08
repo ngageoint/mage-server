@@ -10,8 +10,9 @@ import { of, Subject } from 'rxjs'
 import { PageOf, itemRangeOfPage, pageForItemIndex } from '@ngageoint/mage.web-core-lib/paging'
 
 @Component({
-  selector: 'test-host',
-  template: `<form [formGroup]="form"><mage-user-select formControlName="user"></mage-user-select></form>`
+    selector: 'test-host',
+    template: `<form [formGroup]="form"><mage-user-select formControlName="user"></mage-user-select></form>`,
+    standalone: false
 })
 class TestHostComponent {
 

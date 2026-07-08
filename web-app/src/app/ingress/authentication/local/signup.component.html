@@ -53,12 +53,12 @@
       <mat-label>Password</mat-label>
       <input matInput [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password"
         required />
-      <button mat-icon-button type="button" matSuffix (click)="showPassword = !showPassword">
+      <button matIconButton type="button" matSuffix (click)="showPassword = !showPassword">
         <mat-icon>{{
           showPassword ? 'visibility_off' : 'visibility'
           }}</mat-icon>
       </button>
-      <button mat-icon-button matTooltip="{{ passwordTooltipText }}" matTooltipClass="tooltip-wide" matSuffix>
+      <button matIconButton [matTooltip]="passwordTooltipText" matSuffix>
         <mat-icon>info</mat-icon>
       </button>
 
@@ -76,7 +76,7 @@
       <mat-label>Confirm Password</mat-label>
       <input matInput [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm Password"
         formControlName="passwordconfirm" required />
-      <button mat-icon-button type="button" matSuffix (click)="showConfirmPassword = !showConfirmPassword">
+      <button matIconButton type="button" matSuffix (click)="showConfirmPassword = !showConfirmPassword">
         <mat-icon>{{
           showConfirmPassword ? 'visibility_off' : 'visibility'
           }}</mat-icon>
@@ -96,8 +96,10 @@
     </mat-form-field>
 
     <div class="password-strength">
-      <div class="mat-body-1">Password Strength</div>
-      <div class="mat-body-2">{{ passwordStrength?.text }}</div>
+      <div class="password-strength__header">
+        <div class="password-strength__label">Password Strength</div>
+        <div class="password-strength__value">{{ passwordStrength?.text }}</div>
+      </div>
       <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"
         [ngStyle]="{ '--password-bar-color': passwordStrength?.color }" class="custom-password-bar">
       </mat-progress-bar>
@@ -116,7 +118,7 @@
       </div>
 
       <div class="auth-captcha-refresh" *ngIf="captcha.uri">
-        <button mat-icon-button (click)="getCaptcha()">
+        <button matIconButton (click)="getCaptcha()">
           <mat-icon>refresh</mat-icon>
         </button>
       </div>
@@ -140,10 +142,10 @@
     </mat-form-field>
 
     <div class="actions">
-      <button mat-stroked-button type="button" class="actions__button" (click)="onCancel()">
+      <button matButton="outlined" type="button" class="actions__button" (click)="onCancel()">
         Cancel
       </button>
-      <button mat-flat-button color="primary" class="actions__button" type="submit" [disabled]="signup.invalid"
+      <button matButton="filled" class="actions__button" type="submit" [disabled]="signup.invalid"
         (click)="onSignup()">
         Signup
       </button>

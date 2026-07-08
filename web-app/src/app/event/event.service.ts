@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
 import {
   Observable,
-  Subject,
   catchError,
   combineLatest,
   finalize,
@@ -16,7 +15,7 @@ import { ObservationService } from "../observation/observation.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { LayerService } from "../layer/layer.service";
 import { LocationService } from "../user/location/location.service";
-import { LocalStorageService } from "../http/local-storage.service";
+import { SessionService } from "../http/session.service";
 import * as _ from "lodash";
 import moment from 'moment';
 import { FeedService } from "@ngageoint/mage.web-core-lib/feed";
@@ -46,7 +45,6 @@ export class EventService {
   private pollingTimeout: any = null;
   private feedPollTimeout: any = null;
   private feedSyncStates: any = {};
-  private memberSubject = new Subject<User[]>();
 
   constructor(
     private pollingService: PollingService,
@@ -56,7 +54,7 @@ export class EventService {
     private filterService: FilterService,
     private locationService: LocationService,
     private observationService: ObservationService,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) { }
 
   init() {
@@ -76,8 +74,6 @@ export class EventService {
     if (this.feedPollTimeout) {
       clearTimeout(this.feedPollTimeout);
     }
-
-    this.memberSubject.unsubscribe();
   }
 
   query(options?: any): Observable<any> {
@@ -97,8 +93,10 @@ export class EventService {
     return this.httpClient.get<any>("/api/events/", { params });
   }
 
-  addFeed(eventId: string, feed: any): Observable<any> {
-    return this.httpClient.post<any>(`/api/events/${eventId}/feeds`, feed);
+  addFeed(eventId: string, feedId: string): Observable<any> {
+    return this.httpClient.post<any>(`/api/events/${eventId}/feeds`, `"${feedId}"`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   removeFeed(eventId: string, feedId: string): Observable<any> {
@@ -758,7 +756,7 @@ export class EventService {
         let params = new HttpParams();
         params = params.append(
           "access_token",
-          this.localStorageService.getToken()
+          this.sessionService.getToken()
         );
         params = params.append("_dc", userLocation.user.lastUpdated);
 

@@ -1,17 +1,32 @@
 @use '@angular/material' as mat;
+@use '../_theme-colors' as colors;
 
-@import 'variables.scss';
+@include mat.elevation-classes();
+@include mat.app-background();
 
-@include mat.core();
-
-$app-theme: mat.define-light-theme((
+$app-theme: mat.define-theme((
   color: (
-    primary: $app-primary,
-    accent: $app-accent,
-    warn: $app-warn,
+    theme-type: light,
+    primary: colors.$primary-palette,
+    tertiary: colors.$tertiary-palette,
+    use-system-variables: true,
   ),
-  typography: mat.define-typography-config(),
-  density: 0,
+  typography: (
+    plain-family: (Roboto, sans-serif),
+  ),
+  density: (
+    scale: 0,
+  ),
 ));
 
+html {
+  @include mat.system-level-colors($app-theme);
+  @include mat.system-level-typography($app-theme);
+  @include mat.system-level-shape($app-theme);
+}
+
 @include mat.all-component-themes($app-theme);
+
+@include mat.list-overrides((
+  active-indicator-shape: var(--mat-sys-corner-extra-small),
+));

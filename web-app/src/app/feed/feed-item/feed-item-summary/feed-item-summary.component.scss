@@ -1,14 +1,18 @@
-.item {
+:host {
+  display: block;
   background: white;
-  width: 100%;
-  min-height: 72px;
-  padding: 0 12px;
+  border-radius: var(--mat-sys-corner-medium);
+  overflow: hidden;
+  margin-bottom: 4px;
 }
 
-:host ::ng-deep .item .mdc-list-item__content {
+mat-list-item {
+  min-height: 88px;
+}
+
+.item__content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   min-width: 0;
 }
 
@@ -16,39 +20,22 @@
   width: 20px;
   height: 20px;
   font-size: 20px;
-}
-
-:host ::ng-deep .item__icon img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
-
-:host ::ng-deep .item .mat-mdc-list-item-icon,
-:host ::ng-deep .item .mdc-list-item__start,
-:host ::ng-deep .item .mdc-list-item__end {
-  margin-top: 0;
-  align-self: center;
+  color: var(--mat-sys-primary);
 }
 
 .item__timestamp {
-  font-size: 10px;
-  line-height: 1.2;
-  text-transform: uppercase;
-  opacity: 0.6;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .item__primary {
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 500;
-  opacity: 0.87;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
 }
 
 .item__secondary {
-  font-size: 12px;
-  line-height: 1.2;
-  opacity: 0.6;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

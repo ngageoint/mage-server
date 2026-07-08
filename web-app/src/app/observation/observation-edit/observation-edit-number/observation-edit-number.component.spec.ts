@@ -9,9 +9,10 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ObservationEditNumberComponent } from './observation-edit-number.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-number [definition]="definition" [formGroup]="formGroup"></observation-edit-number>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: `host-component`,
+    template: `<observation-edit-number [definition]="definition" [formGroup]="formGroup"></observation-edit-number>`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({

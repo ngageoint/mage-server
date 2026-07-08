@@ -1,0 +1,64 @@
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    min-width: 480px;
+}
+
+mat-dialog-content {
+    max-height: none;
+}
+
+mat-form-field {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.error-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.color-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.color-swatch {
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+    border: 1px solid var(--mat-sys-outline);
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.color-text-field {
+    flex: 1;
+}
+
+.file-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-button {
+    width: 100%;
+}
+
+.help-text {
+    font-size: 13px;
+    color: var(--mat-sys-on-surface-variant);
+    margin: 6px 0 0 0;
+}
+
+mat-dialog-actions {
+    justify-content: flex-end;
+}

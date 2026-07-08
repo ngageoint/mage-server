@@ -22,6 +22,7 @@ export type Disclaimer = {
 
 export interface Api {
   version: Version,
+  serverVersion: string,
   initial: boolean,
   disclaimer?: Disclaimer,
   contactInfo: any,

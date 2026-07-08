@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>Edit Form</h2>
+
+<mat-dialog-content>
+  <div class="edit-form-content">
+    <mat-form-field appearance="fill" subscriptSizing="dynamic">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" [(ngModel)]="form.name" placeholder="Form name" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" subscriptSizing="dynamic">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="form.description" placeholder="Brief description of the form."></textarea>
+    </mat-form-field>
+
+    <div class="color-field">
+      <input type="color" class="color-swatch-input" [(ngModel)]="form.color" aria-label="Form color" />
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="color-text-field">
+        <mat-label>Color</mat-label>
+        <input matInput type="text" [(ngModel)]="form.color" placeholder="#000000" required />
+      </mat-form-field>
+    </div>
+
+    <mat-checkbox [(ngModel)]="form.default">Add to every new observation</mat-checkbox>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton type="button" (click)="onCancel()">Cancel</button>
+  <button matButton="filled" type="button" (click)="onSave()" [disabled]="!form.name || !form.color">Save</button>
+</mat-dialog-actions>

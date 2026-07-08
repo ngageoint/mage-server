@@ -1,10 +1,31 @@
-.container {
+:host {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  height: 100%;
 }
 
-.title  {
+mat-toolbar {
+  flex: 0 0 auto;
+  background-color: var(--mat-sys-primary);
+  color: #ffffff;
+
+  mat-icon {
+    color: #ffffff;
+  }
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+}
+
+.navigation-title {
   margin-left: 16px;
+  font: var(--mat-sys-title-medium);
+}
+
+.swagger-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }

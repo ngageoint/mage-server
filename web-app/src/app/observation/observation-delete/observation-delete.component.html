@@ -7,7 +7,7 @@
     <div class="delete-mask"></div>
   </div>
 </div>
-<div mat-dialog-actions>
-  <button mat-button (click)="close()">Cancel</button>
-  <button mat-flat-button color="warn" (click)="delete()">Delete</button>
+<div mat-dialog-actions align="end">
+  <button matButton (click)="close()">Cancel</button>
+  <button matButton="filled" class="delete-button" (click)="delete()">Delete</button>
 </div>

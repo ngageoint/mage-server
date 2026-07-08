@@ -5,9 +5,8 @@
 
 .datetime {
   width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 24px;
+  display: flex;
+  gap: 8px;
   align-items: start;
 }
 
@@ -20,83 +19,4 @@
 .date mat-form-field,
 .time mat-form-field {
   width: 100%;
-}
-
-/* legacy Material */
-:host ::ng-deep .date .mat-form-field-wrapper,
-:host ::ng-deep .time .mat-form-field-wrapper {
-  padding-bottom: 0;
-}
-
-:host ::ng-deep .date .mat-form-field-flex,
-:host ::ng-deep .time .mat-form-field-flex {
-  min-height: 56px;
-  height: 56px;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-:host ::ng-deep .date .mat-form-field-infix,
-:host ::ng-deep .time .mat-form-field-infix {
-  min-height: 56px;
-  box-sizing: border-box;
-}
-
-:host ::ng-deep .date .mat-form-field-subscript-wrapper,
-:host ::ng-deep .time .mat-form-field-subscript-wrapper {
-  min-height: 0;
-}
-
-/* MDC / newer Material */
-:host ::ng-deep .date .mat-mdc-text-field-wrapper,
-:host ::ng-deep .time .mat-mdc-text-field-wrapper {
-  min-height: 56px;
-  height: 56px;
-  box-sizing: border-box;
-}
-
-:host ::ng-deep .date .mat-mdc-form-field-flex,
-:host ::ng-deep .time .mat-mdc-form-field-flex {
-  min-height: 56px;
-  height: 56px;
-}
-
-:host ::ng-deep .date .mat-mdc-form-field-infix,
-:host ::ng-deep .time .mat-mdc-form-field-infix {
-  min-height: 56px;
-  padding-top: 24px;
-  padding-bottom: 8px;
-  box-sizing: border-box;
-}
-
-/* normalize the native inputs themselves */
-:host ::ng-deep .date input.mat-input-element,
-:host ::ng-deep .time input.mat-input-element,
-:host ::ng-deep .date input.mat-mdc-input-element,
-:host ::ng-deep .time input.mat-mdc-input-element {
-  line-height: normal;
-  height: auto;
-  box-sizing: border-box;
-}
-
-/* keep suffix icon from stretching the date field oddly */
-:host ::ng-deep .date .mat-form-field-suffix,
-:host ::ng-deep .date .mat-mdc-form-field-icon-suffix {
-  display: flex;
-  align-items: center;
-}
-
-:host ::ng-deep .date .mat-form-field-underline,
-:host ::ng-deep .time .mat-form-field-underline {
-  position: static !important;
-}
-
-:host ::ng-deep .date .mat-mdc-line-ripple,
-:host ::ng-deep .time .mat-mdc-line-ripple {
-  display: block;
-}
-
-:host ::ng-deep .date .mat-form-field-appearance-fill .mat-form-field-underline,
-:host ::ng-deep .time .mat-form-field-appearance-fill .mat-form-field-underline {
-  position: static !important;
 }

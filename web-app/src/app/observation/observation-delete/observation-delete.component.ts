@@ -8,9 +8,10 @@ export interface Observation {
 }
 
 @Component({
-  selector: 'observation-delete',
-  templateUrl: './observation-delete.component.html',
-  styleUrls: ['./observation-delete.component.scss']
+    selector: 'observation-delete',
+    templateUrl: './observation-delete.component.html',
+    styleUrls: ['./observation-delete.component.scss'],
+    standalone: false
 })
 export class ObservationDeleteComponent {
   event: any

@@ -349,9 +349,12 @@ DeviceResource.prototype.parseDeviceParams = function(req, res, next) {
   req.newDevice = {
     uid: req.param('uid'),
     name: req.param('name'),
-    description: req.param('description'),
-    userId: req.param('userId')
+    description: req.param('description')
   };
+
+  if (req.param('userId')) {
+    req.newDevice.userId = req.param('userId');
+  }
 
   if (req.param('registered') !== undefined) {
     req.newDevice.registered = req.param('registered') === true;

@@ -1,0 +1,71 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.feeds-page {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.feeds-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.tab-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 8px;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 8px;
+}
+
+mat-nav-list {
+  padding: 0 8px;
+  margin-bottom: 8px;
+  --mat-list-list-item-leading-icon-color: var(--mat-sys-on-surface-variant);
+
+  button[aria-label="Delete feed"] mat-icon,
+  button[aria-label="Delete service"] mat-icon {
+    color: var(--mat-sys-error);
+  }
+}
+
+mat-paginator {
+  --mat-paginator-container-background-color: var(--mat-sys-surface-container);
+  flex-shrink: 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 96px;
+    width: 96px;
+    height: 96px;
+  }
+}

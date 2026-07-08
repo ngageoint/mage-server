@@ -11,9 +11,10 @@ interface NumberField {
 }
 
 @Component({
-  selector: 'observation-edit-number',
-  templateUrl: './observation-edit-number.component.html',
-  styleUrls: ['./observation-edit-number.component.scss']
+    selector: 'observation-edit-number',
+    templateUrl: './observation-edit-number.component.html',
+    styleUrls: ['./observation-edit-number.component.scss'],
+    standalone: false
 })
 export class ObservationEditNumberComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup

@@ -176,7 +176,7 @@
 
           <div class="timezone">
             <button
-              mat-stroked-button
+              matButton="outlined"
               class="timezone__button"
               (click)="onTimezone()"
             >
@@ -200,12 +200,11 @@
   </div>
 
   <div mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()" [disabled]="isLoading">
+    <button matButton (click)="onCancel()" [disabled]="isLoading">
       Cancel
     </button>
     <button
-      mat-button
-      color="primary"
+      matButton
       (click)="onFilter()"
       [disabled]="isLoading"
     >

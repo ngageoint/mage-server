@@ -1,6 +1,6 @@
 import { animate, style, transition, trigger } from "@angular/animations";
 import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
-import { DOCUMENT } from "@angular/common";
+
 import {
   Component,
   ElementRef,
@@ -14,6 +14,7 @@ import {
   SimpleChanges,
   ViewChild,
   ViewChildren,
+  DOCUMENT
 } from "@angular/core";
 import {
   UntypedFormArray,
@@ -42,37 +43,38 @@ import {
 } from "../attachment/attachment.service";
 import { FileUpload } from "../attachment/attachment-upload/attachment-upload.component";
 import { AttachmentAction } from "./observation-edit-attachment/observation-edit-attachment-action";
-import { LocalStorageService } from "../../http/local-storage.service";
 import { MapService } from "src/app/map/map.service";
 import { UserService } from "src/app/user/user.service";
 import { EventService } from "src/app/event/event.service";
 import { FilterService } from "src/app/filter/filter.service";
 import { ObservationService } from "../observation.service";
+import { SessionService } from "mage-web-app/http/session.service";
 
 export type ObservationFormControl = UntypedFormControl & { definition: any };
 
 @Component({
-  selector: "observation-edit",
-  templateUrl: "./observation-edit.component.html",
-  styleUrls: ["./observation-edit.component.scss"],
-  animations: [
-    trigger("error", [
-      transition(":enter", [
-        style({ height: 0, opacity: 0 }),
-        animate("250ms", style({ height: "*", opacity: 1 })),
-      ]),
-      transition(":leave", [
-        animate("250ms", style({ height: 0, opacity: 0 })),
-      ]),
-    ]),
-    trigger("mask", [
-      transition(":enter", [
-        style({ opacity: 0 }),
-        animate("250ms", style({ opacity: 0.2 })),
-      ]),
-      transition(":leave", [animate("250ms", style({ opacity: 0 }))]),
-    ]),
-  ],
+    selector: "observation-edit",
+    templateUrl: "./observation-edit.component.html",
+    styleUrls: ["./observation-edit.component.scss"],
+    animations: [
+        trigger("error", [
+            transition(":enter", [
+                style({ height: 0, opacity: 0 }),
+                animate("250ms", style({ height: "*", opacity: 1 })),
+            ]),
+            transition(":leave", [
+                animate("250ms", style({ height: 0, opacity: 0 })),
+            ]),
+        ]),
+        trigger("mask", [
+            transition(":enter", [
+                style({ opacity: 0 }),
+                animate("250ms", style({ opacity: 0.2 })),
+            ]),
+            transition(":leave", [animate("250ms", style({ opacity: 0 }))]),
+        ]),
+    ],
+    standalone: false
 })
 export class ObservationEditComponent implements OnInit, OnChanges {
   @Input() preview: boolean;
@@ -135,11 +137,11 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     private attachmentService: AttachmentService,
     @Inject(DOCUMENT) private document: Document,
     private mapService: MapService,
+    private sessionService: SessionService,
     private userService: UserService,
     private filterService: FilterService,
     private eventService: EventService,
-    private observationService: ObservationService,
-    private localStorageService: LocalStorageService
+    private observationService: ObservationService
   ) {
     matIconRegistry.addSvgIcon(
       "handle",
@@ -189,25 +191,24 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     }
   }
 
+
   hasEventUpdatePermission(): boolean {
-    return this.userService.myself.role.permissions.includes(
-      "DELETE_OBSERVATION"
-    );
+    return this.sessionService.user.role.permissions.includes('DELETE_OBSERVATION')
   }
 
   isCurrentUsersObservation(): boolean {
-    return this.observation.userId === this.userService.myself.id;
+    return this.observation.userId === this.sessionService.user.id
   }
 
   hasUpdatePermissionsInEventAcl(): boolean {
     const myAccess =
-      this.filterService.getEvent().acl[this.userService.myself.id] || {};
+      this.filterService.getEvent().acl[this.sessionService.user.id] || {};
     const aclPermissions = myAccess["permissions"] || [];
     return aclPermissions.includes("update");
   }
 
   token(): string {
-    return this.localStorageService.getToken();
+    return this.sessionService.getToken();
   }
 
   // TODO multi-form build out validators here as well for each form control
@@ -423,9 +424,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
     this.dialog
       .open(ObservationEditDiscardComponent, {
-        width: "300px",
         autoFocus: false,
-        position: { left: "75px" },
       })
       .afterClosed()
       .subscribe((result) => {
@@ -506,6 +505,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     this.formRemoveSnackbar = this.snackBar.open("Form Deleted", "UNDO", {
       duration: 5000,
       panelClass: "form-remove-snackbar",
+      verticalPosition: 'bottom',
     });
 
     this.formRemoveSnackbar.onAction().subscribe(() => {

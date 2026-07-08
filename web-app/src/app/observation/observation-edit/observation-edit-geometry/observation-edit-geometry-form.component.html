@@ -2,34 +2,18 @@
   <div class="chip-type">
     <span class="chip-type__label">GEOMETRY</span>
     <mat-chip-listbox selectable="true">
-      <mat-chip-option color="primary" [selected]="selectedShapeType === 'Point'" (click)="shapeTypeChanged('Point')">
-        Point
-      </mat-chip-option>
-      <mat-chip-option color="primary" [selected]="selectedShapeType === 'LineString'"
-        (click)="shapeTypeChanged('LineString')">
-        Line
-      </mat-chip-option>
-      <mat-chip-option color="primary" [selected]="selectedShapeType === 'Polygon'"
-        (click)="shapeTypeChanged('Polygon')">
-        Polygon
-      </mat-chip-option>
+      <mat-chip-option [selected]="selectedShapeType === 'Point'" (click)="shapeTypeChanged('Point')">Point</mat-chip-option>
+      <mat-chip-option [selected]="selectedShapeType === 'LineString'" (click)="shapeTypeChanged('LineString')">Line</mat-chip-option>
+      <mat-chip-option [selected]="selectedShapeType === 'Polygon'" (click)="shapeTypeChanged('Polygon')">Polygon</mat-chip-option>
     </mat-chip-listbox>
   </div>
 
   <div class="chip-type">
     <span class="chip-type__label">MANUAL EDIT</span>
     <mat-chip-listbox selectable="true">
-      <mat-chip-option color="primary" [selected]="coordinateSystem === 'wgs84'"
-        (click)="coordinateSystemChange('wgs84')">
-        Lat/Lng
-      </mat-chip-option>
-      <mat-chip-option color="primary" [selected]="coordinateSystem === 'mgrs'"
-        (click)="coordinateSystemChange('mgrs')">
-        MGRS
-      </mat-chip-option>
-      <mat-chip-option color="primary" [selected]="coordinateSystem === 'dms'" (click)="coordinateSystemChange('dms')">
-        DMS
-      </mat-chip-option>
+      <mat-chip-option [selected]="coordinateSystem === 'wgs84'" (click)="coordinateSystemChange('wgs84')">Lat/Lng</mat-chip-option>
+      <mat-chip-option [selected]="coordinateSystem === 'mgrs'" (click)="coordinateSystemChange('mgrs')">MGRS</mat-chip-option>
+      <mat-chip-option [selected]="coordinateSystem === 'dms'" (click)="coordinateSystemChange('dms')">DMS</mat-chip-option>
     </mat-chip-listbox>
   </div>
 
@@ -89,12 +73,7 @@
   </div>
 
   <div class="edit-location__actions">
-    <button mat-button type="button" color="primary" (click)="onCancel()">
-      Cancel
-    </button>
-    <button mat-flat-button type="button" color="primary" (click)="onSave()"
-      [disabled]="!feature?.geometry?.coordinates?.length">
-      Save
-    </button>
+    <button matButton type="button" (click)="onCancel()">Cancel</button>
+    <button matButton="filled" type="button" (click)="onSave()" [disabled]="!feature?.geometry?.coordinates?.length">Save</button>
   </div>
 </div>

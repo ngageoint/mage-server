@@ -5,19 +5,19 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
 import { ActivatedRoute } from '@angular/router';
 import { User } from 'core-lib-src/user';
-import { Banners, SettingsService } from '../settings/settings.service';
 import * as _ from 'underscore';
 import { UserService } from '../user/user.service';
 import { MageEvent } from '@ngageoint/mage.web-core-lib/event';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
-  selector: 'home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+    selector: 'home',
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.scss'],
+    standalone: false
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
-  banners: Banners
   map: any
   myself: User
   event: MageEvent
@@ -28,13 +28,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private mapService: MapService,
-    private userService: UserService,
+    private sessionService: SessionService,
     private filterService: FilterService,
     private locationService: LocationService,
-    private settingsService: SettingsService,
     private activatedRoute: ActivatedRoute
   ) {
-    this.userService.myself$.subscribe((myself: User) => {
+    this.sessionService.user$.subscribe((myself: User) => {
       this.myself = myself
     })
   }
@@ -47,9 +46,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.myself = user
     })
 
-    this.settingsService.getBanner().subscribe((banners: Banners) => {
-      this.banners = banners
-    })
   }
 
   ngOnDestroy(): void {

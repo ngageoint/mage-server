@@ -9,9 +9,10 @@ export interface AuthenticationEvent {
 }
 
 @Component({
-  selector: 'authentication',
-  templateUrl: './authentication.component.html',
-  styleUrls: ['./authentication.component.scss']
+    selector: 'authentication',
+    templateUrl: './authentication.component.html',
+    styleUrls: ['./authentication.component.scss'],
+    standalone: false
 })
 export class AuthenticationComponent implements OnChanges {
   @Input() api: Api

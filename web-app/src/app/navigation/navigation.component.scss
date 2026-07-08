@@ -2,28 +2,46 @@
   display: block;
 }
 
+mat-toolbar {
+  background-color: var(--mat-sys-primary);
+  color: #ffffff;
+  --mat-icon-button-icon-color: #ffffff;
+}
+
+
 .container {
   width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+}
+
+.menu {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .collapsed-menu {
+  flex: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .actions {
   display: none;
+  gap: 8px;
 }
 
 .event-title {
   margin-top: 0.2rem;
   font-size: 0.75em;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .profile-avatar {
@@ -33,14 +51,6 @@
   justify-content: center;
 }
 
-:host ::ng-deep .mat-icon,
-:host ::ng-deep mat-icon {
-  color: #ffffff !important;
-  width: 24px !important;
-  height: 24px !important;
-  font-size: 24px !important;
-  line-height: 24px !important;
-}
 
 @media (min-width: 900px) {
   .navigation-options {
@@ -48,6 +58,6 @@
   }
 
   .actions {
-    display: block;
+    display: flex;
   }
 }

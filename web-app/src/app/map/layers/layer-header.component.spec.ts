@@ -11,8 +11,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  selector: `host-component`,
-  template: `<layer-header [layer]="layer"></layer-header>`
+    selector: `host-component`,
+    template: `<layer-header [layer]="layer"></layer-header>`,
+    standalone: false
 })
 class TestHostComponent {
 

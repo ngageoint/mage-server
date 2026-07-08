@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 @Component({
-  selector: 'account-status',
-  templateUrl: './account-status.component.html',
-  styleUrls: ['./account-status.component.scss']
+    selector: 'account-status',
+    templateUrl: './account-status.component.html',
+    styleUrls: ['./account-status.component.scss'],
+    standalone: false
 })
 export class AccountStatusComponent implements OnChanges {
   @Input() active: boolean

@@ -1,12 +1,20 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
 
 .container {
-  height: 100%;
+  max-height: 80vh;
   width: 35vw;
   display: flex;
   flex-direction: column;
   gap: 48px;
+}
+
+.container.compact {
+  width: 100%;
+  max-height: none;
+  gap: 16px;
+
+  .disclaimer {
+    overflow-y: auto;
+  }
 }
 
 .header {
@@ -18,19 +26,21 @@
 }
 
 .header__title {
-  font: 400 34px / 40px Roboto, "Helvetica Neue", sans-serif;
-  color: $primary;
+  font: var(--mat-sys-headline-large);
+  color: var(--mat-sys-primary);
   margin-bottom: 16px;
 }
 
 .disclaimer {
   overflow-y: scroll;
+  flex: 1;
+  min-height: 0;
 }
 
 .disclaimer__text {
-  font: 400 16px / 20px Roboto, "Helvetica Neue", sans-serif;
+  font: var(--mat-sys-body-large);
   margin-bottom: 32px;
-  opacity: 60%;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .actions {

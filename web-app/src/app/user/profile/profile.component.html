@@ -1,6 +1,6 @@
-<mat-toolbar color="primary">
+<mat-toolbar>
   <div class="navigation">
-    <button mat-icon-button (click)="onBack()">
+    <button matIconButton (click)="onBack()">
       <mat-icon>arrow_back</mat-icon>
     </button>
 
@@ -11,8 +11,8 @@
 <div class="container">
   <div class="cards">
     <mat-card class="card">
-      <div class="mat-h1">General Information</div>
-    
+      <div class="section-title">General Information</div>
+
       <form [formGroup]="info">
         <div class="avatar-container" >
           <div class="avatar">
@@ -20,7 +20,7 @@
             <input hidden (change)="onAvatar($event)" #fileInput type="file">
           </div>
           <div class="avatar-container__button">
-            <button mat-icon-button (click)="fileInput.click()">
+            <button matIconButton (click)="fileInput.click()">
               <mat-icon>photo_camera</mat-icon>
             </button>
           </div>
@@ -57,17 +57,17 @@
       </div>
     
       <div class="actions">
-        <button mat-flat-button (click)="onCancel()">Cancel</button>
-        <button mat-flat-button color="primary" (click)="onSave()">Save</button>
+        <button matButton (click)="onCancel()">Cancel</button>
+        <button matButton="filled" (click)="onSave()">Save</button>
       </div>
     </mat-card>
     
     <mat-card class="card" *ngIf="user.authentication.type === 'local'">
       <div>
-        <div class="mat-h1">Password</div>
-        <div class="mat-caption">It's a good idea to use a strong password that you're not using elsewhere.</div>
+        <div class="section-title">Password</div>
+        <div class="section-subtitle">It's a good idea to use a strong password that you're not using elsewhere.</div>
       </div>
-
+      
       <form [formGroup]="password">
         <mat-form-field appearance="fill">
           <mat-label>Type your current password</mat-label>
@@ -93,8 +93,8 @@
 
       <div>
         <div class="password-strength">
-          <div class="mat-body-1">Password Strengh</div>
-          <div class="mat-body-2">{{passwordStrength?.text}}</div>
+          <div class="strength-label">Password Strength</div>
+          <div class="strength-value">{{passwordStrength?.text}}</div>
         </div>
         <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"></mat-progress-bar>
       </div>
@@ -105,8 +105,8 @@
       </div>
     
       <div class="actions">
-        <button mat-flat-button (click)="onCancelPassword()">Cancel</button>
-        <button mat-flat-button color="primary" (click)="onResetPassword()">Reset Password</button>
+        <button matButton (click)="onCancelPassword()">Cancel</button>
+        <button matButton="filled" (click)="onResetPassword()">Reset Password</button>
       </div>
     </mat-card>
   </div>

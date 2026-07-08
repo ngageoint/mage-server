@@ -11,6 +11,15 @@ const crypto = require('crypto')
 const JWTService = verification.JWTService;
 const TokenAssertion = verification.TokenAssertion;
 
+const [apiVersionMajor, apiVersionMinor, apiVersionPatch] = packageJson.apiVersion.split('.').map(Number);
+const apiInfo = {
+  name: packageJson.name,
+  nodeVersion: process.versions.node,
+  description: packageJson.description,
+  version: { major: apiVersionMajor, minor: apiVersionMinor, patch: apiVersionPatch },
+  serverVerion: packageJson.version
+};
+
 class AuthenticationInitializer {
   static tokenService = new JWTService(crypto.randomBytes(64).toString('hex'), 'urn:mage');
   static app;

@@ -45,15 +45,16 @@ export const OBJECT_URL_SERVICE = new InjectionToken<ObjectUrlService>(`${select
  * URLs for the image data, preventing memory leaks.
  */
 @Component({
-  selector: `${selector}`,
-  template: `<img [attr.src]="safeBlobUrl" (load)="onImgLoad()"/>`,
-  styles: [ `img { height: 100%; width: 100% }` ],
-  providers: [
-    {
-      provide: OBJECT_URL_SERVICE,
-      useValue: URL
-    }
-  ]
+    selector: `${selector}`,
+    template: `<img [attr.src]="safeBlobUrl" (load)="onImgLoad()"/>`,
+    styles: [`img { height: 100%; width: 100% }`],
+    providers: [
+        {
+            provide: OBJECT_URL_SERVICE,
+            useValue: URL
+        }
+    ],
+    standalone: false
 })
 export class XhrImgComponent implements OnChanges, OnDestroy {
 

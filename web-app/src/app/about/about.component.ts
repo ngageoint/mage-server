@@ -1,18 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../api/api.service';
-import {Location} from '@angular/common';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'about',
-  templateUrl: './about.component.html',
-  styleUrls: ['./about.component.scss', '../../../node_modules/font-awesome/css/font-awesome.min.css']
+    selector: 'about',
+    templateUrl: './about.component.html',
+    styleUrls: ['./about.component.scss'],
+    standalone: false
 })
 export class AboutComponent implements OnInit {
-  mageVersion: {
+  apiVersion: {
     major: number,
     minor: number,
-    micro: number
+    patch: number
   }
+  serverVersion: string
   apk: string
   nodeVersion: string
   mongoVersion: string
@@ -21,13 +24,15 @@ export class AboutComponent implements OnInit {
   showDevContact: boolean = false;
 
   constructor(
-    private _location: Location,
+    private location: Location,
+    private router: Router,
     public apiService: ApiService,
   ) {}
 
   ngOnInit(): void {
     this.apiService.getApi().subscribe(api =>{
-      this.mageVersion = api?.version;
+      this.apiVersion = api?.version;
+      this.serverVersion = api?.serverVersion;
       this.apk = api?.apk;
       this.nodeVersion = api.environment?.nodeVersion;
       this.mongoVersion = api.environment?.mongodbVersion;
@@ -40,6 +45,10 @@ export class AboutComponent implements OnInit {
   }
 
   onBack(): void {
-    this._location.back();
+    if (window.history.state?.navigationId > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['home']);
+    }
   }
 }

@@ -1,0 +1,48 @@
+$preview-height: 550px;
+
+.preview-container {
+  width: 100%;
+  height: $preview-height;
+  position: relative;
+}
+
+.map-wrapper,
+.layer-preview-map {
+  width: 100%;
+  height: $preview-height;
+}
+
+.layer-preview-map {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.no-preview {
+  width: 100%;
+  height: $preview-height;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mat-sys-surface-container-low);
+  border-radius: 8px;
+}
+
+.no-preview-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.no-preview-icon {
+  font-size: 4rem;
+  width: 4rem;
+  height: 4rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 1rem;
+}
+
+.no-preview-text {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: var(--mat-sys-body-large-size);
+  font-weight: 400;
+  margin: 0;
+}

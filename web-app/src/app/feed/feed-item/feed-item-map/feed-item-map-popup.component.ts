@@ -4,9 +4,10 @@ import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 
 @Component({
-  selector: 'feed-item-map-popup',
-  templateUrl: './feed-item-map-popup.component.html',
-  styleUrls: ['./feed-item-map-popup.component.scss']
+    selector: 'feed-item-map-popup',
+    templateUrl: './feed-item-map-popup.component.html',
+    styleUrls: ['./feed-item-map-popup.component.scss'],
+    standalone: false
 })
 export class FeedItemMapPopupComponent implements OnInit {
   @Input() feed: Feed;

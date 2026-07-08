@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
-import { LocalStorageService } from '../../http/local-storage.service';
-import { UserService } from '../../user/user.service';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
-  selector: 'observation-attachment',
-  templateUrl: './attachment.component.html',
-  styleUrls: ['./attachment.component.scss']
+    selector: 'observation-attachment',
+    templateUrl: './attachment.component.html',
+    styleUrls: ['./attachment.component.scss'],
+    standalone: false
 })
 export class AttachmentComponent implements OnInit {
   @Input() attachment: any
@@ -30,14 +30,13 @@ export class AttachmentComponent implements OnInit {
   actions: typeof AttachmentAction = AttachmentAction
 
   constructor(
-    private userService: UserService,
-    localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) {
-    this.token = localStorageService.getToken()
+    this.token = sessionService.getToken()
   }
 
   ngOnInit(): void {
-    this.canEdit = this.userService.amAdmin && this.edit
+    this.canEdit = this.sessionService.amAdmin && this.edit
   }
 
   deleteAttachment(): void {
