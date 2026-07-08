@@ -260,6 +260,17 @@ module.exports = function(app, security) {
     function(req, res, next) {
       Team.updateUserInAcl(req.team._id, req.params.id, req.body.role, function(err, event) {
         if (err) return next(err);
+
+        UserModel.getUserById(req.params.id, function(err, member) {
+          log.info('team member role updated', {
+            user: member ? member.username : undefined,
+            team: req.team.name,
+            role: req.body.role,
+            updatedBy: req.user.username,
+            updatedTime: new Date().toISOString()
+          });
+        });
+
         res.json(event);
       });
     }
