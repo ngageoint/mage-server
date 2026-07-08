@@ -2,7 +2,7 @@ import express from 'express'
 import { Logger } from '../entities/entities.logging'
 
 const mutatingMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-const loggedPathPrefixes = ['/api', '/auth']
+const loggedPathPrefixes = ['/api', '/auth', '/plugins']
 
 function sanitizeUrl(originalUrl: string): string {
   // redact token credentials that some routes accept via query string
@@ -10,7 +10,7 @@ function sanitizeUrl(originalUrl: string): string {
 }
 
 /**
- * Log every request under /api and /auth with the user that made it.
+ * Log every request under /api, /auth, and /plugins with the user that made it.
  * Logging happens on the response finish event, after passport's bearer
  * strategy has resolved the request token to req.user, so the log line
  * carries the acting user's name rather than a token.

@@ -68,6 +68,14 @@ describe('http request logging middleware', () => {
     expect(meta.user).to.equal('anonymous');
   });
 
+  it('logs plugin route requests', async () => {
+    await supertest(app).post('/plugins/sftp/config').expect(200);
+
+    expect(logger.info.calledOnce).to.be.true;
+    const [message] = logger.info.firstCall.args;
+    expect(message).to.equal('POST /plugins/sftp/config');
+  });
+
   it('logs the attempted username on unauthenticated signin requests', async () => {
     await supertest(app)
       .post('/auth/local/signin')
