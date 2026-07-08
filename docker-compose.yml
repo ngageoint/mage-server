@@ -1,19 +1,13 @@
 services:
 
   mage-db:
-    image: mongo:6.0.28
+    image: mongodb/mongodb-community-server:8.0-ubi9-slim
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
-    # ports:
-    #   - 27017:27017
     ports:
       - 27017:27017
     volumes:
       - ./database/data:/data/db
-    # Uncomment the following ports block to allow the mongo client on your
-    # host machine to connect to MongoDB in the Docker container.
-    # ports:
-    #   - 27017:27017
     networks:
       - mage.net
 

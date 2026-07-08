@@ -7,7 +7,6 @@ RUN npm ci
 RUN npm run build
 RUN npm pack
 
-# Build web-app
 FROM $BASE_IMAGE AS build-webapp
 WORKDIR /web-app
 COPY web-app/ ./
