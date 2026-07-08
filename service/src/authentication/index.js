@@ -1,7 +1,7 @@
 const crypto = require('crypto')
   , verification = require('./verification')
   , api = require('../api/')
-  , config = require('../config.js')
+  , packageJson = require('../../package.json')
   , log = require('../logger').child({ component: 'authentication' })
   , userTransformer = require('../transformers/user')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
@@ -115,7 +115,7 @@ class AuthenticationInitializer {
             tokenExpiration: token.expirationDate
           });
 
-          authenticationApiAppender.append(config.api).then(api => {
+          authenticationApiAppender.append(apiInfo).then(api => {
             res.json({
               token: token.token,
               expirationDate: token.expirationDate,
