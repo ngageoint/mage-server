@@ -1,10 +1,9 @@
 const mongoose = require('mongoose')
-  , config = require('../config.js')
   , Location = require('./location');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
-const locationLimit = config.server.locationServices.userCollectionLocationLimit;
+const locationLimit = 100;
 
 // Creates the Schema for FFT Locations
 const CappedLocationSchema = new Schema({

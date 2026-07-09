@@ -1,7 +1,6 @@
 "use strict";
 
-const config = require('../config.js'),
-  log = require('winston');
+const log = require('winston');
 
 exports.id = 'set-default-password-policy';
 
@@ -41,13 +40,6 @@ const passwordPolicy = {
 
 exports.up = async function (done) {
   log.info('Setting default password policy');
-
-  if (config.api.authenticationStrategies && config.api.authenticationStrategies['local']) {
-    const local = config.api.authenticationStrategies['local'];
-    if (local.passwordMinLength) {
-      passwordPolicy.passwordMinLength = local.passwordMinLength;
-    }
-  }
 
   let update = {
     $rename: {
