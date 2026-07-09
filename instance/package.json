@@ -29,7 +29,10 @@
     "@ngageoint/mage.sftp.web": "../plugins/sftp/web/dist/main",
     "@ngageoint/mage.sftp.service": "../plugins/sftp/service",
     "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
+    "@ngageoint/mage.random": "../plugins/random",
     "@ngageoint/mage.service": "../service",
-    "@ngageoint/mage.web-app": "../web-app/dist/app"
+    "@ngageoint/mage.web-app": "../web-app/dist/app",
+    "@jiatfs/mage.csii.service": "../plugins/mage-m2c2/service",
+    "@jiatfs/mage.m2c2.web": "../plugins/mage-m2c2/web-app/dist/mage-m2c2-web"
   }
 }
