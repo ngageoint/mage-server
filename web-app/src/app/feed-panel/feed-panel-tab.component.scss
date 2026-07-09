@@ -1,48 +1,14 @@
-.icon {
-  position: relative;
-  color: rgba(0, 0, 0, .40);
-}
-
-.icon__active {
-  color: var(--mat-sys-primary);
-}
-
-.img {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  background-color: rgba(0, 0, 0, 0.4);
-  mask-size: 24px 24px;
-  -webkit-mask-size: 24px 24px;
-}
-
-.img__active {
-  background-color: var(--mat-sys-primary);
-}
-
 .tab {
   position: relative;
   display: flex;
   align-items: center;
   padding: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  cursor: hand;
 }
 
-.tab--title {
-  position: absolute;
-  color: rgba(0, 0, 0, .40);
-  margin-left: 40px;
-  white-space: nowrap;
-}
-
-.tab--title__active {
-  color: var(--mat-sys-primary);
-}
-
-.tab>mat-icon {
-  font-size: 24px;
-  height: 24px;
+.tab__icon {
+  display: block;
   width: 24px;
+  height: 24px;
+  font-size: 24px;
 }

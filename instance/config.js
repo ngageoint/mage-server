@@ -37,11 +37,15 @@ module.exports = {
       servicePlugins: [
         '@ngageoint/mage.arcgis.service',
         '@ngageoint/mage.sftp.service',
-        '@ngageoint/mage.nga-msi'
+        '@ngageoint/mage.nga-msi',
+        '@ngageoint/mage.random',
+        "@jiatfs/mage.csii.service",
+        "@jiatfs/mage.csii.service/lib/m2c2/main"
       ],
       webUIPlugins: [
         '@ngageoint/mage.arcgis.web-app',
-        '@ngageoint/mage.sftp.web'
+        '@ngageoint/mage.sftp.web',
+        "@jiatfs/mage.m2c2.web",
       ],
     },
   }

@@ -63,7 +63,8 @@ import {
 import {
   ListStaticIcons,
   GetStaticIcon,
-  GetStaticIconContent
+  GetStaticIconContent,
+  CreateStaticIcon
 } from './app.impl/icons/app.impl.icons';
 import { RoleBasedStaticIconPermissionService } from './permissions/permissions.icons';
 import { PluginUrlScheme } from './adapters/url_schemes/adapters.url_schemes.plugin';
@@ -522,7 +523,7 @@ async function initRepositories(
   const staticIconRepo = new MongooseStaticIconRepository(
     models.icons.staticIcon,
     new SimpleIdFactory(),
-    new FileSystemIconContentStore(),
+    new FileSystemIconContentStore(environment.iconBaseDirectory),
     [new PluginUrlScheme(config.plugins?.servicePlugins || [])]
   );
   const userRepo = new MongooseUserRepository(models.users.user);
@@ -667,7 +668,8 @@ function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
   return {
     getIcon: GetStaticIcon(permissions, repos.icons.staticIconRepo),
     getIconContent: GetStaticIconContent(permissions, repos.icons.staticIconRepo),
-    listIcons: ListStaticIcons(permissions)
+     listIcons: ListStaticIcons(permissions),
+    createIcon: CreateStaticIcon(permissions, repos.icons.staticIconRepo)
   };
 }
 

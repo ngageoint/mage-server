@@ -71,7 +71,8 @@ mat-toolbar {
   color: var(--mat-sys-primary);
 
   mat-icon,
-  mage-static-icon-img {
+  mage-static-icon-img,
+  feed-icon {
     width: 40px;
     height: 40px;
   }
@@ -79,6 +80,17 @@ mat-toolbar {
   mat-icon {
     font-size: 40px;
     line-height: 40px;
+  }
+
+  feed-icon {
+    display: block;
+
+    ::ng-deep mat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 40px;
+      line-height: 40px;
+    }
   }
 }
 

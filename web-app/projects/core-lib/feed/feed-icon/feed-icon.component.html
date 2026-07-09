@@ -1,0 +1,17 @@
+
+<div *ngIf="iconMaskImage" class="icon-mask" [ngClass]="active ? 'icon-mask--active' : 'icon-mask--inactive'"
+  [style.width]="size + 'px'" [style.height]="size + 'px'"
+  [style.mask-image]="iconMaskImage" [style.-webkit-mask-image]="iconMaskImage"></div>
+<mat-icon
+    *ngIf="!iconMaskImage && !isImageIcon"
+    matBadge="{{badge}}"
+    matBadgePosition="above after"
+    matBadgeSize="small"
+    [matBadgeHidden]="badge === 0"
+    class="material-icons-outlined"
+    [ngClass]="active ? 'icon--active' : 'icon--inactive'"
+    [style.fontSize]="size + 'px'"
+    [style.width]="size + 'px'"
+    [style.height]="size + 'px'">
+      {{icon?.name ?? 'rss_feed'}}
+  </mat-icon>
