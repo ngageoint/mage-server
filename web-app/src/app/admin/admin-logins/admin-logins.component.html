@@ -1,4 +1,4 @@
-<mat-card appearance="outlined" class="logins-shell">
+<mat-card appearance="raised" class="logins-shell">
   <mat-card-header>
     <mat-card-title>Logins</mat-card-title>
   </mat-card-header>
@@ -50,27 +50,29 @@
   <div class="list-content">
     <mat-list>
       <mat-list-item *ngFor="let login of loginPage?.logins || []">
-        <span matListItemLine class="login-date">{{ fromNow(login.timestamp) }}</span>
-        <span matListItemTitle>{{ login.user?.displayName || 'Unknown User' }}</span>
-        <span matListItemLine>{{ platformLabel(login.device) }} · {{ login.device?.userAgent || 'Unknown' }}</span>
-        <span matListItemMeta class="login-actions">
-          <button
-            matIconButton
-            *ngIf="login.user?.id"
+        <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
+        <span matListItemTitle>
+          <a
+            *ngIf="login.user?.id; else userDisplayName"
+            class="login-link"
+            tabindex="0"
+            role="link"
             (click)="goToUser($event, login)"
-            aria-label="View User"
-          >
-            <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
-          </button>
-          <button
-            matIconButton
-            *ngIf="login.device?.id"
+            (keydown.enter)="goToUser($event, login)"
+          >{{ login.user?.displayName || 'Unknown User' }}</a>
+          <ng-template #userDisplayName>{{ login.user?.displayName || 'Unknown User' }}</ng-template>
+          <span class="login-via">via</span>
+          <a
+            *ngIf="login.device?.id; else deviceDisplayName"
+            class="login-link login-device"
+            tabindex="0"
+            role="link"
             (click)="goToDevice($event, login)"
-            aria-label="View Device"
-          >
-            <mat-icon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
-          </button>
+            (keydown.enter)="goToDevice($event, login)"
+          >{{ platformLabel(login.device) }}</a>
+          <ng-template #deviceDisplayName><span class="login-device">{{ platformLabel(login.device) }}</span></ng-template>
         </span>
+        <span matListItemLine>{{ fromNow(login.timestamp) }} · {{ absoluteTime(login.timestamp) }}</span>
       </mat-list-item>
 
       <div class="empty-state" *ngIf="!loginPage || loginPage.logins.length === 0">

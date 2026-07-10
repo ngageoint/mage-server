@@ -268,14 +268,18 @@ export class LoginsComponent implements OnInit {
     return moment(timestamp).fromNow();
   }
 
-  goToUser(event: MouseEvent, login: Login): void {
+  absoluteTime(timestamp: string | Date): string {
+    return moment(timestamp).format('lll');
+  }
+
+  goToUser(event: Event, login: Login): void {
     event.stopPropagation();
     if (!login.user?.id) return;
 
     this.router.navigate(['/admin/users', login.user.id]);
   }
 
-  goToDevice(event: MouseEvent, login: Login): void {
+  goToDevice(event: Event, login: Login): void {
     event.stopPropagation();
     if (!login.device?.id) return;
 
