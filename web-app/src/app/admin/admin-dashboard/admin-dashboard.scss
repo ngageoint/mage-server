@@ -9,7 +9,7 @@
 
 .dashboard-panel-card {
   flex: 1 1 0;
-  height: 468px;
+  height: 528px;
   overflow: hidden;
   --mat-card-elevated-container-color: white;
   --mat-badge-background-color: var(--mat-sys-tertiary);
@@ -39,6 +39,10 @@ mat-nav-list.item-list {
   padding: 0;
   --mat-list-list-item-leading-icon-color: var(--mat-sys-on-surface-variant);
   --mat-list-list-item-leading-avatar-color: transparent;
+
+  mat-list-item {
+    flex-shrink: 0;
+  }
 }
 
 .primary-icon {
