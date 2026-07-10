@@ -41,7 +41,8 @@
         <div class="row">
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input matInput placeholder="Username" [formControl]="info.controls.email">
+            <input matInput placeholder="Email" [formControl]="info.controls.email">
+            <mat-error *ngIf="info.controls.email.hasError('email')">Must be a valid email address</mat-error>
           </mat-form-field>
     
           <mat-form-field appearance="fill">
