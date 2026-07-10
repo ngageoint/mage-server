@@ -30,7 +30,7 @@ export MAGE_LOG_LEVEL=info
 export MONGOOSE_LOG_LEVEL=info
 # log output format: 'json' emits one JSON object per line for log collectors
 # (Splunk, CloudWatch, etc.); any other value emits the human-readable console format
-export MAGE_LOG_FORMAT=
+export MAGE_LOG_FORMAT=json
 # the URL that specifies MAGE's connection to mongodb
 export MAGE_MONGO_URL=mongodb://127.0.0.1:27017/magedb
 # whether to use secure, TLS sockets to connect to mongo
