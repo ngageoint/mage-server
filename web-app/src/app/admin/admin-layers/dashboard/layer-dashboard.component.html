@@ -41,7 +41,13 @@
     </mat-nav-list>
 
     <ng-template #noLayers>
-      <div class="no-layers">No layers found.</div>
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">layers</mat-icon>
+        <div class="empty-state-text" *ngIf="layerSearch; else noLayersFound">No layers match your search</div>
+        <ng-template #noLayersFound>
+          <div class="empty-state-text">No layers found</div>
+        </ng-template>
+      </div>
     </ng-template>
 
     <mat-paginator

@@ -32,7 +32,13 @@
     </mat-nav-list>
 
     <ng-template #noTeams>
-      <div class="no-teams">No teams found.</div>
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+        <div class="empty-state-text" *ngIf="teamSearch; else noTeamsFound">No teams match your search</div>
+        <ng-template #noTeamsFound>
+          <div class="empty-state-text">No teams found</div>
+        </ng-template>
+      </div>
     </ng-template>
 
     <mat-paginator
