@@ -1,88 +1,82 @@
-FROM node:22 AS build-service
+ARG BASE_IMAGE="node:24-slim"
 
+FROM $BASE_IMAGE AS build-service
 WORKDIR /service
-COPY service/package*.json ./
-RUN npm install
 COPY service/ ./
+RUN npm ci
+RUN npm run build
+WORKDIR /packages
+RUN npm pack /service
+
+FROM $BASE_IMAGE AS build-web-app
+WORKDIR /web-app
+COPY web-app/ ./
+RUN npm ci
+RUN npm run build
+WORKDIR /packages
+RUN npm pack /web-app/dist/app
+RUN npm pack /web-app/dist/core-lib
+
+FROM $BASE_IMAGE AS build-image-service
+WORKDIR /image.service
+COPY plugins/image/service/ ./
+COPY --from=build-service /packages/ /packages
+RUN npm i /packages/ngageoint-mage.service-*.tgz
 RUN npm run build
 RUN npm pack
 
-# Build web-app
-FROM node:22 AS build-webapp
-
-WORKDIR /web-app
-COPY web-app/package*.json ./
-RUN npm install
-COPY web-app/ ./
+FROM $BASE_IMAGE AS build-arcgis-service
+WORKDIR /arcgis.service
+COPY plugins/arcgis/service/ ./
+COPY --from=build-service /packages/ /packages
+RUN npm i /packages/ngageoint-mage.service-*.tgz
 RUN npm run build
-RUN npm pack ./dist/app
+RUN npm pack
 
-# FROM node:22 AS build-arcwebplugin
-# # Build arcgis service plugin
-# WORKDIR /arcgiswebplugin
-# COPY plugins/arcgis/web-app/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /arcgiswebplugin/node_modules/@ngageoint/mage.service
-# COPY plugins/arcgis/web-app/ ./
-# RUN npm run build
-# RUN npm pack ./dist/main
+FROM $BASE_IMAGE AS build-arcgis-web
+WORKDIR /arcgis.web
+COPY plugins/arcgis/web-app/ ./
+COPY --from=build-web-app /packages/ /packages
+# TODO: uncomment this line to build with local core-lib when web plugin is upgraded to angular 20
+# RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
+# TODO: remoove this line after activating above line
+RUN npm ci
+RUN npm run build
+RUN npm pack ./dist/main
 
-# FROM node:22 AS build-arcserviceplugin
-# WORKDIR /arcgisserviceplugin
-# COPY plugins/arcgis/service/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /arcgisserviceplugin/node_modules/@ngageoint/mage.service
-# COPY plugins/arcgis/service/ ./
-# RUN npm run build
-# RUN npm pack
+FROM $BASE_IMAGE AS build-sftp-service
+WORKDIR /sftp.service
+COPY plugins/sftp/service/ ./
+COPY --from=build-service /packages/ /packages
+RUN npm i /packages/ngageoint-mage.service-*.tgz
+RUN npm run build
+RUN npm pack
 
-# FROM node:22 AS build-imageserviceplugin
-# WORKDIR /imageserviceplugin
-# COPY plugins/image/service/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /imageserviceplugin/node_modules/@ngageoint/mage.service
-# RUN rm -rf /imageserviceplugin/node_modules/@ngageoint/mage.service/node_modules/mongoose
-# COPY plugins/image/service/ ./
-# RUN npm run build
-# RUN npm pack
-
-# FROM node:22 AS build-sftpserviceplugin
-# WORKDIR /sftpserviceplugin
-# COPY plugins/sftp/service/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /sftpserviceplugin/node_modules/@ngageoint/mage.service
-# COPY plugins/sftp/service/ ./
-# RUN npm run build
-# RUN npm pack
-
-# FROM node:22 AS build-sftpwebplugin
-# # Build sftp service plugin
-# WORKDIR /sftpwebplugin
-# COPY plugins/sftp/web/package*.json ./
-# RUN npm install
-# COPY plugins/sftp/web/ ./
-# RUN npm run build
-# RUN npm pack ./dist/main
+FROM $BASE_IMAGE AS build-sftp-web
+WORKDIR /sftp.web
+COPY plugins/sftp/web/ ./
+COPY --from=build-web-app /packages/ /packages
+# TODO: uncomment this line to build with local core-lib when web plugin is upgraded to angular 20
+# RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
+# TODO: remoove this line after activating above line
+RUN npm ci
+RUN npm run build
+RUN npm pack ./dist/main
 
 # Build instance
-FROM node:22 AS build-instance
-COPY --from=build-service /service/ngageoint*.tgz /service/
-COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
-# COPY --from=build-arcwebplugin /arcgiswebplugin/ngageoint*.tgz /arcgiswebplugin/
-# COPY --from=build-arcserviceplugin /arcgisserviceplugin/ngageoint*.tgz /arcgisserviceplugin/
-# COPY --from=build-sftpserviceplugin /sftpserviceplugin/ngageoint*.tgz /sftpserviceplugin/
-# COPY --from=build-sftpwebplugin /sftpwebplugin/ngageoint*.tgz /sftpwebplugin/
-
+FROM $BASE_IMAGE AS build-instance
 ENV MAGE_HOME=/home/mage/instance
 WORKDIR ${MAGE_HOME}
+COPY --from=build-service /packages/ngageoint-mage.service-*.tgz ${MAGE_HOME}/packages/
+COPY --from=build-web-app /packages/ngageoint-mage.web-app-*.tgz ${MAGE_HOME}/packages/
+COPY --from=build-image-service /image.service/ngageoint-mage.image.service-*.tgz ${MAGE_HOME}/packages/
+COPY --from=build-arcgis-service /arcgis.service/ngageoint-mage.*.tgz ${MAGE_HOME}/packages/
+COPY --from=build-arcgis-web /arcgis.web/ngageoint-mage.arcgis.web-*.tgz ${MAGE_HOME}/packages/
+COPY --from=build-sftp-service /sftp.service/ngageoint-*.tgz ${MAGE_HOME}/packages/
+COPY --from=build-sftp-web /sftp.web/ngageoint-*.tgz ${MAGE_HOME}/packages/
 
-RUN npm install ../../../service/ngageoint-mage.service*.tgz 
-RUN npm install ../../../web-app/ngageoint-mage.web-app*.tgz
-# RUN npm install ../../../sftpwebplugin/ngageoint-mage.sftp.web*.tgz 
-# RUN npm install ../../../sftpserviceplugin/ngageoint-mage.sftp.service*.tgz 
-# RUN npm install ../../../arcgiswebplugin/ngageoint*.tgz 
-# RUN npm install ../../../arcgisserviceplugin/ngageoint*.tgz 
+# TODO: remove --force after upgrading web plugins
+RUN npm install --force --omit dev ${MAGE_HOME}/packages/*.tgz
 RUN ln -s ./node_modules/.bin/mage.service
 
-ENV NODE_PATH=./node_modules
 ENTRYPOINT [ "./mage.service" ]
