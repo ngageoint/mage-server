@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=node:22-slim
+ARG BASE_IMAGE=node:24-slim
 FROM ${BASE_IMAGE}
 
 LABEL author="NGA"
