@@ -7,6 +7,7 @@ import { Subject, first } from 'rxjs';
 import { FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
+  standalone: false,
   selector: 'arc-admin',
   templateUrl: './arc-admin.component.html',
   styleUrls: ['./arc-admin.component.scss']

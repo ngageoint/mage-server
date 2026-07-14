@@ -30,6 +30,7 @@ WORKDIR /arcgis.service
 COPY plugins/arcgis/service/ ./
 COPY --from=build-service /packages/ /packages
 RUN npm i /packages/ngageoint-mage.service-*.tgz
+RUN npm install
 RUN npm run build
 RUN npm pack
 
@@ -38,9 +39,10 @@ WORKDIR /arcgis.web
 COPY plugins/arcgis/web-app/ ./
 COPY --from=build-web-app /packages/ /packages
 # TODO: uncomment this line to build with local core-lib when web plugin is upgraded to angular 20
-# RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
+RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
 # TODO: remoove this line after activating above line
-RUN npm ci
+# RUN npm ci
+RUN npm install
 RUN npm run build
 RUN npm pack ./dist/main
 
@@ -49,6 +51,7 @@ WORKDIR /sftp.service
 COPY plugins/sftp/service/ ./
 COPY --from=build-service /packages/ /packages
 RUN npm i /packages/ngageoint-mage.service-*.tgz
+RUN npm install
 RUN npm run build
 RUN npm pack
 
@@ -57,9 +60,10 @@ WORKDIR /sftp.web
 COPY plugins/sftp/web/ ./
 COPY --from=build-web-app /packages/ /packages
 # TODO: uncomment this line to build with local core-lib when web plugin is upgraded to angular 20
-# RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
+RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
 # TODO: remoove this line after activating above line
-RUN npm ci
+# RUN npm ci
+RUN npm install
 RUN npm run build
 RUN npm pack ./dist/main
 

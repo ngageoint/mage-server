@@ -21,6 +21,7 @@ import { MatSelect } from '@angular/material/select';
 import { MatOption, MatOptionSelectionChange } from '@angular/material/core';
 
 @Component({
+  standalone: false,
   selector: 'arc-event',
   templateUrl: './arc-event.component.html',
   styleUrls: ['./arc-event.component.scss']
