@@ -3,6 +3,7 @@ import { Logger } from '../entities/entities.logging'
 
 const mutatingMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const loggedPathPrefixes = ['/api', '/auth', '/plugins']
+export const defaultLoggedMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 
 function sanitizeUrl(originalUrl: string): string {
   // redact token credentials that some routes accept via query string
@@ -15,7 +16,8 @@ function sanitizeUrl(originalUrl: string): string {
  * strategy has resolved the request token to req.user, so the log line
  * carries the acting user's name rather than a token.
  */
-export function httpRequestLogging(log: Logger): express.RequestHandler {
+export function httpRequestLogging(log: Logger, loggedMethods: string[] = defaultLoggedMethods): express.RequestHandler {
+  const methods = new Set(loggedMethods.map(m => m.trim().toUpperCase()).filter(m => m.length > 0))
   return (req, res, next) => {
     if (!loggedPathPrefixes.some(p => req.path === p || req.path.startsWith(p + '/'))) {
       return next()
@@ -34,6 +36,9 @@ export function httpRequestLogging(log: Logger): express.RequestHandler {
       }
       if (res.statusCode === 401 || res.statusCode === 403) {
         log.warn(message, meta)
+      }
+      else if (!methods.has(req.method)) {
+        return
       }
       else if (mutatingMethods.has(req.method)) {
         log.info(message, meta)

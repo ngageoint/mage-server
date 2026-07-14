@@ -130,6 +130,51 @@ describe('http request logging middleware', () => {
     expect(postMeta.status).to.equal(401);
   });
 
+  it('does not log methods excluded from the configured method list', async () => {
+    app = express();
+    app.use(httpRequestLogging(logger, ['POST', 'PUT', 'PATCH', 'DELETE']));
+    app.use((req, res) => res.sendStatus(200));
+
+    await supertest(app).get('/api/events').expect(200);
+    await supertest(app).post('/api/events').expect(200);
+
+    expect(logger.debug.called).to.be.false;
+    expect(logger.info.calledOnce).to.be.true;
+    const [message] = logger.info.firstCall.args;
+    expect(message).to.equal('POST /api/events');
+  });
+
+  it('logs unauthorized responses at warn even for excluded methods', async () => {
+    app = express();
+    app.use(httpRequestLogging(logger, ['POST', 'PUT', 'PATCH', 'DELETE']));
+    app.get('/api/admin/thing', (req, res) => res.sendStatus(403));
+    app.use((req, res) => res.sendStatus(200));
+
+    await supertest(app).get('/api/admin/thing').expect(403);
+    await supertest(app).get('/api/events').expect(200);
+
+    expect(logger.warn.calledOnce).to.be.true;
+    expect(logger.debug.called).to.be.false;
+    expect(logger.info.called).to.be.false;
+    const [message, meta] = logger.warn.firstCall.args;
+    expect(message).to.equal('GET /api/admin/thing');
+    expect(meta.status).to.equal(403);
+  });
+
+  it('normalizes configured method names', async () => {
+    app = express();
+    app.use(httpRequestLogging(logger, [' get ', 'post']));
+    app.use((req, res) => res.sendStatus(200));
+
+    await supertest(app).get('/api/events').expect(200);
+    await supertest(app).delete('/api/events/1').expect(200);
+
+    expect(logger.debug.calledOnce).to.be.true;
+    expect(logger.info.called).to.be.false;
+    const [message] = logger.debug.firstCall.args;
+    expect(message).to.equal('GET /api/events');
+  });
+
   it('logs anonymous when no user is on the request', async () => {
     await supertest(app).post('/api/open').expect(200);
 
