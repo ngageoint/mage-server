@@ -1,5 +1,5 @@
 import { TestBed, waitForAsync } from '@angular/core/testing'
-import { MageArcModule } from '@@main'
+import { MageArcModule } from './mage-arc.module'
 import { createNgModule, Injector, NgModuleRef, Type } from '@angular/core'
 import { BrowserTestingModule } from '@angular/platform-browser/testing'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
