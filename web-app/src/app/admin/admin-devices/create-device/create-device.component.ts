@@ -48,7 +48,7 @@ export class CreateDeviceDialogComponent {
       ? this.deviceService.updateDevice(String(this.data.device!.id), {
           uid: deviceData.uid,
           description: deviceData.description,
-          user: deviceData.userId ? ({ id: deviceData.userId } as any) : null
+          userId: deviceData.userId || null
         })
       : this.deviceService.createDevice(deviceData);
 

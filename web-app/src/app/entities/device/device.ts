@@ -12,6 +12,13 @@ export type Device = {
   iconClass?: string;
 };
 
+export type DeviceRequest = {
+  uid?: string;
+  description?: string;
+  userId?: string | null;
+  registered?: boolean;
+};
+
 export function platformLabel(device: Device | null | undefined): string {
   if (!device) return 'Unknown';
   if (device.appVersion === 'Web Client') return 'Web';

@@ -255,7 +255,7 @@ exports.createDevice = function (device) {
 
 exports.updateDevice = function (id, update) {
   const options = { new: true, runValidators: true };
-  return Device.findOneAndUpdate({ _id: id }, update, options).exec();
+  return Device.findOneAndUpdate({ _id: id }, update, options).populate('userId').exec();
 };
 
 exports.deleteDevice = function (id) {
