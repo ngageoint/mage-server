@@ -123,6 +123,8 @@ export class ProfileComponent implements OnInit {
     if (this.password.valid) {
       this.userService.updatePassword(this.password.controls.currentPassword.value, this.password.controls.newPassword.value).subscribe({
         next: () => {
+          this.sessionService.clearSession()
+
           const dialogRef = this.dialog.open(PasswordResetSuccessDialog, {
             disableClose: true,
             autoFocus: false
