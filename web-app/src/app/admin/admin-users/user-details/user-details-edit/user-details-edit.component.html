@@ -1,6 +1,6 @@
 <admin-breadcrumb [breadcrumbs]="breadcrumbs">
   <div class="nav-actions">
-    <button matButton="outlined" type="button" (click)="cancelled.emit()" [disabled]="saving">
+    <button matButton="outlined" class="cancel-button" type="button" (click)="cancelled.emit()" [disabled]="saving">
       <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
       Cancel
     </button>
