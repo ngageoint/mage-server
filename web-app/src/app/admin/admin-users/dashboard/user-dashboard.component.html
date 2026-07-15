@@ -1,7 +1,7 @@
 <admin-breadcrumb [breadcrumbs]="breadcrumbs">
   <div class="nav-actions">
-    <button matButton="outlined" *ngIf="hasUserCreatePermission" (click)="openImportModal()">
-      <mat-icon>upload</mat-icon>Import Users
+    <button matButton="outlined" class="import-users-button" *ngIf="hasUserCreatePermission" (click)="openImportModal()">
+      <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Import Users
     </button>
     <button matButton="filled" *ngIf="hasUserCreatePermission" (click)="createUser()">
       <mat-icon>add</mat-icon>New User

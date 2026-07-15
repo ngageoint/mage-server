@@ -3,6 +3,11 @@
   gap: 8px;
 }
 
+.import-users-button {
+  color: var(--mat-sys-primary) !important;
+  border-color: var(--mat-sys-primary) !important;
+}
+
 :host {
   display: flex;
   flex-direction: column;
