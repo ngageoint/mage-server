@@ -116,7 +116,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
       const file = path.join(exportDirectory, exportReq.export!.relativePath!);
       res.writeHead(200, {
         'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${exportReq.export!.filename}`
+        'Content-Disposition': `attachment; filename="${exportReq.export!.filename}"`
       });
       const readStream = fs.createReadStream(file);
       readStream.pipe(res);
