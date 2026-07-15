@@ -73,7 +73,7 @@ const authentication = AuthenticationInitializer.initialize(
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
 require('./routes')(app, { authentication });
 
-const adminDist = path.join(__dirname, '..', '..', 'web-app', 'dist', 'admin');
+const adminDist = path.join(path.dirname(require.resolve('@ngageoint/mage.web-app/package.json')), 'admin');
 
 app.use(
   '/admin',
