@@ -404,7 +404,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
         this.saving = false;
         this.error = {
-          message: err.data.message,
+          message: err.error?.message || 'Please check your entries and try again.',
         };
       },
     });
