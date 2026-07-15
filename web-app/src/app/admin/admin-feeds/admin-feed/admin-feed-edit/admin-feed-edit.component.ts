@@ -17,7 +17,7 @@ export class AdminFeedEditComponent implements OnInit {
     {
       title: 'Feeds',
       icon: 'rss_feed',
-      route: ['/feeds']
+      route: ['/admin/feeds']
     }
   ];
 
@@ -60,7 +60,7 @@ export class AdminFeedEditComponent implements OnInit {
       if (nextOriginalFeed && !this.editState.originalFeed) {
         this.breadcrumbs[1] = {
           title: nextOriginalFeed.title,
-          route: ['/feeds', nextOriginalFeed.id]
+          route: ['/admin/feeds', nextOriginalFeed.id]
         };
         this.step = 1;
       }
