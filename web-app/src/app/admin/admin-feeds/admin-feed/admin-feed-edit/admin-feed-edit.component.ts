@@ -133,7 +133,7 @@ export class AdminFeedEditComponent implements OnInit {
     }
 
     this.feedEdit.saveFeed().subscribe((feed) => {
-      this.router.navigate(['../../feeds', feed.id], { relativeTo: this.route });
+      this.router.navigate(['/admin/feeds', feed.id]);
     });
   }
 
