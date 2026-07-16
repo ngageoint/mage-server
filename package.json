@@ -5,7 +5,7 @@
   "version": "6.6.0-beta.1",
   "files": [],
   "scripts": {
-    "postinstall": "npm-run-all service:ci web-app:ci arcgis:ci sftp:ci nga-msi:ci image.service:ci",
+    "postinstall": "npm-run-all service:ci web-app:ci core-lib:pack arcgis:ci sftp:ci nga-msi:ci image.service:ci",
     "install:resolve": "npm-run-all service:install web-app:install",
     "build": "npm-run-all service:build web-app:build instance:build",
     "build-all": "npm-run-all build arcgis:build sftp:build nga-msi:build",
@@ -16,6 +16,7 @@
     "service:pack": "npm pack ./service",
     "web-app:install": "npm install --prefix web-app",
     "web-app:ci": "npm ci --prefix web-app",
+    "core-lib:pack": "cd web-app && npm run build:core-lib && npm pack ./dist/core-lib",
     "web-app:build": "npm run build --prefix web-app",
     "web-app:debug": "npm start --prefix web-app",
     "web-app:pack": "npm pack ./web-app/dist/app",
