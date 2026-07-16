@@ -23,7 +23,7 @@ async function createOSMLayer(db) {
     type: "Imagery",
     format: "XYZ",
     base: true,
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
   };
 
   const collection = db.collection('layers');
