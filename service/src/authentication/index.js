@@ -2,7 +2,7 @@ const crypto = require('crypto')
   , verification = require('./verification')
   , api = require('../api/')
   , packageJson = require('../../package.json')
-  , log = require('../logger')
+  , log = require('../logger').child({ component: 'authentication' })
   , userTransformer = require('../transformers/user')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
@@ -104,6 +104,16 @@ class AuthenticationInitializer {
 
         new api.User().login(req.user, req.provisionedDevice, options, function (err, token) {
           if (err) return next(err);
+
+          log.info('user signed in', {
+            user: req.user.username,
+            userId: req.user._id.toString(),
+            deviceUid: req.provisionedDevice ? req.provisionedDevice.uid : undefined,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            signInTime: new Date().toISOString(),
+            tokenExpiration: token.expirationDate
+          });
 
           authenticationApiAppender.append(apiInfo).then(api => {
             res.json({

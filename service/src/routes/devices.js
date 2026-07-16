@@ -1,7 +1,6 @@
-const log = require('../logger'); 
+const log = require('../logger').child({ component: 'devices' });
 const Device = require('../models/device');
 const access = require('../access');
-const pageInfoTransformer = require('../transformers/pageinfo.js');
 
 function DeviceResource() {}
 
@@ -302,11 +301,34 @@ DeviceResource.prototype.updateDevice = function(req, res, next) {
     update.registered = req.newDevice.registered;
   if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
-  Device.updateDevice(req.param('id'), update)
-    .then(device => {
-      if (!device) return res.sendStatus(404);
+  Device.getDeviceById(req.param('id'))
+    .then(existing => {
+      const previouslyRegistered = existing ? !!existing.registered : undefined;
+      return Device.updateDevice(req.param('id'), update).then(device => {
+        if (!device) return res.sendStatus(404);
 
-      res.json(device);
+        if (update.registered !== undefined && update.registered !== previouslyRegistered) {
+          if (device.registered) {
+            log.info('device registered', {
+              device: device.uid,
+              name: device.name,
+              deviceUserId: device.userId ? device.userId.toString() : undefined,
+              registeredBy: req.user.username,
+              registeredTime: new Date().toISOString()
+            });
+          } else {
+            log.info('device unregistered', {
+              device: device.uid,
+              deviceId: device._id.toString(),
+              name: device.name,
+              unregisteredBy: req.user.username,
+              unregisteredTime: new Date().toISOString()
+            });
+          }
+        }
+
+        res.json(device);
+      });
     })
     .catch(err => {
       next(err);

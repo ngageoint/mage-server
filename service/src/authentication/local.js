@@ -1,4 +1,4 @@
-const log = require('../logger')
+const log = require('../logger').child({ component: 'authentication' })
   , moment = require('moment')
   , LocalStrategy = require('passport-local').Strategy
   , TokenAssertion = require('./verification').TokenAssertion
@@ -10,39 +10,49 @@ const log = require('../logger')
 function configure() {
   log.info('Configuring local authentication');
   passport.use(new LocalStrategy(
-    function (username, password, done) {
+    { passReqToCallback: true },
+    function (req, username, password, done) {
       User.getUserByUsername(username, function (err, user) {
         if (err) { return done(err); }
 
+        function failedLogin(reason, message, meta) {
+          log.warn('failed login attempt', Object.assign({
+            username: username,
+            reason: reason,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            attemptTime: new Date().toISOString()
+          }, meta));
+          return done(null, false, { message: message });
+        }
+
         if (!user) {
-          log.warn('Failed login attempt: User with username ' + username + ' not found');
-          return done(null, false, { message: 'Please check your username and password and try again.' });
+          return failedLogin('user not found', 'Please check your username and password and try again.');
         }
 
         if (!user.active) {
-          log.warn('Failed user login attempt: User ' + user.username + ' is not active');
-          return done(null, false, { message: 'User account is not approved, please contact your MAGE administrator to approve your account.' });
+          return failedLogin('account not active', 'User account is not approved, please contact your MAGE administrator to approve your account.');
         }
 
         if (!user.enabled) {
-          log.warn('Failed user login attempt: User ' + user.username + ' account is disabled.');
-          return done(null, false, { message: 'Your account has been disabled, please contact a MAGE administrator for assistance.' });
+          return failedLogin('account disabled', 'Your account has been disabled, please contact a MAGE administrator for assistance.');
         }
 
         const settings = user.authentication.security;
         if (settings && settings.locked && moment().isBefore(moment(settings.lockedUntil))) {
-          log.warn('Failed user login attempt: User ' + user.username + ' account is locked until ' + settings.lockedUntil);
-          return done(null, false, { message: 'Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.' });
+          return failedLogin('account locked', 'Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.', {
+            lockedUntil: moment(settings.lockedUntil).toISOString()
+          });
         }
 
         if (!(user.authentication instanceof Authentication.Local)) {
-          log.warn(user.username + " is not a local account");
-          return done(null, false, { message: 'You do not have a local account, please contact a MAGE administrator for assistance.' });
+          return failedLogin('not a local account', 'You do not have a local account, please contact a MAGE administrator for assistance.');
         }
 
         if (!user.authentication.authenticationConfiguration.enabled) {
-          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
-          return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+          return failedLogin('authentication method disabled', 'Authentication method is not enabled, please contact a MAGE administrator for assistance.', {
+            authenticationMethod: user.authentication.authenticationConfiguration.title
+          });
         }
 
         user.authentication.validatePassword(password, function (err, isValid) {
@@ -53,9 +63,8 @@ function configure() {
               .then(() => done(null, user))
               .catch(err => done(err));
           } else {
-            log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             User.invalidLogin(user)
-              .then(() => done(null, false, { message: 'Please check your username and password and try again.' }))
+              .then(() => failedLogin('invalid password', 'Please check your username and password and try again.'))
               .catch(err => done(err));
           }
         });
@@ -73,6 +82,7 @@ function initialize() {
         if (err) return next(err);
 
         if (!user) return res.status(401).send(info.message);
+        req.user = user;
 
         tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
           .then(token => {

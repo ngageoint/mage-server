@@ -24,6 +24,15 @@ export MAGE_EXPORT_SWEEP_INTERVAL=28800
 export MAGE_EXPORT_TTL=259200
 # number of seconds an authentication token is valid; default 28800 (8 hours)
 export MAGE_TOKEN_EXPIRATION=28800
+# root logging level for MAGE audit logs (logs all routes)
+export MAGE_LOG_LEVEL=info
+# root logging level for MAGE's mongoose logs (logs all database queries)
+export MONGOOSE_LOG_LEVEL=info
+# list of HTTP methods to include in the audit request log
+export MAGE_HTTP_REQUEST_LOG_METHODS=GET,POST,PUT,PATCH,DELETE
+# log output format: 'json' emits one JSON object per line for log collectors
+# (Splunk, CloudWatch, etc.); any other value emits the human-readable console format
+export MAGE_LOG_FORMAT=json
 # the URL that specifies MAGE's connection to mongodb
 export MAGE_MONGO_URL=mongodb://127.0.0.1:27017/magedb
 # whether to use secure, TLS sockets to connect to mongo
