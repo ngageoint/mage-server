@@ -1,3 +1,5 @@
+const { pageOf } = require('../entities/entities.global')
+
 module.exports = function(app, security) {
   const crypto = require('crypto'),
     BearerStrategy = require('passport-http-bearer').Strategy,
@@ -10,7 +12,7 @@ module.exports = function(app, security) {
     access = require('../access'),
     verification = require('../authentication/verification'),
     userTransformer = require('../transformers/user'),
-    pageinfoTransformer = require('../transformers/pageinfo'),
+    pageTransformer = require('../transformers/pageinfo'),
     { defaultHandler: upload } = require('../upload'),
     {
       defaultEventPermissionsService: eventPermissions
@@ -309,6 +311,9 @@ module.exports = function(app, security) {
 
   /**
    * TODO:
+   * * 2026-07-15 - This route should be defunct on the next release of the iOS app.  The web app uses
+   *   /api/next-users/search, which will become /api/users/search pending some refactoring of user
+   *   functions to typescript.
    * * openapi supports array query parameters using the pipe `|` delimiter;
    *   use that instead of comma for the `populate` query param. on the other hand,
    *   this only actually supports a singular `populate` key, so why bother with
@@ -318,61 +323,19 @@ module.exports = function(app, security) {
     '/api/users',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function(req, res, next) {
-      var filter = {};
-
-      if (req.query) {
-        for (let [key, value] of Object.entries(req.query)) {
-          if (
-            key == 'populate' ||
-            key == 'limit' ||
-            key == 'start' ||
-            key == 'sort' ||
-            key == 'forceRefresh'
-          ) {
-            continue;
-          }
-          filter[key] = value;
-        }
+    async function(req, res) {
+      const limit = req.query.limit || null;
+      const start = req.query.start || null;
+      if (limit) {
+        const emptyPage = pageOf([], {
+          totalCount: 0,
+          pageSize: 0,
+          pageIndex: 0,
+        });
+        const pageWithLinks = pageTransformer.transform(emptyPage, req, start, limit);
+        return res.json(pageWithLinks);
       }
-
-      var populate = null;
-      if (req.query.populate) {
-        populate = req.query.populate.split(',');
-      }
-
-      var limit = null;
-      if (req.query.limit) {
-        limit = req.query.limit;
-      }
-
-      var start = null;
-      if (req.query.start) {
-        start = req.query.start;
-      }
-
-      var sort = null;
-      if (req.query.sort) {
-        sort = req.query.sort;
-      }
-
-      new api.User().getAll({ filter, populate, limit, start, sort }, function(
-        err,
-        users,
-        page
-      ) {
-        if (err) return next(err);
-
-        let data = null;
-
-        if (page) {
-          data = pageinfoTransformer.transform(page, req, start, limit);
-        } else {
-          data = userTransformer.transform(users, { path: req.getRoot() });
-        }
-
-        res.json(data);
-      });
+      res.json([]);
     }
   );
 

@@ -81,17 +81,6 @@ User.prototype.count = function (options, callback) {
   });
 };
 
-User.prototype.getAll = function (filter, callback) {
-  if (typeof filter === 'function') {
-    callback = filter;
-    filter = {};
-  }
-
-  UserModel.getUsers(filter, function (err, users, pageInfo) {
-    callback(err, users, pageInfo);
-  });
-};
-
 User.prototype.getById = function (id, callback) {
   UserModel.getUserById(id, function (err, user) {
     callback(err, user);
