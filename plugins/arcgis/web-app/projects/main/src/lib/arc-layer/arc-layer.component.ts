@@ -8,6 +8,7 @@ import { ArcLayerDialogComponent, DialogData } from './arc-layer-dialog.componen
 import { ArcLayerDeleteDialogComponent } from './arc-layer-delete-dialog.component'
 
 @Component({
+  standalone: false,
   selector: 'arc-layer',
   templateUrl: './arc-layer.component.html',
   styleUrls: ['./arc-layer.component.scss']

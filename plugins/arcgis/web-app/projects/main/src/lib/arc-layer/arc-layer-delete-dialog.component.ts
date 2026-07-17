@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
+	standalone: false,
 	selector: 'arc-layer-delete-dialog',
 	templateUrl: 'arc-layer-delete-dialog.component.html',
 	styleUrls: ['./arc-layer-delete-dialog.component.scss']

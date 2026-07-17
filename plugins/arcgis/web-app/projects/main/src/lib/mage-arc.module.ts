@@ -14,7 +14,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatTableModule } from '@angular/material/table'
 import { MatTabsModule } from '@angular/material/tabs'
 import { ArcAdminComponent } from './arc-admin/arc-admin.component'
-import { HttpClientModule } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ArcLayerComponent } from './arc-layer/arc-layer.component';
 import { ArcEventComponent } from './arc-event/arc-event.component';
@@ -32,7 +32,6 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
   imports: [
     CommonModule,
     FormsModule,
-    HttpClientModule,
     MatAutocompleteModule,
     MatButtonModule,
     MatCardModule,
@@ -48,6 +47,7 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
     ReactiveFormsModule,
     MatProgressSpinnerModule,
   ],
+  providers: [provideHttpClient(withInterceptorsFromDi())],
   exports: [
     ArcAdminComponent,
     ArcLayerComponent,

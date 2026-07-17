@@ -23,6 +23,7 @@ export interface DialogData {
 }
 
 @Component({
+	standalone: false,
 	selector: 'arc-layer-dialog',
 	templateUrl: 'arc-layer-dialog.component.html',
 	styleUrls: ['./arc-layer-dialog.component.scss']

@@ -16,7 +16,7 @@ import { MatTableModule } from '@angular/material/table'
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { HttpClientModule } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -32,10 +32,12 @@ import { SftpAdminComponent } from './sftp-admin/sftp-admin.component';
     ObservationStatusComponent,
     SftpAdminComponent,
   ],
+  providers: [
+    provideHttpClient(withInterceptorsFromDi()),
+  ],
   imports: [
     CommonModule,
     FormsModule,
-    HttpClientModule,
     MatAutocompleteModule,
     MatButtonModule,
     MatCardModule,

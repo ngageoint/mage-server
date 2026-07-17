@@ -9,6 +9,7 @@ import { MageEventSummary, SftpObservationRecord } from '../entities/entities.fo
 const ALL_STATUSES = ['SUCCESS', 'FAILED', 'PENDING', 'SKIPPED']
 
 @Component({
+  standalone: false,
   selector: 'sftp-observation-status',
   templateUrl: './observation-status.component.html',
   styleUrls: ['./observation-status.component.scss']

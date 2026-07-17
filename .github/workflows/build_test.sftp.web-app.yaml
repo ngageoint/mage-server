@@ -27,11 +27,20 @@ jobs:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
           cache-dependency-path: plugins/sftp/web/package-lock.json
+      - name: build web-core-lib
+        run: |
+          cd web-app
+          npm install
+          npm run build:core-lib
+          npm pack ./dist/core-lib
       - name: build
         run: |
           cd plugins/sftp/web
-          npm ci
+          npm i ../../../web-app/ngageoint-mage.web-core-lib-6.6.0-beta.1.tgz
+          npm install
           npm run build
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
       # Tests for the web app are currently just generic spec files generated from the angular cli.
