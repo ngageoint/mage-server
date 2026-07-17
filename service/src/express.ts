@@ -76,44 +76,6 @@ const auth = AuthenticationInitializer.initialize(
 import initializeRoutes = require('./routes')
 initializeRoutes(app, { authentication: auth });
 
-const adminDist = path.join(path.dirname(require.resolve('@ngageoint/mage.web-app/package.json')), 'admin');
-
-app.use(
-  '/admin',
-  express.static(adminDist, {
-    etag: true,
-    lastModified: true,
-    setHeaders: (res, filePath) => {
-      const rel = path.relative(adminDist, filePath).replace(/\\/g, '/');
-
-      if (rel === 'index.html') {
-        res.setHeader(
-          'Cache-Control',
-          'no-store, no-cache, must-revalidate, max-age=0'
-        );
-        return;
-      }
-
-      if (
-        /\.(?:js|css|woff2?|ttf|eot|ico|png|jpg|jpeg|gif|svg)$/.test(filePath)
-      ) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        return;
-      }
-
-      res.setHeader('Cache-Control', 'no-cache');
-    }
-  })
-);
-
-app.get('/admin/*', (req, res) => {
-  res.setHeader(
-    'Cache-Control',
-    'no-store, no-cache, must-revalidate, max-age=0'
-  );
-  res.sendFile(path.join(adminDist, 'index.html'));
-});
-
 // Express requires a 4 parameter function callback, do not remove unused next parameter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use(function(err, req, res, next) {
