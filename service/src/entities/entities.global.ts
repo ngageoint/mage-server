@@ -91,38 +91,32 @@ export interface Links {
   prev: number | null;
 }
 
-export function calculateLinks( paging: PagingParameters, totalCount: number | null): Links {
+export function calculatePagingLinks(paging: PagingParameters, totalCount: number | null): Links {
   const links: Links = {
     next: null,
     prev: null
-  };
-
-  const limit = paging.pageSize;
-  const start = paging.pageIndex * limit;
-
+  }
+  const limit = paging.pageSize
+  const start = paging.pageIndex * limit
   if (start + limit < (totalCount || 0)) {
-    links.next = paging.pageIndex + 1;
+    links.next = paging.pageIndex + 1
   }
-
   if (start > 0) {
-    links.prev = Math.max(0, paging.pageIndex - 1);
+    links.prev = Math.max(0, paging.pageIndex - 1)
   }
-
-  return links;
+  return links
 }
 
 export const pageOf = <T>(items: T[], paging: PagingParameters, totalCount?: number | null): PageOf<T> => {
-  // Provide a default value for totalCount if it's undefined
-  const resolvedTotalCount = totalCount || 0;
-  const links = calculateLinks(paging, resolvedTotalCount);
-
+  const resolvedTotalCount = totalCount || 0
+  const links = calculatePagingLinks(paging, resolvedTotalCount)
   return {
     totalCount: typeof totalCount === 'number' ? totalCount : null,
     pageSize: paging.pageSize,
     pageIndex: paging.pageIndex,
     items,
     links
-  };
+  }
 }
 
 /**
