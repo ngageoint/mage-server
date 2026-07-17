@@ -22,9 +22,6 @@
     "paths": {
       "@@main": [
         "./dist/main"
-      ],
-      "@ngageoint/mage.web-core-lib/*": [
-        "./node_modules/@ngageoint/mage.web-core-lib/*"
       ]
     }
   },
