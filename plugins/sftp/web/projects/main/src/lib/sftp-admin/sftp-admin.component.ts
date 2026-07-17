@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'sftp-admin',
   template: `
     <mat-tab-group>

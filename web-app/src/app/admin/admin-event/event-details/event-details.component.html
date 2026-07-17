@@ -116,7 +116,10 @@
 
         <div class="empty-state" *ngIf="membersPage.totalCount === 0 && !loadingMembers">
           <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
-          <div class="empty-state-text">No members for {{ event?.name }}</div>
+          <div class="empty-state-text" *ngIf="memberSearchTerm; else noMembers">No members match your search</div>
+          <ng-template #noMembers>
+            <div class="empty-state-text">No members for {{ event?.name }}</div>
+          </ng-template>
         </div>
 
         <div class="loading-overlay" *ngIf="loadingMembers">
@@ -165,7 +168,10 @@
 
         <div class="empty-state" *ngIf="teamsPage.totalCount === 0 && !loadingTeams">
           <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
-          <div class="empty-state-text">No teams for {{ event?.name }}</div>
+          <div class="empty-state-text" *ngIf="teamSearchTerm; else noTeams">No teams match your search</div>
+          <ng-template #noTeams>
+            <div class="empty-state-text">No teams for {{ event?.name }}</div>
+          </ng-template>
         </div>
 
         <div class="loading-overlay" *ngIf="loadingTeams">
@@ -217,7 +223,10 @@
 
         <div class="empty-state" *ngIf="layersPage.totalCount === 0 && !loadingLayers">
           <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">map</mat-icon>
-          <div class="empty-state-text">No layers for {{ event?.name }}</div>
+          <div class="empty-state-text" *ngIf="layerSearchTerm; else noLayers">No layers match your search</div>
+          <ng-template #noLayers>
+            <div class="empty-state-text">No layers for {{ event?.name }}</div>
+          </ng-template>
         </div>
 
         <div class="loading-overlay" *ngIf="loadingLayers">

@@ -40,7 +40,13 @@
     </mat-nav-list>
 
     <ng-template #noDevices>
-      <div class="no-devices">No devices found.</div>
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">devices</mat-icon>
+        <div class="empty-state-text" *ngIf="deviceSearch; else noDevicesFound">No devices match your search</div>
+        <ng-template #noDevicesFound>
+          <div class="empty-state-text">No devices found</div>
+        </ng-template>
+      </div>
     </ng-template>
 
     <mat-paginator

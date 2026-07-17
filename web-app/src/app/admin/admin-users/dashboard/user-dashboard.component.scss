@@ -3,6 +3,11 @@
   gap: 8px;
 }
 
+.import-users-button {
+  color: var(--mat-sys-primary) !important;
+  border-color: var(--mat-sys-primary) !important;
+}
+
 :host {
   display: flex;
   flex-direction: column;
@@ -60,4 +65,29 @@ mat-nav-list {
 mat-paginator {
   --mat-paginator-container-background-color: var(--mat-sys-surface-container);
   flex-shrink: 0;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 96px;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 4px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state-text {
+  font-size: var(--mat-sys-body-large-size);
+  color: var(--mat-sys-on-surface-variant);
+  max-width: 350px;
 }

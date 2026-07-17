@@ -72,7 +72,7 @@
   margin: 0;
   font-size: var(--mat-sys-body-large-size);
   color: var(--mat-sys-on-surface-variant);
-  max-width: 320px;
+  max-width: 350px;
 }
 
 // CDK Drag & Drop styles
@@ -177,4 +177,5 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+  margin-bottom: 16px;
 }

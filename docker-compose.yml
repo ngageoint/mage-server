@@ -34,7 +34,8 @@ services:
     environment:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
       MAGE_TOKEN_EXPIRATION: "28800"
-      # MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service","@ngageoint/mage.arcgis.service"],"webUIPlugins":["@ngageoint/mage.sftp.web","@ngageoint/mage.arcgis.web-app"]}'
+      MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service", "@ngageoint/mage.arcgis.service"],"webUIPlugins":["@ngageoint/mage.sftp.web", "@ngageoint/mage.arcgis.web-app"]}'
+      MAGE_SFTP_KEY_FILE: /var/lib/mage/sftp_key
 
     # Uncomment this section to use Docker volumes instead of bind mounts for data directories:
     # volumes:
@@ -72,16 +73,16 @@ services:
   # Local SFTP server for development testing.
   # Uploaded zips land in ./sftp-test/upload/ on your Mac.
   # Connect the plugin to: host=mage-sftp, port=22, user=magetest, path=/upload
-  # mage-sftp:
-  #   image: atmoz/sftp
-  #   command: magetest::1001
-  #   volumes:
-  #     - ./sftp-test/id_rsa.pub:/home/magetest/.ssh/keys/id_rsa.pub:ro
-  #     - ./sftp-test/upload:/home/magetest/upload
-  #   ports:
-  #     - "2222:22"
-  #   networks:
-  #     - mage.net
+  mage-sftp:
+    image: atmoz/sftp
+    command: magetest::1001
+    volumes:
+      - ./sftp-test/id_rsa.pub:/home/magetest/.ssh/keys/id_rsa.pub:ro
+      - ./sftp-test/upload:/home/magetest/upload
+    ports:
+      - "2222:22"
+    networks:
+      - mage.net
 
 networks:
   mage.net:

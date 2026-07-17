@@ -34,6 +34,5 @@ mat-dialog-actions {
 }
 
 .delete-button:not(:disabled) {
-  --mdc-filled-button-container-color: var(--mat-sys-error);
-  --mdc-filled-button-label-text-color: var(--mat-sys-on-error);
+  color: var(--mat-sys-error);
 }

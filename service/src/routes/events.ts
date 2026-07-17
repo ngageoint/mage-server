@@ -15,6 +15,9 @@ import { EventAccessType, MageEvent } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
 import { LineStyle, PagingParameters } from '../entities/entities.global'
+import logger from '../logger'
+
+const log = logger.child({ component: 'events' })
 
 declare module 'express-serve-static-core' {
   export interface Request {
@@ -611,6 +614,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+        const requester = req.user as any;
+        log.info('team added to event', {
+          team: req.body.name,
+          event: req.event!.name,
+          addedBy: requester.username,
+          addedTime: new Date().toISOString()
+        });
         res.json(event);
       });
     }
@@ -625,6 +635,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+        const requester = req.user as any;
+        log.info('team removed from event', {
+          team: req.team.name,
+          event: req.event!.name,
+          removedBy: requester.username,
+          removedTime: new Date().toISOString()
+        });
         res.json(event);
       });
     }

@@ -99,8 +99,11 @@
       </mat-nav-list>
 
       <div class="empty-state" *ngIf="totalMembers === 0 && !loadingMembers">
-        <mat-icon class="empty-state-icon">groups</mat-icon>
-        <div class="empty-state-text">This team has no members</div>
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+        <div class="empty-state-text" *ngIf="memberSearchTerm; else noMembers">No members match your search</div>
+        <ng-template #noMembers>
+          <div class="empty-state-text">This team has no members</div>
+        </ng-template>
       </div>
 
       <div class="loading-overlay" *ngIf="loadingMembers">
@@ -157,7 +160,10 @@
 
       <div class="empty-state" *ngIf="totalEvents === 0 && !loadingEvents">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
-        <div class="empty-state-text">This team is not part of any events</div>
+        <div class="empty-state-text" *ngIf="teamEventSearch; else noTeamEvents">No events match your search</div>
+        <ng-template #noTeamEvents>
+          <div class="empty-state-text">This team is not part of any events</div>
+        </ng-template>
       </div>
 
       <div class="loading-overlay" *ngIf="loadingEvents">

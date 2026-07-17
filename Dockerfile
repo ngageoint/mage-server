@@ -37,10 +37,7 @@ FROM $BASE_IMAGE AS build-arcgis-web
 WORKDIR /arcgis.web
 COPY plugins/arcgis/web-app/ ./
 COPY --from=build-web-app /packages/ /packages
-# TODO: uncomment this line to build with local core-lib when web plugin is upgraded to angular 20
-# RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
-# TODO: remoove this line after activating above line
-RUN npm ci
+RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
 RUN npm run build
 RUN npm pack ./dist/main
 
@@ -56,10 +53,7 @@ FROM $BASE_IMAGE AS build-sftp-web
 WORKDIR /sftp.web
 COPY plugins/sftp/web/ ./
 COPY --from=build-web-app /packages/ /packages
-# TODO: uncomment this line to build with local core-lib when web plugin is upgraded to angular 20
-# RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
-# TODO: remoove this line after activating above line
-RUN npm ci
+RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
 RUN npm run build
 RUN npm pack ./dist/main
 
@@ -75,7 +69,6 @@ COPY --from=build-arcgis-web /arcgis.web/ngageoint-mage.arcgis.web-*.tgz ${MAGE_
 COPY --from=build-sftp-service /sftp.service/ngageoint-*.tgz ${MAGE_HOME}/packages/
 COPY --from=build-sftp-web /sftp.web/ngageoint-*.tgz ${MAGE_HOME}/packages/
 
-# TODO: remove --force after upgrading web plugins
 RUN npm install --force --omit dev ${MAGE_HOME}/packages/*.tgz
 RUN ln -s ./node_modules/.bin/mage.service
 

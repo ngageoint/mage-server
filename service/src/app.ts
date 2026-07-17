@@ -1,5 +1,6 @@
 import environment from './environment/env';
 import log from './logger';
+import { Logger } from './entities/entities.logging';
 import {
   InjectableServices,
   integratePluginHooks
@@ -32,7 +33,7 @@ import * as observationsImpl from './app.impl/observations/app.impl.observations
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds';
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
-import { AppRequest, AppRequestContext } from './app.api/app.api.global';
+import { AppRequest, AppRequestContext, logPermissionDenials } from './app.api/app.api.global';
 import { UserDocument } from './models/user';
 import SimpleIdFactory from './adapters/adapters.simple_id_factory';
 import {
@@ -201,6 +202,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   mongoose.Error.messages.general.required = '{PATH} is required.';
 
   log.info('Starting MAGE Server ...');
+
+  logPermissionDenials(log.child({ component: 'permissions' }));
 
   // Create directory for storing media attachments
   const attachmentBase = environment.attachmentBaseDirectory;
@@ -572,7 +575,10 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const feeds = await initFeedsAppLayer(repos);
   const users = await initUsersAppLayer(repos);
   const systemInfo = initSystemInfoAppLayer(repos);
-  const settings = await initSettingsAppLayer(repos);
+  const settings = await initSettingsAppLayer(
+    repos,
+    log.child({ component: 'settings' })
+  );
 
   return {
     events,
@@ -790,11 +796,12 @@ function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
 }
 
 async function initSettingsAppLayer(
-  repos: Repositories
+  repos: Repositories,
+  logger: Logger
 ): Promise<AppLayer['settings']> {
   const mapPermissions = new RoleBasedMapPermissionService();
-  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions);
-  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions);
+  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions, logger);
+  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions, logger);
   return {
     getMapSettings,
     updateMapSettings

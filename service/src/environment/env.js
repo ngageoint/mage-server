@@ -99,6 +99,8 @@ const environment = {
   exportSweepInterval: parseInt(process.env.MAGE_EXPORT_SWEEP_INTERVAL) || 28800,
   exportTtl: parseInt(process.env.MAGE_EXPORT_TTL) || 259200,
   tokenExpiration: parseInt(process.env.MAGE_TOKEN_EXPIRATION) || 28800,
+  httpRequestLogMethods: (process.env.MAGE_HTTP_REQUEST_LOG_METHODS || 'GET,POST,PUT,PATCH,DELETE')
+    .split(',').map(x => x.trim().toUpperCase()).filter(x => x.length > 0),
   cookies: {
     secure: process.env.MAGE_SESSION_COOKIE_SECURE !== 'false'
   },

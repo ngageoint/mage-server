@@ -44,13 +44,12 @@ mat-toolbar {
 }
 
 .edit-banner {
-  background: var(--mat-sys-error-container);
-  border-bottom: 1px solid var(--mat-sys-outline);
+  background: var(--mat-sys-surface-container-low);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
 }
 
 .edit-banner-container {
@@ -66,14 +65,21 @@ mat-toolbar {
 
 .edit-banner-content__title {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font: var(--mat-sys-body-large);
-  color: var(--mat-sys-on-error-container);
+  color: var(--mat-sys-on-surface);
+}
+
+.edit-banner-content__title-icon {
+  color: var(--mat-sys-error);
 }
 
 .edit-banner-content__summary {
   font: var(--mat-sys-body-medium);
   white-space: pre-wrap;
-  color: var(--mat-sys-on-error-container);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .edit-banner-actions {
@@ -81,10 +87,6 @@ mat-toolbar {
   justify-content: flex-end;
   margin-right: 8px;
   margin-bottom: 8px;
-
-  button {
-    color: var(--mat-sys-on-error-container);
-  }
 }
 
 .edit-progress {

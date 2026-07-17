@@ -19,13 +19,15 @@ import { SecurityBannerComponent } from './security-banner/security-banner.compo
 import { SecurityDisclaimerComponent } from './security-disclaimer/security-disclaimer.component';
 import { ContactInfoComponent } from './contact-info/contact-info.component';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
+import { EmailValidatorDirective } from '../../email/email';
 
 @NgModule({
   declarations: [
     SecurityBannerComponent,
     SecurityDisclaimerComponent,
     ContactInfoComponent,
-    AdminSettingsUnsavedComponent
+    AdminSettingsUnsavedComponent,
+    EmailValidatorDirective
   ],
   imports: [
     CommonModule,

@@ -15,10 +15,13 @@
   <mat-progress-bar *ngIf="saving" mode="indeterminate" class="edit-progress"></mat-progress-bar>
 
   <div cdkScrollable #editContent class="edit-content" [ngClass]="{'edit-content--scroll-lock': mask}">
-    <div class="edit-banner" *ngIf="error" @error>
+    <div class="edit-banner mat-elevation-z4" *ngIf="error" @error>
       <div class="edit-banner-container">
         <div class="edit-banner-content">
-          <div class="edit-banner-content__title">Invalid observation, correct the following errors.</div>
+          <div class="edit-banner-content__title">
+            <mat-icon class="edit-banner-content__title-icon">error_outline</mat-icon>
+            Unable to save observation
+          </div>
           <div class="edit-banner-content__summary">{{error?.message}}</div>
         </div>
       </div>

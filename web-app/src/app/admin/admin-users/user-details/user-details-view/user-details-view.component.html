@@ -118,7 +118,10 @@
 
       <div class="empty-state" *ngIf="totalUserTeams === 0 && !loadingTeams">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
-        <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams</div>
+        <div class="empty-state-text" *ngIf="teamSearchTerm; else noTeams">{{ user.displayName }} is not assigned to any teams that match your search</div>
+        <ng-template #noTeams>
+          <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams</div>
+        </ng-template>
       </div>
 
       <div class="loading-overlay" *ngIf="loadingTeams">
@@ -163,7 +166,10 @@
 
       <div class="empty-state" *ngIf="totalUserEvents === 0 && !loadingEvents">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
-        <div class="empty-state-text">{{ user.displayName }} is not assigned to any events</div>
+        <div class="empty-state-text" *ngIf="eventSearchTerm; else noEvents">{{ user.displayName }} is not assigned to any events that match your search</div>
+        <ng-template #noEvents>
+          <div class="empty-state-text">{{ user.displayName }} is not assigned to any events</div>
+        </ng-template>
       </div>
 
       <div class="loading-overlay" *ngIf="loadingEvents">

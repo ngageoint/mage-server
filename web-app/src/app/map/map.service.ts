@@ -5,6 +5,12 @@ import { LocationService } from "../user/location/location.service";
 import { SessionService } from "../http/session.service";
 import { FeatureService } from "../layer/feature.service";
 
+export interface FeatureEdit {
+  update(feature: any): void;
+  cancel(): void;
+  save(): void;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -368,8 +374,9 @@ export class MapService {
     this.feedLayers[layer.id] = layer;
   }
 
-  createFeature(feature, style, listeners?: any) {
+  createFeature(feature, style, listeners?: any): FeatureEdit | undefined {
     if (this.delegate) return this.delegate.createFeature(feature, style, listeners);
+    return undefined;
   }
 
   addFeaturesToLayer(features, layerId) {

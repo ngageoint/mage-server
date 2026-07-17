@@ -7,6 +7,7 @@ import { Subject, interval, takeUntil } from 'rxjs';
 import { ResetConfirmDialogComponent } from './reset-confirm-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'sftp-configuration',
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.scss']

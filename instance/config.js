@@ -16,6 +16,10 @@ module.exports = {
     exportSweepInterval: 28800,
     exportTTL: 259200,
     tokenExpiration: 28800,
+    logLevel: 'info',
+    logFormat: 'json',
+    httpDebug: false,
+    httpRequestLogMethods: 'GET,POST,PUT,PATCH,DELETE',
     sftpKeyDir: path.join(baseDir, 'sftp-keys'),
     sftpKeyFile: path.join(baseDir, 'sftp-keys', 'mage-sftp-key'),
     mongo: {

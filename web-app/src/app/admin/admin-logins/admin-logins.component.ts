@@ -188,18 +188,16 @@ export class LoginsComponent implements OnInit {
     this.userText = term;
     this.user = null;
 
-    if (!term) {
-      this.loginSearchResults = [];
-      this.filterLogins();
-      return;
-    }
-
     const searchTerm = term === '.*' ? '' : term;
     this.userPagingService.search(this.userStateAndData['all'], searchTerm)
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of([] as User[])))
       .subscribe((users: User[]) => {
         this.loginSearchResults = (users || []).slice(0, 10);
       });
+
+    if (!term) {
+      this.filterLogins();
+    }
   }
 
   onDeviceSearchChange(term: string): void {
@@ -207,12 +205,6 @@ export class LoginsComponent implements OnInit {
 
     this.deviceText = term;
     this.device = null;
-
-    if (!term) {
-      this.loginDeviceSearchResults = [];
-      this.filterLogins();
-      return;
-    }
 
     this.deviceService.search(
       this.deviceStateAndData['all'],
@@ -223,6 +215,10 @@ export class LoginsComponent implements OnInit {
     .subscribe((devices: Device[]) => {
       this.loginDeviceSearchResults = devices || [];
     });
+
+    if (!term) {
+      this.filterLogins();
+    }
   }
 
   selectUser(u: User): void {
@@ -268,14 +264,18 @@ export class LoginsComponent implements OnInit {
     return moment(timestamp).fromNow();
   }
 
-  goToUser(event: MouseEvent, login: Login): void {
+  absoluteTime(timestamp: string | Date): string {
+    return moment(timestamp).format('lll');
+  }
+
+  goToUser(event: Event, login: Login): void {
     event.stopPropagation();
     if (!login.user?.id) return;
 
     this.router.navigate(['/admin/users', login.user.id]);
   }
 
-  goToDevice(event: MouseEvent, login: Login): void {
+  goToDevice(event: Event, login: Login): void {
     event.stopPropagation();
     if (!login.device?.id) return;
 

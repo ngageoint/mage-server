@@ -23,6 +23,7 @@ import {
   evaluatePasswordStrength,
   getPasswordTooltip
 } from 'mage-web-app/password/password';
+import { emailValidator } from 'mage-web-app/email/email';
 
 @Component({
     selector: 'signup',
@@ -41,7 +42,7 @@ export class SignupComponent {
   signup = new FormGroup({
     username: new FormControl<string>('', [Validators.required]),
     displayName: new FormControl<string>('', [Validators.required]),
-    email: new FormControl<string>('', [Validators.email]),
+    email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>(''),
     password: new FormControl<string>('', [Validators.required]),
     passwordconfirm: new FormControl<string>('', [Validators.required]),
