@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 
@@ -9,6 +9,7 @@ import {
 } from '../../services/admin-events.service';
 
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { Event } from 'mage-web-app/filter/filter.types';
 import { CreateEventDialogComponent } from '../create-event/create-event.component';
 import { AdminToastService } from '../../services/admin-toast.service';
@@ -20,7 +21,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
     styleUrls: ['./event-dashboard.component.scss'],
     standalone: false
 })
-export class EventDashboardComponent implements OnInit {
+export class EventDashboardComponent implements OnInit, OnDestroy {
   events: EventsResponse | null = null;
   filteredEvents: Event[] = [];
 
@@ -43,20 +44,29 @@ export class EventDashboardComponent implements OnInit {
 
   eventStatusFilter: 'all' | 'active' | 'complete' = 'all';
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Events', icon: 'event' }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Events', icon: 'event' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   constructor(
     private modal: MatDialog,
     private eventService: AdminEventsService,
     private sessionService: SessionService,
-    private toastService: AdminToastService
+    private toastService: AdminToastService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.refreshEvents();
     this.updateResponsiveLayout();
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
   }
 
   refreshEvents(): void {

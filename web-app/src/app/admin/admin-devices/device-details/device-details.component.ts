@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { DeleteDeviceComponent } from '../delete-device/delete-device.component';
 import { CreateDeviceDialogComponent } from '../create-device/create-device.component';
 import { Device } from '../../../entities/device/device';
@@ -15,7 +16,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
     styleUrls: ['./device-details.component.scss'],
     standalone: false
 })
-export class DeviceDetailsComponent implements OnInit {
+export class DeviceDetailsComponent implements OnInit, OnDestroy {
   device: Device | null = null;
 
   currentUserDisplayName: string | null = null;
@@ -23,13 +24,21 @@ export class DeviceDetailsComponent implements OnInit {
   hasUpdatePermission = false;
   hasDeletePermission = false;
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Devices',
-      icon: 'devices',
-      route: ['../devices']
-    }
-  ];
+  #breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Devices',
+    icon: 'devices',
+    route: ['/admin/devices']
+  }];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this.#breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this.#breadcrumbs;
+  }
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   saving = false;
   error: string | null = null;
@@ -39,10 +48,14 @@ export class DeviceDetailsComponent implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private deviceService: AdminDeviceService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     const deviceId = this.route.snapshot.paramMap.get('deviceId');
     if (!deviceId) {
       this.error = 'Missing deviceId route param';
@@ -58,6 +71,10 @@ export class DeviceDetailsComponent implements OnInit {
     this.loadDevice(deviceId);
   }
 
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
+  }
+
   private loadDevice(deviceId: string): void {
     this.deviceService.getDeviceById(deviceId).subscribe({
       next: (device: Device) => {
@@ -71,14 +88,13 @@ export class DeviceDetailsComponent implements OnInit {
 
   private applyDevice(device: Device): void {
     this.device = device;
-    this.breadcrumbs = [
-      {
-        title: 'Devices',
-        icon: 'devices',
-        route: ['../']
-      },
-      { title: device?.uid || 'Device' }
-    ];
+    this.breadcrumbs = [{
+      title: 'Devices',
+      icon: 'devices',
+      route: ['/admin/devices']
+    },{
+      title: device?.uid || 'Device'
+    }];
 
     this.currentUserDisplayName = device?.user?.displayName || null;
   }

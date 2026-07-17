@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
@@ -10,6 +10,7 @@ import {
 } from '@ngageoint/mage.web-core-lib/feed';
 
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminServiceDeleteComponent } from './admin-service-delete/admin-service-delete.component';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -19,14 +20,15 @@ import { SessionService } from 'mage-web-app/http/session.service';
     styleUrls: ['./admin-service.component.scss'],
     standalone: false
 })
-export class AdminServiceComponent implements OnInit {
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Feeds',
-      icon: 'rss_feed',
-      route: ['/admin/feeds']
-    }
-  ];
+export class AdminServiceComponent implements OnInit, OnDestroy {
+  breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Feeds',
+    icon: 'rss_feed',
+    route: ['/admin/feeds']
+  }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   service!: Service;
   serviceType!: ServiceType;
@@ -54,10 +56,14 @@ export class AdminServiceComponent implements OnInit {
     private feedService: FeedService,
     private route: ActivatedRoute,
     public dialog: MatDialog,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private breadcrumbService: AdminBreadcrumbService
   ) { }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.serviceId = this.route.snapshot.paramMap.get('serviceId');
     if (!this.serviceId) return;
 
@@ -71,6 +77,7 @@ export class AdminServiceComponent implements OnInit {
       this.breadcrumbs.push({
         title: this.service.title,
       });
+      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
 
       const serviceType: ServiceType = this.service.serviceType as ServiceType;
 
@@ -96,6 +103,10 @@ export class AdminServiceComponent implements OnInit {
 
       });
     });
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
   }
 
   deleteService(): void {

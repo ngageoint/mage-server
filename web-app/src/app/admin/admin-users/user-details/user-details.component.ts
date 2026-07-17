@@ -5,6 +5,7 @@ import { map, Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../../user/user.service';
 import { User } from '../user';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 
 @Component({
     selector: 'mage-user-details',
@@ -16,22 +17,26 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
  * Admin component for viewing and managing a user's details, teams, events, devices, logins, and credentials.
  */
 export class UserDetailsComponent implements OnInit, OnDestroy {
-  user?: User;
+  private _user?: User;
+  set user(value: User | undefined) {
+    this._user = value;
+    this.breadcrumbs = [{ title: 'Users', icon: 'person', route: ['/admin/users'] }, { title: value?.displayName || 'Unknown User' }];
+  }
+  get user(): User | undefined {
+    return this._user;
+  }
+
   error: string | null = null;
   isEditingUser = false;
 
   private destroy$ = new Subject<void>();
 
-  get breadcrumbs(): AdminBreadcrumb[] {
-    return [
-      { title: 'Users', icon: 'person', route: ['../'] },
-      { title: this.user?.displayName || 'Unknown User' }
-    ];
-  }
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Users', icon: 'person', route: ['/admin/users'] }, { title: 'Unknown User' }];
 
   constructor(
     private route: ActivatedRoute,
-    private userService: UserService
+    private userService: UserService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +52,12 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         }
         this.initForUser(userId);
       });
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private initForUser(userId: string): void {
@@ -82,10 +93,5 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   onEditCancelled(): void {
     this.isEditingUser = false;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

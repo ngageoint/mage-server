@@ -1,4 +1,4 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions">
     <button matButton="outlined" class="cancel-button" type="button" (click)="cancelled.emit()" [disabled]="saving">
       <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
@@ -9,7 +9,7 @@
       Save
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="user-page">
 <mat-card appearance="outlined" class="details-card">

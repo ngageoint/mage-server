@@ -1,4 +1,4 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="layer && (hasLayerEditPermission || hasLayerDeletePermission)">
     <button matButton="outlined" *ngIf="isLayerFileBased() && hasLayerEditPermission" (click)="downloadLayer()"
       [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating">
@@ -8,7 +8,7 @@
       <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="loading-state" *ngIf="loading && !layer">
   <mat-spinner></mat-spinner>

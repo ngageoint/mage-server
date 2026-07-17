@@ -1,4 +1,4 @@
-import { Component, DestroyRef, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnInit, OnDestroy, OnChanges, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTableDataSource } from '@angular/material/table';
 import { PageEvent } from '@angular/material/paginator';
@@ -15,6 +15,7 @@ import { ChangePasswordComponent } from '../../change-password/change-password.c
 import { User } from '../../user';
 import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
@@ -23,9 +24,12 @@ import { SessionService } from 'mage-web-app/http/session.service';
     styleUrls: ['./user-details-view.component.scss'],
     standalone: false
 })
-export class UserDetailsViewComponent implements OnInit, OnDestroy {
+export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   @Input() user!: User;
   @Input() breadcrumbs: AdminBreadcrumb[] = [];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   @Output() editRequested = new EventEmitter<void>();
   @Output() userChanged = new EventEmitter<User>();
@@ -63,10 +67,14 @@ export class UserDetailsViewComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private router: Router,
     private route: ActivatedRoute,
-    private destroyRef: DestroyRef
+    private destroyRef: DestroyRef,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.sessionService.user$
       .pipe(take(1), takeUntilDestroyed(this.destroyRef))
       .subscribe((myself) => {
@@ -75,6 +83,12 @@ export class UserDetailsViewComponent implements OnInit, OnDestroy {
 
     this.loadUserTeams();
     this.loadUserEvents();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['breadcrumbs']) {
+      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    }
   }
 
   ngOnDestroy(): void {

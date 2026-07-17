@@ -2,10 +2,13 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  OnChanges,
+  SimpleChanges,
   Input,
   Output,
   EventEmitter,
   ElementRef,
+  TemplateRef,
   ViewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,6 +17,7 @@ import { UserService } from '../../../../user/user.service';
 import { User } from '../../user';
 import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 interface EditableUser extends User {
@@ -32,9 +36,12 @@ interface IconMetadata {
     styleUrls: ['./user-details-edit.component.scss'],
     standalone: false
 })
-export class UserDetailsEditComponent implements OnInit {
+export class UserDetailsEditComponent implements OnInit, OnChanges {
   @Input() user!: User;
   @Input() breadcrumbs: AdminBreadcrumb[] = [];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   @Output() saved = new EventEmitter<User>();
   @Output() cancelled = new EventEmitter<void>();
@@ -60,10 +67,14 @@ export class UserDetailsEditComponent implements OnInit {
   constructor(
     private userService: UserService,
     private sessionService: SessionService,
-    private destroyRef: DestroyRef
+    private destroyRef: DestroyRef,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.editUser = { ...this.user } as EditableUser;
 
     const anyUser: any = this.user;
@@ -92,6 +103,12 @@ export class UserDetailsEditComponent implements OnInit {
         this.roles = roles;
         this.setSelectedRoleFromUser();
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['breadcrumbs']) {
+      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    }
   }
 
   getPhoneNumber(): string {

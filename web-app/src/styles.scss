@@ -26,6 +26,15 @@ app {
   overflow: hidden;
 }
 
+// Caps the width of every admin page's routed content. .admin-main-content is a flex
+// container, so this child is auto-blockified regardless of the page's own :host display,
+// meaning max-width takes effect without needing to override that component's own layout.
+.admin-main-content > *:not(router-outlet) {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 // Angular Material sets display: block and align-self: flex-start on the trailing meta slot for
 // multi-line list items with leading icons. Override to keep the slot centered.
 mat-nav-list .mdc-list-item--with-leading-icon.mdc-list-item--with-trailing-meta.mdc-list-item--with-two-lines .mdc-list-item__end,

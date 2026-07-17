@@ -14,6 +14,7 @@ import { Banner } from './security-banner.model';
 import { ColorPickerComponent } from '../../../../app/color-picker/color-picker.component';
 import { SettingsService } from '../settings.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminSettingsUnsavedComponent } from '../admin-settings-unsaved/admin-settings-unsaved.component';
 
 @Component({
@@ -23,9 +24,7 @@ import { AdminSettingsUnsavedComponent } from '../admin-settings-unsaved/admin-s
   standalone: false
 })
 export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy {
-  readonly breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Banner', icon: 'page_header' }
-  ];
+  readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Banner', icon: 'page_header' }];
 
   banner: Banner = {
     headerTextColor: '#000000',
@@ -52,10 +51,13 @@ export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy
   constructor(
     private settingsService: SettingsService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+
     this.settingsService
       .get('banner')
       .pipe(takeUntil(this.destroy$))

@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="event && hasDeletePermission">
     <button matButton="outlined" class="delete-event-button" type="button" (click)="deleteEvent()">
       <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="event-page" *ngIf="event">
   <mat-card appearance="outlined" class="details-card">

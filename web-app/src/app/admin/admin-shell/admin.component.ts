@@ -15,6 +15,7 @@ import { PluginService } from '../plugin/plugin.service';
 import { UserPagingService } from '../services/user-paging.service';
 import { DeviceService } from '../admin-devices/device.service';
 import { SidenavService } from './sidenav.service';
+import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 
 @Component({
     selector: 'admin',
@@ -58,7 +59,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     private userPaging: UserPagingService,
     private deviceService: DeviceService,
     private breakpointObserver: BreakpointObserver,
-    private sidenavService: SidenavService
+    private sidenavService: SidenavService,
+    public breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
@@ -116,6 +118,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.breadcrumbService.setBreadcrumbs([]);
+    this.breadcrumbService.setActions(null);
     this.destroy$.next();
     this.destroy$.complete();
   }

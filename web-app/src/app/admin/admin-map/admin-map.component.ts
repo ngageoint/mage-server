@@ -1,8 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 import { MapSettingsService } from '../../../app/map/settings/map.settings.service';
 import { MapSettings } from '../../../app/entities/map/entities.map';
 
@@ -15,12 +16,10 @@ type WebSearchType = 'NONE' | 'NOMINATIM';
     styleUrls: ['./admin-map.component.scss'],
     standalone: false
 })
-export class AdminMapComponent {
+export class AdminMapComponent implements OnInit {
   @ViewChild('mapForm') mapForm!: NgForm;
 
-  readonly breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Map', icon: 'public' }
-  ];
+  readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Map', icon: 'public' }];
 
   mobileSearchType: MobileSearchType | null = 'NONE';
   mobileSearchOptions: MobileSearchType[] = ['NONE', 'NATIVE', 'NOMINATIM'];
@@ -33,7 +32,8 @@ export class AdminMapComponent {
 
   constructor(
     private mapSettingsService: MapSettingsService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private breadcrumbService: AdminBreadcrumbService
   ) {
     this.mapSettingsService.getMapSettings().subscribe({
       next: (settings: MapSettings | null | undefined) => {
@@ -58,6 +58,10 @@ export class AdminMapComponent {
         this.snackBar.open(message, undefined, { duration: 3000 });
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
   }
 
   save(): void {

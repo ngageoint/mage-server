@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
@@ -24,12 +25,10 @@ export interface CanComponentDeactivate {
 export class AdminAuthenticationComponent
   implements OnInit, OnDestroy, CanComponentDeactivate
 {
-  readonly breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Authentication',
-      icon: 'lock'
-    }
-  ];
+  readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Authentication', icon: 'lock' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   teams: any[] = [];
   events: any[] = [];
@@ -48,10 +47,14 @@ export class AdminAuthenticationComponent
     private teamsService: AdminTeamsService,
     private eventsService: AdminEventsService,
     private authenticationConfigurationService: AuthenticationConfigurationService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.sessionService.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
@@ -62,6 +65,12 @@ export class AdminAuthenticationComponent
     this.loadInitialData().catch((err) => {
       console.log(err);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private async loadInitialData(): Promise<void> {
@@ -259,10 +268,5 @@ export class AdminAuthenticationComponent
     }
 
     return true;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

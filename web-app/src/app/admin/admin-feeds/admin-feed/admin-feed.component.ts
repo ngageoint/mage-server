@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
@@ -18,6 +18,7 @@ import {
   animate
 } from '@angular/animations';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { EventService } from '../../../event/event.service';
@@ -50,14 +51,15 @@ import { SessionService } from 'mage-web-app/http/session.service';
     ],
     standalone: false
 })
-export class AdminFeedComponent implements OnInit {
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Feeds',
-      icon: 'rss_feed',
-      route: ['/admin/feeds']
-    }
-  ];
+export class AdminFeedComponent implements OnInit, OnDestroy {
+  breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Feeds',
+    icon: 'rss_feed',
+    route: ['/admin/feeds']
+  }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   feedsRoute: any[] = ['../../feeds'];
   feedEditRoute: any[] | null = null;
@@ -108,12 +110,20 @@ export class AdminFeedComponent implements OnInit {
     private snackBar: MatSnackBar,
     private eventsService: AdminEventsService,
     private sessionService: SessionService,
-    private eventService: EventService
+    private eventService: EventService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.feedId = this.route.snapshot.paramMap.get('feedId');
     this.initFeed();
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
   }
 
   private initFeed(): void {
@@ -122,16 +132,14 @@ export class AdminFeedComponent implements OnInit {
     this.feedService.fetchFeed(this.feedId).subscribe((feed) => {
       this.feed = feed;
 
-      this.breadcrumbs = [
-        {
-          title: 'Feeds',
-          icon: 'rss_feed',
-          route: ['/admin/feeds']
-        },
-        {
-          title: this.feed.title
-        }
-      ];
+      this.breadcrumbs = [{
+        title: 'Feeds',
+        icon: 'rss_feed',
+        route: ['/admin/feeds']
+      },{
+        title: this.feed.title
+      }];
+      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
 
       this.feedEditRoute = ['../feedEdit', this.feed.id];
 

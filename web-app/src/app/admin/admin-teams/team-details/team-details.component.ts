@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,6 +22,7 @@ import {
   SearchModalColumn
 } from '../../search-modal/search-modal.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
@@ -63,11 +64,21 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   totalEvents = 0;
   eventsPageSize = 5;
 
-  breadcrumbs: AdminBreadcrumb[] = [{
+  private _breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Teams',
     icon: 'groups',
-    route: ['../']
+    route: ['/admin/teams']
   }];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this._breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this._breadcrumbs;
+  }
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   private asId(value: any): string {
     if (!value) return '';
@@ -83,10 +94,14 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private sessionService: SessionService,
     private teamService: AdminTeamsService,
-    private eventsService: AdminEventsService
+    private eventsService: AdminEventsService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.route.paramMap.subscribe((params) => {
       this.teamId = params.get('teamId') || '';
       if (!this.teamId) return;
@@ -96,6 +111,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
     this.snackBar.dismiss();
   }
 
@@ -122,10 +138,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       this.getMembers();
       this.getTeamEvents();
 
-      this.breadcrumbs = [
-        { title: 'Teams', icon: 'groups', route: ['../'] },
-        { title: this.team?.name || 'Team' }
-      ];
+      this.breadcrumbs = [{ title: 'Teams', icon: 'groups', route: ['/admin/teams'] }, { title: this.team?.name || 'Team' }];
     });
   }
 
@@ -201,10 +214,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       if (!updatedTeam) return;
 
       this.team = updatedTeam;
-      this.breadcrumbs = [
-        { title: 'Teams', icon: 'groups', route: ['../'] },
-        { title: this.team?.name || 'Team' }
-      ];
+      this.breadcrumbs = [{ title: 'Teams', icon: 'groups', route: ['/admin/teams'] }, { title: this.team?.name || 'Team' }];
     });
   }
 

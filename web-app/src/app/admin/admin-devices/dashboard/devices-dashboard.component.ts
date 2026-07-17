@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import {
@@ -7,6 +7,7 @@ import {
   SearchOptions
 } from '../../services/admin-device.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { Device } from '../../../entities/device/device';
 import { CreateDeviceDialogComponent } from '../create-device/create-device.component';
 import { Subject, takeUntil } from 'rxjs';
@@ -38,9 +39,10 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
 
   deviceStatusFilter: 'all' | 'registered' | 'unregistered' = 'all';
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Devices', icon: 'devices' }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Devices', icon: 'devices' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   private destroy$ = new Subject<void>();
 
@@ -48,15 +50,20 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
     private modal: MatDialog,
     private deviceService: AdminDeviceService,
     private sessionService: SessionService,
-    private toastService: AdminToastService
+    private toastService: AdminToastService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.subscribeToUser();
     this.refreshDevices();
   }
 
   ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
     this.destroy$.next();
     this.destroy$.complete();
   }

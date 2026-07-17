@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
@@ -24,14 +25,13 @@ import {
     standalone: false
 })
 export class AuthenticationCreateComponent implements OnInit, OnDestroy {
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Authentication',
-      icon: 'lock',
-      route: ['../../security']
-    },
-    { title: 'New' }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Authentication',
+    icon: 'lock',
+    route: ['/admin/security']
+  },{
+    title: 'New'
+  }];
 
   strategy: Strategy & { settings: any } = this.buildDefaultStrategy();
 
@@ -75,7 +75,8 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
     private route: ActivatedRoute,
-    private readonly authenticationConfigurationService: AuthenticationConfigurationService
+    private readonly authenticationConfigurationService: AuthenticationConfigurationService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {
     this.form = this.fb.group({
       title: this.fb.nonNullable.control('', Validators.required),
@@ -101,6 +102,8 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+
     this.titleCtrl.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((v) => {
