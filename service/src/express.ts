@@ -1,23 +1,22 @@
-const express = require('express'),
-  crypto = require('crypto'),
-  session = require('express-session'),
-  fs = require('fs'),
-  passport = require('passport'),
-  path = require('path'),
-  provision = require('./provision'),
-  log = require('./logger'),
-  api = require('./api'),
-  env = require('./environment/env'),
-  yaml = require('yaml'),
-  AuthenticationInitializer = require('./authentication');
+import crypto from 'crypto'
+import fs from 'fs'
+import path from 'path'
+import express from 'express'
+import session from 'express-session'
+import passport from 'passport'
+import yaml from 'yaml'
+import AuthenticationInitializer from './authentication'
+import provision from './provision'
+import log from './logger'
+
 
 const app = express();
 app.use(function(req, res, next) {
-  req.getRoot = function() {
+  req.getRoot = function(): string {
     return req.protocol + '://' + req.get('host');
   };
 
-  req.getPath = function() {
+  req.getPath = function(): string {
     return req.getRoot() + req.path;
   };
 
@@ -66,7 +65,7 @@ app.use(
 );
 
 // Configure authentication
-const authentication = AuthenticationInitializer.initialize(
+const auth = AuthenticationInitializer.initialize(
   app,
   passport,
   provision
@@ -74,7 +73,8 @@ const authentication = AuthenticationInitializer.initialize(
 
 // Configure routes
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
-require('./routes')(app, { authentication });
+import initializeRoutes = require('./routes')
+initializeRoutes(app, { authentication: auth });
 
 const adminDist = path.join(path.dirname(require.resolve('@ngageoint/mage.web-app/package.json')), 'admin');
 
@@ -126,8 +126,7 @@ app.use(function(err, req, res, next) {
   );
 
   const status = err.status || 500;
-  let msg =
-    status === 500
+  let msg = status === 500
       ? 'Internal server error, please contact MAGE administrator.'
       : err.message;
   if (err.name === 'ValidationError') {
@@ -140,6 +139,6 @@ app.use(function(err, req, res, next) {
   }
 
   res.status(status).send(msg);
-});
+} as express.ErrorRequestHandler);
 
-module.exports = { app, auth: authentication };
+export { app, auth }
