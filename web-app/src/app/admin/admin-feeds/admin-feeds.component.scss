@@ -61,11 +61,19 @@ mat-paginator {
   justify-content: center;
   gap: 8px;
   padding: 48px 16px;
-  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+}
 
-  mat-icon {
-    font-size: 96px;
-    width: 96px;
-    height: 96px;
-  }
+.empty-state-icon {
+  font-size: 96px;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 4px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state-text {
+  font-size: var(--mat-sys-body-large-size);
+  color: var(--mat-sys-on-surface-variant);
+  max-width: 350px;
 }

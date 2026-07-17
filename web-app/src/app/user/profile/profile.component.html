@@ -41,7 +41,8 @@
         <div class="row">
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input matInput placeholder="Username" [formControl]="info.controls.email">
+            <input matInput placeholder="Email" [formControl]="info.controls.email">
+            <mat-error *ngIf="info.controls.email.hasError('email')">Must be a valid email address</mat-error>
           </mat-form-field>
     
           <mat-form-field appearance="fill">
@@ -65,7 +66,10 @@
     <mat-card class="card" *ngIf="user.authentication.type === 'local'">
       <div>
         <div class="section-title">Password</div>
-        <div class="section-subtitle">It's a good idea to use a strong password that you're not using elsewhere.</div>
+        <p class="info-hint">
+          <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+          It's a good idea to use a strong password that you're not using elsewhere.  Changing your password will sign you out; you'll need to log in again with your new password.
+        </p>
       </div>
       
       <form [formGroup]="password">

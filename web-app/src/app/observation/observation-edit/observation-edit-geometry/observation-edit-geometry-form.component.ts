@@ -6,7 +6,7 @@ import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/g
 import * as DMS from 'src/app/geometry/geometry-dms'
 import { createMask } from '@ngneat/input-mask'
 import { LocalStorageService } from '../../../http/local-storage.service'
-import { MapService } from '../../../map/map.service'
+import { MapService, FeatureEdit } from '../../../map/map.service'
 import { GeometryService } from '../../../geometry/geometry.service'
 
 @Directive({
@@ -82,7 +82,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   coordinateSystem = 'wgs84'
   coordinateEditSource: CoordinateSystemKey | null = null
   selectedVertexIndex: number
-  featureEdit: any
+  featureEdit?: FeatureEdit
   latitude: number
   longitude: number
   mgrs: string
@@ -155,17 +155,17 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
         })
         return
       }
-      this.featureEdit.save()
+      this.featureEdit?.save()
       this.save.emit({ feature: this.feature })
     } else {
       this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'observations')
-      this.featureEdit.cancel()
+      this.featureEdit?.cancel()
       this.save.emit({})
     }
   }
 
   onCancel(): void {
-    this.featureEdit.cancel()
+    this.featureEdit?.cancel()
     this.cancel.emit()
   }
 
@@ -286,7 +286,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
         this.mgrs = null
         this.dmsForm.setValue({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '' }, { emitEvent: false })
         delete this.feature.geometry.type
-        this.featureEdit.cancel()
+        this.featureEdit?.cancel()
         break;
     }
     if (shapeType) {
@@ -295,7 +295,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   }
 
   onEditShape(): void {
-    this.featureEdit.update(this.feature)
+    this.featureEdit?.update(this.feature)
   }
 
   editCurrentCoordinates(from: CoordinateSystemKey, lat: number, lon: number): void {
@@ -317,7 +317,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       return
     }
     this.feature.geometry.coordinates = coordinates
-    this.featureEdit.update(this.feature)
+    this.featureEdit?.update(this.feature)
   }
 
   updateCoordinates(): void {

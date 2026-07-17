@@ -48,7 +48,6 @@
             <mat-nav-list>
               <div *ngFor="let feature of editState.preview?.content?.items?.features | slice:0:10">
                 <feed-item-summary [item]="feature" [feed]="editState.preview.feed"></feed-item-summary>
-                <mat-divider></mat-divider>
               </div>
             </mat-nav-list>
           </div>

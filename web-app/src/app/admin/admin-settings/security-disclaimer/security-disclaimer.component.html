@@ -14,17 +14,21 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Disclaimer Title</mat-label>
-        <input matInput [(ngModel)]="disclaimer.title" [disabled]="!disclaimer.show" (input)="setDirty(true)" />
+        <input matInput [(ngModel)]="disclaimer.title" #titleModel="ngModel"
+          [required]="disclaimer.show" [disabled]="!disclaimer.show" (input)="setDirty(true)" />
+        <mat-error *ngIf="titleModel.invalid">Disclaimer title is required</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill" subscriptSizing="dynamic">
         <mat-label>Disclaimer Text</mat-label>
-        <textarea matInput [(ngModel)]="disclaimer.text" [disabled]="!disclaimer.show" rows="6" (input)="setDirty(true)"></textarea>
+        <textarea matInput [(ngModel)]="disclaimer.text" #textModel="ngModel"
+          [required]="disclaimer.show" [disabled]="!disclaimer.show" rows="6" (input)="setDirty(true)"></textarea>
+        <mat-error *ngIf="textModel.invalid">Disclaimer text is required</mat-error>
       </mat-form-field>
     </mat-card-content>
     <mat-divider></mat-divider>
     <div class="card-actions">
-      <button matButton="filled" (click)="save()">Save</button>
+      <button matButton="filled" (click)="save()" [disabled]="titleModel.invalid || textModel.invalid">Save</button>
     </div>
   </mat-card>
 </div>

@@ -10,6 +10,11 @@
   gap: 8px;
 }
 
+.cancel-button {
+  color: var(--mat-sys-primary) !important;
+  border-color: var(--mat-sys-primary) !important;
+}
+
 .user-page {
   flex: 1;
   overflow-y: auto;

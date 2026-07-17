@@ -10,6 +10,7 @@ import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
 import { PasswordStrength, passwordStrengthScores } from '../../entities/password/password';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { emailValidator } from 'mage-web-app/email/email';
 
 @Component({
     selector: 'profile',
@@ -25,7 +26,7 @@ export class ProfileComponent implements OnInit {
   info = new FormGroup({
     username: new FormControl<string>({ value: '', disabled: true }, []),
     displayName: new FormControl<string>('', [Validators.required]),
-    email: new FormControl<string>('', [Validators.email]),
+    email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>('', []),
   })
   infoError?: string
@@ -61,6 +62,11 @@ export class ProfileComponent implements OnInit {
   }
 
   onSave(): void {
+    this.info.markAllAsTouched()
+    if (this.info.invalid) {
+      return
+    }
+
     this.saving = true
 
     this.userService.saveProfile({
@@ -117,6 +123,8 @@ export class ProfileComponent implements OnInit {
     if (this.password.valid) {
       this.userService.updatePassword(this.password.controls.currentPassword.value, this.password.controls.newPassword.value).subscribe({
         next: () => {
+          this.sessionService.clearSession()
+
           const dialogRef = this.dialog.open(PasswordResetSuccessDialog, {
             disableClose: true,
             autoFocus: false

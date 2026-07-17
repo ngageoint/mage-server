@@ -141,6 +141,7 @@ mat-card.details-card {
 .empty-state-text {
   font-size: var(--mat-sys-body-large-size);
   color: var(--mat-sys-on-surface-variant);
+  max-width: 350px;
 }
 
 mat-paginator {

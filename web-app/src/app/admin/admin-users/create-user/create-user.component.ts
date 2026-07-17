@@ -11,6 +11,7 @@ import {
   evaluatePasswordStrength,
   getPasswordTooltip
 } from '../../../password/password';
+import { emailValidator } from '../../../email/email';
 
 import {
   PasswordStrength,
@@ -45,7 +46,7 @@ export class CreateUserModalComponent implements OnInit {
   signup = new FormGroup({
     displayName: new FormControl('', [Validators.required]),
     username: new FormControl('', [Validators.required]),
-    email: new FormControl('', [Validators.email]),
+    email: new FormControl('', [emailValidator]),
     phone: new FormControl(''),
     selectedRole: new FormControl(null, [Validators.required]),
     password: new FormControl('', [Validators.required]),

@@ -98,6 +98,16 @@
 
   table {
     width: 100%;
+    --mat-table-row-item-outline-width: 0;
+  }
+
+  tr.mat-mdc-row:nth-child(even) {
+    background-color: var(--mat-sys-surface-container);
+  }
+
+  td.mat-mdc-cell {
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 }
 

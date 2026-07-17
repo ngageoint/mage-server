@@ -39,7 +39,13 @@
     </mat-nav-list>
 
     <ng-template #noEvents>
-      <div class="no-events">No events found.</div>
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event</mat-icon>
+        <div class="empty-state-text" *ngIf="eventSearch; else noEventsFound">No events match your search</div>
+        <ng-template #noEventsFound>
+          <div class="empty-state-text">No events found</div>
+        </ng-template>
+      </div>
     </ng-template>
 
     <mat-paginator [length]="totalEvents" [pageSize]="searchOptions.page_size" [pageIndex]="searchOptions.page"

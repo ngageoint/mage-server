@@ -51,8 +51,11 @@
             </mat-list-item>
 
             <div class="empty-state" *ngIf="!feeds || feeds.length === 0">
-              <mat-icon>rss_feed</mat-icon>
-              <span>No feeds found</span>
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">rss_feed</mat-icon>
+              <div class="empty-state-text" *ngIf="feedSearch; else noFeedsFound">No feeds match your search</div>
+              <ng-template #noFeedsFound>
+                <div class="empty-state-text">No feeds found</div>
+              </ng-template>
             </div>
           </mat-nav-list>
 
@@ -105,8 +108,11 @@
             </mat-list-item>
 
             <div class="empty-state" *ngIf="!services || services.length === 0">
-              <mat-icon>cloud_queue</mat-icon>
-              <span>No services found</span>
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">cloud_queue</mat-icon>
+              <div class="empty-state-text" *ngIf="serviceSearch; else noServicesFound">No services match your search</div>
+              <ng-template #noServicesFound>
+                <div class="empty-state-text">No services found</div>
+              </ng-template>
             </div>
           </mat-nav-list>
 

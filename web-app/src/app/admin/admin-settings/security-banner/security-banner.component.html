@@ -18,7 +18,9 @@
 
           <mat-form-field appearance="fill">
             <mat-label>Header Text</mat-label>
-            <input matInput [(ngModel)]="banner.headerText" [disabled]="!banner.showHeader" (input)="setDirty(true)" />
+            <input matInput [(ngModel)]="banner.headerText" #headerTextModel="ngModel"
+              [required]="banner.showHeader" [disabled]="!banner.showHeader" (input)="setDirty(true)" />
+            <mat-error *ngIf="headerTextModel.invalid">Header text is required</mat-error>
           </mat-form-field>
 
           <div class="color-field">
@@ -41,7 +43,9 @@
 
           <mat-form-field appearance="fill">
             <mat-label>Footer Text</mat-label>
-            <input matInput [(ngModel)]="banner.footerText" [disabled]="!banner.showFooter" (input)="setDirty(true)" />
+            <input matInput [(ngModel)]="banner.footerText" #footerTextModel="ngModel"
+              [required]="banner.showFooter" [disabled]="!banner.showFooter" (input)="setDirty(true)" />
+            <mat-error *ngIf="footerTextModel.invalid">Footer text is required</mat-error>
           </mat-form-field>
 
           <div class="color-field">
@@ -58,7 +62,7 @@
     </mat-card-content>
     <mat-divider></mat-divider>
     <div class="card-actions">
-      <button matButton="filled" (click)="save()">Save</button>
+      <button matButton="filled" (click)="save()" [disabled]="headerTextModel.invalid || footerTextModel.invalid">Save</button>
     </div>
   </mat-card>
 </div>

@@ -31,7 +31,10 @@
 
           <div class="empty-state" *ngIf="!(inactiveUsers && inactiveUsers.length)">
             <mat-icon>group</mat-icon>
-            <span class="empty-desc">No users are awaiting activation</span>
+            <span class="empty-desc" *ngIf="userSearch; else noInactiveUsers">No users match your search</span>
+            <ng-template #noInactiveUsers>
+              <span class="empty-desc">No users are awaiting activation</span>
+            </ng-template>
           </div>
         </mat-nav-list>
       </mat-card-content>
@@ -74,7 +77,10 @@
 
           <div class="empty-state" *ngIf="!(unregisteredDevices && unregisteredDevices.length)">
             <mat-icon>devices</mat-icon>
-            <span class="empty-desc">No devices are awaiting registration</span>
+            <span class="empty-desc" *ngIf="deviceSearch; else noUnregisteredDevices">No devices match your search</span>
+            <ng-template #noUnregisteredDevices>
+              <span class="empty-desc">No devices are awaiting registration</span>
+            </ng-template>
           </div>
         </mat-nav-list>
       </mat-card-content>

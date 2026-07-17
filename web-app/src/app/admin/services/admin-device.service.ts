@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Device } from 'src/app/entities/device/device';
+import { Device, DeviceRequest } from 'src/app/entities/device/device';
 
 export interface SearchOptions {
   term?: string;
@@ -167,7 +167,7 @@ export class AdminDeviceService {
     return this.http.get<Device>(`/api/devices/${deviceId}`, { params: new HttpParams().set('expand', 'user') });
   }
 
-  updateDevice(deviceId: string, device: Partial<Device>): Observable<Device> {
+  updateDevice(deviceId: string, device: DeviceRequest): Observable<Device> {
     return this.http.put<Device>(`/api/devices/${deviceId}`, device);
   }
 
@@ -175,7 +175,7 @@ export class AdminDeviceService {
     return this.http.delete<void>(`/api/devices/${deviceId}`);
   }
 
-  createDevice(deviceData: Partial<Device>): Observable<Device> {
+  createDevice(deviceData: DeviceRequest): Observable<Device> {
     return this.http.post<Device>('/api/devices', deviceData);
   }
 }

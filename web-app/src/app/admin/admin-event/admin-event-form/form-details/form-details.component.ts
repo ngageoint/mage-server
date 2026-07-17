@@ -553,7 +553,7 @@ export class FormDetailsComponent implements OnInit {
       return;
     }
 
-    this.router.navigate(['/events', this.event.id, 'forms', this.form.id]);
+    this.router.navigate(['/admin/events', this.event.id, 'forms', this.form.id]);
   }
 
   exportForm(): void {

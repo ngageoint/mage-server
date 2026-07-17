@@ -16,6 +16,7 @@ mat-paginator {
 }
 
 .logins-shell {
+  --mat-card-elevated-container-color: white;
   overflow: hidden;
 }
 
@@ -23,7 +24,7 @@ mat-paginator {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 0 20px 8px;
+  padding: 0 16px;
 
   mat-form-field {
     flex: 1 1 160px;
@@ -37,16 +38,34 @@ mat-paginator {
   padding: 0 20px;
 }
 
-.login-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+mat-list-item {
+  border-radius: var(--mat-list-active-indicator-shape, var(--mat-sys-corner-extra-small));
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%), transparent);
+  }
 }
 
-.login-date {
-  font-size: var(--mat-sys-label-small-size);
+.login-link {
+  color: var(--mat-sys-tertiary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration-thickness: 2px;
+  }
+}
+
+.login-device {
+  font-size: var(--mat-sys-label-large-size);
+}
+
+.login-via {
+  margin: 0 4px;
+  font-size: var(--mat-sys-label-large-size);
   color: var(--mat-sys-on-surface-variant);
-  white-space: nowrap;
 }
 
 .empty-state {
