@@ -6,6 +6,7 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "importHelpers": true,
@@ -13,15 +14,7 @@
     "lib": [
       "ES2022",
       "dom"
-    ],
-    "paths": {
-      "admin": [
-        "dist/admin"
-      ],
-      "@ngageoint/mage.web-core-lib/*": [
-        "./node_modules/@ngageoint/mage.web-core-lib/*"
-      ]
-    }
+    ]
   },
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
