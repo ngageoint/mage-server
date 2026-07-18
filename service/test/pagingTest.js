@@ -161,22 +161,6 @@ describe("Paging Tests", function () {
     });
 
     it('Test page devices against users', function (done) {
-        sinon.mock(User)
-            .expects('count')
-            .returns(5);
-
-        const mockUsers = [{
-            _id: 'id1',
-            username: 'test1'
-        }, {
-            _id: 'id2',
-            username: 'test2'
-        }];
-
-        sinon.mock(User)
-            .expects('getUsers')
-            .returns(Promise.resolve(mockUsers));
-
         const mockDevices = [{
             _id: 'id0',
             description: 'test0'
@@ -184,21 +168,15 @@ describe("Paging Tests", function () {
             _id: 'id1',
             description: 'test1'
         }];
-
         const query = new mongoose.Query();
         sinon.stub(query, 'sort').returns({
             limit: sinon.stub().returnsThis(),
             skip: sinon.stub().returnsThis(),
             exec: sinon.stub().resolves(mockDevices)
         });
-
-        sinon.mock(Device)
-            .expects('getDevices')
-            .returns(query);
-
-        let options = { limit: '10' };
+        const options = { limit: '10' };
         Paging.page(null, query, options, 'devices').then(pageInfo => {
-            expect(pageInfo).to.not.be.null;
+            expect(pageInfo).to.exist;
             expect(pageInfo.size).to.equal(2);
             expect(pageInfo['devices']).to.not.be.null;
             expect(pageInfo['devices']).to.have.lengthOf(2);
