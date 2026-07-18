@@ -84,14 +84,6 @@ describe("export tests", function () {
       .onSecondCall()
       .resolves(mockEvent);
 
-    sinon.mock(UserModel)
-      .expects('getUsers')
-      .yields(null, [{
-        username: 'user3'
-      }, {
-        username: 'user4'
-      }]);
-
     sinon.mock(DeviceModel)
       .expects('getDevices')
       .resolves([{
