@@ -45,7 +45,7 @@ Form.prototype.populateUserFields = function (callback) {
   var event = this._event;
   var form = this._form;
 
-  var forms = form ? [form] : event.forms;
+  var forms = form ? [form] : (event.forms || []);
   var formsUserFields = [];
   forms.forEach(function (form) {
     var userFields = getUserFields(form);

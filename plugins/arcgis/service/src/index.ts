@@ -229,26 +229,32 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             const config = await processor.safeGetConfig();
             const { url, portalUrl, token, username, password } = req.body;
             if (!URL.canParse(url)) {
-              return res.send('Invalid feature service url').status(400);
-            }
-
-            let service: FeatureServiceConfig;
-            let identityManager: ArcGISIdentityManager;
-            if (token) {
-              identityManager = await ArcGISIdentityManager.fromToken({ token });
-              service = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
-            } else if (username && password) {
-              identityManager = await ArcGISIdentityManager.signIn({
-                username,
-                password,
-                portal: portalUrl || getPortalUrl(url)
-              });
-              service = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
-            } else {
-              return res.sendStatus(400);
+              return res.status(400).send('Invalid feature service url');
             }
 
             try {
+              let identityManager: ArcGISIdentityManager;
+              if (token) {
+                identityManager = await ArcGISIdentityManager.fromToken({ token });
+              } else if (username && password) {
+                const serverRoot = url.split(/\/rest\/services/i)[0];
+                const { owningSystemUrl } = await request(`${serverRoot}/rest/info`);
+                if (owningSystemUrl || portalUrl) {
+                  identityManager = await ArcGISIdentityManager.signIn({
+                    username,
+                    password,
+                    portal: portalUrl || `${owningSystemUrl}/sharing/rest`
+                  });
+                } else {
+                  // stand-alone ArcGIS Server with no portal; sign in to the server's own token service
+                  identityManager = new ArcGISIdentityManager({ username, password, server: serverRoot });
+                  await identityManager.refreshCredentials();
+                }
+              } else {
+                return res.sendStatus(400);
+              }
+
+              const service: FeatureServiceConfig = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
               const existingService = config.featureServices.find(service => service.url === url);
               if (!existingService) {
                 config.featureServices.push(service);
@@ -258,7 +264,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               const sanitized = await sanitizeFeatureService(service, identityService);
               return res.send(sanitized);
             } catch (err) {
-              return res.send('Invalid credentials provided to communicate with feature service' + err).status(400);
+              return res.status(400).send('Invalid credentials provided to communicate with feature service' + err);
             }
           });
 
