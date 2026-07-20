@@ -37,7 +37,7 @@ RUN cd plugins/sftp/web \
     && npm link ../../../web-app/dist/core-lib \
     && npm run build \
     && cd /packages \
-    && npm pack /mage-server/plugins/sftp/web
+    && npm pack /mage-server/plugins/sftp/web/dist/main
 
 RUN cd plugins/arcgis/service \
     && npm link ../../../service \
@@ -49,7 +49,7 @@ RUN cd plugins/arcgis/web-app \
     && npm link ../../../web-app/dist/core-lib \
     && npm run build \
     && cd /packages \
-    && npm pack /mage-server/plugins/arcgis/web-app
+    && npm pack /mage-server/plugins/arcgis/web-app/dist/main
 
 FROM node-base AS build-instance
 ENV MAGE_HOME=/home/mage/instance
