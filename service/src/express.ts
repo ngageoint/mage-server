@@ -1,23 +1,23 @@
-const express = require('express'),
-  crypto = require('crypto'),
-  session = require('express-session'),
-  fs = require('fs'),
-  passport = require('passport'),
-  path = require('path'),
-  provision = require('./provision'),
-  log = require('./logger'),
-  api = require('./api'),
-  env = require('./environment/env'),
-  yaml = require('yaml'),
-  AuthenticationInitializer = require('./authentication');
+import crypto from 'crypto'
+import fs from 'fs'
+import path from 'path'
+import express from 'express'
+import session from 'express-session'
+import passport from 'passport'
+import yaml from 'yaml'
+import { httpRequestLogging } from './adapters/adapters.logging.http'
+import AuthenticationInitializer from './authentication'
+import provision from './provision'
+import env = require('./environment/env')
+import log from './logger'
 
 const app = express();
 app.use(function(req, res, next) {
-  req.getRoot = function() {
+  req.getRoot = function(): string {
     return req.protocol + '://' + req.get('host');
   };
 
-  req.getPath = function() {
+  req.getPath = function(): string {
     return req.getRoot() + req.path;
   };
 
@@ -48,7 +48,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-const { httpRequestLogging } = require('./adapters/adapters.logging.http');
 app.use(httpRequestLogging(log.child({ component: 'http' }), env.httpRequestLogMethods));
 app.get('/api/docs/openapi.yaml', async function(req, res) {
   const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
@@ -66,7 +65,7 @@ app.use(
 );
 
 // Configure authentication
-const authentication = AuthenticationInitializer.initialize(
+const auth = AuthenticationInitializer.initialize(
   app,
   passport,
   provision
@@ -74,45 +73,8 @@ const authentication = AuthenticationInitializer.initialize(
 
 // Configure routes
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
-require('./routes')(app, { authentication });
-
-const adminDist = path.join(path.dirname(require.resolve('@ngageoint/mage.web-app/package.json')), 'admin');
-
-app.use(
-  '/admin',
-  express.static(adminDist, {
-    etag: true,
-    lastModified: true,
-    setHeaders: (res, filePath) => {
-      const rel = path.relative(adminDist, filePath).replace(/\\/g, '/');
-
-      if (rel === 'index.html') {
-        res.setHeader(
-          'Cache-Control',
-          'no-store, no-cache, must-revalidate, max-age=0'
-        );
-        return;
-      }
-
-      if (
-        /\.(?:js|css|woff2?|ttf|eot|ico|png|jpg|jpeg|gif|svg)$/.test(filePath)
-      ) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        return;
-      }
-
-      res.setHeader('Cache-Control', 'no-cache');
-    }
-  })
-);
-
-app.get('/admin/*', (req, res) => {
-  res.setHeader(
-    'Cache-Control',
-    'no-store, no-cache, must-revalidate, max-age=0'
-  );
-  res.sendFile(path.join(adminDist, 'index.html'));
-});
+import initializeRoutes = require('./routes')
+initializeRoutes(app, { authentication: auth });
 
 // Express requires a 4 parameter function callback, do not remove unused next parameter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -126,8 +88,7 @@ app.use(function(err, req, res, next) {
   );
 
   const status = err.status || 500;
-  let msg =
-    status === 500
+  let msg = status === 500
       ? 'Internal server error, please contact MAGE administrator.'
       : err.message;
   if (err.name === 'ValidationError') {
@@ -140,6 +101,6 @@ app.use(function(err, req, res, next) {
   }
 
   res.status(status).send(msg);
-});
+} as express.ErrorRequestHandler);
 
-module.exports = { app, auth: authentication };
+export { app, auth }
