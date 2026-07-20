@@ -51,6 +51,7 @@
         "passport-openidconnect": "0.1.2",
         "pug": "3.0.3",
         "rfc5646": "3.0.0",
+        "skia-canvas": "3.0.8",
         "superagent": "8.1.2",
         "uniqid": "5.4.0",
         "winston": "3.19.0",
