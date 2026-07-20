@@ -1,74 +1,60 @@
 ARG BASE_IMAGE="node:24-slim"
 
-FROM $BASE_IMAGE AS build-service
-WORKDIR /service
-COPY service/ ./
-RUN npm ci
-RUN npm run build
-WORKDIR /packages
-RUN npm pack /service
+FROM $BASE_IMAGE AS node-base
 
-FROM $BASE_IMAGE AS build-web-app
-WORKDIR /web-app
-COPY web-app/ ./
-RUN npm ci
-RUN npm run build
-WORKDIR /packages
-RUN npm pack /web-app/dist/app
-RUN npm pack /web-app/dist/core-lib
+FROM node-base AS build-packages
 
-FROM $BASE_IMAGE AS build-image-service
-WORKDIR /image.service
-COPY plugins/image/service/ ./
-COPY --from=build-service /packages/ /packages
-RUN npm i /packages/ngageoint-mage.service-*.tgz
-RUN npm run build
-RUN npm pack
+RUN mkdir /packages
+WORKDIR /mage-server
+COPY ./ ./
 
-FROM $BASE_IMAGE AS build-arcgis-service
-WORKDIR /arcgis.service
-COPY plugins/arcgis/service/ ./
-COPY --from=build-service /packages/ /packages
-RUN npm i /packages/ngageoint-mage.service-*.tgz
-RUN npm run build
-RUN npm pack
+RUN cd service \
+    && npm ci \
+    && npm run build \
+    && cd /packages \
+    && npm pack /mage-server/service
 
-FROM $BASE_IMAGE AS build-arcgis-web
-WORKDIR /arcgis.web
-COPY plugins/arcgis/web-app/ ./
-COPY --from=build-web-app /packages/ /packages
-RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
-RUN npm run build
-RUN npm pack ./dist/main
+RUN cd web-app \
+    && npm ci \
+    && npm run build \
+    && cd /packages \
+    && npm pack /mage-server/web-app/dist/app \
+    && npm pack /mage-server/web-app/dist/core-lib
 
-FROM $BASE_IMAGE AS build-sftp-service
-WORKDIR /sftp.service
-COPY plugins/sftp/service/ ./
-COPY --from=build-service /packages/ /packages
-RUN npm i /packages/ngageoint-mage.service-*.tgz
-RUN npm run build
-RUN npm pack
+RUN cd plugins/image/service \
+    && npm link ../../../service \
+    && npm run build && \
+    cd /packages \
+    && npm pack /mage-server/plugins/image/service
 
-FROM $BASE_IMAGE AS build-sftp-web
-WORKDIR /sftp.web
-COPY plugins/sftp/web/ ./
-COPY --from=build-web-app /packages/ /packages
-RUN npm i /packages/ngageoint-mage.web-core-lib-*.tgz
-RUN npm run build
-RUN npm pack ./dist/main
+RUN cd plugins/sftp/service \
+    && npm link ../../../service \
+    && npm run build \
+    && cd /packages \
+    && npm pack /mage-server/plugins/sftp/service
 
-# Build instance
-FROM $BASE_IMAGE AS build-instance
+RUN cd plugins/sftp/web \
+    && npm link ../../../web-app/dist/core-lib \
+    && npm run build \
+    && cd /packages \
+    && npm pack /mage-server/plugins/sftp/web
+
+RUN cd plugins/arcgis/service \
+    && npm link ../../../service \
+    && npm run build \
+    && cd /packages \
+    && npm pack /mage-server/plugins/arcgis/service
+
+RUN cd plugins/arcgis/web-app \
+    && npm link ../../../web-app/dist/core-lib \
+    && npm run build \
+    && cd /packages \
+    && npm pack /mage-server/plugins/arcgis/web-app
+
+FROM node-base AS build-instance
 ENV MAGE_HOME=/home/mage/instance
 WORKDIR ${MAGE_HOME}
-COPY --from=build-service /packages/ngageoint-mage.service-*.tgz ${MAGE_HOME}/packages/
-COPY --from=build-web-app /packages/ngageoint-mage.web-app-*.tgz ${MAGE_HOME}/packages/
-COPY --from=build-image-service /image.service/ngageoint-mage.image.service-*.tgz ${MAGE_HOME}/packages/
-COPY --from=build-arcgis-service /arcgis.service/ngageoint-mage.*.tgz ${MAGE_HOME}/packages/
-COPY --from=build-arcgis-web /arcgis.web/ngageoint-mage.arcgis.web-*.tgz ${MAGE_HOME}/packages/
-COPY --from=build-sftp-service /sftp.service/ngageoint-*.tgz ${MAGE_HOME}/packages/
-COPY --from=build-sftp-web /sftp.web/ngageoint-*.tgz ${MAGE_HOME}/packages/
-
+COPY --from=build-packages /packages ${MAGE_HOME}/packages/
 RUN npm install --force --omit dev ${MAGE_HOME}/packages/*.tgz
 RUN ln -s ./node_modules/.bin/mage.service
 
