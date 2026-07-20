@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { Team } from '../team';
@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -28,12 +29,10 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
   pageIndex = 0;
   pageSizeOptions = [5, 10, 25];
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Teams',
-      icon: 'groups'
-    }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Teams', icon: 'groups' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   get hasTeamCreatePermission(): boolean {
     return this.sessionService.hasPermission('CREATE_TEAM');
@@ -45,13 +44,17 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
     private modal: MatDialog,
     private teamService: AdminTeamsService,
     private sessionService: SessionService,
-    private toastService: AdminToastService
+    private toastService: AdminToastService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   /**
    * Fetches the initial set of teams when the component loads
    */
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.fetchTeams();
   }
 
@@ -59,6 +62,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * Component destruction lifecycle hook
    */
   ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
     this.destroy$.next();
     this.destroy$.complete();
   }

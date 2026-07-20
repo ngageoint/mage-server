@@ -10,7 +10,11 @@
     ></admin-navigation>
   </mat-sidenav>
 
-  <mat-sidenav-content>
+  <mat-sidenav-content class="admin-sidenav-content">
+    <admin-breadcrumb [breadcrumbs]="(breadcrumbService.breadcrumbs$ | async) ?? []">
+      <ng-container *ngTemplateOutlet="breadcrumbService.actions$ | async"></ng-container>
+    </admin-breadcrumb>
+
     <div class="admin-main-content" #adminMainContent>
       <router-outlet></router-outlet>
     </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { EMPTY, Subject } from 'rxjs';
@@ -12,6 +12,7 @@ import { BulkUserComponent } from '../bulk-user/bulk-user.component';
 import { AdminTeamsService } from '../../services/admin-teams-service';
 import { Team } from '../../admin-teams/team';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { UserService } from '../../../user/user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -48,12 +49,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   roles: Role[] = [];
   teams: Team[] = [];
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Users',
-      icon: 'person'
-    }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Users', icon: 'person' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   userStatusFilter: 'all' | 'active' | 'inactive' | 'disabled' = 'all';
 
@@ -67,18 +66,23 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private teamService: AdminTeamsService,
     private sessionService: SessionService,
     private userPagingService: UserPagingService,
-    private toastService: AdminToastService
+    private toastService: AdminToastService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {
     this.stateAndData = this.userPagingService.constructDefault();
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.refreshUsers();
     this.loadRoles();
     this.fetchTeams();
   }
 
   ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
     this.destroy$.next();
     this.destroy$.complete();
   }

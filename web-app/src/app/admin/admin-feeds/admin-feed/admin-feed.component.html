@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="feed">
     <button *ngIf="hasFeedDeletePermission" matButton="outlined" type="button" class="delete-feed-button" (click)="deleteFeed()">
       <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="feed-page" *ngIf="feedLoaded | async; else loading">
   <mat-card appearance="outlined" class="details-card">

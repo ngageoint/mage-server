@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
@@ -10,6 +10,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { Event as MageEvent, Layer } from 'mage-web-app/filter/filter.types';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { User as MageUser } from '@ngageoint/mage.web-core-lib/user';
 import { Team } from '../../admin-teams/team';
@@ -54,13 +55,21 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   event: ExtendedEvent | null = null;
   eventTeam: Team | null = null;
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Events',
-      icon: 'event',
-      route: ['../']
-    }
-  ];
+  private _breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Events',
+    icon: 'event',
+    route: ['/admin/events']
+  }];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this._breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this._breadcrumbs;
+  }
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   hasReadPermission = false;
   hasUpdatePermission = false;
@@ -104,10 +113,14 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     const eventId = this.route.snapshot.paramMap.get('eventId') || this.route.snapshot.paramMap.get('id');
 
     if (!eventId) {
@@ -137,6 +150,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           this.loadLayers();
 
           this.breadcrumbs.push({ title: this.event?.name || 'Event' });
+          this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
         },
         error: (error) => {
           console.error('Error loading event:', error);
@@ -149,6 +163,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -533,10 +548,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       if (!updatedEvent) return;
 
       this.event = updatedEvent;
-      this.breadcrumbs = [
-        { title: 'Events', icon: 'event', route: ['../'] },
-        { title: this.event?.name || 'Event' }
-      ];
+      this.breadcrumbs = [{ title: 'Events', icon: 'event', route: ['/admin/events'] }, { title: this.event?.name || 'Event' }];
     });
   }
 

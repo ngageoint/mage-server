@@ -1,11 +1,12 @@
 import _ from 'underscore'
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core'
 import { Feed, Service, FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { MatDialog as MatDialog } from '@angular/material/dialog'
 import { forkJoin } from 'rxjs'
 import { AdminFeedDeleteComponent } from './admin-feed/admin-feed-delete/admin-feed-delete.component'
 import { AdminServiceDeleteComponent } from './admin-service/admin-service-delete/admin-service-delete.component'
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
+import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service'
 import { SessionService } from 'mage-web-app/http/session.service'
 
 @Component({
@@ -14,11 +15,14 @@ import { SessionService } from 'mage-web-app/http/session.service'
     styleUrls: ['./admin-feeds.component.scss'],
     standalone: false
 })
-export class AdminFeedsComponent implements OnInit {
+export class AdminFeedsComponent implements OnInit, OnDestroy {
   breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Feeds',
     icon: 'rss_feed',
   }]
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>
 
   services: Service[] = []
   private _services: Service[] = []
@@ -36,7 +40,8 @@ export class AdminFeedsComponent implements OnInit {
   constructor(
     private feedService: FeedService,
     public dialog: MatDialog,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   get hasServiceDeletePermission(): boolean {
@@ -56,6 +61,9 @@ export class AdminFeedsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs)
+    this.breadcrumbService.setActions(this.breadcrumbActions)
+
     forkJoin({
       services: this.feedService.fetchServices(),
       feeds: this.feedService.fetchAllFeeds()
@@ -65,7 +73,11 @@ export class AdminFeedsComponent implements OnInit {
     
       this._feeds = (feeds ?? []).sort(this.sortByTitle)
       this.feeds = this._feeds.slice()
-    })    
+    })
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null)
   }
 
   onFeedSearchChange(): void {

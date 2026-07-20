@@ -1,11 +1,11 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions">
     <button matButton="outlined" [routerLink]="['../security/new']" *ngIf="hasAuthConfigEditPermission">
       <mat-icon>add</mat-icon>New Authentication
     </button>
     <button matButton="filled" (click)="save()" [disabled]="!isDirty">Save</button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="auth-page">
   <mat-accordion>

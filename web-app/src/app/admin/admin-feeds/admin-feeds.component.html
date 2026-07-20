@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="hasFeedCreatePermission">
     <button matButton="filled" [routerLink]="['./new']">
       <mat-icon>add</mat-icon>New Feed
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="feeds-page">
   <mat-card appearance="outlined" class="feeds-card">

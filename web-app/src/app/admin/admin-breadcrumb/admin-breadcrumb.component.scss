@@ -1,19 +1,8 @@
-::ng-deep admin {
-  .admin-main-content {
-    &:has(mage-admin-plugin-tab-content) {
-      margin-top: 55px;
-    }
-  }
-}
-
 .breadcrumb-spacer {
   flex: 1;
 }
 
 .admin-breadcrumbs {
-  position: sticky;
-  top: 0;
-  z-index: 100;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   font-size: var(--mat-sys-title-medium-size);

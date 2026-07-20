@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="device && hasDeletePermission">
     <button matButton="outlined" class="delete-device-button" (click)="confirmDeleteDevice()">
       <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="device-page" *ngIf="device">
   <div class="error-alert" *ngIf="error">
