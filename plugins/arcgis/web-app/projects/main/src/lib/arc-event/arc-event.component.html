@@ -44,7 +44,7 @@
                   <div>This event is not synchronizing to any ArcGIS layers.</div>
                 </ng-template>
               </div>
-              <div class="arcEvent__icons">
+              <span matListItemMeta class="arcEvent__icons">
                 <a mat-icon-button color="primary" href="/#/admin/events/{{event.id}}" target="_blank">
                   <mat-icon>open_in_new</mat-icon>
                 </a>
@@ -54,7 +54,7 @@
                 <button mat-icon-button color="primary" (click)="onRemoveEvent(event)">
                   <mat-icon>remove_circle</mat-icon>
                 </button>
-              </div>
+              </span>
             </mat-list-item>
             <mat-divider *ngIf="!last"></mat-divider>
           </ng-container>

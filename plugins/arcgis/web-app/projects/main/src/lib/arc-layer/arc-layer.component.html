@@ -28,15 +28,17 @@
             Credentials invalid or expired
           </p>
 
-          <a mat-icon-button color="primary" href="{{service.url}}" target="_blank">
-            <mat-icon>open_in_new</mat-icon>
-          </a>
-          <button mat-icon-button color="primary" (click)="onEditService(service)">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="primary" (click)="onDeleteService(service)">
-            <mat-icon>delete</mat-icon>
-          </button>
+          <span matListItemMeta>
+            <a mat-icon-button color="primary" href="{{service.url}}" target="_blank">
+              <mat-icon>open_in_new</mat-icon>
+            </a>
+            <button mat-icon-button color="primary" (click)="onEditService(service)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="primary" (click)="onDeleteService(service)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </span>
 
           <mat-divider *ngIf="!lastService"></mat-divider>
         </mat-list-item>
