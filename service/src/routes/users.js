@@ -2,6 +2,7 @@ const { pageOf } = require('../entities/entities.global')
 
 module.exports = function(app, security) {
   const crypto = require('crypto'),
+    path = require('path'),
     BearerStrategy = require('passport-http-bearer').Strategy,
     hasher = require('../utilities/pbkdf2')(),
     log = require('../logger').child({ component: 'users' }),
@@ -28,6 +29,16 @@ module.exports = function(app, security) {
     'urn:mage'
   );
   const captchaCanvas = require('captcha-canvas');
+  const { FontLibrary } = require('skia-canvas');
+
+  // Register a bundled font so captcha text renders regardless of which
+  // fonts (if any) are installed on the host/container.
+  const captchaFontPath = path.resolve(__dirname, '..', 'assets', 'fonts', 'Roboto-Regular.ttf');
+  try {
+    FontLibrary.use('Sans', [captchaFontPath]);
+  } catch (err) {
+    log.warn(`failed to register bundled captcha font at ${captchaFontPath}, captcha text may not render: `, err);
+  }
 
   passport.use(
     'captcha',
