@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
+    "skipLibCheck": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -22,9 +23,6 @@
     "paths": {
       "@@main": [
         "./dist/main"
-      ],
-      "@ngageoint/mage.web-core-lib/*": [
-        "./node_modules/@ngageoint/mage.web-core-lib/*"
       ]
     }
   },
