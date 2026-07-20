@@ -41,8 +41,6 @@ jobs:
           npm run build
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
       # Tests for the web app are currently just generic spec files generated from the angular cli.
       # need to revisit this after we can write some practical tests.
       # - name: test
