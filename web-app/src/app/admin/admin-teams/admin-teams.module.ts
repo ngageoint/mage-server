@@ -22,6 +22,7 @@ import { DeleteTeamComponent } from './delete-team/delete-team.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
 import { AdminTeamsService } from '../services/admin-teams-service';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
@@ -49,6 +50,7 @@ import { RouterModule } from '@angular/router';
         MatProgressSpinnerModule,
         AdminBreadcrumbModule,
         MatTooltipModule,
+        SearchBarComponent,
         RouterModule
     ],
     providers: [

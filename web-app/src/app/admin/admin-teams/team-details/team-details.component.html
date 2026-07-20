@@ -28,155 +28,143 @@
     </div>
   </mat-card>
 
-  <mat-card appearance="outlined" class="list-card">
-    <div class="card-header">
-      <h3 class="section-title">Team Members</h3>
-      <div class="card-actions" *ngIf="hasUpdatePermission">
-        <button matButton="outlined" (click)="addMember()">
-          <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Member
-        </button>
+  <div class="members-events-row">
+    <mat-card appearance="outlined" class="list-card">
+      <div class="card-header">
+        <h3 class="section-title">Team Members</h3>
+        <div class="card-actions" *ngIf="hasUpdatePermission">
+          <button matButton="outlined" (click)="addMember()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Member
+          </button>
+        </div>
       </div>
-    </div>
 
-    <div class="toolbar">
-      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-        <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-        <mat-label>Search members</mat-label>
-        <input matInput [(ngModel)]="memberSearchTerm" (ngModelChange)="onMembersSearchChange($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="memberSearchTerm" (click)="onMembersSearchChange()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
-    </div>
+      <div class="toolbar">
+        <search-bar placeholder="Search members" [debounceMs]="300" (searchChange)="onMembersSearchChange($event)"></search-bar>
+      </div>
 
-    <div class="list-content">
-      <mat-nav-list *ngIf="totalMembers > 0 && !loadingMembers">
-        <mat-list-item *ngFor="let user of membersDataSource.data" [routerLink]="['../../users', user.id]">
-          <mat-icon matListItemIcon fontSet="material-symbols-outlined">person</mat-icon>
-          <span matListItemTitle>{{ user.displayName }}</span>
-          <span matListItemLine>{{ user.username }}</span>
-          <span matListItemMeta>
-            <span class="member-meta">
-              <button
-                *ngIf="hasUpdatePermission"
-                type="button"
-                class="role-badge-trigger"
-                [class]="getRoleClass(user)"
-                [matMenuTriggerFor]="roleMenu"
-                (click)="$event.stopPropagation()"
-              >
-                {{ getUserRole(user) }}
-                <mat-icon class="role-badge-chevron" fontSet="material-symbols-outlined">arrow_drop_down</mat-icon>
-              </button>
-              <span *ngIf="!hasUpdatePermission" [class]="getRoleClass(user)">{{ getUserRole(user) }}</span>
-
-              <mat-menu #roleMenu="matMenu">
-                <button mat-menu-item (click)="updateUserRole(user, 'GUEST')">
-                  <mat-icon *ngIf="getUserRole(user) === 'GUEST'" fontSet="material-symbols-outlined">check</mat-icon>
-                  Guest
+      <div class="list-content">
+        <mat-nav-list *ngIf="totalMembers > 0 && !loadingMembers">
+          <mat-list-item *ngFor="let user of membersDataSource.data" [routerLink]="['../../users', user.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">person</mat-icon>
+            <span matListItemTitle>{{ user.displayName }}</span>
+            <span matListItemLine>{{ user.username }}</span>
+            <span matListItemMeta>
+              <span class="member-meta">
+                <button
+                  *ngIf="hasUpdatePermission"
+                  type="button"
+                  class="role-badge-trigger"
+                  [class]="getRoleClass(user)"
+                  [matMenuTriggerFor]="roleMenu"
+                  (click)="$event.stopPropagation()"
+                >
+                  {{ getUserRole(user) }}
+                  <mat-icon class="role-badge-chevron" fontSet="material-symbols-outlined">arrow_drop_down</mat-icon>
                 </button>
-                <button mat-menu-item (click)="updateUserRole(user, 'MANAGER')">
-                  <mat-icon *ngIf="getUserRole(user) === 'MANAGER'" fontSet="material-symbols-outlined">check</mat-icon>
-                  Manager
-                </button>
-                <button mat-menu-item (click)="updateUserRole(user, 'OWNER')">
-                  <mat-icon *ngIf="getUserRole(user) === 'OWNER'" fontSet="material-symbols-outlined">check</mat-icon>
-                  Owner
-                </button>
-              </mat-menu>
+                <span *ngIf="!hasUpdatePermission" [class]="getRoleClass(user)">{{ getUserRole(user) }}</span>
 
+                <mat-menu #roleMenu="matMenu">
+                  <button mat-menu-item (click)="updateUserRole(user, 'GUEST')">
+                    <mat-icon *ngIf="getUserRole(user) === 'GUEST'" fontSet="material-symbols-outlined">check</mat-icon>
+                    Guest
+                  </button>
+                  <button mat-menu-item (click)="updateUserRole(user, 'MANAGER')">
+                    <mat-icon *ngIf="getUserRole(user) === 'MANAGER'" fontSet="material-symbols-outlined">check</mat-icon>
+                    Manager
+                  </button>
+                  <button mat-menu-item (click)="updateUserRole(user, 'OWNER')">
+                    <mat-icon *ngIf="getUserRole(user) === 'OWNER'" fontSet="material-symbols-outlined">check</mat-icon>
+                    Owner
+                  </button>
+                </mat-menu>
+
+                <button
+                  matIconButton
+                  *ngIf="hasUpdatePermission"
+                  (click)="removeMember($event, user)"
+                  aria-label="Remove Member"
+                >
+                  <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+                </button>
+              </span>
+            </span>
+          </mat-list-item>
+        </mat-nav-list>
+
+        <div class="empty-state" *ngIf="totalMembers === 0 && !loadingMembers">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+          <div class="empty-state-text" *ngIf="memberSearchTerm; else noMembers">No members match your search</div>
+          <ng-template #noMembers>
+            <div class="empty-state-text">This team has no members</div>
+          </ng-template>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingMembers">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </div>
+
+      <mat-paginator
+        [length]="totalMembers"
+        [pageSize]="membersPageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onMembersPageChange($event)"
+      ></mat-paginator>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="list-card">
+      <div class="card-header">
+        <h3 class="section-title">Events</h3>
+        <div class="card-actions" *ngIf="hasUpdatePermission">
+          <button matButton="outlined" (click)="addEventToTeam()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Event
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <search-bar placeholder="Search events" [debounceMs]="300" (searchChange)="onTeamEventSearchChange($event)"></search-bar>
+      </div>
+
+      <div class="list-content">
+        <mat-nav-list *ngIf="totalEvents > 0 && !loadingEvents">
+          <mat-list-item *ngFor="let event of eventsDataSource.data" [routerLink]="['../../events', event.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
+            <span matListItemTitle>{{ event.name }}</span>
+            <span matListItemLine *ngIf="event.description">{{ event.description }}</span>
+            <span matListItemMeta *ngIf="hasUpdatePermission">
               <button
                 matIconButton
-                *ngIf="hasUpdatePermission"
-                (click)="removeMember($event, user)"
-                aria-label="Remove Member"
+                (click)="removeEventFromTeam($event, event)"
+                aria-label="Remove Event"
               >
                 <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
               </button>
             </span>
-          </span>
-        </mat-list-item>
-      </mat-nav-list>
+          </mat-list-item>
+        </mat-nav-list>
 
-      <div class="empty-state" *ngIf="totalMembers === 0 && !loadingMembers">
-        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
-        <div class="empty-state-text" *ngIf="memberSearchTerm; else noMembers">No members match your search</div>
-        <ng-template #noMembers>
-          <div class="empty-state-text">This team has no members</div>
-        </ng-template>
+        <div class="empty-state" *ngIf="totalEvents === 0 && !loadingEvents">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+          <div class="empty-state-text" *ngIf="teamEventSearch; else noTeamEvents">No events match your search</div>
+          <ng-template #noTeamEvents>
+            <div class="empty-state-text">This team is not part of any events</div>
+          </ng-template>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingEvents">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
       </div>
 
-      <div class="loading-overlay" *ngIf="loadingMembers">
-        <mat-spinner diameter="32"></mat-spinner>
-      </div>
-    </div>
-
-    <mat-paginator
-      [length]="totalMembers"
-      [pageSize]="membersPageSize"
-      [pageSizeOptions]="pageSizeOptions"
-      (page)="onMembersPageChange($event)"
-    ></mat-paginator>
-  </mat-card>
-
-  <mat-card appearance="outlined" class="list-card">
-    <div class="card-header">
-      <h3 class="section-title">Events</h3>
-      <div class="card-actions" *ngIf="hasUpdatePermission">
-        <button matButton="outlined" (click)="addEventToTeam()">
-          <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Event
-        </button>
-      </div>
-    </div>
-
-    <div class="toolbar">
-      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-        <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-        <mat-label>Search events</mat-label>
-        <input matInput [(ngModel)]="teamEventSearch" (ngModelChange)="onTeamEventSearchChange($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="teamEventSearch" (click)="onTeamEventSearchChange()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
-    </div>
-
-    <div class="list-content">
-      <mat-nav-list *ngIf="totalEvents > 0 && !loadingEvents">
-        <mat-list-item *ngFor="let event of eventsDataSource.data" [routerLink]="['../../events', event.id]">
-          <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
-          <span matListItemTitle>{{ event.name }}</span>
-          <span matListItemLine *ngIf="event.description">{{ event.description }}</span>
-          <span matListItemMeta *ngIf="hasUpdatePermission">
-            <button
-              matIconButton
-              (click)="removeEventFromTeam($event, event)"
-              aria-label="Remove Event"
-            >
-              <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
-            </button>
-          </span>
-        </mat-list-item>
-      </mat-nav-list>
-
-      <div class="empty-state" *ngIf="totalEvents === 0 && !loadingEvents">
-        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
-        <div class="empty-state-text" *ngIf="teamEventSearch; else noTeamEvents">No events match your search</div>
-        <ng-template #noTeamEvents>
-          <div class="empty-state-text">This team is not part of any events</div>
-        </ng-template>
-      </div>
-
-      <div class="loading-overlay" *ngIf="loadingEvents">
-        <mat-spinner diameter="32"></mat-spinner>
-      </div>
-    </div>
-
-    <mat-paginator
-      [length]="totalEvents"
-      [pageSize]="eventsPageSize"
-      [pageIndex]="teamEventsPage"
-      [pageSizeOptions]="pageSizeOptions"
-      (page)="onEventsPageChange($event)"
-    ></mat-paginator>
-  </mat-card>
+      <mat-paginator
+        [length]="totalEvents"
+        [pageSize]="eventsPageSize"
+        [pageIndex]="teamEventsPage"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onEventsPageChange($event)"
+      ></mat-paginator>
+    </mat-card>
+  </div>
 </div>

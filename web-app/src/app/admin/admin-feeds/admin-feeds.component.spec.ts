@@ -163,24 +163,48 @@ describe('AdminFeedsComponent', () => {
       tick();
     }));
 
-    it('onFeedSearchChange resets page and filters feeds', () => {
+    it('onFeedSearchTermChanged resets page and filters feeds', () => {
       component.feedPage = 3;
-      component.feedSearch = 'gam';
-      component.onFeedSearchChange();
+      component.onFeedSearchTermChanged('gam');
 
+      expect(component.feedSearch).toBe('gam');
       expect(component.feedPage).toBe(0);
       expect(component.feeds.length).toBe(1);
       expect(component.feeds[0].title).toBe('Gamma');
     });
 
-    it('onServiceSearchChange resets page and filters services', () => {
+    it('onServiceSearchTermChanged resets page and filters services', () => {
       component.servicePage = 2;
-      component.serviceSearch = 'beta';
-      component.onServiceSearchChange();
+      component.onServiceSearchTermChanged('beta');
 
+      expect(component.serviceSearch).toBe('beta');
       expect(component.servicePage).toBe(0);
       expect(component.services.length).toBe(1);
       expect(component.services[0].title).toBe('Beta');
+    });
+
+    it('onFeedSearchTermChanged with empty term clears the feed search', () => {
+      component.feedSearch = 'x';
+      component.feeds = [];
+      component.feedPage = 9;
+
+      component.onFeedSearchTermChanged('');
+
+      expect(component.feedPage).toBe(0);
+      expect(component.feedSearch).toBe('');
+      expect(component.feeds.length).toBe(2);
+    });
+
+    it('onServiceSearchTermChanged with empty term clears the service search', () => {
+      component.serviceSearch = 'x';
+      component.services = [];
+      component.servicePage = 9;
+
+      component.onServiceSearchTermChanged('');
+
+      expect(component.servicePage).toBe(0);
+      expect(component.serviceSearch).toBe('');
+      expect(component.services.length).toBe(2);
     });
 
     it('clearFeedSearch resets page, clears text, restores feeds', () => {

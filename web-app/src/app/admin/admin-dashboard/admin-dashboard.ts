@@ -168,6 +168,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  onUserSearch(value: string): void {
+    this.userSearch = value;
+    this.search();
+  }
+
   search(): void {
     this.userPageIndex = 0;
     this.loadingUsersPage = true;
@@ -184,6 +189,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           this.loadingUsersPage = false;
         }
       });
+  }
+
+  onDeviceSearch(value: string): void {
+    this.deviceSearch = value;
+    this.searchDevices();
   }
 
   searchDevices(): void {

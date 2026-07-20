@@ -28,6 +28,7 @@ import { DeleteLayerComponent } from './delete-layer/delete-layer.component';
 import { LayerPreviewComponent } from './layer-preview/layer-preview.component';
 import { ImageryLayerSettingsComponent } from './imagery-layer-settings/imagery-layer-settings.component';
 import { RouterModule } from '@angular/router';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
 
 @NgModule({
     declarations: [
@@ -61,7 +62,8 @@ import { RouterModule } from '@angular/router';
         MatExpansionModule,
         MatCheckboxModule,
         AdminBreadcrumbModule,
-        RouterModule
+        RouterModule,
+        SearchBarComponent
     ],
     providers: [
         LayersService

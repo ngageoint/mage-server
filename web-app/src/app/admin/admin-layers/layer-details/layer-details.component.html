@@ -203,14 +203,7 @@
       </div>
 
       <div class="toolbar">
-        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-          <mat-label>Search events</mat-label>
-          <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
-          <button matSuffix matIconButton *ngIf="eventSearchTerm" (click)="onEventSearchChange()" aria-label="Clear">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <search-bar placeholder="Search events" [debounceMs]="300" (searchChange)="onEventSearchChange($event)"></search-bar>
       </div>
 
       <div class="events-content">

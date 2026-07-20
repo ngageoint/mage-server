@@ -1,0 +1,22 @@
+<div class="search-bar__container">
+  <mat-icon class="search-bar__leading-icon">search</mat-icon>
+
+  <input
+    #searchInput
+    class="search-bar__input"
+    type="text"
+    [placeholder]="placeholder"
+    [formControl]="searchControl"
+    autocomplete="off"
+    aria-label="Search">
+
+  @if (hasValue()) {
+    <button
+      mat-icon-button
+      class="search-bar__btn"
+      (click)="clear()"
+      aria-label="Clear search">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+</div>

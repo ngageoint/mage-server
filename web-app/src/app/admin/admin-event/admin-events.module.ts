@@ -32,6 +32,7 @@ import { EventDashboardComponent } from './dashboard/event-dashboard.component';
 import { MatOptionModule as MatOptionModule } from '@angular/material/core';
 import { EventService } from '../../event/event.service';
 import { CreateEventDialogComponent } from './create-event/create-event.component';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
 
 @NgModule({
     declarations: [
@@ -66,7 +67,8 @@ import { CreateEventDialogComponent } from './create-event/create-event.componen
         MatTooltipModule,
         DragDropModule,
         MatListModule,
-        MatMenuModule
+        MatMenuModule,
+        SearchBarComponent
     ],
     exports: [
         EventDashboardComponent,

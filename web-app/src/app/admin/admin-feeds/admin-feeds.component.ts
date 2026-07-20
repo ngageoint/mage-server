@@ -68,12 +68,26 @@ export class AdminFeedsComponent implements OnInit {
     })    
   }
 
-  onFeedSearchChange(): void {
+  onFeedSearchTermChanged(term: string): void {
+    this.feedSearch = term || ''
+
+    if (!this.feedSearch) {
+      this.clearFeedSearch()
+      return
+    }
+
     this.feedPage = 0
     this.updateFilteredFeeds()
   }
 
-  onServiceSearchChange(): void {
+  onServiceSearchTermChanged(term: string): void {
+    this.serviceSearch = term || ''
+
+    if (!this.serviceSearch) {
+      this.clearServiceSearch()
+      return
+    }
+
     this.servicePage = 0
     this.updateFilteredServices()
   }

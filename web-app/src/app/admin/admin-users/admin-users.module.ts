@@ -33,6 +33,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { BulkUserComponent } from './bulk-user/bulk-user.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { UserSearchBoxComponent } from './user-search/user-search-box.component';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
@@ -51,6 +52,7 @@ import { RouterModule } from '@angular/router';
     MatProgressSpinnerModule,
     LoginsModule,
     UserAvatarModule,
+    SearchBarComponent,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,

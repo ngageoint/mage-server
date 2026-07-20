@@ -31,6 +31,17 @@ mat-card.list-card {
   overflow: hidden;
 }
 
+.members-events-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  mat-card.list-card {
+    flex: 1 1 360px;
+    min-width: 0;
+  }
+}
+
 .team-header {
   display: flex;
   align-items: center;
@@ -145,7 +156,7 @@ mat-card.list-card {
   margin-bottom: 8px;
 }
 
-.search-field {
+search-bar {
   width: 100%;
 }
 

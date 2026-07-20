@@ -160,6 +160,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   onSearchTermChanged(term: string): void {
     this.userSearch = term || '';
+
+    if (!this.userSearch) {
+      this.onSearchCleared();
+      return;
+    }
+
     this.pageIndex = 0;
     this.search();
   }

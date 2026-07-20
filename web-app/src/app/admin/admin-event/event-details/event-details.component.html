@@ -62,16 +62,7 @@
       </mat-card-header>
 
       <div class="toolbar">
-        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-          <mat-label>Search members</mat-label>
-          <input matInput [(ngModel)]="memberSearchTerm" (ngModelChange)="onMemberSearchChange($event)"
-            autocomplete="off">
-          <button matSuffix matIconButton *ngIf="memberSearchTerm" (click)="onMemberSearchChange()"
-            aria-label="Clear">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <search-bar placeholder="Search members" [debounceMs]="300" (searchChange)="onMemberSearchChange($event)"></search-bar>
       </div>
 
       <div class="list-content">
@@ -142,14 +133,7 @@
       </mat-card-header>
 
       <div class="toolbar">
-        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-          <mat-label>Search teams</mat-label>
-          <input matInput [(ngModel)]="teamSearchTerm" (ngModelChange)="onTeamSearchChange($event)" autocomplete="off">
-          <button matSuffix matIconButton *ngIf="teamSearchTerm" (click)="onTeamSearchChange()" aria-label="Clear">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <search-bar placeholder="Search teams" [debounceMs]="300" (searchChange)="onTeamSearchChange($event)"></search-bar>
       </div>
 
       <div class="list-content">
@@ -196,15 +180,7 @@
       </mat-card-header>
 
       <div class="toolbar">
-        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-          <mat-label>Search layers</mat-label>
-          <input matInput [(ngModel)]="layerSearchTerm" (ngModelChange)="onLayerSearchChange($event)"
-            autocomplete="off">
-          <button matSuffix matIconButton *ngIf="layerSearchTerm" (click)="onLayerSearchChange()" aria-label="Clear">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <search-bar placeholder="Search layers" [debounceMs]="300" (searchChange)="onLayerSearchChange($event)"></search-bar>
       </div>
 
       <div class="list-content">

@@ -22,14 +22,7 @@
     </div>
 
     <div class="toolbar">
-      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-        <mat-icon matPrefix>search</mat-icon>
-        <mat-label>Search users</mat-label>
-        <input matInput [(ngModel)]="userSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="userSearch" (click)="onSearchCleared()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
+      <search-bar placeholder="Search users" [debounceMs]="300" (searchChange)="onSearchTermChanged($event)"></search-bar>
     </div>
 
     <mat-nav-list *ngIf="dataSource.length">

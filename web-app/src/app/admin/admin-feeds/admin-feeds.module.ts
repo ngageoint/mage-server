@@ -42,6 +42,7 @@ import { JsonSchemaModule } from '../json-schema/json-schema.module';
 import { FeedItemSummaryModule } from '../../feed/feed-item/feed-item-summary/feed-item-summary.module';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 import { RouterModule } from '@angular/router';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
 
 @NgModule({
   declarations: [
@@ -92,7 +93,8 @@ import { RouterModule } from '@angular/router';
     JsonSchemaModule,
     StaticIconModule,
     RouterModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    SearchBarComponent
   ],
   exports: [
     AdminFeedsComponent,

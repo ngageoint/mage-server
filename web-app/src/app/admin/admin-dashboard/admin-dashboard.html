@@ -9,9 +9,7 @@
       </mat-card-header>
 
       <mat-card-content class="panel-card-content">
-        <mat-form-field>
-          <input matInput placeholder="Search users…" [(ngModel)]="userSearch" (ngModelChange)="search()" />
-        </mat-form-field>
+        <search-bar placeholder="Search users…" [debounceMs]="300" (searchChange)="onUserSearch($event)"></search-bar>
 
         <mat-nav-list class="item-list">
           <mat-list-item *ngFor="let user of inactiveUsers || []" [routerLink]="['../users', user?.id]">
@@ -55,9 +53,7 @@
       </mat-card-header>
 
       <mat-card-content class="panel-card-content">
-        <mat-form-field>
-          <input matInput placeholder="Search devices…" [(ngModel)]="deviceSearch" (ngModelChange)="searchDevices()" />
-        </mat-form-field>
+        <search-bar placeholder="Search devices…" [debounceMs]="300" (searchChange)="onDeviceSearch($event)"></search-bar>
 
         <mat-nav-list class="item-list">
           <mat-list-item *ngFor="let device of unregisteredDevices || []" (click)="goToDevice(device)">

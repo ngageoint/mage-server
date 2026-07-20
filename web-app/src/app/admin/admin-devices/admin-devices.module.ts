@@ -30,6 +30,7 @@ import { AdminUsersModule } from '../admin-users/admin-users.module';
 import { DeviceDetailsComponent } from './device-details/device-details.component';
 import { DeleteDeviceComponent } from './delete-device/delete-device.component';
 import { LoginsModule } from '../admin-logins/admin-logins.module';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
 
 @NgModule({
     declarations: [
@@ -68,7 +69,8 @@ import { LoginsModule } from '../admin-logins/admin-logins.module';
         MatPaginatorModule,
         DragDropModule,
         AdminUsersModule,
-        LoginsModule
+        LoginsModule,
+        SearchBarComponent
     ],
     exports: [
         DeviceDashboardComponent,

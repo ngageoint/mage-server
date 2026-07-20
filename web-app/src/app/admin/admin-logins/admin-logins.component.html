@@ -4,11 +4,12 @@
   </mat-card-header>
 
   <div class="filter-section">
-    <mat-form-field *ngIf="!userId">
+    <mat-form-field *ngIf="!userId" appearance="fill" subscriptSizing="dynamic" class="filter-field">
+      <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
       <mat-label>User</mat-label>
       <input matInput [(ngModel)]="userText" (ngModelChange)="onUserSearchChange($event)"
-        [matAutocomplete]="userAuto" />
-      <button matSuffix matIconButton *ngIf="userText" (click)="onClearUserInput()" type="button">
+        [matAutocomplete]="userAuto" autocomplete="off" />
+      <button matSuffix matIconButton *ngIf="userText" (click)="onClearUserInput()" type="button" aria-label="Clear">
         <mat-icon>close</mat-icon>
       </button>
       <mat-autocomplete #userAuto (optionSelected)="selectUser($event.option.value)">
@@ -18,11 +19,12 @@
       </mat-autocomplete>
     </mat-form-field>
 
-    <mat-form-field *ngIf="!deviceId">
+    <mat-form-field *ngIf="!deviceId" appearance="fill" subscriptSizing="dynamic" class="filter-field">
+      <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
       <mat-label>Device</mat-label>
       <input matInput [(ngModel)]="deviceText" (ngModelChange)="onDeviceSearchChange($event)"
-        [matAutocomplete]="deviceAuto" />
-      <button matSuffix matIconButton *ngIf="deviceText" (click)="onClearDeviceInput()" type="button">
+        [matAutocomplete]="deviceAuto" autocomplete="off" />
+      <button matSuffix matIconButton *ngIf="deviceText" (click)="onClearDeviceInput()" type="button" aria-label="Clear">
         <mat-icon>close</mat-icon>
       </button>
       <mat-autocomplete #deviceAuto (optionSelected)="selectDevice($event.option.value)">
@@ -32,14 +34,14 @@
       </mat-autocomplete>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field appearance="fill" subscriptSizing="dynamic" class="filter-field">
       <mat-label>Start Date</mat-label>
       <input matInput [matDatepicker]="startPicker" [(ngModel)]="login.startDate" (ngModelChange)="dateFilterChanged()" />
       <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
       <mat-datepicker #startPicker></mat-datepicker>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field appearance="fill" subscriptSizing="dynamic" class="filter-field">
       <mat-label>End Date</mat-label>
       <input matInput [matDatepicker]="endPicker" [(ngModel)]="login.endDate" (ngModelChange)="dateFilterChanged()" />
       <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
