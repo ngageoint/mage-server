@@ -1,61 +1,74 @@
-ARG BASE_IMAGE="node:24-slim"
+ARG BUILD_IMAGE="node:24-slim"
+ARG DIST_IMAGE="ghcr.io/ngageoint/mage-server/ironbank/google/distroless13/nodejs-24:nonroot"
+ARG MAGE_HOME="/mage"
+ARG MAGE_SERVER="${MAGE_HOME}/mage-server"
+ARG MAGE_PACKAGES="${MAGE_HOME}/packages"
+ARG MAGE_INSTANCE="${MAGE_HOME}/instance"
 
-FROM $BASE_IMAGE AS node-base
+FROM ${BUILD_IMAGE} AS build-instance
+ARG MAGE_HOME
+ARG MAGE_SERVER
+ARG MAGE_PACKAGES
+ARG MAGE_INSTANCE
+ENV MAGE_HOME=${MAGE_HOME}
+ENV MAGE_SERVER=${MAGE_SERVER}
+ENV MAGE_PACKAGES=${MAGE_PACKAGES}
+ENV MAGE_INSTANCE=${MAGE_INSTANCE}
+RUN mkdir -p ${MAGE_SERVER} ${MAGE_PACKAGES}
+COPY ./ ${MAGE_SERVER}/
 
-FROM node-base AS build-packages
-
-RUN mkdir /packages
-WORKDIR /mage-server
-COPY ./ ./
-
-RUN cd service \
+RUN cd ${MAGE_SERVER}/service \
     && npm ci \
     && npm run build \
-    && cd /packages \
-    && npm pack /mage-server/service
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/service
 
-RUN cd web-app \
+RUN cd ${MAGE_SERVER}/web-app \
     && npm ci \
     && npm run build \
-    && cd /packages \
-    && npm pack /mage-server/web-app/dist/app \
-    && npm pack /mage-server/web-app/dist/core-lib
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/web-app/dist/app \
+    && npm pack ${MAGE_SERVER}/web-app/dist/core-lib
 
-RUN cd plugins/image/service \
+RUN cd ${MAGE_SERVER}/plugins/image/service \
     && npm link ../../../service \
     && npm run build && \
-    cd /packages \
-    && npm pack /mage-server/plugins/image/service
+    cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/image/service
 
-RUN cd plugins/sftp/service \
+RUN cd ${MAGE_SERVER}/plugins/sftp/service \
     && npm link ../../../service \
     && npm run build \
-    && cd /packages \
-    && npm pack /mage-server/plugins/sftp/service
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/sftp/service
 
-RUN cd plugins/sftp/web \
+RUN cd ${MAGE_SERVER}/plugins/sftp/web \
     && npm link ../../../web-app/dist/core-lib \
     && npm run build \
-    && cd /packages \
-    && npm pack /mage-server/plugins/sftp/web/dist/main
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/sftp/web/dist/main
 
-RUN cd plugins/arcgis/service \
+RUN cd ${MAGE_SERVER}/plugins/arcgis/service \
     && npm link ../../../service \
     && npm run build \
-    && cd /packages \
-    && npm pack /mage-server/plugins/arcgis/service
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/arcgis/service
 
-RUN cd plugins/arcgis/web-app \
+RUN cd ${MAGE_SERVER}/plugins/arcgis/web-app \
     && npm link ../../../web-app/dist/core-lib \
     && npm run build \
-    && cd /packages \
-    && npm pack /mage-server/plugins/arcgis/web-app/dist/main
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/arcgis/web-app/dist/main
 
-FROM node-base AS build-instance
-ENV MAGE_HOME=/home/mage/instance
-WORKDIR ${MAGE_HOME}
-COPY --from=build-packages /packages ${MAGE_HOME}/packages/
-RUN npm install --force --omit dev ${MAGE_HOME}/packages/*.tgz
-RUN ln -s ./node_modules/.bin/mage.service
+WORKDIR ${MAGE_INSTANCE}
+RUN cd ${MAGE_INSTANCE} \
+    && npm install --omit dev --force ${MAGE_PACKAGES}/*.tgz \
+    && ln -s ./node_modules/.bin/mage.service
 
-ENTRYPOINT [ "./mage.service" ]
+FROM ${DIST_IMAGE}
+ARG MAGE_INSTANCE
+ENV MAGE_INSTANCE=${MAGE_INSTANCE}
+COPY --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
+WORKDIR ${MAGE_INSTANCE}
+
+CMD [ "./mage.service" ]
