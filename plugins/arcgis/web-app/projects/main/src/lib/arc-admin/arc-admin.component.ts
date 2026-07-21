@@ -64,7 +64,6 @@ export class ArcAdminComponent implements OnInit {
       observationIdField: [''], 
       idSeparator: [''],
       eventIdField: [''],
-      lastEditedDateField: [''],
       eventNameField: [''],
       userIdField: [''],
       usernameField: [''],
@@ -99,7 +98,6 @@ export class ArcAdminComponent implements OnInit {
             observationIdField: config.observationIdField || '',
             idSeparator: config.idSeparator || '',
             eventIdField: config.eventIdField || '',
-            lastEditedDateField: config.lastEditedDateField || '',
             eventNameField: config.eventNameField || '',
             userIdField: config.userIdField || '',
             usernameField: config.usernameField || '',
@@ -129,7 +127,6 @@ export class ArcAdminComponent implements OnInit {
         observationIdField: formValue.observationIdField || this.editConfig.observationIdField,
         idSeparator: formValue.idSeparator || this.editConfig.idSeparator,
         eventIdField: formValue.eventIdField || this.editConfig.eventIdField,
-        lastEditedDateField: formValue.lastEditedDateField || this.editConfig.lastEditedDateField,
         eventNameField: formValue.eventNameField || this.editConfig.eventNameField,
         userIdField: formValue.userIdField || this.editConfig.userIdField,
         usernameField: formValue.usernameField || this.editConfig.usernameField,
@@ -159,7 +156,6 @@ export class ArcAdminComponent implements OnInit {
             observationIdField: config.observationIdField || '',
             idSeparator: config.idSeparator || '',
             eventIdField: config.eventIdField || '',
-            lastEditedDateField: config.lastEditedDateField || '',
             eventNameField: config.eventNameField || '',
             userIdField: config.userIdField || '',
             usernameField: config.usernameField || '',
@@ -257,10 +253,6 @@ export class ArcAdminComponent implements OnInit {
     if (this.editConfig.eventIdField != this.config.eventIdField) {
       this.config.eventIdField = this.editConfig.eventIdField
       console.log('Edited eventIdField: ' + this.config.eventIdField)
-    }
-    if (this.editConfig.lastEditedDateField != this.config.lastEditedDateField) {
-      this.config.lastEditedDateField = this.editConfig.lastEditedDateField
-      console.log('Edited lastEditedDateField: ' + this.config.lastEditedDateField)
     }
     if (this.editConfig.eventNameField != this.config.eventNameField) {
       this.config.eventNameField = this.editConfig.eventNameField

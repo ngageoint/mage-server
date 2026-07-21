@@ -91,7 +91,6 @@ export class MockArcService implements ArcServiceInterface {
       observationIdField: 'mock_description',
       idSeparator: 'mock-',
       eventIdField: 'mock_event_id',
-      lastEditedDateField: 'mock_last_edited_date',
       eventNameField: 'mock_event_name',
       userIdField: 'mock_user_id',
       usernameField: 'mock_username',

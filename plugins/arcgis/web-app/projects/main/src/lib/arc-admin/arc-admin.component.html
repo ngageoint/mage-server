@@ -135,13 +135,6 @@
                     <mat-hint>The ArcGIS layer integer field attribute name to store the MAGE event id</mat-hint>
                   </mat-form-field>
                 </div>
-                <div class="last-edited-date-field">
-                  <mat-form-field appearance="fill">
-                    <mat-label>Last Edited Date Field</mat-label>
-                    <input type="text" matInput formControlName="lastEditedDateField" />
-                    <mat-hint>The last edited date field attribute name on the ArcGIS layer</mat-hint>
-                  </mat-form-field>
-                </div>
                 <div class="event-name-field">
                   <mat-form-field appearance="fill">
                     <mat-label>Event Name Field</mat-label>
@@ -188,8 +181,7 @@
                   <mat-form-field appearance="fill">
                     <mat-label>Last Modified Field</mat-label>
                     <input type="text" matInput formControlName="lastModifiedField" />
-                    <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the
-                      same as last edited date field if editable)</mat-hint>
+                    <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE last modified date</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="geometry-type-field">
@@ -667,17 +659,6 @@
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
-    <div class="last-edited-date-field">
-      <mat-form-field [style.width.%]="90">
-        <mat-label>Last Edited Date Field</mat-label>
-        <input type="text" matInput value="{{editConfig.lastEditedDateField}}"
-          (keyup)="setField('lastEditedDateField', lastEditedDateField.value)" #lastEditedDateField />
-      </mat-form-field>
-      <button class="info-button" mat-icon-button
-        (click)="showInfo('Last Edited Date Field', 'The last edited date field attribute name on the ArcGIS layer')">
-        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
-      </button>
-    </div>
     <div class="event-name-field">
       <mat-form-field [style.width.%]="90">
         <mat-label>Event Name Field</mat-label>
@@ -751,7 +732,7 @@
           (keyup)="setField('lastModifiedField', lastModifiedField.value)" #lastModifiedField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the same as last edited date field if editable)')">
+        (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>

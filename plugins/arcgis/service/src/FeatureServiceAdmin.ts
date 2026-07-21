@@ -374,8 +374,7 @@ export class FeatureServiceAdmin {
 				break;
 			case FormFieldType.DateTime:
 				field.type = 'esriFieldTypeDate';
-				field.sqlType = 'sqlTypeOther';
-				field.length = 10;
+				field.sqlType = 'sqlTypeTimestamp';
 				break;
 			case FormFieldType.Numeric:
 				if (integer) {
