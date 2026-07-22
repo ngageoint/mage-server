@@ -366,6 +366,40 @@ describe('mongoose observation repository', function () {
         expect(count).to.equal(1)
       })
 
+      it('removes previously set important', async function() {
+
+        const putAttrs = copyObservationAttrs(origAttrs)
+        putAttrs.geometry = {
+          type: 'Point',
+          coordinates: [ 12, 34 ]
+        }
+        putAttrs.states = [
+          { name: 'archived', id: PendingEntityId }
+        ]
+        putAttrs.properties.forms = [
+          {
+            id: orig.properties.forms[0].id,
+            formId: event.forms[0].id,
+            field1: 'mod text',
+            field2: 20
+          }
+        ]
+        putAttrs.attachments = []
+        putAttrs.important = null
+        const put = Observation.evaluate(putAttrs, event)
+        const saved = await repo.save(put) as Observation
+        const savedAttrs = copyObservationAttrs(saved)
+        const count = await model.countDocuments()
+
+        expect(saved).to.be.instanceOf(Observation)
+        expect(saved.id).to.equal(orig.id)
+        expect(() => new mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
+        expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
+        expect(savedAttrs.lastModified.getTime()).to.be.greaterThanOrEqual(orig.lastModified.getTime())
+        expect(count).to.equal(1)
+        expect(saved.important).to.be.undefined
+      })
+
       it('does not allow changing the create timestamp', async function () {
 
         const modAttrs = copyObservationAttrs(orig)

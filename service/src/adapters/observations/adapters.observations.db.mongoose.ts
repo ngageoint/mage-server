@@ -54,8 +54,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
         console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
         docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
-      //TODO remove any, was as legacy.ObservationDocument
-      beforeDoc = beforeDoc.set(docSeed) as any
+      beforeDoc = beforeDoc.set(docSeed)
     }
     else {
       const idVerified = await this.idModel.findById(dbId)
@@ -189,7 +188,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
       description: docImportant.description
     }
   }
-  return void (0)
+  return undefined
 }
 
 function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
