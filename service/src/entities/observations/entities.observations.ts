@@ -18,7 +18,7 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
   createdAt: Date
   lastModified: Date
   attachments: readonly Attachment[]
-  important?: Readonly<ObservationImportantFlag> | undefined
+  important?: Readonly<ObservationImportantFlag> | undefined | null
   /**
    * TODO: scalability - potential problem if thousands of users favorite;
    * this should not be returned to the client
