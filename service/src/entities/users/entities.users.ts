@@ -14,6 +14,7 @@ export interface User {
   lastUpdated: Date
   email?: string
   phones: Phone[]
+  icon?: UserIcon
   roleId: string
   authenticationId: string
   avatar?: Avatar
@@ -73,3 +74,23 @@ export interface UserFindParameters extends PagingParameters {
   active?: boolean | undefined
   enabled?: boolean | undefined
 }
+
+export interface UserIconContentStore {
+  readContent(user: User): Promise<NodeJS.ReadableStream | null | UserIconStoreError>
+}
+
+export class UserIconStoreError extends Error {
+  constructor(readonly errorCode: UserIconStoreErrorCode, message?: string) {
+    super(message)
+    this.name = errorCode
+  }
+}
+
+export enum UserIconStoreErrorCode {
+  /**
+   * The underlying storage system, e.g. file system, raised an error during
+   * some I/O operation.
+   */
+  StorageError = 'UserIconStoreError.StorageError'
+}
+

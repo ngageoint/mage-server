@@ -36,28 +36,29 @@ export type UserJson = Omit<UserDocument, '_id' | 'avatar' | 'roleId' | 'authent
   & (AuthenticationPopulated | AuthenticationReferenced)
 
 export declare const Model: mongoose.Model<UserDocument>
+export declare const Schema: mongoose.Schema
 
 export function getUserById(id: mongoose.Types.ObjectId): Promise<UserDocument | null>
 export function getUserById(id: mongoose.Types.ObjectId, callback: (err: null | any, result: UserDocument | null) => any): void
 
 type RoleReferenced = {
   roleId: string,
-  role: never
+  role?: never
 }
 
 type RolePopulated = {
-  roleId: never,
+  roleId?: never,
   role: RoleJson
 }
 
 type AuthenticationPopulated = {
-  authenticationId: never,
+  authenticationId?: never,
   authentication: Authentication
 }
 
 type AuthenticationReferenced = {
   authenticationId: string,
-  authentication: never
+  authentication?: never
 }
 
 
