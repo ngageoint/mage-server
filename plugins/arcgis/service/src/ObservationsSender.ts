@@ -3,12 +3,22 @@ import { ArcObjects } from './ArcObjects';
 import { ArcObservation, ArcAttachment } from './types/ArcObservation';
 import { LayerInfo } from "./LayerInfo";
 import { EditResult } from './types/EditResult';
-import { AttachmentInfosResult, AttachmentInfo } from './types/AttachmentInfosResult';
+import { AttachmentInfo } from './types/AttachmentInfosResult';
 import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'
-import { ArcGISIdentityManager, IFeature, request } from "@esri/arcgis-rest-request"
-import { addFeatures, updateFeatures, deleteFeatures, getAttachments, updateAttachment, addAttachment, deleteAttachments } from "@esri/arcgis-rest-feature-service";
+import { ArcGISIdentityManager, ArcGISRequestError, IFeature } from "@esri/arcgis-rest-request"
+import {
+    addAttachment,
+    addFeatures,
+    deleteAttachments,
+    deleteFeatures,
+    getAttachments,
+    updateAttachment,
+    updateFeatures,
+    IAddAttachmentOptions,
+    IEditFeatureResult
+} from "@esri/arcgis-rest-feature-service";
 
 /**
  * Class that transforms observations into a json string that can then be sent to an arcgis server.
@@ -58,14 +68,21 @@ export class ObservationsSender {
      * @param {ArcObjects} observations The observations to convert.
      */
     async sendAdds(observations: ArcObjects) {
-        this._console.info('ArcGIS addFeatures');
+        this._console.info(`ArcGIS addFeatures - ${observations.objects.length} observations`);
 
-        await addFeatures({
-            url: this._url,
-            authentication: this._identityManager,
-            features: observations.objects as IFeature[]
-        }).then(this.responseHandler(observations, false))
-            .catch((error) => this._console.error('Error in ObservationSender.sendAdds :: ' + error));
+        try {
+            const response = await addFeatures({
+                url: this._url,
+                authentication: this._identityManager,
+                features: observations.objects as IFeature[]
+            });
+            this.responseHandler(observations, false)(response);
+        } catch (error) {
+            this._console.error('Error in ObservationSender.sendAdds :: ' + error)
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
     }
 
     /**
@@ -74,14 +91,21 @@ export class ObservationsSender {
      * @param {ArcObjects} observations The observations to convert.
      */
     async sendUpdates(observations: ArcObjects) {
-        this._console.info('ArcGIS updateFeatures');
+        this._console.info(`ArcGIS updateFeatures - ${observations.objects.length} observations`);
 
-        await updateFeatures({
-            url: this._url,
-            authentication: this._identityManager,
-            features: observations.objects as IFeature[]
-        }).then(this.responseHandler(observations, true))
-            .catch((error) => this._console.error('Error in ObservationSender.sendUpdates :: ' + error));
+        try {
+            const response = await updateFeatures({
+                url: this._url,
+                authentication: this._identityManager,
+                features: observations.objects as IFeature[]
+            });
+            this.responseHandler(observations, true)(response);
+        } catch (error) {
+            this._console.error('Error in ObservationSender.sendUpdates :: ' + error)
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
     }
 
     /**
@@ -91,29 +115,55 @@ export class ObservationsSender {
     async sendDelete(id: string) {
         this._console.info('ArcGIS deleteFeatures id: ' + id)
 
-        await deleteFeatures({
-            url: this._url,
-            authentication: this._identityManager,
-            where: `${this._config.observationIdField} LIKE '%${id}%'`,
-            objectIds: []
-        }).catch((error) => this._console.error('Error in ObservationSender.sendDelete :: ' + error));
+        try {
+            const response = await deleteFeatures({
+                url: this._url,
+                authentication: this._identityManager,
+                where: `${this._config.observationIdField} LIKE '%${id}%'`,
+                objectIds: []
+            });
+            const results = response.deleteResults;
+            for (const result of results) {
+                if (!result.success) {
+                    this._console.error(`Error deleting feature(s) for observation! code: ${result.error?.code}, description: ${result.error?.description}`);
+                }
+            }
+        } catch (error) {
+            this._console.error('Error in ObservationSender.sendDelete :: ' + error)
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
     }
 
     /**
      * Deletes all observations that are apart of a specified event.
-     * @param {number} id The event id.
+     * @param {string} id The event id.
      */
-    async sendDeleteEvent(id: number) {
-        this._console.info('ArcGIS deleteFeatures by event ' + this._config.observationIdField + ': ' + id);
+    async sendDeleteEvent(id: string) {
+        this._console.info('ArcGIS deleteFeatures by event ' + this._config.eventIdField + ': ' + id);
 
-        await deleteFeatures({
-            url: this._url,
-            authentication: this._identityManager,
-            where: this._config.eventIdField
-                ? `${this._config.eventIdField} = ${id}`
-                : `${this._config.observationIdField} LIKE '%${this._config.idSeparator + id}%'`,
-            objectIds: []
-        }).catch((error) => this._console.error('Error in ObservationSender.sendDeleteEvent :: ' + error));
+        try {
+            const response = await deleteFeatures({
+                url: this._url,
+                authentication: this._identityManager,
+                where: this._config.eventIdField
+                    ? `${this._config.eventIdField} = '${id}'`
+                    : `${this._config.observationIdField} LIKE '%${this._config.idSeparator + id}%'`,
+                objectIds: []
+            });
+            const results: IEditFeatureResult[] = response.deleteResults;
+            for (const result of results) {
+                if (!result.success) {
+                    this._console.error(`Error deleting features for event! code: ${result.error?.code}, description: ${result.error?.description}`);
+                }
+            }
+        } catch (error) {
+            this._console.error('Error in ObservationSender.sendDeleteEvent :: ' + error)
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
     }
 
     /**
@@ -124,9 +174,8 @@ export class ObservationsSender {
      */
     private responseHandler(observations: ArcObjects, update: boolean): (chunk: { addResults?: EditResult[], updateResults?: EditResult[] }) => void {
         const console = this._console;
-        return (chunk: { addResults?: EditResult[], updateResults?: EditResult[] }) => {
-            console.log('ArcGIS ' + (update ? 'Update' : 'Add') + ' Response: ' + JSON.stringify(chunk));
-            const response = chunk;
+        return (response: { addResults?: EditResult[], updateResults?: EditResult[] }) => {
+            console.log('ArcGIS ' + (update ? 'Update' : 'Add') + ' Response: ' + JSON.stringify(response));
             const results = response[update ? 'updateResults' : 'addResults'] as EditResult[];
             if (results != null) {
                 const obs = observations.observations;
@@ -139,7 +188,7 @@ export class ObservationsSender {
                         if (objectId != null) {
                             console.log((update ? 'Update' : 'Add') + ' Features Observation id: ' + observation.id + ', Object id: ' + objectId);
                             if (update) {
-                                this.queryAndUpdateAttachments(observation, objectId);
+                                void this.queryAndUpdateAttachments(observation, objectId);
                             } else {
                                 this.sendAttachments(observation, objectId);
                             }
@@ -160,7 +209,7 @@ export class ObservationsSender {
     private sendAttachments(observation: ArcObservation, objectId: number) {
         if (observation.attachments != null) {
             for (const attachment of observation.attachments) {
-                this.sendAttachment(attachment, objectId);
+                void this.sendAttachment(attachment, objectId);
             }
         }
     }
@@ -170,16 +219,21 @@ export class ObservationsSender {
      * @param {ArcObservation} observation The observation.
      * @param {number} objectId The arc object id of the observation.
      */
-    private queryAndUpdateAttachments(observation: ArcObservation, objectId: number) {
+    private async queryAndUpdateAttachments(observation: ArcObservation, objectId: number) {
         // Query for existing attachments
-        getAttachments({
-            url: this._url,
-            authentication: this._identityManager,
-            featureId: objectId
-        }).then((response) => {
-            const result = response as AttachmentInfosResult;
-            this.updateAttachments(observation, objectId, result.attachmentInfos);
-        }).catch((error) => this._console.error(error));
+        try {
+            const response = await getAttachments({
+                url: this._url,
+                authentication: this._identityManager,
+                featureId: objectId
+            });
+            await this.updateAttachments(observation, objectId, response.attachmentInfos);
+        } catch (error) {
+            this._console.error("Error querying and updating attachments! " + error)
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
     }
 
     /**
@@ -188,7 +242,7 @@ export class ObservationsSender {
      * @param {number} objectId The arc object id of the observation.
      * @param {AttachmentInfo[]} attachmentInfos The arc attachment infos.
      */
-    private updateAttachments(observation: ArcObservation, objectId: number, attachmentInfos: AttachmentInfo[]) {
+    private async updateAttachments(observation: ArcObservation, objectId: number, attachmentInfos: AttachmentInfo[]) {
         // Build a mapping between existing arc attachment names and the attachment infos
         const nameAttachments = new Map<string, AttachmentInfo>();
         if (attachmentInfos != null) {
@@ -209,11 +263,11 @@ export class ObservationsSender {
                     // Update the existing attachment if the file sizes do not match or last modified date updated
                     if (attachment.size != existingAttachment.size
                         || attachment.lastModified + this._config.attachmentModifiedTolerance >= observation.lastModified) {
-                        this.updateAttachment(attachment, objectId, existingAttachment.id);
+                        await this.updateAttachment(attachment, objectId, existingAttachment.id);
                     }
                 } else {
                     // Add the new attachment on the updated observation
-                    this.sendAttachment(attachment, objectId);
+                    await this.sendAttachment(attachment, objectId);
                 }
 
             }
@@ -221,7 +275,7 @@ export class ObservationsSender {
 
         // Delete arc attachments that are no longer on the observation
         if (nameAttachments.size > 0) {
-            this.deleteAttachments(objectId, Array.from(nameAttachments.values()));
+            await this.deleteAttachments(objectId, Array.from(nameAttachments.values()));
         }
 
     }
@@ -236,17 +290,31 @@ export class ObservationsSender {
             const file = path.join(this._attachmentDirectory, attachment.contentLocator!);
 
             const fileName = this.attachmentFileName(attachment);
-            this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file);
 
             const readStream = await fs.openAsBlob(file);
-            const attachmentFile = new File([readStream], fileName);
+            const attachmentFile = new File([readStream], fileName, { type: attachment.mediaType });
 
-            addAttachment({
+            this._console.info('ArcGIS sending file ' + fileName + ' from ' + file + ' for ' + objectId + ', ' + attachmentFile.size + ' bytes');
+
+            const o = {
                 url: this._url,
                 authentication: this._identityManager,
                 featureId: objectId,
                 attachment: attachmentFile
-            }).catch((error) => this._console.error(error));
+            } as IAddAttachmentOptions;
+            try {
+                const response: { addAttachmentResult: IEditFeatureResult; } = await addAttachment(o);
+                const result = response.addAttachmentResult;
+                if (!result.success) {
+                    this._console.error(`Error sending attachment! code: ${result.error?.code}, description: ${result.error?.description}`);
+                }
+            }
+            catch (error) {
+                this._console.error("Error sending attachment! " + error);
+                if (error instanceof ArcGISRequestError) {
+                    this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+                }
+            }
         }
     }
 
@@ -261,18 +329,30 @@ export class ObservationsSender {
             const file = path.join(this._attachmentDirectory, attachment.contentLocator!);
 
             const fileName = this.attachmentFileName(attachment);
-            this._console.info('ArcGIS ' + request + ' file ' + fileName + ' from ' + file);
 
             const readStream = await fs.openAsBlob(file);
-            const attachmentFile = new File([readStream], fileName);
+            const attachmentFile = new File([readStream], fileName, { type: attachment.mediaType });
 
-            updateAttachment({
-                url: this._url,
-                authentication: this._identityManager,
-                featureId: objectId,
-                attachmentId,
-                attachment: attachmentFile
-            }).catch((error) => this._console.error(error));
+            this._console.info('ArcGIS sending file ' + fileName + ' from ' + file + ' for update to ' + objectId + ', ' + attachmentFile.size + ' bytes');
+
+            try {
+                const response = await updateAttachment({
+                    url: this._url,
+                    authentication: this._identityManager,
+                    featureId: objectId,
+                    attachmentId,
+                    attachment: attachmentFile
+                });
+                const result = response.updateAttachmentResult
+                if (!result.success) {
+                    this._console.error(`Error updating attachment! code: ${result.error?.code}, description: ${result.error?.description}`);
+                }
+            } catch (error) {
+                this._console.error("Error updating attachment! " + error)
+                if (error instanceof ArcGISRequestError) {
+                    this._console.error(`  details: ${error?.response?.error?.details || "<unknown>"}`);
+                }
+            }
         }
     }
 
@@ -281,14 +361,14 @@ export class ObservationsSender {
      * @param {number} objectId The arc object id of the observation.
      * @param {AttachmentInfo[]} attachmentInfos The arc attachment infos.
      */
-    private deleteAttachments(objectId: number, attachmentInfos: AttachmentInfo[]) {
+    private async deleteAttachments(objectId: number, attachmentInfos: AttachmentInfo[]) {
         const attachmentIds: number[] = [];
 
         for (const attachmentInfo of attachmentInfos) {
             attachmentIds.push(attachmentInfo.id);
         }
 
-        this.deleteAttachmentIds(objectId, attachmentIds);
+        await this.deleteAttachmentIds(objectId, attachmentIds);
     }
 
     /**
@@ -296,15 +376,28 @@ export class ObservationsSender {
      * @param {number} objectId The arc object id of the observation.
      * @param {number[]} attachmentIds The arc attachment ids.
      */
-    private deleteAttachmentIds(objectId: number, attachmentIds: number[]) {
+    private async deleteAttachmentIds(objectId: number, attachmentIds: number[]) {
         this._console.info('ArcGIS deleteAttachments ' + attachmentIds);
 
-        deleteAttachments({
-            url: this._url,
-            authentication: this._identityManager,
-            featureId: objectId,
-            attachmentIds
-        }).catch((error) => this._console.error(error));
+        try {
+            const response = await deleteAttachments({
+                url: this._url,
+                authentication: this._identityManager,
+                featureId: objectId,
+                attachmentIds
+            });
+            const results = response.deleteAttachmentResults;
+            for (const result of results) {
+                if (!result.success) {
+                    this._console.error(`Error deleting attachments! code: ${result.error?.code}, description: ${result.error?.description}`);
+                }
+            }
+        } catch (error) {
+            this._console.error("Error deleting attachment ID(s)! " + error)
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
     }
 
     /**

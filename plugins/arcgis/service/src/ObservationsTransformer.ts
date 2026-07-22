@@ -7,6 +7,7 @@ import { Geometry, Point, LineString, Polygon } from 'geojson'
 import { ArcObservation, ArcAttachment } from './types/ArcObservation'
 import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
 import { EventTransform } from './EventTransform'
+import mimetypes from 'mime-types';
 
 /**
  * Class that transforms observations into a json string that can then be sent to an arcgis server.
@@ -517,6 +518,14 @@ export class ObservationsTransformer {
                     arcAttachment.name = attachment.id;
                 }
                 arcAttachment.contentLocator = attachment.contentLocator;
+                if (attachment.contentType != null) {
+                    arcAttachment.mediaType = attachment.contentType;
+                } else if (attachment.name != null) {
+                    const mimeType = mimetypes.lookup(attachment.name);
+                    if (mimeType !== false) {
+                        arcAttachment.mediaType = mimeType;
+                    }
+                }
 
                 arcAttachments.push(arcAttachment);
             }

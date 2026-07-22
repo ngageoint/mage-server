@@ -32,7 +32,7 @@ export interface StaticIcon {
   resolvedTimestamp?: number
   imageType?: 'raster' | 'vector'
   /**
-   * The icons's media type is a standard [IANA media/MIME](https://www.iana.org/assignments/media-types/media-types.xhtml)
+   * The icon's media type is a standard [IANA media/MIME](https://www.iana.org/assignments/media-types/media-types.xhtml)
    * type strings, such as `image/jpeg`.
    */
   mediaType?: string

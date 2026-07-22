@@ -21,5 +21,6 @@ export interface ArcAttachment {
     lastModified: number,
     size: number,
     name: string,
-    contentLocator: string
+    contentLocator: string,
+    mediaType: string
 }
