@@ -57,7 +57,11 @@ import { LayerHeaderComponent } from '../map/layers/layer-header.component';
 import { LayerContentComponent } from '../map/layers/layer-content.component';
 import { ColorPickerModule } from '../color-picker/color-picker.module';
 import { ExportComponent } from '../export/export.component';
-import { ExportDialogComponent } from '../export/export-dialog.component'
+import { ExportCreateComponent } from '../export/export-create/export-create.component';
+import { ExportListComponent } from '../export/export-list/export-list.component';
+import { ExportListItemComponent } from '../export/export-list/export-list-item.component';
+import { ExportViewComponent } from '../export/export-view/export-view.component';
+import { ExportEmptyComponent } from '../export/export-empty/export-empty.component';
 
 import { MapClipModule } from '../map/clip/map-clip.module';
 import { GeometryModule } from '../geometry/geometry.module';
@@ -74,7 +78,7 @@ import { UserViewComponent } from '../user/user-view/user-view.component';
 import { UserListItemComponent } from '../user/user-list/user-list-item.component';
 import { UserListComponent } from '../user/user-list/user-list.component';
 import { FeedListComponent } from '../feed/feed-list/feed-list.component';
-import { FeedPanelComponent } from '../feed-panel/feed-panel.component';
+import { SidebarComponent } from '../sidebar/sidebar.component';
 
 import {
   ObservationViewCheckboxComponent,
@@ -95,7 +99,7 @@ import { ObservationEditModule } from '../observation/observation-edit/observati
 import { FeedItemComponent } from '../feed/feed-item/feed-item.component';
 import { FeedItemMapPopupComponent } from '../feed/feed-item/feed-item-map/feed-item-map-popup.component';
 import { FeedItemSummaryModule } from '../feed/feed-item/feed-item-summary/feed-item-summary.module';
-import { FeedPanelTabComponent } from '../feed-panel/feed-panel-tab.component';
+import { SidebarTabComponent } from '../sidebar/sidebar-tab.component';
 import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
@@ -108,8 +112,6 @@ import { ObservationViewAttachmentComponent } from '../observation/observation-v
 import { ObservationViewPasswordComponent } from '../observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from '../observation/observation-view/observation-view-password/password.pipe';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
-import { ExportDataComponent } from '../export/export-data/export-data.component';
-import { NoExportsComponent } from '../export/empty-state/no-exports.component';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { FilterComponent } from '../filter/filter.component';
 import { PreferencesComponent } from '../preferences/preferences.component';
@@ -125,8 +127,8 @@ import { HomeGuard } from '../ingress/home-guard.service';
 import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
 import { IngressModule } from '../ingress/ingress.module';
 import { FilterControlComponent } from '../map/controls/filter.component';
-import { ExportControlComponent } from '../map/controls/export.component';
 import { MatMenuModule as MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 
 const routes: Routes = [{
   path: '',
@@ -160,6 +162,7 @@ const routes: Routes = [{
     MatTimepickerModule,
     MatMomentDateModule,
     MatDialogModule,
+    MatDividerModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatGridListModule,
@@ -198,14 +201,14 @@ class AngularModule { }
     DatetimePickerComponent,
     DMSValidatorDirective,
     ExportComponent,
-    ExportControlComponent,
-    ExportDataComponent,
-    ExportDialogComponent,
+    ExportCreateComponent,
+    ExportEmptyComponent,
+    ExportListComponent,
+    ExportListItemComponent,
+    ExportViewComponent,
     FeedItemComponent,
     FeedItemMapPopupComponent,
     FeedListComponent,
-    FeedPanelComponent,
-    FeedPanelTabComponent,
     FilterComponent,
     FilterControlComponent,
     HomeComponent,
@@ -219,7 +222,6 @@ class AngularModule { }
     MGRSValidatorDirective,
 
     NavigationComponent,
-    NoExportsComponent,
     ObservationDeleteComponent,
     ObservationEditComponent,
     ObservationEditDiscardComponent,
@@ -244,6 +246,8 @@ class AngularModule { }
     PollingIntervalComponent,
     PreferencesComponent,
     SearchComponent,
+    SidebarComponent,
+    SidebarTabComponent,
     TimeFormatComponent,
     TimeZoneComponent,
     UserListComponent,

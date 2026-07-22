@@ -23,7 +23,6 @@ import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 import { UserService } from '../user/user.service'
 import { FilterComponent } from '../filter/filter.component'
 import { MatDialog as MatDialog } from '@angular/material/dialog'
-import { ExportDialogComponent } from '../export/export-dialog.component'
 import _ from 'underscore'
 import moment from 'moment';
 import { Subscription } from 'rxjs'
@@ -310,13 +309,6 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     this.dialog.open(FilterComponent, {
       height: '580px',
       width: '675px'
-    });
-  }
-
-  onExport() {
-    this.dialog.open(ExportDialogComponent, { width: '650px', maxWidth: '650px' }).afterClosed().subscribe(result => {
-      if (!result || result === 'closeAction') {
-      }
     });
   }
 

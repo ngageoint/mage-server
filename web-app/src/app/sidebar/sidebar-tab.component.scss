@@ -1,0 +1,60 @@
+.icon {
+  position: relative;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.icon__active {
+  color: var(--mat-sys-primary);
+}
+
+.img {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background-color: var(--mat-sys-on-surface-variant);
+  mask-size: 24px 24px;
+  -webkit-mask-size: 24px 24px;
+}
+
+.img__active {
+  background-color: var(--mat-sys-primary);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: pointer;
+  cursor: hand;
+}
+
+.tab-icon {
+  position: relative;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  padding-top: 2px;
+  padding-right: 4px;
+  box-sizing: content-box;
+  --mat-badge-background-color: var(--mat-sys-tertiary);
+  --mat-badge-text-color: var(--mat-sys-on-tertiary);
+}
+
+.tab--title {
+  position: absolute;
+  color: var(--mat-sys-on-surface-variant);
+  margin-left: 40px;
+  white-space: nowrap;
+}
+
+.tab--title__active {
+  color: var(--mat-sys-primary);
+}
+
+.tab>mat-icon {
+  font-size: 24px;
+  height: 24px;
+  width: 24px;
+}

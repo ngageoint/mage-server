@@ -1,32 +1,63 @@
-import { Component, OnChanges, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { ExportDialogComponent } from './export-dialog.component';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import { ExportService } from './export.service';
+import { Observable, Subscription, timer } from 'rxjs';
+import { animate, style, transition, trigger } from '@angular/animations';
+
+export enum ViewState { List, Create }
 
 @Component({
-    template: '<div></div>',
-    standalone: false
+  selector: 'export',
+  templateUrl: 'export.component.html',
+  styleUrls: ['./export.component.scss'],
+  animations: [
+    trigger('fade', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('250ms', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [
+        animate('250ms', style({ opacity: 0 })),
+      ])
+    ])
+  ],
+  standalone: false
 })
-export class ExportComponent implements OnChanges {
-  @Input() open: any;
-  @Input() events: any[];
-  @Output() onExportClose = new EventEmitter<void>();
+export class ExportComponent implements OnInit, OnDestroy {
 
-  constructor(public dialog: MatDialog) {
-  }
+  viewState = ViewState
+  state: { view: ViewState, count?: number } = { view: ViewState.List, count: 0 }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.open) {
-      if (this.open && this.open.opened) {
-        this.openExportDialog();
+  refreshTimer$: Observable<number> = timer(0, 5000)
+  refreshTimerSubscription: Subscription
+  exportsSubscription: Subscription
+
+  constructor(
+    @Inject(ExportService) public exportService: ExportService
+  ) { }
+
+  ngOnInit(): void {
+    this.refreshTimerSubscription = this.refreshTimer$.subscribe(() => {
+      this.exportService.fetchExports().subscribe()
+    })
+
+    this.exportsSubscription = this.exportService.exports$.subscribe({
+      next: (exports) => {
+        this.state.count = exports.length
       }
-    }
+    })
   }
 
-  openExportDialog(): void {
-    this.dialog.open(ExportDialogComponent, { width: '650px', maxWidth: '650px' }).afterClosed().subscribe(result => {
-      if (!result || result === 'closeAction') {
-        this.onExportClose.emit();
-      }
-    });
+  ngOnDestroy(): void {
+    this.refreshTimerSubscription?.unsubscribe()
+    this.exportsSubscription?.unsubscribe()
   }
+
+  onCreate(): void {
+    this.state.view = ViewState.Create
+  }
+
+  onCreateClose(): void {
+    this.state.view = ViewState.List
+  }
+
 }

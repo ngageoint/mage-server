@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@a
 import { MatRipple } from '@angular/material/core';
 import { MapService } from '../../map/map.service';
 import { SessionService } from '../../http/session.service';
-import { FeedPanelService } from '../../feed-panel/feed-panel.service';
+import { SidebarService } from '../../sidebar/sidebar.service';
 
 @Component({
     selector: 'user-list-item',
@@ -26,7 +26,7 @@ export class UserListItemComponent implements OnChanges {
   location: any
 
   constructor(
-    private feedPanelService: FeedPanelService,
+    private sidebarService: SidebarService,
     private mapService: MapService,
     sessionService: SessionService) {
     this.followingUser = mapService.followedFeature
@@ -50,7 +50,7 @@ export class UserListItemComponent implements OnChanges {
 
   viewUser(): void {
     this.onUserLocation()
-    this.feedPanelService.viewUser(this.userWithLocation)
+    this.sidebarService.viewUser(this.user)
   }
 
   onRipple(): void {

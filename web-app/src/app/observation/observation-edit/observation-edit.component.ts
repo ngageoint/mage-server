@@ -462,7 +462,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     this.formOptions.expand = true;
     this.bottomSheet
       .open(ObservationEditFormPickerComponent, {
-        panelClass: "feed-panel",
+        panelClass: "sidebar",
       })
       .afterDismissed()
       .subscribe((form) => {
