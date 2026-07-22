@@ -253,7 +253,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase();
   const repos = await initRepositories(dbLayer, config);
   const appLayer = await initAppLayer(repos);
-  const tasks = await initTasks(repos);
+  const tasks = await initTasks(repos, log.child({ component: 'export-archive' }));
   const { webController, addPluginRoutes } = await initWebLayer(
     repos,
     appLayer,
@@ -668,7 +668,7 @@ async function initRepositories(
 
 async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const events = await initEventsAppLayer(repos);
-  const exports = await initExportsAppLayer(repos);
+  const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }));
   const observations = await initObservationsAppLayer(repos);
   const icons = await initIconsAppLayer(repos);
   const feeds = await initFeedsAppLayer(repos);
@@ -692,7 +692,8 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
 }
 
 async function initExportsAppLayer(
-  repos: Repositories
+  repos: Repositories,
+  logger: Logger
 ): Promise<AppLayer['exports']> {
   const eventPermissions = await import('./permissions/permissions.events');
   const exportPermissions = new RoleBasedExportsPermissionService(
@@ -738,7 +739,8 @@ async function initExportsAppLayer(
           repos.observations.attachmentStore,
           repos.observations.iconRepo,
           repos.users.userRepo,
-          repos.users.iconStore
+          repos.users.iconStore,
+          logger
         );
       }
     }
@@ -749,7 +751,8 @@ async function initExportsAppLayer(
       exportFactory,
       repos.exports.exportRepo,
       repos.exports.exportStore,
-      exportPermissions
+      exportPermissions,
+      logger
     ),
     getExports: exportsImpl.FetchExports(
       repos.exports.exportRepo,
@@ -1190,12 +1193,13 @@ async function initWebLayer(
   };
 }
 
-async function initTasks(repos: Repositories): Promise<Task[]> {
+async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
   const exportTask = new ExportArchiveTask(
     environment.exportDirectory,
     environment.exportSweepInterval,
     repos.exports.exportStore,
-    repos.exports.exportRepo
+    repos.exports.exportRepo,
+    logger
   );
 
   return [exportTask];

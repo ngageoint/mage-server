@@ -22,18 +22,10 @@ import { RelationType } from '@ngageoint/geopackage/dist/lib/extension/relatedTa
 import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/featureRow'
 import { FeatureDao } from '@ngageoint/geopackage/dist/lib/features/user/featureDao'
 import { EnvelopeBuilder } from '@ngageoint/geopackage/dist/lib/geom/envelopeBuilder'
+import { Logger, NoopLogger } from '../../entities/entities.logging'
 
 const mgrs = require('mgrs')
 const wkx = require('wkx')
-
-const logger = require('../../logger')
-const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, methodName: string): any => {
-  const logMethod = logger[methodName] as (...args: any[]) => any
-  return {
-    ...log,
-    [methodName]: (...args: any[]) => logMethod('[export:geopackage]', ...args)
-  }
-}, {} as any)
 
 export class GeoPackageExportTransform implements ExportTransform {
   private iconCache = new IconTreeCache()
@@ -45,7 +37,8 @@ export class GeoPackageExportTransform implements ExportTransform {
     private readonly attachmentStore: AttachmentStore,
     private readonly iconRepository: ObservationIconRepository,
     private readonly userRepository: UserRepository,
-    private readonly userIconStore: UserIconContentStore
+    private readonly userIconStore: UserIconContentStore,
+    private readonly log: Logger = NoopLogger
   ) {}
 
   async export(
@@ -121,7 +114,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     let zoomToEnvelope: Envelope | null = null;
     try {
       for await (const observation of iterable) {
-        log.debug('exporting observation', observation.id, '...')
+        this.log.debug(`exporting observation ${observation.id} ...`)
         count++;
         if (startTimestamp === undefined || observation.properties.timestamp.getTime() < startTimestamp) {
           startTimestamp = observation.properties.timestamp.getTime()
@@ -224,7 +217,7 @@ export class GeoPackageExportTransform implements ExportTransform {
             }
             await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
           } catch (e) {
-            log.error(`error writing rows for form entry ${formEntry.id} of observation ${observation.id} to geopackage`, e);
+            this.log.error(`error writing rows for form entry ${formEntry.id} of observation ${observation.id} to geopackage`, e);
           }
         }
       }
@@ -240,7 +233,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     if (zoomToEnvelope) {
       setContentBounds(geopackage, featureDao, zoomToEnvelope);
     }
-    log.info(`'wrote ${count} observations to geopackage`);
+    this.log.info(`'wrote ${count} observations to geopackage`);
 
     return { count, startTimestamp, endTimestamp }
   }
@@ -283,7 +276,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     formTable: string,
     formRowId: number,
   ): Promise<void> {
-    log.info('add attachments');
+    this.log.info('add attachments');
 
     for (const attachment of attachments) {
       const content = await this.attachmentStore.readContent(attachment.id, observation)
@@ -427,7 +420,7 @@ export class GeoPackageExportTransform implements ExportTransform {
                 featureTableStyles.setIconDefault(rowId, iconRow)
                 userIconRows.set(user.id, iconRow)
               } catch (err) {
-                log.error(`error reading icon for user: ${user.id}`, err)
+                this.log.error(`error reading icon for user: ${user.id}`, err)
               }
             } else {
               featureTableStyles.setIconDefault(rowId, iconRow)
@@ -451,7 +444,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     const rtreeIndex = new RTreeIndex(geopackage, featureDao);
     rtreeIndex.create();
 
-    log.info(`wrote ${count} locations to geopackage`)
+    this.log.info(`wrote ${count} locations to geopackage`)
     return { count, startTimestamp, endTimestamp }
   }
 }

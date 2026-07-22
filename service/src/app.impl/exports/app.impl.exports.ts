@@ -6,15 +6,7 @@ import { entityNotFound, infrastructureError, invalidInput, InvalidInputError } 
 import { Stats } from 'fs'
 import archiver from 'archiver'
 import { once } from 'stream'
-
-const logger = require('../../logger')
-const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, methodName: string): any => {
-  const logMethod = logger[methodName] as (...args: any[]) => any
-  return {
-    ...log,
-    [methodName]: (...args: any[]) => logMethod('[export]', ...args)
-  }
-}, {} as any)
+import { Logger, NoopLogger } from '../../entities/entities.logging'
 
 export function FetchExports(repository: ExportsRepository, permissionService: api.ExportAppLayerPermissionService): api.GetExports {
   return async function getExports(req: api.GetExportsRequest): ReturnType<api.GetExports> {
@@ -63,9 +55,10 @@ export function GetExportContent(
 
 export function CreateExport(
   exportFactory: api.ExportFactory,
-  exportsRepository: ExportsRepository, 
+  exportsRepository: ExportsRepository,
   contentStore: ExportStore,
-  permissionService: api.ExportAppLayerPermissionService
+  permissionService: api.ExportAppLayerPermissionService,
+  log: Logger = NoopLogger
 ): api.CreateExport {
   return async function getExports(req: api.CreateExportRequest): ReturnType<api.CreateExport> {
     return await withPermission<Export, KnownErrorsOf<api.CreateExport>>( 
