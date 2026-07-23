@@ -62,7 +62,12 @@ RUN cd ${MAGE_SERVER}/plugins/arcgis/web-app \
 
 WORKDIR ${MAGE_INSTANCE}
 RUN cd ${MAGE_INSTANCE} \
-    && npm install --omit dev --force ${MAGE_PACKAGES}/*.tgz \
+    && npm install --omit dev --force \
+    ${MAGE_PACKAGES}/ngageoint-mage.service-*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.web-app-*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.sftp.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.arcgis.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.image.*.tgz \
     && ln -s ./node_modules/.bin/mage.service
 
 FROM ${DIST_IMAGE}
