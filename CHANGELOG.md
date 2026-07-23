@@ -7,11 +7,49 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
+## [6.6.0](https://github.com/ngageoint/mage-server/releases/tag/6.6.0)
+### Service
+#### Features
+* Audit logging: HTTP request logging for `/api` and `/auth`, login success/failure tracking with IP/user agent, permission-denial logging, and logging of account, event, team, banner, and device changes; JSON output by default for easy ingestion into tools like Splunk
+* API compatibility version is now decoupled from the release version via a new `apiVersion` field, so client compatibility checks no longer break on every release
+* Support for Mongoose 8.x and MongoDB 8
+* Support for deleting an observation's "important" flag by sending `null` in addition to `undefined`
+* Attachments are no longer restricted to a fixed set of file types
+#### Bug Fixes
+* GeoPackage export used an incorrect file type
+* Use the preferred `tile.openstreetmap.org` URL for place name tiles
+* Duplicate forms could appear in CSV exports
+* Device point-of-contact edits were silently dropped due to a nested field the server didn't read
+* Null-reference error in the local authentication migration
+* Orphaned authentication documents (from deleted users) and multi-value fields (e.g. email) were not handled correctly
+* The `/api/users` route no longer returns an unbounded list of all users; the endpoint is deprecated
+#### Security
+* Replaced `passport-ldapauth` with `ldapts` for LDAP authentication
+* Added Trivy vulnerability scanning of built container images in CI
+* General dependency/vulnerability cleanup: upgraded Express, `geopackage`, `passport-saml`, `form-data`, `multer`; removed `crypto-js` and unused `xpath`/`walk` dependencies
+
+### Web App
+#### Features
+* Upgraded Angular from 14.x to 20.x, including a full migration of Angular Material theming from M2 to M3, and consolidated the previously separate `web-app` and admin Angular projects into a single project
+* AngularJS has been fully retired — the remaining admin auth, navbar, banner, user, device, and location code is now all Angular
+* New signup CAPTCHA implementation, replacing `svg-captcha` with `captcha-canvas`
+#### Bug Fixes
+* The active session is now cleared client-side immediately after a user changes their own password, rather than leaving a stale session in place
+
+### Plugins
+#### SFTP
+* Added a web UI showing the status of backfilled SFTP observations, including start-forward sync and a SKIPPED status for backfilled items
+* Configurable port and improved connection error handling; added a paste-in certificate option and automatic reconnection logic
+* Fixed `.mov` attachment sync and switched to syncing observations by last-modified date only
+* Upgraded to Angular 20
+#### ArcGIS
+* Reworked to run on the version of Angular used by the core web app, then upgraded to Angular 20
+
 ## [6.5.8](https://github.com/ngageoint/mage-server/releases/tag/6.5.8)
 ### Service
 #### Bug Fixes
-* Event pagination no longer defaults to `NaN` when `page_size`/`limit` is omitted; now defaults to `null` (#384)
-* Event query results now sort numerically instead of lexicographically (#381)
+* Event pagination no longer defaults to `NaN` when `page_size`/`limit` is omitted; now defaults to `null`
+* Event query results now sort numerically instead of lexicographically
 
 ## [6.5.5](https://github.com/ngageoint/mage-server/releases/tag/6.5.5)
 ### Service
