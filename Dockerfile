@@ -71,6 +71,8 @@ RUN cd ${MAGE_INSTANCE} \
     && ln -s ./node_modules/.bin/mage.service
 
 FROM ${DIST_IMAGE}
+# create the mage data base directory as DIST_IMAGE nonroot user
+WORKDIR /var/lib/mage
 ARG MAGE_INSTANCE
 ENV MAGE_INSTANCE=${MAGE_INSTANCE}
 COPY --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
