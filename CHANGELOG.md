@@ -7,21 +7,61 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
-##### Features
-- The _About_ page displays system information, including Node and MongoDB versions.
-  - The new `READ_SYSTEM_INFO` role restricts access to system information.
-- Support for Mongoose 6.x
-- Support for Webpack 5.x
-- Support for Angular 14.x
-- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x.
-- The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
-- [GARS](https://github.com/ngageoint/gars-js) grid overlay
-- [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
+## [6.5.8](https://github.com/ngageoint/mage-server/releases/tag/6.5.8)
+### Service
+#### Bug Fixes
+* Event pagination no longer defaults to `NaN` when `page_size`/`limit` is omitted; now defaults to `null` (#384)
+* Event query results now sort numerically instead of lexicographically (#381)
 
-##### Bug fixes
-- Single observation download bug
-- Protect against disabling all authentications.
-- Problem with OAuth web login
+## [6.5.5](https://github.com/ngageoint/mage-server/releases/tag/6.5.5)
+### Service
+#### Features
+* Support for Mongoose 6.x (#141)
+* [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x (#141)
+* The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147) (#141)
+* The _About_ page displays system information, including Node and MongoDB versions (#170, #172)
+  * The new `READ_SYSTEM_INFO` role restricts access to system information (#192)
+* [GARS](https://github.com/ngageoint/gars-js) grid overlay (#143)
+* [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay (#144)
+* Observations can be created with no geometry attached, via a "No Geometry" option (#300)
+* KMZ file uploads supported for layers, with custom stylesheets/icons and a default icon fallback for invalid images (#291, #298)
+#### Bug Fixes
+* Single observation download bug (#146)
+* Protect against disabling all authentications (#147)
+* Problem with OAuth web login (#148, #149)
+* Form upload icon duplication error
+#### Security
+* Upgrade `jsonwebtoken` to address a CVE
+
+### Web App
+#### Features
+* Support for Webpack 5.x (#154)
+* Support for Angular 14.x (#150, #151, #152, #153, #155, #156, #158)
+* Admin _Team_ component rebuilt in Angular, with role-based visibility and an Access section for managing team membership (#306, #315)
+* Admin _User_ and _Users_ components rebuilt in Angular 14, with filter tabs (All/Active/Inactive/Disabled) and search (#318, #326)
+* Admin navigation moved from a side nav into a collapsed top menu (#334)
+* Tooltips added to navbar action buttons (#310)
+* Login page links to the About page, including a new "Contact The Development Team" section (#313)
+* Map view supports filtering observations by user and by form (#299)
+* Fixed observation time search and added time window filter options (Today, Last 24/12/6 Hours, Last Hour, Custom) (#299)
+* _Preferences_ &rarr; _Time Format_ "30 Seconds" option relabeled "Relative" to match its behavior (#307)
+* Login Access Code page now submits on Enter (#308)
+* Observation panel now opens by default on the map view (#347)
+#### Bug Fixes
+* Web app UI fixed for medium-sized screens (#303)
+* New user registration now properly displays password validation errors
+* Fixed scrolling issue across different screen resolutions (hotfix, #340)
+
+### Plugins
+#### ArcGIS
+* Added a user-driven "portal URL" field in preparation for future ArcGIS sync support; does not enable sync yet (#325)
+* OAuth support for ArcGIS authentication (#218, #219, #225, #252)
+* Material UI facelift for event/processing sections (#229)
+* Bug fixes for duplicate feature transfer and enable/disable-after-init issues (#257, #260)
+#### SFTP
+* New SFTP plugin (#230)
+* Password encryption for SFTP credentials (#258)
+* RSA key support (#279)
 
 ## [6.3.0](https://github.com/ngageoint/mage-server/releases/tag/6.3.0)
 ### Service
