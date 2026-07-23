@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule as MatListModule } from '@angular/material/list';
+import { MatCardModule } from '@angular/material/card';
+import { MatRippleModule } from '@angular/material/core';
 import { MomentModule } from 'src/app/moment/moment.module';
 import { FeedItemSummaryComponent } from './feed-item-summary.component';
 import { MapService } from 'src/app/map/map.service';
@@ -19,7 +20,8 @@ describe('FeedItemSummaryComponent', () => {
         { provide: FeedPanelService, useValue: { selectFeedItem: () => {} } }
       ],
       imports: [
-        MatListModule,
+        MatCardModule,
+        MatRippleModule,
         MatIconModule,
         MomentModule
       ],
