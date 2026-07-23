@@ -30,11 +30,15 @@ mat-list-item {
 
 .item__primary {
   font: var(--mat-sys-body-large);
-  color: var(--mat-sys-on-surface);
+  color: var(--mat-sys-primary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item__secondary {
-  font: var(--mat-sys-body-small);
+  font: var(--mat-sys-body-medium);
   color: var(--mat-sys-on-surface-variant);
   white-space: nowrap;
   overflow: hidden;

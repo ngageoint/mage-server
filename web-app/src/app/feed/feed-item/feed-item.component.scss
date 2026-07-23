@@ -24,7 +24,6 @@ mat-toolbar {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--mat-sys-primary);
-  font: var(--mat-sys-title-large);
 }
 
 .feed-item {
@@ -88,8 +87,9 @@ mat-toolbar {
 }
 
 .card-title {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-body-large);
   color: var(--mat-sys-primary);
+  margin-top: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
