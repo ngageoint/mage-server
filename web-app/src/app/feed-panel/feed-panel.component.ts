@@ -42,7 +42,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   defaultTabs = [{
     id: 'observations',
     title: 'Observations',
-    icon: 'place'
+    icon: 'location_on'
   }, {
     id: 'people',
     title: 'People',

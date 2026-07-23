@@ -1,9 +1,6 @@
-:host {
-  --mat-card-elevated-container-color: #ffffff;
-}
-
 mat-card {
   overflow: hidden;
+  --mat-card-elevated-container-color: white;
 }
 
 mat-card-content {
@@ -29,7 +26,7 @@ mat-card-actions {
 }
 
 .item-header-text {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-body-large);
   color: var(--mat-sys-primary);
   margin-top: 4px;
   white-space: nowrap;
