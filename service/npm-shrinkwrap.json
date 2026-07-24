@@ -25,7 +25,6 @@
         "base-64": "1.0.0",
         "busboy": "1.6.0",
         "captcha-canvas": "3.4.0",
-        "cfenv": "^1.2.6",
         "commander": "12.0.0",
         "express": "4.22.2",
         "express-session": "1.18.1",
@@ -3168,17 +3167,6 @@
       "license": "Apache-2.0",
       "dependencies": {
         "skia-canvas": "^3.0.8"
-      }
-    },
-    "node_modules/cfenv": {
-      "version": "1.2.6",
-      "resolved": "https://registry.npmjs.org/cfenv/-/cfenv-1.2.6.tgz",
-      "integrity": "sha512-nx+bbEvpzWTuASn2Xy64n8oDkhgK4Z+dHhG51RNsPH66vCU08cPiLyRrxJh9ukjtK3AGbVc15NSAMMMrO1rGQg==",
-      "license": "Apache-2.0",
-      "dependencies": {
-        "js-yaml": "4.1.x",
-        "ports": "1.1.x",
-        "underscore": "1.13.x"
       }
     },
     "node_modules/chai": {
@@ -6735,11 +6723,6 @@
       "license": "MIT"
     },
     "node_modules/js-yaml": {
-<<<<<<< Updated upstream
-      "version": "4.1.1",
-      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.1.tgz",
-      "integrity": "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==",
-=======
       "version": "4.3.0",
       "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.0.tgz",
       "integrity": "sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==",
@@ -6753,7 +6736,6 @@
           "url": "https://github.com/sponsors/nodeca"
         }
       ],
->>>>>>> Stashed changes
       "license": "MIT",
       "dependencies": {
         "argparse": "^2.0.1"
@@ -9433,12 +9415,6 @@
         "splaytree": "^3.1.0"
       }
     },
-    "node_modules/ports": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/ports/-/ports-1.1.0.tgz",
-      "integrity": "sha512-XmS7dspHnkTXZC75NkG0ti2hLj8aSyg1Izp87/2cWT7QhTo1vdtWsQ4ldp4BEQ/EXqy0s4yTATJUZ3t9RGZVpg==",
-      "license": "Apache 2.0"
-    },
     "node_modules/possible-typed-array-names": {
       "version": "1.1.0",
       "resolved": "https://registry.npmjs.org/possible-typed-array-names/-/possible-typed-array-names-1.1.0.tgz",
@@ -11839,12 +11815,6 @@
       "funding": {
         "url": "https://github.com/sponsors/ljharb"
       }
-    },
-    "node_modules/underscore": {
-      "version": "1.13.8",
-      "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.13.8.tgz",
-      "integrity": "sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ==",
-      "license": "MIT"
     },
     "node_modules/undici-types": {
       "version": "5.26.5",
