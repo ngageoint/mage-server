@@ -138,7 +138,7 @@ export class LayerDashboardComponent implements OnInit, OnDestroy {
 
       this.toastService.show(
         'Layer Created',
-        ['../layers', newLayer.id],
+        ['/admin/layers', newLayer.id],
         'Go to Layer'
       );
 
