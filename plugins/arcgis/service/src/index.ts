@@ -65,7 +65,9 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
 
     const identityService = createArcGISIdentityService(stateRepo);
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, identityService, console);
-    await processor.start();
+    // don't block server startup on the first ArcGIS sync cycle, which can involve
+    // several rounds of network I/O against the configured ArcGIS server(s)
+    processor.start().catch((err) => console.error('Error starting ArcGIS observation processor: ', err));
     return {
       webRoutes: {
         public: () => {
