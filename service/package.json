@@ -39,7 +39,7 @@
     "@types/json-schema": "7.0.15",
     "@types/mime-types": "3.0.1",
     "@xmldom/xmldom": "0.9.10",
-    "adm-zip": "0.5.16",
+    "adm-zip": "0.6.0",
     "archiver": "^7.0.1",
     "async": "3.2.6",
     "async-lock": "1.4.1",
@@ -82,7 +82,6 @@
   },
   "devDependencies": {
     "@fluffy-spoon/substitute": "1.208.0",
-    "@types/adm-zip": "0.5.7",
     "@types/archiver": "^7.0.0",
     "@types/async": "3.2.24",
     "@types/busboy": "1.5.4",
