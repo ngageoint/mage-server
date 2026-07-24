@@ -8,6 +8,7 @@ import {
   ValidationErrors,
   AsyncValidatorFn
 } from '@angular/forms';
+import { HttpEventType } from '@angular/common/http';
 import { LayersService, Layer } from '../layers.service';
 import { Observable, of } from 'rxjs';
 import { map, catchError, debounceTime, first } from 'rxjs/operators';
@@ -24,6 +25,8 @@ export class CreateLayerDialogComponent {
   errorMessage = '';
   geopackageFile: File | null = null;
   geopackageFileName = '';
+  uploading = false;
+  uploadProgress: number | null = null;
 
   isEditMode: boolean;
 
@@ -192,11 +195,24 @@ export class CreateLayerDialogComponent {
       }
     }
 
+    this.uploading = true;
+    this.uploadProgress = 0;
+
     this.layersService.createLayer(layerData).subscribe({
-      next: (newLayer) => {
-        this.dialogRef.close(newLayer);
+      next: (event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          this.uploadProgress = event.total
+            ? Math.round((100 * event.loaded) / event.total)
+            : null;
+        } else if (event.type === HttpEventType.Response) {
+          this.uploading = false;
+          this.dialogRef.close(event.body);
+        }
       },
       error: ({ status, error }) => {
+        this.uploading = false;
+        this.uploadProgress = null;
+
         if (status === 400 && error?.errors) {
           const fieldErrors = error.errors;
           if (fieldErrors.name?.type === 'unique') {
@@ -258,6 +274,8 @@ export class CreateLayerDialogComponent {
   }
 
   get canSave(): boolean {
+    if (this.uploading) return true;
+
     const nameControl = this.layerForm.get('name');
     const type = this.isEditMode
       ? this.data.layer?.type
