@@ -1,5 +1,8 @@
 import { FeatureServiceConfig, AttributeConfig } from "./ArcGISConfig";
 
+export type FieldAttributesFormConfig = { [formName: string]: { [fieldTitle: string]: string } }
+export type FieldAttributes = { [eventName: string]: FieldAttributesFormConfig }
+
 /**
  * Contains various configuration values used by the plugin.
  */
@@ -123,7 +126,7 @@ export interface ArcGISPluginConfig {
   /**
    * Override mappings between event form fields and ArcGIS attributes as: { event: { form: { field: attribute } } }
    */
-  fieldAttributes?: unknown
+  fieldAttributes?: FieldAttributes
 
   /**
    * The attribute configurations.

@@ -10,6 +10,7 @@ import { request } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from "./ArcGISService";
 import { ILayerDefinition } from "@esri/arcgis-rest-feature-service";
 import { DrawingInfoBuilder } from "./DrawingInfoBuilder";
+import { EventTransform } from "./EventTransform";
 
 /**
  * Administers hosted feature services such as layer creation and updates.
@@ -18,6 +19,9 @@ export class FeatureServiceAdmin {
 	private _config: ArcGISPluginConfig;
 	private _identityService: ArcGISIdentityService;
 	private _console: Console;
+
+	/** string field length to hold WKT-encoded form fields with locations/geometries */
+	private static readonly GEOMETRY_STRING_FIELD_LENGTH: number = 2 ** 31 - 1;
 
 	/**
 	 * Constructor.
@@ -229,12 +233,7 @@ export class FeatureServiceAdmin {
 		}
 		fields.push(this.createTextField(this._config.iconSymbolField));
 
-		const fieldNames = new Set<string>();
-		for (const field of fields) {
-			fieldNames.add(field.name);
-		}
-
-		this.eventsFields(events, fields, fieldNames);
+		fields.push(...this.eventsFields(events));
 
 		return fields;
 	}
@@ -294,64 +293,70 @@ export class FeatureServiceAdmin {
 	}
 
 	/**
-	 * Build fields from the layer events
+	 * Build ArcGIS fields from the layer events
 	 * @param {MageEvent[]} events layer events
-	 * @param {Field[]} fields created fields
-	 * @param {Set<string>} fieldNames set of all field names
+	 * @returns {Field[]} ArcGIS fields
 	 */
-	private eventsFields(events: MageEvent[], fields: Field[], fieldNames: Set<string>) {
+	private eventsFields(events: MageEvent[]): Field[] {
 		const forms = new Set<FormId>();
 
+		const newFields: Field[] = [];
 		for (const event of events) {
-			this.eventFields(event, forms, fields, fieldNames);
+			newFields.push(...this.eventFields(event, forms));
 		}
+		return newFields;
 	}
 
 	/**
-	 * Build fields from the layer event
+	 * Build ArcGIS fields from the layer event
 	 * @param {MageEvent} event layer event
 	 * @param {Set<FormId>} forms set of processed forms
-	 * @param {Field[]} fields created fields
-	 * @param {Set<string>} fieldNames set of all field names
+	 * @returns {Field[]} ArcGIS fields
 	 */
-	private eventFields(event: MageEvent, forms: Set<FormId>, fields: Field[], fieldNames: Set<string>) {
+	private eventFields(event: MageEvent, forms: Set<FormId>): Field[] {
+		const transform = new EventTransform(this._config, event);
+		const newFields: Field[] = [];
 		for (const form of event.activeForms) {
 			if (!forms.has(form.id)) {
 				forms.add(form.id);
 
 				for (const formField of form.fields) {
 					if (!formField.archived) {
-						this.createFormField(form, formField, fields, fieldNames);
+						const newField = this.createFormField(form, formField, transform);
+						if (newField != null) {
+							newFields.push(newField);
+						}
 					}
 				}
 			}
 		}
+		return newFields;
 	}
 
 	/**
-	 * Build a field from the form field
+	 * Build an ArcGIS field from the form field
 	 * @param {Form} form form
 	 * @param {FormField} formField form field
-	 * @param {Field[]} fields created fields
-	 * @param {Set<string>} fieldNames set of all field names
+	 * @param {EventTransform} transform transformer object for event
+	 * @returns {Field | null} ArcGIS field
 	 */
-	private createFormField(form: Form, formField: FormField, fields: Field[], fieldNames: Set<string>) {
+	private createFormField(form: Form, formField: FormField, transform: EventTransform): Field | null {
 		const field = this.initField(formField.type);
 
 		if (field != null) {
-			const sanitizedName = ObservationsTransformer.replaceSpaces(formField.title);
-			const sanitizedFormName = ObservationsTransformer.replaceSpaces(form.name);
-			const name = `${sanitizedFormName}_${sanitizedName}`.toLowerCase();
-
-			fieldNames.add(name);
-
-			field.name = name;
-			field.alias = field.name;
+			field.name = formField.name;
+			const formTransform = transform.get(form.id);
+			if (formTransform != null) {
+				const fieldName = formTransform.getField(formField.name);
+				if (fieldName != null) {
+					field.name = fieldName;
+				}
+			}
+			field.alias = formField.title;
 			field.editable = true;
 			field.defaultValue = formField.value;
-
-			fields.push(field);
 		}
+		return field;
 	}
 
 	/**
@@ -398,6 +403,10 @@ export class FeatureServiceAdmin {
 				}
 				break;
 			case FormFieldType.Geometry:
+				field.type = 'esriFieldTypeString';
+				field.sqlType = 'sqlTypeNVarchar';
+				field.length = FeatureServiceAdmin.GEOMETRY_STRING_FIELD_LENGTH;
+				break;
 			case FormFieldType.Attachment:
 			case FormFieldType.Hidden:
 			default:

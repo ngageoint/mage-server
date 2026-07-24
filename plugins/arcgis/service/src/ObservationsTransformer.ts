@@ -6,6 +6,7 @@ import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entit
 import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import api from '@ngageoint/mage.service/lib/api'
 import { Geometry, Point, LineString, Polygon } from 'geojson'
+import { geojsonToWKT } from '@terraformer/wkt';
 import { ArcObservation, ArcAttachment } from './types/ArcObservation'
 import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
 import { EventTransform } from './EventTransform'
@@ -231,6 +232,52 @@ export class ObservationsTransformer {
     }
 
     /**
+     * Recursively rounds coordinate precision in a GeoJSON geometry.
+     * Works with any geometry type including GeometryCollections.
+     * @param {Geometry} geometry The geometry to round.
+     * @param {number} precision maximum number of decimal places to keep
+     * @returns new geometry with rounded coordinates
+     */
+    private roundCoordinates(geometry: Geometry, precision = 6): Geometry {
+        const factor = Math.pow(10, precision);
+        const round = (n: number) => Math.round(n * factor) / factor;
+
+        const processCoord = (coord: number[]): number[] => coord.map(round);
+        const processRing = (ring: number[][]): number[][] => ring.map(processCoord);
+
+        switch (geometry.type) {
+            case "Point":
+                return { ...geometry, coordinates: processCoord(geometry.coordinates) };
+
+            case "LineString":
+            case "MultiPoint":
+                return { ...geometry, coordinates: geometry.coordinates.map(processCoord) };
+
+            case "Polygon":
+            case "MultiLineString":
+                return { ...geometry, coordinates: geometry.coordinates.map(processRing) };
+
+            case "MultiPolygon":
+                return { ...geometry, coordinates: geometry.coordinates.map(p => p.map(processRing)) };
+
+            case "GeometryCollection":
+                return { ...geometry, geometries: geometry.geometries.map(g => this.roundCoordinates(g, precision)) };
+
+            default:
+                throw new Error(`Unsupported geometry type: ${(geometry as Geometry).type}`);
+        }
+    }
+
+    /**
+     * Converts an observation geometry to a WKT string.
+     * @param {Geometry} geometry The observation geometry to convert.
+     * @returns {string} The WKT-encoded geometry.
+     */
+    private geometryToWKT(geometry: Geometry): string {
+        return geojsonToWKT(this.roundCoordinates(geometry));
+    }
+
+    /**
      * Converts an observation Point to an ArcPoint.
      * @param {Point} point The observation Point to convert.
      * @returns {ArcPoint} The converted ArcPoint.
@@ -324,19 +371,17 @@ export class ObservationsTransformer {
                     if (mageEvent != null && formId != null) {
                         const field = mageEvent.formFieldFor(formProperty, formId);
                         if (field != null && field.type !== FormFieldType.Attachment) {
-                            let title = field.title
+                            let attributeName = formProperty;
                             if (fields != null) {
-                                const fieldTitle = fields.get(title)
-                                if (fieldTitle != null) {
-                                    const sanitizedName = ObservationsTransformer.replaceSpaces(fieldTitle)
-                                    const sanitizedFormName = ObservationsTransformer.replaceSpaces(fields.name)
-                                    title = `${sanitizedFormName}_${sanitizedName}`.toLowerCase()
+                                const fieldAttributeName = fields.getField(formProperty)
+                                if (fieldAttributeName != null) {
+                                    attributeName = fieldAttributeName
                                 }
                             }
                             if (field.type === FormFieldType.Geometry) {
-                                value = this.geometryToArcGeometry(value as Geometry)
+                                value = this.geometryToWKT(value as Geometry)
                             }
-                            this.addFormAttribute(title, formCount, value, arcObject);
+                            this.addFormAttribute(attributeName, formCount, value, arcObject);
                         }
                     } else {
                         this.addFormAttribute(formProperty, formCount, value, arcObject);

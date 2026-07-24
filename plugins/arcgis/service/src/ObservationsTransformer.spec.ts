@@ -9,6 +9,7 @@ import { LineStyle } from "@ngageoint/mage.service/lib/entities/entities.global"
 import { Acl, MageEvent } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 import { Form, FormField, FormFieldType } from "@ngageoint/mage.service/lib/entities/events/entities.events.forms";
 import { Model as IconModel } from '@ngageoint/mage.service/lib/models/icon';
+import { Polygon } from 'geojson'
 
 describe('MAGE observation to ArcGIS feature transformer', () => {
 
@@ -18,7 +19,7 @@ describe('MAGE observation to ArcGIS feature transformer', () => {
     id: 1, name: 'simple form', description: 'simple form description',
     default: false, color: '#BEADED', archived: false, userFields: [],
     fields: [{
-      id: 1, archived: false, name: 'other_geometry', title: 'Geometry', type: FormFieldType.Geometry, required: false, value: null
+      id: 1, archived: false, name: 'other_geometry', title: 'other_geometry', type: FormFieldType.Geometry, required: false, value: null
     } as FormField]
   } as Form;
   let eventWithForm = new MageEvent({
@@ -54,6 +55,31 @@ describe('MAGE observation to ArcGIS feature transformer', () => {
     expect(feature.object.attributes).not.toBeNull();
     const attributes = feature.object.attributes;
     expect(attributes).toHaveProperty('icon_symbol', '4321/icon.svg');
+  });
+
+  test('transforms an observation with a geometry form attribute', async () => {
+
+    mockingoose(IconModel).toReturn(null, 'findOne');
+
+    const xformer = new ObservationsTransformer(config, console);
+    const mageObservation = {
+      properties: {forms: [{formId: 1}]},
+      eventId: 4321,
+      geometry: { type: 'Point', coordinates: [ -1.391412, 50.885025 ] },
+      attachments: [] as Attachment[]
+    } as unknown as ObservationAttrs;
+    const positions = [[[0.00000001, 1], [0, 0], [1, 0], [1.00001, 1.00001], [0.00000001, 1]]]
+    mageObservation.properties.forms[0].id = 'formentry1';
+    mageObservation.properties.forms[0].other_geometry = { type: "Polygon", coordinates: positions} as Polygon;
+    const eventTransform = new EventTransform(config, eventWithForm);
+    const feature = await xformer.transform(mageObservation, eventTransform, null);
+    expect(feature.object).not.toBeNull();
+    expect(feature.object.attributes).not.toBeNull();
+    const attributes = feature.object.attributes;
+    expect(attributes).toHaveProperty('form1_other_geometry');
+    const other_geometry_string = attributes.form1_other_geometry;
+    expect(other_geometry_string).toContain('POLYGON');
+    expect(other_geometry_string).toContain('1.00001 1.00001');
   });
 
 });
