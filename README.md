@@ -248,14 +248,6 @@ host headers. To do this, execute the following command:
 \Windows\System32\inetsrv\appcmd.exe set config -section:system.webServer/proxy -preserveHostHeader:true /commit:apphost
 ```
 
-#### Cloud Foundry deployment
-
-Mage uses the [cfenv](https://github.com/cloudfoundry-community/node-cfenv) Node module to read settings from Cloud Foundry's
-[environment variables](https://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html).  If Cloud Foundry's
-environment variables are present, they will take precedence over any of their counterparts derived from the
-[magerc.sh](environment/env.js) file.  This pertains mostly to defining the connection to the MongoDB server as a bound service
-in Cloud Foundry, for which Cloud Foundry should supply the connection string and credentials in the `VCAP_SERVICES` value.
-
 ### Upgrading Mage server
 
 Upgrading the Mage server essentially consists of the same process as [installing for the first time](#install-mage-server-packages).

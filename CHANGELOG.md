@@ -27,6 +27,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Replaced `passport-ldapauth` with `ldapts` for LDAP authentication
 * Added Trivy vulnerability scanning of built container images in CI
 * General dependency/vulnerability cleanup: upgraded Express, `geopackage`, `passport-saml`, `form-data`, `multer`; removed `crypto-js` and unused `xpath`/`walk` dependencies
+* Removed legacy Cloud Foundry deployment support. Environment configuration is now read directly from `MAGE_*` env vars
 
 ### Web App
 #### Features

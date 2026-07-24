@@ -24,9 +24,7 @@ describe("environment", function() {
       'MAGE_MONGO_CONN_TIMEOUT',
       'MAGE_MONGO_CONN_RETRY_DELAY',
       'PORT',
-      'ADDRESS',
-      'VCAP_APPLICATION',
-      'VCAP_SERVICES'
+      'ADDRESS'
     ].forEach(key => delete process.env[key]);
   });
 
@@ -155,48 +153,6 @@ describe("environment", function() {
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('authMechanism', 'MONGODB-X509');
       expect(options).to.not.have.property('user');
-    });
-  });
-
-  describe("in cloud foundry", function() {
-
-    it("loads values from vcap env vars", function() {
-
-      process.env.PORT = '2424';
-      process.env.MAGE_TOKEN_EXPIRATION = '3600';
-      process.env.VCAP_APPLICATION = '{}';
-      process.env.VCAP_SERVICES = JSON.stringify({
-        "user-provided": [
-          {
-            name: 'MongoInstance',
-            credentials: {
-              url: 'mongodb-cf://db.test.mage:27999/magedb_cf',
-              user: 'cloudfoundry',
-              pass: 'foundrycloud',
-              minPoolSize: 99,
-              maxPoolSize: 99
-            }
-          }
-        ]
-      });
-      const environment = proxyquire('../../lib/environment/env', {});
-
-      expect(environment).to.have.property('port', 2424);
-      expect(environment).to.have.property('address', '0.0.0.0');
-      expect(environment).to.have.property('attachmentBaseDirectory', '/var/lib/mage/attachments');
-      expect(environment).to.have.property('iconBaseDirectory', '/var/lib/mage/icons');
-      expect(environment).to.have.property('userBaseDirectory', '/var/lib/mage/users');
-      expect(environment).to.have.property('tokenExpiration', 3600);
-      expect(environment).to.have.property('mongo');
-      const mongo = environment.mongo;
-      expect(mongo).to.have.property('uri', 'mongodb-cf://db.test.mage:27999/magedb_cf');
-      expect(mongo).to.have.property('connectRetryDelay', 5000);
-      expect(mongo).to.have.property('connectTimeout', 300000);
-      const options = mongo.options;
-      expect(options).to.not.have.property('tls');
-      expect(options).to.have.property('minPoolSize', 99);
-      expect(options).to.have.property('maxPoolSize', 99);
-      expect(options).to.have.deep.property('auth', { "username": "cloudfoundry", "password": "foundrycloud" });
     });
   });
 });
