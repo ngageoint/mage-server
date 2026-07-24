@@ -99,6 +99,7 @@ export class MockArcService implements ArcServiceInterface {
       createdAtField: 'mock_created_at',
       lastModifiedField: 'mock_last_modified',
       geometryType: 'mock_geometry_type',
+      iconSymbolField: 'mock_icon_symbol',
       fieldAttributes: {},
       attributes: {
         'symbolid': {

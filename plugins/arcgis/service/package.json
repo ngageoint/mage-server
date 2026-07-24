@@ -14,8 +14,8 @@
   "scripts": {
     "build:tsc": "tsc -b src",
     "build": "tsc -b src",
-    "test:run": "jest lib",
-    "test": "tsc -b src && jest lib",
+    "test:run": "jest",
+    "test": "tsc -b src && jest",
     "clean": "rm -rf lib"
   },
   "repository": {
@@ -41,6 +41,7 @@
     "@esri/arcgis-rest-feature-service": "4.1.0",
     "@esri/arcgis-rest-request": "4.3.0",
     "@terraformer/arcgis": "2.1.2",
+    "file-type": "16.5.4",
     "form-data": "4.0.6",
     "mime-types": "3.0.2"
   },
@@ -57,7 +58,11 @@
     "eslint": "9.24.0",
     "eslint-plugin-jsdoc": "50.6.9",
     "jest": "^30.2.0",
+    "mockingoose": "2.16.2",
+    "mongoose": "8.23.0",
     "nock": "12.0.3",
+    "ts-jest": "29.4.6",
+    "ts-node": "10.9.2",
     "typescript": "5.8.2",
     "typescript-eslint": "8.29.1"
   }

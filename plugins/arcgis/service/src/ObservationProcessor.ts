@@ -137,7 +137,7 @@ export class ObservationProcessor {
 	public async safeGetConfig(): Promise<ArcGISPluginConfig> {
 		const state = await this._stateRepo.get();
 		if (!state) return await this._stateRepo.put(defaultArcGISPluginConfig as never);
-		return await this._stateRepo.get().then((state) => state ? state : this._stateRepo.put(defaultArcGISPluginConfig as never));
+		return { ...defaultArcGISPluginConfig, ...(state as ArcGISPluginConfig) };
 	}
 
 	/**
@@ -361,7 +361,7 @@ export class ObservationProcessor {
 					if (observation.userId != null) {
 						user = await this._userRepo.findById(observation.userId);
 					}
-					const arcObservation = this._transformer.transform(observation, eventTransform, user);
+					const arcObservation = await this._transformer.transform(observation, eventTransform, user);
 					arcObjects.add(arcObservation);
 				}
 			}

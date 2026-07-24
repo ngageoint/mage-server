@@ -116,6 +116,11 @@ export interface ArcGISPluginConfig {
   geometryType?: string
 
   /**
+   * The field name containing the icon symbol
+   */
+  iconSymbolField: string
+
+  /**
    * Override mappings between event form fields and ArcGIS attributes as: { event: { form: { field: attribute } } }
    */
   fieldAttributes?: any
@@ -149,6 +154,7 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
   createdAtField: 'created_at',
   lastModifiedField: 'last_modified',
   geometryType: 'geometry_type',
+  iconSymbolField: 'icon_symbol',
   fieldAttributes: {},
   attributes: {
     'symbolid': {

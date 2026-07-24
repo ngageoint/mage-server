@@ -1,8 +1,10 @@
 import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { AttributeDefaultConfig } from "./types/ArcGISConfig";
-import { ObservationAttrs, Attachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { ObservationAttrs, Attachment, FormEntry } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { User } from '@ngageoint/mage.service/lib/entities/users/entities.users'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
+import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events'
+import api from '@ngageoint/mage.service/lib/api'
 import { Geometry, Point, LineString, Polygon } from 'geojson'
 import { ArcObservation, ArcAttachment } from './types/ArcObservation'
 import { ArcGeometry, ArcObject, ArcPoint, ArcPolyline, ArcPolygon } from './types/ArcObject'
@@ -78,7 +80,7 @@ export class ObservationsTransformer {
      * @param {User | null} user The MAGE user.
      * @returns {ArcObservation} The ArcObservation of the observation.
      */
-    transform(observation: ObservationAttrs, transform: EventTransform, user: User | null): ArcObservation {
+    async transform(observation: ObservationAttrs, transform: EventTransform, user: User | null): Promise<ArcObservation> {
         this.init();
 
         const arcObject = {} as ArcObject;
@@ -92,9 +94,9 @@ export class ObservationsTransformer {
             arcObject.geometry = arcGeometry;
         }
 
-        let formIds: { [name: string]: number } = {};
+        let formIds: Map<string, number> = new Map();
         if (observation.properties != null) {
-            formIds = this.propertiesToAttributes(observation.properties, transform, arcObject);
+            formIds = await this.propertiesToAttributes(observation.properties, transform, arcObject);
         }
 
         const arcObservation = this.createObservation(observation);
@@ -267,14 +269,14 @@ export class ObservationsTransformer {
      * @param {{ [name: string]: unknown }} properties The observation properties to convert.
      * @param {EventTransform} transform The Event transform.
      * @param {ArcObject} arcObject The converted ArcObject.
-     * @returns {{ [name: string]: number }} form ids map
+     * @returns {Map<string, number>} mapping from form entry ID to form ID
      */
-    private propertiesToAttributes(properties: { [name: string]: any }, transform: EventTransform, arcObject: ArcObject): { [name: string]: number } {
-        let formIds: { [name: string]: number } = {};
+    private async propertiesToAttributes(properties: { [name: string]: any }, transform: EventTransform, arcObject: ArcObject): Promise<Map<string, number>> {
+        let formIds: Map<string, number> = new Map();
         for (const property in properties) {
             const value = properties[property]
             if (property === 'forms') {
-                formIds = this.formsToAttributes(value, transform, arcObject)
+                formIds = await this.formsToAttributes(value as FormEntry[], transform, arcObject)
             } else {
                 this.addAttribute(property, value, arcObject);
             }
@@ -284,36 +286,40 @@ export class ObservationsTransformer {
 
     /**
      * Converts and adds observation property forms data to ArcObject attributes.
-     * @param {[{ [name: string]: unknown }]} forms The observation property forms to convert.
+     * @param {FormEntry[]} forms The observation property forms to convert.
      * @param {EventTransform} transform The Event transform.
      * @param {ArcObject} arcObject The converted ArcObject.
-     * @returns {{ [name: string]: number }} form ids map
+     * @returns {Map<string, number>} mapping from form entry ID to form ID
      */
-    private formsToAttributes(forms: [{ [name: string]: any }], transform: EventTransform, arcObject: ArcObject): { [name: string]: number } {
+    private async formsToAttributes(forms: FormEntry[], transform: EventTransform, arcObject: ArcObject): Promise<Map<string, number>> {
 
-        const formIds: { [id: string]: number } = {};
-        const formIdCount: { [id: number]: number } = {};
+        // mapping from form entry ID to form ID
+        const formIds: Map<string, number> = new Map();
+        // mapping from form ID to number of instances of that form in the observation
+        const formIdCount: Map<number, number> = new Map();
 
         const mageEvent = transform.mageEvent;
 
+        let firstFormEntry: FormEntry | null = null;
+
         for (let i = 0; i < forms.length; i++) {
-            const form = forms[i];
-            const formId = form['formId'];
-            const id = form['id'];
+            const form: FormEntry = forms[i];
+            const formId: number = form['formId'];
+            if (firstFormEntry == null) {
+                firstFormEntry = form;
+            }
+            const formEntryId: string = form['id'];
             let fields = null;
             let formCount = 1;
-            if (formId != null && id != null) {
-                formIds[id] = formId;
-                let count = formIdCount[formId];
-                if (count == null) {
-                    count = 0;
-                }
+            if (formId != null && formEntryId != null) {
+                formIds.set(formEntryId, formId);
+                const count: number = formIdCount.get(formId) || 0;
                 formCount = count + 1;
-                formIdCount[formId] = formCount;
+                formIdCount.set(formId, formCount);
                 fields = transform.get(formId);
             }
             for (const formProperty in form) {
-                let value = form[formProperty];
+                let value: any = form[formProperty];
                 if (value != null) {
                     if (mageEvent != null && formId != null) {
                         const field = mageEvent.formFieldFor(formProperty, formId);
@@ -328,7 +334,7 @@ export class ObservationsTransformer {
                                 }
                             }
                             if (field.type === FormFieldType.Geometry) {
-                                value = this.geometryToArcGeometry(value)
+                                value = this.geometryToArcGeometry(value as Geometry)
                             }
                             this.addFormAttribute(title, formCount, value, arcObject);
                         }
@@ -339,7 +345,51 @@ export class ObservationsTransformer {
             }
         }
 
+        await this.addIconSymbolAttribute(arcObject, mageEvent, firstFormEntry);
+
         return formIds;
+    }
+
+    /**
+     * Add an attribute to the ArcGIS feature to specify the icon symbol that should be rendered for the feature
+     * @param {ArcObject} arcObject the converted ArcObject
+     * @param {MageEvent | null} mageEvent event to which the observation belongs
+     * @param {FormEntry | null} formEntry the form entry to drive the symbology
+     */
+    private async addIconSymbolAttribute(arcObject: ArcObject, mageEvent: MageEvent | null, formEntry: FormEntry | null): Promise<void> {
+        let primaryFieldValue: string | undefined = undefined;
+        let variantFieldValue: string | undefined = undefined;
+        if (formEntry != null && mageEvent != null) {
+            const form = mageEvent.forms.find((f) => f.id === formEntry.formId);
+            if (form != null) {
+                primaryFieldValue = form.primaryField ? formEntry[form.primaryField] as string : undefined;
+                variantFieldValue = form.variantField ? formEntry[form.variantField] as string : undefined;
+            }
+        }
+
+        let iconPath: string | null = null;
+        try {
+            iconPath = await new Promise<string | null>((resolve, reject) => {
+                new api.Icon(mageEvent?.id, formEntry?.formId, primaryFieldValue, variantFieldValue)
+                    .getIcon((err, icon) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        if (icon) {
+                            resolve(icon.relativePath);
+                            return;
+                        }
+                        resolve(null);
+                    });
+            });
+        } catch (err) {
+            this._console.error(`error determining observation icon for event:${mageEvent?.name}${formEntry ? ", form:" + formEntry.formId : ""}${primaryFieldValue ? ", primary field value:" + primaryFieldValue : ""}${variantFieldValue ? ", variant field value:" + variantFieldValue : ""} — ${err}`);
+        }
+
+        if (iconPath) {
+            this.addAttribute(this._config.iconSymbolField, iconPath, arcObject);
+        }
     }
 
     /**
@@ -474,11 +524,11 @@ export class ObservationsTransformer {
     /**
      * Transform observation attachments.
      * @param {readonly Attachment[]} attachments The observation attachments.
-     * @param {{ [name: string]: number }} formIds Form ids map.
+     * @param {Map<string, number>} formIds Form ids map.
      * @param {EventTransform} transform The Event transform.
      * @returns {ArcAttachment[]} The converted ArcAttachments.
      */
-    private attachments(attachments: readonly Attachment[], formIds: { [name: string]: number }, transform: EventTransform): ArcAttachment[] {
+    private attachments(attachments: readonly Attachment[], formIds: Map<string, number>, transform: EventTransform): ArcAttachment[] {
 
         const arcAttachments: ArcAttachment[] = [];
 
@@ -490,7 +540,7 @@ export class ObservationsTransformer {
 
                 let fieldName = attachment.fieldName;
                 if (mageEvent != null) {
-                    const formId = formIds[attachment.observationFormId];
+                    const formId = formIds.get(attachment.observationFormId);
                     if (formId != null) {
                         const field = mageEvent.formFieldFor(fieldName, formId);
                         if (field != null) {

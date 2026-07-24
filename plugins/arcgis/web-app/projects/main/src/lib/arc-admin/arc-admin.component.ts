@@ -71,7 +71,8 @@ export class ArcAdminComponent implements OnInit {
       deviceIdField: [''],
       createdAtField: [''],
       lastModifiedField: [''],
-      geometryType: ['']
+      geometryType: [''],
+      iconSymbolField: ['']
     });
 
     arcService.fetchArcConfig().subscribe(x => {
@@ -105,7 +106,8 @@ export class ArcAdminComponent implements OnInit {
             deviceIdField: config.deviceIdField || '',
             createdAtField: config.createdAtField || '',
             lastModifiedField: config.lastModifiedField || '',
-            geometryType: config.geometryType || ''
+            geometryType: config.geometryType || '',
+            iconSymbolField: config.iconSymbolField || 'icon_symbol'
           });
           console.log('Form initialized with server config:', config);
         }
@@ -134,7 +136,8 @@ export class ArcAdminComponent implements OnInit {
         deviceIdField: formValue.deviceIdField || this.editConfig.deviceIdField,
         createdAtField: formValue.createdAtField || this.editConfig.createdAtField,
         lastModifiedField: formValue.lastModifiedField || this.editConfig.lastModifiedField,
-        geometryType: formValue.geometryType || this.editConfig.geometryType
+        geometryType: formValue.geometryType || this.editConfig.geometryType,
+        iconSymbolField: formValue.iconSymbolField || this.editConfig.iconSymbolField
     };
   
       console.log('Form Submitted:', this.editConfig);
@@ -163,7 +166,8 @@ export class ArcAdminComponent implements OnInit {
             deviceIdField: config.deviceIdField || '',
             createdAtField: config.createdAtField || '',
             lastModifiedField: config.lastModifiedField || '',
-            geometryType: config.geometryType || ''
+            geometryType: config.geometryType || '',
+            iconSymbolField: config.iconSymbolField || 'icon_symbol'
           });
           console.log('Form reloaded with server config:', config);
         }
@@ -285,6 +289,10 @@ export class ArcAdminComponent implements OnInit {
     if (this.editConfig.geometryType != this.config.geometryType) {
       this.config.geometryType = this.editConfig.geometryType
       console.log('Edited geometryType: ' + this.config.geometryType)
+    }
+    if (this.editConfig.iconSymbolField != this.config.iconSymbolField) {
+      this.config.iconSymbolField = this.editConfig.iconSymbolField
+      console.log('Edited iconSymbolField: ' + this.config.iconSymbolField)
     }
     this.saveConfig()
     console.log('Saved configuration edit')
@@ -523,6 +531,7 @@ export class ArcAdminComponent implements OnInit {
     this.addAttribute(this.config.createdAtField, attributes, exclude)
     this.addAttribute(this.config.lastModifiedField, attributes, exclude)
     this.addAttribute(this.config.geometryType, attributes, exclude)
+    this.addAttribute(this.config.iconSymbolField, attributes, exclude)
 
     if (this.config.fieldAttributes != undefined) {
       for (const formMappings of Object.values(this.config.fieldAttributes)) {

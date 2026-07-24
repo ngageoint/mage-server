@@ -191,6 +191,13 @@
                     <mat-hint>The ArcGIS layer text field attribute name to store the Esri geometry type</mat-hint>
                   </mat-form-field>
                 </div>
+                <div class="icon-symbol-field">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Icon Symbol Field</mat-label>
+                    <input type="text" matInput formControlName="iconSymbolField" required/>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the icon symbol name</mat-hint>
+                  </mat-form-field>
+                </div>
                 <div class="button-group">
                   <button mat-raised-button color="primary" type="submit" [disabled]="attributesForm.invalid">Save</button>
                   <button mat-button type="button" (click)="onCancel()">Cancel</button>
@@ -744,6 +751,17 @@
       </mat-form-field>
       <button class="info-button" mat-icon-button
         (click)="showInfo('Geometry Type Field', 'The ArcGIS layer text field attribute name to store the Esri geometry type')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="icon-symbol-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Icon Symbol Field</mat-label>
+        <input type="text" matInput value="{{editConfig.iconSymbolField}}"
+          (keyup)="setField('iconSymbolField', iconSymbolField.value)" #iconSymbolField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Icon Symbol Field', 'The ArcGIS layer text field attribute name to store the icon symbol name')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>

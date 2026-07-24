@@ -8,6 +8,8 @@ import { LayerInfoResult, LayerField } from "./types/LayerInfoResult";
 import FormData from 'form-data';
 import { request } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from "./ArcGISService";
+import { ILayerDefinition } from "@esri/arcgis-rest-feature-service";
+import { DrawingInfoBuilder } from "./DrawingInfoBuilder";
 
 /**
  * Administers hosted feature services such as layer creation and updates.
@@ -83,7 +85,6 @@ export class FeatureServiceAdmin {
 	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository): Promise<Field[]> {
 		this._console.info('FeatureServiceAdmin updateLayer()');
 		const events = await this.layerEvents(featureLayer, eventRepo);
-		const promises = [];
 
 		const eventFields = this.fields(events);
 
@@ -106,7 +107,7 @@ export class FeatureServiceAdmin {
 		}
 
 		if (addFields.length > 0) {
-			promises.push(this.addFields(service, layerInfo.id, addFields));
+			await this.addFields(service, layerInfo.id, addFields);
 		}
 
 		const eventFieldSet = new Set();
@@ -118,7 +119,13 @@ export class FeatureServiceAdmin {
 		const remainingFields = [];
 		for (const field of layerFields) {
 			if (field.editable && !eventFieldSet.has(field.name)) {
-				deleteFields.push(field);
+				if (layerInfo.displayField != null && field.name === layerInfo.displayField) {
+					this._console.warn(`FeatureServiceAdmin updateLayer() not deleting field '${field.name}' `
+						+ `because it is set as the layer's display field`);
+					remainingFields.push(field);
+				} else {
+					deleteFields.push(field);
+				}
 			} else {
 				remainingFields.push(field);
 			}
@@ -126,9 +133,11 @@ export class FeatureServiceAdmin {
 
 		if (deleteFields.length > 0) {
 			layerInfo.fields = remainingFields;
-			promises.push(this.deleteFields(service, layerInfo.id, deleteFields));
+			await this.deleteFields(service, layerInfo.id, deleteFields);
 		}
-		await Promise.all(promises);
+
+		await this.updateDrawingInfo(service, layerInfo.id, events);
+
 		return eventFields;
 	}
 
@@ -218,6 +227,7 @@ export class FeatureServiceAdmin {
 		if (this._config.geometryType != null) {
 			fields.push(this.createTextField(this._config.geometryType));
 		}
+		fields.push(this.createTextField(this._config.iconSymbolField));
 
 		const fieldNames = new Set<string>();
 		for (const field of fields) {
@@ -495,5 +505,38 @@ export class FeatureServiceAdmin {
 		}
 
 		return url;
+	}
+
+	/**
+	 * Update the drawingInfo within the feature layer definition to properly render features for the given events
+	 * @param {FeatureServiceConfig} service feature service
+	 * @param {number} featureLayer feature layer number
+	 * @param {MageEvent[]} events MAGE events applicable to the layer
+	 */
+	private async updateDrawingInfo(service: FeatureServiceConfig, featureLayer: number, events: MageEvent[]): Promise<any> {
+		const builder = new DrawingInfoBuilder(this._console, this._config)
+			.events(events);
+		const drawingInfo = await builder.build();
+		if (!drawingInfo) {
+			return;
+		}
+		const definitionUpdate: ILayerDefinition = { drawingInfo: drawingInfo } as ILayerDefinition;
+
+		const url = this.adminUrl(service) + featureLayer.toString() + '/updateDefinition';
+
+		this._console.info('ArcGIS feature layer updateDefinition with drawingInfo, URL ' + url);
+
+		try {
+			const identityManager = await this._identityService.signin(service);
+			await request(url, {
+				authentication: identityManager,
+				params: {
+					updateDefinition: definitionUpdate,
+					f: "json"
+				}
+			}).catch((error) => this._console.error('Error in updateDrawingInfo: ' + error));
+		} catch (error) {
+			this._console.error('FeatureServiceAdmin updateDrawingInfo() error ' + error);
+		}
 	}
 }
