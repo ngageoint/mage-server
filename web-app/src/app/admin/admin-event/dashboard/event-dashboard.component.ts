@@ -137,8 +137,8 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
       if (newEvent?.id) {
         this.toastService.show(
           'Event Created',
-          ['../events', newEvent.id],
-          'Go To Event'
+          ['/admin/events', newEvent.id],
+          'Go to Event'
         );
         this.refreshEvents();
       }

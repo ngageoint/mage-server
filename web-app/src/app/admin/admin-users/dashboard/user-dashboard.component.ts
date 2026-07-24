@@ -215,8 +215,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.refreshUsers(() => {
           this.toastService.show(
             'User created successfully',
-            ['../users', createdUser.id],
-            'View User'
+            ['/admin/users', createdUser.id],
+            'Go to User'
           );
         });
       });
