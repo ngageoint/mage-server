@@ -39,7 +39,7 @@
         "mgrs": "1.0.0",
         "mime-types": "2.1.35",
         "moment": "2.30.1",
-        "mongoose": "8.23.0",
+        "mongoose": "8.24.1",
         "multer": "2.2.0",
         "node-fetch": "2.7.0",
         "passport": "0.7.0",
@@ -7693,9 +7693,9 @@
       }
     },
     "node_modules/mongoose": {
-      "version": "8.23.0",
-      "resolved": "https://registry.npmjs.org/mongoose/-/mongoose-8.23.0.tgz",
-      "integrity": "sha512-Bul4Ha6J8IqzFrb0B1xpVzkC3S0sk43dmLSnhFOn8eJlZiLwL5WO6cRymmjaADdCMjUcCpj2ce8hZI6O4ZFSug==",
+      "version": "8.24.1",
+      "resolved": "https://registry.npmjs.org/mongoose/-/mongoose-8.24.1.tgz",
+      "integrity": "sha512-UpHBA0l5kHyKJQFjmBaFYQFo5sgz1DK0TRqDkOyBLYbqiIbKKhIvBpHWBXqeo0rgW4kGI1UhhAw+kTQZoj1BdA==",
       "license": "MIT",
       "dependencies": {
         "bson": "^6.10.4",
