@@ -6,7 +6,7 @@ import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapte
 import { MongooseObservationRepository } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
-import { MageEventDocument } from '../../../src/models/event'
+import { MageEventDocument, MageEventModelInstance } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
@@ -51,16 +51,16 @@ describe('mongoose observation repository', function () {
 
   let model: ObservationModel
   let repo: MongooseObservationRepository
-  let eventDoc: MageEventDocument
+  let eventDoc: MageEventModelInstance
   let event: MageEvent
-  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventDocument>
+  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventModelInstance>
   let domainEvents: SubstituteOf<EventEmitter>
 
   beforeEach('initialize model', async function () {
     //TODO remove cast to any, was mongoose.Model<MageEventDocument>
     const MageEventModel = legacyEvent.Model as any
     const eventRepo = new MongooseMageEventRepository(MageEventModel)
-    createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
+    createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventModelInstance> => {
       return new Promise<MageEventDocument>((resolve, reject) => {
         legacyEvent.create(
           attrs as MageEventCreateAttrs,
@@ -92,7 +92,7 @@ describe('mongoose observation repository', function () {
       description: 'For testing',
       maxObservationForms: 2,
     })
-    const addForm = util.promisify(legacyEvent.addForm) as (eventId: MageEventId, form: Form) => Promise<MageEventDocument>
+    const addForm = util.promisify(legacyEvent.addForm) as (eventId: MageEventId, form: Form) => Promise<MageEventModelInstance>
     eventDoc = await addForm(eventDoc._id, {
       id: 1,
       archived: false,

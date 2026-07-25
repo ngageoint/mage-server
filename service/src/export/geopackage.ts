@@ -19,7 +19,7 @@ import wkx from 'wkx'
 import { Exporter } from './exporter'
 import api from '../api'
 import environment from '../environment/env'
-import User, { UserDocument } from '../models/user'
+import User, { UserModelInstance } from '../models/user'
 import { FormFieldType, FormId } from '../entities/events/entities.events.forms'
 import { AttachmentDocument } from '../models/observation'
 import { IconRow } from '@ngageoint/geopackage/dist/lib/extension/style/iconRow'
@@ -201,7 +201,7 @@ export class GeoPackage extends Exporter {
     const { startDate, endDate } = this._filter
     const cursor = this.requestLocations({ startDate, endDate })
     let numLocations = 0
-    let user: UserDocument | null = null
+    let user: UserModelInstance | null = null
     const userIconRows: Map<string, IconRow> = new Map()
     let zoomToEnvelope: Envelope | null = null
     return cursor.eachAsync(async location => {

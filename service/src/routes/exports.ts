@@ -5,8 +5,9 @@ import fs from 'fs'
 import mongoose from 'mongoose'
 import log from '../logger'
 import { exportDirectory } from '../environment/env'
-import Event, { MageEventDocument } from '../models/event'
+import Event, { MageEventModelInstance } from '../models/event'
 import access from '../access'
+import { userRoleHasPermission } from '../permissions/permissions.role-based.base'
 import exportXform from '../transformers/export'
 import { exportFactory, ExportFormat } from '../export'
 import { defaultEventPermissionsService as eventPermissions } from '../permissions/permissions.events'
@@ -28,10 +29,10 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
   const passport = security.authentication.passport;
 
   async function authorizeEventAccess(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
-    if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_ALL)) {
+    if (userRoleHasPermission(req.user, ObservationPermission.READ_OBSERVATION_ALL)) {
       return next();
     }
-    else if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_EVENT)) {
+    else if (userRoleHasPermission(req.user, ObservationPermission.READ_OBSERVATION_EVENT)) {
       // Make sure I am part of this event
       const allowed = await eventPermissions.userHasEventPermission(req.event!, req.user.id, EventAccessType.Read)
       if (allowed) {
@@ -45,7 +46,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
     return async function authorizeExportAccess(req, res, next) {
       const exportReq = req as ExportRequest
       exportReq.export = await Export.getExportById(req.params.exportId)
-      if (access.userHasPermission(exportReq.user, permission)) {
+      if (userRoleHasPermission(exportReq.user, permission)) {
         next()
       }
       else {
@@ -236,7 +237,7 @@ function getEvent(req: express.Request, res: express.Response, next: express.Nex
   })
 }
 
-async function exportData(exportId: ExportDocument['_id'], event: MageEventDocument): Promise<void> {
+async function exportData(exportId: ExportDocument['_id'], event: MageEventModelInstance): Promise<void> {
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
   if (!exportDocument) {
     return

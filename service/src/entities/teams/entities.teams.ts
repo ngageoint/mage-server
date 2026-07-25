@@ -1,5 +1,6 @@
 import { UserId } from '../users/entities.users'
 import { MageEventId } from '../events/entities.events'
+import { PageOf, PagingParameters } from '../entities.global'
 
 export type TeamId = string
 
@@ -27,3 +28,17 @@ export interface TeamAcl {
 
 export type TeamMemberRole = 'OWNER' | 'MANAGER' | 'GUEST'
 export type TeamMemberRolePermission  = 'read' | 'update' | 'delete'
+
+export interface TeamRepository {
+  findById(id: TeamId): Promise<Team | null>
+  findAllByIds(ids: TeamId[]): Promise<{ [id: string]: Team | null }>
+  find<MappedResult>(which?: TeamFindParameters, mapping?: (team: Team) => MappedResult): Promise<PageOf<MappedResult>>
+}
+
+export interface TeamFindParameters extends PagingParameters {
+  /**
+   * Search by user name, display name, email, or phone number.
+   */
+  nameOrContactTerm?: string | undefined,
+  omitEventTeams?: boolean | undefined
+}

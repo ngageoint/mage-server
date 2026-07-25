@@ -392,7 +392,7 @@ describe('feeds repositories', function () {
               'x-derp-ner': { title: 'Title in Derp Ner' }
             }
           })
-          const origDoc: FeedDocument = await model.create({ _id: origAttrs.id, ...origAttrs, icon: origAttrs.icon.id })
+          const origDoc = await model.create({ _id: origAttrs.id, ...origAttrs, icon: origAttrs.icon.id })
           const updated = await repo.put(updatedAttrs)
           const updatedDoc = await model.findById(origAttrs.id)
 

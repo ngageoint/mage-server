@@ -124,7 +124,7 @@ TeamSchema.set("toJSON", {
 });
 
 var Team = mongoose.model('Team', TeamSchema);
-exports.TeamModel = Team;
+exports.Model = Team;
 
 exports.userHasAclPermission = function (team, userId, permission) {
   return team.acl[userId] && rolesWithPermission(permission).some(function (role) {

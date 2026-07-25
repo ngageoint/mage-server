@@ -3,16 +3,17 @@ module.exports = function(app, security) {
   const Location = require('../api').Location;
   const Team = require('../models/team');
   const access = require('../access');
+  const { userRoleHasPermission } = require('../permissions/permissions.role-based.base');
   const { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   const passport = security.authentication.passport;
   const location = new Location();
 
   async function validateEventAccess(req, res, next) {
-    if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
+    if (userRoleHasPermission(req.user, 'READ_LOCATION_ALL')) {
       return next();
     }
-    if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
+    if (userRoleHasPermission(req.user, 'READ_LOCATION_EVENT')) {
       // Make sure I am part of this event
       const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
       if (hasPermission) {

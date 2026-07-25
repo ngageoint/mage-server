@@ -9,6 +9,7 @@ import { StaticIcon, StaticIconContentStore, StaticIconImportFetch, StaticIconSt
 import { MongooseStaticIconRepository, StaticIconDocument, StaticIconModel } from '../../../lib/adapters/icons/adapters.icons.db.mongoose'
 import { EntityIdFactory, UrlResolutionError, UrlScheme } from '../../../lib/entities/entities.global'
 import { Readable } from 'stream'
+import { StaticIconModelInstance } from '../../../src/adapters/icons/adapters.icons.db.mongoose'
 
 
 interface TestUrlScheme extends UrlScheme {
@@ -403,7 +404,7 @@ describe('static icon mongoose repository', function () {
           contentStore.received(1).putContent(Arg.deepEquals(icon), content)
           expect(fetchResolved).to.equal(true)
 
-          const updatedDoc = await new Promise<StaticIconDocument>((resolve) => {
+          const updatedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {
@@ -453,7 +454,7 @@ describe('static icon mongoose repository', function () {
 
           contentStore.received(1).putContent(Arg.deepEquals(lazy) as StaticIcon, content)
 
-          const updatedDoc = await new Promise<StaticIconDocument>((resolve) => {
+          const updatedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {
@@ -500,7 +501,7 @@ describe('static icon mongoose repository', function () {
           contentStore.putContent(Arg.all()).resolves()
           const icon = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Eager) as StaticIcon
           const iconDoc = await model.findById(iconId)
-          const resolvedDoc = await new Promise<StaticIconDocument>((resolve) => {
+          const resolvedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {

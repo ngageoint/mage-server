@@ -34,7 +34,6 @@ import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissi
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
 import { AppRequest, AppRequestContext, logPermissionDenials } from './app.api/app.api.global';
-import { UserDocument } from './models/user';
 import SimpleIdFactory from './adapters/adapters.simple_id_factory';
 import {
   JsonSchemaService,
@@ -149,6 +148,11 @@ import {
 } from './app.impl/settings/app.impl.settings';
 import { RoleBasedMapPermissionService } from './permissions/permissions.settings';
 import { SettingRepository } from './entities/settings/entities.settings';
+import { MongooseTeamRepository, TeamModel } from './adapters/teams/adapters.teams.db.mongoose'
+import { TeamsAppLayer, TeamsRoutes } from './adapters/teams/adapters.teams.controllers.web'
+import { TeamRepository } from './entities/teams/entities.teams'
+import { RoleBasedTeamsPermissionService } from './permissions/permissions.teams'
+import { SearchTeams } from './app.impl/teams/app.impl.teams'
 
 export interface MageService {
   webController: express.Application;
@@ -328,63 +332,67 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 };
 
 type DatabaseLayer = {
-  conn: mongoose.Connection;
-  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection;
+  conn: mongoose.Connection
+  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection
   feeds: {
-    feedServiceTypeIdentity: FeedServiceTypeIdentityModel;
-    feedService: FeedServiceModel;
-    feed: FeedModel;
-  };
+    feedServiceTypeIdentity: FeedServiceTypeIdentityModel
+    feedService: FeedServiceModel
+    feed: FeedModel
+  }
+  teams: {
+    team: TeamModel
+  }
   events: {
-    event: MageEventModel;
-  };
+    event: MageEventModel
+  }
   icons: {
-    staticIcon: StaticIconModel;
-  };
+    staticIcon: StaticIconModel
+  }
   users: {
-    user: UserModel;
-  };
+    user: UserModel
+  }
   settings: {
-    setting: SettingsModel;
-  };
-};
+    setting: SettingsModel
+  }
+}
 
 type AppLayer = {
+  teams: TeamsAppLayer
   events: {
-    addFeedToEvent: eventsApi.AddFeedToEvent;
-    listEventFeeds: eventsApi.ListEventFeeds;
-    removeFeedFromEvent: eventsApi.RemoveFeedFromEvent;
-    fetchFeedContent: feedsApi.FetchFeedContent;
-  };
+    addFeedToEvent: eventsApi.AddFeedToEvent
+    listEventFeeds: eventsApi.ListEventFeeds
+    removeFeedFromEvent: eventsApi.RemoveFeedFromEvent
+    fetchFeedContent: feedsApi.FetchFeedContent
+  }
   observations: {
-    allocateObservationId: observationsApi.AllocateObservationId;
-    saveObservation: observationsApi.SaveObservation;
-    storeAttachmentContent: observationsApi.StoreAttachmentContent;
-    readAttachmentContent: observationsApi.ReadAttachmentContent;
-  };
+    allocateObservationId: observationsApi.AllocateObservationId
+    saveObservation: observationsApi.SaveObservation
+    storeAttachmentContent: observationsApi.StoreAttachmentContent
+    readAttachmentContent: observationsApi.ReadAttachmentContent
+  }
   feeds: {
-    jsonSchemaService: JsonSchemaService;
-    permissionService: feedsApi.FeedsPermissionService;
-    listServiceTypes: feedsApi.ListFeedServiceTypes;
-    previewTopics: feedsApi.PreviewTopics;
-    createService: feedsApi.CreateFeedService;
-    listServices: feedsApi.ListFeedServices;
-    getService: feedsApi.GetFeedService;
-    listTopics: feedsApi.ListServiceTopics;
-    previewFeed: feedsApi.PreviewFeed;
-    createFeed: feedsApi.CreateFeed;
-    listAllFeeds: feedsApi.ListAllFeeds;
-    listServiceFeeds: feedsApi.ListServiceFeeds;
-    deleteService: feedsApi.DeleteFeedService;
-    getFeed: feedsApi.GetFeed;
-    updateFeed: feedsApi.UpdateFeed;
-    deleteFeed: feedsApi.DeleteFeed;
-  };
-  icons: StaticIconsAppLayer;
-  users: UsersAppLayer;
-  systemInfo: SystemInfoAppLayer;
-  settings: SettingsAppLayer;
-};
+    jsonSchemaService: JsonSchemaService
+    permissionService: feedsApi.FeedsPermissionService
+    listServiceTypes: feedsApi.ListFeedServiceTypes
+    previewTopics: feedsApi.PreviewTopics
+    createService: feedsApi.CreateFeedService
+    listServices: feedsApi.ListFeedServices
+    getService: feedsApi.GetFeedService
+    listTopics: feedsApi.ListServiceTopics
+    previewFeed: feedsApi.PreviewFeed
+    createFeed: feedsApi.CreateFeed
+    listAllFeeds: feedsApi.ListAllFeeds
+    listServiceFeeds: feedsApi.ListServiceFeeds
+    deleteService: feedsApi.DeleteFeedService
+    getFeed: feedsApi.GetFeed
+    updateFeed: feedsApi.UpdateFeed
+    deleteFeed: feedsApi.DeleteFeed
+  }
+  icons: StaticIconsAppLayer
+  users: UsersAppLayer
+  systemInfo: SystemInfoAppLayer
+  settings: SettingsAppLayer
+}
 
 async function initDatabase(): Promise<DatabaseLayer> {
   const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo;
@@ -441,10 +449,14 @@ async function initDatabase(): Promise<DatabaseLayer> {
   const userModel = require('./models/user').Model;
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const settingModel = require('./models/setting').Model;
+  const TeamDBModule = await import('./models/team.js')
 
   return {
     conn,
     connectionFactoryForPlugin: PluginConnectionFactory,
+    teams: {
+      team: TeamDBModule.Model
+    },
     feeds: {
       feedServiceTypeIdentity: FeedServiceTypeIdentityModel(conn),
       feedService: FeedServiceModel(conn),
@@ -466,29 +478,32 @@ async function initDatabase(): Promise<DatabaseLayer> {
 }
 
 type Repositories = {
+  teams: {
+    teamRepo: TeamRepository
+  }
   events: {
-    eventRepo: MageEventRepository;
-  };
+    eventRepo: MageEventRepository
+  }
   observations: {
-    obsRepoFactory: ObservationRepositoryForEvent;
-    attachmentStore: AttachmentStore;
-  };
+    obsRepoFactory: ObservationRepositoryForEvent
+    attachmentStore: AttachmentStore
+  }
   feeds: {
-    serviceTypeRepo: FeedServiceTypeRepository;
-    serviceRepo: FeedServiceRepository;
-    feedRepo: FeedRepository;
-  };
+    serviceTypeRepo: FeedServiceTypeRepository
+    serviceRepo: FeedServiceRepository
+    feedRepo: FeedRepository
+  }
   icons: {
-    staticIconRepo: StaticIconRepository;
-  };
+    staticIconRepo: StaticIconRepository
+  }
   users: {
-    userRepo: UserRepository;
-  };
-  enviromentInfo: EnvironmentService;
+    userRepo: UserRepository
+  }
+  enviromentInfo: EnvironmentService
   settings: {
-    settingRepo: SettingRepository;
-  };
-};
+    settingRepo: SettingRepository
+  }
+}
 
 // TODO: the real thing
 const jsonSchemaService: JsonSchemaService = {
@@ -529,6 +544,7 @@ async function initRepositories(
     [new PluginUrlScheme(config.plugins?.servicePlugins || [])]
   );
   const userRepo = new MongooseUserRepository(models.users.user);
+  const teamRepo = new MongooseTeamRepository(models.teams.team)
   const settingRepo = new MongooseSettingsRepository(models.settings.setting);
   const attachmentStore = await intializeAttachmentStore(
     environment.attachmentBaseDirectory
@@ -561,6 +577,9 @@ async function initRepositories(
     users: {
       userRepo
     },
+    teams: {
+      teamRepo
+    },
     enviromentInfo: systemInfoService,
     settings: {
       settingRepo
@@ -569,11 +588,12 @@ async function initRepositories(
 }
 
 async function initAppLayer(repos: Repositories): Promise<AppLayer> {
+  const users = await initUsersAppLayer(repos)
+  const teams = await initTeamsAppLayer(repos)
   const events = await initEventsAppLayer(repos);
   const observations = await initObservationsAppLayer(repos);
   const icons = await initIconsAppLayer(repos);
   const feeds = await initFeedsAppLayer(repos);
-  const users = await initUsersAppLayer(repos);
   const systemInfo = initSystemInfoAppLayer(repos);
   const settings = await initSettingsAppLayer(
     repos,
@@ -581,6 +601,7 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   );
 
   return {
+    teams,
     events,
     observations,
     feeds,
@@ -599,6 +620,14 @@ async function initUsersAppLayer(
   return {
     searchUsers
   };
+}
+
+async function initTeamsAppLayer(repos: Repositories): Promise<AppLayer['teams']> {
+  const usersPermissions = new RoleBasedTeamsPermissionService()
+  const searchTeams = SearchTeams(repos.teams.teamRepo, usersPermissions)
+  return {
+    searchTeams
+  }
 }
 
 async function initEventsAppLayer(
@@ -808,7 +837,7 @@ async function initSettingsAppLayer(
   };
 }
 
-interface MageEventRequestContext extends AppRequestContext<UserDocument> {
+interface MageEventRequestContext extends AppRequestContext<UserWithRole> {
   event: MageEventDocument | MageEvent | undefined;
 }
 
@@ -830,7 +859,7 @@ async function initWebLayer(
   const appRequestFactory: WebAppRequestFactory = <Params>(
     req: express.Request,
     params: Params
-  ): AppRequest<UserDocument, MageEventRequestContext> & Params => {
+  ): AppRequest<UserWithRole, MageEventRequestContext> & Params => {
     return {
       ...params,
       context: {
@@ -860,7 +889,23 @@ async function initWebLayer(
   const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory);
   webController.use('/api/settings', [bearerAuthentication, settingsRoutes]);
 
+  const teamsRoutes = TeamsRoutes(app.teams, appRequestFactory)
+  /*
+  TODO: cannot mount at /api/teams/search because the /api/teams/:teamId route
+  comes first and catches the request.  when old routes move to new sub-router,
+  ensure this and the web client changes appropriately
+  */
+  webController.use('/api/next-teams', [
+    bearerAuthentication,
+    teamsRoutes
+  ])
+
   const usersRoutes = UsersRoutes(app.users, appRequestFactory);
+  /*
+  TODO: cannot mount at /api/users/search because the /api/users/:userId route
+  comes first and catches the request.  when old routes move to new sub-router,
+  ensure this and the web client changes appropriately
+  */
   webController.use('/api/next-users', [bearerAuthentication, usersRoutes]);
 
   const feedsRoutes = FeedsRoutes(app.feeds, appRequestFactory);

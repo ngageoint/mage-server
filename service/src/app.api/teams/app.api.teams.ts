@@ -1,0 +1,22 @@
+import { AppResponse, AppRequest, AppRequestContext } from '../app.api.global'
+import { PermissionDeniedError } from '../app.api.errors'
+import { PageOf, PagingParameters } from '../../entities/entities.global'
+import { Team } from '../../entities/teams/entities.teams'
+
+
+export interface TeamSearchRequest extends AppRequest {
+  teamSearch: PagingParameters & {
+    nameOrContactTerm?: string | undefined,
+    omitEventTeams?: boolean | undefined
+  }
+}
+
+export type TeamSearchResult = Pick<Team, 'id' | 'name' | 'description' >
+
+export interface SearchTeams {
+  (req: TeamSearchRequest): Promise<AppResponse<PageOf<TeamSearchResult>, PermissionDeniedError>>
+}
+
+export interface TeamsPermissionService {
+  ensureReadTeamsPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
+}

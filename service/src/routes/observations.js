@@ -1,7 +1,3 @@
-const {
-  attachmentTypeIsValidForField,
-} = require("../entities/events/entities.events.forms");
-
 module.exports = function (app, security) {
   const async = require("async"),
     api = require("../api"),
@@ -11,15 +7,12 @@ module.exports = function (app, security) {
     environment = require("../environment/env"),
     moment = require("moment"),
     Team = require("../models/team"),
-    access = require("../access"),
     { default: turfCentroid } = require("@turf/centroid"),
     geometryFormat = require("../format/geoJsonFormat"),
     observationXform = require("../transformers/observation"),
-    FileType = require("file-type"),
     passport = security.authentication.passport,
-    {
-      defaultEventPermissionsService: eventPermissions,
-    } = require("../permissions/permissions.events");
+    { userRoleHasPermission } = require('../permissions/permissions.role-based.base'),
+    { defaultEventPermissionsService: eventPermissions} = require("../permissions/permissions.events");
 
   const sortColumnWhitelist = ["lastModified"];
 
@@ -31,10 +24,10 @@ module.exports = function (app, security) {
   }
 
   async function validateObservationReadAccess(req, res, next) {
-    if (access.userHasPermission(req.user, "READ_OBSERVATION_ALL")) {
+    if (userRoleHasPermission(req.user, "READ_OBSERVATION_ALL")) {
       return next();
     }
-    if (access.userHasPermission(req.user, "READ_OBSERVATION_EVENT")) {
+    if (userRoleHasPermission(req.user, "READ_OBSERVATION_EVENT")) {
       // Make sure I am part of this event
       const hasPermission = await eventPermissions.userHasEventPermission(
         req.event,
@@ -50,7 +43,7 @@ module.exports = function (app, security) {
 
   function validateObservationCreateAccess(validateObservationId) {
     return function (req, res, next) {
-      if (!access.userHasPermission(req.user, "CREATE_OBSERVATION")) {
+      if (!userRoleHasPermission(req.user, "CREATE_OBSERVATION")) {
         return res.sendStatus(403);
       }
 
@@ -86,66 +79,9 @@ module.exports = function (app, security) {
     };
   }
 
-  async function validateObservationUpdateAccess(req, res, next) {
-    if (access.userHasPermission(req.user, "UPDATE_OBSERVATION_ALL")) {
-      return next();
-    }
-    if (access.userHasPermission(req.user, "UPDATE_OBSERVATION_EVENT")) {
-      // Make sure I am part of this event
-      const hasPermission = await eventPermissions.userHasEventPermission(
-        req.event,
-        req.user.id,
-        "read"
-      );
-      if (hasPermission) {
-        return next();
-      }
-    }
-    res.sendStatus(403);
-  }
-
-  function validateAttachmentFile(req, res, next) {
-    FileType.fromFile(req.file.path).then((fileType) => {
-      const attachment = req.observation.attachments.find(
-        (attachment) => attachment._id.toString() === req.params.attachmentId
-      );
-      const observationForm = req.observation.properties.forms.find(
-        (observationForm) => {
-          return (
-            observationForm._id.toString() ===
-            attachment.observationFormId.toString()
-          );
-        }
-      );
-      if (!observationForm) {
-        return res.status(400).send("Attachment form not found");
-      }
-      const formDefinition = req.event.forms.find(
-        (form) => form._id === observationForm.formId
-      );
-      const fieldDefinition = formDefinition.fields.find(
-        (field) => field.name === attachment.fieldName
-      );
-      if (!fieldDefinition) {
-        return res.status(400).send("Attachment field not found");
-      }
-      if (!attachmentTypeIsValidForField(fieldDefinition, fileType.mime)) {
-        return res
-          .status(400)
-          .send(
-            `Invalid attachment '${attachment.name
-            }', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(
-              " or "
-            )}`
-          );
-      }
-      next();
-    });
-  }
-
   function authorizeEventAccess(collectionPermission, aclPermission) {
     return async function (req, res, next) {
-      if (access.userHasPermission(req.user, collectionPermission)) {
+      if (userRoleHasPermission(req.user, collectionPermission)) {
         return next();
       }
       const hasPermission = await eventPermissions.userHasEventPermission(
@@ -161,7 +97,7 @@ module.exports = function (app, security) {
   }
 
   async function authorizeDeleteAccess(req, res, next) {
-    if (access.userHasPermission(req.user, "UPDATE_EVENT")) {
+    if (userRoleHasPermission(req.user, "UPDATE_EVENT")) {
       return next();
     }
     if (req.user._id.toString() === req.observation.userId.toString()) {

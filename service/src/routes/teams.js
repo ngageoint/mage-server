@@ -1,3 +1,5 @@
+const { userRoleHasPermission } = require('../permissions/permissions.role-based.base')
+
 module.exports = function(app, security) {
   const Team = require('../models/team')
     , UserModel = require('../models/user')
@@ -9,7 +11,7 @@ module.exports = function(app, security) {
   app.all('/api/teams*', passport.authenticate('bearer'));
 
   function determineReadAccess(req, res, next) {
-    if (!access.userHasPermission(req.user, 'READ_TEAM')) {
+    if (!userRoleHasPermission(req.user, 'READ_TEAM')) {
       req.access = { user: req.user, permission: 'read' };
     }
 
@@ -18,7 +20,7 @@ module.exports = function(app, security) {
 
   function authorizeAccess(collectionPermission, aclPermission) {
     return function(req, res, next) {
-      if (access.userHasPermission(req.user, collectionPermission)) {
+      if (userRoleHasPermission(req.user, collectionPermission)) {
         next();
       } else {
         var hasPermission = Team.userHasAclPermission(req.team, req.user._id, aclPermission);
@@ -223,7 +225,7 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.addUser(req.team, req.body, function(err, team) {
-        if (err) 
+        if (err)
           return next(err);
 
         const wasMember = team.userIds.some(id => id.toString() === String(req.body.id));
@@ -241,7 +243,7 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.removeUser(req.team, {id: req.params.id}, function(err, team) {
-        if (err) 
+        if (err)
           return next(err);
 
         const wasMember = team.userIds.some(id => id.toString() === String(req.params.id));

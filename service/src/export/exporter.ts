@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
 import * as ObservationModelModule from '../models/observation'
 import * as UserLocationModelModule from '../models/location'
-import { MageEventDocument } from '../models/event'
+import { MageEventModelInstance } from '../models/event'
 import { MageEvent, MageEventAttrs } from '../entities/events/entities.events'
 
 
 export interface ExportOptions {
-  event: MageEventDocument
+  event: MageEventModelInstance
   filter: ExportFilter
 }
 
@@ -29,7 +29,7 @@ export type LocationFetchOptions = Pick<ExportFilter, 'startDate' | 'endDate'>
 
 export class Exporter {
 
-  protected eventDoc: MageEventDocument
+  protected eventDoc: MageEventModelInstance
   protected _event: MageEvent
   protected _filter: ExportFilter
 

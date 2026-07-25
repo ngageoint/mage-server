@@ -3,7 +3,6 @@ import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent } from '../
 import mongoose from 'mongoose'
 import { FeedId } from '../../entities/feeds/entities.feeds'
 import * as legacy from '../../models/event'
-import { Team } from '../../entities/teams/entities.teams'
 
 export const MageEventModelName = 'Event'
 
@@ -11,7 +10,7 @@ export type MageEventDocument = legacy.MageEventDocument
 export type MageEventModel = mongoose.Model<legacy.MageEventDocument>
 export const MageEventSchema = legacy.Model.schema
 
-export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs, MageEvent> implements MageEventRepository {
+export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs> implements MageEventRepository {
 
   constructor(model: MageEventModel) {
     super(model)
@@ -34,7 +33,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   }
 
   async findActiveEvents(): Promise<MageEventAttrs[]> {
-    const docs: legacy.MageEventDocument[] = await this.model.find({ complete: { $in: [null, false] } }).exec()
+    const docs: legacy.MageEventModelInstance[] = await this.model.find({ complete: { $in: [null, false] } })
     return docs.map(this.entityForDocument)
   }
 
@@ -82,8 +81,8 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     else {
       eventDoc = event
     }
-    await this.model.populate(eventDoc, { path: 'teamIds' })
-    const teamDocs = eventDoc.teamIds as mongoose.Document[]
+    const populatedEventDoc = await this.model.populate(eventDoc, { path: 'teamIds' })
+    const teamDocs = populatedEventDoc.teamIds as unknown as mongoose.Document[]
     return teamDocs.map((x: mongoose.Document) => {
       const team = x.toJSON()
       team.id = team.id.toHexString()

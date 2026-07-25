@@ -10,6 +10,7 @@ module.exports = function (app, security) {
     layerXform = require('../transformers/layer'),
     GeoPackageUtility = require('../utilities/geopackage').GeoPackageUtility,
     { defaultHandler: upload } = require('../upload'),
+    { userRoleHasPermission } = require('../permissions/permissions.role-based.base'),
     { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   const passport = security.authentication.passport;
@@ -160,10 +161,10 @@ module.exports = function (app, security) {
   }
 
   async function validateEventAccess(req, res, next) {
-    if (access.userHasPermission(req.user, 'READ_LAYER_ALL')) {
+    if (userRoleHasPermission(req.user, 'READ_LAYER_ALL')) {
       return next();
     }
-    if (access.userHasPermission(req.user, 'READ_LAYER_EVENT')) {
+    if (userRoleHasPermission(req.user, 'READ_LAYER_EVENT')) {
       // Make sure I am part of this event
       const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
       if (hasPermission) {

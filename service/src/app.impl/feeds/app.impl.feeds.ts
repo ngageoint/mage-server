@@ -3,7 +3,7 @@ import { FeedServiceTypeRepository, FeedServiceRepository, FeedTopic, FeedServic
 import * as api from '../../app.api/feeds/app.api.feeds'
 import { AppRequest, KnownErrorsOf, withPermission, AppResponse } from '../../app.api/app.api.global'
 import { PermissionDeniedError, EntityNotFoundError, InvalidInputError, entityNotFound, invalidInput, MageError, KeyPathError, infrastructureError, InfrastructureError } from '../../app.api/app.api.errors'
-import { FeedServiceTypeDescriptor } from '../../app.api/feeds/app.api.feeds'
+import { feedServiceTypeDescriptorFor } from '../../app.api/feeds/app.api.feeds'
 import { JsonSchemaService, JsonValidator } from '../../entities/entities.json_types'
 import { MageEventRepository } from '../../entities/events/entities.events'
 import { SourceUrlStaticIconReference, StaticIconImportFetch, StaticIconReference, StaticIconRepository } from '../../entities/icons/entities.icons'
@@ -17,7 +17,7 @@ export function ListFeedServiceTypes(permissionService: api.FeedsPermissionServi
       permissionService.ensureListServiceTypesPermissionFor(req.context),
       async () => {
         const all = await repo.findAll()
-        return all.map(x => FeedServiceTypeDescriptor(x))
+        return all.map(x => feedServiceTypeDescriptorFor(x))
       }
     )
   }
@@ -111,7 +111,7 @@ export function GetFeedService(permissionService: api.FeedsPermissionService, se
           return entityNotFound(service.serviceType, 'FeedServiceType')
         }
         const redacted = redactServiceConfig(service, serviceType)
-        return Object.assign({ ...redacted }, { serviceType: FeedServiceTypeDescriptor(serviceType) })
+        return Object.assign({ ...redacted }, { serviceType: feedServiceTypeDescriptorFor(serviceType) })
       }
     )
   }

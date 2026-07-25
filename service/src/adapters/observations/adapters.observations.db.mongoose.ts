@@ -3,7 +3,7 @@ import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs
 import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
-import { MageEventDocument } from '../../models/event'
+import { MageEventModelInstance } from '../../models/event'
 import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
@@ -16,7 +16,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   readonly eventScope: MageEventId
   readonly idModel: ObservationIdModel
 
-  constructor(eventDoc: Pick<MageEventDocument, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
+  constructor(eventDoc: Pick<MageEventModelInstance, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
     // TODO: do not bind to the default mongoose instance and connection
     super(legacy.observationModel(eventDoc), { docToEntity: createDocumentMapping(eventDoc.id) })
     this.eventScope = eventDoc.id
@@ -63,7 +63,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    const savedDoc = await beforeDoc!.save() as legacy.ObservationDocument
+    const savedDoc = await beforeDoc!.save()
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     for (const e of observation.pendingEvents) {
@@ -117,11 +117,11 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async nextFormEntryIds(count: number = 1): Promise<FormEntryId[]> {
-    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
+    return Array.from({ length: count }).map(() => (new mongoose.Types.ObjectId()).toHexString())
   }
 
   async nextAttachmentIds(count: number = 1): Promise<AttachmentId[]> {
-    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
+    return Array.from({ length: count }).map(() => (new mongoose.Types.ObjectId()).toHexString())
   }
 }
 
@@ -140,10 +140,6 @@ export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventR
     console.error(err)
     throw err
   }
-}
-
-export function docToEntity(doc: legacy.ObservationDocument, eventId: MageEventId): ObservationAttrs {
-  return createDocumentMapping(eventId)(doc)
 }
 
 function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.ObservationDocument, ObservationAttrs> {
@@ -193,7 +189,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
 
 function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
   return {
-    id: doc.id,
+    id: doc._id.toHexString(),
     observationFormId: doc.observationFormId.toHexString(),
     fieldName: doc.fieldName,
     lastModified: doc.lastModified ? new Date(doc.lastModified) : undefined,
@@ -210,7 +206,7 @@ function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
 
 function thumbnailAttrsForDoc(doc: legacy.ThumbnailDocument): Thumbnail {
   return {
-    // TODO: is id necessary for thumnails? needs cleanup
+    // TODO: is id necessary for thumbnails? needs cleanup
     contentLocator: doc.relativePath,
     minDimension: doc.minDimension,
     contentType: doc.contentType,
@@ -246,15 +242,15 @@ function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _
   return withoutId
 }
 
-function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocAttrs {
+function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocument {
   const seed = assignMongoIdToDocAttrs(attrs)
   seed.relativePath = attrs.contentLocator
   delete seed['contentLocator']
   seed.thumbnails = attrs.thumbnails.map(thumbnailDocSeedForEntity)
-  return seed as legacy.AttachmentDocAttrs
+  return seed as legacy.AttachmentDocument
 }
 
-function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
+function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocument {
   return {
     _id: new mongoose.Types.ObjectId(),
     relativePath: attrs.contentLocator,

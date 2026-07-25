@@ -6,19 +6,19 @@ type EntityReference = { id: string | number }
 /**
  * Map Mongoose `Document` instances to plain entity objects.
  */
-export type DocumentMapping<D, E extends object> = (doc: D) => E
+export type DocumentMapping<D, E extends object> = (doc: mongoose.HydratedDocument<D>) => E
 /**
  * Map entities to objects suitable to create Mongoose `Document` instances, as
  * in `new mongoose.Model(stub)`.
  */
-export type EntityMapping<D, E extends object> = (entity: Partial<E>) => any
+export type EntityMapping<D, E extends object> = (entity: Partial<E>) => Partial<D>
 
 /**
  * Return a document mapping that calls `toJSON()` on the given `Document`
  * instance and returns the result.
  */
 export function createDefaultDocMapping<D, E extends object>(): DocumentMapping<D, E> {
-  return (d): any => (d as any).toJSON()
+  return (d): any => d.toJSON<E>()
 }
 
 /**
@@ -29,17 +29,13 @@ export function createDefaultEntityMapping<D, E extends object>(): EntityMapping
 }
 
 /**
- * * Type parameter `D` is a subtype of `mongoose.Document`
- * * Type parameter `M` is a subtpye of `mongoose.Model<D>` that creates
- *   instances of type `D`.
+ * * Type parameter `D` is the type of the document as stored in MongoDB.
+ * * Type parameter `M` is a `mongoose.Model<D>` that creates "hydrated" instances of `D`.
  * * Type parameter `Attrs` is the entity attributes type, which is typically a
  *   plain object interface, and is the type that repository queries return
- *   using `entityForDocuent()`.
- * * Type parameter `Entity` is an optional, typically more objected-oriented
- *   entity type that provides extra functionality beyond just the raw data
- *   of the `Attrs` type.
+ *   using `entityForDocument()`.
  */
-export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs extends object, Entity extends object = Attrs> {
+export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs extends object> {
 
   readonly model: M
   readonly entityForDocument: DocumentMapping<D, Attrs>
@@ -52,15 +48,13 @@ export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs exte
   }
 
   async create(attrs: Partial<Attrs>): Promise<Attrs> {
-    const attrsWithoutId: any = { ...attrs }
-    delete attrsWithoutId.id
-    const stub = this.documentStubForEntity(attrsWithoutId)
+    const stub = this.documentStubForEntity(attrs)
     const created = await this.model.create(stub)
     return this.entityForDocument(created)
   }
 
   async findAll(): Promise<Attrs[]> {
-    const docs = await this.model.find().cursor()
+    const docs = this.model.find().cursor()
     const entities: Attrs[] = []
     for await (const doc of docs) {
       entities.push(this.entityForDocument(doc))
@@ -81,11 +75,11 @@ export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs exte
       notFound[id] = null
       return notFound
     }, {} as any)
-    const docs: D[] = await this.model.find({ _id: { $in: ids } }).exec();
+    const docs = await this.model.find({ _id: { $in: ids } })
     const found = {} as any
     for (const doc of docs) {
-      found[(doc as any).id] = this.entityForDocument(doc)
-      delete notFound[(doc as any).id]
+      found[doc.id] = this.entityForDocument(doc)
+      delete notFound[doc.id]
     }
     return { ...notFound, ...found }
   }
@@ -94,14 +88,14 @@ export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs exte
     if (attrs.id == null) {
       throw new Error('update requires an id')
     }
-    let doc = (await this.model.findById(attrs.id))
-    if (!doc) {
+    const found = await this.model.findById(attrs.id)
+    if (!found) {
       throw new Error(`document not found for id: ${attrs.id}`)
     }
     const stub = this.documentStubForEntity(attrs)
-    doc.set(stub)
-    doc = await doc.save()
-    return this.entityForDocument(doc)
+    found.set(stub)
+    const saved = await found.save()
+    return this.entityForDocument(saved)
   }
 
   async removeById(id: any): Promise<Attrs | null> {
@@ -114,18 +108,12 @@ export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs exte
 }
 
 export const pageQuery = <RT, DT>(query: mongoose.Query<RT, DT>, paging: PagingParameters): Promise<{ totalCount: number | null, query: mongoose.Query<RT, DT> }> => {
-  //TODO had to use any to construct
-  const BaseQuery: any = query.toConstructor()
+  const BaseQuery = query.toConstructor()
   const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<RT, DT>
   const includeTotalCount = typeof paging.includeTotalCount === 'boolean' ? paging.includeTotalCount : paging.pageIndex === 0
   if (includeTotalCount) {
     const countQuery = new BaseQuery().countDocuments()
-    return countQuery.then((totalCount: number) => {
-      return { totalCount, query: pageQuery }
-    })
+    return countQuery.then(totalCount => ({ totalCount, query: pageQuery }))
   }
-  return Promise.resolve({
-    totalCount: null,
-    query: pageQuery
-  })
+  return Promise.resolve({ totalCount: null, query: pageQuery })
 }

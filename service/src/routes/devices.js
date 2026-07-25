@@ -1,6 +1,7 @@
 const log = require('../logger').child({ component: 'devices' });
 const Device = require('../models/device');
 const access = require('../access');
+const { userRoleHasPermission } = require('../permissions/permissions.role-based.base')
 
 function DeviceResource() {}
 
@@ -115,7 +116,7 @@ module.exports = function(app, security) {
 
 DeviceResource.prototype.ensurePermission = function(permission) {
   return function(req, res, next) {
-    access.userHasPermission(req.user, permission)
+    userRoleHasPermission(req.user, permission)
       ? next()
       : res.sendStatus(403);
   };
