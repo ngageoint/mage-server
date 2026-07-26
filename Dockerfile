@@ -75,7 +75,12 @@ FROM ${DIST_IMAGE}
 WORKDIR /var/lib/mage
 ARG MAGE_INSTANCE
 ENV MAGE_INSTANCE=${MAGE_INSTANCE}
-COPY --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
+# set user to 999 as historically mage images were built with user/group 999
+# and 999 owns the files of existing deployments
+USER 999:999
+COPY --chown=999:999 --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
 WORKDIR ${MAGE_INSTANCE}
+VOLUME /var/lib/mage
+EXPOSE 4242
 
 CMD [ "./mage.service" ]

@@ -14,8 +14,8 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends libfontconfig1 libfreetype6 \
   && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -r mage \
-  && useradd -m -r -s /bin/bash -g mage mage \
+RUN groupadd -g 999 -r mage \
+  && useradd -u 999 -m -r -s /bin/bash -g mage mage \
   && mkdir -p /var/lib/mage \
   && chown mage:mage /var/lib/mage
 
