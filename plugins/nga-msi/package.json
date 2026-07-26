@@ -46,7 +46,7 @@
     "@types/json-schema": "7.0.15",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
-    "typescript": "5.8.2"
+    "typescript": "^5.8.2"
   },
   "peerDependencies": {
     "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta"
