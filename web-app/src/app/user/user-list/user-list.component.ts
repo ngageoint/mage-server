@@ -39,8 +39,8 @@ export class UserListComponent implements OnInit, OnDestroy {
     return index
   }
 
-  trackByUserId(index: number, user: any): any {
-    return user.id
+  trackByUserId(index: number, userWithLocation: any): any {
+    return userWithLocation.id
   }
 
   onFilterChanged(): void {
@@ -50,19 +50,19 @@ export class UserListComponent implements OnInit, OnDestroy {
   onUsersChanged(changed): void {
     const { added = [], updated = [], removed = [] } = changed
 
-    added.forEach(user => {
-      this.usersById[user.id] = user;
+    added.forEach(userWithLocation => {
+      this.usersById[userWithLocation.id] = userWithLocation;
     })
 
-    updated.forEach(user => {
-      const updatedUser = this.usersById[user.id];
-      if (updatedUser) {
-        this.usersById[updatedUser.id] = user
+    updated.forEach(userWithLocation => {
+      const existing = this.usersById[userWithLocation.id];
+      if (existing) {
+        this.usersById[existing.id] = userWithLocation
       }
     })
 
-    removed.forEach(user => {
-      delete this.usersById[user.id];
+    removed.forEach(userWithLocation => {
+      delete this.usersById[userWithLocation.id];
     })
 
     // update the news feed observations

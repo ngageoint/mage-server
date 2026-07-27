@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
 import { MatRipple } from '@angular/material/core';
 import { MapService } from '../../map/map.service';
 import { SessionService } from '../../http/session.service';
@@ -10,8 +10,8 @@ import { FeedPanelService } from '../../feed-panel/feed-panel.service';
     styleUrls: ['./user-list-item.component.scss'],
     standalone: false
 })
-export class UserListItemComponent {
-  @Input() user: any
+export class UserListItemComponent implements OnChanges {
+  @Input() userWithLocation: any
   @Input() follow: any
   @Input() followable: boolean
 
@@ -22,6 +22,9 @@ export class UserListItemComponent {
   token: string | undefined
   followingUser: any
 
+  user: any
+  location: any
+
   constructor(
     private feedPanelService: FeedPanelService,
     private mapService: MapService,
@@ -30,18 +33,24 @@ export class UserListItemComponent {
     this.token = sessionService.getToken()
   }
 
+  ngOnChanges(): void {
+    if (!this.userWithLocation) return
+    this.user = this.userWithLocation.user
+    this.location = this.userWithLocation.location
+  }
+
   followUser(event): void {
     event.stopPropagation();
-    this.mapService.followFeatureInLayer(this.user, 'people')
+    this.mapService.followFeatureInLayer(this.userWithLocation, 'people')
   }
 
   onUserLocation(): void {
-    this.mapService.zoomToFeatureInLayer(this.user, 'people')
+    this.mapService.zoomToFeatureInLayer(this.userWithLocation, 'people')
   }
 
   viewUser(): void {
     this.onUserLocation()
-    this.feedPanelService.viewUser(this.user)
+    this.feedPanelService.viewUser(this.userWithLocation)
   }
 
   onRipple(): void {

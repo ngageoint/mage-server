@@ -7,28 +7,28 @@
 
       <div class="item-header-content">
         <div class="item-title">
-          <span>{{ user?.user?.displayName }}</span>
+          <span>{{ user?.displayName }}</span>
         </div>
 
-        <div *ngIf="user?.location?.properties?.timestamp" class="item-subtitle">
-          {{ user?.location?.properties?.timestamp | moment }}
+        <div *ngIf="location?.properties?.timestamp" class="item-subtitle">
+          {{ location?.properties?.timestamp | moment }}
         </div>
 
-        <div *ngIf="user?.location?.geometry" class="item-subtitle">
-          {{ user?.location?.geometry | geometry : 5 }}
+        <div *ngIf="location?.geometry" class="item-subtitle">
+          {{ location?.geometry | geometry : 5 }}
         </div>
       </div>
 
-      <div *ngIf="user?.user?.iconUrl">
-        <img class="item-icon" [src]="user?.user?.iconUrl + '?access_token=' + token" alt="" />
+      <div *ngIf="user?.iconUrl">
+        <img class="item-icon" [src]="user?.iconUrl + '?access_token=' + token" alt="" />
       </div>
     </div>
   </mat-card-content>
 
   <mat-card-actions>
     <div class="actions-buttons">
-      <button *ngIf="followingUser.id !== user.id" matButton (click)="followUser($event)">Follow</button>
-      <button *ngIf="followingUser.id === user.id" matButton="filled" (click)="followUser($event)">Following</button>
+      <button *ngIf="followingUser.id !== user?.id" matButton (click)="followUser($event)">Follow</button>
+      <button *ngIf="followingUser.id === user?.id" matButton="filled" (click)="followUser($event)">Following</button>
     </div>
 
     <div class="actions-icons">
