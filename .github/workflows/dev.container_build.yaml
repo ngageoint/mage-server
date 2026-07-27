@@ -64,6 +64,6 @@ jobs:
           retention-days: 7
 
       - name: Push Image
-        if: ${{ steps.image-info.outputs.tag != local }}
+        if: ${{ steps.image-info.outputs.tag != 'local' }}
         run: |
           docker push ${{ steps.image-info.outputs.url }}
