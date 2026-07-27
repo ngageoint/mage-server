@@ -38,7 +38,7 @@ jobs:
           image_url="${{ github.repository }}/mage:${image_tag}"
           echo "using image url ${image_url}"
           echo "tag=${image_tag}" >> $GITHUB_OUTPUT
-          echo "url=\"ghcr.io/${image_url}\"" >> $GITHUB_OUTPUT
+          echo "url=ghcr.io/${image_url}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: |
