@@ -2,36 +2,44 @@
   <mat-form-field appearance="fill" class="auth-form__field">
     <mat-label>Username</mat-label>
     <input matInput formControlName="username" required placeholder="Enter your username">
-    <mat-error *ngIf="authenticationForm.get('username')?.hasError('required')">
-      Username is required
-    </mat-error>
+    @if (authenticationForm.get('username')?.hasError('required')) {
+      <mat-error>
+        Username is required
+      </mat-error>
+    }
   </mat-form-field>
 
   <mat-form-field appearance="fill" class="auth-form__field">
     <mat-label>Password</mat-label>
     <input matInput type="password" formControlName="password" required placeholder="Enter your password">
-    <mat-error *ngIf="authenticationForm.get('password')?.hasError('required')">
-      Password is required
-    </mat-error>
+    @if (authenticationForm.get('password')?.hasError('required')) {
+      <mat-error>
+        Password is required
+      </mat-error>
+    }
   </mat-form-field>
 
   <button matButton="filled" class="auth-form__button" type="submit">
     Sign In
   </button>
 
-  <div *ngIf="error" class="auth-form__error" [@slide] (@slide.done)="scrollToError()" #errorElement>
-    <span class="material-symbols-outlined auth-form__error-icon">sentiment_dissatisfied</span>
-    <div class="auth-form__error-message" [innerHTML]="error.message"></div>
-  </div>
+  @if (error(); as err) {
+    <div class="auth-form__error" [@slide] (@slide.done)="scrollToError()" #errorElement>
+      <span class="material-symbols-outlined auth-form__error-icon">sentiment_dissatisfied</span>
+      <div class="auth-form__error-message" [innerHTML]="err.message"></div>
+    </div>
+  }
 
-  <div *ngIf="landing" class="auth-form__footer">
-    <div>
-      <span class="auth-form__footer-text">New to Mage?</span>
-      <a class="auth-form__footer-link" (click)="onSignup()">Sign Up Now</a>
+  @if (landing) {
+    <div class="auth-form__footer">
+      <div>
+        <span class="auth-form__footer-text">New to Mage?</span>
+        <a class="auth-form__footer-link" (click)="onSignup()">Sign Up Now</a>
+      </div>
+      <div>
+        <span class="auth-form__footer-text">Need More Info?</span>
+        <a class="auth-form__footer-link" (click)="onAboutClick()">About Mage</a>
+      </div>
     </div>
-    <div>
-      <span class="auth-form__footer-text">Need More Info?</span>
-      <a class="auth-form__footer-link" (click)="onAboutClick()">About Mage</a>
-    </div>
-  </div>
+  }
 </form>

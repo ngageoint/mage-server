@@ -1,5 +1,5 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SecurityContext, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SecurityContext, signal, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../../api/api.service';
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -7,6 +7,9 @@ import { Api, AuthenticationStrategy } from '../../../../app/api/api.entity';
 import { UserService } from '../../../user/user.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
     selector: 'local-authentication',
@@ -23,10 +26,15 @@ import { Router } from '@angular/router';
             ])
         ]),
     ],
-    standalone: false
+    standalone: true,
+    imports: [
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule
+    ]
 })
 export class LocalAuthenticationComponent implements OnInit {
-  @Input() api: Api
   @Input() strategy: AuthenticationStrategy
   @Input() landing: boolean
 
@@ -40,10 +48,12 @@ export class LocalAuthenticationComponent implements OnInit {
     password: new FormControl('', [Validators.required])
   })
 
-  error: {
+  private api = signal<Api | undefined>(undefined)
+
+  error = signal<{
     title: string,
     message: SafeHtml
-  }
+  } | undefined>(undefined)
 
   constructor(
     private router: Router,
@@ -54,7 +64,7 @@ export class LocalAuthenticationComponent implements OnInit {
 
   ngOnInit(): void {
     this.apiService.getApi().subscribe((api: any) => {
-      this.api = api
+      this.api.set(api)
     })
   }
 
@@ -70,16 +80,17 @@ export class LocalAuthenticationComponent implements OnInit {
       },
       error: (response: any) => {
         let message = response.error || 'Please check your username and password and try again.'
-        if (this.api.contactInfo.email || this.api.contactInfo.phone) {
-          const email = LinkGenerator.emailLink(this.api.contactInfo, response.error, username, this.strategy)
-          const phone = LinkGenerator.phoneLink(this.api.contactInfo)
+        const api = this.api()
+        if (api.contactInfo.email || api.contactInfo.phone) {
+          const email = LinkGenerator.emailLink(api.contactInfo, response.error, username, this.strategy)
+          const phone = LinkGenerator.phoneLink(api.contactInfo)
           message = `${message} Should you need futher assistance you may contact your Mage administrator via ${[`<a href=${email}>email</a>`, `<a href=${phone}>phone</a>`].join(' or ')}.`
         }
 
-        this.error = {
+        this.error.set({
           title: 'Error Signing In',
           message: this.sanitizer.sanitize(SecurityContext.HTML, message)
-        }
+        })
 
         this.scrollToError()
       }

@@ -93,8 +93,8 @@ describe('SignupComponent', () => {
     };
 
     TestBed.configureTestingModule({
-    declarations: [SignupComponent],
-    imports: [ReactiveFormsModule,
+    imports: [SignupComponent,
+        ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
         MatIconModule,
@@ -126,7 +126,7 @@ describe('SignupComponent', () => {
   it('should initialize passwordPolicy and update password control', () => {
     const passwordControl = component.signup.get('password');
     expect(passwordControl?.validator).toBeTruthy();
-    expect(component.passwordPolicy).toEqual(mockPasswordPolicy);
+    expect(component.passwordPolicy()).toEqual(mockPasswordPolicy);
   });
 
   it('should emit cancel event on onCancel()', () => {
@@ -139,14 +139,14 @@ describe('SignupComponent', () => {
     component.signup.controls.username.setValue(mockUser.username);
     component.getCaptcha();
     expect(mockUserService.signup).toHaveBeenCalledWith(mockUser.username);
-    expect(component.captcha.token).toBe('captcha-token');
+    expect(component.captcha().token).toBe('captcha-token');
   });
 
   it('should not call getCaptcha() without username', () => {
     component.signup.controls.username.setValue('');
     component.getCaptcha();
     expect(mockUserService.signup).not.toHaveBeenCalled();
-    expect(component.loadingCaptcha).toBeFalse();
+    expect(component.loadingCaptcha()).toBeFalse();
   });
 
   it('should emit signup event if form is valid and passwords match', () => {
@@ -162,7 +162,7 @@ describe('SignupComponent', () => {
       captchaText: 'captcha'
     });
 
-    component.captcha.token = 'valid-token';
+    component.captcha.set({ token: 'valid-token' });
 
     component.onSignup();
 
@@ -207,7 +207,7 @@ describe('SignupComponent', () => {
       captchaText: 'text'
     });
 
-    component.captcha.token = 'token';
+    component.captcha.set({ token: 'token' });
     component.onSignup();
 
     expect(getCaptchaSpy).toHaveBeenCalled();
@@ -232,7 +232,7 @@ describe('SignupComponent', () => {
       captchaText: 'text'
     });
 
-    component.captcha.token = 'token';
+    component.captcha.set({ token: 'token' });
     component.onSignup();
 
     expect(component.signup.controls.captchaText.errors?.invalid).toBeTrue();
@@ -257,7 +257,7 @@ describe('SignupComponent', () => {
       captchaText: 'text'
     });
 
-    component.captcha.token = 'token';
+    component.captcha.set({ token: 'token' });
     component.onSignup();
 
     expect(component.signup.controls.username.errors?.exists).toBeTrue();
@@ -266,7 +266,7 @@ describe('SignupComponent', () => {
   it('should evaluate password strength', () => {
     component.signup.controls.username.setValue('testuser');
     component.onPasswordChanged('TestPassword123!');
-    expect(component.passwordStrength).toBeTruthy();
+    expect(component.passwordStrength()).toBeTruthy();
   });
 
   it('should return correct tooltip text from password policy', () => {

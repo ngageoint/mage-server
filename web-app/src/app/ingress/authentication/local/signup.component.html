@@ -8,40 +8,36 @@
     <mat-form-field appearance="fill">
       <mat-label>Username</mat-label>
       <input matInput placeholder="Username" formControlName="username" (blur)="getCaptcha()" required />
-      <mat-error *ngIf="
-          signup.controls.username.touched &&
-          signup.controls.username.hasError('required')
-        ">
-        Username is required
-      </mat-error>
-      <mat-error *ngIf="
-          signup.controls.username.touched &&
-          signup.controls.username.hasError('exists')
-        ">
-        Username already exists
-      </mat-error>
+      @if (signup.controls.username.touched && signup.controls.username.hasError('required')) {
+        <mat-error>
+          Username is required
+        </mat-error>
+      }
+      @if (signup.controls.username.touched && signup.controls.username.hasError('exists')) {
+        <mat-error>
+          Username already exists
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Display Name</mat-label>
       <input matInput placeholder="Display Name" formControlName="displayName" required />
-      <mat-error *ngIf="
-          signup.controls.displayName.touched &&
-          signup.controls.displayName.hasError('required')
-        ">
-        Display name is required
-      </mat-error>
+      @if (signup.controls.displayName.touched && signup.controls.displayName.hasError('required')) {
+        <mat-error>
+          Display name is required
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Email</mat-label>
       <input matInput placeholder="Email" formControlName="email" />
-      <mat-error *ngIf="
-          signup.controls.email.touched &&
-          signup.controls.email.hasError('email')
-        ">
-        Must be a valid email address
-      </mat-error>
+      @if (signup.controls.email.touched && signup.controls.email.hasError('email')) {
+        <mat-error>
+          Must be a valid email address
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
@@ -62,14 +58,15 @@
         <mat-icon>info</mat-icon>
       </button>
 
-      <mat-error *ngIf="
-          signup.controls.password.touched &&
-          signup.controls.password.errors as errors
-        ">
-        <div *ngFor="let msg of getPasswordErrorMessages(errors)">
-          {{ msg }}
-        </div>
-      </mat-error>
+      @if (signup.controls.password.touched && signup.controls.password.errors; as errors) {
+        <mat-error>
+          @for (msg of getPasswordErrorMessages(errors); track msg) {
+            <div>
+              {{ msg }}
+            </div>
+          }
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
@@ -81,64 +78,66 @@
           showConfirmPassword ? 'visibility_off' : 'visibility'
           }}</mat-icon>
       </button>
-      <mat-error *ngIf="
-          signup.controls.passwordconfirm.touched &&
-          signup.controls.passwordconfirm.hasError('required')
-        ">
-        Password confirmation is required
-      </mat-error>
-      <mat-error *ngIf="
-          signup.controls.passwordconfirm.touched &&
-          signup.controls.passwordconfirm.hasError('match')
-        ">
-        Passwords must match
-      </mat-error>
+      @if (signup.controls.passwordconfirm.touched && signup.controls.passwordconfirm.hasError('required')) {
+        <mat-error>
+          Password confirmation is required
+        </mat-error>
+      }
+      @if (signup.controls.passwordconfirm.touched && signup.controls.passwordconfirm.hasError('match')) {
+        <mat-error>
+          Passwords must match
+        </mat-error>
+      }
     </mat-form-field>
 
     <div class="password-strength">
       <div class="password-strength__header">
         <div class="password-strength__label">Password Strength</div>
-        <div class="password-strength__value">{{ passwordStrength?.text }}</div>
+        <div class="password-strength__value">{{ passwordStrength()?.text }}</div>
       </div>
-      <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"
-        [ngStyle]="{ '--password-bar-color': passwordStrength?.color }" class="custom-password-bar">
+      <mat-progress-bar mode="determinate" [value]="passwordStrength()?.value"
+        [ngStyle]="{ '--password-bar-color': passwordStrength()?.color }" class="custom-password-bar">
       </mat-progress-bar>
     </div>
 
     <div class="auth-captcha-container">
-      <div *ngIf="loadingCaptcha" class="auth-captcha-progress">
-        <div class="auth-captcha-progress__container">
-          <div class="auth-captcha-progress-text">Generating Captcha...</div>
-          <mat-progress-bar mode="indeterminate" class="auth-captcha-progressbar"></mat-progress-bar>
+      @if (loadingCaptcha()) {
+        <div class="auth-captcha-progress">
+          <div class="auth-captcha-progress__container">
+            <div class="auth-captcha-progress-text">Generating Captcha...</div>
+            <mat-progress-bar mode="indeterminate" class="auth-captcha-progressbar"></mat-progress-bar>
+          </div>
         </div>
-      </div>
+      }
 
-      <div class="auth-captcha" *ngIf="captcha.uri && !loadingCaptcha">
-        <img [src]="captcha.uri" alt="captcha image" width="100%" height="100%" />
-      </div>
+      @if (captcha().uri && !loadingCaptcha()) {
+        <div class="auth-captcha">
+          <img [src]="captcha().uri" alt="captcha image" width="100%" height="100%" />
+        </div>
+      }
 
-      <div class="auth-captcha-refresh" *ngIf="captcha.uri">
-        <button matIconButton (click)="getCaptcha()">
-          <mat-icon>refresh</mat-icon>
-        </button>
-      </div>
+      @if (captcha().uri) {
+        <div class="auth-captcha-refresh">
+          <button matIconButton (click)="getCaptcha()">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+      }
     </div>
 
     <mat-form-field appearance="fill">
       <mat-label>Captcha</mat-label>
       <input matInput placeholder="Captcha" formControlName="captchaText" required />
-      <mat-error *ngIf="
-          signup.controls.captchaText.touched &&
-          signup.controls.captchaText.hasError('required')
-        ">
-        Captcha is required
-      </mat-error>
-      <mat-error *ngIf="
-          signup.controls.captchaText.touched &&
-          signup.controls.captchaText.hasError('invalid')
-        ">
-        Invalid captcha
-      </mat-error>
+      @if (signup.controls.captchaText.touched && signup.controls.captchaText.hasError('required')) {
+        <mat-error>
+          Captcha is required
+        </mat-error>
+      }
+      @if (signup.controls.captchaText.touched && signup.controls.captchaText.hasError('invalid')) {
+        <mat-error>
+          Invalid captcha
+        </mat-error>
+      }
     </mat-form-field>
 
     <div class="actions">

@@ -49,12 +49,12 @@ class AngularModule { }
     IdpAuthenticationComponent,
     IngressComponent,
     InitializeComponent,
-    LdapAuthenticationComponent,
-    LocalAuthenticationComponent,
-    SignupComponent
+    LdapAuthenticationComponent
   ],
   imports: [
-    AngularModule
+    AngularModule,
+    LocalAuthenticationComponent,
+    SignupComponent
   ],
   exports: [
     IngressComponent
