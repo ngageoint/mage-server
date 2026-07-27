@@ -89,9 +89,15 @@ export class ArcLayerDialogComponent {
 
 	fetchLayers(url: string): void {
 		this.loading = true
-		this.arcService.fetchFeatureServiceLayers(url).subscribe(layers => {
-			this.layers = layers
-			this.loading = false
+		this.arcService.fetchFeatureServiceLayers(url).subscribe({
+			next: (layers) => {
+				this.layers = layers
+				this.loading = false
+			},
+			error: (error) => {
+				console.log('arc-layer fetchFeatureServiceLayers error: ' + error);
+				this.loading = false
+			}
 		})
 	}
 
@@ -101,7 +107,8 @@ export class ArcLayerDialogComponent {
 
 	onValidate(): void {
 		this.loading = true
-		const { url, portalUrl, authenticationType } = this.layerForm.value
+		// use the "raw" value, since it will include the URL from the possibly-disabled input field
+		const { url, portalUrl, authenticationType } = this.layerForm.getRawValue()
 
 		switch (authenticationType) {
 			case AuthenticationType.Token: {

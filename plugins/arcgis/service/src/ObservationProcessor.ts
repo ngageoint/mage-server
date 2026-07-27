@@ -18,6 +18,9 @@ import { FeatureServiceConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 import { ArcGISIdentityService } from './ArcGISService';
+import { ArcGISRequestError } from "@esri/arcgis-rest-request";
+
+const VERBOSE_DEBUG = false;
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -231,7 +234,7 @@ export class ObservationProcessor {
 							if (featureLayer.geometryType != null) {
 								// TODO The featureLayerConfig should contain the layer id
 								featureLayerConfig.layer = featureLayer.id;
-								const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
+								const admin = new FeatureServiceAdmin(config, this._identityService, this._console, VERBOSE_DEBUG)
 								const eventIds = featureLayerConfig.eventIds || []
 								const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
 								const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
@@ -242,6 +245,17 @@ export class ObservationProcessor {
 					}
 				} catch (err) {
 					this._console.error(`Error getting feature service layers for ${service.url}:`, err);
+					if (err instanceof Error) {
+						let requestError: ArcGISRequestError | null = null;
+						if ('cause' in err && err.cause instanceof ArcGISRequestError) {
+							requestError = err.cause;
+						} else if (err instanceof ArcGISRequestError) {
+							requestError = err;
+						}
+						if (requestError) {
+							this._console.error(`  message: ${requestError.response?.error?.message || "<unknown>"}, details: ${requestError.response?.error?.details || "<unknown>"}`);
+						}
+					}
 				}
 			})());
 		}

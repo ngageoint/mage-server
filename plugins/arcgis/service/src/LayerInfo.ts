@@ -70,8 +70,8 @@ export class LayerInfo {
      * @param {MageEventId} eventId The event.
      * @returns {boolean} true if enabled
      */
-    hasEvent(eventId: MageEventId) {
-        return this.events.size === 0 || this.events.has(eventId)
+    hasEvent(eventId: MageEventId): boolean {
+        return this.events.has(eventId)
     }
 
 }

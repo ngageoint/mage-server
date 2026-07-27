@@ -1,6 +1,6 @@
 import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig";
-import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
+import { MageEvent, MageEventAttrs, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { Layer, Field } from "./types/AddLayersRequest";
 import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
 import { ObservationsTransformer } from "./ObservationsTransformer";
@@ -19,6 +19,7 @@ export class FeatureServiceAdmin {
 	private _config: ArcGISPluginConfig;
 	private _identityService: ArcGISIdentityService;
 	private _console: Console;
+	private _verbose: boolean;
 
 	/** string field length to hold WKT-encoded form fields with locations/geometries */
 	private static readonly GEOMETRY_STRING_FIELD_LENGTH: number = 2 ** 31 - 1;
@@ -28,11 +29,13 @@ export class FeatureServiceAdmin {
 	 * @param {ArcGISPluginConfig} config The plugins configuration.
 	 * @param {ArcGISIdentityService} identityService The identity service.
 	 * @param {Console} console Used to log to the console.
+	 * @param {boolean} verbose whether to perform verbose logging
 	 */
-	constructor(config: ArcGISPluginConfig, identityService: ArcGISIdentityService, console: Console) {
+	constructor(config: ArcGISPluginConfig, identityService: ArcGISIdentityService, console: Console, verbose: boolean) {
 		this._config = config;
 		this._identityService = identityService;
 		this._console = console;
+		this._verbose = verbose;
 	}
 
 	/**
@@ -146,34 +149,21 @@ export class FeatureServiceAdmin {
 	}
 
 	/**
-	 * Get the Mage layer events
+	 * Get the MAGE events for a feature layer
 	 * @param {FeatureLayerConfig} layer feature layer
 	 * @param {MageEventRepository} eventRepo event repository
 	 * @returns {Promise<MageEvent[]>} Mage layer events
 	 */
 	private async layerEvents(layer: FeatureLayerConfig, eventRepo: MageEventRepository): Promise<MageEvent[]> {
-		const layerEventIds: Set<MageEventId> = new Set();
-		if (layer.eventIds != null) {
-			for (const layerEventId of layer.eventIds) {
-				layerEventIds.add(layerEventId);
-			}
-		}
-
-		let mageEvents;
-		if (layerEventIds.size > 0) {
-			mageEvents = await eventRepo.findAll();
-		} else {
-			mageEvents = await eventRepo.findActiveEvents();
-		}
-
 		const events: MageEvent[] = [];
-		for (const mageEvent of mageEvents) {
-			if (layerEventIds.size === 0 || layerEventIds.has(mageEvent.id)) {
-				const event = await eventRepo.findById(mageEvent.id);
-				if (event != null) {
-					events.push(event);
-				}
-			}
+		if (layer.eventIds) {
+			const results = await eventRepo.findAllByIds(layer.eventIds);
+			events.push(
+				...layer.eventIds
+					.map(id => results[id])
+					.filter((eventAttrs): eventAttrs is MageEventAttrs => eventAttrs != null)
+					.map(eventAttrs => new MageEvent(eventAttrs))
+			)
 		}
 
 		return events;
@@ -534,6 +524,9 @@ export class FeatureServiceAdmin {
 		const url = this.adminUrl(service) + featureLayer.toString() + '/updateDefinition';
 
 		this._console.info('ArcGIS feature layer updateDefinition with drawingInfo, URL ' + url);
+		if (this._verbose) {
+			this._console.debug(' drawingInfo:\n' + JSON.stringify(drawingInfo, null, 2));
+		}
 
 		try {
 			const identityManager = await this._identityService.signin(service);

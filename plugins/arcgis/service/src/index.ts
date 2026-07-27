@@ -6,7 +6,7 @@ import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plu
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationProcessor } from './ObservationProcessor'
-import { ArcGISIdentityManager, request } from "@esri/arcgis-rest-request"
+import { ArcGISIdentityManager, ArcGISRequestError, request } from "@esri/arcgis-rest-request"
 import { FeatureServiceConfig, FeatureLayerConfig } from './types/ArcGISConfig'
 import { URL } from "node:url"
 import express from 'express'
@@ -41,7 +41,12 @@ const sanitizeFeatureService = async (config: FeatureServiceConfig, identityServ
   try {
     await identityService.signin(config);
     authenticated = true;
-  } catch (error) { console.error('Error in sanitizeFeatureService :: ', error); }
+  } catch (error) {
+    console.error('Error in sanitizeFeatureService');
+    if (error instanceof ArcGISRequestError) {
+      console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error.response?.error?.details || "<unknown>"}`);
+    }
+  }
 
   const { identityManager, ...sanitized } = config;
   return { ...sanitized, authenticated };

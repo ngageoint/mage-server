@@ -36,7 +36,12 @@ export function createArcGISIdentityService(
       const cached = await identityManagerCache.get(featureService.url);
       if (!cached) {
         const identityManager = ArcGISIdentityManager.deserialize(featureService.identityManager);
-        const promise = identityManager.getToken(featureService.url).then(() => identityManager);
+        const promise = identityManager.getToken(featureService.url)
+          .then(() => identityManager)
+          .catch(err => {
+            identityManagerCache.delete(featureService.url);
+            throw err;
+          });
         identityManagerCache.set(featureService.url, promise);
         return promise;
       } else {
