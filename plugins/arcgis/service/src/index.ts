@@ -14,16 +14,22 @@ import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
 
 // scope every log message from this plugin under MAGE's central winston logger
+// map console's method names to the child logger's methods explicitly
 const arcgisLog = baseLog.child({ component: 'arcgis' });
-const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const;
-const logOverrides = logMethods.reduce((overrides, fn) => {
-  const logFunction = (arcgisLog as unknown as Record<string, (...args: unknown[]) => void>)[fn] || arcgisLog.info;
+const logMethodMap: Record<'log' | 'debug' | 'info' | 'warn' | 'error', (...args: unknown[]) => void> = {
+  log: (...args) => arcgisLog.info(...args as [string, ...unknown[]]),
+  debug: (...args) => arcgisLog.debug(...args as [string, ...unknown[]]),
+  info: (...args) => arcgisLog.info(...args as [string, ...unknown[]]),
+  warn: (...args) => arcgisLog.warn(...args as [string, ...unknown[]]),
+  error: (...args) => arcgisLog.error(...args as [string, ...unknown[]]),
+};
+const logOverrides = (Object.keys(logMethodMap) as (keyof typeof logMethodMap)[]).reduce((overrides, fn) => {
   return {
     ...overrides,
     [fn]: {
       writable: false,
       value: (...args: unknown[]) => {
-        logFunction(...args);
+        logMethodMap[fn](...args);
       }
     }
   } as PropertyDescriptorMap;
