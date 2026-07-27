@@ -22,12 +22,16 @@
     [icon]="strategy.icon">
   </authentication-button>
 
-  <div *ngIf="error" class="error-container" [@slide]>
-    <div class="error">
-      <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
-      <div class="error__message">
-        <div>{{error?.message}} <span *ngIf="contact" class="contact" [innerHTML]="contact"></span></div>
+  @if (error(); as err) {
+    <div class="error-container" [@slide]>
+      <div class="error">
+        <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
+        <div class="error__message">
+          <div>{{err.message}} @if (contact(); as msg) {
+            <span class="contact" [innerHTML]="msg"></span>
+          }</div>
+        </div>
       </div>
     </div>
-  </div>
+  }
 </form>

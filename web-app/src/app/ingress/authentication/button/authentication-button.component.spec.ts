@@ -7,8 +7,7 @@ describe('Authentication Button Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AuthenticationButtonComponent],
-      imports: []
+      imports: [AuthenticationButtonComponent]
     }).compileComponents();
   }));
 

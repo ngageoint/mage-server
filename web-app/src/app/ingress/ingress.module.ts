@@ -42,17 +42,17 @@ class AngularModule { }
   declarations: [
     AccountStatusComponent,
     AuthenticationComponent,
-    AuthenticationButtonComponent,
     AuthenticationDialogComponent,
     AuthorizationComponent,
     DisclaimerComponent,
     IdpAuthenticationComponent,
     IngressComponent,
     InitializeComponent,
-    LdapAuthenticationComponent
   ],
   imports: [
     AngularModule,
+    AuthenticationButtonComponent,
+    LdapAuthenticationComponent,
     LocalAuthenticationComponent,
     SignupComponent
   ],

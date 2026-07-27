@@ -1,9 +1,13 @@
 <button class="authentication-button" [style]="{'background-color': color}" matButton="filled" (click)="onClick()">
   <div class="authentication-button-container">
-    <div *ngIf="icon" class="authentication-button__icon">
-      <img class="authentication-button__image" [src]="'data:image/png\;base64,'+icon">
-    </div>
+    @if (icon) {
+      <div class="authentication-button__icon">
+        <img class="authentication-button__image" [src]="'data:image/png\;base64,'+icon">
+      </div>
+    }
     <div class="authentication-button__text" [ngStyle]="{color: textColor}">Continue with {{text}}</div>
-    <div *ngIf="icon" class="spacer"></div>
+    @if (icon) {
+      <div class="spacer"></div>
+    }
   </div>
 </button>
