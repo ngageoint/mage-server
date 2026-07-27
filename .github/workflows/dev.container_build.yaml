@@ -54,7 +54,7 @@ jobs:
           retention-days: 7
 
       - name: Push Image
-        if: github.ref =='refs/heads/develop' || inputs.image-tag
+        if: github.ref == 'refs/heads/develop' || inputs.image-tag
         run: |
           image_tag="${{ inputs.image-tag }}" || "dev"
           docker push ghcr.io/${{ github.repository }}/mage:${image_tag}

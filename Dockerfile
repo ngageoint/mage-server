@@ -74,7 +74,7 @@ RUN cd ${MAGE_INSTANCE} \
     ${MAGE_PACKAGES}/ngageoint-mage.sftp.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.arcgis.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.image.*.tgz \
-    ${MAGE_PACKAGES}/ngageoint-mage.nga-msi.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.nga-msi-*.tgz \
     && ln -s ./node_modules/.bin/mage.service
 
 FROM ${DIST_IMAGE}
