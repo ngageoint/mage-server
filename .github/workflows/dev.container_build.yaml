@@ -30,6 +30,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: image-info
+        id: image-info
         run: |
           image_tag="local"
           [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
