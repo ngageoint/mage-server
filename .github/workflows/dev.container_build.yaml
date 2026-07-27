@@ -37,12 +37,12 @@ jobs:
           image_url="${{ github.repository }}/mage:${image_tag}"
           echo "using image url ${image_url}"
           echo "tag=${image_tag}" >> $GITHUB_OUTPUT
-          echo "url=${image_url}" >> $GITHUB_OUTPUT
+          echo "url=\"ghcr.io/${image_url}\"" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: |
           docker build \
-          -t ghcr.io/${{ steps.image-info.outputs.url }} \
+          -t ${{ steps.image-info.outputs.url }} \
           --annotation "org.opencontainers.image.revision=${{ github.sha }}" .
 
       - name: Scan the docker image with Trivy
