@@ -58,7 +58,7 @@ RUN cd ${MAGE_SERVER}/plugins/arcgis/web-app \
     && npm link ../../../web-app/dist/core-lib \
     && npm run build \
     && cd ${MAGE_PACKAGES} \
-    && npm pack ${MAGE_SERVER}/plugins/arcgis/web-app/dist/main \
+    && npm pack ${MAGE_SERVER}/plugins/arcgis/web-app/dist/main
 
 RUN cd ${MAGE_SERVER}/plugins/nga-msi \
     && npm link ../../service \
