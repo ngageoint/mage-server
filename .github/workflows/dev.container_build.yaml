@@ -32,7 +32,7 @@ jobs:
       - name: image-info
         run: |
           image_tag="local"
-          [[ ${{ github.ref = 'refs/heads/develop' ]] && image_tag="dev"
+          [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
           [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
           image_url="${{ github.repository }}/mage:${image_tag}"
           echo "using image url ${image_url}"
