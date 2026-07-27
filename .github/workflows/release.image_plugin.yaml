@@ -59,7 +59,7 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: image.service-artifacts
       - name: publish to package registry
