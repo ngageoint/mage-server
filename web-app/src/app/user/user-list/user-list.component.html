@@ -18,10 +18,10 @@
 
   <div class="page-container">
     <ng-container
-      *ngFor="let user of userPages[currentUserPage]; trackBy: trackByUserId">
+      *ngFor="let userWithLocation of userPages[currentUserPage]; trackBy: trackByUserId">
       <div class="feed-user">
         <user-list-item
-          [user]="user"
+          [userWithLocation]="userWithLocation"
           followable="true"
           [follow]="followUserId"></user-list-item>
       </div>
