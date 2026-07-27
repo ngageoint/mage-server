@@ -89,7 +89,7 @@ jobs:
           echo "instance package.json"
           cat package.json
       - name: create release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ inputs.version }}
           prerelease: ${{ inputs.is_prerelease }}
