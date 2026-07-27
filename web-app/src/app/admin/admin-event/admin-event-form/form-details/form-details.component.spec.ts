@@ -451,6 +451,104 @@ describe('FormDetailsComponent', () => {
     });
   });
 
+  describe('getDropdownFields', () => {
+    it('returns empty array when form has no fields', () => {
+      component.form = { name: 'Test Form', color: '#ff0000', fields: [] };
+
+      expect(component.getDropdownFields()).toEqual([]);
+    });
+
+    it('excludes non-dropdown fields', () => {
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        fields: [
+          { name: 'notes', type: 'textfield' } as any,
+          { name: 'count', type: 'numberfield' } as any
+        ]
+      };
+
+      expect(component.getDropdownFields()).toEqual([]);
+    });
+
+    it('includes dropdown and userDropdown fields, excluding multiselect and archived', () => {
+      const dropdown = { name: 'status', type: 'dropdown' } as any;
+      const userDropdown = { name: 'assignee', type: 'userDropdown' } as any;
+      const multiselect = {
+        name: 'tags',
+        type: 'dropdown',
+        multiselect: true
+      } as any;
+      const archived = {
+        name: 'old',
+        type: 'dropdown',
+        archived: true
+      } as any;
+
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        fields: [dropdown, userDropdown, multiselect, archived]
+      };
+
+      expect(component.getDropdownFields()).toEqual([dropdown, userDropdown]);
+    });
+
+    it('excludes the field named by excludeField', () => {
+      const primary = { name: 'status', type: 'dropdown' } as any;
+      const secondary = { name: 'severity', type: 'dropdown' } as any;
+
+      component.form = {
+        name: 'Test Form',
+        color: '#ff0000',
+        fields: [primary, secondary]
+      };
+
+      expect(component.getDropdownFields('status')).toEqual([secondary]);
+    });
+  });
+
+  describe('getIconUrl', () => {
+    it('returns null when no icons have been cached', () => {
+      expect(component.getIconUrl('')).toBeNull();
+    });
+
+    it('returns the form-wide default icon for an empty primary', () => {
+      (component as any).iconCache = { icon: 'default-icon-url' };
+
+      expect(component.getIconUrl('')).toBe('default-icon-url');
+    });
+
+    it('returns the icon for a primary choice', () => {
+      (component as any).iconCache = {
+        Active: { icon: 'active-icon-url' },
+        icon: 'default-icon-url'
+      };
+
+      expect(component.getIconUrl('Active')).toBe('active-icon-url');
+    });
+
+    it('returns the icon for a primary/variant combination', () => {
+      (component as any).iconCache = {
+        Active: { High: 'active-high-icon-url', icon: 'active-icon-url' }
+      };
+
+      expect(component.getIconUrl('Active', 'High')).toBe(
+        'active-high-icon-url'
+      );
+    });
+
+    it('falls back to the primary icon when the variant has no icon', () => {
+      (component as any).iconCache = {
+        Active: { icon: 'active-icon-url' }
+      };
+
+      expect(component.getIconUrl('Active', 'High')).toBe(
+        'active-icon-url'
+      );
+    });
+  });
+
   describe('exportForm', () => {
     let mockAnchor: any;
 
