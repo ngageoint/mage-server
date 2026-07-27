@@ -13,7 +13,7 @@ import {
 } from '@angular/material/dialog';
 import { ApiService } from '../../../api/api.service';
 import { Role } from '../user';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { MatSelectModule as MatSelectModule } from '@angular/material/select';
@@ -46,33 +46,7 @@ describe('CreateUserModalComponent', () => {
       of({
         authenticationStrategies: {
           local: {
-            settings: {
-              passwordPolicy: {
-                passwordMinLength: 8,
-                passwordMinLengthEnabled: true,
-                lowLettersEnabled: true,
-                lowLetters: 1,
-                highLettersEnabled: true,
-                highLetters: 1,
-                numbersEnabled: true,
-                numbers: 1,
-                specialCharsEnabled: true,
-                specialChars: 1,
-                maxConCharsEnabled: true,
-                maxConChars: 3,
-                restrictSpecialCharsEnabled: true,
-                restrictSpecialChars: '!@#',
-                helpTextTemplate: {
-                  passwordMinLength: 'be at least # characters long',
-                  lowLetters: 'have at least # lowercase letter(s)',
-                  highLetters: 'have at least # uppercase letter(s)',
-                  numbers: 'contain at least # number(s)',
-                  specialChars: 'contain at least # special character(s)',
-                  maxConChars: 'have no more than # consecutive characters',
-                  restrictSpecialChars: 'use only these special characters: #'
-                }
-              }
-            }
+            passwordHelpText: 'Password must be at least 8 characters.'
           }
         }
       })
@@ -111,19 +85,31 @@ describe('CreateUserModalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize password policy on init', fakeAsync(() => {
+  it('should load passwordHelpText from the local strategy on init', fakeAsync(() => {
     fixture.detectChanges();
     tick();
 
     expect(apiServiceSpy.getApi).toHaveBeenCalled();
-    expect(component.passwordPolicy).toBeTruthy();
-    expect(component.passwordTooltipText.length).toBeGreaterThan(0);
+    expect(component.passwordHelpText).toBe(
+      'Password must be at least 8 characters.'
+    );
 
     const passwordControl = component.signup.get('password');
     const confirmControl = component.signup.get('passwordconfirm');
 
     expect(passwordControl).toBeTruthy();
     expect(confirmControl).toBeTruthy();
+  }));
+
+  it('should leave passwordHelpText unset when the api does not provide one', fakeAsync(() => {
+    apiServiceSpy.getApi.and.returnValue(
+      of({ authenticationStrategies: { local: {} } })
+    );
+
+    fixture.detectChanges();
+    tick();
+
+    expect(component.passwordHelpText).toBeUndefined();
   }));
 
   it('should validate required fields in form', fakeAsync(() => {
@@ -229,5 +215,64 @@ describe('CreateUserModalComponent', () => {
     component.saveUser();
 
     expect(dialogRefSpy.close).not.toHaveBeenCalled();
+  }));
+
+  it('should surface the server password policy message on a 400 response', fakeAsync(() => {
+    userServiceSpy.createUser.and.returnValue(
+      throwError(() => ({ status: 400, error: 'Password is too weak' }))
+    );
+
+    fixture.detectChanges();
+    tick();
+    (dialogRefSpy.close as jasmine.Spy).calls.reset();
+
+    component.signup.patchValue({
+      displayName: 'John Doe',
+      username: 'john_doe',
+      email: '',
+      password: 'weak',
+      passwordconfirm: 'weak',
+      selectedRole: mockRoles[0].id
+    });
+
+    component.passwordErrorMessages = [];
+    component.signup.updateValueAndValidity();
+
+    component.saveUser();
+
+    expect(dialogRefSpy.close).not.toHaveBeenCalled();
+    expect(component.saving()).toBeFalse();
+    expect(component.passwordErrorMessages).toEqual(['Password is too weak']);
+    expect(
+      component.signup.get('password')?.errors?.['policy']
+    ).toBeTrue();
+    expect(component.serverError()).toBe('');
+  }));
+
+  it('should show a generic error for non-password server failures', fakeAsync(() => {
+    userServiceSpy.createUser.and.returnValue(
+      throwError(() => ({ status: 500, error: 'boom' }))
+    );
+
+    fixture.detectChanges();
+    tick();
+
+    component.signup.patchValue({
+      displayName: 'John Doe',
+      username: 'john_doe',
+      email: '',
+      password: 'somepassword',
+      passwordconfirm: 'somepassword',
+      selectedRole: mockRoles[0].id
+    });
+
+    component.passwordErrorMessages = [];
+    component.signup.updateValueAndValidity();
+
+    component.saveUser();
+
+    expect(component.serverError()).toBe(
+      'Failed to create user. Please try again.'
+    );
   }));
 });

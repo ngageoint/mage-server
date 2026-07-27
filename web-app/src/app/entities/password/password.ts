@@ -8,22 +8,22 @@ export const passwordStrengthScores: { [key: number]: PasswordStrength } = {
   0: {
     color: '#F44336',
       text: 'Weak',
-        value: '0'
+        value: '20'
   },
   1: {
     color: '#FF9800',
       text: 'Fair',
-        value: '25'
+        value: '40'
   },
   2: {
-    color: '#FFEB3B',
+    color: '#2196F3',
       text: 'Good',
-        value: '50'
+        value: '60'
   },
   3: {
-    color: '#8BC34A',
+    color: '#009688',
       text: 'Strong',
-        value: '75'
+        value: '80'
   },
   4: {
     color: '#4CAF50',

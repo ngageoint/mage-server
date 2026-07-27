@@ -38,36 +38,52 @@ mat-form-field {
   grid-column: 1 / -1;
 }
 
-::ng-deep .tooltip-wide {
-  white-space: pre-line;
-  max-width: 300px;
+.password-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .password-strength {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
   padding: 0 0 8px;
-}
-
-.strength-header {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.strength-label {
-  font-size: var(--mat-sys-label-medium-size);
-  font-weight: 500;
-  color: var(--mat-sys-on-surface);
 }
 
 .strength-text {
   font-size: var(--mat-sys-body-small-size);
-  color: var(--mat-sys-on-surface-variant);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .strength-bar {
-  --mdc-linear-progress-active-indicator-color: var(--password-bar-color, var(--mat-sys-primary));
-  --mdc-linear-progress-track-color: var(--mat-sys-surface-container-high);
+  flex: 1;
+  --mat-progress-bar-active-indicator-color: var(--password-bar-color, var(--mat-sys-primary));
+  --mat-progress-bar-track-color: var(--mat-sys-surface-container-high);
+}
+
+.password-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding: 12px 16px;
+  background-color: var(--mat-sys-secondary-container);
+  border-radius: 8px;
+  font-size: var(--mat-sys-body-small-size);
+  color: var(--mat-sys-on-secondary-container);
+
+  mat-icon {
+    font-size: var(--mat-sys-body-large-size);
+    width: var(--mat-sys-body-large-size);
+    height: var(--mat-sys-body-large-size);
+    flex-shrink: 0;
+  }
 }

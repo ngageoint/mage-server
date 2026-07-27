@@ -1,6 +1,5 @@
 
 :host {
-  height: 100%;
   width: 100%;
 }
 
@@ -11,7 +10,6 @@
 }
 
 .signin-container {
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -21,9 +19,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
   color: var(--mat-sys-primary);
-  height: 30vh;
 }
 
 .welcome__title {

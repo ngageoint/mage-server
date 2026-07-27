@@ -173,4 +173,14 @@ describe('CreateReadSystemInfo', () => {
     expect(systemInfo.environment).to.be.undefined; // Asserts that environment info is not present
   });
 
+  it('should request whitelist filtering of authentication strategies, since this route is public and unauthenticated', async () => {
+    const request = requestBy(mockUserWithRole);
+    await readSystemInfo(request);
+
+    mockedAuthConfigTransformerModule.received(1).transform(
+      Arg.any(),
+      Arg.is((options: any) => options?.whitelist === true)
+    );
+  });
+
 });

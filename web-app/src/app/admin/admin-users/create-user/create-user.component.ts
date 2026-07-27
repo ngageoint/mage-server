@@ -6,19 +6,12 @@ import { UserService } from '../../../user/user.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import {
-  createPasswordPolicyValidator,
   confirmPasswordValidator,
-  evaluatePasswordStrength,
-  getPasswordTooltip
+  evaluatePasswordStrength
 } from '../../../password/password';
 import { emailValidator } from '../../../email/email';
 
-import {
-  PasswordStrength,
-  passwordStrengthScores
-} from 'src/app/entities/password/password';
-
-import { PasswordPolicy } from 'src/app/ingress/authentication/@types/signup';
+import { PasswordStrength } from 'src/app/entities/password/password';
 
 @Component({
     selector: 'create-user-modal',
@@ -39,9 +32,9 @@ export class CreateUserModalComponent implements OnInit {
   showPassword = false;
   showConfirmPassword = false;
 
-  passwordPolicy: PasswordPolicy;
   passwordErrorMessages: string[] = [];
-  passwordStrength: PasswordStrength = passwordStrengthScores[0];
+  passwordStrength?: PasswordStrength;
+  passwordHelpText?: string;
 
   signup = new FormGroup({
     displayName: new FormControl('', [Validators.required]),
@@ -59,38 +52,24 @@ export class CreateUserModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.apiService.getApi().subscribe((api: any) => {
-      this.passwordPolicy =
-        api.authenticationStrategies.local.settings.passwordPolicy;
-
-      const passwordControl = this.signup.get('password');
-      const confirmControl = this.signup.get('passwordconfirm');
-      const username = this.signup.get('username')?.value;
-
-      if (passwordControl) {
-        passwordControl.setValidators([
-          Validators.required,
-          createPasswordPolicyValidator(
-            this.passwordPolicy,
-            (errors) => { this.passwordErrorMessages = errors; },
-            username
-          )
-        ]);
-        passwordControl.updateValueAndValidity();
-
-        passwordControl.valueChanges.subscribe((value) => {
-          this.passwordStrength = evaluatePasswordStrength(value, username);
-          confirmControl?.updateValueAndValidity();
-        });
-      }
-
-      if (confirmControl) {
-        confirmControl.setValidators([
-          Validators.required,
-          confirmPasswordValidator(() => this.signup.get('password')?.value)
-        ]);
-        confirmControl.updateValueAndValidity();
-      }
+      this.passwordHelpText = api.authenticationStrategies?.local?.passwordHelpText;
     });
+
+    const passwordControl = this.signup.get('password');
+    const confirmControl = this.signup.get('passwordconfirm');
+    const username = this.signup.get('username')?.value;
+
+    passwordControl?.valueChanges.subscribe((value) => {
+      this.passwordStrength = evaluatePasswordStrength(value, username);
+      this.passwordErrorMessages = [];
+      confirmControl?.updateValueAndValidity();
+    });
+
+    confirmControl?.setValidators([
+      Validators.required,
+      confirmPasswordValidator(() => this.signup.get('password')?.value)
+    ]);
+    confirmControl?.updateValueAndValidity();
   }
 
   saveUser(): void {
@@ -118,19 +97,20 @@ export class CreateUserModalComponent implements OnInit {
       next: (createdUser) => {
         this.dialogRef.close(createdUser);
       },
-      error: () => {
+      error: (response: any) => {
         this.saving.set(false);
-        this.serverError.set('Failed to create user. Please try again.');
+        if (response.status === 400) {
+          this.passwordErrorMessages = [response.error];
+          this.signup.get('password')?.setErrors({ policy: true });
+        } else {
+          this.serverError.set('Failed to create user. Please try again.');
+        }
       }
     });
   }
 
   cancelModal(): void {
     this.dialogRef.close();
-  }
-
-  get passwordTooltipText(): string {
-    return this.passwordPolicy ? getPasswordTooltip(this.passwordPolicy) : '';
   }
 
   getPasswordErrorMessages(errors: any): string[] {

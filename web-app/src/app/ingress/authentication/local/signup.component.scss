@@ -9,8 +9,16 @@ mat-form-field {
   margin-bottom: 8px;
 }
 
-.password-form-field {
-  margin-bottom: 20px;
+.form-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+
+  > mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .signup-container {
@@ -84,21 +92,21 @@ mat-form-field {
   margin-top: 8px;
 }
 
-.password-strength__header {
+.password-strength {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 4px;
+  align-items: center;
+  gap: 12px;
 }
 
-.password-strength__label {
-  font: var(--mat-sys-body-medium);
-  color: var(--mat-sys-on-surface-variant);
+.custom-password-bar {
+  flex: 1;
+  --mat-progress-bar-active-indicator-color: var(--password-bar-color);
 }
 
 .password-strength__value {
   font: var(--mat-sys-body-medium);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .auth-captcha-refresh {
@@ -120,13 +128,23 @@ mat-form-field {
   flex: 1;
 }
 
-::ng-deep .tooltip-wide {
-  white-space: pre-line;
-  max-width: 300px;
-}
+.password-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -8px 0 16px;
+  padding: 12px 16px;
+  background-color: var(--mat-sys-secondary-container);
+  border-radius: 8px;
+  font-size: var(--mat-sys-body-small-size);
+  color: var(--mat-sys-on-secondary-container);
 
-::ng-deep .custom-password-bar {
-  --mdc-linear-progress-active-indicator-color: var(--password-bar-color);
+  mat-icon {
+    font-size: var(--mat-sys-body-large-size);
+    width: var(--mat-sys-body-large-size);
+    height: var(--mat-sys-body-large-size);
+    flex-shrink: 0;
+  }
 }
 
 ::ng-deep .password-form-field .mat-mdc-form-field-subscript-wrapper {

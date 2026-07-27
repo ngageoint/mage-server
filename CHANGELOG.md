@@ -12,10 +12,15 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Inactive, disabled, or misconfigured-strategy accounts signing in via OAuth/SAML/OIDC now consistently report account status instead of silently failing
 #### Security
 * The IdP sign-in popup now computes its `postMessage` target origin client-side instead of trusting the request's `Host` header, removing a potential host-header-injection vector
+* The unauthenticated `/api` endpoint no longer exposes the local authentication strategy's full password policy (rule thresholds); only an admin-authored help message is exposed, and only when explicitly enabled
+* Signup and admin user creation now enforce password policy server-side only, rather than duplicating the rules to the client
 
 ### Web App
 #### Bug Fixes
 * OAuth/SAML/OIDC sign-in for inactive or disabled accounts now shows the account status screen (previously failed silently with no feedback); disabled accounts get their own distinct message instead of an incorrect "Account Created" message
+* The re-authentication dialog had a hardcoded height meant to accommodate any sign-in strategy, leaving empty space most of the time; it's now sized to its actual content instead, and the signup form's fields are grouped into two-column rows to help it fit
+* The signup form could get stuck scrolled past its top, and a long disclaimer's Accept button could become unreachable with no way to scroll to it
+* Removed a password-info icon on the signup form that looked clickable but wasn't, and fixed its tooltip rendering the password rules as an unreadable single line
 
 ## [6.6.0](https://github.com/ngageoint/mage-server/releases/tag/6.6.0)
 ### Service
