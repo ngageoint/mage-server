@@ -15,6 +15,15 @@
   margin-bottom: 1.5rem !important;
 }
 
+.edit-enabled-field {
+  display: grid;
+  margin-bottom: 32px;
+}
+
+.edit-enabled-field .mat-hint {
+  font-size: 75%;
+}
+
 section {
   margin-block-start: 2em;
   margin-block-end: 2em;

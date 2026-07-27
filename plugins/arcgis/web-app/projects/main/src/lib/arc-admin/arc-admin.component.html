@@ -13,17 +13,16 @@
             <div style="width: 100%;">
               <div class="edit-processing-form">
                 <div class="edit-enabled-field">
-                  <mat-form-field appearance="fill">
-                    <mat-label>Enabled</mat-label>
-                    <mat-select placeholder="Enabled" [(value)]="editConfig.enabled"
-                      (selectionChange)="setField('enabled', $event.value)">
-                      <mat-option [value]="true">true</mat-option>
-                      <mat-option [value]="false">false</mat-option>
-                    </mat-select>
-                    <mat-hint>Process observations and send to configured ArcGIS feature layers</mat-hint>
-                  </mat-form-field>
+                  <mat-slide-toggle
+                    [checked]="editConfig.enabled"
+                    [(ngModel)]="editConfig.enabled"
+                    color="primary"
+                    (change)="setField('enabled', $event.checked)">
+                    Enable Observation Processing
+                  </mat-slide-toggle>
+                  <mat-hint>Process observations and send to configured ArcGIS feature layers</mat-hint>
                 </div>
-                <div class="edit-enabled-field">
+                <div class="edit-base-url-field">
                   <mat-form-field appearance="fill" floatLabel="always">
                     <mat-label>Base URL</mat-label>
                     <input type="text" matInput value="{{editConfig.baseUrl}}"

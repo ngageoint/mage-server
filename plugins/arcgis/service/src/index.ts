@@ -1,3 +1,4 @@
+import baseLog from '@ngageoint/mage.service/lib/logger';
 import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api'
 import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web'
 import { ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.observations'
@@ -12,20 +13,22 @@ import { URL } from "node:url"
 import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
 
-const logPrefix = '[mage.arcgis]';
+// scope every log message from this plugin under MAGE's central winston logger
+const arcgisLog = baseLog.child({ component: 'arcgis' });
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const;
-const consoleOverrides = logMethods.reduce((overrides, fn) => {
+const logOverrides = logMethods.reduce((overrides, fn) => {
+  const logFunction = (arcgisLog as unknown as Record<string, (...args: unknown[]) => void>)[fn] || arcgisLog.info;
   return {
     ...overrides,
     [fn]: {
       writable: false,
       value: (...args: unknown[]) => {
-        globalThis.console[fn](new Date().toISOString(), '-', logPrefix, ...args);
+        logFunction(...args);
       }
     }
   } as PropertyDescriptorMap;
 }, {} as PropertyDescriptorMap);
-const console = Object.create(globalThis.console, consoleOverrides) as Console;
+const console = Object.create(globalThis.console, logOverrides) as Console;
 
 type InjectedServices = {
   stateRepo: typeof PluginStateRepositoryToken,

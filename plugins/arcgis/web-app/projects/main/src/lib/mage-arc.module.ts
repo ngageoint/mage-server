@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatListModule } from '@angular/material/list'
 import { MatSelectModule } from '@angular/material/select'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTableModule } from '@angular/material/table'
 import { MatTabsModule } from '@angular/material/tabs'
 import { ArcAdminComponent } from './arc-admin/arc-admin.component'
@@ -42,6 +43,7 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
     MatInputModule,
     MatListModule,
     MatSelectModule,
+    MatSlideToggleModule,
     MatTableModule,
     MatTabsModule,
     ReactiveFormsModule,

@@ -53,32 +53,34 @@ export class EventDeletionHandler {
             for (const layerProcessor of layerProcessors) {
                 const response: (result: QueryObjectResult) => void = (result) => { this.figureOutAllEventsOnArc(layerProcessor, result); };
                 if (this._config.eventIdField == null) {
-                    layerProcessor.featureQuerier.queryObservations(response, [this._config.observationIdField], false);
+                    void layerProcessor.featureQuerier.queryObservations(response, [this._config.observationIdField], false);
                 } else {
-                    layerProcessor.featureQuerier.queryDistinct(response, this._config.eventIdField);
+                    void layerProcessor.featureQuerier.queryDistinct(response, this._config.eventIdField);
                 }
             }
         } else {
-            this._console.log('Checking for event deletions the previous known events are:');
+            this._console.log('Checking for event deletions');
             const deletedEvents = new Map<string, string>();
             this._currentEventIds.forEach((eventName: string, eventId: string) => {
-                this._console.log(eventName + ' with id ' + eventId);
                 deletedEvents.set(eventId, eventName);
             });
 
-            this._console.log('Active events are:');
             for (const activeEvent of activeEvents) {
-                this._console.log(activeEvent.name + ' with id ' + activeEvent.id);
                 deletedEvents.delete(activeEvent.id.toString());
             }
 
-            deletedEvents.forEach((eventName: string, eventId: string) => {
-                this._console.log('Event named ' + eventName + ' was deleted removing observations from arc layers');
-                for (const layerProcessor of layerProcessors) {
-                    layerProcessor.sender.sendDeleteEvent(eventId);
-                }
-                this._currentEventIds.delete(eventId);
-            });
+            if (deletedEvents.size > 0) {
+                this._console.debug('Removing observations from ArcGIS layers for deleted events: '
+                    + [...deletedEvents.keys()].join(","));
+                deletedEvents.forEach((eventName: string, eventId: string) => {
+                    for (const layerProcessor of layerProcessors) {
+                        void layerProcessor.sender.sendDeleteEvent(eventId);
+                    }
+                    this._currentEventIds.delete(eventId);
+                });
+            } else {
+                this._console.debug('No deleted events found');
+            }
 
             for (const activeEvent of activeEvents) {
                 this._currentEventIds.set(activeEvent.id.toString(), activeEvent.name);
@@ -117,7 +119,7 @@ export class EventDeletionHandler {
             });
 
             for (const arcEventId of arcEventIds) {
-                layerProcessor.sender.sendDeleteEvent(arcEventId);
+                void layerProcessor.sender.sendDeleteEvent(arcEventId);
             }
         }
     }
