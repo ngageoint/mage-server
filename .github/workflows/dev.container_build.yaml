@@ -29,17 +29,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: image-info
+        run: |
+          image_tag="local"
+          [[ ${{ github.ref = 'refs/heads/develop' ]] && image_tag="dev"
+          [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
+          image_url="${{ github.repository }}/mage:${image_tag}"
+          echo "using image url ${image_url}"
+          echo "tag=${image_tag}" >> $GITHUB_OUTPUT
+          echo "url=${image_url}" >> $GITHUB_OUTPUT
+
       - name: Build Docker image
         run: |
           docker build \
-          -t ghcr.io/${{ github.repository }}/mage:dev \
+          -t ghcr.io/${{ steps.image-info.outputs.url }} \
           --annotation "org.opencontainers.image.revision=${{ github.sha }}" .
 
       - name: Scan the docker image with Trivy
         uses: aquasecurity/trivy-action@v0.35.0 
         with:
           scan-type: 'image'
-          image-ref: 'ghcr.io/${{ github.repository }}/mage:dev'
+          image-ref: '${{ steps.image-info.outputs.url }}'
           ignore-unfixed: true
           format: 'table'
           output: 'trivy-image-report.txt'
@@ -54,7 +64,6 @@ jobs:
           retention-days: 7
 
       - name: Push Image
-        if: github.ref == 'refs/heads/develop' || inputs.image-tag
+        if: ${{ steps.image-info.outputs.tag != local }}
         run: |
-          image_tag="${{ inputs.image-tag }}" || "dev"
-          docker push ghcr.io/${{ github.repository }}/mage:${image_tag}
+          docker push ${{ steps.image-info.outputs.url }}
