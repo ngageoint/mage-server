@@ -409,9 +409,14 @@ in your plugin working tree.  You can check using the `npm ls` command as follow
 ```
 
 ## Docker Setup
-The docker directory includes documentation and dockerfiles for building using the release npm packages. The root Dockerfile and docker-compose.yml are used for building and running a dockerfile from the source/local code. Simply run `docker compose up` to spin up a local mongo db database along with the web server. After it starts up, navitage to localhost:4242 to view the web server.
+The docker directory includes documentation and dockerfiles for building using the release npm packages. The root 
+Dockerfile and docker-compose.yml are used for building and running a dockerfile from the source/local code. Simply 
+run `docker compose up` to start a local MongoDB database along with the Mage application server. Navigate to 
+http://localhost:4242 to view the web app.
 
-By default, the Dockerfile includes additional plugins. Should you want to add/remove any plugins, you will need to modify the Entrypoint command. Simply uncomment the `entrypoint` section of the docker compose to specify what plugins you would like to include, or exlude
+By default, the Dockerfile includes additional plugins. Should you want to add/remove any plugins, you will need to 
+modify the entrypoint. Simply uncomment the `entrypoint` section of `docker-compose.yml` to specify which plugins to 
+include.
 
 ### HTTPS/TLS reverse proxy
 
