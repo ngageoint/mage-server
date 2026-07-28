@@ -7,6 +7,12 @@ on:
         description: The version you want to assign to the release
         type: string
         required: true
+      dist_tag:
+        description: >
+          Apply the given dist tag when publishing to NPM.  If omitted, the workflow will try to determine the dist
+          tag from the package version prerelease tag.
+        type: string
+        required: false
 
   # TODO: possibly use release branches to perform the release process
   # push:
@@ -60,12 +66,29 @@ jobs:
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           registry-url: "https://registry.npmjs.org"
-      - name: install json util
-        run: npm i -g json
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: package info
+        id: package_info
+        uses: ./.github/actions/package_info
+        with:
+          package_path: ./plugins/image/service/package.json
+      - name: determine dist tag
+        id: dist-tag
+        run: |
+          dist_tag_switch=""
+          dist_tag="${{ inputs.dist_tag }}"
+          [ -z "${dist_tag}" ] && dist_tag="${{ steps.package_info.outputs.version-prerelease_tag }}"
+          [ -n "${dist_tag}" ] && dist_tag_switch="--tag ${dist_tag}"
+          echo "dist_tag_switch=${dist_tag_switch:-""}" >> $GITHUB_ENV
       - name: download service packages
         uses: actions/download-artifact@v8
         with:
           name: image.service-artifacts
-      - name: publish to package registry
+          path: ./scratch
+      - name: dry run publish
         run: |
-          npm publish --access public $(ls -1 ngageoint-mage.image.service-*.tgz)
+          eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.image.service-*.tgz)"
+      - name: publish
+        run: |
+          eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.image.service-*.tgz)"

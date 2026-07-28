@@ -59,7 +59,7 @@ jobs:
       - name: package for plugin
         run: npm pack ./plugins/arcgis/service
       - name: upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: arcgis.service-artifacts
           path: |

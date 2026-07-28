@@ -13,10 +13,18 @@ on:
         required: false
         default: false
       is_prerelease:
-        description: Whether this is a prerelease
+        description: >
+          When true, mark the GitHub release as a prerelease.  If true, the package version must be a prerelease
+          version.
         type: boolean
         required: false
         default: true
+      dist_tag:
+        description: >
+          Apply the given dist tag when publishing to NPM.  If omitted, the workflow will try to determine the dist
+          tag from the package version prerelease tag.
+        type: string
+        required: false
 
 jobs:
   config:
@@ -32,6 +40,11 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
+      - name: package info
+        id: package_info
+        uses: ./.github/actions/package_info
+        with:
+          package_path: ./package.json
       - name: install json util
         run: npm i -g json
       - name: check project
@@ -46,6 +59,13 @@ jobs:
       - name: check web-core-lib
         run: |
           [[ $(json version < ./web-app/projects/core-lib/package.json) = ${{ inputs.version }} ]] || exit 1
+      - name: check prerelease
+        run: |
+          if ( [ "${{ inputs.is_prerelease }}" != "false" ] &&  [ -z "${{ steps.package_info.outputs.version-prerelease_tag }}" ] )
+          then
+            echo "ERROR: Prereleases must publish a package version with a prerelease component."
+            exit 1
+          fi
 
   build_and_test-service:
     needs: [check_release_version]
@@ -109,28 +129,41 @@ jobs:
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           registry-url: "https://registry.npmjs.org"
-      - name: install json util
-        run: npm i -g json
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: package info
+        id: package_info
+        uses: ./.github/actions/package_info
+        with:
+          package_path: ./package.json
+      - name: determine dist tag
+        id: dist-tag
+        run: |
+          dist_tag_switch=""
+          dist_tag="${{ inputs.dist_tag }}"
+          [ -z "${dist_tag}" ] && dist_tag="${{ steps.package_info.outputs.version-prerelease_tag }}"
+          [ -n "${dist_tag}" ] && dist_tag_switch="--tag ${dist_tag}"
+          echo "dist_tag_switch=${dist_tag_switch:-""}" >> $GITHUB_ENV
       - name: download service packages
         uses: actions/download-artifact@v8
         with:
           name: mage.service-artifacts
+          path: ./scratch/
       - name: download web-app packages
         uses: actions/download-artifact@v8
         with:
           name: mage.web-app-artifacts
-      - name: publish mage service
-        run: >
-          npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz)
-          ${{(inputs.is_prerelease && '--tag beta') || ''}}
-          ${{(inputs.is_draft && '--dry-run') || ''}}
-      - name: publish mage web-app
-        run: >
-          npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz)
-          ${{(inputs.is_prerelease && '--tag beta') || ''}}
-          ${{(inputs.is_draft && '--dry-run') || ''}}
-      - name: publish mage web-core-lib
-        run: >
-          npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz) 
-          ${{(inputs.is_prerelease && '--tag beta') || ''}}
-          ${{(inputs.is_draft && '--dry-run') || ''}}
+          path: ./scratch/
+      - name: dry run publish
+        run: |
+          echo "using dist tag switch: ${dist_tag_switch}"
+          eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.service-*.tgz)"
+          eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-app-*.tgz)"
+          eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-core-lib-*.tgz)"
+      - name: publish
+        if: ${{ ! inputs.is_draft }}
+        run: |
+          eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.service-*.tgz)"
+          eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-app-*.tgz)"
+          eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-core-lib-*.tgz)"
+
