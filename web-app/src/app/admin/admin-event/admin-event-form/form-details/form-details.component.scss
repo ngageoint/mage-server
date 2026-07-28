@@ -414,6 +414,7 @@
 
 .default-symbology-card {
   margin-bottom: 16px;
+  padding-bottom: 8px;
   display: inline-flex;
   flex-direction: column;
   min-width: 220px;
@@ -441,11 +442,13 @@
 .symbology-variant-item {
   min-width: 220px;
   flex-shrink: 0;
+  padding-bottom: 8px;
 }
 
 .variant-card-header {
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 4px 4px 0 12px;
 }
 
@@ -472,7 +475,7 @@
 }
 
 .icon-preview {
-  height: 48px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;

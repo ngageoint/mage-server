@@ -60,6 +60,12 @@ RUN cd ${MAGE_SERVER}/plugins/arcgis/web-app \
     && cd ${MAGE_PACKAGES} \
     && npm pack ${MAGE_SERVER}/plugins/arcgis/web-app/dist/main
 
+RUN cd ${MAGE_SERVER}/plugins/nga-msi \
+    && npm link ../../service \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/nga-msi
+
 WORKDIR ${MAGE_INSTANCE}
 RUN cd ${MAGE_INSTANCE} \
     && npm install --omit dev --force \
@@ -68,6 +74,7 @@ RUN cd ${MAGE_INSTANCE} \
     ${MAGE_PACKAGES}/ngageoint-mage.sftp.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.arcgis.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.image.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.nga-msi-*.tgz \
     && ln -s ./node_modules/.bin/mage.service
 
 FROM ${DIST_IMAGE}
@@ -75,7 +82,12 @@ FROM ${DIST_IMAGE}
 WORKDIR /var/lib/mage
 ARG MAGE_INSTANCE
 ENV MAGE_INSTANCE=${MAGE_INSTANCE}
-COPY --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
+# set user to 999 as historically mage images were built with user/group 999
+# and 999 owns the files of existing deployments
+USER 999:999
+COPY --chown=999:999 --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
 WORKDIR ${MAGE_INSTANCE}
+VOLUME /var/lib/mage
+EXPOSE 4242
 
 CMD [ "./mage.service" ]

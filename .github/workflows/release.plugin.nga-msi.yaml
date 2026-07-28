@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
@@ -44,18 +44,21 @@ jobs:
     name: publish packages
     needs: [config, build_and_test-service]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
+          registry-url: "https://registry.npmjs.org"
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: nga-msi-artifacts
       - name: publish to package registry
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.nga-msi-*.tgz)

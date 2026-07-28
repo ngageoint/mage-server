@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
@@ -39,6 +39,7 @@ jobs:
       - name: check web
         run: |
           [[ $(json version < ./plugins/sftp/web/package.json) = ${{ inputs.version }} ]] || exit 1
+
   build_and_test-service:
     needs: [ check_release_version ]
     uses: ./.github/workflows/build_test.sftp.service.yaml
@@ -51,26 +52,28 @@ jobs:
     name:  publish packages
     needs: [ config, build_and_test-service ]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
+          registry-url: "https://registry.npmjs.org"
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sftp.service-artifacts
       - name: download web packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sftp.web-artifacts
       - name: publish sftp service
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.sftp.service-*.tgz) || echo "skipping sftp service plugin publish..."
       - name: publish sftp web
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.sftp.web-*.tgz) || echo "skipping sftp web plugin publish"
