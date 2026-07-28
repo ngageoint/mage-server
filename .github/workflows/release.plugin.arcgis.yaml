@@ -51,11 +51,15 @@ jobs:
     name: publish packages
     needs: [config, build_and_test-service]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: setup node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
+          registry-url: "https://registry.npmjs.org"
       - name: install json util
         run: npm i -g json
       - name: download service packages
@@ -68,9 +72,7 @@ jobs:
           name: arcgis.web-app-artifacts
       - name: publish arcgis service
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.arcgis.service-*.tgz) || echo "skipping arcgis service plugin publish..."
       - name: publish arcgis web
         run: |
-          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.arcgis.web-app-*.tgz) || echo "skipping arcgis web plugin publish..."
