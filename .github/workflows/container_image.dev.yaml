@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       image-tag:
-        description: Supply a tag to push the image to ghcr.io with the given tag.
+        description: |
+          Supply a tag to push the image to ghcr.io with the given tag.  Without a tag, the workflow will not push,
+          but only build the image.
         type: string
         required: false
 
