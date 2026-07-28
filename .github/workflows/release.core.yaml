@@ -78,7 +78,7 @@ jobs:
         run: |
           (
           printf '{ "name": "mage.instance", "version": "%s" }\n' ${{ inputs.version }} &&
-          printf '{ "scripts": { "start": "mage.service --plugin @ngageoint/mage.nga-msi --plugin @ngageoint/mage.image.service" }}\n' &&
+          printf '{ "scripts": { "start": "mage.service" }}\n' &&
           printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
           printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz)
           ) | json --deep-merge > package.json
