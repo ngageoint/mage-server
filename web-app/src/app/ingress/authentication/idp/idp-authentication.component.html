@@ -3,5 +3,14 @@
   [textColor]="strategy.textColor"
   [color]="strategy.buttonColor"
   [icon]="strategy.icon"
-  (click)="signin()">
+  (authenticate)="signin()">
 </authentication-button>
+
+<div *ngIf="error" class="error-container">
+  <div class="error">
+    <span class="material-symbols-outlined error__icon">sentiment_dissatisfied</span>
+    <div class="error__message">
+      <div>{{error?.message}}</div>
+    </div>
+  </div>
+</div>

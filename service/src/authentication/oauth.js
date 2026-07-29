@@ -147,11 +147,6 @@ function setDefaults(strategy) {
 
 function initialize(strategy) {
    setDefaults(strategy);
-
-   // TODO lets test with newer geoaxis server to see if this is still needed
-   // If it is, this should be a admin client side option, would also need to modify the
-   // renderer to provide a more generic message
-   strategy.redirect = false;
    configure(strategy);
 
    function authenticate(req, res, next) {
@@ -188,9 +183,10 @@ function initialize(strategy) {
 
    app.get(`/auth/${strategy.name}/signin`,
       function (req, res, next) {
+         req.session.oauthContext = { origin: req.query.state || 'web' }
+
          passport.authenticate(strategy.name, {
-            scope: strategy.settings.scope,
-            state: req.query.state
+            scope: strategy.settings.scope
          })(req, res, next);
       }
    );
@@ -198,7 +194,10 @@ function initialize(strategy) {
    app.get(`/auth/${strategy.name}/callback`,
       authenticate,
       function (req, res) {
-         if (req.query.state === 'mobile') {
+         const { origin } = req.session.oauthContext || {}
+         delete req.session.oauthContext
+
+         if (origin === 'mobile') {
             let uri;
             if (!req.user.active || !req.user.enabled) {
                uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
@@ -206,13 +205,22 @@ function initialize(strategy) {
                uri = `mage://app/authentication?token=${req.token}`
             }
 
-            if (strategy.redirect) {
-               res.redirect(uri);
-            } else {
-               res.render('oauth', { uri: uri });
-            }
+            res.redirect(uri);
          } else {
-            res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
+            res.render('authentication', { success: true, login: { token: req.token, user: req.user } });
+         }
+      },
+      // eslint-disable-next-line no-unused-vars
+      function (err, req, res, next) {
+         log.error(strategy.title + ' authentication failed', err);
+
+         const { origin } = req.session.oauthContext || {}
+         delete req.session.oauthContext
+
+         if (origin === 'mobile') {
+            res.redirect('mage://app/error_account');
+         } else {
+            res.render('authentication', { success: false, login: {} });
          }
       }
    );

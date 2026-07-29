@@ -6,6 +6,16 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ---
 
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
+### Service
+#### Bug Fixes
+* OAuth/SAML/OIDC sign-in no longer hangs on a stuck popup or in-app browser when authentication fails; errors are now logged server-side and the popup/mobile flow always closes or redirects cleanly
+* Inactive, disabled, or misconfigured-strategy accounts signing in via OAuth/SAML/OIDC now consistently report account status instead of silently failing
+#### Security
+* The IdP sign-in popup now computes its `postMessage` target origin client-side instead of trusting the request's `Host` header, removing a potential host-header-injection vector
+
+### Web App
+#### Bug Fixes
+* OAuth/SAML/OIDC sign-in for inactive or disabled accounts now shows the account status screen (previously failed silently with no feedback); disabled accounts get their own distinct message instead of an incorrect "Account Created" message
 
 ## [6.6.0](https://github.com/ngageoint/mage-server/releases/tag/6.6.0)
 ### Service

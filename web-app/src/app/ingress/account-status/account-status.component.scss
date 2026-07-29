@@ -19,6 +19,18 @@ p {
   font-size: 96px;
   font-variation-settings: 'fill' 0, 'wght' 200, 'grad' 0, 'opsz' 96;
   margin-bottom: 32px;
+
+  &--active {
+    color: #4CAF50;
+  }
+
+  &--inactive {
+    color: #FFA000;
+  }
+
+  &--disabled {
+    color: #F44336;
+  }
 }
 
 .actions {

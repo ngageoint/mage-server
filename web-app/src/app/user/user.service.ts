@@ -51,7 +51,7 @@ export class UserService {
     const subject = new Subject<any>();
 
     const url = '/auth/' + strategy + '/signin';
-    const authWindow = window.open(url, '_blank');
+    window.open(url, '_blank');
 
     function onMessage(event: any) {
       window.removeEventListener('message', onMessage, false);
@@ -62,8 +62,6 @@ export class UserService {
 
       subject.next(event.data);
       subject.complete();
-
-      authWindow?.close();
     }
 
     window.addEventListener('message', onMessage, false);

@@ -1,6 +1,6 @@
 <div class="container" @disableOnEnter>
   <div class="state" *ngIf="ingress.state === IngressState.Signin" @slide>
-    <authentication [landing]="landing" [api]="api" (authenticated)="onAuthenticated($event)" (signup)="onSignup()"></authentication>
+    <authentication [landing]="landing" [api]="api" (authenticated)="onAuthenticated($event)" (signup)="onSignup()" (created)="onCreated($event)"></authentication>
   </div>
 
   <div class="state" *ngIf="ingress.state === IngressState.Authorization" @slide>
@@ -12,15 +12,19 @@
   </div>
 
   <div *ngIf="ingress.state === IngressState.Signup" @slide class="state">
-    <signup (complete)="signup($event)"></signup>
+    <signup (complete)="onCreated($event)"></signup>
   </div>
 
   <div *ngIf="ingress.state === IngressState.ActiveAccount" @slide class="state">
-    <account-status [active]="true" (complete)="onAccountStatus()"></account-status>
+    <account-status [status]="'active'" (complete)="onAccountStatus()"></account-status>
   </div>
 
   <div *ngIf="ingress.state === IngressState.InactiveAccount" @slide class="state">
-    <account-status [active]="false" (complete)="onAccountStatus()"></account-status>
+    <account-status [status]="'inactive'" (complete)="onAccountStatus()"></account-status>
+  </div>
+
+  <div *ngIf="ingress.state === IngressState.DisabledAccount" @slide class="state">
+    <account-status [status]="'disabled'" (complete)="onAccountStatus()"></account-status>
   </div>
 
   <div *ngIf="ingress.state === IngressState.Initialize" @slide class="state">

@@ -1,10 +1,21 @@
 html
   head
     script.
-      var login = !{JSON.stringify(login)};
-      window.opener.postMessage(login, '#{host}');
+      (function() {
+        var login = !{JSON.stringify(login)};
+        // Ensure host is just the origin (protocol + host + port)
+        var targetOrigin = window.location.origin;
+
+        // Safely send message to opener
+        if (window.opener && targetOrigin) {
+          window.opener.postMessage(login, targetOrigin);
+        }
+
+        // Close after a short delay to allow message delivery
+        setTimeout(() => window.close(), 100);
+      })();
   body
-    if (success)
+    if success
       p Successful authentication
     else
       p Authentication error
