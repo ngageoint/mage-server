@@ -6,7 +6,8 @@ on:
       image-tag:
         description: |
           Supply a tag to push the image to ghcr.io with the given tag.  Without a tag, the workflow will not push,
-          but only build the image.
+          but only build the image.  If the workflow runs from the develop branch for testing, the image will 
+          implicitly receive the 'dev' tag.
         type: string
         required: false
 
@@ -47,7 +48,7 @@ jobs:
           file: ./docker/server/Dockerfile
           tags: ${{ steps.image-info.outputs.url }}
           platforms: linux/amd64
-          push: ${{ steps.image-info.outputs.tag }} != local
+          push: ${{ steps.image-info.outputs.tag != 'local' }}
           annotations: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ steps.image-info.outputs.version }}
