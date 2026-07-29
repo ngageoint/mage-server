@@ -25,6 +25,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: checkout
+        uses: actions/checkout@v7
+
       - name: image-info
         id: image-info
         run: |
