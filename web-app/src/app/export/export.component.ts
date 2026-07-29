@@ -1,9 +1,10 @@
 import { Component, OnChanges, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { ExportDialogComponent } from './export-dialog.component';
 
 @Component({
-  template: '<div></div>'
+    template: '<div></div>',
+    standalone: false
 })
 export class ExportComponent implements OnChanges {
   @Input() open: any;
@@ -22,7 +23,7 @@ export class ExportComponent implements OnChanges {
   }
 
   openExportDialog(): void {
-    this.dialog.open(ExportDialogComponent).afterClosed().subscribe(result => {
+    this.dialog.open(ExportDialogComponent, { width: '650px', maxWidth: '650px' }).afterClosed().subscribe(result => {
       if (!result || result === 'closeAction') {
         this.onExportClose.emit();
       }

@@ -1,1 +1,14 @@
-:host ::ng-deep.mat-icon[hidden] { display: none; }
+.map-control-fab {
+  --mat-fab-small-container-color: #ffffff;
+  --mat-fab-small-foreground-color: var(--mat-sys-primary);
+}
+
+:host ::ng-deep .map-control-fab .mat-mdc-button-persistent-ripple,
+:host ::ng-deep .map-control-fab .mdc-button__ripple,
+:host ::ng-deep .map-control-fab .mat-mdc-button-touch-target {
+  border-radius: var(--mat-fab-small-container-shape, var(--mat-sys-corner-medium));
+}
+
+:host ::ng-deep .mat-icon[hidden] {
+  display: none;
+}

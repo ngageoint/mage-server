@@ -1,44 +1,48 @@
 <mat-toolbar>
-  <button mat-icon-button color="primary" (click)="close()">
+  <button matIconButton (click)="close()">
     <mat-icon>arrow_back</mat-icon>
   </button>
 
-  <span class="title">{{feed?.title}}</span>
+  <span *ngIf="primary" class="title">{{ primary }}</span>
 </mat-toolbar>
 
 <div class="feed-item">
   <mat-card class="feed-item__card">
     <div class="card-header">
       <div class="card-header-text">
-        <div class="card-overline">{{date}}</div>
-        <div class="card-title">{{primary}}</div>
-        <div class="card-subtitle">{{secondary}}</div>
+        <div *ngIf="date" class="card-overline">{{ date }}</div>
+        <div *ngIf="primary" class="card-title">{{ primary }}</div>
+        <div *ngIf="secondary" class="card-subtitle">{{ secondary }}</div>
       </div>
-      <mat-icon mat-card-avatar *ngIf="!feed.icon" color="primary">place</mat-icon>
-      <mage-static-icon-img mat-card-avatar *ngIf="feed.icon" [iconRef]="feed.icon"></mage-static-icon-img>
+
+      <div class="card-avatar">
+        <mat-icon *ngIf="!feed.icon">place</mat-icon>
+        <mage-static-icon-img *ngIf="feed.icon" [iconRef]="feed.icon"></mage-static-icon-img>
+      </div>
     </div>
-    <div mat-card-image>
-      <map-clip class="map" [feature]=mapFeature></map-clip>
+
+    <div class="card-image">
+      <map-clip class="map" [feature]="mapFeature"></map-clip>
     </div>
+
     <div class="card-actions">
-      <button mat-button color="primary" (click)="onLocationClick()">
+      <button matButton (click)="onLocationClick()">
         <mat-icon>gps_fixed</mat-icon>
-        {{item?.geometry|geometry:5}}
+        <span>{{ item?.geometry | geometry:5 }}</span>
       </button>
     </div>
   </mat-card>
 
   <mat-card class="feed-item__card">
-    <div class="mat-title">Properties</div>
-    <mat-card-content>
-      <div *ngFor="let property of properties">
-        <div class="item">
-          <div class="mat-body-1">{{property.key}}</div>
-          <div class="mat-body-2">{{property.value}}</div>
-        </div>
-        <mat-divider></mat-divider>
-      </div>
-    </mat-card-content>
+    <mat-card-header>
+      <mat-card-title>Properties</mat-card-title>
+    </mat-card-header>
+
+    <mat-list>
+      <mat-list-item *ngFor="let property of properties">
+        <span matListItemTitle class="prop-key">{{ property.key }}</span>
+        <span matListItemLine class="prop-value">{{ property.value }}</span>
+      </mat-list-item>
+    </mat-list>
   </mat-card>
 </div>
-

@@ -6,14 +6,17 @@ import { HttpEvent, HttpEventType } from '@angular/common/http';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
-import { PasswordStrength, passwordStrengthScores } from '../../entities/entities.password';
+import { PasswordStrength, passwordStrengthScores } from '../../entities/password/password';
+import { SessionService } from 'mage-web-app/http/session.service';
+import { emailValidator } from 'mage-web-app/email/email';
 
 @Component({
-  selector: 'profile',
-  templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss']
+    selector: 'profile',
+    templateUrl: './profile.component.html',
+    styleUrls: ['./profile.component.scss'],
+    standalone: false
 })
 export class ProfileComponent implements OnInit {
   user: any
@@ -23,7 +26,7 @@ export class ProfileComponent implements OnInit {
   info = new FormGroup({
     username: new FormControl<string>({ value: '', disabled: true }, []),
     displayName: new FormControl<string>('', [Validators.required]),
-    email: new FormControl<string>('', [Validators.email]),
+    email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>('', []),
   })
   infoError?: string
@@ -41,10 +44,11 @@ export class ProfileComponent implements OnInit {
     public dialog: MatDialog,
     private router: Router,
     private userService: UserService,
+    private sessionService: SessionService
   ) { }
 
   ngOnInit(): void {
-    this.user = this.userService.myself
+    this.user = this.sessionService.user
     this.setInfo(this.user)
 
     zxcvbnOptions.setOptions({
@@ -58,6 +62,11 @@ export class ProfileComponent implements OnInit {
   }
 
   onSave(): void {
+    this.info.markAllAsTouched()
+    if (this.info.invalid) {
+      return
+    }
+
     this.saving = true
 
     this.userService.saveProfile({
@@ -87,7 +96,8 @@ export class ProfileComponent implements OnInit {
 
   onPasswordChanged(password: string) {
     if (password && password.length > 0) {
-      const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
+      const userInputs = [this.user.username, this.user.displayName, this.user.email].filter(Boolean)
+      const score = password && password.length ? zxcvbn(password, userInputs).score : 0;
       this.passwordStrength = passwordStrengthScores[score]
     } else {
       this.passwordStrength = passwordStrengthScores[0]
@@ -113,6 +123,8 @@ export class ProfileComponent implements OnInit {
     if (this.password.valid) {
       this.userService.updatePassword(this.password.controls.currentPassword.value, this.password.controls.newPassword.value).subscribe({
         next: () => {
+          this.sessionService.clearSession()
+
           const dialogRef = this.dialog.open(PasswordResetSuccessDialog, {
             disableClose: true,
             autoFocus: false

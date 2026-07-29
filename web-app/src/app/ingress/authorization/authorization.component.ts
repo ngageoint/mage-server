@@ -7,12 +7,14 @@ export interface AuthorizationEvent {
 }
 
 @Component({
-  selector: 'authorization',
-  templateUrl: './authorization.component.html',
-  styleUrls: ['./authorization.component.scss']
+    selector: 'authorization',
+    templateUrl: './authorization.component.html',
+    styleUrls: ['./authorization.component.scss'],
+    standalone: false
 })
 export class AuthorizationComponent {
   @Input() token: string
+  @Input() compact = false
   @Output() authorized = new EventEmitter<AuthorizationEvent>()
 
   deviceId = new FormControl('', [Validators.required])

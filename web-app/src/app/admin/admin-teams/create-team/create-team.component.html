@@ -1,0 +1,26 @@
+<form [formGroup]="form" (ngSubmit)="save()">
+  <h2 mat-dialog-title>{{ isEditMode ? 'Edit Team' : 'Create New Team' }}</h2>
+
+  <mat-dialog-content>
+    <div *ngIf="serverError()" class="server-error">
+      <mat-icon>error_outline</mat-icon>
+      {{ serverError() }}
+    </div>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Team Name</mat-label>
+      <input matInput formControlName="name" />
+      <mat-error *ngIf="form.controls.name.hasError('required')">Team name is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button matButton type="button" (click)="cancel()" [disabled]="saving()">Cancel</button>
+    <button matButton="filled" type="submit" [disabled]="form.invalid || saving()">{{ isEditMode ? 'Save' : 'Create Team' }}</button>
+  </mat-dialog-actions>
+</form>

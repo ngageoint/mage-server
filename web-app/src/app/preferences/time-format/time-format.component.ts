@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatSelectChange } from '@angular/material/select';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 interface TimeFormatOption {
@@ -8,9 +8,10 @@ interface TimeFormatOption {
 }
 
 @Component({
-  selector: 'time-format',
-  templateUrl: './time-format.component.html',
-  styleUrls: ['./time-format.component.scss']
+    selector: 'time-format',
+    templateUrl: './time-format.component.html',
+    styleUrls: ['./time-format.component.scss'],
+    standalone: false
 })
 export class TimeFormatComponent implements OnInit {
 

@@ -24,6 +24,15 @@ export MAGE_EXPORT_SWEEP_INTERVAL=28800
 export MAGE_EXPORT_TTL=259200
 # number of seconds an authentication token is valid; default 28800 (8 hours)
 export MAGE_TOKEN_EXPIRATION=28800
+# root logging level for MAGE audit logs (logs all routes)
+export MAGE_LOG_LEVEL=info
+# root logging level for MAGE's mongoose logs (logs all database queries)
+export MONGOOSE_LOG_LEVEL=info
+# list of HTTP methods to include in the audit request log
+export MAGE_HTTP_REQUEST_LOG_METHODS=GET,POST,PUT,PATCH,DELETE
+# log output format: 'json' emits one JSON object per line for log collectors
+# (Splunk, CloudWatch, etc.); any other value emits the human-readable console format
+export MAGE_LOG_FORMAT=json
 # the URL that specifies MAGE's connection to mongodb
 export MAGE_MONGO_URL=mongodb://127.0.0.1:27017/magedb
 # whether to use secure, TLS sockets to connect to mongo
@@ -55,9 +64,8 @@ export MAGE_MONGO_X509_CA_CERT_FILE=
 export MAGE_MONGO_CONN_TIMEOUT=300
 # seconds between attempts to connect to mongodb
 export MAGE_MONGO_CONN_RETRY_DELAY=5
-# Using self-signed certs can cause issues.  If it does, set this to true. 
+# Using self-signed certs can cause issues.  If it does, set this to true.
 # (https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation).
 export MAGE_MONGO_TLS_INSECURE=false
 # Name of the db that contains the credentials
 export MAGE_MONGO_CRED_DB_NAME=
-export SFTP_PLUGIN_CONFIG_SALT="A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"

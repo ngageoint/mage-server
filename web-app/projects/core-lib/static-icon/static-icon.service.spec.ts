@@ -1,5 +1,5 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
+import { HttpClient, HttpErrorResponse, HttpParams, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
 import { TestBed, waitForAsync } from '@angular/core/testing'
 import * as _ from 'lodash'
 import { RegisteredStaticIconReference, SourceUrlStaticIconReference, StaticIcon } from './static-icon.model'
@@ -14,10 +14,9 @@ describe('StaticIconService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ]
-    })
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     http = TestBed.inject(HttpClient)
     httpTest = TestBed.inject(HttpTestingController)
     service = TestBed.inject(StaticIconService)

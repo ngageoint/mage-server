@@ -41,7 +41,7 @@ describe("team read tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -62,7 +62,7 @@ describe("team read tests", function () {
       .withArgs({})
       .chain('populate').withArgs('userIds')
       .chain('exec')
-      .yields(null, [mockTeam]);
+      .resolves([mockTeam]);
 
     request(app)
       .get('/api/teams')
@@ -96,7 +96,7 @@ describe("team read tests", function () {
       .withArgs({ $or: [{ userIds: { $in: [userId] } }, aclOwner, aclManager, aclGuest] })
       .chain('populate').withArgs('userIds')
       .chain('exec')
-      .yields(null, [mockTeam]);
+      .resolves([mockTeam]);
 
     request(app)
       .get('/api/teams')

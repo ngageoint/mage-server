@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+    <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+        <mat-label>{{ data.searchPlaceholder }}</mat-label>
+        <input matInput [(ngModel)]="currentSearchTerm" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="currentSearchTerm" (click)="onSearchCleared()" aria-label="Clear">
+            <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+        </button>
+    </mat-form-field>
+
+    <div class="results-container">
+        <mat-selection-list [multiple]="false" hideSingleSelectionIndicator class="search-results-list" data-testid="search-results-table">
+            <mat-list-option *ngFor="let item of dataSource.data" [value]="item" [selected]="isSelected(item)"
+                (click)="onRowClick(item, $event)">
+                <mat-icon matListItemIcon *ngIf="getItemIcon(item)" fontSet="material-symbols-outlined">{{ getItemIcon(item) }}</mat-icon>
+                <span matListItemTitle>{{ getColumnValue(item, columns[0]) }}</span>
+                <span matListItemLine *ngIf="columns.length > 1">{{ getSecondaryText(item) }}</span>
+            </mat-list-option>
+        </mat-selection-list>
+
+        <div class="no-results" *ngIf="dataSource.data.length === 0" data-testid="no-results">
+            <mat-icon fontSet="material-symbols-outlined">search_off</mat-icon>
+            <span>No results found</span>
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-paginator *ngIf="totalCount > 0" [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[]"
+    (page)="onPageChange($event)" data-testid="paginator">
+</mat-paginator>
+
+<mat-dialog-actions>
+    <button matButton mat-dialog-close data-testid="cancel-button">Cancel</button>
+    <button matButton="filled" (click)="onConfirm()" [disabled]="getSelectedCount() === 0" data-testid="confirm-button">
+        Add Selected
+    </button>
+</mat-dialog-actions>

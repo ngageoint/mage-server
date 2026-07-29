@@ -12,7 +12,60 @@ export enum TriggerRule {
   CreateAndUpdate = "CreateAndUpdate"
 }
 
+/**
+ * Determines how the events list is applied when filtering which events to sync.
+ * - All: Sync all active events (ignore the events list)
+ * - Include: Only sync events in the events list
+ * - Exclude: Sync all active events except those in the events list
+ */
+export enum EventFilterMode {
+  All = 'all',
+  Include = 'include',
+  Exclude = 'exclude'
+}
+
+/**
+ * Summary of a MAGE event for display in the configuration UI
+ */
+export interface MageEventSummary {
+  id: number
+  name: string
+}
+
+/**
+ * Represents the result of a connection test to the SFTP server
+ */
+export interface ConnectionTestResult {
+  success: boolean
+  message: string
+  timestamp?: Date
+}
+
+/**
+ * Represents the current status of the SFTP plugin
+ */
+export interface PluginStatus {
+  connected: boolean
+  lastError?: string
+  lastSync?: Date
+  lastConnectionAttempt?: Date
+}
+
 export type MageEventId = number
+
+export interface SftpObservationRecord {
+  eventId: number
+  observationId: string
+  status: string
+  lastObservationModified?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ObservationStatusResponse {
+  records: SftpObservationRecord[]
+  counts: Record<string, number>
+}
 
 /**
  * Contains various configuration values used by the plugin.
@@ -35,7 +88,13 @@ export interface SFTPPluginConfig {
   pageSize: number
 
   /**
-   * Events in which to SFTP observations
+   * Determines how the events list is applied: 'all' syncs everything,
+   * 'include' syncs only listed events, 'exclude' syncs all except listed events.
+   */
+  eventFilterMode: EventFilterMode
+
+  /**
+   * Events to include or exclude based on eventFilterMode
    */
   events: Array<MageEventId>
 
@@ -62,7 +121,14 @@ export interface SFTPPluginConfig {
    */
   sftpClient: {
     host: string,
+    port: number,
     path: string,
     username: string
   }
+
+  /**
+   * Whether a private key is stored on the server.
+   * This is a read-only field returned by the server and never sent by the client.
+   */
+  hasPrivateKey?: boolean
 }

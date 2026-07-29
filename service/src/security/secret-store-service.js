@@ -1,6 +1,6 @@
 "use strict";
 
-const log = require('winston')
+const log = require('../logger')
     , FileSystemSecretStore = require("./storage/file-system-secret-store")
     , KeyMgtFactory = require('./key-mgt/key-mgt-factory')
     , DataResponse = require('./responses/data-response');

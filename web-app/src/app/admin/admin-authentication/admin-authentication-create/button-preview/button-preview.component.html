@@ -1,0 +1,28 @@
+<div *ngIf="editable">
+   <div class="button-option">
+      <p class="field-label">Text Color</p>
+      <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')">
+      </color-picker>
+   </div>
+   <div class="button-option">
+      <p class="field-label">Button Color</p>
+      <color-picker [hexColor]="strategy.buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')">
+      </color-picker>
+   </div>
+   <div class="button-option">
+      <p class="field-label">Button Icon</p>
+      <icon-upload [strategy]="strategy"></icon-upload>
+   </div>
+</div>
+<div class="preview-button">
+   <div class="auth-button-preview"
+      [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor}">
+      <span class="third-party-logo" [ngStyle]="{'color': strategy.buttonColor}">
+         <img *ngIf="strategy.icon" [src]="strategy.icon" style="width:32px; height:32px">
+         <mat-icon *ngIf="!strategy.icon">security</mat-icon>
+      </span>
+      <span class="third-party-button-text" [ngStyle]="{color: strategy.textColor}">
+         Sign In With {{strategy.title}}
+      </span>
+   </div>
+</div>

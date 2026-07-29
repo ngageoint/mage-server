@@ -19,7 +19,7 @@ const RoleSchema = new Schema(
   }
 );
 
-RoleSchema.pre('remove', function (next) {
+RoleSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   const role = this;
 
   User.removeRoleFromUsers(role, function (err) {
@@ -39,7 +39,7 @@ RoleSchema.pre('save', function (next) {
     if (!validPermissions[permission]) {
       return next(new Error("Permission '" + permission + "' is not a valid permission"));
     }
-  };
+  }
 
   next();
 });
@@ -53,22 +53,25 @@ function transform(role, ret) {
 const Role = mongoose.model('Role', RoleSchema);
 
 exports.getRoleById = function (id, callback) {
-  Role.findById(id, function (err, role) {
-    callback(err, role);
-  });
+  Role.findById(id).then(
+    role => callback(null, role),
+    err => callback(err)
+  );
 };
 
 exports.getRole = function (name, callback) {
-  Role.findOne({ name: name }, function (err, role) {
-    callback(err, role);
-  });
+  Role.findOne({ name: name }).then(
+    role => callback(null, role),
+    err => callback(err)
+  );
 };
 
 exports.getRoles = function (callback) {
   const query = {};
-  Role.find(query, function (err, roles) {
-    callback(err, roles);
-  });
+  Role.find(query).then(
+    roles => callback(null, roles),
+    err => callback(err)
+  );
 };
 
 exports.createRole = function (role, callback) {
@@ -78,19 +81,22 @@ exports.createRole = function (role, callback) {
     permissions: role.permissions
   };
 
-  Role.create(create, function (err, role) {
-    callback(err, role);
-  });
+  Role.create(create).then(
+    role => callback(null, role),
+    err => callback(err)
+  );
 };
 
 exports.updateRole = function (id, update, callback) {
-  Role.findByIdAndUpdate(id, update, { new: true }, function (err, role) {
-    callback(err, role);
-  });
+  Role.findByIdAndUpdate(id, update, { new: true }).then(
+    role => callback(null, role),
+    err => callback(err)
+  );
 };
 
 exports.deleteRole = function (role, callback) {
-  role.remove(function (err) {
-    callback(err, role);
-  });
+  role.deleteOne().then(
+    () => callback(null, role),
+    err => callback(err)
+  );
 };

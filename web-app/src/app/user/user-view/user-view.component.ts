@@ -1,16 +1,17 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { LatLng } from 'leaflet';
 import { PointAccuracy } from '../../map/clip/clip.component';
-import * as moment from 'moment'
+import moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { LocationService } from '../location/location.service';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 
 @Component({
-  selector: 'user-view',
-  templateUrl: './user-view.component.html',
-  styleUrls: ['./user-view.component.scss']
+    selector: 'user-view',
+    templateUrl: './user-view.component.html',
+    styleUrls: ['./user-view.component.scss'],
+    standalone: false
 })
 export class UserViewComponent implements OnInit, OnChanges {
   @Input() user: any

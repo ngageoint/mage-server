@@ -5,9 +5,10 @@ import { MapService } from '../../map/map.service';
 import { MomentPipe } from '../../moment/moment.pipe';
 
 @Component({
-  selector: 'feed-item',
-  templateUrl: './feed-item.component.html',
-  styleUrls: ['./feed-item.component.scss']
+    selector: 'feed-item',
+    templateUrl: './feed-item.component.html',
+    styleUrls: ['./feed-item.component.scss'],
+    standalone: false
 })
 export class FeedItemComponent implements OnChanges {
   @Input() feed: Feed;
@@ -69,7 +70,7 @@ export class FeedItemComponent implements OnChanges {
           key: schemaProperties[key]?.title || key,
           value: value
         }
-      });
+      }).filter(property => property.value != null && property.value !== '');
     }
   }
 

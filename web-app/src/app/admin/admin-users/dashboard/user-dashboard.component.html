@@ -1,0 +1,61 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions">
+    <button matButton="outlined" class="import-users-button" *ngIf="hasUserCreatePermission" (click)="openImportModal()">
+      <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Import Users
+    </button>
+    <button matButton="filled" *ngIf="hasUserCreatePermission" (click)="createUser()">
+      <mat-icon>add</mat-icon>New User
+    </button>
+  </div>
+</ng-template>
+
+<div class="users-page">
+
+  <mat-card appearance="elevated" class="users-card">
+    <div class="filter-row">
+      <mat-chip-listbox [(ngModel)]="userStatusFilter" (change)="onStatusFilterChange($event.value)">
+        <mat-chip-option value="all">All</mat-chip-option>
+        <mat-chip-option value="active">Active</mat-chip-option>
+        <mat-chip-option value="inactive">Inactive</mat-chip-option>
+        <mat-chip-option value="disabled">Disabled</mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+
+    <div class="toolbar">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Search users</mat-label>
+        <input matInput [(ngModel)]="userSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="userSearch" (click)="onSearchCleared()" aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <mat-nav-list *ngIf="dataSource.length">
+      <mat-list-item *ngFor="let user of dataSource" [routerLink]="['../users', user.id]">
+        <user-avatar matListItemAvatar [user]="user" avatar-width="40" avatar-height="40"></user-avatar>
+        <span matListItemTitle>{{ user.displayName }}</span>
+        <span matListItemLine>{{ user.email }}</span>
+      </mat-list-item>
+    </mat-nav-list>
+
+    <div class="empty-state" *ngIf="!dataSource.length">
+      <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">group</mat-icon>
+      <div class="empty-state-text" *ngIf="userSearch; else noUsers">No users match your search</div>
+      <ng-template #noUsers>
+        <div class="empty-state-text">No users found</div>
+      </ng-template>
+    </div>
+
+    <mat-paginator
+      [length]="totalUsers"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </mat-card>
+
+</div>

@@ -1,0 +1,22 @@
+.info-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--mat-sys-secondary-container);
+  border-radius: 8px;
+  font-size: var(--mat-sys-body-small-size);
+  color: var(--mat-sys-on-secondary-container);
+
+  mat-icon {
+    font-size: var(--mat-sys-body-large-size);
+    width: var(--mat-sys-body-large-size);
+    height: var(--mat-sys-body-large-size);
+    flex-shrink: 0;
+  }
+}
+
+.delete-button {
+  --mat-button-filled-container-color: var(--mat-sys-error);
+  --mat-button-filled-label-text-color: var(--mat-sys-on-error);
+}

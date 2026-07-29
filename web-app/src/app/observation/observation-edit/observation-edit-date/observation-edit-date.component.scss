@@ -1,23 +1,44 @@
-.datetime {
-  display: flex;
-  margin: 0 -8px;
-  align-items: flex-start;
-}
-
-.date, .time {
-  flex: 1 1 0;
-  padding: 0 8px;
-}
-
-:host ::ng-deep .mat-form-field-infix {
-  width: auto;
-}
-
-:host ::ng-deep mat-icon {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-mat-form-field {
+:host {
+  display: block;
   width: 100%;
-  margin-bottom: 16px;
+}
+
+.datetime {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.date,
+.time {
+  min-width: 0;
+  width: 100%;
+}
+
+.date mat-form-field,
+.time mat-form-field {
+  width: 100%;
+}
+
+button[matSuffix] {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+input[type='time'] {
+  color-scheme: light;
+  accent-color: var(--mat-sys-primary);
+  font: var(--mat-sys-body-large);
+}
+
+input[type='time']::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .datetime {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }

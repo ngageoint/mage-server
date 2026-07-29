@@ -1,3 +1,4 @@
-mat-icon {
-  color: white;
+[matFab] {
+  --mat-fab-container-color: var(--mat-sys-primary);
+  --mat-fab-foreground-color: var(--mat-sys-on-primary);
 }

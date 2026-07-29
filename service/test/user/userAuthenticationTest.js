@@ -7,8 +7,6 @@ const sinon = require('sinon')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('sinon-mongoose');
-
 describe("user authentication tests", function () {
 
   let app;
@@ -17,7 +15,7 @@ describe("user authentication tests", function () {
     sinon.mock(TokenModel)
       .expects('getToken')
       .withArgs('12345')
-      .yields(null, createToken(mongoose.Types.ObjectId(), ['READ_USER']));
+      .yields(null, createToken(new mongoose.Types.ObjectId(), ['READ_USER']));
 
     const configs = [];
     const config = {

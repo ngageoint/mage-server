@@ -1,37 +1,36 @@
-.mat-list-base {
-  padding: 0px;
+.popup {
+  display: flex;
+  align-items: center;
+  min-height: 88px;
+  padding: 8px 8px 8px 16px;
+  gap: 8px;
 }
 
-.mat-list-icon {
-  border-radius: unset !important;
-  height: unset !important;
+.popup__content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.mat-body-1 {
-  opacity: .60;
+.item__timestamp {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
-.mat-body-2 {
-  opacity: .87;
+.item__primary {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
 }
 
-.overline {
-  font: 500 10px/24px Roboto, "Helvetica Neue", sans-serif;
-  font-size: 10px !important;
-  text-transform: uppercase;
-  opacity: .60;
+.item__secondary {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .action {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.no-content {
-  flex: 1;
-  font-size: 24px;
-  padding-left: 16px;
-}
-
-.no-content > span {
-  opacity: .6;
+  color: var(--mat-sys-primary);
 }

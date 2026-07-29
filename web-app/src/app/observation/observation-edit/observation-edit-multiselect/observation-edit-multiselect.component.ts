@@ -1,8 +1,8 @@
-import { Component, ViewChild, ElementRef, Input, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, Input, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
-import { MatChipInputEvent, MatChipList } from '@angular/material/chips';
+import { MatChipInputEvent } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -18,34 +18,28 @@ interface MultiSelectField {
 }
 
 @Component({
-  selector: 'observation-edit-multiselect',
-  templateUrl: './observation-edit-multiselect.component.html',
-  styleUrls: ['./observation-edit-multiselect.component.scss']
+    selector: 'observation-edit-multiselect',
+    templateUrl: './observation-edit-multiselect.component.html',
+    styleUrls: ['./observation-edit-multiselect.component.scss'],
+    standalone: false
 })
-export class ObservationEditMultiselectComponent implements OnInit, AfterViewInit {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: MultiSelectField
+export class ObservationEditMultiselectComponent implements OnInit {
+  @Input() formGroup!: UntypedFormGroup
+  @Input() definition!: MultiSelectField
 
-  @ViewChild('chipList', { static: false }) chipList: MatChipList
-  @ViewChild('choiceInput', { static: false }) choiceInput: ElementRef<HTMLInputElement>
-  @ViewChild(MatAutocompleteTrigger, {static: false}) autocomplete: MatAutocompleteTrigger
+  @ViewChild('choiceInput', { static: false }) choiceInput!: ElementRef<HTMLInputElement>
+  @ViewChild(MatAutocompleteTrigger, { static: false }) autocomplete!: MatAutocompleteTrigger
 
-  visible = true
-  removable = true
   separatorKeysCodes: number[] = [ENTER, COMMA]
-  control: UntypedFormControl
+  control!: UntypedFormControl
   choiceControl = new UntypedFormControl()
   filteredChoices: Observable<Choice[]>
 
   constructor() {
     this.filteredChoices = this.choiceControl.valueChanges.pipe(
       startWith(''),
-      map(value => {
-        return !value || typeof value === 'string' ? value : value.title
-      }),
-      map(title => {
-        return title ? this.filter(title) : this.definition.choices.slice()
-      })
+      map(value => !value || typeof value === 'string' ? value : value.title),
+      map(title => title ? this.filter(title) : this.definition.choices.slice())
     )
   }
 
@@ -53,23 +47,12 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
     this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
   }
 
-  ngAfterViewInit(): void {
-    this.control.statusChanges.subscribe(() => {
-      this.checkErrorState()
-    })
-  }
-
   add(event: MatChipInputEvent): void {
     const choice = this.definition.choices.find((choice: Choice) => choice.title === event.value)
     if (!choice) return
 
     this.addChoice(choice.title)
-
-    // Reset the input value
-    if (event.input) {
-      event.input.value = ''
-    }
-
+    this.choiceInput.nativeElement.value = ''
     this.autocomplete.closePanel()
   }
 
@@ -87,7 +70,6 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
 
   selected(event: MatAutocompleteSelectedEvent): void {
     this.addChoice(event.option.value)
-
     this.choiceInput.nativeElement.value = ''
   }
 
@@ -100,12 +82,6 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
 
   private filter(value: string): Choice[] {
     const filterValue = value.toLowerCase()
-
     return this.definition.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0)
   }
-
-  private checkErrorState(): void {
-    this.chipList.errorState = this.definition.required && (!this.control.value || this.control.value.length === 0)
-  }
-
 }

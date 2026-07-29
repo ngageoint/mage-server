@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 'use strict';
 
 import async from 'async'
@@ -9,7 +10,7 @@ import * as User from '../models/user'
 import * as Device from '../models/device'
 import * as json2csv from 'json2csv'
 const mgrs = require('mgrs')
-const log = require('winston')
+const log = require('../logger');
 const wkx = require('wkx')
 import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
 import stream from 'stream'
@@ -20,47 +21,9 @@ import { UserLocationDocument, UserLocationDocumentProperties } from '../models/
 
 export class Csv extends Exporter {
 
+  private _maxFormCounts: Record<string, number> = {};
+
   export(streamable: NodeJS.WritableStream): void {
-    const observationFields = [
-      { label: 'id', value: 'id' },
-      { label: 'User', value: 'user' },
-      { label: 'Device', value: 'device' },
-      { label: 'Shape Type', value: 'shapeType' },
-      { label: 'Latitude', value: 'latitude' },
-      { label: 'Longitude', value: 'longitude' },
-      { label: 'MGRS', value: 'mgrs' },
-      { label: 'Date (ISO8601)', value: 'timestamp' },
-      { label: 'Excel Timestamp (UTC)', value: 'excelTimestamp' },
-      { label: 'Well Known Text', value: 'wkt' },
-      { label: 'Location Provider', value: 'provider' },
-      { label: 'Location Accuracy +/- (meters)', value: 'accuracy' },
-    ]
-    this._event.forms
-      .filter(form => !form.archived)
-      .forEach(form => {
-        const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
-        form.fields
-          .filter(field => !field.archived)
-          .sort((a, b) => a.id - b.id)
-          .filter(field => field.type !== 'attachment')
-          .forEach(field => {
-            observationFields.push({
-              label: formPrefix + field.title,
-              value: formPrefix + field.name
-            });
-          });
-      });
-
-    observationFields.push({
-      label: 'Attachment',
-      value: 'attachment'
-    });
-
-    observationFields.push({
-      label: 'Attachment Orig Name',
-      value: 'attachmentOriginalName'
-    })
-
     const locationFields = [
       'user',
       'timestamp',
@@ -84,11 +47,9 @@ export class Csv extends Exporter {
           if (!this._filter.exportObservations) {
             return done();
           }
-          const asyncParser = new json2csv.AsyncParser({ fields: observationFields }, { readableObjectMode: true, writableObjectMode: true });
-          archive.append(asyncParser.processor as stream.Transform, { name: 'observations.csv' });
-          this.streamObservations(asyncParser.input, archive, (err: any) => {
-            done(err);
-          });
+          this.exportObservations(archive)
+            .then(() => done())
+            .catch(err => done(err));
         },
         (done): void => {
           if (!this._filter.exportLocations) {
@@ -109,6 +70,85 @@ export class Csv extends Exporter {
         archive.finalize();
       }
     );
+  }
+
+  private async exportObservations(archive: archiver.Archiver): Promise<void> {
+    this._maxFormCounts = await this.getMaxFormInstanceCounts();
+    const observationFields = this.buildObservationFields();
+    const asyncParser = new json2csv.AsyncParser({ fields: observationFields }, { readableObjectMode: true, writableObjectMode: true });
+    archive.append(asyncParser.processor as stream.Transform, { name: 'observations.csv' });
+    return new Promise((resolve, reject) => {
+      this.streamObservations(asyncParser.input, archive, (err: any) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
+
+  private async getMaxFormInstanceCounts(): Promise<Record<string, number>> {
+    const maxFormCounts: Record<string, number> = {};
+    const cursor = this.requestObservations(this._filter);
+    await cursor.eachAsync(async (observation: ObservationDocument) => {
+      if (observation.properties?.forms) {
+        const counts: Record<string, number> = {};
+        observation.properties.forms.forEach((formEntry: any) => {
+          const key = String(formEntry.formId);
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        for (const [k, v] of Object.entries(counts)) {
+          maxFormCounts[k] = Math.max(maxFormCounts[k] || 0, v);
+        }
+      }
+    });
+    return maxFormCounts;
+  }
+
+  private buildObservationFields(): { label: string, value: string }[] {
+    const observationFields = [
+      { label: 'id', value: 'id' },
+      { label: 'User', value: 'user' },
+      { label: 'Device', value: 'device' },
+      { label: 'Shape Type', value: 'shapeType' },
+      { label: 'Latitude', value: 'latitude' },
+      { label: 'Longitude', value: 'longitude' },
+      { label: 'MGRS', value: 'mgrs' },
+      { label: 'Date (ISO8601)', value: 'timestamp' },
+      { label: 'Excel Timestamp (UTC)', value: 'excelTimestamp' },
+      { label: 'Well Known Text', value: 'wkt' },
+      { label: 'Location Provider', value: 'provider' },
+      { label: 'Location Accuracy +/- (meters)', value: 'accuracy' },
+    ];
+    this._event.forms
+      .filter(form => !form.archived)
+      .forEach(form => {
+        const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
+        const maxInstances = this._maxFormCounts[String(form.id)] || 1;
+        for (let i = 1; i <= maxInstances; i++) {
+          const instanceSuffix = maxInstances > 1 ? ` [${i}]` : '';
+          form.fields
+            .filter(field => !field.archived)
+            .sort((a, b) => a.id - b.id)
+            .filter(field => field.type !== 'attachment')
+            .forEach(field => {
+              observationFields.push({
+                label: formPrefix + field.title + instanceSuffix,
+                value: formPrefix + field.name + instanceSuffix
+              });
+            });
+        }
+      });
+
+    observationFields.push({
+      label: 'Attachment',
+      value: 'attachment'
+    });
+
+    observationFields.push({
+      label: 'Attachment Orig Name',
+      value: 'attachmentOriginalName'
+    });
+
+    return observationFields;
   }
 
   async streamObservations(stream: stream.Transform, archive: archiver.Archiver, done: (err?: any) => any): Promise<void> {
@@ -136,7 +176,7 @@ export class Csv extends Exporter {
       .catch(err => done(err));
   }
 
-  async flattenObservation(observation: ObservationDocument, cache: { user: UserDocument | null, device: any }, archive: archiver.Archiver): Promise<void> {
+  async flattenObservation(observation: ObservationDocument, cache: { user: UserDocument | null, device: any }, archive: archiver.Archiver): Promise<any> {
     const flat = {
       id: observation.id,
       ...observation.properties
@@ -175,16 +215,22 @@ export class Csv extends Exporter {
     flat.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
 
     if (observation.properties && observation.properties.forms) {
+      const formInstanceCount: Record<string, number> = {};
       observation.properties.forms.forEach(formEntry => {
         const form = this._event.formFor(formEntry.formId)
         if (!form) {
           return
         }
+        const formIdKey = String(formEntry.formId);
+        formInstanceCount[formIdKey] = (formInstanceCount[formIdKey] || 0) + 1;
+        const instanceNum = formInstanceCount[formIdKey];
+        const maxInstances = this._maxFormCounts[formIdKey] || 1;
+        const instanceSuffix = maxInstances > 1 ? ` [${instanceNum}]` : '';
         const formPrefix = this._event.forms.length > 1 ? form.name + '.' : ''
         for (const field of form.fields) {
           const fieldEntry = formEntry[field.name]
           if (fieldEntry !== undefined) {
-            flat[formPrefix + field.name] = fieldEntry
+            flat[formPrefix + field.name + instanceSuffix] = fieldEntry
           }
         }
       });

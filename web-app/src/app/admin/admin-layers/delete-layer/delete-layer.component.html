@@ -1,0 +1,18 @@
+<h2 mat-dialog-title>Delete "{{ layer.name }}"?</h2>
+
+<mat-dialog-content>
+  <p>This layer will be permanently deleted and all associated data will be removed. This action cannot be undone.</p>
+
+  <div class="error-alert" *ngIf="error">
+    <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button matButton type="button" (click)="cancel()" [disabled]="deleting" cdkFocusInitial>Cancel</button>
+  <button matButton type="button" class="delete-button" [disabled]="deleting" (click)="deleteLayer()">
+    <mat-icon fontSet="material-symbols-outlined">{{ deleting ? 'progress_activity' : 'delete' }}</mat-icon>
+    Delete Layer
+  </button>
+</mat-dialog-actions>

@@ -1,10 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import * as moment from 'moment';
+import moment from 'moment';
 import { LocalStorageService } from '../http/local-storage.service';
 
 @Pipe({
-  name: 'moment',
-  pure: false
+    name: 'moment',
+    pure: false,
+    standalone: false
 })
 export class MomentPipe implements PipeTransform {
 

@@ -1,4 +1,5 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { MatRipple } from '@angular/material/core';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 import { Feature } from 'geojson';
 import { FeedPanelService } from '../../../feed-panel/feed-panel.service';
@@ -6,13 +7,16 @@ import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MapService } from '../../../map/map.service';
 
 @Component({
-  selector: 'feed-item-summary',
-  templateUrl: './feed-item-summary.component.html',
-  styleUrls: ['./feed-item-summary.component.scss']
+    selector: 'feed-item-summary',
+    templateUrl: './feed-item-summary.component.html',
+    styleUrls: ['./feed-item-summary.component.scss'],
+    standalone: false
 })
 export class FeedItemSummaryComponent implements OnChanges {
   @Input() feed: Feed;
   @Input() item: Feature;
+
+  @ViewChild(MatRipple) ripple: MatRipple;
 
   hasContent = false;
   timestamp: number;
@@ -47,5 +51,11 @@ export class FeedItemSummaryComponent implements OnChanges {
   onItemSelect(): void {
     this.feedPanelService.selectFeedItem(this.feed, this.item);
     this.mapService.zoomToFeatureInLayer(this.item, `feed-${this.feed.id}`);
+  }
+
+  onRipple(): void {
+    this.ripple.launch({
+      centered: true
+    })
   }
 }

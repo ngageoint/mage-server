@@ -1,0 +1,428 @@
+<div class="form-page" *ngIf="event">
+
+  <mat-stepper *ngIf="creatingNewForm" linear #formStepper class="create-form-stepper">
+    <mat-step label="Details">
+      <div class="stepper-step-content">
+        <mat-form-field appearance="fill" subscriptSizing="dynamic">
+          <mat-label>Name</mat-label>
+          <input matInput type="text" placeholder="Form name" [(ngModel)]="form.name" name="name" required>
+          <mat-error *ngIf="generalFormSubmitted && !form.name">Name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" subscriptSizing="dynamic">
+          <mat-label>Description</mat-label>
+          <textarea matInput rows="3" placeholder="Brief description of the form."
+            [(ngModel)]="form.description" name="description"></textarea>
+        </mat-form-field>
+
+        <div class="color-field">
+          <input type="color" class="form-color-swatch" [(ngModel)]="form.color" name="colorSwatch"
+            aria-label="Form color">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="color-text-field">
+            <mat-label>Color</mat-label>
+            <input matInput type="text" [(ngModel)]="form.color" name="color" required>
+            <mat-error *ngIf="generalFormSubmitted && !form.color">Color is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-checkbox [(ngModel)]="form.default" name="default">Add To Every New Observation</mat-checkbox>
+
+        <mat-divider></mat-divider>
+
+        <div class="stepper-actions">
+          <button matButton="filled" type="button" (click)="goToFieldsStep()">
+            Next: Add Fields
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <mat-step label="Fields">
+      <div class="stepper-step-content">
+        <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
+          [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="form.userFields || []"
+          (fieldsChange)="onFieldsChange($event)">
+        </mage-fields-list>
+
+        <mat-divider></mat-divider>
+
+        <div class="stepper-actions">
+          <button matButton="filled" type="button" (click)="saveForm()"
+            [disabled]="getActiveFields().length === 0 || saving">
+            {{ saving ? 'Creating...' : 'Finish' }}
+          </button>
+        </div>
+      </div>
+    </mat-step>
+  </mat-stepper>
+
+  <div *ngIf="!creatingNewForm">
+    <mat-card appearance="outlined" class="details-card">
+      <div class="form-header">
+        <div class="form-icon-placeholder">
+          <mat-icon fontSet="material-symbols-outlined" [style.color]="form.color">description</mat-icon>
+        </div>
+        <div class="form-info">
+          <div class="form-name-row">
+            <span class="form-name">{{ form.name }}</span>
+            <span class="status-badge status-badge-active" *ngIf="!form.archived">Active</span>
+            <span class="status-badge status-badge-archived" *ngIf="form.archived">Archived</span>
+          </div>
+          <div class="form-description">{{ form.description || 'No description' }}</div>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Color</span>
+        <div class="detail-value color-display">
+          <span class="color-swatch-preview" [style.background-color]="form.color"></span>
+          {{ form.color }}
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Default Form</span>
+        <span class="detail-value">{{ form.default ? 'Yes – Added to every new observation' : 'No' }}</span>
+      </div>
+
+      <mat-divider class="section-divider" *ngIf="form.id"></mat-divider>
+
+      <div class="form-actions" *ngIf="form.id">
+        <button matButton="outlined" type="button" (click)="openEditDialog()">
+          <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>Edit Form
+        </button>
+        <button matButton="outlined" type="button" (click)="exportForm()">
+          <mat-icon fontSet="material-symbols-outlined">download</mat-icon>Export
+        </button>
+        <div class="action-with-info" *ngIf="!form.archived">
+          <button matButton="outlined" type="button" class="archive-button" (click)="archiveForm()">
+            <mat-icon fontSet="material-symbols-outlined">archive</mat-icon>Archive
+          </button>
+          <mat-icon class="info-icon" fontSet="material-symbols-outlined"
+            matTooltip="Archiving a form will remove it from the list of forms users see when creating an observation. The form can be restored at any time.">info</mat-icon>
+        </div>
+        <div class="action-with-info" *ngIf="form.archived">
+          <button matButton="outlined" type="button" class="restore-button" (click)="restoreForm()">
+            <mat-icon fontSet="material-symbols-outlined">undo</mat-icon>Restore
+          </button>
+          <mat-icon class="info-icon" fontSet="material-symbols-outlined"
+            matTooltip="Restoring a form will add it back to the list of forms users see when creating an observation.">info</mat-icon>
+        </div>
+      </div>
+    </mat-card>
+
+    <div class="configuration-sections" *ngIf="form.id">
+
+      <mat-card appearance="outlined" class="configuration-card">
+        <div class="section-header" (click)="toggleFieldsSection()">
+          <div class="section-icon-wrapper fields-color">
+            <mat-icon fontSet="material-symbols-outlined">description</mat-icon>
+          </div>
+          <div class="section-title-group">
+            <div class="section-title">Form Fields</div>
+            <p class="section-subtitle">Create custom fields that capture your organization's unique information.</p>
+          </div>
+          <button matIconButton type="button" aria-label="Toggle fields section">
+            <mat-icon fontSet="material-symbols-outlined">
+              {{ showFieldsSection ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+            </mat-icon>
+          </button>
+        </div>
+
+        <div *ngIf="showFieldsSection">
+          <mat-divider></mat-divider>
+          <div class="section-body">
+
+            <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
+              [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="form.userFields || []"
+              (fieldsChange)="onFieldsChange($event)">
+            </mage-fields-list>
+          </div>
+        </div>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="configuration-card">
+        <div class="section-header" (click)="toggleMapSection()">
+          <div class="section-icon-wrapper map-color">
+            <mat-icon fontSet="material-symbols-outlined">place</mat-icon>
+          </div>
+          <div class="section-title-group">
+            <div class="section-title">Map Symbology</div>
+            <p class="section-subtitle">Configure how observations appear on the map using primary and variant fields.</p>
+          </div>
+          <button matIconButton type="button" aria-label="Toggle map section">
+            <mat-icon fontSet="material-symbols-outlined">
+              {{ showMapSection ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+            </mat-icon>
+          </button>
+        </div>
+
+        <div *ngIf="showMapSection">
+          <mat-divider></mat-divider>
+          <div class="section-body">
+
+
+            <mat-card appearance="outlined" class="symbology-variant-item default-symbology-card">
+              <div class="variant-card-header">
+                <div class="variant-card-titles">
+                  <span class="variant-card-title">Default</span>
+                  <span class="variant-card-subtitle">No primary or secondary value</span>
+                </div>
+                <button matIconButton type="button" (click)="editSymbology('')"
+                  matTooltip="Edit default symbology">
+                  <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+                </button>
+              </div>
+              <div class="symbology-display-content">
+                <div class="symbology-visual">
+                  <div class="icon-preview" *ngIf="getIconUrl('')">
+                    <img [src]="getIconUrl('')" alt="icon" />
+                  </div>
+                  <div class="icon-preview" *ngIf="!getIconUrl('')">
+                    <mat-icon fontSet="material-symbols-outlined" class="symbology-marker-icon"
+                      matTooltip="Map Icon" matTooltipPosition="above">place</mat-icon>
+                  </div>
+                  <div class="color-swatches">
+                    <div class="color-swatch line-color" [style.color]="getLineColor('')"
+                      matTooltip="Line Color" matTooltipPosition="above"></div>
+                    <div class="color-swatch fill-color" [style.background-color]="getFillColor('')"
+                      matTooltip="Fill Color" matTooltipPosition="above"></div>
+                  </div>
+                </div>
+              </div>
+            </mat-card>
+
+            <div class="no-fields-hint" *ngIf="getDropdownFields().length === 0">
+              <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+              <div>
+                <p class="hint-title">No Select fields available</p>
+                <p class="hint-body">Add a Select field to the form to configure additional map symbology options.</p>
+              </div>
+            </div>
+
+            <ng-container *ngIf="getDropdownFields().length > 0">
+              <mat-form-field appearance="fill" class="config-select-field">
+                <mat-label>Primary Field</mat-label>
+                <mat-select [(ngModel)]="form.primaryField" (ngModelChange)="onMapFieldChange()" name="primaryField">
+                  <mat-option [value]="undefined">No Primary Field</mat-option>
+                  <mat-option *ngFor="let field of getDropdownFields()" [value]="field.name">{{ field.title }}</mat-option>
+                </mat-select>
+                <mat-hint>Select a dropdown field to use for primary map symbology.</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="config-select-field"
+                *ngIf="form.primaryField && getDropdownFields(form.primaryField).length > 0">
+                <mat-label>Variant Field</mat-label>
+                <mat-select [(ngModel)]="form.variantField" (ngModelChange)="onMapFieldChange()" name="variantField">
+                  <mat-option [value]="undefined">No Variant Field</mat-option>
+                  <mat-option *ngFor="let field of getDropdownFields(form.primaryField)" [value]="field.name">{{ field.title }}</mat-option>
+                </mat-select>
+                <mat-hint>Select a second dropdown field for additional symbology variation.</mat-hint>
+              </mat-form-field>
+            </ng-container>
+
+            <div class="primary-choices-section"
+              *ngIf="form.primaryField && getPrimaryFieldChoices().length > 0">
+              <div class="choices-list">
+                <div class="choice-symbology" *ngFor="let choice of getPrimaryFieldChoices()">
+                    <div class="symbology-variants-horizontal">
+                      <mat-card appearance="outlined" class="symbology-variant-item">
+                        <div class="variant-card-header">
+                          <div class="variant-card-titles">
+                            <span class="variant-card-title">{{ choice.title }}</span>
+                            <span class="variant-card-subtitle" *ngIf="getVariantFieldChoices().length > 0">None</span>
+                          </div>
+                          <button matIconButton type="button" (click)="editSymbology(choice.title)"
+                            matTooltip="Edit symbology">
+                            <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+                          </button>
+                        </div>
+                        <div class="symbology-display-content">
+                          <div class="symbology-visual">
+                            <div class="icon-preview" *ngIf="getIconUrl(choice.title)">
+                              <img [src]="getIconUrl(choice.title)" alt="icon" />
+                            </div>
+                            <div class="icon-preview" *ngIf="!getIconUrl(choice.title)">
+                              <mat-icon fontSet="material-symbols-outlined" class="symbology-marker-icon"
+                matTooltip="Map Icon" matTooltipPosition="above">place</mat-icon>
+                            </div>
+                            <div class="color-swatches">
+                              <div class="color-swatch line-color" [style.color]="getLineColor(choice.title)"
+                                matTooltip="Line Color" matTooltipPosition="above"></div>
+                              <div class="color-swatch fill-color"
+                                [style.background-color]="getFillColor(choice.title)"
+                                matTooltip="Fill Color" matTooltipPosition="above"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </mat-card>
+                      <mat-card appearance="outlined" class="symbology-variant-item"
+                        *ngFor="let variant of getVariantFieldChoices()">
+                        <div class="variant-card-header">
+                          <div class="variant-card-titles">
+                            <span class="variant-card-title">{{ choice.title }}</span>
+                            <span class="variant-card-subtitle">{{ variant.title }}</span>
+                          </div>
+                          <button matIconButton type="button"
+                            (click)="editSymbology(choice.title, variant.title)"
+                            matTooltip="Edit symbology">
+                            <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+                          </button>
+                        </div>
+                        <div class="symbology-display-content">
+                          <div class="symbology-visual">
+                            <div class="icon-preview" *ngIf="getIconUrl(choice.title, variant.title)">
+                              <img [src]="getIconUrl(choice.title, variant.title)" alt="icon" />
+                            </div>
+                            <div class="icon-preview" *ngIf="!getIconUrl(choice.title, variant.title)">
+                              <mat-icon fontSet="material-symbols-outlined" class="symbology-marker-icon"
+                matTooltip="Map Icon" matTooltipPosition="above">place</mat-icon>
+                            </div>
+                            <div class="color-swatches">
+                              <div class="color-swatch line-color"
+                                [style.color]="getLineColor(choice.title, variant.title)"
+                                matTooltip="Line Color" matTooltipPosition="above"></div>
+                              <div class="color-swatch fill-color"
+                                [style.background-color]="getFillColor(choice.title, variant.title)"
+                                matTooltip="Fill Color" matTooltipPosition="above"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </mat-card>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-save-actions">
+              <button matButton="filled" type="button" (click)="saveMap()"
+                [disabled]="!mapChanged || savingMap">
+                <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
+                {{ savingMap ? 'Saving...' : 'Save Map Configuration' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="configuration-card">
+        <div class="section-header" (click)="toggleFeedSection()">
+          <div class="section-icon-wrapper feed-color">
+            <mat-icon fontSet="material-symbols-outlined">list</mat-icon>
+          </div>
+          <div class="section-title-group">
+            <div class="section-title">Observation Feed</div>
+            <p class="section-subtitle">Choose which fields appear as primary and secondary text in the observation feed.</p>
+          </div>
+          <button matIconButton type="button" aria-label="Toggle feed section">
+            <mat-icon fontSet="material-symbols-outlined">
+              {{ showFeedSection ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+            </mat-icon>
+          </button>
+        </div>
+
+        <div *ngIf="showFeedSection">
+          <mat-divider></mat-divider>
+          <div class="section-body">
+
+
+            <div class="feed-config-inline">
+              <mat-form-field appearance="fill" class="config-select-field">
+                <mat-label>Primary Field</mat-label>
+                <mat-select [(ngModel)]="form.primaryFeedField" (ngModelChange)="onFeedFieldChange()"
+                  name="primaryFeedField">
+                  <mat-option [value]="null">No Primary Field</mat-option>
+                  <mat-option *ngFor="let field of getActiveFields()" [value]="field.name">
+                    {{ field.title }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Displayed as the primary information in the observation feed.</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="config-select-field">
+                <mat-label>Secondary Field</mat-label>
+                <mat-select [(ngModel)]="form.secondaryFeedField" (ngModelChange)="onFeedFieldChange()"
+                  name="secondaryFeedField">
+                  <mat-option [value]="null">No Secondary Field</mat-option>
+                  <mat-option *ngFor="let field of getActiveFields()" [value]="field.name">
+                    {{ field.title }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Displayed as secondary information in the observation feed.</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <div class="feed-samples-section" *ngIf="observations.length > 0">
+              <div class="field-hint">Preview how observations appear in the feed.</div>
+              <div class="observation-feed-preview">
+                <mat-card appearance="outlined" class="observation-list-item"
+                  *ngFor="let observation of observations">
+                  <div class="item">
+                    <div class="item-header">
+                      <div class="item-header-content">
+                        <div class="item-overline">
+                          <span>{{ observation.user?.displayName || observation.user?.username || 'Unknown User' }}</span>
+                          <span>·</span>
+                          <span>{{ observation.properties?.timestamp | date:'short' }}</span>
+                        </div>
+
+                        <div
+                          *ngIf="form.primaryFeedField && observation.properties?.forms[0]?.[form.primaryFeedField]">
+                          <div class="item-header-text">
+                            {{ getFeedFieldDisplayValue(form.primaryFeedField, observation.properties?.forms[0]) }}
+                          </div>
+                        </div>
+
+                        <div
+                          *ngIf="form.secondaryFeedField && observation.properties?.forms[0]?.[form.secondaryFeedField]">
+                          <div class="item-subhead">
+                            {{ getFeedFieldDisplayValue(form.secondaryFeedField, observation.properties?.forms[0]) }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="item-thumbnail">
+                        <img [src]="observation.style?.iconUrl" alt="icon" *ngIf="observation.style?.iconUrl" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <mat-card-footer>
+                    <div class="actions">
+                      <div class="action-buttons">
+                        <button matButton>
+                          <mat-icon class="actions__location-icon">my_location</mat-icon>
+                          {{ observation.geometry.coordinates[1].toFixed(5) }}, {{
+                          observation.geometry.coordinates[0].toFixed(5) }}
+                        </button>
+                      </div>
+                      <div class="actions-icons">
+                        <button matIconButton class="actions--inactive">
+                          <mat-icon>outlined_flag</mat-icon>
+                        </button>
+                        <button matIconButton class="actions--inactive">
+                          <mat-icon>favorite_border</mat-icon>
+                        </button>
+                        <a matIconButton class="actions--inactive">
+                          <mat-icon>save_alt</mat-icon>
+                        </a>
+                      </div>
+                    </div>
+                  </mat-card-footer>
+                </mat-card>
+              </div>
+            </div>
+
+            <div class="section-save-actions">
+              <button matButton="filled" type="button" (click)="saveFeeds()"
+                [disabled]="!feedsChanged || savingFeeds">
+                <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
+                {{ savingFeeds ? 'Saving...' : 'Save Feed Configuration' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>

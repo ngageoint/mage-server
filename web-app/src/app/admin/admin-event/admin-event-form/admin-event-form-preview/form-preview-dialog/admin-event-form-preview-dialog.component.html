@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>{{ formDefinition.name }}</h2>
+
+<mat-dialog-content class="form-preview-dialog-content">
+  <div class="form-preview-viewport">
+    <div class="form-preview-scale">
+      <observation-edit-form
+        [formGroup]="formGroup"
+        [definition]="formDefinition"
+        [deletable]="false"
+        [options]="{ expand: true }"
+      >
+      </observation-edit-form>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton [mat-dialog-close]="true">
+    Close
+  </button>
+</mat-dialog-actions>

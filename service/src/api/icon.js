@@ -43,11 +43,11 @@ function createIconPath(icon, name) {
   return iconPath;
 }
 
-Icon.prototype.getBasePath = function() {
+Icon.prototype.getBasePath = function () {
   return path.join(iconBase, this._eventId.toString());
 };
 
-Icon.prototype.writeZip = function(zipPath, callback) {
+Icon.prototype.writeZip = function (zipPath, callback) {
   var output = fs.createWriteStream(zipPath);
   var archive = archiver('zip');
   output.on('close', callback);
@@ -58,23 +58,23 @@ Icon.prototype.writeZip = function(zipPath, callback) {
   archive.finalize();
 };
 
-Icon.prototype.getZipPath = function(callback) {
-  var zipPath = path.join(os.tmpdir(), this._eventId + '_icons' + mongoose.Types.ObjectId() + '.zip');
-  this.writeZip(zipPath, function(err) {
+Icon.prototype.getZipPath = function (callback) {
+  var zipPath = path.join(os.tmpdir(), this._eventId + '_icons' + new mongoose.Types.ObjectId() + '.zip');
+  this.writeZip(zipPath, function (err) {
     return callback(err, zipPath);
   }.bind(this));
 };
 
-Icon.prototype.getIcons = function(callback) {
+Icon.prototype.getIcons = function (callback) {
   var options = {
     eventId: this._eventId,
     formId: this._formId
   };
 
-  IconModel.getAll(options, function(err, icons) {
+  IconModel.getAll(options, function (err, icons) {
     if (err) return callback(err);
 
-    icons.forEach(function(icon) {
+    icons.forEach(function (icon) {
       icon.path = path.join(iconBase, icon.relativePath);
     });
 
@@ -82,7 +82,7 @@ Icon.prototype.getIcons = function(callback) {
   });
 };
 
-Icon.prototype.getIcon = function(callback) {
+Icon.prototype.getIcon = function (callback) {
   var options = {
     eventId: this._eventId,
     formId: this._formId,
@@ -90,7 +90,7 @@ Icon.prototype.getIcon = function(callback) {
     variant: this._variant
   };
 
-  IconModel.getIcon(options, function(err, icon) {
+  IconModel.getIcon(options, function (err, icon) {
     if (err || !icon) {
       return callback(err);
     }
@@ -100,7 +100,7 @@ Icon.prototype.getIcon = function(callback) {
   });
 };
 
-Icon.prototype.saveDefaultIconToEventForm = function(callback) {
+Icon.prototype.saveDefaultIconToEventForm = function (callback) {
   const relativePath = createIconPath(this, 'default-icon.png');
   const targetPath = path.join(iconBase, relativePath);
   const newIcon = {
@@ -108,7 +108,7 @@ Icon.prototype.saveDefaultIconToEventForm = function(callback) {
     formId: this._formId,
     relativePath: relativePath
   };
-  fs.copy(defaultIconPath, targetPath, function(err) {
+  fs.copy(defaultIconPath, targetPath, function (err) {
     if (err) {
       return callback(err);
     }
@@ -116,7 +116,7 @@ Icon.prototype.saveDefaultIconToEventForm = function(callback) {
   });
 };
 
-Icon.prototype.create = function(icon, callback) {
+Icon.prototype.create = function (icon, callback) {
   var relativePath = createIconPath(this, icon.originalname);
   var newIcon = {
     eventId: this._eventId,
@@ -127,17 +127,17 @@ Icon.prototype.create = function(icon, callback) {
   };
 
   var iconPath = path.join(iconBase, relativePath);
-  fs.mkdirp(path.dirname(iconPath), function(err) {
+  fs.mkdirp(path.dirname(iconPath), function (err) {
     if (err) return callback(err);
 
-    fs.move(icon.path, iconPath, {overwrite: true}, function(err) {
+    fs.move(icon.path, iconPath, { overwrite: true }, function (err) {
       if (err) return callback(err);
 
-      IconModel.create(newIcon, function(err, oldIcon) {
+      IconModel.create(newIcon, function (err, oldIcon) {
         callback(err, newIcon);
 
         if (oldIcon && oldIcon.relativePath !== newIcon.relativePath) {
-          fs.remove(path.join(iconBase, oldIcon.relativePath), function(err) {
+          fs.remove(path.join(iconBase, oldIcon.relativePath), function (err) {
             if (err) log.error('could not remove old icon from file system', err);
           });
         }
@@ -146,7 +146,7 @@ Icon.prototype.create = function(icon, callback) {
   });
 };
 
-Icon.prototype.add = function(icon, callback) {
+Icon.prototype.add = function (icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     eventId: this._eventId,
@@ -156,12 +156,12 @@ Icon.prototype.add = function(icon, callback) {
     relativePath: relativePath
   };
 
-  IconModel.create(newIcon, function(err) {
+  IconModel.create(newIcon, function (err) {
     callback(err, newIcon);
   });
 };
 
-Icon.prototype.delete = function(callback) {
+Icon.prototype.delete = function (callback) {
   var self = this;
   var conditions = {
     eventId: this._eventId,
@@ -170,17 +170,15 @@ Icon.prototype.delete = function(callback) {
     variant: this._variant
   };
 
-  IconModel.getIcon(conditions, function(err) {
+  IconModel.getIcon(conditions, function (err) {
     if (err) return callback(err);
 
-    var remove = {eventId: self._eventId, formId: self._formId};
+    var remove = { eventId: self._eventId, formId: self._formId };
     if (self._primary) remove.primary = self._primary;
     if (self._variant) remove.variant = self._variant;
 
-    IconModel.remove(remove, function(err) {
-      if (err) return callback(err);
-
-      callback(err);
+    IconModel.Model.deleteMany(remove).then(() => {
+      callback(null);
 
       // remove the variant dir, primary dir, or base dir
       var removePath = path.join(iconBase, self._eventId.toString());
@@ -192,7 +190,7 @@ Icon.prototype.delete = function(callback) {
       }
 
       log.info('removing icons: ', removePath);
-      fs.remove(removePath, function(err) {
+      fs.remove(removePath, function (err) {
         if (err) {
           log.error("Could not remove icon file " + removePath + ". ", err);
         }

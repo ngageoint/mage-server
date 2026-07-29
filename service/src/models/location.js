@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for FFT Locations
 var LocationSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User' },
+  userId: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
   eventId: { type: Number, required: false, sparse: true, ref: 'Event' },
   // TODO: not sure anything references this
   teamIds: [{ type: Schema.Types.ObjectId }],
@@ -22,8 +22,7 @@ var LocationSchema = new Schema({
 LocationSchema.index({ geometry: "2dsphere" });
 LocationSchema.index({ 'properties.timestamp': 1 });
 LocationSchema.index({ 'properties.timestamp': 1, _id: 1 });
-// TODO: this seems superfluous - probably remove because there's already an index on userId in the field definition
-LocationSchema.index({ 'userId': 1 });
+LocationSchema.index({ 'userId': 1 }, { sparse: true });
 // TODO: should add _id to the end of the index for consistent ordering
 LocationSchema.index({ 'properties.user': 1, 'properties.timestamp': 1 });
 LocationSchema.index({ eventId: 1, userId: 1, 'properties.timestamp': 1, _id: 1 }, { background: true });
@@ -34,7 +33,10 @@ exports.Model = Location;
 
 // create location
 exports.createLocations = function (locations, callback) {
-  Location.create(locations, callback);
+  Location.create(locations).then(
+    createdLocations => callback(null, createdLocations),
+    err => callback(err)
+  );
 };
 
 exports.getLocations = function (options, callback) {
@@ -67,9 +69,9 @@ exports.getLocations = function (options, callback) {
     if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  let queryOptions = { };
+  let queryOptions = {};
 
-  if(options.sort) {
+  if (options.sort) {
     queryOptions.sort = options.sort;
   } else {
     queryOptions.sort = { sort: { "properties.timestamp": 1, _id: 1 } };
@@ -93,15 +95,17 @@ exports.getLocations = function (options, callback) {
       queryOptions.limit = 2000;
     }
 
-    Location.find(conditions, {}, queryOptions, function (err, locations) {
-      callback(err, locations);
-    });
+    Location.find(conditions, {}, queryOptions).then(
+      locations => callback(null, locations),
+      err => callback(err)
+    );
   }
 };
 
 exports.removeLocationsForUser = function (user, callback) {
   const conditions = { "userId": user._id };
-  Location.remove(conditions, function (err) {
-    callback(err);
-  });
+  Location.deleteMany(conditions).then(
+    () => callback(null),
+    err => callback(err)
+  );
 };

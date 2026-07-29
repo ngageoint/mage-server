@@ -1,6 +1,7 @@
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
 import { SFTPPluginConfig } from './configuration/SFTPPluginConfig'
 import { SftpController } from './controller/controller'
+import { SftpStatus } from './adapters/adapters.sftp.mongoose'
 import { MongooseDbConnectionToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api'
 import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web'
@@ -17,7 +18,7 @@ const consoleOverrides = logMethods.reduce((overrides, fn) => {
     ...overrides,
     [fn]: {
       writable: false,
-      value: (...args: any[]) => {
+      value: (...args: unknown[]) => {
         globalThis.console[fn](new Date().toISOString(), '-', logPrefix, ...args)
       }
     }
@@ -63,7 +64,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
     return {
       webRoutes: {
-        protected: (requestContext: GetAppRequestContext) => {
+        protected: (requestContext: GetAppRequestContext): express.Router => {
           const routes = express.Router()
             .use(express.json())
             .use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -80,14 +81,161 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               res.json(config);
             })
             .post(async (req, res, _next) => {
-              await controller.stop()
+              try {
+                await controller.stop()
 
-              const configuration = req.body as SFTPPluginConfig
-              await controller.updateConfiguration(configuration)
+                const configuration = req.body as SFTPPluginConfig
+                await controller.updateConfiguration(configuration)
 
-              await controller.start()
+                await controller.start()
 
-              res.status(200)
+                const status = controller.getStatus()
+                if (status.lastError) {
+                  res.status(200).json({
+                    success: false,
+                    message: status.lastError,
+                    configuration
+                  })
+                } else {
+                  res.status(200).json({
+                    success: true,
+                    message: 'Configuration saved successfully',
+                    configuration
+                  })
+                }
+              } catch (error) {
+                console.error('Error updating configuration:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Failed to save configuration'
+                })
+              }
+            })
+
+          routes.route('/private-key')
+            .post(async (req, res, _next) => {
+              try {
+                const { privateKey } = req.body
+                if (!privateKey || typeof privateKey !== 'string') {
+                  return res.status(400).json({
+                    success: false,
+                    message: 'Private key text is required'
+                  })
+                }
+
+                const trimmedKey = privateKey.trim()
+                if (!trimmedKey.includes('PRIVATE KEY')) {
+                  return res.status(400).json({
+                    success: false,
+                    message: 'The provided text does not appear to be a valid private key.'
+                  })
+                }
+
+                controller.savePrivateKey(trimmedKey)
+
+                res.json({
+                  success: true,
+                  message: 'Private key saved successfully'
+                })
+              } catch (error) {
+                console.error('Error saving private key:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Failed to save private key'
+                })
+              }
+            })
+
+          routes.route('/reset')
+            .post(async (_req, res, _next) => {
+              try {
+                await controller.resetToDefaults()
+                const config = await controller.getConfiguration()
+                res.json({
+                  success: true,
+                  message: 'Plugin has been reset to default settings',
+                  configuration: config
+                })
+              } catch (error) {
+                console.error('Error resetting plugin:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Failed to reset plugin'
+                })
+              }
+            })
+
+          routes.route('/test-connection')
+            .post(async (req, res, _next) => {
+              try {
+                const result = await controller.testConnection(req.body)
+                res.json(result)
+              } catch (error) {
+                console.error('Error testing connection:', error)
+                res.status(500).json({
+                  success: false,
+                  message: error instanceof Error ? error.message : 'Connection test failed'
+                })
+              }
+            })
+
+          routes.route('/status')
+            .get(async (_req, res, _next) => {
+              try {
+                const status = controller.getStatus()
+                res.json(status)
+              } catch (error) {
+                console.error('Error getting status:', error)
+                res.status(500).json({
+                  connected: false,
+                  lastError: error instanceof Error ? error.message : 'Failed to get status'
+                })
+              }
+            })
+
+          routes.route('/events')
+            .get(async (_req, res, _next) => {
+              try {
+                const events = await controller.getActiveEvents()
+                res.json(events)
+              } catch (error) {
+                console.error('Error getting events:', error)
+                res.status(500).json([])
+              }
+            })
+
+          routes.route('/observations')
+            .get(async (req, res, _next) => {
+              try {
+                const eventId = parseInt(req.query['eventId'] as string)
+                if (isNaN(eventId)) {
+                  return res.status(400).json({ error: 'eventId query param is required' })
+                }
+                const statusParam = req.query['status'] as string | undefined
+                const statusFilter = statusParam
+                  ? statusParam.split(',').filter((s): s is SftpStatus => Object.values(SftpStatus).includes(s as SftpStatus))
+                  : undefined
+                const result = await controller.getObservationStatuses(eventId, statusFilter)
+                res.json(result)
+              } catch (error) {
+                console.error('Error getting observation statuses:', error)
+                res.status(500).json({ records: [], counts: {} })
+              }
+            })
+
+          routes.route('/observations/sync')
+            .post(async (req, res, _next) => {
+              try {
+                const { eventId, observationIds } = req.body
+                if (!eventId || !Array.isArray(observationIds)) {
+                  return res.status(400).json({ error: 'eventId and observationIds[] are required' })
+                }
+                await controller.requeueObservations(eventId, observationIds)
+                res.json({ queued: observationIds.length })
+              } catch (error) {
+                console.error('Error requeueing observations:', error)
+                res.status(500).json({ queued: 0 })
+              }
             })
 
           return routes

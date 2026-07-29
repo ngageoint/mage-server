@@ -294,9 +294,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
     get:
+      deprecated: true
       tags: [ User ]
       description: >
-        Return an array of all users.  The client must have `READ_USER` permission.
+        This operation is deprecated and now only returns an empty response.  The client must have `READ_USER` permission.
       summary: Get an array of users.
       operationId: getUsers
       parameters:

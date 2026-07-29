@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatSelectChange } from '@angular/material/select';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
 
 interface TimeZoneOption {
@@ -8,9 +8,10 @@ interface TimeZoneOption {
 }
 
 @Component({
-  selector: 'time-zone',
-  templateUrl: './time-zone.component.html',
-  styleUrls: ['./time-zone.component.scss']
+    selector: 'time-zone',
+    templateUrl: './time-zone.component.html',
+    styleUrls: ['./time-zone.component.scss'],
+    standalone: false
 })
 export class TimeZoneComponent implements OnInit {
 

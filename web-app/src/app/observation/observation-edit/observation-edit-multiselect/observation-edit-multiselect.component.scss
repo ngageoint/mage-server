@@ -4,5 +4,5 @@ mat-form-field {
 }
 
 .select__choice--disabled {
-  color: rgba($color: #000000, $alpha: .54)
+  color: var(--mat-sys-on-surface-variant);
 }

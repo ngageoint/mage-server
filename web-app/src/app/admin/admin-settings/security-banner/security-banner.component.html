@@ -1,0 +1,66 @@
+<div class="settings-page">
+  <mat-card appearance="elevated" class="settings-card">
+    <mat-card-content>
+      <div class="helper-text">
+        <mat-icon>info</mat-icon>
+        Display a header and footer banner across all MAGE views. Configure the text content and colors for each.
+      </div>
+
+      <div class="banner-grid">
+        <div class="banner-block">
+          <h3 class="banner-title">Header</h3>
+
+          <div class="show-section">
+            <mat-slide-toggle [(ngModel)]="banner.showHeader" (change)="setDirty(true)">Show Header</mat-slide-toggle>
+          </div>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Header Text</mat-label>
+            <input matInput [(ngModel)]="banner.headerText" #headerTextModel="ngModel"
+              [required]="banner.showHeader" [disabled]="!banner.showHeader" (input)="setDirty(true)" />
+            <mat-error *ngIf="headerTextModel.invalid">Header text is required</mat-error>
+          </mat-form-field>
+
+          <div class="color-field">
+            <label class="color-field-label" for="headerTextColor">Header Text Color</label>
+            <color-picker [hexColor]="banner.headerTextColor" id="headerTextColor" #headerTextColor></color-picker>
+          </div>
+
+          <div class="color-field">
+            <label class="color-field-label" for="headerBackgroundColor">Header Background Color</label>
+            <color-picker [hexColor]="banner.headerBackgroundColor" id="headerBackgroundColor" #headerBackgroundColor></color-picker>
+          </div>
+        </div>
+
+        <div class="banner-block">
+          <h3 class="banner-title">Footer</h3>
+
+          <div class="show-section">
+            <mat-slide-toggle [(ngModel)]="banner.showFooter" (change)="setDirty(true)">Show Footer</mat-slide-toggle>
+          </div>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Footer Text</mat-label>
+            <input matInput [(ngModel)]="banner.footerText" #footerTextModel="ngModel"
+              [required]="banner.showFooter" [disabled]="!banner.showFooter" (input)="setDirty(true)" />
+            <mat-error *ngIf="footerTextModel.invalid">Footer text is required</mat-error>
+          </mat-form-field>
+
+          <div class="color-field">
+            <label class="color-field-label" for="footerTextColor">Footer Text Color</label>
+            <color-picker [hexColor]="banner.footerTextColor" id="footerTextColor" #footerTextColor></color-picker>
+          </div>
+
+          <div class="color-field">
+            <label class="color-field-label" for="footerBackgroundColor">Footer Background Color</label>
+            <color-picker [hexColor]="banner.footerBackgroundColor" id="footerBackgroundColor" #footerBackgroundColor></color-picker>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <div class="card-actions">
+      <button matButton="filled" (click)="save()" [disabled]="headerTextModel.invalid || footerTextModel.invalid">Save</button>
+    </div>
+  </mat-card>
+</div>

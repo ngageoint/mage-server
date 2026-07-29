@@ -1,13 +1,23 @@
-<mat-list-item class="item" (click)="onItemSelect()">
-  <mat-icon *ngIf="!iconUrl" matListIcon color="primary">place</mat-icon>
-  <mage-static-icon-img *ngIf="feed?.icon" [iconRef]="feed.icon" matListIcon></mage-static-icon-img>
-  <span *ngIf="hasContent" matLine class="overline">{{timestamp | moment}}</span>
-  <span *ngIf="hasContent" matLine class="mat-body-2">{{primary || "&nbsp;"}}</span>
-  <span *ngIf="hasContent" matLine class="mat-body-1">{{secondary || "&nbsp;"}}</span>
+<mat-card matRipple [matRippleTrigger]="ripple">
+  <mat-card-content class="item" (click)="onItemSelect()" (mousedown)="onRipple()">
+    <div class="item-header">
+      <div class="item__icon">
+        <mat-icon *ngIf="!iconUrl">place</mat-icon>
+        <mage-static-icon-img *ngIf="feed?.icon" [iconRef]="feed.icon"></mage-static-icon-img>
+      </div>
 
-  <div class="no-content">
-    <span *ngIf="!hasContent" matLine>No Content</span>
-    <span *ngIf="!hasContent" matLine></span>
-    <span *ngIf="!hasContent" matLine></span>
-  </div>
-</mat-list-item>
+      <div class="item__content">
+        <ng-container *ngIf="hasContent; else noContent">
+          <span class="item__timestamp">{{timestamp | moment}}</span>
+          <span class="item__primary">{{primary || "&nbsp;"}}</span>
+          <span class="item__secondary">{{primary || "&nbsp;"}}</span>
+        </ng-container>
+        <ng-template #noContent>
+          <span class="item__primary">{{feed.title}}</span>
+        </ng-template>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <div #ripple></div>
+</mat-card>

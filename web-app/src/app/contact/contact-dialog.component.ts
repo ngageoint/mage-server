@@ -1,5 +1,5 @@
 import { Component, Inject } from "@angular/core";
-import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { LinkGenerator } from "./utilities/link-generator";
 import { Api } from "../api/api.entity";
 import { ApiService } from "../api/api.service";
@@ -8,6 +8,7 @@ import { ApiService } from "../api/api.service";
     selector: 'contact-dialog',
     templateUrl: 'contact-dialog.component.html',
     styleUrls: ['./contact-dialog.component.scss'],
+    standalone: false
 })
 export class ContactDialogComponent  {
     statusTitle: string;

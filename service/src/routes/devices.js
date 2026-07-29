@@ -1,12 +1,10 @@
-const log = require('winston');
+const log = require('../logger').child({ component: 'devices' });
 const Device = require('../models/device');
 const access = require('../access');
-const pageInfoTransformer = require('../transformers/pageinfo.js');
 
 function DeviceResource() {}
 
 module.exports = function(app, security) {
-
   var passport = security.authentication.passport;
   var resource = new DeviceResource(passport);
 
@@ -14,9 +12,12 @@ module.exports = function(app, security) {
   /**
    * @deprecated
    */
-  app.post('/api/devices',
+  app.post(
+    '/api/devices',
     function authenticate(req, res, next) {
-      log.warn('DEPRECATED - The /api/devices route will be removed in the next major version, please use /auth/{auth_strategy}/devices');
+      log.warn(
+        'DEPRECATED - The /api/devices route will be removed in the next major version, please use /auth/{auth_strategy}/devices'
+      );
       passport.authenticate('local', function(err, user) {
         if (err) {
           return next(err);
@@ -44,12 +45,15 @@ module.exports = function(app, security) {
         if (!device) {
           device = await Device.createDevice(newDevice);
         }
-        return res.json(device)
-      }
-      catch(err) {
+        return res.json(device);
+      } catch (err) {
         next(err);
       }
-      next(new Error(`unknown error registering device ${newDevice.uid} for user ${newDevice.userId}`));
+      next(
+        new Error(
+          `unknown error registering device ${newDevice.uid} for user ${newDevice.userId}`
+        )
+      );
     }
   );
 
@@ -58,7 +62,8 @@ module.exports = function(app, security) {
    *
    * @deprecated Use /auth/{strategy}/authorize instead.
    */
-  app.post('/api/devices',
+  app.post(
+    '/api/devices',
     passport.authenticate('bearer'),
     resource.ensurePermission('CREATE_DEVICE'),
     resource.parseDeviceParams,
@@ -66,14 +71,16 @@ module.exports = function(app, security) {
     resource.create
   );
 
-  app.get('/api/devices/count',
+  app.get(
+    '/api/devices/count',
     passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     resource.count
   );
 
   // get all devices
-  app.get('/api/devices',
+  app.get(
+    '/api/devices',
     passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     resource.getDevices
@@ -81,14 +88,16 @@ module.exports = function(app, security) {
 
   // get device
   // TODO: check for READ_USER also
-  app.get('/api/devices/:id',
+  app.get(
+    '/api/devices/:id',
     passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     resource.getDevice
   );
 
   // Update a device
-  app.put('/api/devices/:id',
+  app.put(
+    '/api/devices/:id',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_DEVICE'),
     resource.parseDeviceParams,
@@ -96,7 +105,8 @@ module.exports = function(app, security) {
   );
 
   // Delete a device
-  app.delete('/api/devices/:id',
+  app.delete(
+    '/api/devices/:id',
     passport.authenticate('bearer'),
     access.authorize('DELETE_DEVICE'),
     resource.deleteDevice
@@ -105,7 +115,9 @@ module.exports = function(app, security) {
 
 DeviceResource.prototype.ensurePermission = function(permission) {
   return function(req, res, next) {
-    access.userHasPermission(req.user, permission) ? next() : res.sendStatus(403);
+    access.userHasPermission(req.user, permission)
+      ? next()
+      : res.sendStatus(403);
   };
 };
 
@@ -115,7 +127,9 @@ DeviceResource.prototype.ensurePermission = function(permission) {
  * @deprecated Use /auth/{strategy}/authorize instead.
  */
 DeviceResource.prototype.create = function(req, res, next) {
-  console.warn("Calling deprecated function to create device.  Call authorize instead.");
+  console.warn(
+    'Calling deprecated function to create device.  Call authorize instead.'
+  );
 
   // Automatically register any device created by an ADMIN
   req.newDevice.registered = true;
@@ -124,17 +138,23 @@ DeviceResource.prototype.create = function(req, res, next) {
     .then(device => {
       res.json(device);
     })
-    .catch(err => { 
-      next(err)
+    .catch(err => {
+      next(err);
     });
 };
 
-DeviceResource.prototype.count = function (req, res, next) {
+DeviceResource.prototype.count = function(req, res, next) {
   var filter = {};
 
-  if(req.query) {
+  if (req.query) {
     for (let [key, value] of Object.entries(req.query)) {
-      if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+      if (
+        key == 'populate' ||
+        key == 'limit' ||
+        key == 'start' ||
+        key == 'sort' ||
+        key == 'forceRefresh'
+      ) {
         continue;
       }
       filter[key] = value;
@@ -142,7 +162,7 @@ DeviceResource.prototype.count = function (req, res, next) {
   }
 
   Device.count({ filter: filter })
-    .then(count => res.json({count: count}))
+    .then(count => res.json({ count: count }))
     .catch(err => next(err));
 };
 
@@ -155,31 +175,119 @@ DeviceResource.prototype.count = function (req, res, next) {
  *   this only actually supports a singular `expand` key, so why bother with
  *   the split anyway?
  */
-DeviceResource.prototype.getDevices = function (req, res, next) {
+DeviceResource.prototype.getDevices = async function (req, res, next) {
+  try {
+    const {
+      populate,
+      expand,
+      limit,
+      start,
+      sort,
+      includePagination,
+      page,
+      page_size,
+      term,
+      state,
+      ...rawFilter
+    } = req.query;
 
-  const { populate, expand, limit, start, sort, forceRefresh, ...filter } = req.query;
-  const expandFlags = { user: /\buser\b/i.test(expand) };
+    const expandFlags = { user: /\buser\b/i.test(expand || '') };
 
-  Device.getDevices({ filter, expand: expandFlags, limit, start, sort })
-    .then(result => {
-      if (!Array.isArray(result)) {
-        result = pageInfoTransformer.transform(result, req);
-      }
-      return res.json(result);
-    })
-    .catch(err => next(err));
+    const filter = {
+      ...rawFilter,
+      ...(term ? { term } : {}),
+      ...(state === 'registered'
+        ? { registered: 'true' }
+        : state === 'unregistered'
+        ? { registered: 'false' }
+        : {})
+    };
+
+    let effectiveLimit;
+    let effectiveStart;
+
+    const hasPageParams = page !== undefined || page_size !== undefined;
+
+    if (hasPageParams) {
+      const pageNum = parseInt(page ?? '0', 10);
+      const pageSizeNum = parseInt(page_size ?? '25', 10);
+
+      effectiveLimit = Number.isNaN(pageSizeNum) ? 25 : pageSizeNum;
+      effectiveStart = (Number.isNaN(pageNum) ? 0 : pageNum) * effectiveLimit;
+    } else {
+      effectiveLimit = limit !== undefined ? parseInt(limit, 10) : undefined;
+      effectiveStart = start !== undefined ? parseInt(start, 10) : undefined;
+    }
+
+    const result = await Device.getDevices({
+      filter,
+      expand: expandFlags,
+      limit: effectiveLimit,
+      start: effectiveStart,
+      sort
+    });
+
+    const shouldIncludePagination =
+      includePagination &&
+      String(includePagination).toLowerCase() !== 'false';
+
+    if (!shouldIncludePagination) {
+      return res.json(result.items || result);
+    }
+
+    const items = result.items || result;
+    const totalCount =
+      result.totalCount ??
+      result.count ??
+      (Array.isArray(items) ? items.length : 0);
+
+    let responsePageSize;
+    let responsePage;
+
+    if (hasPageParams) {
+      responsePageSize = effectiveLimit || 25;
+      responsePage = Math.floor((effectiveStart || 0) / responsePageSize);
+    } else {
+      responsePageSize =
+        result.pageSize ||
+        effectiveLimit ||
+        result.limit ||
+        25;
+
+      responsePage =
+        result.pageIndex ||
+        result.page ||
+        Math.floor((effectiveStart || 0) / responsePageSize);
+    }
+
+    const pagePayload = {
+      pageSize: responsePageSize,
+      page: responsePage,
+      totalCount,
+      items
+    };
+
+    return res.json(pagePayload);
+  } catch (err) {
+    next(err);
+  }
 };
+
 
 DeviceResource.prototype.getDevice = function(req, res, next) {
   var expand = {};
   if (req.query.expand) {
-    var expandList = req.query.expand.split(",");
-    if (expandList.some(function(e) { return e === 'user';})) {
+    var expandList = req.query.expand.split(',');
+    if (
+      expandList.some(function(e) {
+        return e === 'user';
+      })
+    ) {
       expand.user = true;
     }
   }
 
-  Device.getDeviceById(req.params.id, {expand: expand})
+  Device.getDeviceById(req.params.id, { expand: expand })
     .then(device => res.json(device))
     .catch(err => next(err));
 };
@@ -189,17 +297,41 @@ DeviceResource.prototype.updateDevice = function(req, res, next) {
   if (req.newDevice.uid) update.uid = req.newDevice.uid;
   if (req.newDevice.name) update.name = req.newDevice.name;
   if (req.newDevice.description) update.description = req.newDevice.description;
-  if (req.newDevice.registered !== undefined) update.registered = req.newDevice.registered;
+  if (req.newDevice.registered !== undefined)
+    update.registered = req.newDevice.registered;
   if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
-  Device.updateDevice(req.param('id'), update)
-    .then(device => {
-      if (!device) return res.sendStatus(404);
+  Device.getDeviceById(req.param('id'))
+    .then(existing => {
+      const previouslyRegistered = existing ? !!existing.registered : undefined;
+      return Device.updateDevice(req.param('id'), update).then(device => {
+        if (!device) return res.sendStatus(404);
 
-      res.json(device);
+        if (update.registered !== undefined && update.registered !== previouslyRegistered) {
+          if (device.registered) {
+            log.info('device registered', {
+              device: device.uid,
+              name: device.name,
+              deviceUserId: device.userId ? device.userId.toString() : undefined,
+              registeredBy: req.user.username,
+              registeredTime: new Date().toISOString()
+            });
+          } else {
+            log.info('device unregistered', {
+              device: device.uid,
+              deviceId: device._id.toString(),
+              name: device.name,
+              unregisteredBy: req.user.username,
+              unregisteredTime: new Date().toISOString()
+            });
+          }
+        }
+
+        res.json(device);
+      });
     })
     .catch(err => {
-      next(err)
+      next(err);
     });
 };
 
@@ -217,12 +349,15 @@ DeviceResource.prototype.parseDeviceParams = function(req, res, next) {
   req.newDevice = {
     uid: req.param('uid'),
     name: req.param('name'),
-    description: req.param('description'),
-    userId: req.param('userId')
+    description: req.param('description')
   };
 
+  if (req.param('userId')) {
+    req.newDevice.userId = req.param('userId');
+  }
+
   if (req.param('registered') !== undefined) {
-    req.newDevice.registered = req.param('registered') === 'true';
+    req.newDevice.registered = req.param('registered') === true;
   }
 
   next();

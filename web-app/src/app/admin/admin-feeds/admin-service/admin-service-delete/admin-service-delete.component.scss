@@ -1,0 +1,42 @@
+.danger-zone {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-error);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.danger-zone-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: var(--mat-sys-title-medium-size);
+  font-weight: 600;
+  color: var(--mat-sys-error);
+}
+
+.feed-list {
+  max-height: 150px;
+  overflow-y: auto;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.feed-list__label {
+  margin: 0 0 8px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: var(--mat-sys-body-medium-size);
+}
+
+.feed-list__item {
+  padding: 2px 0;
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface);
+  font-weight: 500;
+}
+
+.delete-button {
+  --mat-button-filled-container-color: var(--mat-sys-error);
+  --mat-button-filled-label-text-color: var(--mat-sys-on-error);
+}

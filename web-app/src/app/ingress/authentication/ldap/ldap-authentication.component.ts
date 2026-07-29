@@ -5,9 +5,10 @@ import { UserService } from '../../../user/user.service'
 import { LinkGenerator } from '../../../contact/utilities/link-generator'
 
 @Component({
-  selector: 'ldap-authentication',
-  templateUrl: './ldap-authentication.component.html',
-  styleUrls: ['./ldap-authentication.component.scss']
+    selector: 'ldap-authentication',
+    templateUrl: './ldap-authentication.component.html',
+    styleUrls: ['./ldap-authentication.component.scss'],
+    standalone: false
 })
 export class LdapAuthenticationComponent {
   @Input() api: Api
@@ -47,8 +48,8 @@ export class LdapAuthenticationComponent {
           message: response.error || 'Please check your username and password and try again.'
         }
 
-        const email = LinkGenerator.emailLink(this.api.contactInfo, response.error, username, this.strategy)
-        const phone = LinkGenerator.phoneLink(this.api.contactInfo)
+        const email = LinkGenerator.emailLink(this.api?.contactInfo, response.error, username, this.strategy)
+        const phone = LinkGenerator.phoneLink(this.api?.contactInfo)
         this.contact = `Should you need futher assistance you may contact your Mage administrator via ${[`<a href=${email}>email</a>`, `<a href=${phone}>phone</a>`].join(' or ')}.`
       }
     }) 

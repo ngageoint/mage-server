@@ -1,111 +1,117 @@
 <mat-card matRipple [matRippleTrigger]="ripple">
-  <div class="item" (click)="viewObservation()" (mousedown)="onRipple()">
-    <div *ngIf="observation?.important" class="item-important">
-      <mat-icon class="item-important--icon">flag</mat-icon>
+  <div *ngIf="observation?.important" class="item-important" (click)="viewObservation()">
+    <mat-icon class="item-important--icon">flag</mat-icon>
+    <div>
       <div>
-        <div>
-          <span class="item-important--overline">Flagged By {{observation?.important?.user?.displayName}}</span>
-        </div>
-        <div class="item-important--description">
-          {{observation?.important?.description}}
-        </div>
+        <span class="item-important--overline">
+          Flagged By {{ observation?.important?.user?.displayName }}
+        </span>
+      </div>
+      <div class="item-important--description">
+        {{ observation?.important?.description }}
       </div>
     </div>
+  </div>
 
+  <mat-card-content appearance="raised" class="item" (click)="viewObservation()" (mousedown)="onRipple()">
     <div class="item-header">
       <div class="item-header-content">
         <div class="item-overline">
           <div>
-            <span>{{observation?.user?.displayName}}</span>
+            <span>{{ observation?.user?.displayName }}</span>
             <span>·</span>
-            <span>{{observation?.properties?.timestamp | moment}}</span>
+            <span>{{ observation?.properties?.timestamp | moment }}</span>
           </div>
         </div>
 
-        <div *ngIf="primaryFeedField.value">
-          <div class="item-header-text">
-            <span [ngSwitch]="primaryFeedField.field?.type">
-              <span *ngSwitchCase="'geometry'">
-                {{primaryFeedField?.value | geometry:5}}
-              </span>
-              <span *ngSwitchDefault>
-                {{primaryFeedField?.value}}
-              </span>
-            </span>
-          </div>
+        <div *ngIf="primaryFeedField.value" class="item-header-text">
+          <span [ngSwitch]="primaryFeedField.field?.type">
+            <span *ngSwitchCase="'geometry'">{{ primaryFeedField?.value | geometry : 5 }}</span>
+            <span *ngSwitchDefault>{{ primaryFeedField?.value }}</span>
+          </span>
         </div>
 
-        <div *ngIf="secondaryFeedField.value">
-          <div class="item-subhead">
-            <span [ngSwitch]="secondaryFeedField.field?.type">
-              <span *ngSwitchCase="'geometry'">
-                {{secondaryFeedField?.value | geometry:5}}
-              </span>
-              <span *ngSwitchDefault>
-                {{secondaryFeedField?.value}}
-              </span>
-            </span>
-          </div>
+        <div *ngIf="secondaryFeedField.value" class="item-subhead">
+          <span [ngSwitch]="secondaryFeedField.field?.type">
+            <span *ngSwitchCase="'geometry'">{{ secondaryFeedField?.value | geometry : 5 }}</span>
+            <span *ngSwitchDefault>{{ secondaryFeedField?.value }}</span>
+          </span>
         </div>
       </div>
 
       <div *ngIf="!observation?.noGeometry" class="item-thumbnail">
-        <img [src]="observation?.style?.iconUrl" />
+        <img
+          *ngIf="observation?.style?.iconUrl; else fallbackPin"
+          [src]="observation?.style?.iconUrl"
+          alt=""
+        />
+        <ng-template #fallbackPin>
+          <mat-icon class="item-thumbnail__fallback">place</mat-icon>
+        </ng-template>
       </div>
     </div>
 
-    <div *ngIf="attachments?.length && attachments[0]?.url" class="item-media" matCardImage>
-      <observation-attachment [attachment]="attachments[0]"
-        [label]="attachments.length > 1 ? '1 of ' + attachments.length : false"></observation-attachment>
+    <div *ngIf="attachments?.length && attachments[0]?.url" class="item-media">
+      <observation-attachment
+        [attachment]="attachments[0]"
+        [label]="attachments.length > 1 ? '1 of ' + attachments.length : false">
+      </observation-attachment>
+    </div>
+  </mat-card-content>
+
+  <div *ngIf="importantEditor.open" class="important" @important>
+    <mat-form-field appearance="outline" class="important__text">
+      <mat-label>Important Description</mat-label>
+      <textarea matInput [(ngModel)]="importantEditor.description"></textarea>
+    </mat-form-field>
+
+    <div class="important__actions">
+      <button matButton (click)="clearImportant()">
+        {{ observation?.important ? 'Remove' : 'Cancel' }}
+      </button>
+      <button matButton="filled" (click)="markAsImportant()" class="important__actions--confirm">
+        {{ observation?.important ? 'Update' : 'Flag As Important' }}
+      </button>
     </div>
   </div>
 
-  <mat-card-footer>
-    <div *ngIf="importantEditor.open" class="important" @important>
-      <mat-form-field appearance="outline" class="important__text">
-        <mat-label>Important Description</mat-label>
-        <textarea matInput [(ngModel)]="importantEditor.description"></textarea>
-      </mat-form-field>
-      <div class="important__actions">
-        <button mat-button color="primary" (click)="clearImportant()">{{observation?.important ? 'Remove' :
-          'Cancel'}}</button>
-        <button mat-flat-button color="primary" (click)="markAsImportant()"
-          class="important__actions--confirm">{{observation?.important ? 'Update' : 'Flag As Important'}}</button>
-      </div>
+  <mat-card-actions>
+    <div *ngIf="!observation?.noGeometry" class="actions-buttons">
+      <button matButton (click)="onObservationLocationClick()">
+        <mat-icon class="actions__location-icon">my_location</mat-icon>
+        <span>{{ observation?.geometry | geometry : 5 }}</span>
+      </button>
     </div>
 
-    <div class="actions">
-      <div *ngIf="!observation?.noGeometry" class="action-buttons">
-        <button mat-button color="primary" (click)="onObservationLocationClick()" class="actions__location-button">
-          <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
+    <div class="actions-icons">
+      <div *ngIf="canEditImportant">
+        <button
+          matIconButton
+          (click)="onFlagAsImportant()"
+          [ngClass]="{ 'actions__important--active': observation.important }"
+          matTooltip="Flag As Important"
+          matTooltipPosition="above">
+          <mat-icon>{{ observation.important ? 'flag' : 'outlined_flag' }}</mat-icon>
         </button>
       </div>
 
-      <div class="actions-icons">
-        <div *ngIf="canEditImportant">
-          <button mat-icon-button (click)="onFlagAsImportant()" class="actions--inactive"
-            [ngClass]="{'actions__important--active': observation.important}" matTooltip="Flag As Important"
-            matTooltipPosition="above">
-            <mat-icon>{{observation.important ? 'flag' : 'outlined_flag'}}</mat-icon>
-          </button>
-        </div>
-
-        <div class="actions__favorite">
-          <button mat-icon-button (click)="toggleFavorite()" class="actions--inactive"
-            [ngClass]="{'actions__favorite--active': isUserFavorite}" matTooltip="Add To Favorites"
-            matTooltipPosition="above">
-            <mat-icon>{{isUserFavorite ? 'favorite' : 'favorite_border'}}</mat-icon>
-          </button>
-          <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
-        </div>
-
-        <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download"
+      <div class="actions__favorite">
+        <button
+          matIconButton
+          (click)="toggleFavorite()"
+          [ngClass]="{ 'actions__favorite--active': isUserFavorite }"
+          matTooltip="Add To Favorites"
           matTooltipPosition="above">
-          <mat-icon>save_alt</mat-icon>
-        </a>
+          <mat-icon>{{ isUserFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+        </button>
+        <span *ngIf="favorites" class="actions__favorite-label">{{ favorites }}</span>
       </div>
+
+      <a matIconButton [href]="downloadUrl()" matTooltip="Download" matTooltipPosition="above">
+        <mat-icon>save_alt</mat-icon>
+      </a>
     </div>
-  </mat-card-footer>
+  </mat-card-actions>
 
   <div #ripple></div>
 </mat-card>

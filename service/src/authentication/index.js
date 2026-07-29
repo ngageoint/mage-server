@@ -1,8 +1,8 @@
 const crypto = require('crypto')
   , verification = require('./verification')
   , api = require('../api/')
-  , config = require('../config.js')
-  , log = require('../logger')
+  , packageJson = require('../../package.json')
+  , log = require('../logger').child({ component: 'authentication' })
   , userTransformer = require('../transformers/user')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
@@ -10,6 +10,15 @@ const crypto = require('crypto')
 
 const JWTService = verification.JWTService;
 const TokenAssertion = verification.TokenAssertion;
+
+const [apiVersionMajor, apiVersionMinor, apiVersionPatch] = packageJson.apiVersion.split('.').map(Number);
+const apiInfo = {
+  name: packageJson.name,
+  nodeVersion: process.versions.node,
+  description: packageJson.description,
+  version: { major: apiVersionMajor, minor: apiVersionMinor, patch: apiVersionPatch },
+  serverVerion: packageJson.version
+};
 
 class AuthenticationInitializer {
   static tokenService = new JWTService(crypto.randomBytes(64).toString('hex'), 'urn:mage');
@@ -96,7 +105,17 @@ class AuthenticationInitializer {
         new api.User().login(req.user, req.provisionedDevice, options, function (err, token) {
           if (err) return next(err);
 
-          authenticationApiAppender.append(config.api).then(api => {
+          log.info('user signed in', {
+            user: req.user.username,
+            userId: req.user._id.toString(),
+            deviceUid: req.provisionedDevice ? req.provisionedDevice.uid : undefined,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            signInTime: new Date().toISOString(),
+            tokenExpiration: token.expirationDate
+          });
+
+          authenticationApiAppender.append(apiInfo).then(api => {
             res.json({
               token: token.token,
               expirationDate: token.expirationDate,

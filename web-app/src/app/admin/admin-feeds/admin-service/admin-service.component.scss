@@ -1,0 +1,150 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.delete-button {
+  color: var(--mat-sys-error) !important;
+  border-color: var(--mat-sys-error) !important;
+}
+
+.service-page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.loading-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+mat-card.details-card {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.service-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.service-icon-placeholder {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.service-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.service-name {
+  font-size: var(--mat-sys-title-large-size);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.service-summary {
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.detail-label {
+  font-size: var(--mat-sys-label-small-size);
+  font-weight: 400;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.detail-value {
+  font-size: var(--mat-sys-body-large-size);
+  color: var(--mat-sys-on-surface);
+}
+
+.content-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.list-content {
+  flex: 1;
+  position: relative;
+  min-height: 120px;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  min-height: 120px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state-icon {
+  font-size: 96px;
+  width: 96px;
+  height: 96px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state-text {
+  font-size: var(--mat-sys-body-large-size);
+  color: var(--mat-sys-on-surface-variant);
+  max-width: 350px;
+}
+
+mat-paginator {
+  --mat-paginator-container-background-color: var(--mat-sys-surface-container);
+}
+

@@ -1,0 +1,39 @@
+.plugins-page {
+  padding-bottom: 24px;
+}
+
+.plugins-loading,
+.plugins-empty {
+  padding: 12px 0;
+  opacity: 0.8;
+}
+
+.plugins-error {
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.plugins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.plugin-card {
+  text-align: left;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  .plugin-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .plugin-subtitle {
+    opacity: 0.75;
+    font-size: 12px;
+  }
+}

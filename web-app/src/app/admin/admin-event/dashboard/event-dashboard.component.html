@@ -1,0 +1,54 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions" *ngIf="hasEventCreatePermission">
+    <button matButton="filled" (click)="createEvent()">
+      <mat-icon>add</mat-icon>New Event
+    </button>
+  </div>
+</ng-template>
+
+<div class="events-page">
+  <mat-card appearance="elevated" class="events-card">
+    <div class="filter-row">
+      <mat-chip-listbox [(ngModel)]="eventStatusFilter" (change)="onStatusFilterChange($event.value)">
+        <mat-chip-option value="all">All</mat-chip-option>
+        <mat-chip-option value="active">Active</mat-chip-option>
+        <mat-chip-option value="complete">Complete</mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+
+    <div class="toolbar">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Search events</mat-label>
+        <input matInput [(ngModel)]="eventSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="eventSearch" (click)="onSearchCleared()" aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <mat-nav-list *ngIf="filteredEvents?.length; else noEvents">
+      <mat-list-item *ngFor="let event of filteredEvents; trackBy: trackByEventId"
+        [routerLink]="['../events', event.id]">
+        <mat-icon matListItemIcon fontSet="material-symbols-outlined">event</mat-icon>
+        <span matListItemTitle>{{ event.name }}</span>
+        <span *ngIf="event.description" matListItemLine>
+          {{ event.description }}
+        </span>
+      </mat-list-item>
+    </mat-nav-list>
+
+    <ng-template #noEvents>
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event</mat-icon>
+        <div class="empty-state-text" *ngIf="eventSearch; else noEventsFound">No events match your search</div>
+        <ng-template #noEventsFound>
+          <div class="empty-state-text">No events found</div>
+        </ng-template>
+      </div>
+    </ng-template>
+
+    <mat-paginator [length]="totalEvents" [pageSize]="searchOptions.page_size" [pageIndex]="searchOptions.page"
+      [pageSizeOptions]="pageSizeOptions" showFirstLastButtons (page)="onPageChange($event)"></mat-paginator>
+  </mat-card>
+</div>

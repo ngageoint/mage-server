@@ -1,88 +1,93 @@
-FROM node:20.11.1 AS build-service
+ARG BUILD_IMAGE="node:24-slim"
+ARG DIST_IMAGE="ghcr.io/ngageoint/mage-server/ironbank/google/distroless13/nodejs-24:nonroot"
+ARG MAGE_HOME="/mage"
+ARG MAGE_SERVER="${MAGE_HOME}/mage-server"
+ARG MAGE_PACKAGES="${MAGE_HOME}/packages"
+ARG MAGE_INSTANCE="${MAGE_HOME}/instance"
 
-WORKDIR /service
-COPY service/package*.json ./
-RUN npm install
-COPY service/ ./
-RUN npm run build
-RUN npm pack
+FROM ${BUILD_IMAGE} AS build-instance
+ARG MAGE_HOME
+ARG MAGE_SERVER
+ARG MAGE_PACKAGES
+ARG MAGE_INSTANCE
+ENV MAGE_HOME=${MAGE_HOME}
+ENV MAGE_SERVER=${MAGE_SERVER}
+ENV MAGE_PACKAGES=${MAGE_PACKAGES}
+ENV MAGE_INSTANCE=${MAGE_INSTANCE}
+RUN mkdir -p ${MAGE_SERVER} ${MAGE_PACKAGES}
+COPY ./ ${MAGE_SERVER}/
 
-# Build web-app
-FROM node:20.11.1 AS build-webapp
+RUN cd ${MAGE_SERVER}/service \
+    && npm ci \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/service
 
-WORKDIR /web-app
-COPY web-app/package*.json ./
-RUN npm install
-COPY web-app/ ./
-RUN npm run build
-RUN npm pack ./dist
+RUN cd ${MAGE_SERVER}/web-app \
+    && npm ci \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/web-app/dist/app \
+    && npm pack ${MAGE_SERVER}/web-app/dist/core-lib
 
-# FROM node:20.11.1 AS build-arcwebplugin
-# # Build arcgis service plugin
-# WORKDIR /arcgiswebplugin
-# COPY plugins/arcgis/web-app/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /arcgiswebplugin/node_modules/@ngageoint/mage.service
-# COPY plugins/arcgis/web-app/ ./
-# RUN npm run build
-# RUN npm pack ./dist/main
+RUN cd ${MAGE_SERVER}/plugins/image/service \
+    && npm link ../../../service \
+    && npm run build && \
+    cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/image/service
 
-# FROM node:20.11.1 AS build-arcserviceplugin
-# WORKDIR /arcgisserviceplugin
-# COPY plugins/arcgis/service/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /arcgisserviceplugin/node_modules/@ngageoint/mage.service
-# COPY plugins/arcgis/service/ ./
-# RUN npm run build
-# RUN npm pack
+RUN cd ${MAGE_SERVER}/plugins/sftp/service \
+    && npm link ../../../service \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/sftp/service
 
-# FROM node:20.11.1 AS build-imageserviceplugin
-# WORKDIR /imageserviceplugin
-# COPY plugins/image/service/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /imageserviceplugin/node_modules/@ngageoint/mage.service
-# RUN rm -rf /imageserviceplugin/node_modules/@ngageoint/mage.service/node_modules/mongoose
-# COPY plugins/image/service/ ./
-# RUN npm run build
-# RUN npm pack
+RUN cd ${MAGE_SERVER}/plugins/sftp/web \
+    && npm link ../../../web-app/dist/core-lib \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/sftp/web/dist/main
 
-# FROM node:20.11.1 AS build-sftpserviceplugin
-# WORKDIR /sftpserviceplugin
-# COPY plugins/sftp/service/package*.json ./
-# RUN npm install
-# COPY --from=build-service /service /sftpserviceplugin/node_modules/@ngageoint/mage.service
-# COPY plugins/sftp/service/ ./
-# RUN npm run build
-# RUN npm pack
+RUN cd ${MAGE_SERVER}/plugins/arcgis/service \
+    && npm link ../../../service \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/arcgis/service
 
-# FROM node:20.11.1 AS build-sftpwebplugin
-# # Build sftp service plugin
-# WORKDIR /sftpwebplugin
-# COPY plugins/sftp/web/package*.json ./
-# RUN npm install
-# COPY plugins/sftp/web/ ./
-# RUN npm run build
-# RUN npm pack ./dist/main
+RUN cd ${MAGE_SERVER}/plugins/arcgis/web-app \
+    && npm link ../../../web-app/dist/core-lib \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/arcgis/web-app/dist/main
 
-# Build instance
-FROM node:20.11.1 AS build-instance
-COPY --from=build-service /service/ngageoint*.tgz /service/
-COPY --from=build-webapp /web-app/ngageoint*.tgz /web-app/
-# COPY --from=build-arcwebplugin /arcgiswebplugin/ngageoint*.tgz /arcgiswebplugin/
-# COPY --from=build-arcserviceplugin /arcgisserviceplugin/ngageoint*.tgz /arcgisserviceplugin/
-# COPY --from=build-sftpserviceplugin /sftpserviceplugin/ngageoint*.tgz /sftpserviceplugin/
-# COPY --from=build-sftpwebplugin /sftpwebplugin/ngageoint*.tgz /sftpwebplugin/
+RUN cd ${MAGE_SERVER}/plugins/nga-msi \
+    && npm link ../../service \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/nga-msi
 
-ENV MAGE_HOME=/home/mage/instance
-WORKDIR ${MAGE_HOME}
+WORKDIR ${MAGE_INSTANCE}
+RUN cd ${MAGE_INSTANCE} \
+    && npm install --omit dev --force \
+    ${MAGE_PACKAGES}/ngageoint-mage.service-*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.web-app-*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.sftp.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.arcgis.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.image.*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.nga-msi-*.tgz \
+    && ln -s ./node_modules/.bin/mage.service
 
-RUN npm install ../../../service/ngageoint-mage.service*.tgz 
-RUN npm install ../../../web-app/ngageoint-mage.web-app*.tgz
-# RUN npm install ../../../sftpwebplugin/ngageoint-mage.sftp.web*.tgz 
-# RUN npm install ../../../sftpserviceplugin/ngageoint-mage.sftp.service*.tgz 
-# RUN npm install ../../../arcgiswebplugin/ngageoint*.tgz 
-# RUN npm install ../../../arcgisserviceplugin/ngageoint*.tgz 
-RUN ln -s ./node_modules/.bin/mage.service
+FROM ${DIST_IMAGE}
+# create the mage data base directory as DIST_IMAGE nonroot user
+WORKDIR /var/lib/mage
+ARG MAGE_INSTANCE
+ENV MAGE_INSTANCE=${MAGE_INSTANCE}
+# set user to 999 as historically mage images were built with user/group 999
+# and 999 owns the files of existing deployments
+USER 999:999
+COPY --chown=999:999 --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
+WORKDIR ${MAGE_INSTANCE}
+VOLUME /var/lib/mage
+EXPOSE 4242
 
-ENV NODE_PATH=./node_modules
-ENTRYPOINT [ "./mage.service" ]
+CMD [ "./mage.service" ]

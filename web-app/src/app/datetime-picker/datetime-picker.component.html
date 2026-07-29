@@ -1,22 +1,31 @@
 <div class="datetime">
   <div class="date">
-    <mat-form-field appearance="fill">
-      <mat-label>{{title}} Date</mat-label>
-      <input matInput [matDatepicker]="datePicker" [(ngModel)]="date" [required]="required" (ngModelChange)="onDate()" #dateModel="ngModel" autocomplete="false">
+    <mat-form-field appearance="fill" floatLabel="always">
+      <mat-label>{{ title }} Date</mat-label>
+      <input matInput [matDatepicker]="datePicker" [(ngModel)]="date" [required]="required" (ngModelChange)="onDate()"
+        #dateModel="ngModel" autocomplete="off" />
       <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
       <mat-datepicker #datePicker></mat-datepicker>
-      <mat-error *ngIf="dateModel.errors?.required && !dateModel.errors?.matDatepickerParse">Date is required
+      <mat-error *ngIf="
+          dateModel.errors?.required && !dateModel.errors?.matDatepickerParse
+        ">
+        Date is required
       </mat-error>
-      <mat-error *ngIf="dateModel.errors?.matDatepickerParse">Invalid date</mat-error>
+      <mat-error *ngIf="dateModel.errors?.matDatepickerParse">
+        Invalid date
+      </mat-error>
     </mat-form-field>
   </div>
 
   <div class="time">
-    <mat-form-field appearance="fill">
-      <mat-label>{{title}} Time {{timezone === 'gmt' ? '(GMT)' : '(Local)'}}</mat-label>
-      <input matInput [matDatetimepicker]="timePicker" [(ngModel)]="time" (ngModelChange)="onTime()" #timeModel="ngModel" autocomplete="false">
-      <mat-datetimepicker-toggle [for]="timePicker" matSuffix></mat-datetimepicker-toggle>
-      <mat-datetimepicker #timePicker type="time" openOnFocus="false"></mat-datetimepicker>
+    <mat-form-field appearance="fill" floatLabel="always">
+      <mat-label>
+        {{ title }} Time {{ timezone === 'gmt' ? '(GMT)' : '(Local)' }}
+      </mat-label>
+      <mat-timepicker #timePicker interval="30m"></mat-timepicker>
+      <input matInput [matTimepicker]="timePicker" [(ngModel)]="timeValue" [required]="required"
+        (ngModelChange)="onTime()" autocomplete="off" />
+      <mat-timepicker-toggle matSuffix [for]="timePicker"></mat-timepicker-toggle>
       <mat-error>Invalid time</mat-error>
     </mat-form-field>
   </div>

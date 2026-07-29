@@ -95,12 +95,12 @@ LayerSchema.set('toJSON', {
 });
 
 // Validate the layer before save
-LayerSchema.pre('save', function(next) {
+LayerSchema.pre('save', function (next) {
   //TODO validate layer before save
   next();
 });
 
-LayerSchema.pre('remove', function(next) {
+LayerSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   const layer = this;
 
   Event.removeLayerFromEvents(layer, next);
@@ -114,7 +114,7 @@ const ImageryLayer = Layer.discriminator('Imagery', ImagerySchema);
 const FeatureLayer = Layer.discriminator('Feature', FeatureSchema);
 const GeoPackageLayer = Layer.discriminator('GeoPackage', GeoPackageSchema);
 
-exports.getLayers = function(filter) {
+exports.getLayers = function (filter) {
   const conditions = {};
   if (filter.type) conditions.type = filter.type;
   if (filter.layerIds) conditions._id = { $in: filter.layerIds };
@@ -124,32 +124,32 @@ exports.getLayers = function(filter) {
   return Layer.find(conditions).exec();
 };
 
-exports.count = function() {
-  return Layer.count({}).exec();
+exports.count = function () {
+  return Layer.countDocuments({}).exec();
 };
 
-exports.getById = function(id) {
+exports.getById = function (id) {
   return Layer.findById(id).exec();
 };
 
-exports.createFeatureCollection = function(name) {
-  return mongoose.connection.db.createCollection(name).then(function() {
+exports.createFeatureCollection = function (name) {
+  return mongoose.connection.db.createCollection(name).then(function () {
     log.info('Successfully created feature collection for layer ' + name);
   });
 };
 
-exports.dropFeatureCollection = function(layer) {
-  return mongoose.connection.db.dropCollection(layer.collectionName).then(function() {
+exports.dropFeatureCollection = function (layer) {
+  return mongoose.connection.db.dropCollection(layer.collectionName).then(function () {
     log.info('Dropped collection ' + layer.collectionName);
   });
 };
 
-exports.create = function(id, layer) {
+exports.create = function (id, layer) {
   layer._id = id;
   return Layer.create(layer);
 };
 
-exports.update = function(id, layer) {
+exports.update = function (id, layer) {
   let model;
   switch (layer.type) {
     case 'Imagery':
@@ -166,6 +166,6 @@ exports.update = function(id, layer) {
   return model.findByIdAndUpdate(id, layer, { new: true }).exec();
 };
 
-exports.remove = function(layer) {
-  return layer.remove();
+exports.remove = function (layer) {
+  return layer.deleteOne();
 };

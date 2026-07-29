@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatSelectChange } from '@angular/material/select';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { PollingService } from '../../event/polling.service';
 
 interface PollingOption {
@@ -8,9 +8,10 @@ interface PollingOption {
 }
 
 @Component({
-  selector: 'polling-interval',
-  templateUrl: './polling-interval.component.html',
-  styleUrls: ['./polling-interval.component.scss']
+    selector: 'polling-interval',
+    templateUrl: './polling-interval.component.html',
+    styleUrls: ['./polling-interval.component.scss'],
+    standalone: false
 })
 export class PollingIntervalComponent implements OnInit, OnDestroy  {
   pollingOptions: PollingOption[] = [{

@@ -9,8 +9,6 @@ const Paging = require('../lib/utilities/paging.js'),
     User = require('../lib/models/user.js'),
     Device = require('../lib/models/device.js');
 
-require('sinon-mongoose');
-
 chai.use(sinonChai);
 
 describe("Paging Tests", function () {
@@ -21,8 +19,8 @@ describe("Paging Tests", function () {
 
     it('Test page users', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(1));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(1));
 
         let user0 = {
             _id: '0'
@@ -53,8 +51,8 @@ describe("Paging Tests", function () {
 
     it('Test page to end', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(2));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(2));
 
         let user0 = {
             _id: '0'
@@ -108,8 +106,8 @@ describe("Paging Tests", function () {
 
     it('Test page no results', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(0));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(0));
 
 
         const query = new mongoose.Query();
@@ -138,8 +136,8 @@ describe("Paging Tests", function () {
 
     it('Test page devices', function (done) {
         const countQuery = new mongoose.Query();
-        sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(10));
+        sinon.stub(countQuery, 'countDocuments');
+        countQuery.countDocuments.returns(Promise.resolve(10));
 
         let device0 = {
             _id: '0'
@@ -163,22 +161,6 @@ describe("Paging Tests", function () {
     });
 
     it('Test page devices against users', function (done) {
-        sinon.mock(User)
-            .expects('count')
-            .returns(5);
-
-        const mockUsers = [{
-            _id: 'id1',
-            username: 'test1'
-        }, {
-            _id: 'id2',
-            username: 'test2'
-        }];
-
-        sinon.mock(User)
-            .expects('getUsers')
-            .returns(Promise.resolve(mockUsers));
-
         const mockDevices = [{
             _id: 'id0',
             description: 'test0'
@@ -186,21 +168,15 @@ describe("Paging Tests", function () {
             _id: 'id1',
             description: 'test1'
         }];
-
         const query = new mongoose.Query();
         sinon.stub(query, 'sort').returns({
             limit: sinon.stub().returnsThis(),
             skip: sinon.stub().returnsThis(),
             exec: sinon.stub().resolves(mockDevices)
         });
-
-        sinon.mock(Device)
-            .expects('getDevices')
-            .returns(query);
-
-        let options = { limit: '10' };
+        const options = { limit: '10' };
         Paging.page(null, query, options, 'devices').then(pageInfo => {
-            expect(pageInfo).to.not.be.null;
+            expect(pageInfo).to.exist;
             expect(pageInfo.size).to.equal(2);
             expect(pageInfo['devices']).to.not.be.null;
             expect(pageInfo['devices']).to.have.lengthOf(2);

@@ -5,27 +5,19 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "es2015",
+    "target": "ES2022",
     "lib": [
-      "es2018",
+      "ES2022",
       "dom"
-    ],
-    "paths": {
-      "admin": [
-        "dist/admin"
-      ],
-      "@ngageoint/mage.web-core-lib/*": [
-        "./node_modules/@ngageoint/mage.web-core-lib/*"
-      ]
-    }
+    ]
   },
   "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
-    "strictInjectionParameters": true
+    "strictInjectionParameters": true,
+    "strictTemplates": true
   }
 }

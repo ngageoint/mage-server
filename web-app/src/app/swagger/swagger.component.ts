@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef } from '@angular/core';
-import { LocalStorageService } from '../http/local-storage.service';
+import { SessionService } from '../http/session.service';
 import SwaggerUI from 'swagger-ui';
+import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 
 const DisableAuthorizePlugin = function () {
@@ -14,16 +15,18 @@ const DisableAuthorizePlugin = function () {
 };
 
 @Component({
-  selector: 'swagger',
-  templateUrl: './swagger.component.html',
-  styleUrls: ['./swagger.component.scss']
+    selector: 'swagger',
+    templateUrl: './swagger.component.html',
+    styleUrls: ['./swagger.component.scss'],
+    standalone: false
 })
 export class SwaggerComponent implements AfterViewInit {
 
   constructor(
     private el: ElementRef,
+    private location: Location,
     private router: Router,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) {
   }
 
@@ -34,13 +37,17 @@ export class SwaggerComponent implements AfterViewInit {
       deepLinking: false,
       plugins: [DisableAuthorizePlugin],
       requestInterceptor: (request) => {
-        request.headers['Authorization'] = `Bearer ${this.localStorageService.getToken()}`
+        request.headers['Authorization'] = `Bearer ${this.sessionService.getToken()}`
         return request
       },
     });
   }
 
   onBack() : void {
-    this.router.navigate(['about']);
+    if (window.history.state?.navigationId > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['home']);
+    }
   }
 }

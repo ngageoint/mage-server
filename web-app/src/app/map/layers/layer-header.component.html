@@ -1,17 +1,15 @@
 <div class="item-container">
   <div class="item-content">
     <mat-checkbox *ngIf="multi"
-      class="item-action" 
-      color="primary" 
-      [checked]="layer.selected" 
+      class="item-action"
+      [checked]="layer.selected"
       (click)="$event.stopPropagation()"
       (change)="checkChanged($event)">
     </mat-checkbox>
 
     <mat-radio-button *ngIf="!multi"
-      class="item-action" 
-      color="primary" 
-      [checked]="layer.selected" 
+      class="item-action"
+      [checked]="layer.selected"
       (click)="$event.stopPropagation()"
       (change)="radioChanged()">
     </mat-radio-button>
@@ -20,11 +18,11 @@
   </div>
 
   <div class="item-actions">
-    <button *ngIf="hasBounds()" mat-icon-button matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event)">
+    <button *ngIf="hasBounds()" matIconButton matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event)">
       <mat-icon>crop_free</mat-icon>
     </button>
 
-    <button class="item-action" mat-icon-button (click)="toggle()">
+    <button class="item-action" matIconButton (click)="toggle()">
       <mat-icon class="item-action__icon" [@expanded]="expanded">more_vert</mat-icon>
     </button>
   </div>

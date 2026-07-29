@@ -31,9 +31,9 @@
     </div>
 
     <div class="password-strength">
-      <div class="password-strength__text">
-        <div class="mat-body-1">Password Strengh</div>
-        <div class="mat-body-2">{{passwordStrength?.text}}</div>
+      <div class="password-strength__header">
+        <div class="password-strength__label">Password Strength</div>
+        <div class="password-strength__value">{{passwordStrength?.text}}</div>
       </div>
       <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"></mat-progress-bar>
     </div>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="actions">
-      <button mat-flat-button color="primary" class="actions__button">Create Account</button>
+      <button matButton="filled" class="actions__button">Create Account</button>
     </div>
 
     <div *ngIf="error" class="error-container" [@slide]>

@@ -3,27 +3,28 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LayersComponent } from './layers.component';
 import { LayerHeaderComponent } from './layer-header.component';
 import { LayerContentComponent } from './layer-content.component';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSliderModule } from '@angular/material/slider';
+import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
+import { MatSliderModule as MatSliderModule } from '@angular/material/slider';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { FormsModule } from '@angular/forms';
 import { CheckboardModule, HueModule, SaturationModule, AlphaModule } from 'ngx-color';
 import { Component, ViewChild } from '@angular/core';
 
 @Component({
-  selector: `host-component`,
-  template: `<map-layers-panel
+    selector: `host-component`,
+    template: `<map-layers-panel
     [mageLayers]="mageLayers"
     [baseLayers]="baseLayers"
     [tileOverlays]="tileOverlays"
     [featureOverlays]="featureOverlays"
     [gridOverlays]="gridOverlays">
-  </map-layers-panel>`
+  </map-layers-panel>`,
+    standalone: false
 })
 class TestHostComponent {
 

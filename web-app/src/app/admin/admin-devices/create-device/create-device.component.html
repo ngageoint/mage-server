@@ -1,0 +1,35 @@
+<form [formGroup]="deviceForm" (ngSubmit)="save()">
+  <h2 mat-dialog-title>{{ isEditMode ? 'Edit Device' : 'Create New Device' }}</h2>
+
+  <mat-dialog-content>
+    <div *ngIf="errorMessage" class="server-error">
+      <mat-icon>error_outline</mat-icon>
+      {{ errorMessage }}
+    </div>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Device ID</mat-label>
+      <input matInput formControlName="uid" placeholder="ex: 01:02:03:04:05:06:07" />
+      <mat-error *ngIf="deviceForm.controls.uid.hasError('required')">ID is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+
+    <div class="current-user-hint" *ngIf="currentUserDisplayName">
+      Current Point of Contact: {{ currentUserDisplayName }}
+    </div>
+
+    <user-search-box
+      placeholder="Pick a contact user..."
+      (userSelected)="onPointOfContactSelected($event)">
+    </user-search-box>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button matButton type="button" (click)="cancel()">Cancel</button>
+    <button matButton="filled" type="submit" [disabled]="deviceForm.invalid">{{ isEditMode ? 'Save' : 'Create Device' }}</button>
+  </mat-dialog-actions>
+</form>

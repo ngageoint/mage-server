@@ -1,3 +1,10 @@
-<button mat-mini-fab color="default" matTooltip="Export" matTooltipPosition="after" (click)="onClick($event)">
-  <mat-icon color="primary">file_download</mat-icon>
+<button
+  #exportButton
+  matMiniFab
+  class="map-control-fab"
+  matTooltip="Export"
+  matTooltipPosition="after"
+  (click)="onClick($event)"
+>
+  <mat-icon>file_download</mat-icon>
 </button>

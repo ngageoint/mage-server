@@ -8,10 +8,13 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "es2020",
+    "target": "ES2022",
     "skipLibCheck": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -28,8 +31,12 @@
       ],
       "core-lib-src/*": [
         "projects/core-lib/*/public-api.ts"
+      ],
+      "mage-web-app/*": [
+        "src/app/*"
       ]
-    }
+    },
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

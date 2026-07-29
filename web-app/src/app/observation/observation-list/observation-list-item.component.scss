@@ -1,108 +1,119 @@
+mat-card {
+  overflow: hidden;
+  --mat-card-elevated-container-color: white;
+}
+
+mat-card-content {
+  padding-top: 16px;
+}
+
+mat-card-actions {
+  width: 100%;
+}
+
 .item {
   cursor: pointer;
+}
+
+.item-overline {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .item-header {
   display: flex;
   flex-direction: row;
-  padding-bottom: 16px;
 }
 
 .item-header-text {
-  font-size: 24px;
-  color: rgba(30, 136, 229, 0.87);
-  font-weight: 500;
-  margin-top: 16px;
-  margin-bottom: 2px;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-primary);
+  margin-top: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.item-subhead {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .item-header-content {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
-}
-
-.item-overline {
-  color: rgba(0, 0, 0, 0.6);
-  font-family: Roboto, sans-serif;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: .16667em;
-  text-decoration: none;
-  text-transform: uppercase;
+  margin-right: 16px;
 }
 
 .item-thumbnail {
-  width: 72px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   margin-bottom: auto;
   text-align: center;
 }
 
 .item-thumbnail img {
-  max-width: 40px;
+  max-width: 48px;
+  max-height: 48px;
+  object-fit: contain;
+  display: block;
 }
 
-.item-subhead {
-  margin-top: 4px;
-  color: rgba(0, 0, 0, 0.6);
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+.item-thumbnail__fallback {
+  width: 48px;
+  height: 48px;
+  font-size: 48px;
+  line-height: 48px;
+  color: var(--mat-sys-primary);
 }
 
 .item-media {
-  height: 194px;
+  height: 200px;
   position: relative;
   box-sizing: border-box;
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  overflow: hidden;
+  margin: 8px -16px 0 -16px;
 }
 
 .item-media img {
-  height: 194px;
-}
-
-.item-media-double img {
-  height: 194px;
-  width: 194px;
+  height: 200px;
+  width: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .item-important {
-  margin: -16px -16px 16px -16px;
   padding: 8px 0;
   display: flex;
-  background: #FF9103;
+  cursor: pointer;
+  background: var(--mat-sys-secondary-container);
 }
 
 .item-important--icon {
   margin: 0 16px;
   align-self: center;
   font-size: 32px;
-  color: rgba(0, 0, 0, .87);
+  color: var(--mat-sys-on-secondary-container);
 }
 
 .item-important--overline {
-  color: rgba(0, 0, 0, .6);
-  font-family: Roboto, sans-serif;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: .16667em;
-  text-decoration: none;
-  text-transform: uppercase;
+  color: var(--mat-sys-on-secondary-container);
+  font: var(--mat-sys-body-small);
 }
 
 .item-important--description {
-  margin-top: 8px;
-  color: rgba(0, 0, 0, .87);
+  color: var(--mat-sys-on-secondary-container);
 }
 
 .important {
@@ -122,13 +133,10 @@
   margin-left: 8px;
 }
 
-.actions {
+mat-card-actions {
   display: flex;
   flex-direction: row;
   align-items: center;
-  box-sizing: border-box;
-  min-height: 52px;
-  padding: 8px;
 }
 
 .actions-buttons {
@@ -143,37 +151,22 @@
   flex-direction: row;
   align-items: center;
   box-sizing: border-box;
-  color: rgba(0, 0, 0, 0.6);
   flex-grow: 1;
   justify-content: flex-end;
 }
 
-.actions-icons > * + * {
+.actions-icons>*+* {
   margin-left: 8px;
-}
-
-.actions__location-button {
-  padding: 4px;
 }
 
 .actions__location-icon {
   font-size: 18px;
   height: 18px;
   width: 18px;
-  margin-right: 4px;
-  margin-top: -2px;
-}
-
-.actions--inactive {
-  color: rgba(0, 0, 0, .6);
-}
-
-.actions--inactive:focus {
-  outline: none;
 }
 
 .actions__important--active {
-  color: #FF9105;
+  color: var(--mat-sys-secondary);
 }
 
 .actions__favorite {
@@ -182,11 +175,11 @@
 }
 
 .actions__favorite:hover {
-  color: #7ED321;
+  color: var(--mat-sys-secondary);
 }
 
 .actions__favorite--active {
-  color: #7ED321;
+  color: var(--mat-sys-secondary);
 }
 
 .actions__favorite-label {

@@ -1,17 +1,18 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatError, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatError as MatError, MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ObservationEditEmailComponent } from './observation-edit-email.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-email [definition]="definition" [formGroup]="formGroup"></observation-edit-email>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: `host-component`,
+    template: `<observation-edit-email [definition]="definition" [formGroup]="formGroup"></observation-edit-email>`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({

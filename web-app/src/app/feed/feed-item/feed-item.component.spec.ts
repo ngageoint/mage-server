@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatCardModule } from '@angular/material/card'
+import { MatCardModule as MatCardModule } from '@angular/material/card'
 import { MatDividerModule } from '@angular/material/divider'
 import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
@@ -38,7 +38,8 @@ class MockMapService {
 }
 
 @Component({
-  template: '<feed-item [feed]="feed" [item]="item"></feed-item>'
+    template: '<feed-item [feed]="feed" [item]="item"></feed-item>',
+    standalone: false
 })
 class TestHostComponent {
   feed: Feed = {

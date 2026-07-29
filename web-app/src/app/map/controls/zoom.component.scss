@@ -4,6 +4,7 @@
   gap: 8px;
 }
 
-button:not(:last-child) {
-  margin-bottom: 8px;
+.map-control-fab {
+  --mat-fab-small-container-color: #ffffff;
+  --mat-fab-small-foreground-color: var(--mat-sys-primary);
 }

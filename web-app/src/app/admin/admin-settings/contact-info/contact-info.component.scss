@@ -1,0 +1,113 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.settings-page {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.settings-card {
+  --mat-card-elevated-container-color: white;
+
+  mat-card-content {
+    padding-bottom: 16px;
+  }
+}
+
+.helper-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: var(--mat-sys-secondary-container);
+  border-radius: 8px;
+  font-size: var(--mat-sys-body-small-size);
+  color: var(--mat-sys-on-secondary-container);
+
+  mat-icon {
+    font-size: var(--mat-sys-body-large-size);
+    width: var(--mat-sys-body-large-size);
+    height: var(--mat-sys-body-large-size);
+    flex-shrink: 0;
+  }
+}
+
+.card-actions {
+  display: flex;
+  padding: 16px 20px;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.contact-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+::ng-deep .mat-mdc-menu-panel.contact-menu {
+  min-width: 320px;
+  max-width: unset;
+}
+
+.menu-panel-content {
+  padding: 16px 20px;
+}
+
+.menu-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--mat-sys-title-medium-size);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+  margin-bottom: 12px;
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
+}
+
+.menu-divider {
+  margin-bottom: 12px;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+    flex-shrink: 0;
+  }
+
+  a {
+    color: var(--mat-sys-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

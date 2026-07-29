@@ -7,21 +7,100 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
-##### Features
-- The _About_ page displays system information, including Node and MongoDB versions.
-  - The new `READ_SYSTEM_INFO` role restricts access to system information.
-- Support for Mongoose 6.x
-- Support for Webpack 5.x
-- Support for Angular 14.x
-- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x.
-- The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
-- [GARS](https://github.com/ngageoint/gars-js) grid overlay
-- [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
+## [6.6.0](https://github.com/ngageoint/mage-server/releases/tag/6.6.0)
+### Service
+#### Features
+* Audit logging: HTTP request logging for `/api` and `/auth`, login success/failure tracking with IP/user agent, permission-denial logging, and logging of account, event, team, banner, and device changes; JSON output by default for easy ingestion into tools like Splunk
+* API compatibility version is now decoupled from the release version via a new `apiVersion` field, so client compatibility checks no longer break on every release
+* Support for Mongoose 8.x and MongoDB 8
+* Support for deleting an observation's "important" flag by sending `null` in addition to `undefined`
+* Attachments are no longer restricted to a fixed set of file types
+#### Bug Fixes
+* GeoPackage export used an incorrect file type
+* Use the preferred `tile.openstreetmap.org` URL for place name tiles
+* Duplicate forms could appear in CSV exports
+* Device point-of-contact edits were silently dropped due to a nested field the server didn't read
+* Null-reference error in the local authentication migration
+* Orphaned authentication documents (from deleted users) and multi-value fields (e.g. email) were not handled correctly
+* The `/api/users` route no longer returns an unbounded list of all users; the endpoint is deprecated
+#### Security
+* Replaced `passport-ldapauth` with `ldapts` for LDAP authentication
+* Added Trivy vulnerability scanning of built container images in CI
+* General dependency/vulnerability cleanup: upgraded Express, `geopackage`, `passport-saml`, `form-data`, `multer`; removed `crypto-js` and unused `xpath`/`walk` dependencies
+* Removed legacy Cloud Foundry deployment support. Environment configuration is now read directly from `MAGE_*` env vars
 
-##### Bug fixes
-- Single observation download bug
-- Protect against disabling all authentications.
-- Problem with OAuth web login
+### Web App
+#### Features
+* Upgraded Angular from 14.x to 20.x, including a full migration of Angular Material theming from M2 to M3, and consolidated the previously separate `web-app` and admin Angular projects into a single project
+* AngularJS has been fully retired — the remaining admin auth, navbar, banner, user, device, and location code is now all Angular
+* New signup CAPTCHA implementation, replacing `svg-captcha` with `captcha-canvas`
+#### Bug Fixes
+* The active session is now cleared client-side immediately after a user changes their own password, rather than leaving a stale session in place
+
+### Plugins
+#### SFTP
+* Added a web UI showing the status of backfilled SFTP observations, including start-forward sync and a SKIPPED status for backfilled items
+* Configurable port and improved connection error handling; added a paste-in certificate option and automatic reconnection logic
+* Fixed `.mov` attachment sync and switched to syncing observations by last-modified date only
+* Upgraded to Angular 20
+#### ArcGIS
+* Reworked to run on the version of Angular used by the core web app, then upgraded to Angular 20
+
+## [6.5.8](https://github.com/ngageoint/mage-server/releases/tag/6.5.8)
+### Service
+#### Bug Fixes
+* Event pagination no longer defaults to `NaN` when `page_size`/`limit` is omitted; now defaults to `null`
+* Event query results now sort numerically instead of lexicographically
+
+## [6.5.5](https://github.com/ngageoint/mage-server/releases/tag/6.5.5)
+### Service
+#### Features
+* Support for Mongoose 6.x (#141)
+* [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 6.x (#141)
+* The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147) (#141)
+* The _About_ page displays system information, including Node and MongoDB versions (#170, #172)
+  * The new `READ_SYSTEM_INFO` role restricts access to system information (#192)
+* [GARS](https://github.com/ngageoint/gars-js) grid overlay (#143)
+* [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay (#144)
+* Observations can be created with no geometry attached, via a "No Geometry" option (#300)
+* KMZ file uploads supported for layers, with custom stylesheets/icons and a default icon fallback for invalid images (#291, #298)
+#### Bug Fixes
+* Single observation download bug (#146)
+* Protect against disabling all authentications (#147)
+* Problem with OAuth web login (#148, #149)
+* Form upload icon duplication error
+#### Security
+* Upgrade `jsonwebtoken` to address a CVE
+
+### Web App
+#### Features
+* Support for Webpack 5.x (#154)
+* Support for Angular 14.x (#150, #151, #152, #153, #155, #156, #158)
+* Admin _Team_ component rebuilt in Angular, with role-based visibility and an Access section for managing team membership (#306, #315)
+* Admin _User_ and _Users_ components rebuilt in Angular 14, with filter tabs (All/Active/Inactive/Disabled) and search (#318, #326)
+* Admin navigation moved from a side nav into a collapsed top menu (#334)
+* Tooltips added to navbar action buttons (#310)
+* Login page links to the About page, including a new "Contact The Development Team" section (#313)
+* Map view supports filtering observations by user and by form (#299)
+* Fixed observation time search and added time window filter options (Today, Last 24/12/6 Hours, Last Hour, Custom) (#299)
+* _Preferences_ &rarr; _Time Format_ "30 Seconds" option relabeled "Relative" to match its behavior (#307)
+* Login Access Code page now submits on Enter (#308)
+* Observation panel now opens by default on the map view (#347)
+#### Bug Fixes
+* Web app UI fixed for medium-sized screens (#303)
+* New user registration now properly displays password validation errors
+* Fixed scrolling issue across different screen resolutions (hotfix, #340)
+
+### Plugins
+#### ArcGIS
+* Added a user-driven "portal URL" field in preparation for future ArcGIS sync support; does not enable sync yet (#325)
+* OAuth support for ArcGIS authentication (#218, #219, #225, #252)
+* Material UI facelift for event/processing sections (#229)
+* Bug fixes for duplicate feature transfer and enable/disable-after-init issues (#257, #260)
+#### SFTP
+* New SFTP plugin (#230)
+* Password encryption for SFTP credentials (#258)
+* RSA key support (#279)
 
 ## [6.3.0](https://github.com/ngageoint/mage-server/releases/tag/6.3.0)
 ### Service

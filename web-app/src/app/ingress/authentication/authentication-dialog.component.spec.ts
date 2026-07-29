@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AuthenticationDialogComponent } from './authentication-dialog.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 import { IngressModule } from '../ingress.module';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Authentication Dialog', () => {
   let component: AuthenticationDialogComponent;
@@ -10,13 +11,13 @@ describe('Authentication Dialog', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AuthenticationDialogComponent],
-      imports: [HttpClientTestingModule, IngressModule],
-      providers: [{
-        provide: MatDialogRef,
-        useValue: {}
-      },]
-    }).compileComponents();
+    declarations: [AuthenticationDialogComponent],
+    imports: [IngressModule],
+    providers: [{
+            provide: MatDialogRef,
+            useValue: {}
+        }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting(),]
+}).compileComponents();
   }));
 
   beforeEach(() => {

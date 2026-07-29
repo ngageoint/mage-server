@@ -5,18 +5,19 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ObservationEditFormComponent } from './observation-edit-form.component';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatListModule } from '@angular/material/list';
+import { MatCardModule as MatCardModule } from '@angular/material/card';
+import { MatListModule as MatListModule } from '@angular/material/list';
 import { MapClipComponent } from 'src/app/map/clip/clip.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-form
+    selector: `host-component`,
+    template: `<observation-edit-form
     [formGroup]="formGroup"
     [definition]="definition"
     [geometryStyle]="geometryStyle"
     [options]="options"
-  ></observation-edit-form>`
+  ></observation-edit-form>`,
+    standalone: false
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({});

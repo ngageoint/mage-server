@@ -1,39 +1,42 @@
-ARG BASE_IMAGE=node:20.11.1-slim
+ARG BUILD_IMAGE="node:24-slim"
+ARG DIST_IMAGE="ghcr.io/ngageoint/mage-server/ironbank/google/distroless13/nodejs-24:nonroot"
+ARG MAGE_INSTANCE="/mage/instance"
 
-FROM $BASE_IMAGE
+FROM ${BUILD_IMAGE} AS build-instance
+
 LABEL author="NGA"
 
-ARG SERVER_VERSION=6.5.2
-ARG ARC_VERSION=NONE
-ARG SFTP_VERSION=NONE
-ARG MSI_VERSION=NONE
+ARG CORE_VERSION="latest"
+ARG ARCGIS_VERSION="latest"
+ARG SFTP_VERSION="latest"
+ARG MSI_VERSION="latest"
+ARG IMAGE_VERSION="latest"
+ARG MAGE_INSTANCE
+WORKDIR ${MAGE_INSTANCE}
 
-USER root
+RUN set -eux; \
+  npm i --omit=dev @ngageoint/mage.service@${CORE_VERSION}; \
+  npm i --omit=dev @ngageoint/mage.web-app@${CORE_VERSION}; \
+  [ -n "${ARCGIS_VERSION}" ] && \
+  npm i --omit=dev @ngageoint/mage.arcgis.service@${ARCGIS_VERSION} @ngageoint/mage.arcgis.web-app@${ARCGIS_VERSION}; \
+  [ -n "${SFTP_VERSION}" ] && \
+  npm i --omit=dev @ngageoint/mage.sftp.service@${SFTP_VERSION} @ngageoint/mage.sftp.web@${SFTP_VERSION}; \
+  [ -n "${MSI_VERSION}" ] && \
+  npm i --omit=dev @ngageoint/mage.nga-msi@${MSI_VERSION}; \
+  [ -n "${IMAGE_VERSION}" ] && \
+  npm i --omit=dev @ngageoint/mage.image.service@${IMAGE_VERSION}; \
+  ln -sfn ./node_modules/.bin/mage.service ./mage.service
 
-RUN apt-get update
-
-RUN groupadd -r mage \
-    && useradd -m -r -s /bin/bash -g mage mage \
-    && mkdir -p /var/lib/mage \
-    && chown mage:mage /var/lib/mage
-
-USER mage
-ENV MAGE_HOME=/home/mage/instance
-WORKDIR ${MAGE_HOME}
-RUN ls -l \
-    && npm i --omit dev @ngageoint/mage.service@${SERVER_VERSION} \
-    && npm i --omit dev @ngageoint/mage.web-app@${SERVER_VERSION} \
-    && if [ "$ARC_VERSION" != "NONE" ]; then npm i --omit dev --legacy-peer-deps @ngageoint/mage.arcgis.service@${ARC_VERSION} @ngageoint/mage.arcgis.web-app@${ARC_VERSION}; fi\
-    && if [ "$SFTP_VERSION" != "NONE" ]; then npm i --omit dev --legacy-peer-deps @ngageoint/mage.sftp.service@${SFTP_VERSION} @ngageoint/mage.sftp.web@${SFTP_VERSION}; fi \
-    && if [ "$MSI_VERSION" != "NONE" ]; then npm i --omit dev --legacy-peer-deps @ngageoint/mage.nga-msi@${MSI_VERSION}; fi \
-    && ln -s ./node_modules/.bin/mage.service
-
+FROM ${DIST_IMAGE}
+ARG MAGE_INSTANCE
+# create the mage data base directory as DIST_IMAGE nonroot user
+WORKDIR /var/lib/mage
+# set user to 999 as historically mage images were built with user/group 999
+# and 999 owns the files of existing deployments
+USER 999:999
+COPY --chown=999:999 --from=build-instance ${MAGE_INSTANCE}/ ${MAGE_INSTANCE}/
+WORKDIR ${MAGE_INSTANCE}
 VOLUME /var/lib/mage
 EXPOSE 4242
 
-ENTRYPOINT [ "./mage.service", \
-    "--plugin", "@ngageoint/mage.arcgis.service", \
-    "--plugin", "@ngageoint/mage.sftp.service", \
-    "--plugin", "@ngageoint/mage.nga-msi", \
-    "--web-plugin", "@ngageoint/mage.arcgis.web-app", \
-    "--web-plugin", "@ngageoint/mage.sftp.web"]
+CMD [ "./mage.service" ]

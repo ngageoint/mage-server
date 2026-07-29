@@ -1,6 +1,6 @@
 module.exports = function(provision) {
 
-  const log = require('winston')
+  const log = require('../logger')
     , UidStrategy = require('./strategies/uid').Strategy
     , Device = require('../models/device');
 

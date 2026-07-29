@@ -2,10 +2,10 @@
   "name": "@ngageoint/mage.project",
   "description": "This is the root package definition for the mage-server monorepo.",
   "private": true,
-  "version": "6.5.5",
+  "version": "6.7.0",
   "files": [],
   "scripts": {
-    "postinstall": "npm-run-all service:ci web-app:ci arcgis:ci sftp:ci nga-msi:ci",
+    "postinstall": "npm-run-all service:ci web-app:ci arcgis:ci sftp:ci nga-msi:ci image.service:ci",
     "install:resolve": "npm-run-all service:install web-app:install",
     "build": "npm-run-all service:build web-app:build instance:build",
     "build-all": "npm-run-all build arcgis:build sftp:build nga-msi:build",
@@ -36,7 +36,7 @@
     "sftp.service:build": "npm run build --prefix plugins/sftp/service",
     "sftp.web:build": "npm run build --prefix plugins/sftp/web",
     "image.service:install": "npm install --prefix plugins/image/service",
-    "image.service:ci": "npm ci --prefix plugins/image/service",
+    "image.service:ci": "cd plugins/image/service && npm ci && npm link ../../../service",
     "image.service:build": "npm run build --prefix plugins/image/service",
     "image.service:pack": "npm pack ./plugins/image/service",
     "nga-msi:ci": "cd plugins/nga-msi && npm ci && npm link ../../service",
@@ -46,10 +46,18 @@
     "start-web": "npm run web-app:debug"
   },
   "devDependencies": {
+    "@angular-architects/module-federation": "^20.0.0",
     "@types/angular-ui-router": "^1.1.44",
+    "@types/jasmine": "^5.1.15",
+    "@types/node": "^20.19.30",
     "npm-run-all": "4.1.5"
   },
   "dependencies": {
-    "p-limit": "^7.1.1"
+    "@angular/cdk": "^17.3.10",
+    "@angular/material": "^17.3.10",
+    "@angular/material-moment-adapter": "^17.3.10",
+    "p-limit": "^7.1.1",
+    "systemjs": "^6.15.1",
+    "winston": "^3.19.0"
   }
 }

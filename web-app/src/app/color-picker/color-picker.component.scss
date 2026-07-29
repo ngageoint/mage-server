@@ -1,16 +1,5 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
-
-mat-card {
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  margin-top: -16px;
-  margin-bottom: 16px;
-}
-
-:host ::ng-deep.mat-form-field-wrapper {
-  padding-bottom: unset;
+:host {
+  display: block;
 }
 
 .swatch {
@@ -21,22 +10,14 @@ mat-card {
   cursor: pointer;
 }
 
-.swatch > mat-label {
-  display: block;
-  position: relative;
-  margin-bottom: 2px;
-  font: 400 12px/24px Roboto, "Helvetica Neue", sans-serif;
-  color: mat.get-color-from-palette($app-primary);
-}
-
 .swatch-input {
   cursor: pointer;
 }
 
 .checkboard {
   position: absolute;
-  top: 16px;
-  bottom: 16px;
+  top: 10px;
+  bottom: 30px;
   right: 12px;
   left: 12px;
 }
@@ -47,8 +28,17 @@ mat-card {
   bottom: 0;
   right: 0;
   left: 0;
-  border-radius: 4px;
+  border-radius: var(--mat-sys-corner-extra-small);
   cursor: pointer;
+}
+
+.picker-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  margin: 0;
+  min-width: 280px;
+  max-width: min(320px, 100vw - 32px);
 }
 
 .color {
@@ -95,12 +85,12 @@ mat-card {
 
 .sketch-active {
   position: absolute;
-  top: 0px;
-  right: 0px;
-  bottom: 0px;
-  left: 0px;
-  border-radius: 2px;
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.25) 0px 0px 4px inset;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--mat-sys-corner-extra-small);
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 0 1px inset, rgba(0, 0, 0, 0.25) 0 0 4px inset;
 }
 
 .actions {
@@ -108,4 +98,3 @@ mat-card {
   display: flex;
   justify-content: flex-end;
 }
-

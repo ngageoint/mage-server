@@ -1,7 +1,7 @@
 import mongoose, { Mongoose } from 'mongoose'
 import { EntityIdFactory } from '../entities/entities.global'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const log = require('winston')
+const log = require('../logger'); 
 
 class RetryConnection {
 

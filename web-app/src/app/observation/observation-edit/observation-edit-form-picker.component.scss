@@ -1,3 +1,7 @@
+:host {
+  --mat-bottom-sheet-container-background-color: white;
+}
+
 .container {
   width: 468px;
 }
@@ -5,27 +9,20 @@
 .form-picker-header {
   display: flex;
   align-items: center;
-  margin: 8px 0;
-  height: 50px;
+  min-height: 72px;
+  padding: 0 32px;
 }
 
 .form-picker-header__text {
-  font-family: Roboto, sans-serif;
-  font-size: 20px;
-  font-weight: 400;
-  color: rgba(0, 0, 0, .87);
+  font: var(--mat-sys-title-large);
+  color: var(--mat-sys-on-surface);
 }
 
 .form-picker-header__divider {
-  margin: 0 -16px;
+  margin: 0;
 }
 
 .form-picker-list {
-  background-color: white;
-}
-
-.form-picker-actions {
-  display: flex;
-  justify-content: center;
-  padding: 8px 0;
+  padding: 24px 0 8px;
+  --mat-list-list-item-container-shape: var(--mat-sys-corner-full);
 }

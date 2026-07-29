@@ -1,0 +1,62 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions" *ngIf="hasLayerCreatePermission">
+    <button matButton="filled" (click)="newLayer()">
+      <mat-icon>add</mat-icon>New Layer
+    </button>
+  </div>
+</ng-template>
+
+<div class="layers-page">
+  <mat-card appearance="elevated" class="layers-card">
+    <div class="filter-row">
+      <mat-chip-listbox [(ngModel)]="typeFilter" (change)="onTypeFilterChange($event.value)">
+        <mat-chip-option value="all">All</mat-chip-option>
+        <mat-chip-option value="online">Online</mat-chip-option>
+        <mat-chip-option value="offline">Downloadable</mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+
+    <div class="toolbar">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+        <mat-label>Search layers</mat-label>
+        <input matInput [(ngModel)]="layerSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="layerSearch" (click)="onSearchCleared()" aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <mat-nav-list *ngIf="filteredLayers?.length; else noLayers">
+      <mat-list-item
+        *ngFor="let layer of getPaginatedLayers()"
+        [routerLink]="layerRoute(layer)"
+      >
+        <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
+        <span matListItemTitle>{{ layer.name }}</span>
+        <span matListItemLine>
+          {{ layer.description || 'No description' }}<ng-container *ngIf="layer.type"> · {{ layer.type }}</ng-container>
+        </span>
+      </mat-list-item>
+    </mat-nav-list>
+
+    <ng-template #noLayers>
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">layers</mat-icon>
+        <div class="empty-state-text" *ngIf="layerSearch; else noLayersFound">No layers match your search</div>
+        <ng-template #noLayersFound>
+          <div class="empty-state-text">No layers found</div>
+        </ng-template>
+      </div>
+    </ng-template>
+
+    <mat-paginator
+      [length]="totalLayers"
+      [pageSize]="itemsPerPage"
+      [pageIndex]="page"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)"
+    ></mat-paginator>
+  </mat-card>
+</div>

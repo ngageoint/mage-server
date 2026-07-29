@@ -1,3 +1,11 @@
+mat-toolbar {
+  background-color: white;
+
+  button {
+    color: var(--mat-sys-primary);
+  }
+}
+
 .navigation {
   display: flex;
 }
@@ -8,6 +16,8 @@
 
 .navigation__title {
   flex: 1 1 auto;
+  font: var(--mat-sys-title-large);
+  color: var(--mat-sys-primary);
 }
 
 .observation {
@@ -16,6 +26,7 @@
 
 .form {
   margin: 0 8px 8px 8px;
+  --mat-card-elevated-container-color: white;
 }
 
 .edit-content {
@@ -23,6 +34,7 @@
   top: 64px;
   bottom: 0;
   width: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-bottom: 54px;
 }
@@ -32,13 +44,12 @@
 }
 
 .edit-banner {
-  background: #e7e7e7;
-  border-bottom: 1px solid rgba($color: #000000, $alpha: .12);
+  background: var(--mat-sys-surface-container-low);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
 }
 
 .edit-banner-container {
@@ -54,14 +65,21 @@
 
 .edit-banner-content__title {
   margin-bottom: 8px;
-  font-size: 16px;
-  color: rgba(213, 0, 0, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
+}
+
+.edit-banner-content__title-icon {
+  color: var(--mat-sys-error);
 }
 
 .edit-banner-content__summary {
-  font-size: 16px;
+  font: var(--mat-sys-body-medium);
   white-space: pre-wrap;
-  color: rgba($color: #000000, $alpha: .87);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .edit-banner-actions {
@@ -73,6 +91,10 @@
 
 .edit-progress {
   z-index: 1;
+}
+
+.edit-date {
+  margin-bottom: 16px;
 }
 
 .form-mask {
@@ -89,29 +111,7 @@
   position: absolute;
   bottom: 16px;
   right: 16px;
-}
-
-.extended-fab-button {
-  width: unset;
-  padding: 0 16px;
-  border-radius: 24px;
-  height: 48px;
-
-  .mat-icon {
-    margin-right: 12px;
-    color: white;
-  }
-
-  .extended-fab-button__text {
-    font-weight: 500;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: white;
-  }
-}
-
-:host .extended-fab-button > ::ng-deep.mat-button-wrapper {
-  padding: unset;
+  z-index: 1;
 }
 
 .edit-forms {
@@ -122,7 +122,7 @@
   font-size: 16px;
   width: 16px;
   height: 16px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .cdk-drag-placeholder {

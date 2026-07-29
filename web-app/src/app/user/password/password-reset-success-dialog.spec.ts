@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { PasswordResetSuccessDialog } from './password-reset-success-dialog';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 
 describe('Password Reset Success Component', () => {
   let component: PasswordResetSuccessDialog;

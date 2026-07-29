@@ -1,0 +1,128 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions" *ngIf="hasFeedCreatePermission">
+    <button matButton="filled" [routerLink]="['./new']">
+      <mat-icon>add</mat-icon>New Feed
+    </button>
+  </div>
+</ng-template>
+
+<div class="feeds-page">
+  <mat-card appearance="outlined" class="feeds-card">
+    <mat-tab-group>
+      <mat-tab label="Feeds">
+        <ng-template matTabContent>
+          <div class="tab-toolbar">
+            <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+              <mat-label>Search Feeds</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input
+                matInput
+                type="text"
+                [(ngModel)]="feedSearch"
+                (input)="onFeedSearchChange()"
+                autocomplete="off"
+              />
+              <button
+                matIconButton
+                matSuffix
+                (click)="clearFeedSearch()"
+                *ngIf="feedSearch"
+                aria-label="Clear"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+
+          </div>
+
+          <mat-nav-list>
+            <mat-list-item
+              *ngFor="let feed of feeds | slice: feedPage * itemsPerPage : (feedPage + 1) * itemsPerPage"
+              [routerLink]="['../feeds', feed.id]"
+            >
+              <mat-icon matListItemIcon>rss_feed</mat-icon>
+              <span matListItemTitle>{{ feed.title }}</span>
+              <span matListItemLine>{{ feed.summary }}</span>
+              <span matListItemMeta *ngIf="hasFeedDeletePermission">
+                <button matIconButton (click)="deleteFeed($event, feed)" aria-label="Delete feed">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </span>
+            </mat-list-item>
+
+            <div class="empty-state" *ngIf="!feeds || feeds.length === 0">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">rss_feed</mat-icon>
+              <div class="empty-state-text" *ngIf="feedSearch; else noFeedsFound">No feeds match your search</div>
+              <ng-template #noFeedsFound>
+                <div class="empty-state-text">No feeds found</div>
+              </ng-template>
+            </div>
+          </mat-nav-list>
+
+          <mat-paginator
+            [length]="feeds.length"
+            [pageSize]="itemsPerPage"
+            (page)="feedPage = $event.pageIndex"
+          ></mat-paginator>
+        </ng-template>
+      </mat-tab>
+
+      <mat-tab label="Services">
+        <ng-template matTabContent>
+          <div class="tab-toolbar">
+            <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+              <mat-label>Search Services</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input
+                matInput
+                type="text"
+                [(ngModel)]="serviceSearch"
+                (input)="onServiceSearchChange()"
+                autocomplete="off"
+              />
+              <button
+                matIconButton
+                matSuffix
+                (click)="clearServiceSearch()"
+                *ngIf="serviceSearch"
+                aria-label="Clear"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+
+          <mat-nav-list>
+            <mat-list-item
+              *ngFor="let service of services | slice: servicePage * itemsPerPage : (servicePage + 1) * itemsPerPage"
+              [routerLink]="['../services', service.id]"
+            >
+              <mat-icon matListItemIcon>cloud_queue</mat-icon>
+              <span matListItemTitle>{{ service.title }}</span>
+              <span matListItemLine>{{ service.summary }}</span>
+              <span matListItemMeta *ngIf="hasFeedDeletePermission">
+                <button matIconButton (click)="deleteService($event, service)" aria-label="Delete service">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </span>
+            </mat-list-item>
+
+            <div class="empty-state" *ngIf="!services || services.length === 0">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">cloud_queue</mat-icon>
+              <div class="empty-state-text" *ngIf="serviceSearch; else noServicesFound">No services match your search</div>
+              <ng-template #noServicesFound>
+                <div class="empty-state-text">No services found</div>
+              </ng-template>
+            </div>
+          </mat-nav-list>
+
+          <mat-paginator
+            [length]="services.length"
+            [pageSize]="itemsPerPage"
+            (page)="servicePage = $event.pageIndex"
+          ></mat-paginator>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</div>

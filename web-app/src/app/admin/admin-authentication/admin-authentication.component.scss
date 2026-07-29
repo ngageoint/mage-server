@@ -1,0 +1,44 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-page {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+mat-accordion {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.auth-enable {
+  margin-bottom: 24px;
+}
+
+.auth-delete {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.delete-button {
+  color: var(--mat-sys-error);
+}
+
+mat-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

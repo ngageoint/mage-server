@@ -1,0 +1,31 @@
+<h2 mat-dialog-title>Delete "{{ event.name }}"?</h2>
+
+<mat-dialog-content>
+    <p>This event will be permanently deleted. This action cannot be undone.</p>
+
+    <div class="danger-zone">
+        <h3 class="danger-zone-title">
+            <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
+            Are you absolutely sure?
+        </h3>
+        <p class="danger-zone-description">
+            Deleting this event will remove <strong>all event information</strong> including observation and
+            location data. This action <strong>cannot</strong> be undone.
+        </p>
+
+        <mat-form-field appearance="fill" class="confirm-field">
+            <mat-label>Type "{{ event.name }}" to confirm</mat-label>
+            <input matInput type="text" [(ngModel)]="confirm.text" autocomplete="off">
+            <mat-hint *ngIf="confirm.text && event.name !== confirm.text" class="confirm-mismatch">Does not match event name</mat-hint>
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button matButton type="button" (click)="cancel()" [disabled]="deleting" cdkFocusInitial>Cancel</button>
+    <button matButton type="button" class="delete-button" [disabled]="deleting || event.name !== confirm.text"
+        (click)="deleteEvent()">
+        <mat-icon fontSet="material-symbols-outlined">{{ deleting ? 'progress_activity' : 'delete' }}</mat-icon>
+        Delete Event
+    </button>
+</mat-dialog-actions>

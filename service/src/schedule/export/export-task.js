@@ -1,9 +1,9 @@
-const log = require('winston')
+const log = require('../../logger')
   , fs = require('fs').promises
   , path = require('path');
 
 class ExportTask {
-  constructor({exportDirectory, exportTtl}, exportResource) {
+  constructor({ exportDirectory, exportTtl }, exportResource) {
     this.exportDirectory = exportDirectory;
     this.exportTtl = exportTtl;
     this.exportResource = exportResource;

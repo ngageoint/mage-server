@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import * as moment from 'moment';
+import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 
 @Component({
-  selector: 'observation-list',
-  templateUrl: './observation-list.component.html',
-  styleUrls: ['./observation-list.component.scss']
+    selector: 'observation-list',
+    templateUrl: './observation-list.component.html',
+    styleUrls: ['./observation-list.component.scss'],
+    standalone: false
 })
 export class ObservationListComponent implements OnInit, OnDestroy {
   loaded = false

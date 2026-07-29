@@ -1,18 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LayerHeaderComponent } from './layer-header.component';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatRadioModule } from '@angular/material/radio';
+import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
 import { Component, ViewChild } from '@angular/core';
 import { MapLayerService } from './layer.service';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 
 @Component({
-  selector: `host-component`,
-  template: `<layer-header [layer]="layer"></layer-header>`
+    selector: `host-component`,
+    template: `<layer-header [layer]="layer"></layer-header>`,
+    standalone: false
 })
 class TestHostComponent {
 

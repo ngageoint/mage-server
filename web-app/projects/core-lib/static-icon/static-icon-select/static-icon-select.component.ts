@@ -11,9 +11,10 @@ export interface StaticIconSelectItem {
 }
 
 @Component({
-  selector: 'static-icon-select',
-  templateUrl: './static-icon-select.component.html',
-  styleUrls: ['./static-icon-select.component.scss']
+    selector: 'static-icon-select',
+    templateUrl: './static-icon-select.component.html',
+    styleUrls: ['./static-icon-select.component.scss'],
+    standalone: false
 })
 export class StaticIconSelectComponent implements OnInit {
 

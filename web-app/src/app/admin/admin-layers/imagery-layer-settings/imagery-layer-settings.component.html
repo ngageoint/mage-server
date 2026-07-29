@@ -1,0 +1,143 @@
+<div class="imagery-settings-container">
+    <mat-form-field appearance="fill" subscriptSizing="dynamic">
+        <mat-label>Layer URL</mat-label>
+        <input matInput [(ngModel)]="config.url" (ngModelChange)="onConfigChange()"
+            placeholder="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    </mat-form-field>
+
+    <div class="form-field">
+        <span class="field-label">Format</span>
+        <mat-radio-group [(ngModel)]="config.format" (change)="onFormatChange()" class="radio-group">
+            <mat-radio-button value="XYZ">XYZ</mat-radio-button>
+            <mat-radio-button value="TMS">TMS</mat-radio-button>
+            <mat-radio-button value="WMS">WMS</mat-radio-button>
+        </mat-radio-group>
+    </div>
+
+    <!-- WMS Section -->
+    <div *ngIf="config.format === 'WMS'" class="wms-section">
+        <button matButton="outlined" type="button" (click)="fetchWmsCapabilities()"
+            [disabled]="!config.url || isLoadingWms">
+            <mat-icon fontSet="material-symbols-outlined" [class.spin]="isLoadingWms">
+                {{ isLoadingWms ? 'progress_activity' : 'refresh' }}
+            </mat-icon>
+            {{ isLoadingWms ? 'Loading...' : 'Load WMS Capabilities' }}
+        </button>
+
+        <div *ngIf="wmsError" class="wms-error">
+            <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
+            <span>{{ wmsError }}</span>
+        </div>
+
+        <div *ngIf="wmsCapabilities" class="wms-server-info">
+            <h4>{{ wmsCapabilities.Service?.Title }}</h4>
+            <div *ngIf="wmsCapabilities.Service?.Abstract" class="wms-abstract">
+                {{ wmsCapabilities.Service.Abstract }}
+            </div>
+            <div class="wms-version">WMS Version: {{ wmsCapabilities.version }}</div>
+            <div *ngIf="wmsCapabilities.Service?.ContactInformation?.ContactPersonPrimary" class="wms-contact">
+                <div>Contact Person:
+                    {{ wmsCapabilities.Service.ContactInformation.ContactPersonPrimary.ContactPerson }}
+                </div>
+                <div>Contact Organization:
+                    {{ wmsCapabilities.Service.ContactInformation.ContactPersonPrimary.ContactOrganization }}
+                </div>
+                <div *ngIf="wmsCapabilities.Service.ContactInformation.ContactVoiceTelephone">
+                    Contact Telephone:
+                    <a href="tel:{{ wmsCapabilities.Service.ContactInformation.ContactVoiceTelephone }}">
+                        {{ wmsCapabilities.Service.ContactInformation.ContactVoiceTelephone }}
+                    </a>
+                </div>
+                <div *ngIf="wmsCapabilities.Service.ContactInformation.ContactElectronicMailAddress">
+                    Contact Email:
+                    <a href="mailto:{{ wmsCapabilities.Service.ContactInformation.ContactElectronicMailAddress }}">
+                        {{ wmsCapabilities.Service.ContactInformation.ContactElectronicMailAddress }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="wmsLayers.length > 0" class="wms-layers-section">
+            <h5>Available EPSG:3857 layers on this WMS server. Choose layers to create your map with:</h5>
+            <mat-form-field appearance="fill" subscriptSizing="dynamic">
+                <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+                <input matInput [(ngModel)]="wmsLayerSearchQuery" placeholder="Search layers..." />
+            </mat-form-field>
+            <div class="wms-layers-list">
+                <mat-checkbox *ngFor="let layer of filteredWmsLayers()" class="wms-layer-item"
+                    [(ngModel)]="selectedWmsLayers[layer.Name]" (ngModelChange)="onWmsLayerSelectionChange()">
+                    <span class="layer-info">
+                        <span class="layer-title">{{ layer.Title }}</span>
+                        <span *ngIf="layer.Abstract" class="layer-abstract">{{ layer.Abstract }}</span>
+                    </span>
+                </mat-checkbox>
+            </div>
+        </div>
+
+        <div *ngIf="wmsOtherLayers.length > 0" class="wms-other-layers-section">
+            <h5 class="warning-text">These layers appear to not be available in EPSG:3857. MAGE clients can
+                only show EPSG:3857 layers.</h5>
+            <div class="wms-layers-list">
+                <mat-checkbox *ngFor="let layer of filteredWmsOtherLayers()" class="wms-layer-item"
+                    [checked]="false" disabled>
+                    <span class="layer-info">
+                        <span class="layer-title">{{ layer.Title }}</span>
+                        <span *ngIf="layer.Abstract" class="layer-abstract">{{ layer.Abstract }}</span>
+                    </span>
+                </mat-checkbox>
+            </div>
+        </div>
+
+        <mat-expansion-panel class="wms-advanced-section">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Advanced Options</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="advanced-options-content">
+                <mat-form-field appearance="fill" subscriptSizing="dynamic">
+                    <mat-label>WMS Version</mat-label>
+                    <input matInput [(ngModel)]="config.wmsVersion" (ngModelChange)="onConfigChange()"
+                        placeholder="i.e. 1.3.0" />
+                </mat-form-field>
+
+                <mat-slide-toggle [(ngModel)]="config.wmsTransparent" (ngModelChange)="onConfigChange()">
+                    Transparent
+                </mat-slide-toggle>
+
+                <mat-form-field appearance="fill" subscriptSizing="dynamic">
+                    <mat-label>Styles</mat-label>
+                    <input matInput [(ngModel)]="config.wmsStyles" (ngModelChange)="onConfigChange()"
+                        placeholder="Comma separated list of layer styles" />
+                </mat-form-field>
+            </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel *ngIf="wmsCapabilities" class="wms-capabilities-section">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Show WMS Capabilities Document</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <pre>{{ wmsCapabilities | json }}</pre>
+        </mat-expansion-panel>
+
+    </div>
+
+    <ng-content></ng-content>
+
+    <mat-expansion-panel
+        class="preview-section"
+        *ngIf="config.url"
+        [disabled]="config.format === 'WMS' && !getSelectedWmsLayers()"
+        (opened)="onPreviewOpened()"
+        (closed)="onPreviewClosed()"
+    >
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                <mat-icon fontSet="material-symbols-outlined">map</mat-icon>
+                Preview Map
+            </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div #previewMapContainer class="preview-map-container"></div>
+    </mat-expansion-panel>
+</div>

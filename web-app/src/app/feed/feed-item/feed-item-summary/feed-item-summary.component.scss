@@ -1,39 +1,71 @@
-.mat-list-icon {
-  border-radius: unset !important;
-  height: unset !important;
+:host {
+  display: block;
+  margin: 0 8px 8px;
 }
 
-.list-item-icon {
-  border-radius: unset;
-  height: unset;
-}
-
-.mat-body-1 {
-  opacity: .60;
-}
-
-.mat-body-2 {
-  opacity: .87;
-}
-
-.overline {
-  font: 500 10px/24px Roboto, "Helvetica Neue", sans-serif;
-  font-size: 10px !important;
-  text-transform: uppercase;
-  opacity: .60;
+mat-card {
+  overflow: hidden;
+  --mat-card-elevated-container-color: #ffffff;
 }
 
 .item {
-  background: white;
-  width: 100%;
+  cursor: pointer;
+  padding-bottom: 12px;
 }
 
-.no-content {
-  font-size: 24px;
-  padding-left: 16px;
+.item-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.no-content > span {
-  opacity: .6;
+.item__content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
+.item__icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  color: var(--mat-sys-primary);
+  overflow: hidden;
+
+  mat-icon {
+    font-size: 40px;
+    line-height: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  ::ng-deep img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+}
+
+.item__timestamp {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.item__primary {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-primary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item__secondary {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

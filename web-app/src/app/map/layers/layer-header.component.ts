@@ -1,18 +1,19 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatCheckboxChange as MatCheckboxChange } from '@angular/material/checkbox';
 import { MapLayerService } from './layer.service';
 import { state, style, trigger } from '@angular/animations';
 
 @Component({
-  selector: 'layer-header',
-  templateUrl: './layer-header.component.html',
-  styleUrls: ['./layer-header.component.scss'],
-  animations: [
-    trigger('expanded', [
-      state('true', style({ transform: 'rotate(0)' })),
-      state('false', style({ transform: 'rotate(90deg)' }))
-    ])
-  ]
+    selector: 'layer-header',
+    templateUrl: './layer-header.component.html',
+    styleUrls: ['./layer-header.component.scss'],
+    animations: [
+        trigger('expanded', [
+            state('true', style({ transform: 'rotate(0)' })),
+            state('false', style({ transform: 'rotate(90deg)' }))
+        ])
+    ],
+    standalone: false
 })
 export class LayerHeaderComponent {
   @Input() layer: any;

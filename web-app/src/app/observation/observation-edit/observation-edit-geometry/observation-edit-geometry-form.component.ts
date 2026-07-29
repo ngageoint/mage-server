@@ -1,17 +1,18 @@
 import { Component, Directive, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
-import { MatSnackBar } from '@angular/material/snack-bar'
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
 import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/geometry/geometry-dms'
 import * as DMS from 'src/app/geometry/geometry-dms'
 import { createMask } from '@ngneat/input-mask'
 import { LocalStorageService } from '../../../http/local-storage.service'
-import { MapService } from '../../../map/map.service'
+import { MapService, FeatureEdit } from '../../../map/map.service'
 import { GeometryService } from '../../../geometry/geometry.service'
 
 @Directive({
-  selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
-  providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }]
+    selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
+    providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }],
+    standalone: false
 })
 export class MGRSValidatorDirective implements Validator {
 
@@ -31,8 +32,9 @@ export class MGRSValidatorDirective implements Validator {
 }
 
 @Directive({
-  selector: '[dmsValidation][formControlName],[dmsValidation][formControl],[dmsValidation][ngModel]',
-  providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }]
+    selector: '[dmsValidation][formControlName],[dmsValidation][formControl],[dmsValidation][ngModel]',
+    providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }],
+    standalone: false
 })
 export class DMSValidatorDirective implements Validator {
 
@@ -58,13 +60,14 @@ type CoordinateSystemKey = 'wgs84' | 'mgrs' | 'dms'
 type DMSFormValue = Partial<{ [DimensionKey.Latitude]: string, [DimensionKey.Longitude]: string }>
 
 @Component({
-  selector: 'observation-edit-geometry-form',
-  templateUrl: './observation-edit-geometry-form.component.html',
-  styleUrls: ['./observation-edit-geometry-form.component.scss'],
-  providers: [
-    { provide: NG_VALIDATORS,  useExisting: MGRSValidatorDirective, multi: true },
-    { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }
-  ]
+    selector: 'observation-edit-geometry-form',
+    templateUrl: './observation-edit-geometry-form.component.html',
+    styleUrls: ['./observation-edit-geometry-form.component.scss'],
+    providers: [
+        { provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true },
+        { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }
+    ],
+    standalone: false
 })
 export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
 
@@ -79,7 +82,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   coordinateSystem = 'wgs84'
   coordinateEditSource: CoordinateSystemKey | null = null
   selectedVertexIndex: number
-  featureEdit: any
+  featureEdit?: FeatureEdit
   latitude: number
   longitude: number
   mgrs: string
@@ -152,17 +155,17 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
         })
         return
       }
-      this.featureEdit.save()
+      this.featureEdit?.save()
       this.save.emit({ feature: this.feature })
     } else {
       this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'observations')
-      this.featureEdit.cancel()
+      this.featureEdit?.cancel()
       this.save.emit({})
     }
   }
 
   onCancel(): void {
-    this.featureEdit.cancel()
+    this.featureEdit?.cancel()
     this.cancel.emit()
   }
 
@@ -283,7 +286,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
         this.mgrs = null
         this.dmsForm.setValue({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '' }, { emitEvent: false })
         delete this.feature.geometry.type
-        this.featureEdit.cancel()
+        this.featureEdit?.cancel()
         break;
     }
     if (shapeType) {
@@ -292,7 +295,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   }
 
   onEditShape(): void {
-    this.featureEdit.update(this.feature)
+    this.featureEdit?.update(this.feature)
   }
 
   editCurrentCoordinates(from: CoordinateSystemKey, lat: number, lon: number): void {
@@ -314,7 +317,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       return
     }
     this.feature.geometry.coordinates = coordinates
-    this.featureEdit.update(this.feature)
+    this.featureEdit?.update(this.feature)
   }
 
   updateCoordinates(): void {

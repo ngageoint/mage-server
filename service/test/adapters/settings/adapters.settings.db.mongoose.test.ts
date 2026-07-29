@@ -6,7 +6,7 @@ import * as legacy from '../../../lib/models/setting'
 import { MongooseSettingsRepository, SettingsDocument, SettingsModel } from '../../../lib/adapters/settings/adapters.settings.db.mongoose'
 import { MapSettings, MobileSearchType, WebSearchType } from '../../../lib/entities/settings/entities.settings'
 
-describe('settings mongoose repository', function() {
+describe('settings mongoose repository', function () {
 
   let model: SettingsModel
   let repo: MongooseSettingsRepository
@@ -16,11 +16,11 @@ describe('settings mongoose repository', function() {
     repo = new MongooseSettingsRepository(model)
   })
 
-  afterEach(async function() {
-    await model.remove({})
+  afterEach(async function () {
+    await model.deleteMany({})
   })
 
-  describe('finding map settings', function() {
+  describe('finding map settings', function () {
 
     const mapSettings = {
       webSearchType: WebSearchType.NONE,
@@ -30,10 +30,10 @@ describe('settings mongoose repository', function() {
     }
 
     beforeEach('create map settings', async function () {
-      await model.update({ type: 'map' }, {settings: mapSettings }, { upsert: true})
+      await model.updateOne({ type: 'map' }, { settings: mapSettings }, { upsert: true })
     })
 
-    it('looks up map settings by type', async function() {
+    it('looks up map settings by type', async function () {
       const fetched = await repo.getMapSettings()
       expect(fetched).to.deep.equal(mapSettings)
     })

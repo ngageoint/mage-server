@@ -15,6 +15,9 @@ import { EventAccessType, MageEvent } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
 import { LineStyle, PagingParameters } from '../entities/entities.global'
+import logger from '../logger'
+
+const log = logger.child({ component: 'events' })
 
 declare module 'express-serve-static-core' {
   export interface Request {
@@ -208,31 +211,45 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         feedId: req.query.feedId as string | undefined,
         excludeFeedId: req.query.excludeFeedId as string | undefined,
         searchTerm: req.query.term as string | undefined,
-        userId: req.query.userId as string | undefined
+        userId: req.query.userId as string | undefined,
+        layerId: req.query.layerId as string | undefined,
+        excludeLayerId: req.query.excludeLayerId as string | undefined
       };
       if (req.parameters!.userId) {
         filter.userId = req.parameters!.userId
       }
-      const pageSize = parseInt(String(req.query.page_size)) || parseInt(String(req.query.limit)) || 20
+      const pageSize = parseInt(String(req.query.page_size)) || parseInt(String(req.query.limit)) || null
       const page = parseInt(String(req.query.page)) || parseInt(String(req.query.start)) || 0
       EventModel.getEvents({ access: req.access, filter: filter, populate: req.parameters!.populate, projection: req.parameters!.projection, limit: pageSize, start: page }, (err, events, totalCount) => {
         if (err) {
           return next(err);
         }
-        if (req.query.includePagination) {
-          res.json({
-            pageSize: pageSize,
-            page: page,
-            items: events!.map((event) => {
+
+        const populateTasks = events!.map((event) => {
+          return new Promise<void>((resolve, reject) => {
+            new api.Form(event).populateUserFields((err: any) => {
+              if (err) return reject(err);
+              resolve();
+            });
+          });
+        });
+
+        Promise.all(populateTasks).then(() => {
+          if (req.query.includePagination) {
+            res.json({
+              pageSize: pageSize,
+              page: page,
+              items: events!.map((event) => {
+                return event.toObject({ access: req.access!, projection: req.parameters!.projection });
+              }),
+              totalCount: totalCount
+            })
+          } else {
+            res.json(events!.map((event) => {
               return event.toObject({ access: req.access!, projection: req.parameters!.projection });
-            }),
-            totalCount: totalCount
-          })
-        } else {
-          res.json(events!.map((event) => {
-            return event.toObject({ access: req.access!, projection: req.parameters!.projection });
-          }));
-        }
+            }));
+          }
+        }).catch(next);
       });
     }
   );
@@ -263,7 +280,10 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) return next(err);
         if (!event) return res.sendStatus(404);
 
-        res.json(event.toObject({ access: req.access!, projection: req.parameters!.projection }));
+        new api.Form(event).populateUserFields(function (err: any) {
+          if (err) return next(err);
+          res.json(event.toObject({ access: req.access!, projection: req.parameters!.projection }));
+        });
       });
     }
   );
@@ -317,6 +337,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       function updateEvent(form: FormDocument, callback: any): void {
         form.name = req.param('name');
         form.color = req.param('color');
+        form.description = req.param('description');
         new api.Event(req.event).addForm(form, function (err: any, form: FormDocument) {
           callback(err, form);
         });
@@ -593,6 +614,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+        const requester = req.user as any;
+        log.info('team added to event', {
+          team: req.body.name,
+          event: req.event!.name,
+          addedBy: requester.username,
+          addedTime: new Date().toISOString()
+        });
         res.json(event);
       });
     }
@@ -607,6 +635,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+        const requester = req.user as any;
+        log.info('team removed from event', {
+          team: req.team.name,
+          event: req.event!.name,
+          removedBy: requester.username,
+          removedTime: new Date().toISOString()
+        });
         res.json(event);
       });
     }

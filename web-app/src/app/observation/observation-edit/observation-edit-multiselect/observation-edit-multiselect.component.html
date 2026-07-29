@@ -1,23 +1,45 @@
 <mat-form-field appearance="fill" [formGroup]="formGroup">
-  <mat-label>{{definition.title}}</mat-label>
-  <mat-chip-list #chipList formControlName="{{definition.name}}" [required]="definition.required">
-    <mat-chip *ngFor="let choice of formGroup.get(this.definition.name).value" [removable]="removable" (removed)="remove(choice)">
-      {{choice}}
-      <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-    </mat-chip>
-    <input #choiceInput #trigger="matAutocompleteTrigger"  
+  <mat-label>{{ definition.title }}</mat-label>
+
+  <mat-chip-grid #chipGrid formControlName="{{ definition.name }}">
+    <mat-chip-row
+      *ngFor="let choice of formGroup.get(definition.name).value"
+      (removed)="remove(choice)"
+    >
+      {{ choice }}
+      <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip-row>
+
+    <input
+      #choiceInput
+      #trigger="matAutocompleteTrigger"
+      matInput
       (click)="trigger.openPanel()"
       [formControl]="choiceControl"
       [matAutocomplete]="auto"
-      [matChipInputFor]="chipList" 
+      [matChipInputFor]="chipGrid"
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-      (matChipInputTokenEnd)="add($event)">
-  </mat-chip-list>
+      (matChipInputTokenEnd)="add($event)"
+    />
+  </mat-chip-grid>
+
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-    <mat-option *ngFor="let choice of filteredChoices | async" [value]="choice.title">
-      <span [ngClass]="{'select__choice--disabled ': control.value && control.value.includes(choice.title)}">{{choice.title}}</span>
+    <mat-option
+      *ngFor="let choice of filteredChoices | async"
+      [value]="choice.title"
+    >
+      <span
+        [ngClass]="{
+          'select__choice--disabled':
+            control.value && control.value.includes(choice.title)
+        }"
+      >
+        {{ choice.title }}
+      </span>
     </mat-option>
   </mat-autocomplete>
 
-  <mat-error>You must enter a value</mat-error>
+  <mat-error *ngIf="formGroup.get(definition.name)?.invalid">
+    You must enter a value
+  </mat-error>
 </mat-form-field>

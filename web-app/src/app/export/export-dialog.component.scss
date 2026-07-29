@@ -1,46 +1,42 @@
-@import "variables.scss";
-
-:host ::ng-deep label {
-  display: unset;
-  max-width: unset;
-  margin-bottom: unset;
-  font-weight: unset;
+:host {
+  display: flex;
+  flex-direction: column;
+  height: min(580px, calc(90vh - 48px));
 }
 
 .export {
-  height: 480px;
-  width: 500px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 .export-panel {
-  height: 100%;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-dialog-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .export-filter {
   width: 100%;
-}
-
-.mat-dialog-content {
-  flex: 1 1 auto;
-  max-height: unset;
+  margin-bottom: 16px;
 }
 
 .export-table {
-  height: 300px;
-  overflow-y: scroll;
-}
-
-.export-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
-  margin-bottom: -16px;
-}
-
-.actions-divider {
-  margin: 0 -24px;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-medium);
 }
 
 .export-row {
@@ -53,40 +49,86 @@
   border-bottom-width: 0;
 }
 
+.download-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-tertiary);
+}
+
+.retry-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-tertiary);
+}
+
+.delete-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-error);
+}
+
 .loading-shade {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: color-mix(in srgb, var(--mat-sys-scrim) 15%, transparent);
   z-index: 289;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.export-details-icon {
-  height: 18px;
-  width: 18px;
-  font-size: 18px;
-  margin-right: 8px;
+.export-detail {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.export-details-info {
-  color: rgba(0, 0, 0, .6);
-  margin-left: 16px;
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--mat-sys-title-small-size);
+  font-weight: var(--mat-sys-title-small-weight);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.detail-body {
+  margin-left: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.expand-btn {
+  --mat-icon-button-icon-color: var(--mat-sys-on-surface-variant);
+}
+
+.expand-icon {
+  transition: transform 250ms ease;
+
+  &.expanded {
+    transform: rotate(180deg);
+  }
 }
 
 .export-detail-row {
   min-height: 0;
 }
 
-.export-detail {
-  overflow: hidden;
-  display: flex;
-}
-
-mat-checkbox {
-  margin: 0 10px;
+@media (max-width: 800px) {
+  .export-table {
+    max-height: 300px;
+  }
 }

@@ -1,0 +1,51 @@
+.button-option {
+  margin-bottom: 8px;
+}
+
+.field-label {
+  font-size: var(--mat-sys-label-large-size);
+  font-weight: var(--mat-sys-label-large-weight);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 4px;
+}
+
+.auth-button-preview {
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 200px;
+}
+
+.third-party-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  border-radius: 3px;
+  width: 42px;
+  min-width: 42px;
+  padding: 4px;
+  height: 100%;
+  box-sizing: border-box;
+
+  img {
+    width: 60%;
+  }
+}
+
+.third-party-button-text {
+  text-align: center;
+  flex: 1;
+  padding: 0 16px;
+}
+
+.preview-button {
+  margin: 16px 0;
+}
+
+color-picker {
+  display: block;
+  width: 25%;
+}

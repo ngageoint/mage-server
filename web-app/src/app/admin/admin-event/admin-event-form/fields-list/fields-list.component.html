@@ -1,0 +1,89 @@
+<div class="fields-list-detailed">
+    <p class="reorder-hint" *ngIf="getActiveFields().length > 0">
+        <mat-icon>drag_indicator</mat-icon>
+        Use the drag handle on the left to reorder fields. This is the order they'll appear when users fill out the
+        form.
+    </p>
+
+    <div class="draggable-list" *ngIf="getActiveFields().length > 0" cdkDropList (cdkDropListDropped)="onDrop($event)">
+        <div class="list-item" cdkDrag *ngFor="let field of getActiveFields(); trackBy: trackByFieldId">
+            <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+            <div class="item-content">
+                <div class="field-content-detailed">
+                    <div class="field-header">
+                        <div class="field-title">{{ field.title || 'No title set' }}<span class="required-indicator"
+                                *ngIf="field.required">*required</span></div>
+                    </div>
+                    <div class="field-details">
+                        <div class="field-row">
+                            <span class="field-label">Type</span>
+                            <span class="field-value">{{ getFieldTypeLabel(field.type, field) }}</span>
+                        </div>
+                        <div class="field-row"
+                            *ngIf="field.value !== undefined && field.value !== null && field.value !== ''">
+                            <span class="field-label">Default</span>
+                            <span class="field-value">{{ field.type === 'checkbox' ? (field.value ? 'Checked' :
+                                'Unchecked') : field.value }}</span>
+                        </div>
+                        <div class="field-row"
+                            *ngIf="field.type === 'numberfield' && (field.min !== undefined || field.max !== undefined)">
+                            <span class="field-label">Range</span>
+                            <span class="field-value">
+                                {{ field.min !== undefined ? field.min : '−∞' }} to {{ field.max !== undefined ?
+                                field.max :
+                                '∞' }}
+                            </span>
+                        </div>
+                        <div class="field-row"
+                            *ngIf="field.type === 'attachment' && (field.min !== undefined || field.max !== undefined)">
+                            <span class="field-label">Attachment Count</span>
+                            <span class="field-value">
+                                {{ field.min !== undefined ? field.min : '0' }} to {{ field.max !== undefined ?
+                                field.max :
+                                '∞' }}
+                            </span>
+                        </div>
+                        <div class="field-row"
+                            *ngIf="field.allowedAttachmentTypes && field.allowedAttachmentTypes.length > 0">
+                            <span class="field-label">Allowed Types</span>
+                            <span class="field-value">{{ getAttachmentTypesDisplay(field) }}</span>
+                        </div>
+                        <div class="field-row"
+                            *ngIf="showAddOptions(field) && field.choices && field.choices.length > 0">
+                            <span class="field-label">Options</span>
+                            <span class="field-value">{{ field.choices.length }} option{{ field.choices.length !== 1 ?
+                                's' :
+                                '' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="item-actions">
+                <button matIconButton (click)="$event.stopPropagation(); editField(field)" matTooltip="Edit field"
+                    matTooltipPosition="above">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button matIconButton (click)="$event.stopPropagation(); removeField(field)"
+                    matTooltipPosition="above">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <mat-card appearance="outlined" class="empty-state" *ngIf="getActiveFields().length === 0">
+        <mat-card-content>
+            <mat-icon class="empty-state-icon" fontSet="material-symbols-outlined">checklist</mat-icon>
+            <div class="empty-state-title">No fields added</div>
+            <p class="empty-state-text">Add fields to define what information users can capture in this form.</p>
+        </mat-card-content>
+    </mat-card>
+
+    <div class="section-footer-actions">
+        <button matButton="outlined" type="button" (click)="addField()">
+            <mat-icon>add</mat-icon>
+            Add Field
+        </button>
+    </div>
+
+</div>

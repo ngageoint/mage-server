@@ -19,19 +19,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
           cache-dependency-path: plugins/arcgis/web-app/package-lock.json
+      - name: build web-core-lib
+        run: |
+          cd web-app
+          npm ci
+          npm run build:core-lib
       - name: build
         run: |
           cd plugins/arcgis/web-app
-          npm ci
+          npm i ../../../web-app/dist/core-lib
           npm run build
-        env:
+        env: 
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: test
         run: |
@@ -41,7 +46,7 @@ jobs:
         run: |
           npm pack ./plugins/arcgis/web-app/dist/main
       - name: upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: arcgis.web-app-artifacts
           path: |

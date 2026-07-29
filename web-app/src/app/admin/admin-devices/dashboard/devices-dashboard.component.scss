@@ -1,0 +1,87 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.devices-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-row {
+  display: flex;
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 16px;
+  flex-shrink: 0;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.devices-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 16px;
+  --mat-card-elevated-container-color: white;
+}
+
+mat-nav-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px;
+  --mat-list-list-item-leading-icon-color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 96px;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 4px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state-text {
+  font-size: var(--mat-sys-body-large-size);
+  color: var(--mat-sys-on-surface-variant);
+  max-width: 350px;
+}
+
+mat-paginator {
+  --mat-paginator-container-background-color: var(--mat-sys-surface-container);
+  flex-shrink: 0;
+}

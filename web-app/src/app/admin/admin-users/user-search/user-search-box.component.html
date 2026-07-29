@@ -1,0 +1,16 @@
+<mat-form-field appearance="fill" class="user-search-field">
+  <mat-label>Point of Contact</mat-label>
+  <input matInput
+    type="text"
+    [placeholder]="placeholder"
+    [(ngModel)]="inputValue"
+    (ngModelChange)="onUserInput($event)"
+    [matAutocomplete]="userAuto"
+    autocomplete="off" />
+  <button matSuffix matIconButton *ngIf="inputValue" (click)="clear()" type="button" aria-label="Clear">
+    <mat-icon>close</mat-icon>
+  </button>
+  <mat-autocomplete #userAuto [displayWith]="displayUser" (optionSelected)="onOptionSelected($event.option.value)">
+    <mat-option *ngFor="let u of searchResults" [value]="u">{{ u.displayName }}</mat-option>
+  </mat-autocomplete>
+</mat-form-field>

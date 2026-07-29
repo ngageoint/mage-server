@@ -1,76 +1,96 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
-import { UntypedFormGroup, NgModel } from '@angular/forms'
-import * as moment from 'moment'
-import { LocalStorageService } from '../../../http/local-storage.service'
-
-interface DateField {
-  title: string,
-  name: string,
-  value: Date,
-  required: boolean
-}
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
+import { UntypedFormGroup, NgModel } from '@angular/forms';
+import moment from 'moment';
+import { LocalStorageService } from '../../../http/local-storage.service';
 
 @Component({
-  selector: 'observation-edit-date',
-  templateUrl: './observation-edit-date.component.html',
-  styleUrls: ['./observation-edit-date.component.scss']
+    selector: 'observation-edit-date',
+    templateUrl: './observation-edit-date.component.html',
+    styleUrls: ['./observation-edit-date.component.scss'],
+    standalone: false
 })
 export class ObservationEditDateComponent implements OnChanges {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: any
+  @Input() formGroup: UntypedFormGroup;
+  @Input() definition: any;
 
-  @ViewChild('dateModel') dateModel: NgModel
-  @ViewChild('timeModel') timeModel: NgModel
+  @ViewChild('dateModel') dateModel: NgModel;
 
-  date: moment.Moment
-  time: moment.Moment
-  timeZone: string
+  date: moment.Moment | null = null;
+  timeValue: moment.Moment | null = null;
+  timeZone: string;
+  second = 0;
 
-  constructor(private localStorageService: LocalStorageService) {
+  constructor(localStorageService: LocalStorageService) {
     this.timeZone = localStorageService.getTimeZoneEdit();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.formGroup && changes.formGroup.currentValue) {
-      const timestamp = this.formGroup.get(this.definition.name).value
-      this.date = moment(timestamp)
-      this.time = moment(timestamp)
+      const timestamp = this.formGroup.get(this.definition.name)?.value;
+
+      if (timestamp) {
+        const m =
+          this.timeZone === 'gmt'
+            ? moment.utc(timestamp)
+            : moment(timestamp).local();
+        this.date = m.clone();
+        this.second = m.second();
+        this.timeValue = m.clone();
+      } else {
+        this.date = null;
+        this.timeValue = null;
+        this.second = 0;
+      }
     }
   }
 
   onDate(): void {
     if (!this.date) {
-      this.time = null;
-      return
+      this.timeValue = null;
+      return;
     }
 
-    if (!this.dateModel.invalid) {
-      this.setValue()
+    if (!this.dateModel?.invalid) {
+      this.setValue(true);
     }
   }
 
   onTime(): void {
-    if (!this.timeModel.invalid) {
-      this.setValue()
+    if (this.timeValue && this.date && !this.dateModel?.invalid) {
+      this.setValue(false);
     }
   }
 
   toggleTimeZone(): void {
-    this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt'
+    this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt';
   }
 
-  private setValue(): void {
-    const date = this.date.set({
-      hour: this.time ? this.time.get('hour') : 0,
-      minute: this.time ? this.time.get('minute') : 0,
-      second: this.time ? this.time.get('second') : 0,
-    })
-
-    if (this.timeZone === 'gmt') {
-      date.add(date.utcOffset(), 'minutes')
+  private setValue(preserveSeconds: boolean): void {
+    if (!this.date || !this.timeValue) {
+      return;
     }
 
-    this.formGroup.get(this.definition.name).setValue(date.toDate())
-  }
+    const date = this.date.clone().set({
+      hour: this.timeValue.hours(),
+      minute: this.timeValue.minutes(),
+      second: preserveSeconds ? this.second : 0
+    });
 
+    if (this.timeZone === 'gmt') {
+      date.add(date.utcOffset(), 'minutes');
+    }
+
+    const control = this.formGroup?.get(this.definition.name);
+    if (!control) {
+      return;
+    }
+
+    control.setValue(date.toDate());
+  }
 }

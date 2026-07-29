@@ -1,64 +1,81 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import { NgModel } from '@angular/forms';
-import * as moment from 'moment'
-import { LocalStorageService } from '../http/local-storage.service';
+import moment from 'moment';
 
 @Component({
-  selector: 'datetime-picker',
-  templateUrl: './datetime-picker.component.html',
-  styleUrls: ['./datetime-picker.component.scss']
+    selector: 'datetime-picker',
+    templateUrl: './datetime-picker.component.html',
+    styleUrls: ['./datetime-picker.component.scss'],
+    standalone: false
 })
 export class DatetimePickerComponent implements OnChanges {
+  @Input() title: string;
+  @Input() required: boolean;
+  @Input() datetime: Date;
+  @Input() timezone: 'local' | 'gmt' = 'local';
 
-  @Input() title: string
-  @Input() required: boolean
-  @Input() datetime: Date
-  @Input() timezone: 'local' | 'gmt'
+  @Output() dateTimeChange = new EventEmitter<Date>();
 
-  @Output() dateTimeChange = new EventEmitter<Date>()
+  @ViewChild('dateModel') dateModel: NgModel;
 
-  @ViewChild('dateModel') dateModel: NgModel
-  @ViewChild('timeModel') timeModel: NgModel
-
-  date: moment.Moment
-  time: moment.Moment
+  date: moment.Moment | null = null;
+  timeValue: moment.Moment | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.datetime && changes.datetime.currentValue) {
-      this.date = moment(changes.datetime.currentValue)
-      this.time = moment(changes.datetime.currentValue)
-      this.setValue()
+    if (changes.datetime) {
+      const value = changes.datetime.currentValue;
+
+      if (value) {
+        const m = moment(value);
+        this.date = m.clone();
+        this.timeValue = m.clone();
+      } else {
+        this.date = null;
+        this.timeValue = null;
+      }
     }
   }
 
   onDate(): void {
     if (!this.date) {
-      this.time = null;
-      return
+      this.timeValue = null;
+      return;
     }
 
-    if (!this.dateModel.invalid) {
-      this.setValue()
+    if (!this.dateModel?.invalid) {
+      this.setValue();
     }
   }
 
   onTime(): void {
-    if (!this.timeModel.invalid) {
-      this.setValue()
+    if (this.timeValue) {
+      this.setValue();
     }
   }
 
   private setValue(): void {
-    const date = this.date.set({
-      hour: this.time ? this.time.get('hour') : 0,
-      minute: this.time ? this.time.get('minute') : 0,
-      second: this.time ? this.time.get('second') : 0,
-    })
-
-    if (this.timezone === 'gmt') {
-      date.utc(true)
+    if (!this.date || !this.timeValue) {
+      return;
     }
 
-    this.dateTimeChange.emit(date.toDate())
+    const date = this.date.clone().set({
+      hour: this.timeValue.hours(),
+      minute: this.timeValue.minutes(),
+      second: this.timeValue.seconds()
+    });
+
+    if (this.timezone === 'gmt') {
+      date.utc(true);
+    }
+
+    this.dateTimeChange.emit(date.toDate());
   }
 }

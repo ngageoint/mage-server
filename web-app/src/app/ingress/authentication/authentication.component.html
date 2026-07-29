@@ -30,7 +30,7 @@
             (authenticated)="signin($event)"></idp-authentication>
           <idp-authentication *ngSwitchCase="'openidconnect'" [strategy]="strategy"
             (authenticated)="signin($event)"></idp-authentication>
-          <ldap-authentication *ngSwitchCase="'ldap'" [strategy]="strategy"
+          <ldap-authentication *ngSwitchCase="'ldap'" [api]="api" [strategy]="strategy"
             (authenticated)="signin($event)"></ldap-authentication>
         </ng-container>
       </div>

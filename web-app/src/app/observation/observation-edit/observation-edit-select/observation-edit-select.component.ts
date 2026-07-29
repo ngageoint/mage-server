@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatSelectChange } from '@angular/material/select';
+import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -16,9 +16,10 @@ interface SelectField {
 }
 
 @Component({
-  selector: 'observation-edit-dropdown',
-  templateUrl: './observation-edit-select.component.html',
-  styleUrls: ['./observation-edit-select.component.scss']
+    selector: 'observation-edit-dropdown',
+    templateUrl: './observation-edit-select.component.html',
+    styleUrls: ['./observation-edit-select.component.scss'],
+    standalone: false
 })
 export class ObservationEditSelectComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup

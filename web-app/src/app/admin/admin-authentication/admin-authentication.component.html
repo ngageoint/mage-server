@@ -1,0 +1,46 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions">
+    <button matButton="outlined" [routerLink]="['../security/new']" *ngIf="hasAuthConfigEditPermission">
+      <mat-icon>add</mat-icon>New Authentication
+    </button>
+    <button matButton="filled" (click)="save()" [disabled]="!isDirty">Save</button>
+  </div>
+</ng-template>
+
+<div class="auth-page">
+  <mat-accordion>
+    <mat-expansion-panel *ngFor="let strategy of strategies; first as isFirst" [expanded]="isFirst">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <img *ngIf="strategy.icon" [src]="strategy.icon" width="24" height="24" />
+          <mat-icon *ngIf="!strategy.icon" [style.color]="strategy.buttonColor">security</mat-icon>
+          {{ strategy.title }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ strategy.enabled ? 'Enabled' : 'Disabled' }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="auth-enable" *ngIf="hasAuthConfigEditPermission">
+        <mat-slide-toggle
+          [(ngModel)]="strategy.enabled"
+          (click)="$event.stopPropagation(); onAuthenticationToggled(strategy)">
+          Enable Authentication
+        </mat-slide-toggle>
+      </div>
+
+      <admin-authentication-settings
+        [strategy]="strategy"
+        [teams]="teams"
+        [events]="events"
+        (strategyDirty)="isDirty = $event">
+      </admin-authentication-settings>
+
+      <div class="auth-delete" *ngIf="hasAuthConfigEditPermission && strategy.type.toLowerCase() !== 'local'">
+        <button matButton class="delete-button" (click)="$event.stopPropagation(); deleteStrategy(strategy)">
+          <mat-icon>delete</mat-icon>Delete Authentication
+        </button>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

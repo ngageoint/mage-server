@@ -1,8 +1,8 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTabGroup } from '@angular/material/tabs';
-import * as moment from 'moment';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatTabGroup as MatTabGroup } from '@angular/material/tabs';
+import moment from 'moment';
 import { FeedAction, FeedPanelService } from './feed-panel.service';
 import { MapService } from '../map/map.service';
 import { UserService } from '../user/user.service';
@@ -10,22 +10,24 @@ import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
-  selector: 'feed-panel',
-  templateUrl: './feed-panel.component.html',
-  styleUrls: ['./feed-panel.component.scss'],
-  animations: [
-    trigger('slide', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)' }),
-        animate('150ms', style({ transform: 'translateX(0%)' })),
-      ]),
-      transition(':leave', [
-        animate('250ms', style({ transform: 'translateX(100%)' }))
-      ])
-    ])
-  ]
+    selector: 'feed-panel',
+    templateUrl: './feed-panel.component.html',
+    styleUrls: ['./feed-panel.component.scss'],
+    animations: [
+        trigger('slide', [
+            transition(':enter', [
+                style({ transform: 'translateX(100%)' }),
+                animate('150ms', style({ transform: 'translateX(0%)' })),
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ transform: 'translateX(100%)' }))
+            ])
+        ])
+    ],
+    standalone: false
 })
 export class FeedPanelComponent implements OnInit, OnChanges {
   @Input() event: any
@@ -40,7 +42,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   defaultTabs = [{
     id: 'observations',
     title: 'Observations',
-    icon: 'place'
+    icon: 'location_on'
   }, {
     id: 'people',
     title: 'People',
@@ -74,7 +76,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     private feedService: FeedService,
     private feedPanelService: FeedPanelService,
     private mapService: MapService,
-    private userService: UserService,
+    private sessionService: SessionService,
     private filterService: FilterService,
     private eventService: EventService) { }
 
@@ -189,14 +191,14 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
   createNewObservation(location: any): void {
     const event = this.filterService.getEvent()
-    if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
+    if (!this.eventService.isUserInEvent(this.sessionService.user, event)) {
       this.dialog.open(ContactDialogComponent, {
         width: '500px',
         data: {
           info: {
             statusTitle: this.statusTitle,
             statusMessage: this.statusMessage,
-            id: this.userService.myself.username
+            id: this.sessionService.user.username
           }
         }
       })

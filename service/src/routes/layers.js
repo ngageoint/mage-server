@@ -1,4 +1,4 @@
-module.exports = function(app, security) {
+module.exports = function (app, security) {
   const fs = require('fs-extra'),
     path = require('path'),
     request = require('superagent'),
@@ -124,7 +124,7 @@ module.exports = function(app, security) {
 
     let currentLayer;
     GeoPackageUtility.getInstance()
-      .optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function(progress) {
+      .optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function (progress) {
         if (currentLayer && currentLayer !== progress.layer) {
           const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
           oldLayerStatus.complete = true;
@@ -141,10 +141,10 @@ module.exports = function(app, security) {
         return new Promise((resolve) => {
           // GeoPackage file size may have changed after index, update the metadata
           fs.stat(path.join(environment.layerBaseDirectory, layer.file.relativePath))
-              .then((stats) => {
-                layer.file.size = stats.size;
-                resolve()
-              });
+            .then((stats) => {
+              layer.file.size = stats.size;
+              resolve()
+            });
         })
       })
       .then(() => {
@@ -153,9 +153,9 @@ module.exports = function(app, security) {
         layer.save().then((layer) => {
           console.log('GeoPackage optimized', layer);
         })
-        .catch((err) => {
-          console.log(`error persisting state of layer ${layer._id.toString()} after optimization`, err);
-        });
+          .catch((err) => {
+            console.log(`error persisting state of layer ${layer._id.toString()} after optimization`, err);
+          });
       });
   }
 
@@ -189,7 +189,7 @@ module.exports = function(app, security) {
   app.get('/api/layers',
     access.authorize('READ_LAYER_ALL'),
     parseQueryParams,
-    function(req, res, next) {
+    function (req, res, next) {
       new api.Layer()
         .getLayers({ includeUnavailable: req.parameters.includeUnavailable })
         .then(layers => {
@@ -200,11 +200,11 @@ module.exports = function(app, security) {
     }
   );
 
-  app.get('/api/layers/count', access.authorize('READ_LAYER_ALL'), function(req, res, next) {
+  app.get('/api/layers/count', access.authorize('READ_LAYER_ALL'), function (req, res, next) {
     new api.Layer()
       .count()
       .then(count => res.json({ count: count }))
-      .catch(function(err) {
+      .catch(function (err) {
         next(err);
       });
   });
@@ -212,7 +212,7 @@ module.exports = function(app, security) {
   app.post('/api/events/:eventId/features',
     passport.authenticate('bearer'),
     validateEventAccess,
-    async function(req, res, next) {
+    async function (req, res, next) {
       const clientLayers = req.body.layerIds;
       const layerIdMap = {};
       for (let i = 0; i < clientLayers.length; i++) {
@@ -249,7 +249,7 @@ module.exports = function(app, security) {
   // get features for layer (must be a feature layer)
   app.get('/api/layers/:layerId/features',
     access.authorize('READ_LAYER_ALL'),
-    function(req, res, next) {
+    function (req, res, next) {
       if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
 
       new api.Feature(req.layer)
@@ -286,13 +286,13 @@ module.exports = function(app, security) {
       return res.status(404).send('Table does not exist in layer.');
     }
     GeoPackageUtility.getInstance()
-    .tile(req.layer, req.params.tableName, style, tileParams)
-    .then(tile => {
-      if (!tile) return res.sendStatus(404);
-      res.contentType('image/png');
-      res.send(Buffer.from(tile.split(',')[1], 'base64'))
-    })
-    .catch(err => next(err));
+      .tile(req.layer, req.params.tableName, style, tileParams)
+      .then(tile => {
+        if (!tile) return res.sendStatus(404);
+        res.contentType('image/png');
+        res.send(Buffer.from(tile.split(',')[1], 'base64'))
+      })
+      .catch(err => next(err));
   }
 
   app.get('/api/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
@@ -304,7 +304,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     validateEventAccess,
     parseQueryParams,
-    function(req, res, next) {
+    function (req, res, next) {
       new api.Layer()
         .getLayers({
           layerIds: req.event.layerIds,
@@ -323,9 +323,12 @@ module.exports = function(app, security) {
   app.get(
     '/api/layers/:layerId/file',
     access.authorize('READ_LAYER_ALL'),
-    function(req, res) {
+    function (req, res) {
       if (!req.layer.file) {
         return res.status(404).send('Layer does not have a file');
+      }
+      if (req.layer.state === 'processing') {
+        return res.status(409).send('Layer is currently processing and cannot be downloaded');
       }
       const stream = fs.createReadStream(
         path.join(environment.layerBaseDirectory, req.layer.file.relativePath)
@@ -341,11 +344,14 @@ module.exports = function(app, security) {
   // get layer
   app.get('/api/layers/:layerId',
     access.authorize('READ_LAYER_ALL'),
-    function(req, res) {
+    function (req, res) {
       if (req.accepts('application/json')) {
         const response = layerXform.transform(req.layer, { path: req.getPath() });
         res.json(response);
       } else if (req.layer.file) {
+        if (req.layer.state === 'processing') {
+          return res.status(409).send('Layer is currently processing and cannot be downloaded');
+        }
         // TODO verify accepts header req.accepts(req.layer.contentType), Android needs to be fixed first
         const stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
         stream.on('open', () => {
@@ -361,11 +367,14 @@ module.exports = function(app, security) {
   app.get('/api/events/:eventId/layers/:layerId',
     passport.authenticate('bearer'),
     validateEventAccess,
-    function(req,res) {
+    function (req, res) {
       if (req.accepts('application/json')) {
         const response = layerXform.transform(req.layer, { path: req.getPath() });
         res.json(response);
       } else if (req.layer.file) {
+        if (req.layer.state === 'processing') {
+          return res.status(409).send('Layer is currently processing and cannot be downloaded');
+        }
         // TODO verify accepts header req.accepts(req.layer.contentType), Android needs to be fixed first
         const stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
         stream.on('open', () => {
@@ -387,7 +396,7 @@ module.exports = function(app, security) {
   app.get('/api/events/:eventId/layers/:layerId/features',
     passport.authenticate('bearer'),
     validateEventAccess,
-    function(req, res, next) {
+    function (req, res, next) {
       if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
       if (req.event.layerIds.indexOf(req.layer._id) === -1)
         return res.status(400).send('layer requested is not in event ' + req.event.name);
@@ -409,7 +418,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LAYER'),
     upload.single('geopackage'),
     validateLayerParams,
-    function(req, res, next) {
+    function (req, res, next) {
       // If this has a GeoPackage proceed to the next route handler
       if (req.file) {
         return next();
@@ -429,7 +438,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/layers',
     validateGeopackage,
-    function(req, res, next) {
+    function (req, res, next) {
       new api.Layer()
         .create(req.newLayer)
         .then(layer => {
@@ -443,7 +452,7 @@ module.exports = function(app, security) {
         .catch(err => next(err));
     },
     processGeoPackage,
-    function(req, res) {
+    function (req, res) {
       const layer = req.layer;
       const response = layerXform.transform(layer, { path: req.getPath() });
       res.location(layer._id.toString()).json(response);
@@ -453,14 +462,14 @@ module.exports = function(app, security) {
   app.put('/api/layers/:layerId/available',
     access.authorize('UPDATE_LAYER'),
     processGeoPackage,
-    function(req, res) {
+    function (req, res) {
       const layer = req.layer;
       const response = layerXform.transform(layer, { path: req.getPath() });
       res.status(202).json(response);
     }
   );
 
-  app.put('/api/layers/:layerId', access.authorize('UPDATE_LAYER'), validateLayerParams, function(req, res, next) {
+  app.put('/api/layers/:layerId', access.authorize('UPDATE_LAYER'), validateLayerParams, function (req, res, next) {
     new api.Layer(req.layer.id)
       .update(req.newLayer)
       .then(layer => {
@@ -482,10 +491,10 @@ module.exports = function(app, security) {
     }
   });
 
-  app.delete('/api/layers/:layerId', access.authorize('DELETE_LAYER'), function(req, res, next) {
+  app.delete('/api/layers/:layerId', access.authorize('DELETE_LAYER'), function (req, res, next) {
     new api.Layer()
       .remove(req.layer)
-      .then(function() {
+      .then(function () {
         res.sendStatus(200);
       })
       .catch(err => next(err));

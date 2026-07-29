@@ -1,9 +1,10 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 @Component({
-  selector: 'observation-view-geometry',
-  templateUrl: './observation-view-geometry.component.html',
-  styleUrls: ['./observation-view-geometry.component.scss']
+    selector: 'observation-view-geometry',
+    templateUrl: './observation-view-geometry.component.html',
+    styleUrls: ['./observation-view-geometry.component.scss'],
+    standalone: false
 })
 export class ObservationViewGeometryComponent implements OnChanges {
   @Input() field: any

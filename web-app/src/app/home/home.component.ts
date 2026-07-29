@@ -5,19 +5,19 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
 import { ActivatedRoute } from '@angular/router';
 import { User } from 'core-lib-src/user';
-import { Banners, SettingsService } from '../setttings/settings.service';
 import * as _ from 'underscore';
 import { UserService } from '../user/user.service';
 import { MageEvent } from '@ngageoint/mage.web-core-lib/event';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
-  selector: 'home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+    selector: 'home',
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.scss'],
+    standalone: false
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
-  banners: Banners
   map: any
   myself: User
   event: MageEvent
@@ -28,13 +28,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private mapService: MapService,
-    private userService: UserService,
+    private sessionService: SessionService,
     private filterService: FilterService,
     private locationService: LocationService,
-    private settingsService: SettingsService,
     private activatedRoute: ActivatedRoute
   ) {
-    this.userService.myself$.subscribe((myself: User) => {
+    this.sessionService.user$.subscribe((myself: User) => {
       this.myself = myself
     })
   }
@@ -47,9 +46,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.myself = user
     })
 
-    this.settingsService.getBanner().subscribe((banners: Banners) => {
-      this.banners = banners
-    })
   }
 
   ngOnDestroy(): void {
@@ -62,7 +58,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onFilterChanged(filter: any) {
-    this.event = filter.event?.added?.length ? filter.event.added[0] : null
+    if (filter.event?.added?.length) {
+      this.event = filter.event.added[0]
+    } else if (filter.event?.removed?.length) {
+      this.event = null
+    }
   }
 
   onAddObservation($event) {

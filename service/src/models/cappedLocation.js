@@ -1,24 +1,20 @@
 const mongoose = require('mongoose')
-  , config = require('../config.js')
   , Location = require('./location');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
-const locationLimit = config.server.locationServices.userCollectionLocationLimit;
+const locationLimit = 100;
 
 // Creates the Schema for FFT Locations
 const CappedLocationSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User' },
-  eventId: { type: Number, required: false, sparse: true, ref: 'Event' },
+  userId: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
+  eventId: { type: Number, required: false, ref: 'Event' },
   locations: [Location.Model.schema]
 }, {
   versionKey: false
 });
 
-// TODO: this seems superfluous - probably remove because there's already an index on eventId in the field definition
-CappedLocationSchema.index({ 'eventId': 1 });
-// TODO: this seems superflous because there's already an index on properties.timestamp in LocationSchema. do child-schema indexes get created on parent collections?
-CappedLocationSchema.index({ 'locations.properties.timestamp': 1 });
+CappedLocationSchema.index({ 'eventId': 1 }, { sparse: true });
 CappedLocationSchema.index({ 'locations.properties.timestamp': 1, 'eventId': 1 });
 
 const transform = function (userLocation, ret) {
@@ -51,9 +47,10 @@ exports.addLocations = function (user, event, locations, callback) {
     }
   };
 
-  CappedLocation.findOneAndUpdate({ userId: user._id, eventId: event._id }, update, { upsert: true, new: true }, function (err, user) {
-    callback(err, user);
-  });
+  CappedLocation.findOneAndUpdate({ userId: user._id, eventId: event._id }, update, { upsert: true, new: true }).then(
+    user => callback(null, user),
+    err => callback(err)
+  );
 };
 
 exports.getLocations = function (options, callback) {
@@ -79,16 +76,17 @@ exports.getLocations = function (options, callback) {
   if (options.populate) {
     query.populate({
       path: 'userId',
-      select: 'icon displayName email phones'
+      select: 'icon avatar displayName email phones'
     })
   }
 
-  query.exec(callback);
+  query.exec().then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeLocationsForUser = function (user, callback) {
   const conditions = { "userId": user._id };
-  CappedLocation.remove(conditions, function (err) {
-    callback(err);
-  });
+  CappedLocation.deleteMany(conditions).then(
+    () => callback(null),
+    err => callback(err)
+  );
 };

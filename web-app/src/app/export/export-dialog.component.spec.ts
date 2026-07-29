@@ -2,6 +2,7 @@ import {
   ComponentFixture,
   fakeAsync,
   TestBed,
+  tick,
   waitForAsync
 } from '@angular/core/testing';
 import { Observable, of, Subject } from 'rxjs';
@@ -9,7 +10,8 @@ import { ExportDialogComponent } from './export-dialog.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -33,13 +35,14 @@ import {
   ExportRequest,
   ExportResponse
 } from './export.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { LocalStorageService } from '../http/local-storage.service';
+import { SessionService } from '../http/session.service';
 import { FilterService } from '../filter/filter.service';
 import { NoExportsComponent } from './empty-state/no-exports.component';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 class MockExportService {
   getExports(): Observable<any> {
@@ -128,6 +131,7 @@ class MockSnackbar {
   }
 
   open(): any {
+    this.snackbarRef = new MockSnackbarRef();
     return this.snackbarRef;
   }
 }
@@ -137,7 +141,7 @@ describe('ExportDialogComponent', () => {
   let fixture: ComponentFixture<ExportDialogComponent>;
 
   beforeEach(waitForAsync(() => {
-    const mockLocalStorageService = { getToken: (): string => '1' };
+    const mockSessionService = { getToken: (): string => '1' };
     const mockFilterService = {
       getEvent: (): any => {
         return { id: 1 };
@@ -146,8 +150,8 @@ describe('ExportDialogComponent', () => {
     const mockDialogRef = { close: (): void => {} };
 
     TestBed.configureTestingModule({
-      imports: [
-        NoopAnimationsModule,
+    declarations: [ExportDialogComponent, NoExportsComponent],
+    imports: [NoopAnimationsModule,
         MatPaginatorModule,
         MatSortModule,
         MatSnackBarModule,
@@ -157,8 +161,6 @@ describe('ExportDialogComponent', () => {
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
-        HttpClientTestingModule,
-        NoopAnimationsModule,
         MatCheckboxModule,
         MatListModule,
         MatCardModule,
@@ -169,17 +171,17 @@ describe('ExportDialogComponent', () => {
         MatDatepickerModule,
         MatNativeDateModule,
         FormsModule,
-        MatChipsModule
-      ],
-      providers: [
-        { provide: LocalStorageService, useValue: mockLocalStorageService },
+        MatChipsModule],
+    providers: [
+        { provide: SessionService, useValue: mockSessionService },
         { provide: ExportService, useClass: MockExportService },
         { provide: FilterService, useValue: mockFilterService },
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MatSnackBar, useClass: MockSnackbar }
-      ],
-      declarations: [ExportDialogComponent, NoExportsComponent]
-    }).compileComponents();
+        { provide: MatSnackBar, useClass: MockSnackbar },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+}).compileComponents();
   }));
 
   beforeEach(() => {
@@ -192,10 +194,15 @@ describe('ExportDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should wire up components to datasource', () => {
-    expect(component.dataSource.sort).toBeTruthy();
+  it('should wire up components to datasource', fakeAsync(() => {
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(component.dataSource).toBeTruthy();
     expect(component.dataSource.data.length).toBe(3);
-  });
+    expect(component.dataSource.filteredData.length).toBe(3);
+  }));
 
   it('should filter', () => {
     const event: any = {
@@ -276,6 +283,7 @@ describe('ExportDialogComponent', () => {
     fixture.detectChanges();
 
     component.snackBar._openedSnackBarRef.dismiss();
+    tick();
 
     expect(deleteSpy).toHaveBeenCalled();
   }));
@@ -303,6 +311,8 @@ describe('ExportDialogComponent', () => {
     expect(component.dataSource.data.length).toBe(0);
 
     component.snackBar._openedSnackBarRef.dismissWithAction();
+    tick();
+
     expect(deleteSpy).toHaveBeenCalledTimes(0);
     expect(component.dataSource.data.length).toBe(1);
   }));

@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
 import { TeamService } from './team.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Team Service Tests', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [TeamService],
-      imports: [HttpClientTestingModule]
-    });
+    imports: [],
+    providers: [TeamService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+});
   });
 
   afterEach(() => {

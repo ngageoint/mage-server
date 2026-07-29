@@ -1,0 +1,104 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions" *ngIf="feed">
+    <button *ngIf="hasFeedDeletePermission" matButton="outlined" type="button" class="delete-feed-button" (click)="deleteFeed()">
+      <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+    </button>
+  </div>
+</ng-template>
+
+<div class="feed-page" *ngIf="feedLoaded | async; else loading">
+  <mat-card appearance="outlined" class="details-card">
+    <div class="feed-header">
+      <div class="feed-icon-placeholder">
+        <mat-icon fontSet="material-symbols-outlined">rss_feed</mat-icon>
+      </div>
+      <div class="feed-info">
+        <span class="feed-name">{{ feed.title }}</span>
+        <span class="feed-summary">{{ feed.summary }}</span>
+      </div>
+    </div>
+
+    <mat-divider class="section-divider"></mat-divider>
+
+    <div class="detail-grid">
+      <div class="detail-row">
+        <span class="detail-label">Primary Property</span>
+        <span class="detail-value">{{ feed?.itemPrimaryProperty || '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Secondary Property</span>
+        <span class="detail-value">{{ feed?.itemSecondaryProperty || '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Update Frequency</span>
+        <span class="detail-value">{{ feed?.updateFrequencySeconds || '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Service</span>
+        <span class="detail-value">{{ service?.title || '—' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Service Summary</span>
+        <span class="detail-value">{{ service?.summary || '—' }}</span>
+      </div>
+    </div>
+
+    <mat-divider class="section-divider" *ngIf="hasFeedEditPermission"></mat-divider>
+
+    <div class="feed-actions" *ngIf="hasFeedEditPermission">
+      <button matButton="outlined" type="button" [routerLink]="['../../feeds', feed?.id, 'edit']">
+        <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>Edit Feed
+      </button>
+    </div>
+  </mat-card>
+
+  <div class="lists-section lists-section--single">
+    <mat-card appearance="outlined" class="list-card">
+      <mat-card-header class="card-header">
+        <mat-card-title>Events</mat-card-title>
+        <div class="card-actions" *ngIf="hasFeedEditPermission">
+          <button matButton="outlined" type="button" (click)="addEventToFeed()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Event
+          </button>
+        </div>
+      </mat-card-header>
+
+      <div class="list-content">
+        <mat-nav-list *ngIf="feedEvents.length > 0 && !loadingEvents">
+          <mat-list-item *ngFor="let event of feedEvents" [routerLink]="['../../events', event.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">event</mat-icon>
+            <span matListItemTitle>{{ event.name }}</span>
+            <span matListItemLine>{{ event.description }}</span>
+            <span matListItemMeta *ngIf="hasFeedEditPermission">
+              <button matIconButton (click)="removeFeedFromEvent($event, event)" aria-label="Remove Feed From Event">
+                <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+              </button>
+            </span>
+          </mat-list-item>
+        </mat-nav-list>
+
+        <div class="empty-state" *ngIf="!loadingEvents && feedEvents.length === 0">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event</mat-icon>
+          <div class="empty-state-text">No subscribed events found</div>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingEvents">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </div>
+
+      <mat-paginator
+        [length]="totalFeedEvents"
+        [pageSize]="eventsPerPage"
+        [pageIndex]="eventsPage"
+        (page)="onEventsPageChange($event)"
+      ></mat-paginator>
+    </mat-card>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading-page">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+</ng-template>

@@ -18,7 +18,8 @@ export interface SystemInfo {
    * the server.  Without this structure, the apps will not allow interaction
    * with the server.
    */
-  version: { major: number, minor: number, micro: number }
+  version: { major: number, minor: number, patch: number }
+  serverVersion: string
   /**
    * Package version string straight from package.json
    */

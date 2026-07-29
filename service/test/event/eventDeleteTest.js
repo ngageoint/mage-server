@@ -12,8 +12,6 @@ const request = require('supertest')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('sinon-mongoose');
-
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');
 
@@ -47,7 +45,7 @@ describe('deleting events', function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -65,15 +63,15 @@ describe('deleting events', function () {
       name: 'Mock Event',
       collectionName: 'observations1'
     })
-    const eventRemoveSpy = sinon.spy(mockEvent, 'remove')
+    const eventRemoveSpy = sinon.spy(mockEvent, 'deleteOne')
 
     sinon.mock(EventModel)
       .expects('findById')
       .twice()
       .onFirstCall()
-      .yields(null, mockEvent)
+      .resolves(mockEvent)
       .onSecondCall()
-      .yields(null, null);
+      .resolves(null);
 
     const droppedObservationCollection = sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
@@ -85,9 +83,9 @@ describe('deleting events', function () {
 
     sinon.mock(IconModel)
       .expects('remove')
-      .yields(null);
+      .resolves();
 
-    const teamId = mongoose.Types.ObjectId();
+    const teamId = new mongoose.Types.ObjectId();
     const mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
@@ -106,11 +104,11 @@ describe('deleting events', function () {
       .expects('find')
       .chain('populate')
       .chain('exec')
-      .yields(null, [mockTeam]);
+      .resolves([mockTeam]);
 
     const removedEventTeam = sinon.mock(mockTeam)
-      .expects('remove')
-      .yields(null);
+      .expects('deleteOne')
+      .resolves();
 
     request(app)
       .delete('/api/events/' + eventId)
@@ -148,7 +146,7 @@ describe('deleting events', function () {
 
     sinon.mock(IconModel)
       .expects('remove')
-      .yields(null);
+      .resolves();
 
     sinon.mock(UserModel)
       .expects('removeRecentEventForUsers')
@@ -158,7 +156,7 @@ describe('deleting events', function () {
       '/var/lib/mage': {}
     });
 
-    sinon.stub(mockEvent, 'remove').callsFake(function (){});
+    sinon.stub(mockEvent, 'deleteOne').callsFake(function () { });
 
     request(app)
       .delete('/api/events/' + eventId)
@@ -186,7 +184,7 @@ describe('deleting events', function () {
     });
     sinon.mock(EventModel)
       .expects('findById')
-      .yields(null, mockEvent);
+      .resolves(mockEvent);
 
     request(app)
       .delete('/api/events/' + eventId)

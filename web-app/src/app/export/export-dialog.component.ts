@@ -1,49 +1,50 @@
 import { Component, OnInit, ViewChild, Inject, OnDestroy } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTable as MatTable, MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, Export, ExportResponse } from './export.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Observable, Subscription, timer } from 'rxjs';
-import { LocalStorageService } from '../http/local-storage.service';
+import { SessionService } from '../http/session.service';
 
 @Component({
-	selector: 'export-dialog',
-	templateUrl: 'export-dialog.component.html',
-	styleUrls: ['./export-dialog.component.scss'],
-	animations: [
-		trigger('slide', [
-			transition(':enter', [
-				style({ transform: 'translateX(100%)' }),
-				animate('250ms', style({ transform: 'translateX(0%)' })),
-			]),
-			transition(':leave', [
-				animate('250ms', style({ transform: 'translateX(100%)' }))
-			])
-		]),
-		trigger('detailExpand', [
-			state('collapsed', style({ height: '0px', minHeight: '0' })),
-			state('expanded', style({ height: '*' })),
-			transition('expanded <=> collapsed', animate('250ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
-		]),
-		trigger('cell', [
-			transition(':enter', [
-				style({ 'min-height': 0, height: 0, opacity: 0 }),
-				animate('250ms', style({ 'min-height': '*', height: '*', opacity: 1 })),
-			]),
-			transition(':leave', [
-				animate('250ms', style({ 'min-height': 0, height: 0, opacity: 0 }))
-			])
-		])
-	]
+    selector: 'export-dialog',
+    templateUrl: 'export-dialog.component.html',
+    styleUrls: ['./export-dialog.component.scss'],
+    animations: [
+        trigger('slide', [
+            transition(':enter', [
+                style({ transform: 'translateX(100%)' }),
+                animate('250ms', style({ transform: 'translateX(0%)' })),
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ transform: 'translateX(100%)' }))
+            ])
+        ]),
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0' })),
+            state('expanded', style({ height: '*' })),
+            transition('expanded <=> collapsed', animate('250ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+        ]),
+        trigger('cell', [
+            transition(':enter', [
+                style({ 'min-height': 0, height: 0, opacity: 0 }),
+                animate('250ms', style({ 'min-height': '*', height: '*', opacity: 1 })),
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ 'min-height': 0, height: 0, opacity: 0 }))
+            ])
+        ])
+    ],
+    standalone: false
 })
 export class ExportDialogComponent implements OnInit, OnDestroy {
 
 	@ViewChild(MatTable, { static: true }) table: MatTable<Export>
 	@ViewChild(MatSort, { static: true }) sort: MatSort
 
-	columnsToDisplay: string[] = ['status', 'type', 'url', 'event', 'delete'];
+	columnsToDisplay: string[] = ['status', 'type', 'event', 'retry', 'delete', 'expand'];
 	expandedExport: any
 	dataSource = new MatTableDataSource<Export>();
 
@@ -58,8 +59,8 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	constructor(public dialogRef: MatDialogRef<ExportDialogComponent>,
 		public snackBar: MatSnackBar,
 		@Inject(ExportService) public exportService: ExportService,
-		localStorageService: LocalStorageService) {
-		this.token = localStorageService.getToken();
+		sessionService: SessionService) {
+		this.token = sessionService.getToken();
 	}
 
 	ngOnInit(): void {

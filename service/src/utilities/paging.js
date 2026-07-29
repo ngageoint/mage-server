@@ -37,6 +37,7 @@ function page(count, query, options, dataKey, dataConverter) {
     pageInfo.limit = limit;
     pageInfo[dataKey] = data;
     pageInfo.size = data.length;
+    pageInfo.totalCount = count
 
     const estimatedNext = start + limit;
 
@@ -53,7 +54,7 @@ function page(count, query, options, dataKey, dataConverter) {
 }
 
 function countAndPage(countQuery, query, options, dataKey) {
-  return countQuery.count().then(count => {
+  return countQuery.countDocuments().then(count => {
     return page(count, query, options, dataKey, null);
   });
 }

@@ -1,0 +1,27 @@
+.oidc-settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title {
+  font-size: var(--mat-sys-title-small-size);
+  font-weight: var(--mat-sys-title-small-weight);
+  color: var(--mat-sys-on-surface);
+  margin: 8px 0 12px;
+}
+
+.subsection-title {
+  font-size: var(--mat-sys-body-large-size);
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+  margin: 12px 0 8px;
+}
+
+.advanced-section {
+  margin: 8px 0;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}

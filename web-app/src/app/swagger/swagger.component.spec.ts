@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
@@ -8,7 +8,7 @@ describe('SwaggerComponent', () => {
   let component: SwaggerComponent;
   let fixture: ComponentFixture<SwaggerComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [MatIconModule, MatToolbarModule],
       declarations: [SwaggerComponent]

@@ -1,47 +1,44 @@
 <div #editForm>
-  <mat-toolbar color="primary">
+  <mat-toolbar>
     <mat-toolbar-row class="navigation">
-      <button mat-icon-button class="navigation__icon" (click)="cancel()"
-        [disabled]="saving || mask"><mat-icon>close</mat-icon></button>
+      <button matIconButton class="navigation__icon" (click)="cancel()" [disabled]="saving || mask">
+        <mat-icon>close</mat-icon>
+      </button>
       <div class="navigation__title">
         <span *ngIf="!isNewObservation">Edit Observation</span>
         <span *ngIf="isNewObservation">Create Observation</span>
       </div>
-
-      <button mat-button (click)="save()" [disabled]="saving || mask">SAVE</button>
+      <button matButton class="navigation__save" (click)="save()" [disabled]="saving || mask">Save</button>
     </mat-toolbar-row>
   </mat-toolbar>
 
-  <mat-progress-bar *ngIf="saving" color="primary" mode="indeterminate" class="edit-progress"></mat-progress-bar>
+  <mat-progress-bar *ngIf="saving" mode="indeterminate" class="edit-progress"></mat-progress-bar>
 
   <div cdkScrollable #editContent class="edit-content" [ngClass]="{'edit-content--scroll-lock': mask}">
-    <div class="edit-banner" *ngIf="error" @error>
+    <div class="edit-banner mat-elevation-z4" *ngIf="error" @error>
       <div class="edit-banner-container">
         <div class="edit-banner-content">
-          <div class="edit-banner-content__title">Invalid observation, correct the following errors.</div>
+          <div class="edit-banner-content__title">
+            <mat-icon class="edit-banner-content__title-icon">error_outline</mat-icon>
+            Unable to save observation
+          </div>
           <div class="edit-banner-content__summary">{{error?.message}}</div>
         </div>
       </div>
-
       <div class="edit-banner-actions">
-        <button mat-button color="primary" (click)="error = null;">DISMISS</button>
+        <button matButton (click)="error = null;">Dismiss</button>
       </div>
     </div>
 
     <form class="observation" name="observationForm" novalidate>
       <mat-card class="form">
-        <observation-edit-date [formGroup]="formGroup.get('properties')"
-          [definition]="timestampDefinition"></observation-edit-date>
+        <mat-card-content>
+          <observation-edit-date class="edit-date" [formGroup]="formGroup.get('properties')" [definition]="timestampDefinition"></observation-edit-date>
 
-        <mat-checkbox [formControl]="formGroup?.get('noGeometry')" style="margin-top: 16px;">
-          {{ noGeometryLabel }}
-        </mat-checkbox>
-
-        <ng-container *ngIf="!formGroup?.get('noGeometry')?.value">
           <observation-edit-geometry [formGroup]="formGroup" [definition]="geometryDefinition"
             [featureId]="observation.id" [featureStyle]="geometryStyle" (onFeatureEdit)="onGeometryEdit($event)">
           </observation-edit-geometry>
-        </ng-container>
+        </mat-card-content>
       </mat-card>
 
       <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)"
@@ -64,9 +61,9 @@
   </div>
 
   <div class="add-form" *ngIf="hasForms()">
-    <button class="extended-fab-button" mat-fab color="primary" (click)="pickForm()">
-      <mat-icon class="add-form__button">note_add</mat-icon>
-      <span class="extended-fab-button__text">Add Form</span>
+    <button matFab extended (click)="pickForm()">
+      <mat-icon>note_add</mat-icon>
+      Add Form
     </button>
   </div>
 

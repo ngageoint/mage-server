@@ -1,0 +1,97 @@
+<div class="admin-content">
+  <div class="top-row">
+    <mat-card appearance="raised" class="dashboard-panel-card">
+      <mat-card-header>
+        <mat-card-title>Inactive Users</mat-card-title>
+        <span [matBadge]="count() || 0" matBadgeOverlap="false" [matBadgeHidden]="!count()"></span>
+      </mat-card-header>
+
+      <mat-card-content class="panel-card-content">
+        <mat-form-field>
+          <input matInput placeholder="Search users…" [(ngModel)]="userSearch" (ngModelChange)="search()" />
+        </mat-form-field>
+
+        <mat-nav-list class="item-list">
+          <mat-list-item *ngFor="let user of inactiveUsers || []" [routerLink]="['../users', user?.id]">
+            <mat-icon matListItemIcon>person</mat-icon>
+            <span matListItemTitle>{{ user?.displayName || 'Unknown User' }}</span>
+            <span matListItemLine>{{ user?.username }}</span>
+            <span matListItemMeta *ngIf="hasPermission('UPDATE_USER')">
+              <button
+                matIconButton
+                matTooltip="Activate"
+                (mousedown)="$event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation()"
+                (click)="$event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation(); activateUser(user)">
+                <mat-icon class="primary-icon">check_circle</mat-icon>
+              </button>
+            </span>
+          </mat-list-item>
+
+          <div class="empty-state" *ngIf="!(inactiveUsers && inactiveUsers.length)">
+            <mat-icon>group</mat-icon>
+            <span class="empty-desc" *ngIf="userSearch; else noInactiveUsers">No users match your search</span>
+            <ng-template #noInactiveUsers>
+              <span class="empty-desc">No users are awaiting activation</span>
+            </ng-template>
+          </div>
+        </mat-nav-list>
+      </mat-card-content>
+
+      <mat-paginator class="panel-paginator"
+        [length]="count()"
+        [pageSize]="userPageSize"
+        [pageIndex]="userPageIndex"
+        [hidePageSize]="true"
+        (page)="onUserPage($event)">
+      </mat-paginator>
+    </mat-card>
+
+    <mat-card appearance="raised" class="dashboard-panel-card">
+      <mat-card-header>
+        <mat-card-title>Unregistered Devices</mat-card-title>
+        <span [matBadge]="deviceCount() || 0" matBadgeOverlap="false" [matBadgeHidden]="!deviceCount()"></span>
+      </mat-card-header>
+
+      <mat-card-content class="panel-card-content">
+        <mat-form-field>
+          <input matInput placeholder="Search devices…" [(ngModel)]="deviceSearch" (ngModelChange)="searchDevices()" />
+        </mat-form-field>
+
+        <mat-nav-list class="item-list">
+          <mat-list-item *ngFor="let device of unregisteredDevices || []" (click)="goToDevice(device)">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(device) }}</mat-icon>
+            <span matListItemTitle>{{ device?.user?.displayName || 'No Associated User' }}</span>
+            <span matListItemLine>{{ platformLabel(device) }}{{ device?.userAgent ? ' · ' + device.userAgent : '' }}</span>
+            <span matListItemMeta *ngIf="hasPermission('UPDATE_DEVICE')">
+              <button
+                matIconButton
+                matTooltip="Register"
+                (mousedown)="$event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation()"
+                (click)="$event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation(); registerDevice($event, device)">
+                <mat-icon class="primary-icon">check_circle</mat-icon>
+              </button>
+            </span>
+          </mat-list-item>
+
+          <div class="empty-state" *ngIf="!(unregisteredDevices && unregisteredDevices.length)">
+            <mat-icon>devices</mat-icon>
+            <span class="empty-desc" *ngIf="deviceSearch; else noUnregisteredDevices">No devices match your search</span>
+            <ng-template #noUnregisteredDevices>
+              <span class="empty-desc">No devices are awaiting registration</span>
+            </ng-template>
+          </div>
+        </mat-nav-list>
+      </mat-card-content>
+
+      <mat-paginator class="panel-paginator"
+        [length]="deviceTotalCount"
+        [pageSize]="devicePageSize"
+        [pageIndex]="deviceStart / devicePageSize"
+        [hidePageSize]="true"
+        (page)="onDevicePage($event)">
+      </mat-paginator>
+    </mat-card>
+  </div>
+
+  <mage-logins></mage-logins>
+</div>

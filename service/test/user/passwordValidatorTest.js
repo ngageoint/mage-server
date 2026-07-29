@@ -516,7 +516,7 @@ describe("Password Validator Tests", function () {
       type: 'local',
       password: 'hash1',
       previousPasswords: [hash3, hash2, hash1],
-      authenticationConfigurationId: mongoose.Types.ObjectId()
+      authenticationConfigurationId: new mongoose.Types.ObjectId()
     });
 
     sinon.mock(AuthenticationModel.collection)
@@ -541,15 +541,15 @@ describe("Password Validator Tests", function () {
 
   it('Should remove token if password is reset', async function () {
     const authentication = new Authentication.Local({
-      _id: mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
       previousPasswords: [],
-      authenticationConfigurationId: mongoose.Types.ObjectId()
+      authenticationConfigurationId: new mongoose.Types.ObjectId()
     });
 
     const user = {
-      _id: mongoose.Types.ObjectId()
+      _id: new mongoose.Types.ObjectId()
     }
 
     sinon.mock(AuthenticationConfiguration.Model)

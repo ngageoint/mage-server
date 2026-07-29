@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
+    "skipLibCheck": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -10,27 +11,22 @@
     "strictNullChecks": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "module": "ES2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "ES2020",
+    "target": "ES2022",
     "lib": [
-      "ES2020",
-      "DOM"
+      "ES2022",
+      "dom"
     ],
     "paths": {
       "@@main": [
         "./dist/main"
-      ],
-      "@ngageoint/mage.web-core-lib/*": [
-        "./node_modules/@ngageoint/mage.web-core-lib/*"
       ]
     }
   },
   "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true
   }
 }

@@ -1,0 +1,22 @@
+<admin-navbar></admin-navbar>
+<mat-sidenav-container class="admin-container">
+  <mat-sidenav [mode]="isMobile ? 'over' : 'side'" opened [autoFocus]="false" class="admin-sidenav">
+    <admin-navigation
+      [stateName]="stateName"
+      [inactiveUsers]="inactiveUsers"
+      [unregisteredDevices]="unregisteredDevices"
+      [pluginTabs]="pluginTabs"
+      (pluginActiveChange)="pluginActiveChanged($event)"
+    ></admin-navigation>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="admin-sidenav-content">
+    <admin-breadcrumb [breadcrumbs]="(breadcrumbService.breadcrumbs$ | async) ?? []">
+      <ng-container *ngTemplateOutlet="breadcrumbService.actions$ | async"></ng-container>
+    </admin-breadcrumb>
+
+    <div class="admin-main-content" #adminMainContent>
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

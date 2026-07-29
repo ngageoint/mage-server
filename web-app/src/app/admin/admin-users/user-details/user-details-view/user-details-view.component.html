@@ -1,0 +1,191 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions" *ngIf="user && hasUserDeletePermission">
+    <ng-container *ngIf="hasUserEditPermission">
+      <button matButton="outlined" class="delete-user-button" (click)="confirmDeleteUser()">
+        <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+      </button>
+    </ng-container>
+  </div>
+</ng-template>
+
+<div class="user-page" *ngIf="user">
+  <mat-card appearance="outlined" class="details-card">
+    <div class="profile-header">
+      <div class="media-content">
+        <img *ngIf="user.avatarUrl" [src]="userAvatarImgUrl" width="64" height="64" class="avatar-image">
+        <div *ngIf="!user.avatarUrl" class="avatar-placeholder">
+          <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
+        </div>
+      </div>
+
+      <div class="profile-info">
+        <div class="profile-name-row">
+          <span class="profile-name">{{ user.displayName }}</span>
+          <span class="status-badge" [ngClass]="accountStatusBadgeClass" *ngIf="hasUserEditPermission">{{ accountStatusBadgeText }}</span>
+        </div>
+        <div class="profile-username" *ngIf="user.authentication?.type === 'local'">{{ user.username }}</div>
+      </div>
+    </div>
+
+    <div class="detail-row media-row">
+      <span class="detail-label">Map Icon</span>
+      <div class="media-content">
+        <img *ngIf="user.iconUrl" [src]="userIconImgUrl" width="64" height="64" class="map-icon-thumb">
+        <div *ngIf="!user.iconUrl" class="icon-placeholder">No icon</div>
+      </div>
+    </div>
+
+    <div class="detail-row-pair">
+      <div class="detail-row" *ngIf="user.email">
+        <span class="detail-label">Email address</span>
+        <span class="detail-value">{{ user.email }}</span>
+      </div>
+
+      <div class="detail-row" *ngIf="user.phones && user.phones[0]">
+        <span class="detail-label">Phone number</span>
+        <span class="detail-value">{{ user.phones[0].number }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row-pair">
+      <div class="detail-row">
+        <span class="detail-label">Role</span>
+        <span class="detail-value">{{ user.role?.name }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Authentication</span>
+        <span class="detail-value" *ngIf="user.authentication?.authenticationConfiguration">
+          {{ user.authentication.authenticationConfiguration.title }}
+        </span>
+        <span class="detail-value warning-text" *ngIf="!user.authentication?.authenticationConfiguration">
+          Authentication strategy no longer exists
+        </span>
+      </div>
+    </div>
+
+    <mat-divider class="section-divider" *ngIf="hasUserEditPermission || (canUpdatePassword && user.authentication?.type === 'local') || showAccountStatusAction"></mat-divider>
+
+    <div class="user-actions">
+      <button matButton="outlined" type="button" *ngIf="hasUserEditPermission" (click)="editRequested.emit()">
+        <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+        Edit User
+      </button>
+
+      <button matButton="outlined" type="button" *ngIf="canUpdatePassword && user.authentication?.type === 'local'" (click)="confirmChangePassword()">
+        <mat-icon fontSet="material-symbols-outlined">lock</mat-icon>
+        Change Password
+      </button>
+
+      <div class="status-content" *ngIf="showAccountStatusAction">
+        <button matButton="outlined" (click)="toggleAccountStatus()">
+          <mat-icon fontSet="material-symbols-outlined">{{ accountStatusIcon }}</mat-icon>
+          {{ accountStatusLabel }}
+        </button>
+        <mat-icon
+          class="info-icon"
+          fontSet="material-symbols-outlined"
+          [matTooltip]="accountStatusHelpText">info</mat-icon>
+      </div>
+    </div>
+  </mat-card>
+
+  <div class="teams-events-row">
+  <mat-card appearance="outlined" class="list-card">
+    <mat-card-header>
+      <mat-card-title>Teams</mat-card-title>
+    </mat-card-header>
+
+    <div class="toolbar">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+        <mat-label>Search teams</mat-label>
+        <input matInput [(ngModel)]="teamSearchTerm" (ngModelChange)="onTeamSearchChange($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="teamSearchTerm" (click)="onTeamSearchChange()" aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <div class="list-content">
+      <mat-nav-list *ngIf="totalUserTeams > 0 && !loadingTeams">
+        <mat-list-item *ngFor="let team of teamsDataSource.data" [routerLink]="['../../teams', team.id]">
+          <mat-icon matListItemIcon fontSet="material-symbols-outlined">groups</mat-icon>
+          <span matListItemTitle>{{ team.name }}</span>
+          <span matListItemLine *ngIf="team.description">{{ team.description }}</span>
+        </mat-list-item>
+      </mat-nav-list>
+
+      <div class="empty-state" *ngIf="totalUserTeams === 0 && !loadingTeams">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+        <div class="empty-state-text" *ngIf="teamSearchTerm; else noTeams">{{ user.displayName }} is not assigned to any teams that match your search</div>
+        <ng-template #noTeams>
+          <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams</div>
+        </ng-template>
+      </div>
+
+      <div class="loading-overlay" *ngIf="loadingTeams">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    </div>
+
+    <mat-paginator
+      [length]="totalUserTeams"
+      [pageSize]="userTeamsPageSize"
+      [pageIndex]="userTeamsPageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onUserTeamsPageChange($event)"
+    ></mat-paginator>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="list-card">
+    <mat-card-header>
+      <mat-card-title>Events</mat-card-title>
+    </mat-card-header>
+
+    <div class="toolbar">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+        <mat-label>Search events</mat-label>
+        <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="eventSearchTerm" (click)="onEventSearchChange()" aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <div class="list-content">
+      <mat-nav-list *ngIf="totalUserEvents > 0 && !loadingEvents">
+        <mat-list-item *ngFor="let event of eventsDataSource.data" [routerLink]="['../../events', event.id]">
+          <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
+          <span matListItemTitle>{{ event.name }}</span>
+          <span matListItemLine *ngIf="event.description">{{ event.description }}</span>
+          <span matListItemLine *ngIf="accessTeamNames(event).length" class="team-access">Via teams: {{ accessTeamNames(event).join(', ') }}</span>
+        </mat-list-item>
+      </mat-nav-list>
+
+      <div class="empty-state" *ngIf="totalUserEvents === 0 && !loadingEvents">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+        <div class="empty-state-text" *ngIf="eventSearchTerm; else noEvents">{{ user.displayName }} is not assigned to any events that match your search</div>
+        <ng-template #noEvents>
+          <div class="empty-state-text">{{ user.displayName }} is not assigned to any events</div>
+        </ng-template>
+      </div>
+
+      <div class="loading-overlay" *ngIf="loadingEvents">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    </div>
+
+    <mat-paginator
+      [length]="totalUserEvents"
+      [pageSize]="userEventsPageSize"
+      [pageIndex]="userEventsPageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onUserEventsPageChange($event)"
+    ></mat-paginator>
+  </mat-card>
+  </div>
+
+  <mage-logins [userId]="user?.id"></mage-logins>
+</div>

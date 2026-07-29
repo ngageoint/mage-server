@@ -1,15 +1,14 @@
 {
-    "include": [
-      "src/**/*.ts"
-    ],
-    "compilerOptions": {
-      "strict": true,
-      "outDir": "lib",
-      "target": "es2015",
-      "sourceMap": true,
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "esModuleInterop": true,
-      "baseUrl": "."
-    }
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "lib",
+    "target": "es2015",
+    "sourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "types": ["jest", "node"]
   }
+}

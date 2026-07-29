@@ -1,0 +1,32 @@
+.edit-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 520px;
+  padding-top: 8px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.color-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.color-swatch-input {
+  width: 40px;
+  height: 40px;
+  padding: 4px;
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.color-text-field {
+  flex: 1;
+}

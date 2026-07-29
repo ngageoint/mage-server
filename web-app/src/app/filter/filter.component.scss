@@ -6,6 +6,11 @@ mat-button {
   width: 100%;
 }
 
+datetime-picker {
+  display: block;
+  width: 100%;
+}
+
 .content {
   height: 100%;
   display: flex;
@@ -32,31 +37,70 @@ mat-button {
 }
 
 .option-description {
-  font: 400 12px / 16px Roboto, "Helvetica Neue", sans-serif;
+  font: 400 12px / 16px Roboto, 'Helvetica Neue', sans-serif;
   overflow: hidden;
   text-overflow: ellipsis;
-  opacity: .6;
+  opacity: 0.6;
 }
 
 .datetime {
   width: 100%;
   display: flex;
-  flex-direction: row;
   gap: 8px;
+  align-items: start;
 }
 
-.date {
-  flex: 1;
-}
-
-.time {
-  flex: 1;
+.datetime-fields {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .timezone {
-  margin-top: 58px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 8px;
 }
 
 .timezone__button {
+  white-space: nowrap;
+}
+
+.filter-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 400px;
+}
+
+.skeleton {
+  border-radius: 4px;
+  animation: pulse 1.4s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.12) 37%,
+    rgba(255, 255, 255, 0.06) 63%
+  );
+  background-size: 400% 100%;
+}
+
+.skeleton-title {
+  height: 24px;
   width: 120px;
+}
+
+.skeleton-field {
+  height: 56px;
+  width: 100%;
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { LocalStorageService } from "../http/local-storage.service";
+import { SessionService } from "../http/session.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable, map, mergeMap } from "rxjs";
 import * as _ from "underscore";
@@ -12,7 +12,7 @@ import { Form, Observation } from "../filter/filter.types";
 export class ObservationService {
   constructor(
     private client: HttpClient,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) { }
 
   getId(eventId: number): Observable<any> {
@@ -273,7 +273,7 @@ export class ObservationService {
     }
 
     let params = new HttpParams();
-    params = params.append("access_token", this.localStorageService.getToken());
+    params = params.append("access_token", this.sessionService.getToken());
 
     return url + "?" + params.toString();
   }

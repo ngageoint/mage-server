@@ -1,4 +1,3 @@
-@import 'variables.scss';
 
 :host {
   width: 100%;
@@ -8,6 +7,10 @@
 mat-form-field {
   width: 100%;
   margin-bottom: 8px;
+}
+
+.password-form-field {
+  margin-bottom: 20px;
 }
 
 .signup-container {
@@ -26,22 +29,22 @@ mat-form-field {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: end;
-  color: $primary;
+  justify-content: flex-end;
+  color: var(--mat-sys-primary);
 }
 
 .welcome__title {
   margin-bottom: 16px;
-  font: 400 45px / 48px Roboto, 'Helvetica Neue', sans-serif;
+  font: var(--mat-sys-display-medium);
 }
 
 .welcome__message {
-  font: 500 20px / 32px Roboto, 'Helvetica Neue', sans-serif;
+  font: var(--mat-sys-title-large);
 }
 
 .auth-captcha-container {
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--mat-sys-outline);
   border-radius: 4px;
   padding: 4px;
   width: 100%;
@@ -74,12 +77,28 @@ mat-form-field {
 }
 
 .auth-captcha-progress-text {
-  color: rgba(0, 0, 0, 0.6);
-  font-size: 24px;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .auth-captcha-progressbar {
   margin-top: 8px;
+}
+
+.password-strength__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.password-strength__label {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.password-strength__value {
+  font: var(--mat-sys-body-medium);
+  font-weight: 500;
 }
 
 .auth-captcha-refresh {
@@ -101,33 +120,15 @@ mat-form-field {
   flex: 1;
 }
 
-.tooltip-wide {
+::ng-deep .tooltip-wide {
   white-space: pre-line;
   max-width: 300px;
 }
 
-.password-error-popover {
-  position: absolute;
-  background: #fff0f0;
-  border: 1px solid #f44336;
-  color: #b71c1c;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 13px;
-  z-index: 10;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
-  margin-top: 4px;
-  width: 100%;
+::ng-deep .custom-password-bar {
+  --mdc-linear-progress-active-indicator-color: var(--password-bar-color);
 }
 
-.error-item {
-  margin-bottom: 4px;
-}
-
-.error-item:last-child {
-  margin-bottom: 0;
-}
-
-::ng-deep .custom-password-bar .mat-progress-bar-fill::after {
-  background-color: var(--password-bar-color) !important;
+::ng-deep .password-form-field .mat-mdc-form-field-subscript-wrapper {
+  height: auto;
 }

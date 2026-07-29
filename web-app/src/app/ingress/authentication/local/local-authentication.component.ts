@@ -9,20 +9,21 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'local-authentication',
-  templateUrl: './local-authentication.component.html',
-  styleUrls: ['./local-authentication.component.scss'],
-  animations: [
-    trigger('slide', [
-      transition(':enter', [
-        style({ 'height': '0px', opacity: 0 }),
-        animate('250ms ease-out', style({ 'height': '*', opacity: 1 })),
-      ]),
-      transition(":leave", [
-        animate('250ms ease-out', style({ 'height': '0px', opacity: 0 })),
-      ])
-    ]),
-  ]
+    selector: 'local-authentication',
+    templateUrl: './local-authentication.component.html',
+    styleUrls: ['./local-authentication.component.scss'],
+    animations: [
+        trigger('slide', [
+            transition(':enter', [
+                style({ 'height': '0px', opacity: 0 }),
+                animate('250ms ease-out', style({ 'height': '*', opacity: 1 })),
+            ]),
+            transition(":leave", [
+                animate('250ms ease-out', style({ 'height': '0px', opacity: 0 })),
+            ])
+        ]),
+    ],
+    standalone: false
 })
 export class LocalAuthenticationComponent implements OnInit {
   @Input() api: Api
@@ -52,9 +53,6 @@ export class LocalAuthenticationComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    if (this.userService.myself) {
-      this.router.navigate(['home']);
-    }
     this.apiService.getApi().subscribe((api: any) => {
       this.api = api
     })

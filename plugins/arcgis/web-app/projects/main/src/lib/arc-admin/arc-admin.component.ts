@@ -7,6 +7,7 @@ import { Subject, first } from 'rxjs';
 import { FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
+  standalone: false,
   selector: 'arc-admin',
   templateUrl: './arc-admin.component.html',
   styleUrls: ['./arc-admin.component.scss']
@@ -395,6 +396,15 @@ export class ArcAdminComponent implements OnInit {
 
   getOmit(attribute: string): boolean {
     return this.omit(attribute)!
+  }
+
+  attributeSettingsSummary(attribute: string): string {
+    const parts: string[] = []
+    if (this.hasConcatenation(attribute)) { parts.push('Concatenation') }
+    if (this.hasMappings(attribute)) { parts.push('Mappings') }
+    if (this.hasDefaults(attribute)) { parts.push('Defaults') }
+    if (this.hasOmit(attribute)) { parts.push('Omit') }
+    return parts.length ? parts.join(', ') : 'No settings'
   }
 
   private omit(attribute: string): boolean | undefined {

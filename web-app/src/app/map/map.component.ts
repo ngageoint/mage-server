@@ -6,7 +6,7 @@ import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service
 import { MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { map, latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map } from "leaflet"
+import { map, latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map, DomEvent } from "leaflet"
 import { OpacityEvent, ZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
@@ -22,20 +22,22 @@ import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 import { UserService } from '../user/user.service'
 import { FilterComponent } from '../filter/filter.component'
-import { MatDialog } from '@angular/material/dialog'
+import { MatDialog as MatDialog } from '@angular/material/dialog'
 import { ExportDialogComponent } from '../export/export-dialog.component'
 import _ from 'underscore'
-import * as moment from 'moment'
+import moment from 'moment';
 import { Subscription } from 'rxjs'
 import { ContactDialogComponent } from '../contact/contact-dialog.component'
+import { SessionService } from 'mage-web-app/http/session.service'
 
 Icon.Default.imagePath = '/'
 
 @Component({
-  selector: 'map',
-  templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss'],
-  providers: [LayerService]
+    selector: 'map',
+    templateUrl: './map.component.html',
+    styleUrls: ['./map.component.scss'],
+    providers: [LayerService],
+    standalone: false
 })
 export class MapComponent implements OnDestroy, AfterViewInit {
 
@@ -49,6 +51,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   @Output() addObservation = new EventEmitter<any>()
 
   @ViewChild('map') mapElement: ElementRef<any>
+  @ViewChild('mapControlsLeft') mapControlsLeft: ElementRef<HTMLElement>
+  @ViewChild('mapControlsRight') mapControlsRight: ElementRef<HTMLElement>
   mapReizeObserver?: ResizeObserver
 
   map: Map
@@ -99,7 +103,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   constructor(
     public dialog: MatDialog,
     private mapService: MapService,
-    private userService: UserService,
+    private sessionService: SessionService,
     private layerService: MapLayerService,
     private eventService: EventService,
     private filterService: FilterService,
@@ -117,6 +121,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     this.mapReizeObserver?.observe(this.mapElement.nativeElement)
+
+    DomEvent.disableClickPropagation(this.mapControlsLeft.nativeElement)
+    DomEvent.disableClickPropagation(this.mapControlsRight.nativeElement)
 
     let mapPosition = this.localStorageService.getMapPosition()
     if (!mapPosition) {
@@ -190,7 +197,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.map,
       this.layerService,
       this.filterService,
-      this.localStorageService
+      this.sessionService
     )
 
     this.pollListener = {
@@ -307,7 +314,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   onExport() {
-    this.dialog.open(ExportDialogComponent).afterClosed().subscribe(result => {
+    this.dialog.open(ExportDialogComponent, { width: '650px', maxWidth: '650px' }).afterClosed().subscribe(result => {
       if (!result || result === 'closeAction') {
       }
     });
@@ -325,7 +332,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   onLocationState($event: LocationEvent) {
     if ($event.state === LocationState.Broadcast &&
-      !this.eventService.isUserInEvent(this.userService.myself, this.filterService.getEvent())
+      !this.eventService.isUserInEvent(this.sessionService.user, this.filterService.getEvent())
     ) {
       const data = {
         info: {

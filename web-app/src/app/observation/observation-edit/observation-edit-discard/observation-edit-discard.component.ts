@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'observation-edit-discard',
-  templateUrl: './observation-edit-discard.component.html',
-  styleUrls: ['./observation-edit-discard.component.scss']
+    selector: 'observation-edit-discard',
+    templateUrl: './observation-edit-discard.component.html',
+    styleUrls: ['./observation-edit-discard.component.scss'],
+    standalone: false
 })
 export class ObservationEditDiscardComponent {
 

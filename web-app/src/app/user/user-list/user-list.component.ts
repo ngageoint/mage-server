@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import * as moment from 'moment';
+import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 
 @Component({
-  selector: 'user-list',
-  templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss']
+    selector: 'user-list',
+    templateUrl: './user-list.component.html',
+    styleUrls: ['./user-list.component.scss'],
+    standalone: false
 })
 export class UserListComponent implements OnInit, OnDestroy {
 
@@ -38,8 +39,8 @@ export class UserListComponent implements OnInit, OnDestroy {
     return index
   }
 
-  trackByUserId(index: number, user: any): any {
-    return user.id
+  trackByUserId(index: number, userWithLocation: any): any {
+    return userWithLocation.id
   }
 
   onFilterChanged(): void {
@@ -49,19 +50,19 @@ export class UserListComponent implements OnInit, OnDestroy {
   onUsersChanged(changed): void {
     const { added = [], updated = [], removed = [] } = changed
 
-    added.forEach(user => {
-      this.usersById[user.id] = user;
+    added.forEach(userWithLocation => {
+      this.usersById[userWithLocation.id] = userWithLocation;
     })
 
-    updated.forEach(user => {
-      const updatedUser = this.usersById[user.id];
-      if (updatedUser) {
-        this.usersById[updatedUser.id] = user
+    updated.forEach(userWithLocation => {
+      const existing = this.usersById[userWithLocation.id];
+      if (existing) {
+        this.usersById[existing.id] = userWithLocation
       }
     })
 
-    removed.forEach(user => {
-      delete this.usersById[user.id];
+    removed.forEach(userWithLocation => {
+      delete this.usersById[userWithLocation.id];
     })
 
     // update the news feed observations

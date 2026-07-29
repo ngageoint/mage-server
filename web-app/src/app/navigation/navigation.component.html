@@ -1,30 +1,20 @@
-<mat-toolbar color="primary">
+<mat-toolbar>
   <div class="container">
     <div class="menu">
-      <button mat-icon-button *ngIf="state === 'map'" (click)="toggleFeed()">
+      <button matIconButton *ngIf="state === 'map'" (click)="toggleFeed()">
         <mat-icon>menu</mat-icon>
       </button>
     </div>
 
     <div class="event-title">
       <span class="filter-event">{{ filteredEvent.name }}</span>
-      <span *ngIf="filteredTeams" class="filter-teams"
-        ><span>> {{ filteredTeams }}</span></span
-      >
+      <span *ngIf="filteredTeams" class="filter-teams"><span>> {{ filteredTeams }}</span></span>
       <span *ngIf="filteredInterval" class="filter-interval">
-        {{ filteredInterval }}</span
-      >
+        {{ filteredInterval }}</span>
     </div>
 
     <div class="collapsed-menu">
-      <button matTooltip="Preferences" mat-button (click)="togglePreferences()">
-        <mat-icon>tune</mat-icon>
-      </button>
-      <button
-        mat-icon-button
-        class="navigation-options"
-        [matMenuTriggerFor]="menu"
-      >
+      <button matIconButton class="navigation-options" [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu>
@@ -36,7 +26,7 @@
           <mat-icon>info</mat-icon>
           <span>About</span>
         </a>
-        <a mat-menu-item *ngIf="isAdmin" href="admin/#/admin/">
+        <a mat-menu-item *ngIf="isAdmin" [routerLink]="['/admin']">
           <mat-icon>admin_panel_settings</mat-icon>
           <span>Admin</span>
         </a>
@@ -47,24 +37,19 @@
       </mat-menu>
 
       <div class="actions">
-        <a matTooltip="Profile" [routerLink]="['/profile']" mat-button>
+        <button matTooltip="Preferences" matIconButton (click)="togglePreferences()">
+          <mat-icon>tune</mat-icon>
+        </button>
+        <a matTooltip="Profile" [routerLink]="['/profile']" matIconButton>
           <mat-icon>account_circle</mat-icon>
         </a>
-
-        <a matTooltip="Info" [routerLink]="['/about']" mat-button>
+        <a matTooltip="Info" [routerLink]="['/about']" matIconButton>
           <mat-icon>info</mat-icon>
         </a>
-
-        <a
-          matTooltip="Admin Page"
-          *ngIf="isAdmin"
-          mat-button
-          href="admin/#/admin/"
-        >
+        <a matTooltip="Admin Page" *ngIf="isAdmin" matIconButton [routerLink]="['/admin']">
           <mat-icon>admin_panel_settings</mat-icon>
         </a>
-
-        <a matTooltip="Logout" mat-button (click)="onLogout()">
+        <a matTooltip="Logout" matIconButton (click)="onLogout()">
           <mat-icon>logout</mat-icon>
         </a>
       </div>

@@ -144,10 +144,10 @@ describe('mongoose observation repository', function () {
     }
     // should run all the middleware to drop the observation collection
     if (eventDoc) {
-      await eventDoc.remove()
+      await eventDoc.deleteOne()
     }
     if (repo && repo.idModel) {
-      await repo.idModel.remove({})
+      await repo.idModel.deleteMany({})
     }
   })
 
@@ -158,7 +158,7 @@ describe('mongoose observation repository', function () {
       const id = await repo.allocateObservationId()
       const parsed = new mongoose.Types.ObjectId(id)
       const found = await repo.idModel.findById(id)
-      const idCount = await repo.idModel.count({})
+      const idCount = await repo.idModel.countDocuments({})
 
       expect(id).to.be.a.string
       expect(id).to.not.be.empty
@@ -181,7 +181,7 @@ describe('mongoose observation repository', function () {
         expect(observation.validation.hasErrors).to.be.false
         expect(err).to.be.instanceOf(ObservationRepositoryError)
         expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
         expect(count).to.equal(0)
       })
 
@@ -195,7 +195,7 @@ describe('mongoose observation repository', function () {
         const found = await repo.findById(id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
         const foundAttrs = copyObservationAttrs(found)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
@@ -271,7 +271,7 @@ describe('mongoose observation repository', function () {
         const found = await repo.findById(id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
         const foundAttrs = copyObservationAttrs(found)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
@@ -351,7 +351,7 @@ describe('mongoose observation repository', function () {
         const found = await repo.findById(orig.id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
         const foundAttrs = copyObservationAttrs(found)
-        const count = await model.count({})
+        const count = await model.countDocuments({})
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(orig.id)
@@ -364,6 +364,40 @@ describe('mongoose observation repository', function () {
         expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
         expect(savedAttrs.lastModified.getTime()).to.be.greaterThanOrEqual(orig.lastModified.getTime())
         expect(count).to.equal(1)
+      })
+
+      it('removes previously set important', async function() {
+
+        const putAttrs = copyObservationAttrs(origAttrs)
+        putAttrs.geometry = {
+          type: 'Point',
+          coordinates: [ 12, 34 ]
+        }
+        putAttrs.states = [
+          { name: 'archived', id: PendingEntityId }
+        ]
+        putAttrs.properties.forms = [
+          {
+            id: orig.properties.forms[0].id,
+            formId: event.forms[0].id,
+            field1: 'mod text',
+            field2: 20
+          }
+        ]
+        putAttrs.attachments = []
+        putAttrs.important = null
+        const put = Observation.evaluate(putAttrs, event)
+        const saved = await repo.save(put) as Observation
+        const savedAttrs = copyObservationAttrs(saved)
+        const count = await model.countDocuments()
+
+        expect(saved).to.be.instanceOf(Observation)
+        expect(saved.id).to.equal(orig.id)
+        expect(() => new mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
+        expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
+        expect(savedAttrs.lastModified.getTime()).to.be.greaterThanOrEqual(orig.lastModified.getTime())
+        expect(count).to.equal(1)
+        expect(saved.important).to.be.undefined
       })
 
       it('does not allow changing the create timestamp', async function () {
@@ -389,7 +423,7 @@ describe('mongoose observation repository', function () {
       expect(observation.validation.hasErrors).to.be.false
       expect(err).to.be.instanceOf(ObservationRepositoryError)
       expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
-      const count = await model.count({})
+      const count = await model.countDocuments({})
       expect(count).to.equal(0)
     })
 
@@ -410,7 +444,7 @@ describe('mongoose observation repository', function () {
       expect(observation.validation.hasErrors).to.be.true
       expect(err).to.be.instanceOf(ObservationRepositoryError)
       expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservation)
-      const count = await model.count({})
+      const count = await model.countDocuments({})
       expect(count).to.equal(0)
     })
 

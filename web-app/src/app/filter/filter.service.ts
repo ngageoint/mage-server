@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { UserService } from "../user/user.service";
 import { LocalStorageService } from "../http/local-storage.service";
-import * as moment from "moment";
+import moment from 'moment';
 import * as _ from "lodash";
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import {
@@ -18,6 +18,7 @@ import {
   SearchInterval,
 } from "./filter.types";
 import { filterChanges } from "../event/event.types";
+import { SessionService } from "mage-web-app/http/session.service";
 
 @Injectable({
   providedIn: "root",
@@ -67,6 +68,7 @@ export class FilterService {
 
   constructor(
     private userService: UserService,
+    private sessionService: SessionService,
     private localStorageService: LocalStorageService
   ) {
     this.setTimeInterval(
@@ -357,7 +359,7 @@ export class FilterService {
 
     if (
       this.actionFilter === "favorite" &&
-      !o.favoriteUserIds.includes(this.userService.myself.id)
+      !o.favoriteUserIds.includes(this.sessionService.user.id)
     )
       return false;
 

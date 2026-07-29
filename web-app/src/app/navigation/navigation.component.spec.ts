@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NavigationComponent } from './navigation.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule as MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('Navigation Component', () => {
   let component: NavigationComponent;
@@ -11,14 +12,12 @@ describe('Navigation Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [NavigationComponent],
-      imports: [
-        HttpClientTestingModule,
-        MatIconModule,
+    declarations: [NavigationComponent],
+    imports: [MatIconModule,
         MatMenuModule,
-        MatToolbarModule
-      ]
-    }).compileComponents();
+        MatToolbarModule],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
   }));
 
   beforeEach(() => {

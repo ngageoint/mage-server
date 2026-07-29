@@ -1,16 +1,17 @@
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatError, MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatError as MatError, MatFormField as MatFormField, MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatInput as MatInput, MatInputModule as MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ObservationEditTextComponent } from './observation-edit-text.component';
 
 @Component({
-  selector: `host-component`,
-  template: `<observation-edit-text [field]="field"></observation-edit-text>`
+    selector: `host-component`,
+    template: `<observation-edit-text [field]="field"></observation-edit-text>`,
+    standalone: false
 })
 class TestHostComponent {
 

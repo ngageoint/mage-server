@@ -15,19 +15,21 @@ import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
 import { PasswordPolicy, SignupEvent } from '../@types/signup';
-import { PasswordStrength } from '../../../entities/entities.password';
+import { PasswordStrength } from '../../../entities/password/password';
 
 import {
   createPasswordPolicyValidator,
   confirmPasswordValidator,
   evaluatePasswordStrength,
   getPasswordTooltip
-} from 'admin/src/app/shared/utils/password.utils';
+} from 'mage-web-app/password/password';
+import { emailValidator } from 'mage-web-app/email/email';
 
 @Component({
-  selector: 'signup',
-  templateUrl: './signup.component.html',
-  styleUrls: ['./signup.component.scss']
+    selector: 'signup',
+    templateUrl: './signup.component.html',
+    styleUrls: ['./signup.component.scss'],
+    standalone: false
 })
 export class SignupComponent {
   @Output() complete = new EventEmitter<SignupEvent>();
@@ -40,7 +42,7 @@ export class SignupComponent {
   signup = new FormGroup({
     username: new FormControl<string>('', [Validators.required]),
     displayName: new FormControl<string>('', [Validators.required]),
-    email: new FormControl<string>('', [Validators.email]),
+    email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>(''),
     password: new FormControl<string>('', [Validators.required]),
     passwordconfirm: new FormControl<string>('', [Validators.required]),

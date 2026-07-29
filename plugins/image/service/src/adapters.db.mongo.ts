@@ -19,7 +19,7 @@ export function FindUnprocessedAttachments(getDbConn: GetDbConnection, console: 
           }
           console.info(`query unprocessed attachments from event ${eventId} (${eventState.event.name}) newer than ${new Date(eventState.latestAttachmentProcessedTimestamp).toISOString()}`)
           const collection = conn.collection(eventState.collectionName)
-          const cursor = await collection.aggregate<UnprocessedAttachmentReferenceDocument>(queryStages)
+          const cursor = collection.aggregate<UnprocessedAttachmentReferenceDocument>(queryStages)
           for await (const doc of cursor) {
             yield { eventId: eventState.event.id, observationId: doc.observationId.toString(), attachmentId: doc.attachmentId.toString() }
             if (--remainingCount === 0) {
@@ -37,7 +37,7 @@ type UnprocessedAttachmentReferenceDocument = Record<keyof UnprocessedAttachment
 
 async function * eventStatesWithCollectionNames(conn: mongoose.Connection, eventStates: Iterable<EventProcessingState>, console: Console): AsyncIterableIterator<EventProcessingState & { collectionName: string }> {
   for (const eventState of eventStates) {
-    const found = await conn.collection('events').findOne<{ collectionName: string } | null>({ _id: eventState.event.id })
+    const found = await conn.collection<{ _id: number; collectionName: string }>('events').findOne({ _id: eventState.event.id })
     if (found) {
       yield { ...eventState, collectionName: found.collectionName }
     }

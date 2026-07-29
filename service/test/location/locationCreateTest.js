@@ -57,7 +57,7 @@ describe("location create tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  const userId = new mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('getToken')
@@ -95,7 +95,7 @@ describe("location create tests", function () {
     }];
     sinon.mock(LocationModel)
       .expects('create')
-      .yields(null, mockLocations);
+      .resolves(mockLocations);
 
     sinon.mock(CappedLocationModel)
       .expects('addLocations')
@@ -157,7 +157,7 @@ describe("location create tests", function () {
     };
     sinon.mock(LocationModel)
       .expects('create')
-      .yields(null, mockLocations);
+      .resolves(mockLocations);
 
     sinon.mock(CappedLocationModel)
       .expects('addLocations')

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { HttpClientModule } from '@angular/common/http'; 
-import { MatDialogModule } from '@angular/material/dialog'; 
+import { provideHttpClient } from '@angular/common/http';
+import { MatDialogModule } from '@angular/material/dialog';
 import { ArcLayerDeleteDialogComponent } from './arc-layer-delete-dialog.component';
 import { ArcService } from '../arc.service'
 
@@ -11,9 +11,10 @@ describe('Arc Layer Delete Dialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientModule, MatDialogModule], 
+      imports: [MatDialogModule],
       declarations: [ArcLayerDeleteDialogComponent],
       providers: [
+        provideHttpClient(),
         {
           provide: MatDialogRef,
           useValue: {

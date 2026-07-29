@@ -8,21 +8,17 @@
 }
 
 .title {
-  font: 400 20px / 32px Roboto, "Helvetica Neue", sans-serif;
+  font: var(--mat-sys-headline-small);
+}
+
+p {
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .icon {
   font-size: 96px;
   font-variation-settings: 'fill' 0, 'wght' 200, 'grad' 0, 'opsz' 96;
   margin-bottom: 32px;
-}
-
-.icon--active {
-  color: #4CAF50;
-}
-
-.icon-inactive {
-  color: red;
 }
 
 .actions {

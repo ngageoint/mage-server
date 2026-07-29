@@ -18,7 +18,7 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
   createdAt: Date
   lastModified: Date
   attachments: readonly Attachment[]
-  important?: Readonly<ObservationImportantFlag> | undefined
+  important?: Readonly<ObservationImportantFlag> | undefined | null
   /**
    * TODO: scalability - potential problem if thousands of users favorite;
    * this should not be returned to the client
@@ -1164,7 +1164,6 @@ const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRu
   [FormFieldType.Dropdown]: validateRequiredThen(context => fields.select.SelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Email]: validateRequiredThen(context => fields.email.EmailFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Geometry]: validateRequiredThen(context => fields.geometry.GeometryFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  // TODO: no validation at all? legacy validation code did nothing for hidden fields
   [FormFieldType.Hidden]: context => null,
   [FormFieldType.MultiSelectDropdown]: validateRequiredThen(context => fields.multiselect.MultiSelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Numeric]: validateRequiredThen(context => fields.numeric.NumericFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
@@ -1185,10 +1184,16 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
   const { mageEvent, observationAttrs } = validation
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
+  const userFields = new Set(form.userFields || [])
   activeFields.forEach(field => {
     const fieldEntry = formEntry[field.name]
     const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
-    const resultEntry = FieldTypeValidationRules[field.type](fieldValidation)
+    const isUserField = userFields.has(field.name)
+    const isUserSelectField = isUserField && (field.type === FormFieldType.Dropdown || field.type === FormFieldType.Radio)
+    const rule = isUserSelectField
+      ? validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context)))
+      : FieldTypeValidationRules[field.type]
+    const resultEntry = rule(fieldValidation)
     if (resultEntry instanceof FormFieldValidationError) {
       formEntryError.addFieldError(resultEntry)
     }

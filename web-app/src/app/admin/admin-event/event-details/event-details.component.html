@@ -1,0 +1,362 @@
+<ng-template #breadcrumbActions>
+  <div class="nav-actions" *ngIf="event && hasDeletePermission">
+    <button matButton="outlined" class="delete-event-button" type="button" (click)="deleteEvent()">
+      <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+    </button>
+  </div>
+</ng-template>
+
+<div class="event-page" *ngIf="event">
+  <mat-card appearance="outlined" class="details-card">
+    <div class="event-header">
+      <div class="media-content">
+        <div class="event-icon-placeholder">
+          <mat-icon fontSet="material-symbols-outlined">event</mat-icon>
+        </div>
+      </div>
+
+      <div class="event-info">
+        <div class="event-id-row">
+          <span class="event-name">{{ event.name }}</span>
+          <span class="status-badge" [ngClass]="event.complete ? 'status-badge-inactive' : 'status-badge-active'">
+            {{ event.complete ? 'Inactive' : 'Active' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-row" *ngIf="event.description">
+      <span class="detail-label">Description</span>
+      <span class="detail-value">{{ event.description }}</span>
+    </div>
+
+    <mat-divider class="section-divider" *ngIf="hasUpdatePermission && event.description"></mat-divider>
+
+    <div class="event-actions" *ngIf="hasUpdatePermission">
+      <button matButton="outlined" type="button" (click)="editEventDetails()">
+        <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>Edit Event
+      </button>
+
+      <div class="status-content">
+        <button matButton="outlined" type="button" (click)="event.complete ? activateEvent(event) : completeEvent(event)">
+          <mat-icon fontSet="material-symbols-outlined">{{ event.complete ? 'play_circle' : 'check_circle' }}</mat-icon>
+          {{ event.complete ? 'Activate' : 'Complete' }}
+        </button>
+        <mat-icon class="info-icon" fontSet="material-symbols-outlined"
+          [matTooltip]="event.complete
+            ? 'Marking an event as active will show it as a selectable event on clients. At that point users can contribute observations and locations to the event.'
+            : 'Marking an event as complete will remove it as a selectable event. The event is not destroyed and can be changed back to an active state at any time.'">info</mat-icon>
+      </div>
+    </div>
+  </mat-card>
+
+  <div class="lists-section">
+    <mat-card appearance="outlined" class="list-card">
+      <mat-card-header class="card-header">
+        <mat-card-title>Team Members</mat-card-title>
+        <div class="card-actions" *ngIf="hasUpdatePermission">
+          <button matButton="outlined" type="button" (click)="addMemberToEvent()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Member
+          </button>
+        </div>
+      </mat-card-header>
+
+      <div class="toolbar">
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+          <mat-label>Search members</mat-label>
+          <input matInput [(ngModel)]="memberSearchTerm" (ngModelChange)="onMemberSearchChange($event)"
+            autocomplete="off">
+          <button matSuffix matIconButton *ngIf="memberSearchTerm" (click)="onMemberSearchChange()"
+            aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      <div class="list-content">
+        <mat-nav-list *ngIf="membersPage.totalCount > 0 && !loadingMembers">
+          <mat-list-item *ngFor="let user of membersDataSource.data" [routerLink]="['../../users', user.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">person</mat-icon>
+            <span matListItemTitle>{{ user.displayName }}</span>
+            <span matListItemLine>{{ user.username }}</span>
+            <span matListItemMeta>
+              <span class="member-meta">
+                <button *ngIf="hasUpdatePermission" type="button" class="role-badge-trigger" [class]="getRoleClass(user)"
+                  [matMenuTriggerFor]="roleMenu" (click)="$event.stopPropagation()">
+                  {{ getUserRole(user) }}
+                  <mat-icon class="role-badge-chevron" fontSet="material-symbols-outlined">arrow_drop_down</mat-icon>
+                </button>
+                <span *ngIf="!hasUpdatePermission" [class]="getRoleClass(user)">{{ getUserRole(user) }}</span>
+
+                <mat-menu #roleMenu="matMenu">
+                  <button mat-menu-item (click)="updateUserRole(user, 'GUEST')">
+                    <mat-icon *ngIf="getUserRole(user) === 'GUEST'" fontSet="material-symbols-outlined">check</mat-icon>
+                    Guest
+                  </button>
+                  <button mat-menu-item (click)="updateUserRole(user, 'MANAGER')">
+                    <mat-icon *ngIf="getUserRole(user) === 'MANAGER'" fontSet="material-symbols-outlined">check</mat-icon>
+                    Manager
+                  </button>
+                  <button mat-menu-item (click)="updateUserRole(user, 'OWNER')">
+                    <mat-icon *ngIf="getUserRole(user) === 'OWNER'" fontSet="material-symbols-outlined">check</mat-icon>
+                    Owner
+                  </button>
+                </mat-menu>
+
+                <button matIconButton *ngIf="hasUpdatePermission"
+                  (click)="$event.preventDefault(); $event.stopPropagation(); removeMember($event, user)"
+                  (mousedown)="$event.stopPropagation()" aria-label="Remove Member">
+                  <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+                </button>
+              </span>
+            </span>
+          </mat-list-item>
+        </mat-nav-list>
+
+        <div class="empty-state" *ngIf="membersPage.totalCount === 0 && !loadingMembers">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+          <div class="empty-state-text" *ngIf="memberSearchTerm; else noMembers">No members match your search</div>
+          <ng-template #noMembers>
+            <div class="empty-state-text">No members for {{ event?.name }}</div>
+          </ng-template>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingMembers">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </div>
+
+      <mat-paginator [length]="membersPage.totalCount" [pageSize]="membersPageSize" [pageSizeOptions]="pageSizeOptions"
+        (page)="onMembersPageChange($event)"></mat-paginator>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="list-card">
+      <mat-card-header class="card-header">
+        <mat-card-title>Teams</mat-card-title>
+        <div class="card-actions" *ngIf="hasUpdatePermission">
+          <button matButton="outlined" type="button" (click)="addTeamToEvent()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Team
+          </button>
+        </div>
+      </mat-card-header>
+
+      <div class="toolbar">
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+          <mat-label>Search teams</mat-label>
+          <input matInput [(ngModel)]="teamSearchTerm" (ngModelChange)="onTeamSearchChange($event)" autocomplete="off">
+          <button matSuffix matIconButton *ngIf="teamSearchTerm" (click)="onTeamSearchChange()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      <div class="list-content">
+        <mat-nav-list *ngIf="teamsPage.totalCount > 0 && !loadingTeams">
+          <mat-list-item *ngFor="let team of teamsDataSource.data" [routerLink]="['../../teams', team.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">groups</mat-icon>
+            <span matListItemTitle>{{ team.name }}</span>
+            <span matListItemLine *ngIf="team.description">{{ team.description }}</span>
+            <span matListItemMeta *ngIf="hasUpdatePermission">
+              <button matIconButton (click)="removeTeam($event, team)" aria-label="Remove Team">
+                <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+              </button>
+            </span>
+          </mat-list-item>
+        </mat-nav-list>
+
+        <div class="empty-state" *ngIf="teamsPage.totalCount === 0 && !loadingTeams">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+          <div class="empty-state-text" *ngIf="teamSearchTerm; else noTeams">No teams match your search</div>
+          <ng-template #noTeams>
+            <div class="empty-state-text">No teams for {{ event?.name }}</div>
+          </ng-template>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingTeams">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </div>
+
+      <mat-paginator [length]="teamsPage.totalCount" [pageSize]="teamsPageSize" [pageSizeOptions]="pageSizeOptions"
+        (page)="onTeamsPageChange($event)"></mat-paginator>
+    </mat-card>
+  </div>
+
+  <div class="lists-section lists-section--single">
+    <mat-card appearance="outlined" class="list-card">
+      <mat-card-header class="card-header">
+        <mat-card-title>Layers</mat-card-title>
+        <div class="card-actions" *ngIf="hasUpdatePermission">
+          <button matButton="outlined" type="button" (click)="addLayerToEvent()">
+            <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Layer
+          </button>
+        </div>
+      </mat-card-header>
+
+      <div class="toolbar">
+        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+          <mat-label>Search layers</mat-label>
+          <input matInput [(ngModel)]="layerSearchTerm" (ngModelChange)="onLayerSearchChange($event)"
+            autocomplete="off">
+          <button matSuffix matIconButton *ngIf="layerSearchTerm" (click)="onLayerSearchChange()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      <div class="list-content">
+        <mat-nav-list *ngIf="layersPage.totalCount > 0 && !loadingLayers">
+          <mat-list-item *ngFor="let layer of layersDataSource.data" [routerLink]="['../../layers', layer.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
+            <span matListItemTitle>{{ layer.name }}</span>
+            <span matListItemLine *ngIf="layer.description">{{ layer.description }}</span>
+            <span matListItemMeta *ngIf="hasUpdatePermission">
+              <button matIconButton (click)="removeLayer($event, layer)" aria-label="Remove Layer">
+                <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+              </button>
+            </span>
+          </mat-list-item>
+        </mat-nav-list>
+
+        <div class="empty-state" *ngIf="layersPage.totalCount === 0 && !loadingLayers">
+          <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">map</mat-icon>
+          <div class="empty-state-text" *ngIf="layerSearchTerm; else noLayers">No layers match your search</div>
+          <ng-template #noLayers>
+            <div class="empty-state-text">No layers for {{ event?.name }}</div>
+          </ng-template>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loadingLayers">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </div>
+
+      <mat-paginator [length]="layersPage.totalCount" [pageSize]="layersPageSize" [pageSizeOptions]="pageSizeOptions"
+        (page)="onLayersPageChange($event)"></mat-paginator>
+    </mat-card>
+  </div>
+
+  <mat-card appearance="outlined" class="forms-card">
+    <mat-card-header class="card-header">
+      <mat-card-title>Forms</mat-card-title>
+      <div class="card-actions">
+        <button matButton type="button" (click)="showArchivedForms = !showArchivedForms">
+          <mat-icon fontSet="material-symbols-outlined">{{ showArchivedForms ? 'visibility_off' : 'visibility'
+            }}</mat-icon>
+          {{ showArchivedForms ? 'Hide' : 'Show' }} Archived Forms
+        </button>
+        <button matButton="outlined" type="button" (click)="uploadForm()">
+          <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Upload Form
+        </button>
+        <button matButton="outlined" type="button" [routerLink]="['./forms', 'new']">
+          <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Create Form
+        </button>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="forms-list" *ngIf="filteredForms.length > 0" cdkDropList (cdkDropListDropped)="onFormsReordered($event)">
+        <div class="form-item" *ngFor="let form of filteredForms; trackBy: trackByFormId" cdkDrag>
+          <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+          <div class="form-info" [routerLink]="['./forms', form.id]">
+            <div class="form-name">
+              <mat-icon class="form-icon" fontSet="material-symbols-outlined">description</mat-icon>
+              <span>
+                {{ form.name }}
+                <span *ngIf="form.archived" class="text-danger">(Archived)</span>
+              </span>
+            </div>
+          </div>
+          <div class="form-item-actions">
+            <button matIconButton type="button"
+              (click)="$event.preventDefault(); $event.stopPropagation(); preview($event, form)"
+              matTooltip="Preview Form">
+              <mat-icon fontSet="material-symbols-outlined">preview</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <mat-card appearance="outlined" class="empty-state" *ngIf="filteredForms.length === 0">
+        <mat-card-content>
+          <mat-icon class="empty-state-icon" fontSet="material-symbols-outlined">description</mat-icon>
+          <p class="empty-state-text">No forms have been created yet</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-card-content>
+  </mat-card>
+
+  <form #restrictions="ngForm" *ngIf="nonArchivedForms.length > 0">
+    <mat-card appearance="outlined" class="restrictions-card">
+      <mat-card-header>
+        <mat-card-title>Total Form Entries</mat-card-title>
+        <mat-card-subtitle>Set the minimum and maximum total number of forms allowed in a single observation.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Min Forms Per Observation</mat-label>
+          <input matInput type="number" name="minObservationForms" [(ngModel)]="event.minObservationForms"
+            placeholder="No Minimum" />
+          <mat-hint>Minimum number of forms that must be present in an observation for this event</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Max Forms Per Observation</mat-label>
+          <input matInput type="number" name="maxObservationForms" [(ngModel)]="event.maxObservationForms"
+            placeholder="No Maximum" />
+          <mat-hint>Limit the total number of forms that can be added to an observation for this event</mat-hint>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="restrictions-card">
+      <mat-card-header>
+        <mat-card-title>Individual Form Entries</mat-card-title>
+        <mat-card-subtitle>Set the minimum and maximum number of times each form can appear in an observation.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-restrictions-list">
+          <ng-container *ngFor="let form of nonArchivedForms; let last = last">
+            <div class="form-restriction-row">
+              <div class="form-restriction-content">
+                <span class="form-restriction-name">{{ form.name }}</span>
+                <div class="form-restriction-controls">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Min</mat-label>
+                    <input matInput type="number" [(ngModel)]="form.min" [name]="'form_' + form.id + '_min'" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Max</mat-label>
+                    <input matInput type="number" [(ngModel)]="form.max" [name]="'form_' + form.id + '_max'" />
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+            <mat-divider *ngIf="!last"></mat-divider>
+          </ng-container>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="error-alert" *ngIf="restrictionsError">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <div>
+        <strong>Form Restriction Error</strong>
+        <p *ngIf="restrictionsError.message">{{ restrictionsError.message }}</p>
+        <ul *ngIf="restrictionsError.errors">
+          <li *ngFor="let error of restrictionsError.errors | keyvalue">{{ error.value.message }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-save-actions">
+      <button matButton="filled" type="button" (click)="saveFormRestrictions()" [disabled]="!restrictions.dirty">
+        Save Restrictions
+      </button>
+    </div>
+  </form>
+</div>
+
+<admin-event-form-preview [formDefinition]="previewForm" (onClose)="closePreview()"></admin-event-form-preview>

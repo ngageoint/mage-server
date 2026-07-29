@@ -1,19 +1,21 @@
 import { Component, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { MatButton } from '@angular/material/button';
 import { DomEvent } from 'leaflet';
 
 @Component({
-  selector: 'map-control-add-observation',
-  templateUrl: './add-observation.component.html',
-  styleUrls: ['./add-observation.component.scss']
+    selector: 'map-control-add-observation',
+    templateUrl: './add-observation.component.html',
+    styleUrls: ['./add-observation.component.scss'],
+    standalone: false
 })
 export class AddObservationComponent implements AfterViewInit {
-  @ViewChild(MatButton, { read: ElementRef }) button: ElementRef;
+  @ViewChild('addObservationButton') button!: ElementRef<HTMLElement>;
 
   @Output() onAddObservation = new EventEmitter<void>();
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.button.nativeElement);
+    if (this.button?.nativeElement) {
+      DomEvent.disableClickPropagation(this.button.nativeElement);
+    }
   }
 
   addObservation($event: MouseEvent): void {

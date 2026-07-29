@@ -6,7 +6,6 @@ import { Form, Interval } from "../filter/filter.types";
   providedIn: "root",
 })
 export class LocalStorageService {
-  tokenKey = "token";
   pollingIntervalKey = "pollingInterval";
   timeIntervalKey = "timeInterval";
   teamsKey = "teams";
@@ -18,18 +17,6 @@ export class LocalStorageService {
   timeZoneViewKey = "timeZoneView";
   timeZoneEditKey = "timeZoneEdit";
   timeFormatKey = "timeFormat";
-
-  getToken() {
-    return this.getLocalItem(this.tokenKey);
-  }
-
-  setToken(token: any) {
-    return this.setLocalItem(this.tokenKey, token);
-  }
-
-  removeToken() {
-    return this.removeLocalItem(this.tokenKey);
-  }
 
   setPollingInterval(pollingInterval) {
     return this.setLocalItem(this.pollingIntervalKey, pollingInterval);

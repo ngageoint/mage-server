@@ -2,8 +2,14 @@ import { Injectable } from "@angular/core";
 import { EventService } from "../event/event.service";
 import { MapPopupService } from "./map-popup.service";
 import { LocationService } from "../user/location/location.service";
-import { LocalStorageService } from "../http/local-storage.service";
+import { SessionService } from "../http/session.service";
 import { FeatureService } from "../layer/feature.service";
+
+export interface FeatureEdit {
+  update(feature: any): void;
+  cancel(): void;
+  save(): void;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +36,7 @@ export class MapService {
     private locationService: LocationService,
     private mapPopupService: MapPopupService,
     private featureService: FeatureService,
-    private localStorageService: LocalStorageService
+    private sessionService: SessionService
   ) {}
 
   init () {
@@ -147,7 +153,7 @@ export class MapService {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
       if (layer.type === 'Imagery' && layer.url.indexOf('private') === 0) {
-        layer.url = layer.url + "?access_token=" + this.localStorageService.getToken();
+        layer.url = layer.url + "?access_token=" + this.sessionService.getToken();
       }
 
       if (layer.type === 'Imagery') {
@@ -209,7 +215,7 @@ export class MapService {
       query string parameter.
       */
       const iconId = (feed.mapStyle && feed.mapStyle.icon) ? feed.mapStyle.icon.id : feed.icon ? feed.icon.id : null;
-      const iconUrl = iconId ? `/api/icons/${iconId}/content?access_token=${this.localStorageService.getToken()}` : '/assets/images/default_marker.png'
+      const iconUrl = iconId ? `/api/icons/${iconId}/content?access_token=${this.sessionService.getToken()}` : '/assets/images/default_marker.png'
       this.createFeedLayer({
         id: `feed-${feed.id}`,
         name: feed.title,
@@ -368,8 +374,9 @@ export class MapService {
     this.feedLayers[layer.id] = layer;
   }
 
-  createFeature(feature, style, listeners?: any) {
+  createFeature(feature, style, listeners?: any): FeatureEdit | undefined {
     if (this.delegate) return this.delegate.createFeature(feature, style, listeners);
+    return undefined;
   }
 
   addFeaturesToLayer(features, layerId) {

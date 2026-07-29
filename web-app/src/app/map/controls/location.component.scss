@@ -1,13 +1,15 @@
 .location {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  margin-top: 32px;
+  gap: 16px;
 }
 
-.active {
-  color: white;
+.map-control-fab {
+  --mat-fab-small-container-color: #ffffff;
+  --mat-fab-small-foreground-color: var(--mat-sys-primary);
 }
 
-button:not(:last-child) {
-  margin-bottom: 8px;
+.map-control-fab.is-active {
+  --mat-fab-small-container-color: var(--mat-sys-primary);
+  --mat-fab-small-foreground-color: #ffffff;
 }

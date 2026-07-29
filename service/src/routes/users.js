@@ -1,44 +1,65 @@
-module.exports = function (app, security) {
-  const crypto = require('crypto')
-    , BearerStrategy = require('passport-http-bearer').Strategy
-    , hasher = require('../utilities/pbkdf2')()
-    , svgCaptcha = require('svg-captcha')
-    , log = require('winston')
-    , fs = require('fs-extra')
-    , Role = require('../models/role')
-    , Authentication = require('../models/authentication')
-    , api = require('../api')
-    , access = require('../access')
-    , verification = require('../authentication/verification')
-    , userTransformer = require('../transformers/user')
-    , pageinfoTransformer = require('../transformers/pageinfo')
-    , { defaultHandler: upload } = require('../upload')
-    , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events')
-    , passport = security.authentication.passport;
+const { pageOf } = require('../entities/entities.global')
+
+module.exports = function(app, security) {
+  const crypto = require('crypto'),
+    path = require('path'),
+    BearerStrategy = require('passport-http-bearer').Strategy,
+    hasher = require('../utilities/pbkdf2')(),
+    log = require('../logger').child({ component: 'users' }),
+    fs = require('fs-extra'),
+    Role = require('../models/role'),
+    Authentication = require('../models/authentication'),
+    api = require('../api'),
+    access = require('../access'),
+    verification = require('../authentication/verification'),
+    userTransformer = require('../transformers/user'),
+    pageTransformer = require('../transformers/pageinfo'),
+    { defaultHandler: upload } = require('../upload'),
+    {
+      defaultEventPermissionsService: eventPermissions
+    } = require('../permissions/permissions.events'),
+    passport = security.authentication.passport;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
   const JWTService = verification.JWTService;
   const TokenAssertion = verification.TokenAssertion;
   const VerificationErrorReason = verification.VerificationErrorReason;
-  const tokenService = new JWTService(crypto.randomBytes(64).toString('hex'), 'urn:mage');
+  const tokenService = new JWTService(
+    crypto.randomBytes(64).toString('hex'),
+    'urn:mage'
+  );
+  const captchaCanvas = require('captcha-canvas');
+  const { FontLibrary } = require('skia-canvas');
 
-  passport.use('captcha', new BearerStrategy(function (token, done) {
-    const expectation = {
-      assertion: TokenAssertion.Captcha
-    };
+  // Register a bundled font so captcha text renders regardless of which
+  // fonts (if any) are installed on the host/container.
+  const captchaFontPath = path.resolve(__dirname, '..', 'assets', 'fonts', 'Roboto-Regular.ttf');
+  try {
+    FontLibrary.use('Sans', [captchaFontPath]);
+  } catch (err) {
+    log.warn(`failed to register bundled captcha font at ${captchaFontPath}, captcha text may not render: `, err);
+  }
 
-    tokenService.verifyToken(token, expectation)
-      .then(payload => done(null, payload))
-      .catch(err => done(err));
-  }));
+  passport.use(
+    'captcha',
+    new BearerStrategy(function(token, done) {
+      const expectation = {
+        assertion: TokenAssertion.Captcha
+      };
+
+      tokenService
+        .verifyToken(token, expectation)
+        .then(payload => done(null, payload))
+        .catch(err => done(err));
+    })
+  );
 
   function isAuthenticated(strategy) {
-    return function (req, res, next) {
-      passport.authenticate(strategy, function (err, user) {
+    return function(req, res, next) {
+      passport.authenticate(strategy, function(err, user) {
         if (err) return next(err);
         if (user) req.user = user;
         next();
-
       })(req, res, next);
     };
   }
@@ -75,7 +96,9 @@ module.exports = function (app, security) {
   function validateUsername(req, res, next) {
     let username = req.param('username');
     if (!username) {
-      return res.status(400).send("Invalid user document: missing required parameter 'username'");
+      return res
+        .status(400)
+        .send("Invalid user document: missing required parameter 'username'");
     }
     username = username.trim();
 
@@ -91,7 +114,6 @@ module.exports = function (app, security) {
    *   route.
    */
   function validateAccount(req, res, next) {
-
     function missingRequired(param) {
       return `Invalid account document: missing required parameter '${param}'`;
     }
@@ -115,10 +137,12 @@ module.exports = function (app, security) {
 
     const phone = req.param('phone');
     if (phone) {
-      account.phones = [{
-        type: 'Main',
-        number: phone
-      }];
+      account.phones = [
+        {
+          type: 'Main',
+          number: phone
+        }
+      ];
     }
 
     const password = req.body.password;
@@ -151,7 +175,7 @@ module.exports = function (app, security) {
     validateUsername,
     validateAccount,
     parseIconUpload,
-    function (req, res, next) {
+    function(req, res, next) {
       const roleId = req.param('roleId');
       if (!roleId) return res.status(400).send('roleId is a required field');
 
@@ -174,45 +198,66 @@ module.exports = function (app, security) {
       const files = req.files || {};
       const [avatar] = files.avatar || [];
       const [icon] = files.icon || [];
-      new api.User().create(user, { avatar, icon }).then(newUser => {
-        newUser = userTransformer.transform(newUser, { path: req.getRoot() });
-        res.json(newUser);
-      }).catch(err => next(err));
+      new api.User()
+        .create(user, { avatar, icon })
+        .then(newUser => {
+          log.info('user account created', {
+            user: newUser.username,
+            displayName: newUser.displayName,
+            role: newUser.roleId && newUser.roleId.name ? newUser.roleId.name : String(newUser.roleId),
+            createdBy: req.user.username,
+            createdTime: new Date().toISOString()
+          });
+
+          newUser = userTransformer.transform(newUser, { path: req.getRoot() });
+          res.json(newUser);
+        })
+        .catch(err => next(err));
     }
   );
 
   // Create a new user
   // Anyone can create a new user, but the new user will not be active
-  app.post(
-    '/api/users/signups',
-    validateUsername,
-    function (req, res, next) {
-      const background = req.body.background || '#FFFFFF';
-      const captcha = svgCaptcha.create({
-        size: 6,
-        noise: 4,
-        color: false,
-        background: background.toLowerCase() !== '#ffffff' ? background : null
+  app.post('/api/users/signups', validateUsername, function(req, res, next) {
+    let text;
+    let image;
+
+    if (process.env.NODE_ENV === 'test') {
+      text = 'captcha';
+      image = Buffer.from('image');
+    } else {
+      const generated = captchaCanvas.createCaptchaSync(300, 100, {
+        captcha: {
+          characters: 6,
+          size: 46,
+          rotate: 8
+        },
+        trace: { size: 3, opacity: 0.8 },
+        decoy: { total: 25, opacity: 0.3 }
       });
 
-      hasher.hashPassword(captcha.text, (err, hash) => {
-        if (err) return next(err);
-
-        const claims = {
-          captcha: hash
-        };
-
-        tokenService.generateToken(req.username, TokenAssertion.Captcha, 60 * 3, claims).then(token => {
-          res.json({
-            token: token,
-            captcha: `data:image/svg+xml;base64,${Buffer.from(captcha.data).toString('base64')}`
-          });
-        }).catch(err => {
-          next(err);
-        });
-      })
+      text = generated.text;
+      image = generated.image;
     }
-  );
+
+    const solution = String(text).toUpperCase();
+
+    hasher.hashPassword(solution, (err, hash) => {
+      if (err) return next(err);
+
+      const claims = { captcha: hash };
+
+      tokenService
+        .generateToken(req.username, TokenAssertion.Captcha, 60 * 3, claims)
+        .then(token => {
+          res.json({
+            token,
+            captcha: `data:image/png;base64,${image.toString('base64')}`
+          });
+        })
+        .catch(next);
+    });
+  });
 
   app.post(
     '/api/users/signups/verifications',
@@ -220,8 +265,9 @@ module.exports = function (app, security) {
     function verify(req, res, next) {
       passport.authenticate('captcha', (err, payload) => {
         if (err) {
-          const status = err.reason === VerificationErrorReason.Expired ? 401 : 400;
-          return res.status(status).send("Invalid captcha, please try again");
+          const status =
+            err.reason === VerificationErrorReason.Expired ? 401 : 400;
+          return res.status(status).send('Invalid captcha, please try again');
         }
         if (!payload) return res.sendStatus(400);
 
@@ -235,8 +281,9 @@ module.exports = function (app, security) {
         next(err);
       });
     },
-    function (req, res, next) {
-      hasher.validPassword(req.body.captchaText, req.payload.captcha, (err, valid) => {
+    function(req, res, next) {
+      const attempt = String(req.body.captchaText || '').toUpperCase();
+      hasher.validPassword(attempt, req.payload.captcha, (err, valid) => {
         if (err) return next(err);
 
         if (!valid) {
@@ -258,18 +305,26 @@ module.exports = function (app, security) {
           }
         };
 
-        new api.User().create(user).then(newUser => {
-          newUser = userTransformer.transform(newUser, { path: req.getRoot() });
-          res.json(newUser);
-        }).catch(err => {
-          next(err)
-        });
-      })
+        new api.User()
+          .create(user)
+          .then(newUser => {
+            newUser = userTransformer.transform(newUser, {
+              path: req.getRoot()
+            });
+            res.json(newUser);
+          })
+          .catch(err => {
+            next(err);
+          });
+      });
     }
   );
 
   /**
    * TODO:
+   * * 2026-07-15 - This route should be defunct on the next release of the iOS app.  The web app uses
+   *   /api/next-users/search, which will become /api/users/search pending some refactoring of user
+   *   functions to typescript.
    * * openapi supports array query parameters using the pipe `|` delimiter;
    *   use that instead of comma for the `populate` query param. on the other hand,
    *   this only actually supports a singular `populate` key, so why bother with
@@ -279,51 +334,19 @@ module.exports = function (app, security) {
     '/api/users',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function (req, res, next) {
-      var filter = {};
-
-      if (req.query) {
-        for (let [key, value] of Object.entries(req.query)) {
-          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
-            continue;
-          }
-          filter[key] = value;
-        }
+    async function(req, res) {
+      const limit = req.query.limit || null;
+      const start = req.query.start || null;
+      if (limit) {
+        const emptyPage = pageOf([], {
+          totalCount: 0,
+          pageSize: 0,
+          pageIndex: 0,
+        });
+        const pageWithLinks = pageTransformer.transform(emptyPage, req, start, limit);
+        return res.json(pageWithLinks);
       }
-
-      var populate = null;
-      if (req.query.populate) {
-        populate = req.query.populate.split(",");
-      }
-
-      var limit = null;
-      if (req.query.limit) {
-        limit = req.query.limit;
-      }
-
-      var start = null;
-      if (req.query.start) {
-        start = req.query.start;
-      }
-
-      var sort = null;
-      if (req.query.sort) {
-        sort = req.query.sort;
-      }
-
-      new api.User().getAll({ filter, populate, limit, start, sort }, function (err, users, page) {
-        if (err) return next(err);
-
-        let data = null;
-
-        if (page) {
-          data = pageinfoTransformer.transform(page, req, start, limit);
-        } else {
-          data = userTransformer.transform(users, { path: req.getRoot() });
-        }
-
-        res.json(data);
-      });
+      res.json([]);
     }
   );
 
@@ -331,19 +354,25 @@ module.exports = function (app, security) {
     '/api/users/count',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function (req, res, next) {
+    function(req, res, next) {
       var filter = {};
 
       if (req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
+          if (
+            key == 'populate' ||
+            key == 'limit' ||
+            key == 'start' ||
+            key == 'sort' ||
+            key == 'forceRefresh'
+          ) {
             continue;
           }
           filter[key] = value;
         }
       }
 
-      new api.User().count({ filter: filter }, function (err, count) {
+      new api.User().count({ filter: filter }, function(err, count) {
         if (err) return next(err);
 
         res.json({ count: count });
@@ -352,14 +381,13 @@ module.exports = function (app, security) {
   );
 
   // get info for the user bearing a token, i.e get info for myself
-  app.get(
-    '/api/users/myself',
-    passport.authenticate('bearer'),
-    function (req, res) {
-      var user = userTransformer.transform(req.user, { path: req.getRoot() });
-      res.json(user);
-    }
-  );
+  app.get('/api/users/myself', passport.authenticate('bearer'), function(
+    req,
+    res
+  ) {
+    var user = userTransformer.transform(req.user, { path: req.getRoot() });
+    res.json(user);
+  });
 
   // TODO: should be patch
   // update myself
@@ -367,23 +395,31 @@ module.exports = function (app, security) {
     '/api/users/myself',
     passport.authenticate('bearer'),
     upload.single('avatar'),
-    function (req, res, next) {
+    function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
-      if (req.param('displayName')) req.user.displayName = req.param('displayName');
+      if (req.param('displayName'))
+        req.user.displayName = req.param('displayName');
       if (req.param('email')) req.user.email = req.param('email');
 
       var phone = req.param('phone');
       if (phone) {
-        req.user.phones = [{
-          type: "Main",
-          number: phone
-        }];
+        req.user.phones = [
+          {
+            type: 'Main',
+            number: phone
+          }
+        ];
       }
 
-      new api.User().update(req.user, { avatar: req.file }, function (err, updatedUser) {
+      new api.User().update(req.user, { avatar: req.file }, function(
+        err,
+        updatedUser
+      ) {
         if (err) return next(err);
 
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+        updatedUser = userTransformer.transform(updatedUser, {
+          path: req.getRoot()
+        });
         res.json(updatedUser);
       });
     }
@@ -392,7 +428,7 @@ module.exports = function (app, security) {
   app.put(
     '/api/users/myself/password',
     passport.authenticate('local'),
-    function (req, res, next) {
+    function(req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.sendStatus(404);
       }
@@ -411,38 +447,44 @@ module.exports = function (app, security) {
         return res.status(400).send('Passwords do not match');
       }
 
-      req.user.authentication.password = password
+      req.user.authentication.password = password;
 
-      Authentication.updateAuthentication(req.user.authentication).then(() => {
-        res.sendStatus(200);
-      }).catch(err => next(err));
+      Authentication.updateAuthentication(req.user.authentication)
+        .then(() => {
+          res.sendStatus(200);
+        })
+        .catch(err => next(err));
     }
   );
 
   // update status for myself
-  app.put(
-    '/api/users/myself/status',
-    passport.authenticate('bearer'),
-    function (req, res) {
-      var status = req.param('status');
-      if (!status) return res.status(400).send("Missing required parameter 'status'");
-      req.user.status = status;
+  app.put('/api/users/myself/status', passport.authenticate('bearer'), function(
+    req,
+    res
+  ) {
+    var status = req.param('status');
+    if (!status)
+      return res.status(400).send("Missing required parameter 'status'");
+    req.user.status = status;
 
-      new api.User().update(req.user, function (err, updatedUser) {
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
+    new api.User().update(req.user, function(err, updatedUser) {
+      updatedUser = userTransformer.transform(updatedUser, {
+        path: req.getRoot()
       });
-    }
-  );
+      res.json(updatedUser);
+    });
+  });
 
   // remove status for myself
   app.delete(
     '/api/users/myself/status',
     passport.authenticate('bearer'),
-    function (req, res) {
+    function(req, res) {
       req.user.status = undefined;
-      new api.User().update(req.user, function (err, updatedUser) {
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+      new api.User().update(req.user, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {
+          path: req.getRoot()
+        });
         res.json(updatedUser);
       });
     }
@@ -453,8 +495,10 @@ module.exports = function (app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function (req, res) {
-      var user = userTransformer.transform(req.userParam, { path: req.getRoot() });
+    function(req, res) {
+      var user = userTransformer.transform(req.userParam, {
+        path: req.getRoot()
+      });
       res.json(user);
     }
   );
@@ -466,42 +510,89 @@ module.exports = function (app, security) {
     access.authorize('UPDATE_USER'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     parseIconUpload,
-    function (req, res, next) {
+    function(req, res, next) {
       const user = req.userParam;
 
       if (req.param('username')) user.username = req.param('username');
       if (req.param('displayName')) user.displayName = req.param('displayName');
       if (req.param('email')) user.email = req.param('email');
 
+      let activated = false;
       if (req.param('active') === true || req.param('active') === 'true') {
+        activated = !user.active;
         user.active = true;
       }
 
+      let disabled = false;
       if (req.param('enabled') === true || req.param('enabled') === 'true') {
         user.enabled = true;
-      } else if (req.param('enabled') === false || req.param('enabled') === 'false') {
+      } else if (
+        req.param('enabled') === false ||
+        req.param('enabled') === 'false'
+      ) {
+        disabled = user.enabled !== false;
         user.enabled = false;
       }
 
       // Need UPDATE_USER_ROLE to change a users role
-      if (req.param('roleId') && access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
+      let roleChanged = false;
+      if (
+        req.param('roleId') &&
+        access.userHasPermission(req.user, 'UPDATE_USER_ROLE')
+      ) {
+        const currentRoleId = user.roleId && user.roleId._id ? user.roleId._id.toString() : String(user.roleId);
+        roleChanged = req.param('roleId') !== currentRoleId;
         user.roleId = req.param('roleId');
       }
 
       const phone = req.param('phone');
       if (phone) {
-        user.phones = [{
-          type: "Main",
-          number: phone
-        }];
+        user.phones = [
+          {
+            type: 'Main',
+            number: phone
+          }
+        ];
       }
       const files = req.files || {};
       const [avatar] = files.avatar || [];
       const [icon] = files.icon || [];
-      new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
+      new api.User().update(user, { avatar, icon }, function(err, updatedUser) {
         if (err) return next(err);
 
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+        if (activated) {
+          log.info('user account activated', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            activatedBy: req.user.username,
+            activatedTime: new Date().toISOString()
+          });
+        }
+
+        if (disabled) {
+          log.info('user account disabled', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            disabledBy: req.user.username,
+            disabledTime: new Date().toISOString()
+          });
+        }
+
+        if (roleChanged) {
+          const newRole = updatedUser.roleId;
+          log.info('user role changed', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            newRole: newRole && newRole.name ? newRole.name : String(newRole),
+            newRoleId: newRole && newRole._id ? newRole._id.toString() : String(newRole),
+            changedBy: req.user.username,
+            changedTime: new Date().toISOString()
+          });
+        }
+
+        updatedUser = userTransformer.transform(updatedUser, {
+          path: req.getRoot()
+        });
         res.json(updatedUser);
       });
     }
@@ -514,7 +605,7 @@ module.exports = function (app, security) {
     '/api/users/:userId/password',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_USER_ROLE'),
-    function (req, res, next) {
+    function(req, res, next) {
       const user = req.userParam;
 
       if (user.authentication.type !== 'local') {
@@ -537,9 +628,11 @@ module.exports = function (app, security) {
 
       user.authentication.password = password;
 
-      Authentication.updateAuthentication(user.authentication).then(() => {
-        res.sendStatus(200);
-      }).catch(err => next(err));
+      Authentication.updateAuthentication(user.authentication)
+        .then(() => {
+          res.sendStatus(200);
+        })
+        .catch(err => next(err));
     }
   );
 
@@ -548,9 +641,17 @@ module.exports = function (app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('DELETE_USER'),
-    function (req, res, next) {
-      new api.User().delete(req.userParam, function (err) {
+    function(req, res, next) {
+      const user = req.userParam;
+      new api.User().delete(user, function(err) {
         if (err) return next(err);
+
+        log.info('user account deleted', {
+          user: user.username,
+          userId: user._id.toString(),
+          deletedBy: req.user.username,
+          deletedTime: new Date().toISOString()
+        });
 
         res.sendStatus(204);
       });
@@ -562,19 +663,19 @@ module.exports = function (app, security) {
     '/api/users/:userId/:content(avatar|icon)',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function (req, res, next) {
-      new api.User()[req.params.content](req.userParam, function (err, content) {
+    function(req, res, next) {
+      new api.User()[req.params.content](req.userParam, function(err, content) {
         if (err) return next(err);
 
         if (!content) return res.sendStatus(404);
 
         var stream = fs.createReadStream(content.path);
-        stream.on('open', function () {
+        stream.on('open', function() {
           res.type(content.contentType);
           res.header('Content-Length', content.size);
           stream.pipe(res);
         });
-        stream.on('error', function () {
+        stream.on('error', function() {
           res.sendStatus(404);
         });
       });
@@ -584,20 +685,23 @@ module.exports = function (app, security) {
   app.post(
     '/api/users/:userId/events/:eventId/recent',
     passport.authenticate('bearer'),
-    async function (req, res, next) {
+    async function(req, res, next) {
       if (access.userHasPermission(req.user, 'UPDATE_EVENT')) {
         return next();
-      }
-      else {
-        const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read');
+      } else {
+        const hasPermission = await eventPermissions.userHasEventPermission(
+          req.event,
+          req.user.id,
+          'read'
+        );
         if (hasPermission) {
-          return next()
+          return next();
         }
       }
-      return res.sendStatus(403)
+      return res.sendStatus(403);
     },
-    function (req, res, next) {
-      new api.User().addRecentEvent(req.user, req.event, function (err, user) {
+    function(req, res, next) {
+      new api.User().addRecentEvent(req.user, req.event, function(err, user) {
         if (err) return next(err);
 
         res.json(user);
@@ -606,20 +710,15 @@ module.exports = function (app, security) {
   );
 
   // logout
-  app.post(
-    '/api/logout',
-    isAuthenticated('bearer'),
-    function (req, res, next) {
-      if (req.user) {
-        log.info('logout w/ user', req.user._id.toString());
-        new api.User().logout(req.token, function (err) {
-          if (err) return next(err);
-          res.status(200).send('successfully logged out');
-        });
-      } else {
-        // call to logout with an invalid token, nothing to do
-        res.sendStatus(200);
-      }
+  app.post('/api/logout', isAuthenticated('bearer'), function(req, res, next) {
+    if (req.user) {
+      new api.User().logout(req.token, function(err) {
+        if (err) return next(err);
+        res.status(200).json({ success: true });
+      });
+    } else {
+      // call to logout with an invalid token, nothing to do
+      res.sendStatus(200);
     }
-  );
+  });
 };

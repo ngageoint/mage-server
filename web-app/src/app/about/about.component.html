@@ -1,113 +1,104 @@
-<mat-toolbar color="primary">
-  <div class="container">
-    <button mat-icon-button (click)="onBack()">
+<mat-toolbar>
+  <div class="navigation">
+    <button matIconButton (click)="onBack()">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <span class="title">About MAGE</span>
+    <span class="navigation-title">About MAGE</span>
   </div>
 </mat-toolbar>
 
-<div class="content">
-  <section class="section">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">info</mat-icon>
-      What is MAGE?
-    </h3>
-    <p class="section-text">
-      Mage is a dynamic, secure, mobile situational awareness and field data collection platform that supports
-      low-bandwidth and disconnected users. Mage can integrate with existing command centers and common operating
-      pictures or stand alone as a complete, mission-ready solution.
-    </p>
-    <p class="section-text">
-      The Mage mobile app on iOS and Android
-      allows agents in the field to create and share geo-tagged observations with attached photos, videos,
-      audio, and form data. Mage's data collection forms are easily tailored to suit any team and mission with
-      custom form fields and map symbologies.
-    </p>
-    <p class="section-text">
-      In addition to data collection, the Mage mobile app can optionally
-      report field agents' locations at regular intervals to the Mage server. The Mage server's web app provides
-      a common operating picture of field agents' observations and latest reported locations.
-    </p>
-  </section>
-
-  <section class="section">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">get_app</mat-icon>
-      Download the App
-    </h3>
-    <div class="app-store">
-      <a href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8">
-        <img class="app-store-icon" src="/assets/images/ios_app_store_black.svg" alt="Download on the App Store">
-      </a>
-      <a href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en">
-        <img class="app-store-icon" src="/assets/images/google-play-badge.png" alt="Get it on Google Play">
-      </a>
-    </div>
-  </section>
-  <section class="section">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">api</mat-icon>
-      API Access
-    </h3>
-    <p class="section-text">
-      Browse and try the MAGE API via <a href="#/swagger">Swagger UI</a>. Be cautious when using <strong>POST / PUT / DELETE</strong> — they affect live data.
-    </p>
-  </section>
-
-  <section class="section">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">settings</mat-icon>
-      System Info
-    </h3>
-    <div class="system-info">
-      <div><span class="label">Server</span>{{mageVersion?.major}}.{{mageVersion?.minor}}.{{mageVersion?.micro}}</div>
-      <div><span class="label">Node</span>{{nodeVersion}}</div>
-      <div><span class="label">MongoDB</span>{{mongoVersion}}</div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">emoji_objects</mat-icon>
-      Acknowledgements
-    </h3>
-    <p class="section-text">
-      Mage is built with the MEAN stack:
-      <a href="https://www.mongodb.org/" target="_blank">MongoDB</a>,
-      <a href="https://expressjs.com/" target="_blank">Express</a>,
-      <a href="https://angular.dev/" target="_blank">Angular</a>, and
-      <a href="https://nodejs.org/" target="_blank">NodeJS</a>.
-    </p>
-    <p class="section-text">
-      Authentication via <a href="https://passportjs.org/" target="_blank">Passport</a>. Maps via
-      <a href="https://leafletjs.com/" target="_blank">Maps by Leaflet</a>.
-    </p>
-  </section>
-
-  <section class="section" *ngIf="adminPhone || adminEmail">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">contact_mail</mat-icon>
-      Contact Us
-    </h3>
-    <div class="contact-info">
-      <div *ngIf="adminPhone">
-        <mat-icon>phone</mat-icon> {{adminPhone}}
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title><mat-icon>info</mat-icon>What is MAGE?</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="section-text">
+        Mage is a dynamic, secure, mobile situational awareness and field data collection platform that supports
+        low-bandwidth and disconnected users. Mage can integrate with existing command centers and common operating
+        pictures or stand alone as a complete, mission-ready solution.
       </div>
-      <div *ngIf="adminEmail">
-        <mat-icon>email</mat-icon> <a href="mailto:{{adminEmail}}">{{adminEmail}}</a>
+      <div class="section-text">
+        The Mage mobile app on iOS and Android
+        allows agents in the field to create and share geo-tagged observations with attached photos, videos,
+        audio, and form data. Mage's data collection forms are easily tailored to suit any team and mission with
+        custom form fields and map symbologies.
       </div>
-    </div>
-  </section>  
-  
-  <section class="section" *ngIf="showDevContact">
-    <h3 class="section-title">
-      <mat-icon class="section-icon">contact_mail</mat-icon>
-      Contact NGA POC
-    </h3>
-    <div class="contact-info">
-      <div><mat-icon>phone</mat-icon> +1-571-557-1121</div>
-      <div><mat-icon>email</mat-icon> <a href="mailto:magesuitesupport@nga.mil">magesuitesupport@nga.mil</a></div>
-    </div>
-  </section>  
+      <div class="section-text">
+        In addition to data collection, the Mage mobile app can optionally
+        report field agents' locations at regular intervals to the Mage server. The Mage server's web app provides
+        a common operating picture of field agents' observations and latest reported locations.
+      </div>
+      <div class="app-store">
+        <a href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8">
+          <img class="app-store-icon" src="/assets/images/ios_app_store_black.svg" alt="Download on the App Store">
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en">
+          <img class="app-store-icon" src="/assets/images/google-play-badge.png" alt="Get it on Google Play">
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title><mat-icon>settings</mat-icon>Technical Details</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="sub-section">
+        <div class="sub-label">Versions</div>
+        <div class="system-info">
+          <div><span class="label">Server Version</span>{{serverVersion}}</div>
+          <div><span class="label">API Version</span>{{apiVersion?.major}}.{{apiVersion?.minor}}.{{apiVersion?.patch}}</div>
+          <div><span class="label">Node</span>{{nodeVersion}}</div>
+          <div><span class="label">MongoDB</span>{{mongoVersion}}</div>
+        </div>
+      </div>
+      <div class="sub-section">
+        <div class="sub-label">API</div>
+        <div class="section-text">
+          The MAGE REST API is fully documented and explorable via Swagger UI. You can browse available endpoints,
+          inspect request and response schemas, and test calls directly in the browser.
+        </div>
+        <a matButton="outlined" href="#/swagger">
+          <mat-icon>api</mat-icon>
+          Browse API (Swagger UI)
+        </a>
+      </div>
+      <div class="sub-section">
+        <div class="sub-label">Attributions</div>
+        <div class="section-text">
+          Mage is built with the MEAN stack:
+          <a href="https://www.mongodb.org/" target="_blank">MongoDB</a>,
+          <a href="https://expressjs.com/" target="_blank">Express</a>,
+          <a href="https://angular.dev/" target="_blank">Angular</a>, and
+          <a href="https://nodejs.org/" target="_blank">NodeJS</a>.
+          Authentication via <a href="https://passportjs.org/" target="_blank">Passport</a>. Maps via
+          <a href="https://leafletjs.com/" target="_blank">Maps by Leaflet</a>.
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card *ngIf="adminPhone || adminEmail || showDevContact">
+    <mat-card-header>
+      <mat-card-title><mat-icon>contact_mail</mat-icon>Contact Us</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="adminPhone || adminEmail" class="contact-group">
+        <div class="sub-label">Administrator</div>
+        <div class="contact-info">
+          <div *ngIf="adminPhone">{{adminPhone}}</div>
+          <div *ngIf="adminEmail"><a href="mailto:{{adminEmail}}">{{adminEmail}}</a></div>
+        </div>
+      </div>
+      <div *ngIf="showDevContact" class="contact-group">
+        <div class="sub-label">NGA Support</div>
+        <div class="contact-info">
+          <div>+1-571-557-1121</div>
+          <div><a href="mailto:magesuitesupport@nga.mil">magesuitesupport&#64;nga.mil</a></div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

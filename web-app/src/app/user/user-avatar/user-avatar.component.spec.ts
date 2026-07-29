@@ -1,7 +1,8 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { UserAvatarComponent } from './user-avatar.component';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('UserAvatarComponent', () => {
   let component: UserAvatarComponent;
@@ -9,9 +10,10 @@ describe('UserAvatarComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [UserAvatarComponent]
-    })
+    declarations: [UserAvatarComponent],
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     .compileComponents();
   }));
 

@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FilterComponent } from './filter.component';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule as MatSelectModule } from '@angular/material/select';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('FilterComponent', () => {
   let component: FilterComponent;
@@ -14,21 +15,18 @@ describe('FilterComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FilterComponent],
-      imports: [
-        HttpClientTestingModule,
-        FormsModule,
+    declarations: [FilterComponent],
+    imports: [FormsModule,
         ReactiveFormsModule,
         MatAutocompleteModule,
         MatDialogModule,
         MatFormFieldModule,
         MatChipsModule,
-        MatSelectModule
-      ],
-      providers: [{
-        provide: MatDialogRef, useValue: {}
-      }]
-    }).compileComponents();
+        MatSelectModule],
+    providers: [{
+            provide: MatDialogRef, useValue: {}
+        }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
   }));
 
   beforeEach(() => {

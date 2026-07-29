@@ -22,6 +22,7 @@ const userList: User[] = Array.from({ length: 5000 }).map((_, count: number) => 
     createdAt: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
     roleId: 'test',
+    role: 'test',
     phones,
     recentEventIds: [],
   }
@@ -34,7 +35,7 @@ export class MockUserReadService implements UserReadServiceInterface {
 
   search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
     const [ pageStart, pageEnd ] = itemRangeOfPage(which)
-    const searchPattern = which.searchTerm ? new RegExp(which.searchTerm) : null
+    const searchPattern = which.term ? new RegExp(which.term) : null
     const matching = searchPattern ? userList.filter(x => {
       return searchPattern.test(x.username)
         || searchPattern.test(x.displayName)

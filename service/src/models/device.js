@@ -110,10 +110,41 @@ exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
   return query.exec();
 };
 
-exports.getDevices = function (options = {}) {
+exports.getDevices = async function (options = {}) {
   const { filter = {}, expand = {} } = options;
+  const { term, ...restFilter } = filter;
 
-  const conditions = createQueryConditions(filter);
+  let conditions = createQueryConditions(restFilter);
+
+  if (term) {
+    const regex = new RegExp(term, 'i');
+    const base = Object.keys(conditions).length ? [conditions] : [];
+
+    // 🔹 Find users whose displayName matches the term
+    const users = await User.Model
+      .find({ displayName: regex })
+      .select('_id')
+      .lean()
+      .exec();
+
+    const userIds = users.map(u => u._id);
+
+    // 🔹 Build OR condition over device fields + matching users
+    const searchCondition = {
+      $or: [
+        { uid: regex },
+        { name: regex },
+        { description: regex },
+        ...(userIds.length ? [{ userId: { $in: userIds } }] : [])
+      ]
+    };
+
+    // Combine existing filters with search
+    conditions = base.length
+      ? { $and: [...base, searchCondition] }
+      : searchCondition;
+  }
+
 
   let query = Device.find(conditions);
 
@@ -130,7 +161,6 @@ exports.getDevices = function (options = {}) {
       query.populate('userId');
     }
   } else {
-    // TODO is this minimum enough??
     query.populate({
       path: 'userId',
       select: 'displayName'
@@ -155,7 +185,7 @@ exports.count = function (options) {
 
   var conditions = createQueryConditions(filter);
 
-  return Device.count(conditions).exec();
+  return Device.countDocuments(conditions).exec();
 };
 
 function createQueryConditions(filter) {
@@ -181,7 +211,7 @@ async function queryUsersAndDevicesThenPage(options, conditions) {
     registered = conditions.registered;
     delete conditions.registered;
   }
-  const count = await User.Model.count(conditions);
+  const count = await User.Model.countDocuments(conditions);
   return User.Model.find(conditions, "_id").populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(data => {
     const ids = [];
     for (let i = 0; i < data.length; i++) {
@@ -225,7 +255,7 @@ exports.createDevice = function (device) {
 
 exports.updateDevice = function (id, update) {
   const options = { new: true, runValidators: true };
-  return Device.findOneAndUpdate({ _id: id }, update, options).exec();
+  return Device.findOneAndUpdate({ _id: id }, update, options).populate('userId').exec();
 };
 
 exports.deleteDevice = function (id) {

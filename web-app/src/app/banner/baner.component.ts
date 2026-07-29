@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
-import { Banner } from '../setttings/settings.service';
+import { Banner } from '../settings/settings.service';
 
 @Component({
-  selector: 'banner',
-  templateUrl: './banner.component.html',
-  styleUrls: ['./banner.component.scss']
+    selector: 'banner',
+    templateUrl: './banner.component.html',
+    styleUrls: ['./banner.component.scss'],
+    standalone: false
 })
 export class BannerComponent {
   @Input() banner?: Banner

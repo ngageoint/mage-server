@@ -4,9 +4,10 @@ import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
 
 @Component({
-  selector: 'observation-edit-geometry',
-  templateUrl: './observation-edit-geometry.component.html',
-  styleUrls: ['./observation-edit-geometry.component.scss']
+    selector: 'observation-edit-geometry',
+    templateUrl: './observation-edit-geometry.component.html',
+    styleUrls: ['./observation-edit-geometry.component.scss'],
+    standalone: false
 })
 export class ObservationEditGeometryComponent implements OnChanges {
   @Input() formGroup: UntypedFormGroup

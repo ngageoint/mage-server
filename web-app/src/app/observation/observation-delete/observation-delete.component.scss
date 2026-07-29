@@ -1,13 +1,10 @@
-@use '@angular/material' as mat;
-@import "variables.scss";
-
-.mat-dialog-title {
-  color: mat.get-color-from-palette($app-primary);
+[mat-dialog-title] {
+  color: var(--mat-sys-primary);
 }
 
 .observation {
   position: relative;
-  margin: 16px 0;
+  margin-bottom: 8px;
 }
 
 .delete-mask {
@@ -16,10 +13,9 @@
   bottom: 0;
   right: 0;
   left: 0;
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
-:host ::ng-deep.mat-dialog-actions {
-  display: flex;
-  justify-content: flex-end;
+.delete-button {
+  --mat-button-filled-container-color: var(--mat-sys-error);
+  --mat-button-filled-label-text-color: var(--mat-sys-on-error);
 }

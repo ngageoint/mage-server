@@ -1,6 +1,6 @@
 <mat-toolbar>
   <mat-toolbar-row class="navigation">
-    <button mat-icon-button color="primary" (click)="onClose()">
+    <button matIconButton (click)="onClose()">
       <mat-icon>arrow_back</mat-icon>
     </button>
   </mat-toolbar-row>
@@ -8,50 +8,45 @@
 
 <div class="user-container">
   <mat-card class="user-card">
-    <div class="user-map">
-      <div class="user-map__view">
-        <map-clip [feature]="user.location" [accuracy]="accuracy"></map-clip>
+    <mat-card-content>
+      <div class="user-map">
+        <div class="user-map__view">
+          <map-clip [feature]="user.location" [accuracy]="accuracy"></map-clip>
+        </div>
       </div>
-    </div>
 
-    <div class="user-avatar">
-      <div class="user-avatar__border"></div>
-      <div class="user-avatar__img">
-        <user-avatar [user]="user.user" avatarWidth="110" avatarHeight="110"></user-avatar>
+      <div class="user-avatar">
+        <div class="user-avatar__border"></div>
+        <div class="user-avatar__img">
+          <user-avatar [user]="user.user" avatarWidth="110" avatarHeight="110"></user-avatar>
+        </div>
       </div>
-    </div>
 
-    <div class="user__name">
-      {{user.user.displayName}}
-    </div>
+      <div class="user__name">{{user.user.displayName}}</div>
 
-    <div class="user__divider"></div>
+      <mat-divider></mat-divider>
 
-    <div class="user__row" (click)="onUserLocationClick()" matRipple>
-      <mat-icon class="user__icon user__icon--location">my_location</mat-icon>
-      <div class="user__text">
-        <span>{{user.location.geometry | geometry:5}}</span>
-      </div>
-      <span class="user__location--accuracy">
-        <span class="user__location--provider">{{user.location.properties.provider}} </span>
-        <span>&#177;</span>
-        <span> {{user.location.properties.accuracy | number:'0.0-5'}}m</span>
-      </span>
-    </div>
+      <mat-action-list>
+        <mat-list-item (click)="onUserLocationClick()" class="row-location">
+          <mat-icon matListItemIcon>my_location</mat-icon>
+          <span matListItemTitle>{{user.location.geometry | geometry:5}}</span>
+          <span matListItemMeta class="user__location--accuracy">
+            <span class="user__location--provider">{{user.location.properties.provider}}</span>
+            &#177; {{user.location.properties.accuracy | number:'0.0-5'}}m
+          </span>
+        </mat-list-item>
 
-    <a class="user__row" href="tel:{{user.user.phones[0].number}}" *ngIf="user.user?.phones?.length">
-      <mat-icon class="user__icon user__icon--phone">phone</mat-icon>
-      <div class="user__text">
-        {{user.user.phones[0].number}}
-      </div>
-    </a>
+        <a mat-list-item href="tel:{{user.user.phones[0].number}}" *ngIf="user.user?.phones?.length" class="row-phone">
+          <mat-icon matListItemIcon>phone</mat-icon>
+          <span matListItemTitle>{{user.user.phones[0].number}}</span>
+        </a>
 
-    <a class="user__row" href="mailto:{{user.user.email}}" *ngIf="user.user.email">
-      <mat-icon class="user__icon user__icon--email">email</mat-icon>
-      <div class="user__text">
-        {{user.user.email}}
-      </div>
-    </a>
+        <a mat-list-item href="mailto:{{user.user.email}}" *ngIf="user.user.email" class="row-email">
+          <mat-icon matListItemIcon>email</mat-icon>
+          <span matListItemTitle>{{user.user.email}}</span>
+        </a>
+      </mat-action-list>
+    </mat-card-content>
   </mat-card>
 
   <!-- <div class="user-observations">

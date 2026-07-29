@@ -8,8 +8,9 @@ mat-dialog-content {
 
 .cancel {
   position: absolute;
-  top: -16px;
-  right: -16px;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
 }
 
 .dialog {
@@ -41,7 +42,7 @@ mat-dialog-content {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .actions__save {
