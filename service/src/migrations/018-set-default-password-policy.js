@@ -1,7 +1,5 @@
 "use strict";
 
-const log = require('winston');
-
 exports.id = 'set-default-password-policy';
 
 const passwordPolicy = {
@@ -39,7 +37,7 @@ const passwordPolicy = {
 };
 
 exports.up = async function (done) {
-  log.info('Setting default password policy');
+  this.log('Setting default password policy');
 
   let update = {
     $rename: {
