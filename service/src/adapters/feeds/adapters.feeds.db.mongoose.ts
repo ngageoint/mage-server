@@ -149,17 +149,17 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
 
   constructor(model: FeedModel, private readonly idFactory: EntityIdFactory) {
     const entityToDocStub: EntityMapping<FeedDocument, Feed> = e => {
-      assert(typeof e.service === 'string')
-      return { ...e, service: mongoose.Types.ObjectId.createFromHexString(e.service), icon: e.icon?.id }
+      assert(typeof e.id === 'string', 'feed id must be a string')
+      assert(typeof e.service === 'string', 'feed service id must be a string')
+      const { id, ...idExcluded } = e
+      return { ...idExcluded, _id: id, service: mongoose.Types.ObjectId.createFromHexString(e.service), icon: e.icon?.id }
     }
     super(model, { entityToDocStub })
   }
 
   async create(attrs: Partial<Feed>): Promise<Feed> {
-    const _id = await this.idFactory.nextId()
-    const service = new mongoose.Types.ObjectId(attrs.service)
-    const seed = Object.assign(attrs, { _id, service })
-    return await super.create(seed)
+    const id = await this.idFactory.nextId()
+    return await super.create({ ...attrs, id })
   }
 
   async put(feed: Feed): Promise<Feed | null> {
