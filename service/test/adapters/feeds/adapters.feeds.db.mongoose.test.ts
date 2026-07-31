@@ -574,6 +574,7 @@ describe('feeds repositories', function () {
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true
         }
+        idFactory.nextId().resolves('abc-123')
         const created = await repo.create(stub)
         const fetched = await repo.findById(created.id)
         const rawFetched = await model.findOne({ _id: created.id }) as FeedDocument
@@ -595,6 +596,7 @@ describe('feeds repositories', function () {
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true
         }
+        idFactory.nextId().resolves('abc-123')
         const created = await repo.create(stub)
         const fetched = await repo.findById(created.id)
         const rawFetched = await model.findOne({ _id: created.id }) as FeedDocument
