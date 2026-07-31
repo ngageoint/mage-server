@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { MatCardModule } from '@angular/material/card'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatExpansionModule } from '@angular/material/expansion'
@@ -14,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTableModule } from '@angular/material/table'
 import { MatTabsModule } from '@angular/material/tabs'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { ArcAdminComponent } from './arc-admin/arc-admin.component'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -35,6 +37,7 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
     FormsModule,
     MatAutocompleteModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatCardModule,
     MatDialogModule,
     MatExpansionModule,
@@ -46,6 +49,7 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
     MatSlideToggleModule,
     MatTableModule,
     MatTabsModule,
+    MatTooltipModule,
     ReactiveFormsModule,
     MatProgressSpinnerModule,
   ],

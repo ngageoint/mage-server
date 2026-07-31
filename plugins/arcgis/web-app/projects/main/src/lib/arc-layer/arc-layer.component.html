@@ -16,7 +16,9 @@
       </div>
 
       <mat-list>
-        <mat-list-item *ngFor="let service of config.featureServices let lastService = last;">
+        <mat-list-item *ngFor="let service of config.featureServices let lastService = last;"
+          [class.read-only-service]="isReadOnly(service)"
+          [matTooltip]="isReadOnly(service) ? 'This feature service does not allow editing' : ''">
           <mat-icon matListItemIcon class="material-icons-outlined">map</mat-icon>
           <p matListItemTitle>{{service.url}}</p>
           <p matListItemLine class="subtitle">
@@ -26,6 +28,9 @@
           </p>
           <p matListItemLine *ngIf="!service.authenticated" class="invalid-credentials">
             Credentials invalid or expired
+          </p>
+          <p matListItemLine *ngIf="isReadOnly(service)" class="invalid-credentials">
+            Read-only: editing is not enabled for this feature service
           </p>
 
           <span matListItemMeta>

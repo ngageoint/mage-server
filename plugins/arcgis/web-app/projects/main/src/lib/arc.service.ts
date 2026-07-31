@@ -13,6 +13,7 @@ export interface ArcServiceInterface {
   fetchEvents(): Observable<MageEvent[]>
   fetchPopulatedEvents(): Observable<MageEvent[]>
   fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]>
+  fetchFeatureServiceCapabilities(featureServiceUrl: string): Observable<{ capabilities?: string }>
   validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig>
 }
 
@@ -36,12 +37,37 @@ export interface FeatureLayer {
   id: number
   name: string
   geometryType: string
+  capabilities?: string
 }
 
 export type ValidationRequest = {
   url: string
   portalUrl?: string
 } & ({ token: string } | { username: string, password: string })
+
+export type DiscoveryRequest = {
+  portalUrl: string
+  start?: number
+  num?: number
+  filter?: string
+} & ({ token: string } | { username: string, password: string } | { identityManager: string })
+
+export interface DiscoveredFeatureService {
+  id: string
+  title: string
+  url: string
+  owner: string
+  capabilities?: string
+}
+
+export interface DiscoveryResult {
+  identityManager: string
+  portalUrl?: string
+  services: DiscoveredFeatureService[]
+  total: number
+  start: number
+  num: number
+}
 
 @Injectable({
   providedIn: 'root'
@@ -60,9 +86,11 @@ export class ArcService implements ArcServiceInterface {
     return this.http.get<FeatureLayer[]>(`${baseUrl}/featureService/layers?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}`)
   }
 
-  oauth(featureServiceUrl: string, clientId: string, portalUrl?: string): Observable<FeatureServiceConfig> {
-    let subject = new Subject<FeatureServiceConfig>();
+  fetchFeatureServiceCapabilities(featureServiceUrl: string): Observable<{ capabilities?: string }> {
+    return this.http.get<{ capabilities?: string }>(`${baseUrl}/featureService/capabilities?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}`)
+  }
 
+  oauth(featureServiceUrl: string, clientId: string, portalUrl?: string): Observable<FeatureServiceConfig> {
     const params = new URLSearchParams({
       featureServiceUrl: featureServiceUrl,
       clientId: clientId
@@ -72,11 +100,27 @@ export class ArcService implements ArcServiceInterface {
       params.set('portalUrl', portalUrl);
     }
 
+    return this.oauthPopup<FeatureServiceConfig>(params, (data) => !!data.url);
+  }
+
+  oauthDiscover(portalUrl: string, clientId: string): Observable<DiscoveryResult> {
+    const params = new URLSearchParams({
+      discover: 'true',
+      portalUrl,
+      clientId
+    });
+
+    return this.oauthPopup<DiscoveryResult>(params, (data) => !!data.services);
+  }
+
+  private oauthPopup<T>(params: URLSearchParams, isResponse: (data: any) => boolean): Observable<T> {
+    let subject = new Subject<T>();
+
     const url = `${baseUrl}/oauth/signin?${params.toString()}`;
     const oauthWindow = window.open(url, "_blank");
 
     const listener = (event: any) => {
-      if (event.data.url) {
+      if (isResponse(event.data)) {
         window.removeEventListener('message', listener, false);
 
         if (event.origin !== window.location.origin) {
@@ -96,6 +140,18 @@ export class ArcService implements ArcServiceInterface {
 
   validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig> {
     return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/validate`, request)
+  }
+
+  discoverFeatureServices(request: DiscoveryRequest): Observable<DiscoveryResult> {
+    return this.http.post<DiscoveryResult>(`${baseUrl}/featureService/discover`, request)
+  }
+
+  confirmFeatureService(url: string, portalUrl: string | undefined, identityManager: string): Observable<FeatureServiceConfig> {
+    return this.http.post<FeatureServiceConfig>(`${baseUrl}/featureService/confirm`, { url, portalUrl, identityManager })
+  }
+
+  deleteFeatureService(featureServiceUrl: string): Observable<void> {
+    return this.http.delete<void>(`${baseUrl}/featureService?featureServiceUrl=${encodeURIComponent(featureServiceUrl)}`)
   }
 
   fetchEvents(): Observable<MageEvent[]> {

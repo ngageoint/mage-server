@@ -8,7 +8,9 @@ import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authoriz
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { ObservationProcessor } from './ObservationProcessor'
 import { ArcGISIdentityManager, ArcGISRequestError, request } from "@esri/arcgis-rest-request"
+import { searchItems } from "@esri/arcgis-rest-portal"
 import { FeatureServiceConfig, FeatureLayerConfig } from './types/ArcGISConfig'
+import { ArcGISPluginConfig } from './types/ArcGISPluginConfig'
 import { URL } from "node:url"
 import express from 'express'
 import { ArcGISIdentityService, createArcGISIdentityService, getPortalUrl } from './ArcGISService'
@@ -61,6 +63,100 @@ const sanitizeFeatureService = async (config: FeatureServiceConfig, identityServ
   return { ...sanitized, authenticated };
 };
 
+type DiscoveredFeatureService = {
+  id: string
+  title: string
+  url: string
+  owner: string
+  // undefined if the service's own definition couldn't be fetched, meaning read-only status is unknown
+  capabilities?: string
+}
+
+type DiscoveredFeatureServicesPage = {
+  services: DiscoveredFeatureService[]
+  total: number
+  start: number
+  num: number
+}
+
+/**
+ * Search a portal for feature services accessible to the given identity, sorted alphabetically by title.
+ * @param identityManager authenticated identity to search the portal with
+ * @param start 1-based index of the first result to return, per the ArcGIS REST paging convention
+ * @param num number of results to return
+ * @param titleFilter if provided, restricts results to services whose title starts with this text
+ * @returns a page of feature services available to that identity, and the total count across all pages
+ */
+const discoverFeatureServices = async (identityManager: ArcGISIdentityManager, start = 1, num = 100, titleFilter?: string): Promise<DiscoveredFeatureServicesPage> => {
+  const sanitizedFilter = titleFilter?.replace(/["*:]/g, '').trim();
+  // a trailing-only wildcard (prefix match) is used because leading wildcards are not reliably
+  // supported by the portal's search index and can cause the filter clause to be silently ignored
+  const q = sanitizedFilter ? `type:"Feature Service" AND title:${sanitizedFilter}*` : 'type:"Feature Service"';
+  const result = await searchItems({
+    q,
+    authentication: identityManager,
+    sortField: 'title',
+    sortOrder: 'asc',
+    start,
+    num
+  });
+  const services = await Promise.all(result.results
+    .filter((item): item is typeof item & { url: string } => !!item.url)
+    .map(async (item) => {
+      // the portal search result doesn't include capabilities, so fetch each service's own
+      // definition to find out whether it allows editing before the user selects it
+      let capabilities: string | undefined;
+      try {
+        const response = await request(item.url, { authentication: identityManager });
+        capabilities = response.capabilities;
+      } catch (err) {
+        console.error(`Could not get capabilities for discovered feature service ${item.url}`, err);
+      }
+
+      return {
+        id: item.id,
+        title: item.title,
+        url: item.url,
+        owner: item.owner,
+        capabilities
+      };
+    }));
+  return { services, total: result.total, start, num };
+};
+
+/**
+ * Add or update a feature service in the plugin configuration and return the sanitized result.
+ * @param processor the observation processor, used to persist the updated configuration
+ * @param identityService the identity service, used to verify the feature service is reachable
+ * @param config the current plugin configuration
+ * @param url the feature service url
+ * @param portalUrl the ArcGIS portal API url, if any
+ * @param identityManager authenticated identity to associate with the feature service
+ */
+const commitFeatureService = async (
+  processor: ObservationProcessor,
+  identityService: ArcGISIdentityService,
+  config: ArcGISPluginConfig,
+  url: string,
+  portalUrl: string | undefined,
+  identityManager: ArcGISIdentityManager
+) => {
+  const existingService = config.featureServices.find(service => service.url === url);
+  let service: FeatureServiceConfig;
+  if (existingService) {
+    existingService.identityManager = identityManager.serialize();
+    if (portalUrl) {
+      existingService.portalUrl = portalUrl;
+    }
+    service = existingService;
+  } else {
+    service = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
+    config.featureServices.push(service);
+  }
+  await processor.patchConfig(config);
+  return sanitizeFeatureService(service, identityService);
+};
+
 /**
  * The MAGE ArcGIS Plugin finds new MAGE observations and if configured to send the observations
  * to an ArcGIS server, it will then transform the observation to an ArcGIS feature and
@@ -88,8 +184,15 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
           const routes = express.Router().use(express.json());
 
           routes.get('/oauth/signin', async (req, res) => {
+            const discover = req.query.discover === 'true';
             const url = req.query.featureServiceUrl as string;
-            if (!URL.canParse(url)) {
+            const portalUrl = req.query.portalUrl as string;
+
+            if (discover) {
+              if (!portalUrl) {
+                return res.status(404).send('portalUrl is required to discover feature services');
+              }
+            } else if (!URL.canParse(url)) {
               return res.status(404).send('invalid feature service url');
             }
 
@@ -98,23 +201,21 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               return res.status(404).send('clientId is required');
             }
 
-            const portalUrl = req.query.portalUrl as string;
-
             const config = await processor.safeGetConfig();
             ArcGISIdentityManager.authorize({
               clientId,
-              portal: portalUrl || getPortalUrl(url),
+              portal: discover ? portalUrl : (portalUrl || getPortalUrl(url)),
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
-              state: JSON.stringify({ url: url, clientId: clientId, portalUrl: portalUrl })
+              state: JSON.stringify({ url, clientId, portalUrl, discover })
             }, res);
           });
 
           routes.get('/oauth/authenticate', async (req, res) => {
             const code = req.query.code as string;
-            let state: { url: string, clientId: string, portalUrl?: string };
+            let state: { url: string, clientId: string, portalUrl?: string, discover?: boolean };
             try {
-              const { url, clientId, portalUrl } = JSON.parse(req.query.state as string);
-              state = { url, clientId, portalUrl };
+              const { url, clientId, portalUrl, discover } = JSON.parse(req.query.state as string);
+              state = { url, clientId, portalUrl, discover };
             } catch (err) {
               console.error('error parsing relay state', err);
               return res.sendStatus(500);
@@ -124,9 +225,26 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             const creds = {
               clientId: state.clientId,
               redirectUri: `${config.baseUrl}/${pluginWebRoute}/oauth/authenticate`,
-              portal: state.portalUrl || getPortalUrl(state.url)
+              portal: state.discover ? (state.portalUrl as string) : (state.portalUrl || getPortalUrl(state.url))
+            };
+            const postMessageResponse = (data: unknown) => {
+              res.send(`
+                <html>
+                  <head>
+                    <script>
+                      window.opener.postMessage(${JSON.stringify(data)}, '${req.protocol}://${req.headers.host}');
+                    </script>
+                  </head>
+                </html>
+              `);
             };
             ArcGISIdentityManager.exchangeAuthorizationCode(creds, code).then(async (idManager: ArcGISIdentityManager) => {
+              if (state.discover) {
+                const page = await discoverFeatureServices(idManager);
+                postMessageResponse({ identityManager: idManager.serialize(), portalUrl: state.portalUrl, ...page });
+                return;
+              }
+
               let service = config.featureServices.find(service => service.url === state.url);
               if (!service) {
                 service = {
@@ -146,15 +264,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
 
               await processor.putConfig(config);
               const sanitizedService = await sanitizeFeatureService(service, identityService);
-              res.send(`
-                <html>
-                  <head>
-                    <script>
-                      window.opener.postMessage(${JSON.stringify(sanitizedService)}, '${req.protocol}://${req.headers.host}');
-                    </script>
-                  </head>
-                </html>
-              `);
+              postMessageResponse(sanitizedService);
             }).catch((error) => res.status(400).json(error));
           });
 
@@ -284,6 +394,70 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             }
           });
 
+          routes.post('/featureService/discover', async (req, res) => {
+            const { portalUrl, token, username, password, identityManager: serializedIdentityManager, start, num, filter } = req.body;
+            if (!portalUrl) {
+              return res.status(400).send('portalUrl is required');
+            }
+
+            try {
+              let identityManager: ArcGISIdentityManager;
+              if (serializedIdentityManager) {
+                identityManager = ArcGISIdentityManager.deserialize(serializedIdentityManager);
+              } else if (token) {
+                identityManager = await ArcGISIdentityManager.fromToken({ token, portal: portalUrl });
+              } else if (username && password) {
+                identityManager = await ArcGISIdentityManager.signIn({ username, password, portal: portalUrl });
+              } else {
+                return res.sendStatus(400);
+              }
+
+              const page = await discoverFeatureServices(identityManager, start, num, filter);
+              return res.send({ identityManager: identityManager.serialize(), portalUrl, ...page });
+            } catch (err) {
+              return res.status(400).send('Invalid credentials provided to communicate with portal' + err);
+            }
+          });
+
+          routes.post('/featureService/confirm', async (req, res) => {
+            const { url, portalUrl, identityManager: serializedIdentityManager } = req.body;
+            if (!URL.canParse(url)) {
+              return res.status(400).send('Invalid feature service url');
+            }
+            if (!serializedIdentityManager) {
+              return res.sendStatus(400);
+            }
+
+            try {
+              const identityManager = ArcGISIdentityManager.deserialize(serializedIdentityManager);
+              const config = await processor.safeGetConfig();
+              const sanitized = await commitFeatureService(processor, identityService, config, url, portalUrl, identityManager);
+              return res.send(sanitized);
+            } catch (err) {
+              return res.status(400).send('Invalid credentials provided to communicate with feature service' + err);
+            }
+          });
+
+          routes.delete('/featureService', async (req, res) => {
+            const url = req.query.featureServiceUrl as string;
+            const config = await processor.safeGetConfig();
+            const featureService = config.featureServices.find(featureService => featureService.url === url);
+            if (!featureService) {
+              return res.sendStatus(204);
+            }
+
+            // only remove services with no layers configured yet, so this can't be used to drop a
+            // real, already-configured feature service - just the placeholder created by validate/
+            // confirm before the user picks layers and saves, e.g. when they close the dialog first
+            if (featureService.layers.length > 0) {
+              return res.status(409).send('Feature service has configured layers and cannot be removed this way');
+            }
+
+            config.featureServices = config.featureServices.filter(service => service.url !== url);
+            await processor.patchConfig(config);
+            return res.sendStatus(204);
+          });
+
           routes.get('/featureService/layers', async (req, res) => {
             const url = req.query.featureServiceUrl as string;
             const config = await processor.safeGetConfig();
@@ -297,10 +471,44 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               const response = await request(url, {
                 authentication: identityManager
               });
-              res.send(response.layers);
+
+              // the FeatureServer root response only includes a lightweight summary per layer
+              // (no capabilities); fetch each layer's own definition to get its actual capabilities,
+              // falling back to the service-wide capabilities if the layer doesn't report its own
+              const layers = await Promise.all(response.layers.map(async (layer: { id: number, capabilities?: string }) => {
+                try {
+                  const layerInfo = await request(`${url}/${layer.id}`, { authentication: identityManager });
+                  return { ...layer, capabilities: layerInfo.capabilities || response.capabilities };
+                } catch (err) {
+                  console.error(`Could not get capabilities for layer ${layer.id}`, err);
+                  return { ...layer, capabilities: response.capabilities };
+                }
+              }));
+
+              res.send(layers);
             } catch (err) {
               console.error(err);
               res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err });
+            }
+          });
+
+          routes.get('/featureService/capabilities', async (req, res) => {
+            const url = req.query.featureServiceUrl as string;
+            const config = await processor.safeGetConfig();
+            const featureService = config.featureServices.find(featureService => featureService.url === url);
+            if (!featureService) {
+              return res.status(400);
+            }
+
+            try {
+              const identityManager = await identityService.signin(featureService);
+              const response = await request(url, {
+                authentication: identityManager
+              });
+              res.send({ capabilities: response.capabilities });
+            } catch (err) {
+              console.error(err);
+              res.status(500).json({ message: 'Could not get ArcGIS feature service capabilities', error: err });
             }
           });
 

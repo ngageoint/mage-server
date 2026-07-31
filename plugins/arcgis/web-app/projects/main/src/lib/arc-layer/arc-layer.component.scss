@@ -48,3 +48,7 @@ mat-card {
 .invalid-credentials {
 	color: #F44336;
 }
+
+.read-only-service {
+	--mdc-list-list-item-label-text-color: #F44336;
+}

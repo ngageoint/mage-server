@@ -9,8 +9,7 @@
   <mat-dialog-content>
     <div class="dialog-content">
       <mat-accordion>
-        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate"
-          [disabled]="featureService?.authenticated">
+        <mat-expansion-panel [expanded]="state === State.Validate" (opened)="state = State.Validate">
           <mat-expansion-panel-header>
             <mat-panel-title *ngIf="!featureService?.authenticated">Feature Service</mat-panel-title>
             <mat-panel-title *ngIf="featureService?.authenticated">{{featureService?.url}}</mat-panel-title>
@@ -21,8 +20,14 @@
             </mat-panel-description>
           </mat-expansion-panel-header>
 
+          <mat-button-toggle-group *ngIf="!featureService" class="entry-mode" [(ngModel)]="entryMode"
+            [ngModelOptions]="{standalone: true}" [hideSingleSelectionIndicator]="true">
+            <mat-button-toggle [value]="EntryMode.Url">I have a URL</mat-button-toggle>
+            <mat-button-toggle [value]="EntryMode.Portal">Browse a Portal</mat-button-toggle>
+          </mat-button-toggle-group>
+
           <form [formGroup]="layerForm" class="form validate">
-            <mat-form-field>
+            <mat-form-field *ngIf="entryMode === EntryMode.Url || featureService">
               <mat-label>Feature Service URL</mat-label>
               <input matInput formControlName="url" required
                 placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer" />
@@ -31,8 +36,11 @@
 
             <mat-form-field>
               <mat-label>Portal API URL</mat-label>
-              <input matInput formControlName="portalUrl" placeholder="http{s}://{domain}/arcgis/sharing/rest" />
-              <mat-hint>Leave empty to use default portal URL derived from feature service URL</mat-hint>
+              <input matInput formControlName="portalUrl"
+                [required]="entryMode === EntryMode.Portal && !featureService"
+                placeholder="http{s}://{domain}/arcgis/sharing/rest" />
+              <mat-hint *ngIf="entryMode === EntryMode.Url">Leave empty to use default portal URL derived from feature service URL</mat-hint>
+              <mat-hint *ngIf="entryMode === EntryMode.Portal">Required to browse a portal's feature services</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="authentication-field">
@@ -76,12 +84,51 @@
             </ng-container>
           </form>
 
+          <div class="discovered-services" *ngIf="entryMode === EntryMode.Portal && hasBrowsed">
+            <mat-form-field appearance="fill" class="discovered-services-filter">
+              <mat-label>Filter by name</mat-label>
+              <input matInput [formControl]="filterControl" />
+            </mat-form-field>
+
+            <div class="discovered-services-header">
+              <span>{{discoveredTotal}} feature service{{discoveredTotal === 1 ? '' : 's'}} found</span>
+            </div>
+            <mat-selection-list [multiple]="false" *ngIf="discoveredServices.length > 0">
+              <mat-list-option *ngFor="let service of discoveredServices" (click)="onSelectDiscoveredService(service)" [lines]="3"
+                [class.read-only-service]="isReadOnly(service)"
+                [matTooltip]="isReadOnly(service) ? 'This feature service does not allow editing' : ''">
+                <span matListItemTitle>{{service.title}}</span>
+                <span matListItemLine class="discovered-service-owner">{{service.owner}}<ng-container *ngIf="service.capabilities"> &middot; {{service.capabilities}}</ng-container></span>
+                <span matListItemLine class="discovered-service-url">{{service.url}}</span>
+              </mat-list-option>
+            </mat-selection-list>
+            <div class="discovered-services-paging" *ngIf="discoveredServices.length > 0">
+              <span>{{discoveredStart}}–{{discoveredStart + discoveredServices.length - 1}} of {{discoveredTotal}}</span>
+              <span class="discovered-services-paging__buttons">
+                <button mat-icon-button [disabled]="!hasPrevPage || loading" (click)="onPrevPage()">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <button mat-icon-button [disabled]="!hasNextPage || loading" (click)="onNextPage()">
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </span>
+            </div>
+          </div>
+
           <div class="actions">
-            <button mat-flat-button color="primary" [disabled]="loading" (click)="onValidate()">
+            <button *ngIf="entryMode === EntryMode.Url || featureService"
+              mat-flat-button color="primary" [disabled]="loading" (click)="onValidate()">
               <div class="actions__save">
                 <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
                 <span *ngIf="!featureService">Create Feature Server</span>
                 <span *ngIf="featureService">Update Feature Server</span>
+              </div>
+            </button>
+            <button *ngIf="entryMode === EntryMode.Portal && !featureService"
+              mat-flat-button color="primary" [disabled]="loading" (click)="onBrowse()">
+              <div class="actions__save">
+                <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
+                <span>Browse</span>
               </div>
             </button>
           </div>
@@ -96,9 +143,11 @@
             <div>
               <mat-selection-list #layerList color="primary" class="layers">
                 <mat-list-option *ngFor="let layer of layers" [value]="layer.name" [selected]="hasLayer(layer)">
-                  {{layer.name}}
+                  {{layer.name}}<span *ngIf="!canEdit(layer)" class="no-edit-indicator"
+                    matTooltip="This layer does not appear to allow editing (Create/Update) for the connected account. Syncing observations to it may fail.">*</span>
                 </mat-list-option>
               </mat-selection-list>
+              <div *ngIf="hasNonEditableLayers" class="no-edit-hint">* This layer may not allow write access for the connected account</div>
             </div>
 
             <div class="actions">

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core'
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { ArcService } from '../arc.service'
 import { FeatureLayerConfig, FeatureServiceConfig } from '../ArcGISConfig'
@@ -13,13 +13,16 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer-delete-dialog.compone
   templateUrl: './arc-layer.component.html',
   styleUrls: ['./arc-layer.component.scss']
 })
-export class ArcLayerComponent {
+export class ArcLayerComponent implements OnChanges {
 
   @Input('config') config: ArcGISPluginConfig
   @Output() configChanged = new EventEmitter<ArcGISPluginConfig>()
 
   layers: ArcLayerSelectable[]
   events: string[] = []
+
+  // service capabilities are fetched lazily and cached by url, since they aren't part of the saved config
+  private serviceCapabilities = new Map<string, string | undefined>()
 
   constructor(private arcService: ArcService, private dialog: MatDialog) {
     this.config = defaultArcGISPluginConfig
@@ -28,6 +31,34 @@ export class ArcLayerComponent {
     arcService.fetchEvents().subscribe(events => {
       this.events = events.map(event => event.name)
     })
+  }
+
+  ngOnChanges(): void {
+    this.refreshCapabilities()
+  }
+
+  private refreshCapabilities(): void {
+    for (const service of this.config.featureServices) {
+      if (this.serviceCapabilities.has(service.url)) {
+        continue
+      }
+      // mark as pending immediately so a slow response doesn't trigger duplicate requests
+      this.serviceCapabilities.set(service.url, undefined)
+      this.arcService.fetchFeatureServiceCapabilities(service.url).subscribe({
+        next: (result) => this.serviceCapabilities.set(service.url, result.capabilities),
+        error: (error) => console.log('arc-layer fetchFeatureServiceCapabilities error: ' + error)
+      })
+    }
+  }
+
+  // unlike a missing/pending cache entry, only flag services we can positively confirm are read-only
+  isReadOnly(featureService: FeatureServiceConfig): boolean {
+    const capabilities = this.serviceCapabilities.get(featureService.url)
+    if (!capabilities) {
+      return false
+    }
+    const capabilityList = capabilities.split(',').map(c => c.trim())
+    return !capabilityList.includes('Create') && !capabilityList.includes('Editing')
   }
 
   onAddService() {
@@ -102,5 +133,6 @@ export class ArcLayerComponent {
 
     this.configChanged.emit(this.config)
     this.arcService.putArcConfig(this.config)
+    this.refreshCapabilities()
   }
 }

@@ -17,8 +17,6 @@ import { ArcEventsModel } from './ArcEventsModel';
 import { ArcEvent } from './ArcEvent';
 import { ArcEventLayer } from './ArcEventLayer';
 import { Observable } from 'rxjs';
-import { MatSelect } from '@angular/material/select';
-import { MatOption, MatOptionSelectionChange } from '@angular/material/core';
 
 @Component({
   standalone: false,
@@ -55,19 +53,12 @@ export class ArcEventComponent implements OnInit, OnChanges {
     return this._model;
   }
 
-  selectedValues: number[] = [];
-
   isLoading: boolean;
   currentEditingEvent: ArcEvent;
   layers: ArcEventLayer[];
 
   @ViewChild('editEventDialog', { static: true })
   private editEventTemplate: TemplateRef<unknown>
-
-  @ViewChild('selectEvents', { static: true })
-  private selectEventTemplate: TemplateRef<unknown>
-
-  @ViewChild('matRef') matSelect: MatSelect;
 
   constructor(private arcService: ArcService, private dialog: MatDialog) {
     this.config = defaultArcGISPluginConfig;
@@ -82,7 +73,6 @@ export class ArcEventComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (
       !this.configSet &&
-      this.config.featureServices.length > 0 &&
       this.model.allEvents.length === 0
     ) {
       this.configSet = true;
@@ -94,26 +84,17 @@ export class ArcEventComponent implements OnInit, OnChanges {
     }
   }
 
-  /// Returns a list of values that differ between two lists of ArcEvents
-  getDifferences(left: ArcEvent[], right: ArcEvent[]): ArcEvent[] {
-    return left.filter(l =>
-      !right.some(r =>
-        l.id === r.id));
+  /// This Returns if Something should be shown when the Filter Text Box is used
+  getVisibility(item: ArcEvent): boolean {
+    return item.name.toLocaleLowerCase().includes(this.filterValue.toLocaleLowerCase());
   }
 
-  /// This Returns if Something should be shown when the Filter Text Box is used
-  getVisibility(item: ArcEvent) {
-    let isNotFiltered = this.model.allEvents.find((x) =>
-      x.name === item.name)?.name.toLocaleLowerCase().includes(this.filterValue);
-    return isNotFiltered
+  get sortedEvents(): ArcEvent[] {
+    return [...this.model.allEvents].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   clearFilterValue() {
     this.filterValue = "";
-  }
-
-  getSelections() {
-    return this._model.events.map((x) => x.id);
   }
 
   /// On Initial Load this will store all available events into model.allEvents
@@ -121,34 +102,28 @@ export class ArcEventComponent implements OnInit, OnChanges {
     if (this.model.allEvents.map((aE) => aE.name).filter((eN) =>
       x.map((mE) => mE.name).includes(eN)).length) return;
     console.log("Loading All Available Events")
-    let temp = new ArcEventsModel();
+    const allEvents = new Array<ArcEvent>();
     for (const event of x) {
-      let eventsLayers = this.eventLayers(event.name)
-      const arcEvent = new ArcEvent(event.name, event.id, eventsLayers);
-      temp.allEvents.push(arcEvent);
+      const eventsLayers = this.eventLayers(event.name)
+      allEvents.push(new ArcEvent(event.name, event.id, eventsLayers));
     }
-    this.model = Object.assign({}, temp);
+    this.model.allEvents = allEvents;
     this.eventSet = false;
   }
 
   /// On Initial Load, this checks the database loaded value for selected events
-  /// And Adds them to the list of select box selected values, which in turn adds them
-  /// to model.events
+  /// And marks the matching entries in model.allEvents as selected/on
   LoadSelectedEvents() {
     console.log("Loading Previously Selected Events")
     let events: (string | number)[] = [];
     for (const fs of this.config.featureServices) {
       for (const l of fs.layers) {
-        events.push(...<[]>l.events?.map(x => x))
+        l.events?.forEach(x => events.push(x))
       }
     }
-    if (!events) {
-      console.log("No Events Found!")
-      return;
-    }
-    else events = [...new Set(events)]; /// needs to be distinct.
-    let e = null;
+    events = [...new Set(events)]; /// needs to be distinct.
     for (const event of events) {
+      let e = null;
       if (typeof (event) == "string") {
         e = this.model.allEvents.find((x) => x.name === event);
       } else if (typeof (event) == "number") {
@@ -158,9 +133,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
         console.log(`${event} not found!`)
         continue;
       }
-      let eventsLayers = this.eventLayers(e.name)
-      const arcEvent = new ArcEvent(e.name, e.id, eventsLayers);
-      this.selectedValues.push(arcEvent.id)
+      e.selected = true;
     }
   }
 
@@ -190,29 +163,10 @@ export class ArcEventComponent implements OnInit, OnChanges {
     this.dialog.open<unknown, unknown, string>(this.editEventTemplate)
   }
 
-  onSelectEvents() {
-    this.dialog.open<unknown, unknown, string>(this.selectEventTemplate);
-  }
-
-  onSelectionChange(arcEventModified: ArcEvent, e: MatOptionSelectionChange) {
-    let option: MatOption = e.source;
-    if (!option) return
-    if (option.selected) this.onAddEvent(arcEventModified);
-    else this.onRemoveEvent(arcEventModified)
-  }
-
-  onAddEvent(event: ArcEvent) {
-    console.log('Adding Event to List of Selected Events');
-    let temp: ArcEventsModel = { ...this.model }
-    temp.events.push(event);
-    this.model = Object.assign({}, temp);
-  }
-
-  onRemoveEvent(event: ArcEvent) {
-    console.log('Removing Event to List of Selected Events');
-    let temp: ArcEventsModel = { ...this.model }
-    temp.events = temp.events.filter((e) => e != event);
-    this.model = Object.assign({}, temp);
+  /// Turns an event's synchronization on or off
+  onToggleEvent(event: ArcEvent, on: boolean) {
+    console.log(`Turning event synchronization ${on ? 'on' : 'off'} for event ${event.name}`);
+    event.selected = on;
   }
 
   getSelectedLayers(event: ArcEvent) {

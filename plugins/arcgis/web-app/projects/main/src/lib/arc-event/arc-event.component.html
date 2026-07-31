@@ -5,54 +5,56 @@
         <mat-card-title>Events</mat-card-title>
         <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
       </div>
-      <mat-form-field class="select-event">
-        <mat-label>Select Events</mat-label>
-        <mat-select #matRef multiple [(value)]="selectedValues" placeholder="Select Events"
-          (closed)="clearFilterValue()">
-          <input type="text" placeholder="Filter Events..." [(ngModel)]="filterValue" (click)="$event.stopPropagation()"
-            class="select-text-box" />
-          <mat-option *ngFor="let item of model.allEvents" [style.display]="getVisibility(item)? '' : 'none'"
-            [value]="item.id" (onSelectionChange)="onSelectionChange(item, $event)">
-            {{item.name}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
     </mat-card-header>
     <mat-card-content>
+      <mat-form-field class="filter-events">
+        <mat-label>Filter Events</mat-label>
+        <input matInput [(ngModel)]="filterValue" placeholder="Filter Events..." />
+      </mat-form-field>
+
+      <div *ngIf="!config.featureServices.length" class="no-feature-services-hint">
+        Add a feature service in the Feature Layers tab before synchronizing events
+      </div>
+
       <section class="arc-event-sync event-card">
-        <div *ngIf="!model.events.length">
-          There are currently no events synchronizing to ArcGIS layers.
+        <div *ngIf="!model.allEvents.length">
+          There are currently no events available.
           <mat-divider></mat-divider>
         </div>
 
         <mat-list>
-          <ng-container *ngFor="let event of model.events; let last = last">
-            <mat-list-item class="arcEvent">
-              <div class="arcEvent__info">
-                <div>
-                  {{ event.name }}
-                </div>
-                <div *ngIf="getSelectedLayers(event).length; else noLayers">
+          <ng-container *ngFor="let event of sortedEvents; let last = last">
+            <mat-list-item *ngIf="getVisibility(event)" class="arcEvent">
+              <div class="arcEvent__row">
+                <span class="arcEvent__toggle">
+                  <mat-slide-toggle color="primary" [checked]="event.selected"
+                    [disabled]="!config.featureServices.length"
+                    (change)="onToggleEvent(event, $event.checked)"></mat-slide-toggle>
+                </span>
+                <div class="arcEvent__info">
                   <div>
-                    <ng-container *ngFor="let featureLayer of getSelectedLayers(event); let i = index">
-                      {{ layerDisplay(featureLayer) }}<span *ngIf="i < getSelectedLayers(event).length - 1">, </span>
-                    </ng-container>
+                    {{ event.name }}
                   </div>
-                </div>
+                  <div *ngIf="event.selected && getSelectedLayers(event).length; else noLayers">
+                    <div>
+                      <ng-container *ngFor="let featureLayer of getSelectedLayers(event); let i = index">
+                        {{ layerDisplay(featureLayer) }}<span *ngIf="i < getSelectedLayers(event).length - 1">, </span>
+                      </ng-container>
+                    </div>
+                  </div>
 
-                <ng-template #noLayers>
-                  <div>This event is not synchronizing to any ArcGIS layers.</div>
-                </ng-template>
+                  <ng-template #noLayers>
+                    <div>This event is not synchronizing to any ArcGIS layers.</div>
+                  </ng-template>
+                </div>
               </div>
               <span matListItemMeta class="arcEvent__icons">
-                <a mat-icon-button color="primary" href="/#/admin/events/{{event.id}}" target="_blank">
+                <a mat-icon-button color="primary" [disabled]="!event.selected"
+                  href="/#/admin/events/{{event.id}}" target="_blank">
                   <mat-icon>open_in_new</mat-icon>
                 </a>
-                <button mat-icon-button color="primary" (click)="onEditEvent(event)">
+                <button mat-icon-button color="primary" [disabled]="!event.selected" (click)="onEditEvent(event)">
                   <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="primary" (click)="onRemoveEvent(event)">
-                  <mat-icon>remove_circle</mat-icon>
                 </button>
               </span>
             </mat-list-item>

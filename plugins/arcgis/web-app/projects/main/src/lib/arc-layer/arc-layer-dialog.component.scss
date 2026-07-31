@@ -30,6 +30,28 @@ mat-dialog-content {
   margin-bottom: 16px;
 }
 
+.no-edit-indicator {
+  color: #F44336;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+.no-edit-hint {
+  font-size: 75%;
+  color: #F44336;
+  margin-bottom: 16px;
+}
+
+.read-only-service {
+  --mdc-list-list-item-label-text-color: #F44336;
+  --mdc-list-list-item-supporting-text-color: #F44336;
+
+  .discovered-service-owner,
+  .discovered-service-url {
+    color: #F44336;
+  }
+}
+
 .invalid-credentials {
   color: #F44336;
   display: flex;
@@ -53,4 +75,41 @@ mat-dialog-content {
 
 .authentication-field {
   margin-top: 16px;
+}
+
+.entry-mode {
+  margin-bottom: 16px;
+}
+
+.discovered-services {
+  margin-bottom: 16px;
+}
+
+.discovered-services-filter {
+  width: 100%;
+}
+
+.discovered-service-owner,
+.discovered-service-url {
+  font-size: 75%;
+  opacity: 0.6;
+}
+
+.discovered-services-header {
+  font-size: 90%;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.discovered-services-paging {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 90%;
+  opacity: 0.7;
+}
+
+.discovered-services-paging__buttons {
+  display: flex;
+  align-items: center;
 }
