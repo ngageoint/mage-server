@@ -79,14 +79,7 @@ initializeRoutes(app, { authentication: auth });
 // Express requires a 4 parameter function callback, do not remove unused next parameter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use(function(err, req, res, next) {
-  log.error(
-    '\n-----\nunhandled error during request\n',
-    req.method,
-    req.path,
-    err,
-    '\n-----'
-  );
-
+  log.error(`unhandled error during request:' ${req.method}: ${req.path} %s`, err);
   const status = err.status || 500;
   let msg = status === 500
       ? 'Internal server error, please contact MAGE administrator.'
@@ -96,10 +89,8 @@ app.use(function(err, req, res, next) {
       message: err.message,
       errors: err.errors
     };
-
     return res.status(400).json(msg);
   }
-
   res.status(status).send(msg);
 } as express.ErrorRequestHandler);
 
