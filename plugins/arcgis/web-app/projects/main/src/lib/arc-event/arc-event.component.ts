@@ -173,6 +173,17 @@ export class ArcEventComponent implements OnInit, OnChanges {
     return event.layers.filter((x) => x.isSelected)
   }
 
+  layerSyncSummary(event: ArcEvent): string {
+    const layers = this.getSelectedLayers(event)
+    if (layers.length === 0) {
+      return 'This event is not synchronizing to any ArcGIS layers.'
+    }
+    if (layers.length === 1) {
+      return this.layerDisplay(layers[0])
+    }
+    return `Synchronizing ${layers.length} layers...`
+  }
+
   layerDisplay(layer: ArcEventLayer): string {
     let displayName = layer.name
     return displayName

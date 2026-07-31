@@ -35,17 +35,7 @@
                   <div>
                     {{ event.name }}
                   </div>
-                  <div *ngIf="event.selected && getSelectedLayers(event).length; else noLayers">
-                    <div>
-                      <ng-container *ngFor="let featureLayer of getSelectedLayers(event); let i = index">
-                        {{ layerDisplay(featureLayer) }}<span *ngIf="i < getSelectedLayers(event).length - 1">, </span>
-                      </ng-container>
-                    </div>
-                  </div>
-
-                  <ng-template #noLayers>
-                    <div>This event is not synchronizing to any ArcGIS layers.</div>
-                  </ng-template>
+                  <div>{{ event.selected ? layerSyncSummary(event) : 'This event is not synchronizing to any ArcGIS layers.' }}</div>
                 </div>
               </div>
               <span matListItemMeta class="arcEvent__icons">
