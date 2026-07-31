@@ -10,7 +10,7 @@ import { BaseMongooseRepository } from '../../../lib/adapters/base/adapters.base
 import { FeedServiceRepository, FeedServiceTypeUnregistered, InvalidServiceConfigError, FeedServiceConnection, FeedServiceInfo, FeedTopic, FeedTopicId, FeedRepository, Feed, FeedServiceCreateAttrs, FeedCreateAttrs } from '../../../lib/entities/feeds/entities.feeds'
 import { FeedServiceTypeIdentityModel, FeedsModels, FeedServiceTypeIdentitySchema, FeedServiceModel, FeedServiceSchema, MongooseFeedServiceTypeRepository, MongooseFeedServiceRepository, FeedModel, FeedSchema, MongooseFeedRepository, FeedServiceDocument, FeedDocument } from '../../../lib/adapters/feeds/adapters.feeds.db.mongoose'
 import { FeedServiceType } from '../../../lib/entities/feeds/entities.feeds'
-import { Json, JsonObject } from '../../../src/entities/entities.json_types'
+import { Json, JsonObject } from '../../../lib/entities/entities.json_types'
 import { EntityIdFactory } from '../../../lib/entities/entities.global'
 
 describe('feeds repositories', function () {
@@ -43,8 +43,7 @@ describe('feeds repositories', function () {
     let repo: MongooseFeedServiceTypeRepository
 
     beforeEach(async function () {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection) as any
+      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection)
       repo = new MongooseFeedServiceTypeRepository(model)
     })
 
@@ -200,8 +199,7 @@ describe('feeds repositories', function () {
     let repo: FeedServiceRepository
 
     beforeEach(function () {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection) as any
+      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection)
       repo = new MongooseFeedServiceRepository(model)
     })
 
@@ -257,8 +255,7 @@ describe('feeds repositories', function () {
     let idFactory: SubstituteOf<EntityIdFactory>
 
     beforeEach(function () {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.Feed, FeedSchema, collection) as any
+      model = conn.model(FeedsModels.Feed, FeedSchema, collection)
       idFactory = Sub.for<EntityIdFactory>()
       repo = new MongooseFeedRepository(model, idFactory)
     })
