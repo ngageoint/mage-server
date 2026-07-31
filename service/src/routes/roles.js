@@ -1,9 +1,8 @@
 module.exports = function(app, security) {
   var access = require('../access')
-    , Role = require('../models/role')
-    , passport = security.authentication.passport;
+    , Role = require('../models/role');
 
-  app.all('/api/roles*', passport.authenticate('bearer'));
+  app.all('/api/roles*', security.authentication.bearerAuthentication);
 
   function validateRoleParams(req, res, next) {
     var name = req.param('name');

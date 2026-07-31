@@ -1,8 +1,6 @@
-import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import express from 'express'
-import session from 'express-session'
 import passport from 'passport'
 import yaml from 'yaml'
 import { httpRequestLogging } from './adapters/adapters.logging.http'
@@ -31,9 +29,6 @@ app.use(function(req, res, next) {
   return next();
 });
 
-const secret = crypto.randomBytes(64).toString('hex');
-app.use(session({ secret }));
-
 app.enable('trust proxy');
 
 app.set('views', path.join(__dirname, 'views'));
@@ -46,7 +41,6 @@ app.use(
 );
 
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use(httpRequestLogging(log.child({ component: 'http' }), env.httpRequestLogMethods));
 app.get('/api/docs/openapi.yaml', async function(req, res) {
@@ -58,17 +52,18 @@ app.get('/api/docs/openapi.yaml', async function(req, res) {
   });
 });
 app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
-app.use(
-  '/private',
-  passport.authenticate('bearer'),
-  express.static(path.join(__dirname, 'private'))
-);
 
 // Configure authentication
 const auth = AuthenticationInitializer.initialize(
   app,
   passport,
   provision
+);
+
+app.use(
+  '/private',
+  auth.bearerAuthentication,
+  express.static(path.join(__dirname, 'private'))
 );
 
 // Configure routes

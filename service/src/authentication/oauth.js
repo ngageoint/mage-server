@@ -1,6 +1,8 @@
 'use strict';
 
-const OAuth2Strategy = require('passport-oauth2').Strategy
+const crypto = require('crypto')
+   , session = require('express-session')
+   , OAuth2Strategy = require('passport-oauth2').Strategy
    , TokenAssertion = require('./verification').TokenAssertion
    , base64 = require('base-64')
    , api = require('../api')
@@ -8,6 +10,13 @@ const OAuth2Strategy = require('passport-oauth2').Strategy
    , User = require('../models/user')
    , Role = require('../models/role')
    , { app, passport, tokenService } = require('./index');
+
+// OAuth2 is the only authentication strategy that needs a session: passport-oauth2's
+// CSRF `state` store (enabled via `store: true` below) and our own origin stash both
+// require req.session. Scope it to just these two routes so no other request in the
+// app (bearer-authenticated API calls, SAML, OIDC, static assets, etc.) carries or
+// depends on a session cookie.
+const oauthSession = session({ secret: crypto.randomBytes(64).toString('hex') });
 
 class OAuth2ProfileStrategy extends OAuth2Strategy {
    constructor(options, verify) {
@@ -187,6 +196,7 @@ function initialize(strategy) {
    }
 
    app.get(`/auth/${strategy.name}/signin`,
+      oauthSession,
       function (req, res, next) {
          passport.authenticate(strategy.name, {
             scope: strategy.settings.scope,
@@ -196,6 +206,7 @@ function initialize(strategy) {
    );
 
    app.get(`/auth/${strategy.name}/callback`,
+      oauthSession,
       authenticate,
       function (req, res) {
          if (req.query.state === 'mobile') {

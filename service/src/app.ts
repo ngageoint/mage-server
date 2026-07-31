@@ -840,7 +840,7 @@ async function initWebLayer(
     };
   };
 
-  const bearerAuthentication = webAuth.passport.authenticate('bearer');
+  const bearerAuthentication = webAuth.bearerAuthentication;
 
   // Attempts bearer authentication but never rejects the request - if a valid
   // token is present req.user is populated, otherwise req.user is set to an
@@ -906,36 +906,10 @@ async function initWebLayer(
   );
   webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
 
-  const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
-    req,
-    _res,
-    next
-  ): void => {
-    const token =
-      typeof req.query.access_token === 'string'
-        ? req.query.access_token
-        : null;
-
-    if (token && !req.headers.authorization) {
-      req.headers.authorization = `Bearer ${token}`;
-    }
-
-    next();
-  };
-
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 
-  const uiPluginsAuth: express.RequestHandler = (req, res, next): void => {
-    if (req.user) {
-      next();
-      return;
-    }
-    bearerAuthentication(req, res, next);
-  };
-
   webController.use('/ui_plugins', [
-    uiPluginsAccessTokenToAuthHeader,
-    uiPluginsAuth,
+    bearerAuthentication,
     webUiPluginRoutes
   ]);
 
