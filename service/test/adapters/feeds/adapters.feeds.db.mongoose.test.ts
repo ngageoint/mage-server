@@ -327,7 +327,7 @@ describe('feeds repositories', function () {
 
           const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
             id: uniqid(),
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: new mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: uniqid(),
             summary: uniqid(),

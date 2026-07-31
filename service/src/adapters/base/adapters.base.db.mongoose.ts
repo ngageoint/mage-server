@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { PagingParameters } from '../../entities/entities.global'
 
-type EntityReference = { id: string | number }
+type EntityReference<ID extends string | number = string | number> = ID extends { id: string | number } ? Pick<Required<ID>, 'id'> : { id: ID }
 
 /**
  * Map Mongoose `Document` instances to plain entity objects.
@@ -31,43 +31,43 @@ export function createDefaultEntityMapping<D, E extends object>(): EntityMapping
 /**
  * * Type parameter `D` is the type of the document as stored in MongoDB.
  * * Type parameter `M` is a `mongoose.Model<D>` that creates "hydrated" instances of `D`.
- * * Type parameter `Attrs` is the entity attributes type, which is typically a
+ * * Type parameter `E` is the entity attributes type, which is typically a
  *   plain object interface, and is the type that repository queries return
  *   using `entityForDocument()`.
  */
-export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs extends object> {
+export class BaseMongooseRepository<D, M extends mongoose.Model<any>, E extends object> {
 
   readonly model: M
-  readonly entityForDocument: DocumentMapping<D, Attrs>
-  readonly documentStubForEntity: EntityMapping<D, Attrs>
+  readonly entityForDocument: DocumentMapping<D, E>
+  readonly documentStubForEntity: EntityMapping<D, E>
 
-  constructor(model: M, mapping?: { docToEntity?: DocumentMapping<D, Attrs>, entityToDocStub?: EntityMapping<D, Attrs> }) {
+  constructor(model: M, mapping?: { docToEntity?: DocumentMapping<D, E>, entityToDocStub?: EntityMapping<D, E> }) {
     this.model = model
     this.entityForDocument = mapping?.docToEntity || createDefaultDocMapping()
     this.documentStubForEntity = mapping?.entityToDocStub || createDefaultEntityMapping()
   }
 
-  async create(attrs: Partial<Attrs>): Promise<Attrs> {
+  async create(attrs: Partial<E>): Promise<E> {
     const stub = this.documentStubForEntity(attrs)
     const created = await this.model.create(stub)
     return this.entityForDocument(created)
   }
 
-  async findAll(): Promise<Attrs[]> {
+  async findAll(): Promise<E[]> {
     const docs = this.model.find().cursor()
-    const entities: Attrs[] = []
+    const entities: E[] = []
     for await (const doc of docs) {
       entities.push(this.entityForDocument(doc))
     }
     return entities
   }
 
-  async findById(id: any): Promise<Attrs | null> {
+  async findById(id: any): Promise<E | null> {
     const doc = await this.model.findById(id)
     return doc ? this.entityForDocument(doc) : null as any
   }
 
-  async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: Attrs | null } : ID extends number ? { [id: number]: Attrs | null } : never> {
+  async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: E | null } : ID extends number ? { [id: number]: E | null } : never> {
     if (!ids.length) {
       return {} as any
     }
@@ -84,7 +84,7 @@ export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs exte
     return { ...notFound, ...found }
   }
 
-  async update(attrs: Partial<Attrs> & EntityReference): Promise<Attrs | null> {
+  async update(attrs: Partial<E> & EntityReference): Promise<E | null> {
     if (attrs.id == null) {
       throw new Error('update requires an id')
     }
@@ -98,7 +98,7 @@ export class BaseMongooseRepository<D, M extends mongoose.Model<any>, Attrs exte
     return this.entityForDocument(saved)
   }
 
-  async removeById(id: any): Promise<Attrs | null> {
+  async removeById(id: any): Promise<E | null> {
     const doc = await this.model.findByIdAndDelete(id)
     if (doc) {
       return this.entityForDocument(doc)

@@ -150,9 +150,13 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
   constructor(model: FeedModel, private readonly idFactory: EntityIdFactory) {
     const entityToDocStub: EntityMapping<FeedDocument, Feed> = e => {
       assert(typeof e.id === 'string', 'feed id must be a string')
-      assert(typeof e.service === 'string', 'feed service id must be a string')
-      const { id, ...idExcluded } = e
-      return { ...idExcluded, _id: id, service: mongoose.Types.ObjectId.createFromHexString(e.service), icon: e.icon?.id }
+      const { id, service, ...idExcluded } = e
+      return {
+        ...idExcluded,
+        ...(typeof service === 'string' ? { service: mongoose.Types.ObjectId.createFromHexString(service) } : {}),
+        icon: e.icon?.id,
+        _id: id
+      }
     }
     super(model, { entityToDocStub })
   }
