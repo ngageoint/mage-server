@@ -1,18 +1,16 @@
-/// <reference path="./user.d.ts" />
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
   , User = require('./user')
   , userTransformer = require('../transformers/user')
-  , FilterParser = require('../utilities/filterParser')
   , { pageQuery } = require('../adapters/base/adapters.base.db.mongoose')
   , { pageOf } = require('../entities/entities.global');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 // Collection to hold users
-var TeamSchema = new Schema({
+const TeamSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   teamEventId: { type: Number, ref: 'Event' },
@@ -24,16 +22,16 @@ var TeamSchema = new Schema({
 
 // TODO: index userIds and teamEventId?
 
-var permissions = {
+const permissions = {
   OWNER: ['read', 'update', 'delete'],
   MANAGER: ['read', 'update'],
   GUEST: ['read']
 };
 
 function rolesWithPermission(permission) {
-  var roles = [];
+  const roles = [];
 
-  for (var key in permissions) {
+  for (const key in permissions) {
     if (permissions[key].indexOf(permission) !== -1) {
       roles.push(key);
     }
@@ -41,44 +39,6 @@ function rolesWithPermission(permission) {
 
   return roles;
 }
-
-TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
-  var team = this;
-
-  if (!team.teamEventId) return next();
-
-  Event.getById(team.teamEventId, function (err, event) {
-    if (err) return next(err);
-
-    if (event) {
-      var error = new Error("Cannot delete an events team, event '" + event.name + "' still exists.");
-      error.status = 405;
-      return next(error);
-    }
-
-    return next();
-  });
-});
-
-TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
-  var team = this;
-  Event.removeTeamFromEvents(team, next);
-});
-
-TeamSchema.pre('save', function (next) {
-  var team = this;
-  Team.findOne({ name: new RegExp('^' + team.name + '$', 'i') }).then(
-    possibleDuplicate => {
-      if (possibleDuplicate && !possibleDuplicate._id.equals(team._id)) {
-        const error = new Error('Team already exists');
-        error.status = 409;
-        return next(error);
-      }
-      next();
-    },
-    err => next(err)
-  );
-})
 
 function transform(team, ret, options) {
   ret.id = ret._id;
@@ -89,7 +49,7 @@ function transform(team, ret, options) {
     delete ret.userIds;
   } else {
     let objectIdStrings = new Set();
-    for (var i = 0; i < ret.userIds.length; i++) {
+    for (let i = 0; i < ret.userIds.length; i++) {
       let objectId = ret.userIds[i].toString();
       objectIdStrings.add(objectId);
     }
@@ -98,16 +58,16 @@ function transform(team, ret, options) {
 
   // if read only permissions in team acl, then return users acl
   if (options.access) {
-    var userAccess = ret.acl[options.access.user._id];
-    var roles = rolesWithPermission('update').concat(rolesWithPermission('delete'));
+    const userAccess = ret.acl[options.access.user._id];
+    const roles = rolesWithPermission('update').concat(rolesWithPermission('delete'));
     if (!userAccess || roles.indexOf(userAccess) === -1) {
-      var acl = {};
+      const acl = {};
       acl[options.access.user._id] = ret.acl[options.access.user._id];
       ret.acl = acl;
     }
   }
 
-  for (var userId in ret.acl) {
+  for (const userId in ret.acl) {
     ret.acl[userId] = {
       role: ret.acl[userId],
       permissions: permissions[ret.acl[userId]]
@@ -123,7 +83,42 @@ TeamSchema.set("toJSON", {
   transform: transform
 });
 
-var Team = mongoose.model('Team', TeamSchema);
+const Team = mongoose.model('Team', TeamSchema);
+
+TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
+  if (!this.teamEventId) return next();
+
+  Event.getById(this.teamEventId, function (err, event) {
+    if (err) return next(err);
+
+    if (event) {
+      const error = new Error("Cannot delete an events team, event '" + event.name + "' still exists.");
+      error.status = 405;
+      return next(error);
+    }
+
+    return next();
+  });
+});
+
+TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
+  Event.removeTeamFromEvents(this, next);
+});
+
+TeamSchema.pre('save', function (next) {
+  Team.findOne({ name: new RegExp('^' + this.name + '$', 'i') }).then(
+    possibleDuplicate => {
+      if (possibleDuplicate && !possibleDuplicate._id.equals(this._id)) {
+        const error = new Error('Team already exists');
+        error.status = 409;
+        return next(error);
+      }
+      next();
+    },
+    err => next(err)
+  );
+})
+
 exports.Model = Team;
 
 exports.userHasAclPermission = function (team, userId, permission) {
@@ -138,18 +133,18 @@ exports.getTeamById = function (id, options, callback) {
     options = {};
   }
 
-  var conditions = {
+  const conditions = {
     _id: id
   };
   if (options.access) {
-    var accesses = [{
+    const accesses = [{
       userIds: {
         '$in': [options.access.user._id]
       }
     }];
 
     rolesWithPermission(options.access.permission).forEach(function (role) {
-      var access = {};
+      const access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
     });
@@ -157,7 +152,7 @@ exports.getTeamById = function (id, options, callback) {
     conditions['$or'] = accesses;
   }
 
-  var query = Team.findOne(conditions);
+  let query = Team.findOne(conditions);
 
   if (options.populate == null || options.populate == 'true') {
     query = query.populate('userIds');
@@ -281,7 +276,7 @@ exports.getNonMembers = async function (teamId, options) {
 };
 
 exports.teamsForUserInEvent = function (user, event, callback) {
-  var conditions = {
+  const conditions = {
     _id: { $in: event.teamIds },
     userIds: user._id
   };
@@ -297,15 +292,15 @@ exports.count = function (options, callback) {
     options = {};
   }
 
-  var conditions = {};
+  const conditions = {};
   if (options.access) {
-    var accesses = [{
+    const accesses = [{
       userIds: {
         '$in': [options.access.user._id]
       }
     }];
     rolesWithPermission(options.access.permission).forEach(function (role) {
-      var access = {};
+      const access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
     });
@@ -422,14 +417,8 @@ function entityForDocument(doc) {
   return entity;
 }
 
-function createQueryConditions(filter) {
-  var conditions = FilterParser.parse(filter);
-
-  return conditions;
-};
-
 exports.createTeam = function (team, user, callback) {
-  var create = {
+  const create = {
     name: team.name,
     description: team.description
   };
@@ -450,7 +439,7 @@ exports.createTeam = function (team, user, callback) {
 exports.createTeamForEvent = function (event, user, callback) {
   async.waterfall([
     function (done) {
-      var team = {
+      const team = {
         name: event.name,
         description: "This team belongs specifically to event '" + event.name + "' and cannot be deleted.",
         teamEventId: event._id,
@@ -502,7 +491,7 @@ exports.deleteTeam = function (team, callback) {
 };
 
 exports.addUser = function (team, user, callback) {
-  var update = {
+  const update = {
     $addToSet: {
       userIds: new mongoose.Types.ObjectId(user.id)
     }
@@ -515,7 +504,7 @@ exports.addUser = function (team, user, callback) {
 };
 
 exports.removeUser = function (team, user, callback) {
-  var update = {
+  const update = {
     $pull: {
       userIds: { $in: [new mongoose.Types.ObjectId(user.id)] }
     }
@@ -528,57 +517,45 @@ exports.removeUser = function (team, user, callback) {
 };
 
 exports.updateUserInAcl = function (teamId, userId, role, callback) {
-  // validate userId
-  var err;
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    err = new Error('Invalid userId');
+    const err = new Error('Invalid userId');
     err.status = 400;
     return callback(err);
   }
 
   // validate role
   if (Object.keys(permissions).indexOf(role) === -1) {
-    err = new Error('Invalid role');
+    const err = new Error('Invalid role');
     err.status = 400;
     return callback(err);
   }
 
-  var update = {};
-  update['acl.' + userId.toString()] = role;
-
+  const update = { ['acl.' + userId.toString()]: role };
   Team.findOneAndUpdate({ _id: teamId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
 exports.updateUserInAclForEventTeam = function (eventId, userId, role, callback) {
-  var update = {};
-  update['acl.' + userId.toString()] = role;
-
+  const update = { ['acl.' + userId.toString()]: role };
   Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeUserFromAcl = function (teamId, userId, callback) {
-  var update = {
-    $unset: {}
+  const update = {
+    $unset: { ['acl.' + userId.toString()]: true }
   };
-  update.$unset['acl.' + userId.toString()] = true;
-
   Team.findByIdAndUpdate(teamId, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeUserFromAclForEventTeam = function (eventId, userId, callback) {
-  var update = {
-    $unset: {}
+  const update = {
+    $unset: { ['acl.' + userId.toString()]: true }
   };
-  update.$unset['acl.' + userId.toString()] = true;
-
   Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeUserFromAllAcls = function (user, callback) {
-  var update = {
-    $unset: {}
+  const update = {
+    $unset: { ['acl.' + user._id.toString()]: true }
   };
-  update.$unset['acl.' + user._id.toString()] = true;
-
   Team.updateMany({}, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
