@@ -11,7 +11,7 @@ const Schema = mongoose.Schema;
 
 // Collection to hold users
 const TeamSchema = new Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
   description: { type: String },
   teamEventId: { type: Number, ref: 'Event' },
   userIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
@@ -83,8 +83,6 @@ TeamSchema.set("toJSON", {
   transform: transform
 });
 
-const Team = mongoose.model('Team', TeamSchema);
-
 TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   if (!this.teamEventId) return next();
 
@@ -105,20 +103,7 @@ TeamSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   Event.removeTeamFromEvents(this, next);
 });
 
-TeamSchema.pre('save', function (next) {
-  Team.findOne({ name: new RegExp('^' + this.name + '$', 'i') }).then(
-    possibleDuplicate => {
-      if (possibleDuplicate && !possibleDuplicate._id.equals(this._id)) {
-        const error = new Error('Team already exists');
-        error.status = 409;
-        return next(error);
-      }
-      next();
-    },
-    err => next(err)
-  );
-})
-
+const Team = mongoose.model('Team', TeamSchema);
 exports.Model = Team;
 
 exports.userHasAclPermission = function (team, userId, permission) {
@@ -409,12 +394,10 @@ exports.getTeams = async function (options, callback) {
 
 function entityForDocument(doc) {
   const json = doc.toJSON();
-  const entity = {
+  return {
     ...json,
     id: doc._id.toHexString()
-  }
-
-  return entity;
+  };
 }
 
 exports.createTeam = function (team, user, callback) {
