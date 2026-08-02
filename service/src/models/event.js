@@ -369,7 +369,7 @@ exports.getEvents = async function (options, callback) {
     const buildAccessClause = async (userId) => {
       if (!userId) return null;
 
-      const teamDocs = await Team.TeamModel.find({ userIds: { $in: [userId] } }, { _id: 1 }).lean();
+      const teamDocs = await Team.Model.find({ userIds: { $in: [userId] } }, { _id: 1 }).lean();
       const teamIdsForUser = teamDocs.map(t => t._id);
       const readRoles = rolesWithPermission('read');
       const aclKey = `acl.${userId.toString()}`;
