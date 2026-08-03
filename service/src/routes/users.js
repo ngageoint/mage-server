@@ -427,7 +427,7 @@ module.exports = function(app, security) {
 
   app.put(
     '/api/users/myself/password',
-    passport.authenticate('local'),
+    passport.authenticate('local', { session: false }),
     function(req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.sendStatus(404);
