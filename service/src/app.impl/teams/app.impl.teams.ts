@@ -5,26 +5,11 @@ import { PageOf } from '../../entities/entities.global';
 
 export function SearchTeams(teamRepo: TeamRepository,permissions: api.TeamsPermissionService
 ): api.SearchTeams {
-  return async function searchUsers(req: api.TeamSearchRequest): ReturnType<api.SearchTeams> {
-    return await withPermission<
-      PageOf<api.TeamSearchResult>,
-      KnownErrorsOf<api.SearchTeams>
-    >(
+  return async function searchTeams(req: api.TeamSearchRequest): ReturnType<api.SearchTeams> {
+    return await withPermission<PageOf<api.TeamSearchResult>,KnownErrorsOf<api.SearchTeams>>(
       permissions.ensureReadTeamsPermission(req.context),
       async (): Promise<PageOf<api.TeamSearchResult>> => {
-        const page = await teamRepo.find<api.TeamSearchResult>(
-          req.teamSearch,
-          x => {
-            return {
-              id: x.id,
-              name: x.name,
-              description: x.description,
-              userIds: x.userIds,
-              acl: x.acl
-            };
-          }
-        );
-        return page;
+        return await teamRepo.find<api.TeamSearchResult>(req.teamSearch)
       }
     );
   };

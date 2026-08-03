@@ -40,5 +40,7 @@ export interface TeamFindParameters extends PagingParameters {
    * Search by user name, display name, email, or phone number.
    */
   nameOrContactTerm?: string | undefined,
-  omitEventTeams?: boolean | undefined
+  omitEventTeams?: boolean | undefined,
+  withMembers?: string[] | undefined,
+  withoutMembers?: string[] | undefined
 }

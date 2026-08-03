@@ -13,12 +13,24 @@ export function TeamsRoutes(app: TeamsAppLayer, createAppRequest: WebAppRequestF
 
   routes.route('/search')
     .get(async (req, res, next) => {
+      const queryParamArray = (ids: any): string[] | undefined => {
+        if (typeof ids === 'string') {
+          return [ids]
+        } else if (Array.isArray(ids) && ids.every(id => typeof id === 'string')) {
+          return ids
+        } else {
+          return undefined
+        }
+      }
+
       const teamSearch: TeamSearchRequest['teamSearch'] = {
-        omitEventTeams: req.query.omit_event_teams ? /^true$/i.test(String(req.query.omit_event_teams)) : false,
+        omitEventTeams: 'true' === String(req.query.omit_event_teams).toLowerCase(),
         nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: req.query.total ? /^true$/i.test(String(req.query.total)) : true
+        includeTotalCount: req.query.total ? /^true$/i.test(String(req.query.total)) : true,
+        withMembers: queryParamArray(req.query.with_members),
+        withoutMembers: queryParamArray(req.query.without_members)
       };
 
       const appReq = createAppRequest(req, { teamSearch })

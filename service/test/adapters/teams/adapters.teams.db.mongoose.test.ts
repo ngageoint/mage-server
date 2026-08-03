@@ -1,472 +1,198 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import mongoose from 'mongoose'
-import uniqid from 'uniqid'
 import _ from 'lodash'
-import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapters.events.db.mongoose'
-import * as legacy from '../../../lib/models/event'
-import TeamModelModule = require('../../../lib/models/team')
-import { Team } from '../../../lib/entities/teams/entities.teams'
-import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventCreateAttrs } from '../../../lib/entities/events/entities.events'
-import { MageEventModel, MageEventModelInstance } from '../../../src/models/event'
-
-const TeamModel = TeamModelModule.Model
+import * as legacy from '../../../lib/models/team'
+import { TeamModel, MongooseTeamRepository } from '../../../lib/adapters/teams/adapters.teams.db.mongoose'
+import { TeamFindParameters } from '../../../src/entities/teams/entities.teams'
 
 describe('event mongoose repository', function() {
 
-  const model = legacy.Model as unknown as MageEventModel
-  let repo: MongooseMageEventRepository
-  let eventDoc: MageEventModelInstance
-  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventModelInstance>
+  let mockUser1Id = new mongoose.Types.ObjectId()
+  let mockUser2Id = new mongoose.Types.ObjectId()
+  let mockUser3Id = new mongoose.Types.ObjectId()
+  let mockUser4Id = new mongoose.Types.ObjectId()
+
+  let model: TeamModel
+  let repository: MongooseTeamRepository
+  let mockTeams = [{
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Team 1',
+    description: 'Group one',
+    userIds: [mockUser1Id]
+  },{
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Team 2',
+    description: 'Group two',
+    userIds: [mockUser1Id, mockUser2Id]
+  },{
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Team 3',
+    teamEventId: 3,
+    description: 'Users one',
+    userIds: [mockUser3Id]
+  },{
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Team 4',
+    teamEventId: 4,
+    description: 'Users two',
+    userIds: [mockUser3Id, mockUser4Id]
+  }]
 
   beforeEach('initialize model', async function() {
+    model = legacy.Model as any
+    repository = new MongooseTeamRepository(model)
 
-    repo = new MongooseMageEventRepository(model)
-    createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventModelInstance> => {
-      return new Promise<MageEventModelInstance>((resolve, reject) => {
-        legacy.create(
-          attrs as MageEventCreateAttrs,
-          { _id: new mongoose.Types.ObjectId() },
-          (err: any | null, event?: MageEventModelInstance) => {
-            if (err) {
-              return reject(err)
-            }
-            resolve(event!)
-          })
-      })
-        .then(createdWithoutTeamId => {
-          // fetch again, because the create method does not return the event with
-          // the implicitly created team id in the teamIds list, presumably
-          // because it's done in middleware |:$
-          // TODO: fix the above
-          return model.findById(createdWithoutTeamId._id).then(withTeamId => {
-            if (withTeamId) {
-              return withTeamId
-            }
-            throw new Error(`created event ${createdWithoutTeamId._id} now does not exist!`)
-          })
-        })
-    }
-    eventDoc = await createEvent({
-      name: 'Test Event',
-      description: 'For testing'
-    })
-
-    expect(eventDoc._id).to.be.a('number')
-    expect(eventDoc.teamIds.length).to.equal(1)
+    await model.insertMany(mockTeams)
   })
 
   afterEach(async function() {
     await model.deleteMany({})
   })
 
-  describe('finding events by id', function() {
+  describe('finding teams by id', function() {
 
-    it('looks up an event by id', async function() {
-
-      const fetched = await repo.findById(eventDoc._id)
-      expect(fetched).to.be.instanceOf(MageEvent)
-      expect(omitUndefinedFrom(copyMageEventAttrs(fetched!))).to.deep.equal(eventDoc.toJSON())
-    })
-  })
-
-  describe('finding active events', function() {
-
-    beforeEach('clear all events', async function() {
-      await model.deleteMany({})
+    it('finds team by id', async function() {
+      const fetched = await repository.findById(mockTeams[0]._id?.toHexString())
+      expect(fetched).to.deep.include({
+        id: mockTeams[0]._id?.toHexString(),
+        name: mockTeams[0].name,
+        userIds: mockTeams[0].userIds.map(id => id.toHexString())
+      })
     })
 
-    it('finds events whose complete key is false', async function() {
+    it('Return null when no team exists by id', async function() {
+      const fetched = await repository.findById(new mongoose.Types.ObjectId(),)
+      expect(fetched).to.be.null
+    })
 
-      const active1 = await createEvent({
-        name: 'Active 1',
-        complete: false
-      })
-      const active2 = await createEvent({
-        name: 'Active 2',
-        complete: false
-      })
-      const inactive = await createEvent({
-        name: 'Inactive',
-        complete: true
-      })
-      const allEvents = await repo.findAll()
-      const activeEvents = await repo.findActiveEvents()
-
-      expect(allEvents.length).to.equal(3)
-      expect(allEvents).to.deep.include.members([
-        repo.entityForDocument(active1),
-        repo.entityForDocument(active2),
-        repo.entityForDocument(inactive)
+    it('finds teams by ids', async function() {
+      const fetched = await repository.findAllByIds<string>([
+        mockTeams[2]._id!.toHexString(),
+        mockTeams[3]._id!.toHexString()
       ])
-      expect(activeEvents.length).to.equal(2)
-      expect(activeEvents).to.deep.include.members([
-        repo.entityForDocument(active1),
-        repo.entityForDocument(active2)
-      ])
-    })
-
-    it('finds events without a complete key', async function() {
-
-      const active1 = await createEvent({
-        name: 'Active 1',
+      expect(fetched).to.be.an('object');
+      expect(fetched[mockTeams[2]._id!.toHexString()]).to.deep.include({
+        id: mockTeams[2]._id?.toHexString(),
+        name: mockTeams[2].name,
+        userIds: mockTeams[2].userIds.map(id => id.toHexString())
       })
-      const active2 = await createEvent({
-        name: 'Active 2',
+
+      expect(fetched[mockTeams[3]._id!.toHexString()]).to.deep.include({
+        id: mockTeams[3]._id?.toHexString(),
+        name: mockTeams[3].name,
+        userIds: mockTeams[3].userIds.map(id => id.toHexString())
       })
-      const inactive = await createEvent({
-        name: 'Inactive',
-        complete: true
-      })
-      const allEvents = await repo.findAll()
-      const activeEvents = await repo.findActiveEvents()
-
-      expect(allEvents.length).to.equal(3)
-      expect(allEvents).to.deep.include.members([
-        repo.entityForDocument(active1),
-        repo.entityForDocument(active2),
-        repo.entityForDocument(inactive)
-      ])
-      expect(activeEvents.length).to.equal(2)
-      expect(activeEvents).to.deep.include.members([
-        repo.entityForDocument(active1),
-        repo.entityForDocument(active2)
-      ])
-    })
-  })
-
-  describe('adding feeds to events', function() {
-
-    it('adds a feed id when the feeds list does not exist', async function() {
-
-      const repo = new MongooseMageEventRepository(model)
-      const feedId = uniqid()
-      const updated = await repo.addFeedsToEvent(eventDoc?._id, feedId)
-      const fetched = await repo.findById(eventDoc?._id)
-
-      expect(updated?.feedIds).to.deep.equal([ feedId ])
-      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
     })
 
-    it('adds a feed id to a non-empty feeds list', async function() {
-
-      const repo = new MongooseMageEventRepository(model)
-      const feedIds = [ uniqid(), uniqid() ]
-      let updated = await repo.addFeedsToEvent(eventDoc?._id, feedIds[0])
-      let fetched = await repo.findById(eventDoc?._id)
-
-      expect(updated?.feedIds).to.deep.equal([ feedIds[0] ])
-      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
-
-      updated = await repo.addFeedsToEvent(eventDoc?._id, feedIds[1])
-      fetched = await repo.findById(eventDoc?._id)
-
-      expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
-    })
-
-    it('adds multiple feed ids to the feeds list', async function() {
-
-      const repo = new MongooseMageEventRepository(model)
-      const feedIds = [ uniqid(), uniqid() ]
-      let updated = await repo.addFeedsToEvent(eventDoc?._id, ...feedIds)
-      let fetched = await repo.findById(eventDoc?._id)
-
-      expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
-    })
-
-    it('does not add duplicate feed ids', async function() {
-
-      const repo = new MongooseMageEventRepository(model)
-      const feedIds = [ uniqid(), uniqid() ]
-      let updated = await repo.addFeedsToEvent(eventDoc?._id, ...feedIds)
-      let fetched = await repo.findById(eventDoc?._id)
-
-      expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
-
-      updated = await repo.addFeedsToEvent(eventDoc?._id, feedIds[0])
-      fetched = await repo.findById(eventDoc?._id)
-
-      expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
-    })
-
-    it('returns null if the event does not exist', async function() {
-
-      let typedEventDoc = eventDoc
-      const updated = await repo.addFeedsToEvent(typedEventDoc.id - 1, uniqid())
-      const fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.be.empty
-      expect(updated).to.be.null
-      expect(omitUndefinedFrom(copyMageEventAttrs(fetched!))).to.deep.equal(typedEventDoc.toJSON())
-    })
-  })
-
-  describe('removing feeds from an event', function() {
-
-    it('removes a feed id from the list', async function() {
-
-      const feedIds = Object.freeze([ uniqid(), uniqid() ])
-      let typedEventDoc = eventDoc
-      typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
-      const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0])
-      const fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
-      expect(fetched!.feedIds).to.deep.equal([ feedIds[1]] )
-      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
-    })
-
-    it('removes multiple feed ids from the list', async function() {
-
-      const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
-      let typedEventDoc = eventDoc
-      typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
-      const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0], feedIds[2])
-      const fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
-      expect(fetched!.feedIds).to.deep.equal([ feedIds[1]] )
-      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
-    })
-
-    it('has no affect if the feed ids are not in the list', async function() {
-
-      const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
-      let typedEventDoc = eventDoc
-      typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
-      const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, uniqid())
-      const fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
-      expect(fetched!.feedIds).to.deep.equal(feedIds)
-      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
-    })
-
-    it('has no affect if the event feed ids list is empty', async function() {
-
-      let typedEventDoc = eventDoc
-      let updated = await repo.removeFeedsFromEvent(typedEventDoc.id, uniqid())
-      let fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.be.empty
-      expect(fetched!.feedIds).to.be.empty
-      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
-    })
-
-    it('removes the given feed ids that are in the list and ignores feed ids that are not', async function() {
-
-      const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
-      let typedEventDoc = eventDoc as MageEventModelInstance
-      typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
-      const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[2], uniqid())
-      const fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
-      expect(fetched!.feedIds).to.deep.equal([ feedIds[0], feedIds[1] ])
-      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
-    })
-
-    it('returns null if the event does not exist', async function() {
-
-      const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
-      let typedEventDoc = eventDoc as MageEventModelInstance
-      typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
-      const updated = await repo.removeFeedsFromEvent(typedEventDoc.id - 1, feedIds[0])
-      const fetched = await repo.findById(typedEventDoc.id)
-
-      expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
-      expect(fetched?.feedIds).to.deep.equal(feedIds)
-      expect(updated).to.be.null
-    })
-  })
-
-  describe('removing a feed from all referencing events', function() {
-
-    it('removes the feed id entry from all events that reference the feed', async function() {
-
-      const feedId = uniqid()
-      const eventDocs = await Promise.all([
-        createEvent({
-          name: 'Remove Feeds 1',
-          description: 'testing',
-          feedIds: [
-            uniqid(),
-            feedId,
-            uniqid(),
-          ]
-        }),
-        createEvent({
-          name: 'Remove Feeds 2',
-          description: 'testing',
-          feedIds: [
-            feedId
-          ]
-        }),
-        createEvent({
-          name: 'Remove Feeds 3',
-          description: 'testing',
-          feedIds: [
-            uniqid(),
-            uniqid()
-          ]
-        })
-      ])
-      const updateCount = await repo.removeFeedsFromEvents(feedId)
-      const updatedEventDocs = await model.find({ _id: { $in: eventDocs.map(x => x._id) }})
-      expect(updateCount).to.equal(2)
-      expect(updatedEventDocs).to.have.length(3)
-      const byId = _.keyBy(updatedEventDocs.map(x => x.toJSON<MageEventAttrs>()), 'id')
-      expect(byId[eventDocs[0].id]).to.deep.include(
-        {
-          id: eventDocs[0]._id,
-          name: 'Remove Feeds 1',
-          description: 'testing',
-          feedIds: [ eventDocs[0].feedIds[0], eventDocs[0].feedIds[2] ]
-        }
-      )
-      expect(byId[eventDocs[1].id]).to.deep.include(
-        {
-          id: eventDocs[1]._id,
-          name: 'Remove Feeds 2',
-          description: 'testing',
-          feedIds: []
-        }
-      )
-      expect(byId[eventDocs[2].id]).to.deep.include(
-        {
-          id: eventDocs[2]._id,
-          name: 'Remove Feeds 3',
-          description: 'testing',
-          feedIds: eventDocs[2].feedIds
-        }
-      )
-    })
-
-    it('removes multiple feeds from multiple events', async function() {
-
-      const feedIds = [ uniqid(), uniqid() ]
-      const created = await Promise.all([
-        createEvent({
-          name: 'Remove Feeds 1',
-          description: 'testing',
-          feedIds: [
-            feedIds[0],
-            uniqid(),
-            feedIds[1]
-          ]
-        }),
-        createEvent({
-          name: 'Remove Feeds 2',
-          description: 'testing',
-          feedIds: [
-            ...feedIds
-          ]
-        }),
-        createEvent({
-          name: 'Remove Feeds 3',
-          description: 'testing',
-          feedIds: [
-            uniqid(),
-            feedIds[1],
-            uniqid()
-          ]
-        }),
-        createEvent({
-          name: 'Remove Feeds 4',
-          description: 'testing',
-          feedIds: [
-            uniqid(),
-            uniqid()
-          ]
-        })
-      ]) as MageEventModelInstance[]
-      // re-fetch to get teamIds array populated
-      const idsFilter = { _id: { $in: created.map(x => x._id) }}
-      const fetched = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON<MageEventAttrs>()), 'name')
-      expect(Object.keys(fetched)).to.have.length(4)
-
-      const updateCount = await repo.removeFeedsFromEvents(...feedIds)
-      expect(updateCount).to.equal(3)
-
-      const updated = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON<MageEventAttrs>()), 'name')
-      for (const nameNum of [ 1, 2, 3, 4 ]) {
-        const name = `Remove Feeds ${nameNum}`
-        const createdEvent = fetched[name]
-        const updatedEvent = updated[name]
-        expect(createdEvent.feedIds, name).to.include.members(updatedEvent.feedIds)
-        expect(_.difference(createdEvent.feedIds, feedIds), name).to.deep.equal(updatedEvent.feedIds)
-        expect(_.omit(updatedEvent, 'feedIds')).to.deep.equal(_.omit(createdEvent, 'feedIds'))
+    it('find all teams for page 1', async function() {
+      const parameters: TeamFindParameters = {
+        pageSize: 2,
+        pageIndex: 0
       }
-    })
-  })
-
-  describe('getting teams in an event', function() {
-
-    it('gets the teams', async function() {
-
-      const user = new mongoose.Types.ObjectId().toHexString()
-      const teams: Partial<Team>[] = [
-        {
-          id: new mongoose.Types.ObjectId().toHexString(),
-          name: 'Team 1',
-          acl: {
-            [user]: {
-              role: 'OWNER',
-              permissions: [ 'read', 'update', 'delete' ]
-            }
-          },
-          userIds: [ user, new mongoose.Types.ObjectId().toHexString(), new mongoose.Types.ObjectId().toHexString() ]
-        },
-        {
-          id: new mongoose.Types.ObjectId().toHexString(),
-          name: 'Team 2',
-          acl: {
-            [user]: {
-              role: 'GUEST',
-              permissions: [ 'read' ]
-            }
-          },
-          userIds: [ user, new mongoose.Types.ObjectId().toHexString() ]
-        }
-      ]
-      const teamDocs = await Promise.all(teams.map(async (x) => {
-        return await TeamModel.create(Object.assign({ ...x },
-          {
-            _id: new mongoose.Types.ObjectId(x.id),
-            acl: _.mapValues(x.acl, x => x.role)
-          }))
-      }))
-      eventDoc.teamIds = teamDocs.map(x => x._id)
-      eventDoc = await eventDoc.save()
-      const fetchedTeams = await repo.findTeamsInEvent(eventDoc.id)
-
-      expect(fetchedTeams).to.deep.equal(teams)
+      const fetched = await repository.find(parameters)
+      expect(fetched.totalCount).to.equal(4)
+      expect(fetched.pageIndex).to.equal(0)
+      expect(fetched.pageSize).to.equal(2)
+      expect(fetched.items[0]).to.deep.include({
+        id: mockTeams[0]._id?.toHexString(),
+        name: mockTeams[0].name,
+        userIds: mockTeams[0].userIds.map(id => id.toHexString())
+      })
+      expect(fetched.items[1]).to.deep.include({
+        id: mockTeams[1]._id?.toHexString(),
+        name: mockTeams[1].name,
+        userIds: mockTeams[1].userIds.map(id => id.toHexString())
+      })
     })
 
-    it('returns null when the event does not exist', async function() {
-      const oops = await repo.findTeamsInEvent(eventDoc.id - 1)
-      expect(oops).to.be.null
+    it('find all teams for page 1 with search term', async function() {
+      const parameters: TeamFindParameters = {
+        pageSize: 2,
+        pageIndex: 0,
+        nameOrContactTerm: 'two'
+      }
+      const fetched = await repository.find(parameters)
+      expect(fetched.totalCount).to.equal(2)
+      expect(fetched.pageIndex).to.equal(0)
+      expect(fetched.pageSize).to.equal(2)
+      expect(fetched.items[0]).to.deep.include({
+        id: mockTeams[1]._id?.toHexString(),
+        name: mockTeams[1].name,
+        userIds: mockTeams[1].userIds.map(id => id.toHexString())
+      })
+      expect(fetched.items[1]).to.deep.include({
+        id: mockTeams[3]._id?.toHexString(),
+        name: mockTeams[3].name,
+        userIds: mockTeams[3].userIds.map(id => id.toHexString())
+      })
     })
-  })
 
-  it('does not allow creating events', async function() {
-    await expect(repo.create()).to.eventually.rejectWith(Error)
-  })
+    it('find all teams for page 1 and omit event teams', async function() {
+      const parameters: TeamFindParameters = {
+        pageSize: 4,
+        pageIndex: 0,
+        omitEventTeams: true
+      }
+      const fetched = await repository.find(parameters)
+      expect(fetched.totalCount).to.equal(2)
+      expect(fetched.pageIndex).to.equal(0)
+      expect(fetched.pageSize).to.equal(4)
+      expect(fetched.items[0]).to.deep.include({
+        id: mockTeams[0]._id?.toHexString(),
+        name: mockTeams[0].name,
+        userIds: mockTeams[0].userIds.map(id => id.toHexString())
+      })
+      expect(fetched.items[1]).to.deep.include({
+        id: mockTeams[1]._id?.toHexString(),
+        name: mockTeams[1].name,
+        userIds: mockTeams[1].userIds.map(id => id.toHexString())
+      })
+    })
 
-  it('does not allow updating events', async function() {
-    await expect(repo.update({ id: eventDoc._id, feedIds: [ 'not_allowed' ] })).to.eventually.rejectWith(Error)
+
+    it('find all teams for page 1 with members', async function() {
+      const parameters: TeamFindParameters = {
+        pageSize: 4,
+        pageIndex: 0,
+        withMembers: [mockUser1Id.toHexString()]
+      }
+      const fetched = await repository.find(parameters)
+      expect(fetched.totalCount).to.equal(2)
+      expect(fetched.pageIndex).to.equal(0)
+      expect(fetched.pageSize).to.equal(4)
+      expect(fetched.items[0]).to.deep.include({
+        id: mockTeams[0]._id?.toHexString(),
+        name: mockTeams[0].name,
+        userIds: mockTeams[0].userIds.map(id => id.toHexString())
+      })
+      expect(fetched.items[1]).to.deep.include({
+        id: mockTeams[1]._id?.toHexString(),
+        name: mockTeams[1].name,
+        userIds: mockTeams[1].userIds.map(id => id.toHexString())
+      })
+    })
+
+    it('find all teams for page 1 without members', async function() {
+      const parameters: TeamFindParameters = {
+        pageSize: 4,
+        pageIndex: 0,
+        withoutMembers: [mockUser1Id.toHexString()]
+      }
+      const fetched = await repository.find(parameters)
+      expect(fetched.totalCount).to.equal(2)
+      expect(fetched.pageIndex).to.equal(0)
+      expect(fetched.pageSize).to.equal(4)
+      expect(fetched.items[0]).to.deep.include({
+        id: mockTeams[2]._id?.toHexString(),
+        name: mockTeams[2].name,
+        userIds: mockTeams[2].userIds.map(id => id.toHexString())
+      })
+      expect(fetched.items[1]).to.deep.include({
+        id: mockTeams[3]._id?.toHexString(),
+        name: mockTeams[3].name,
+        userIds: mockTeams[3].userIds.map(id => id.toHexString())
+      })
+    })
   })
 })
-
-function omitUndefinedFrom(x: any) {
-  return _.omitBy(x, v => v === void(0))
-}

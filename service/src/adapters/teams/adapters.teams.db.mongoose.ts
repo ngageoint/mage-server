@@ -21,7 +21,7 @@ export class MongooseTeamRepository extends BaseMongooseRepository<TeamDocument,
   constructor(model: mongoose.Model<TeamDocument>) {
     super(model, {
       docToEntity: doc => {
-        const json = doc.toJSON<Team>()
+        const json = doc.toObject<Team>({ versionKey: false })
         return {
           ...json,
           id: doc._id.toHexString(),
@@ -57,11 +57,21 @@ export class MongooseTeamRepository extends BaseMongooseRepository<TeamDocument,
     const params = omitEventTeams ? {
       $and: [
         termParams,
-        {
-          teamEventId: null
-        }
+        { teamEventId: null }
       ]
     } : termParams
+
+    const toObjectIds = (ids: string[]): mongoose.Types.ObjectId[] => {
+      return ids
+        .filter(id => mongoose.Types.ObjectId.isValid(id))
+        .map(id => new mongoose.Types.ObjectId(id));
+    }
+
+    if (which.withMembers) {
+      params.userIds = { $in: toObjectIds(which.withMembers) }
+    } else if (which.withoutMembers) {
+      params.userIds = { $nin: toObjectIds(which.withoutMembers) }
+    }
 
     const baseQuery = this.model.find(params).sort('name _id')
     const counted = await pageQuery(baseQuery, which)

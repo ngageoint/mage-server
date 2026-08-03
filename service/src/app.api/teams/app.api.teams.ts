@@ -7,7 +7,9 @@ import { Team } from '../../entities/teams/entities.teams'
 export interface TeamSearchRequest extends AppRequest {
   teamSearch: PagingParameters & {
     nameOrContactTerm?: string | undefined,
-    omitEventTeams?: boolean | undefined
+    omitEventTeams?: boolean | undefined,
+    withMembers?: string[],
+    withoutMembers?: string[]
   }
 }
 
