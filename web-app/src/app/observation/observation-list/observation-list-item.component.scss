@@ -93,6 +93,21 @@ mat-card-actions {
   display: block;
 }
 
+.item-media-chip {
+  margin-top: 8px;
+}
+
+.item-media-chip-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #ffebee;
+  color: #c62828;
+}
+
 .item-important {
   padding: 8px 0;
   display: flex;

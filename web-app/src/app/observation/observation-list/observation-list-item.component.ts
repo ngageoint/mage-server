@@ -7,6 +7,7 @@ import { FeedPanelService } from '../../feed-panel/feed-panel.service'
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { AttachmentProcessingStatus } from '../../filter/filter.types';
 
 @Component({
     selector: 'observation-list-item',
@@ -205,5 +206,18 @@ export class ObservationListItemComponent implements OnChanges {
 
   updateFavorites(): void {
     this.favorites = this.observation.favoriteUserIds.length
+  }
+
+  // If observation shows multiple attachments, always show the 'passed' as the thumbnail but ensure a flag is also shown for the failed
+  representativeAttachment(): any {
+    return this.attachments.find(attachment => attachment.processingStatus !== AttachmentProcessingStatus.Rejected && attachment.processingStatus !== AttachmentProcessingStatus.Error) || this.attachments[0]
+  }
+
+  hasFailedAttachment(): boolean {
+    return this.attachments.some(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error)
+  }
+
+  failedAttachmentCount(): number {
+    return this.attachments.filter(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error).length
   }
 }

@@ -1,11 +1,16 @@
 import EventEmitter from 'events'
+import stream from 'stream'
+import util from 'util'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
+import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
+
+const pipeline = util.promisify(stream.pipeline)
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
   return async function allocateObservationId(req: api.AllocateObservationIdRequest): ReturnType<api.AllocateObservationId> {
@@ -52,7 +57,7 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   }
 }
 
-export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore): api.StoreAttachmentContent {
+export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore, attachmentHooks: AttachmentHook[]): api.StoreAttachmentContent {
   return async function storeAttachmentContent(req: api.StoreAttachmentContentRequest): ReturnType<api.StoreAttachmentContent> {
     const obsRepo = req.context.observationRepository
     const obsBefore = await obsRepo.findById(req.observationId)
@@ -72,7 +77,43 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     if (denied) {
       return AppResponse.error(denied)
     }
-    const attachmentPatch = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    let attachmentPatch: AttachmentContentPatchAttrs | AttachmentPatchAttrs | AttachmentStoreError | null
+    if (attachmentHooks.length === 0) {
+      /*
+      No attachment-processing hooks are registered (e.g. no ClamAV or other
+      plugin enabled) - keep the original, direct-to-final-storage behavior
+      unchanged, so installations that never asked for attachment processing
+      see no staging latency at all.
+      */
+      attachmentPatch = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    }
+    else if (req.content.bytes instanceof StagedAttachmentContentRef) {
+      /*
+      The incoming content is already a reference to previously-staged
+      content (not a fresh stream) - nothing to write here, just record its
+      existing id so the background job can find it later.
+      */
+      attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: req.content.bytes.id as string }
+    }
+    else {
+      /*
+      Hooks are registered and this is a fresh stream - stage the upload
+      instead of finalizing it immediately. A later, separate attachment-
+      processing job runs the registered hooks against the staged content
+      and only then finalizes (saveContent with a StagedAttachmentContentRef)
+      or rejects it.
+      */
+      const staged = await attachmentStore.stagePendingContent()
+      try {
+        await pipeline(req.content.bytes, staged.tempLocation)
+        attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: staged.id as string }
+      }
+      catch (err) {
+        const message = `error staging attachment content for attachment ${attachmentBefore.id} on observation ${obsBefore.id}`
+        console.error(message, err)
+        attachmentPatch = new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `${message}: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
     if (attachmentPatch instanceof AttachmentStoreError) {
       if (attachmentPatch.errorCode === AttachmentStoreErrorCode.StorageError) {
         return AppResponse.error(infrastructureError(attachmentPatch))

@@ -51,11 +51,15 @@
       </div>
     </div>
 
-    <div *ngIf="attachments?.length && attachments[0]?.url" class="item-media">
+    <div *ngIf="attachments?.length" class="item-media">
       <observation-attachment
-        [attachment]="attachments[0]"
+        [attachment]="representativeAttachment()"
         [label]="attachments.length > 1 ? '1 of ' + attachments.length : false">
       </observation-attachment>
+    </div>
+
+    <div *ngIf="hasFailedAttachment()" class="item-media-chip">
+      <span class="item-media-chip-label">{{ failedAttachmentCount() > 1 ? 'Attachments Failed - ' + failedAttachmentCount() : 'Attachment Failed' }}</span>
     </div>
   </mat-card-content>
 

@@ -7,7 +7,7 @@ import {
 } from './main.impl/main.impl.plugins';
 import httpLib from 'http';
 import fs from 'fs-extra';
-import mongoose from 'mongoose';
+import mongoose, { plugin } from 'mongoose';
 import express from 'express';
 import util from 'util';
 import {
@@ -150,6 +150,10 @@ import {
 import { RoleBasedMapPermissionService } from './permissions/permissions.settings';
 import { SettingRepository } from './entities/settings/entities.settings';
 
+// Attachment imports
+import { AttachmentHook } from './plugins.api/plugins.api.attachments';
+import { startAttachmentProcessing } from './main.impl/main.impl.attachment_processing';
+
 export interface MageService {
   webController: express.Application;
   server: httpLib.Server;
@@ -226,7 +230,17 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 
   const dbLayer = await initDatabase();
   const repos = await initRepositories(dbLayer, config);
-  const appLayer = await initAppLayer(repos);
+  /*
+  Declared here, before plugins load, and passed by reference into
+  initAppLayer/storeAttachmentContent below. storeAttachmentContent is only
+  actually invoked per HTTP request, long after boot() finishes, so it's
+  safe for this array to still be empty right now - it gets filled in below,
+  after the plugin-loading loop, by mutating this same array in place
+  (not reassigning it), so the reference already handed to
+  storeAttachmentContent's closure sees the final contents.
+  */
+  const attachmentHooks: AttachmentHook[] = [];
+  const appLayer = await initAppLayer(repos, attachmentHooks);
   const { webController, addPluginRoutes } = await initWebLayer(
     repos,
     appLayer,
@@ -239,6 +253,15 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     initPluginRoutes: WebRoutesHooks
   ): void => {
     routesForPluginId[pluginId] = initPluginRoutes;
+  };
+
+  // Hooks by plugin
+  const attachmentHooksByPluginId: { [pluginId: string]: AttachmentHook[] } = {};
+  const collectAttachmentHooks = (
+    pluginId: string,
+    attachmentHooks: AttachmentHook[]
+  ): void => {
+    attachmentHooksByPluginId[pluginId] = attachmentHooks;
   };
 
   const globalScopeServices = new Map<InjectionToken<any>, any>([
@@ -288,12 +311,24 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
         pluginId,
         initPlugin,
         injectService,
-        collectPluginRoutesToSort
+        collectPluginRoutesToSort,
+        collectAttachmentHooks
       );
     } catch (err) {
       console.error(`error loading plugin ${pluginId}`, err);
     }
   }
+
+  // Flatten hooks in array. Mutates the array declared earlier (not a
+  // reassignment) so the reference already passed into storeAttachmentContent
+  // reflects these contents once real requests start coming in.
+  attachmentHooks.push(...Object.values(attachmentHooksByPluginId).flat())
+
+  // Start the background job that finds attachments staged by
+  // storeAttachmentContent and runs them through the now-final attachmentHooks
+  // list. Core-owned (not tied to any one plugin's init()), since it must run
+  // hooks contributed by any enabled plugin.
+  startAttachmentProcessing(repos.observations.obsRepoFactory, repos.observations.attachmentStore, attachmentHooks, console);
 
   const pluginRoutePathsDescending = Object.keys(routesForPluginId)
     .sort()
@@ -568,9 +603,9 @@ async function initRepositories(
   };
 }
 
-async function initAppLayer(repos: Repositories): Promise<AppLayer> {
+async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook[]): Promise<AppLayer> {
   const events = await initEventsAppLayer(repos);
-  const observations = await initObservationsAppLayer(repos);
+  const observations = await initObservationsAppLayer(repos, attachmentHooks);
   const icons = await initIconsAppLayer(repos);
   const feeds = await initFeedsAppLayer(repos);
   const users = await initUsersAppLayer(repos);
@@ -635,7 +670,8 @@ async function initEventsAppLayer(
 }
 
 async function initObservationsAppLayer(
-  repos: Repositories
+  repos: Repositories,
+  attachmentHooks: AttachmentHook[]
 ): Promise<AppLayer['observations']> {
   const eventPermissions = await import('./permissions/permissions.events');
   const obsPermissions = await import('./permissions/permissions.observations');
@@ -659,7 +695,8 @@ async function initObservationsAppLayer(
     ),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(
       obsPermissionsService,
-      repos.observations.attachmentStore
+      repos.observations.attachmentStore,
+      attachmentHooks
     ),
     readAttachmentContent: observationsImpl.ReadAttachmentContent(
       obsPermissionsService,

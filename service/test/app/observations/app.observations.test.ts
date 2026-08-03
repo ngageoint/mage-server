@@ -1614,7 +1614,7 @@ describe('observations use case interactions', function() {
         }
       ]
       obs = Observation.evaluate(baseObsAttrs, mageEvent)
-      storeAttachmentContent = StoreAttachmentContent(permissions, store)
+      storeAttachmentContent = StoreAttachmentContent(permissions, store, [])
 
       expect(obs.validation.hasErrors).to.be.false
     })

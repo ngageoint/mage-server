@@ -945,6 +945,15 @@ class BufferAttachmentStore implements AttachmentStore {
     this.pendingContent.set(id, Buffer.alloc(0))
     return pending
   }
+  async stagedContentPath(stagedContentId: StagedAttachmentContentId): Promise<string | AttachmentStoreError> {
+    if (!this.pendingContent.has(stagedContentId as string)) {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, `pending content not found: ${stagedContentId}`)
+    }
+    return stagedContentId as string
+  }
+  async deleteStagedContent(stagedContentId: StagedAttachmentContentId): Promise<void | AttachmentStoreError> {
+    this.pendingContent.delete(stagedContentId as string)
+  }
   async saveContent(content: NodeJS.ReadableStream | StagedAttachmentContent, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | AttachmentContentPatchAttrs | null> {
     if (typeof content !== 'string') {
       return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')

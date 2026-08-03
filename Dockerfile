@@ -66,6 +66,12 @@ RUN cd ${MAGE_SERVER}/plugins/nga-msi \
     && cd ${MAGE_PACKAGES} \
     && npm pack ${MAGE_SERVER}/plugins/nga-msi
 
+RUN cd ${MAGE_SERVER}/plugins/clamav/service \
+    && npm link ../../../service \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/clamav/service
+
 WORKDIR ${MAGE_INSTANCE}
 RUN cd ${MAGE_INSTANCE} \
     && npm install --omit dev --force \
@@ -75,6 +81,7 @@ RUN cd ${MAGE_INSTANCE} \
     ${MAGE_PACKAGES}/ngageoint-mage.arcgis.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.image.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.nga-msi-*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.clamav.*.tgz \
     && ln -s ./node_modules/.bin/mage.service
 
 FROM ${DIST_IMAGE}
