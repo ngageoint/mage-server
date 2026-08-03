@@ -160,10 +160,19 @@ jobs:
           eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.service-*.tgz)"
           eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-app-*.tgz)"
           eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-core-lib-*.tgz)"
-      - name: publish
+      - name: publish service package
         if: ${{ ! inputs.is_draft }}
+        continue-on-error: true
         run: |
           eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.service-*.tgz)"
+      - name: publish web-app package
+        if: ${{ ! inputs.is_draft }}
+        continue-on-error: true
+        run: |
           eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-app-*.tgz)"
+      - name: publish web-core-lib package
+        if: ${{ ! inputs.is_draft }}
+        continue-on-error: true
+        run: |
           eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.web-core-lib-*.tgz)"
 

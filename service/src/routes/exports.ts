@@ -25,7 +25,6 @@ type ExportRequest = express.Request & {
 
 const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
 
-  const passport = security.authentication.passport;
 
   async function authorizeEventAccess(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
     if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_ALL)) {
@@ -55,7 +54,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
   }
 
   app.post('/api/exports',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     parseQueryParams,
     getEvent,
     authorizeEventAccess,
@@ -82,7 +81,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
    * Get all exports
    */
   app.get('/api/exports',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize(ExportPermission.READ_EXPORT),
     function (req, res, next) {
       Export.getExports().then(results => {
@@ -96,7 +95,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
    * Get my exports
    */
   app.get('/api/exports/myself',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     function (req, res, next) {
       Export.getExportsByUserId(req.user._id, { populate: true }).then(exports => {
         const response = exportXform.transform(exports, { path: `${req.getRoot()}/api/exports` });
@@ -109,7 +108,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
   * Get a specific export
   */
   app.get('/api/exports/:exportId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     authorizeExportAccess(ExportPermission.READ_EXPORT),
     function (req, res) {
       const exportReq = req as ExportRequest
@@ -127,7 +126,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
    */
   // TODO should be able to delete your own export
   app.delete('/api/exports/:exportId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     authorizeExportAccess(ExportPermission.DELETE_EXPORT),
     function (req, res, next) {
       const exportId = req.params.exportId
@@ -150,7 +149,7 @@ const DefineExportsRoutes: MageRouteDefinitions = function (app, security) {
    * Retry a failed export
    */
   app.post('/api/exports/:exportId/retry',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     authorizeExportAccess(ExportPermission.READ_EXPORT),
     getExport,
     getEvent,

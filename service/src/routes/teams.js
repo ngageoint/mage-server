@@ -3,10 +3,9 @@ module.exports = function(app, security) {
     , UserModel = require('../models/user')
     , access = require('../access')
     , log = require('../logger').child({ component: 'teams' })
-    , pageinfoTransformer = require('../transformers/pageinfo')
-    , passport = security.authentication.passport;
+    , pageinfoTransformer = require('../transformers/pageinfo');
 
-  app.all('/api/teams*', passport.authenticate('bearer'));
+  app.all('/api/teams*', security.authentication.bearerAuthentication);
 
   function determineReadAccess(req, res, next) {
     if (!access.userHasPermission(req.user, 'READ_TEAM')) {

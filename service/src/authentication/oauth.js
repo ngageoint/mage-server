@@ -1,6 +1,8 @@
 'use strict';
 
-const OAuth2Strategy = require('passport-oauth2').Strategy
+const crypto = require('crypto')
+   , session = require('express-session')
+   , OAuth2Strategy = require('passport-oauth2').Strategy
    , TokenAssertion = require('./verification').TokenAssertion
    , base64 = require('base-64')
    , api = require('../api')
@@ -8,6 +10,8 @@ const OAuth2Strategy = require('passport-oauth2').Strategy
    , User = require('../models/user')
    , Role = require('../models/role')
    , { app, passport, tokenService } = require('./index');
+
+const oauthSession = session({ secret: crypto.randomBytes(64).toString('hex') });
 
 class OAuth2ProfileStrategy extends OAuth2Strategy {
    constructor(options, verify) {
@@ -182,6 +186,7 @@ function initialize(strategy) {
    }
 
    app.get(`/auth/${strategy.name}/signin`,
+      oauthSession,
       function (req, res, next) {
          req.session.oauthContext = { origin: req.query.state || 'web' }
 
@@ -192,6 +197,7 @@ function initialize(strategy) {
    );
 
    app.get(`/auth/${strategy.name}/callback`,
+      oauthSession,
       authenticate,
       function (req, res) {
          const { origin } = req.session.oauthContext || {}

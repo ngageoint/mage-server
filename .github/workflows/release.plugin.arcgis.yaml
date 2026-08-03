@@ -95,7 +95,11 @@ jobs:
         run: |
           eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.arcgis.service-*.tgz)"
           eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.arcgis.web-app-*.tgz)"
-      - name: publish
+      - name: publish service package
+        continue-on-error: true
         run: |
           eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.arcgis.service-*.tgz)"
+      - name: publish web-app package
+        continue-on-error: true
+        run: |
           eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.arcgis.web-app-*.tgz)"
