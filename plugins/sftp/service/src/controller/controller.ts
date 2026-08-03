@@ -7,8 +7,8 @@ import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig, EventFilterMode } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
-import fs from 'fs';
-import path from 'path';
+import { PrivateKeyStore } from '../keystore/PrivateKeyStore';
+import { MongoPrivateKeyStore } from '../keystore/MongoPrivateKeyStore';
 import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
 import { Connection } from 'mongoose';
@@ -90,6 +90,11 @@ export class SftpController {
   private stateRepository: PluginStateRepository<SFTPPluginConfig>;
 
   /**
+   * Storage for the SFTP private key
+   */
+  private privateKeyStore: PrivateKeyStore;
+
+  /**
    * SFTP client configuration
    */
   private sftpClient: SFTPClient = new SFTPClient();
@@ -152,6 +157,7 @@ export class SftpController {
     const archiverFactory = new ArchiverFactory(userRepository, attachmentStore)
 
     this.stateRepository = stateRepository;
+    this.privateKeyStore = new MongoPrivateKeyStore(stateRepository);
     this.eventRepository = eventRepository;
     this.sftpObservationRepository = sftpObservationRepository;
     this.observationRepository = observationRepository;
@@ -169,7 +175,7 @@ export class SftpController {
     let config: SFTPPluginConfig = this.configuration
       ?? await this.stateRepository.get()
       ?? await this.stateRepository.put(defaultSFTPPluginConfig);
-    return { ...config, hasPrivateKey: this.privateKeyFileExists() }
+    return { ...config, hasPrivateKey: await this.privateKeyStore.hasPrivateKey() }
   }
 
   /**
@@ -185,71 +191,40 @@ export class SftpController {
   }
 
   /**
-   * Returns the configured SFTP key file path from MAGE_SFTP_KEY_FILE env var.
-   */
-  private getSftpKeyFilePath(): string {
-    const keyFile = process.env['MAGE_SFTP_KEY_FILE'] as string
-    if (!keyFile) {
-      throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set. Configure sftpKeyFile in the server config.')
-    }
-    return keyFile
-  }
-
-  /**
-   * Checks whether a private key file exists at the configured path.
-   */
-  private privateKeyFileExists(): boolean {
-    try {
-      const keyFile = this.getSftpKeyFilePath()
-      return fs.existsSync(keyFile)
-    } catch {
-      return false
-    }
-  }
-
-  /**
-   * Saves a private key to the configured MAGE_SFTP_KEY_FILE path.
+   * Saves a private key for SFTP authentication.
    * @param keyText The OpenSSH private key text
    */
-  public savePrivateKey(keyText: string): void {
-    const keyFile = this.getSftpKeyFilePath()
-    const keyDir = path.dirname(keyFile)
-    if (!fs.existsSync(keyDir)) {
-      fs.mkdirSync(keyDir, { recursive: true })
-    }
-    fs.writeFileSync(keyFile, keyText, { mode: 0o600 })
+  public async savePrivateKey(keyText: string): Promise<void> {
+    await this.privateKeyStore.savePrivateKey(keyText)
   }
 
   /**
-   * Removes the private key file from the configured path.
+   * Removes the stored private key.
    */
-  public removePrivateKey(): void {
-    const keyFile = this.getSftpKeyFilePath()
-    if (fs.existsSync(keyFile)) {
-      fs.unlinkSync(keyFile)
-    }
+  public async removePrivateKey(): Promise<void> {
+    await this.privateKeyStore.removePrivateKey()
   }
 
   /**
-   * Resets the plugin to default configuration and removes the private key file.
+   * Resets the plugin to default configuration and removes the private key.
    */
   public async resetToDefaults(): Promise<void> {
     await this.stop()
-    this.removePrivateKey()
+    await this.removePrivateKey()
     await this.stateRepository.put(defaultSFTPPluginConfig)
     this.configuration = null
   }
 
   /**
-   * Reads the private key from the configured MAGE_SFTP_KEY_FILE path.
-   * @returns The private key as a Buffer
+   * Reads the stored private key.
+   * @returns The private key contents
    */
-  private resolvePrivateKey(): Buffer {
-    const keyFile = this.getSftpKeyFilePath()
-    if (!fs.existsSync(keyFile)) {
-      throw new Error('No SFTP private key file found. Upload a key in the admin settings or place one at the configured path.')
+  private async resolvePrivateKey(): Promise<string> {
+    const key = await this.privateKeyStore.getPrivateKey()
+    if (!key) {
+      throw new Error('No SFTP private key configured. Upload a key in the admin settings.')
     }
-    return fs.readFileSync(keyFile)
+    return key
   }
 
   /**
@@ -267,7 +242,7 @@ export class SftpController {
     this.status.lastConnectionAttempt = new Date()
 
     try {
-      const privateKey = this.resolvePrivateKey()
+      const privateKey = await this.resolvePrivateKey()
       await this.sftpClient.connect({
         host: this.configuration.sftpClient.host,
         port: this.configuration.sftpClient.port,
@@ -358,9 +333,9 @@ export class SftpController {
     const timestamp = new Date()
 
     try {
-      let privateKey: Buffer
+      let privateKey: string
       try {
-        privateKey = this.resolvePrivateKey()
+        privateKey = await this.resolvePrivateKey()
       } catch (e) {
         return {
           success: false,
@@ -613,11 +588,7 @@ export class SftpController {
     try { await this.sftpClient.end() } catch { }
     this.sftpClient = new SFTPClient()
 
-    const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string
-    if (!sftpKeyFilename) {
-      throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set')
-    }
-    const sftpKeyFile = fs.readFileSync(sftpKeyFilename)
+    const sftpKeyFile = await this.resolvePrivateKey()
 
     if (!this.configuration) {
       throw new Error('SFTP plugin configuration is not loaded')

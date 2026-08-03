@@ -131,7 +131,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
                   })
                 }
 
-                controller.savePrivateKey(trimmedKey)
+                await controller.savePrivateKey(trimmedKey)
 
                 res.json({
                   success: true,

@@ -72,9 +72,14 @@ export interface SFTPPluginConfig {
   }
 
   /**
-   * Whether a private key file exists for SFTP authentication
+   * Whether a private key is currently configured for SFTP authentication.
    */
   hasPrivateKey?: boolean
+
+  /**
+   * The private key contents used for SFTP authentication.
+   */
+  privateKey?: string
 }
 
 export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
