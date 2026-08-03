@@ -1,10 +1,14 @@
-const OpenIdConnectStrategy = require('passport-openidconnect').Strategy
+const crypto = require('crypto')
+  , session = require('express-session')
+  , OpenIdConnectStrategy = require('passport-openidconnect').Strategy
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
   , { app, passport, tokenService } = require('./index');
+
+const oidcSession = session({ secret: crypto.randomBytes(64).toString('hex') });
 
 function configure(strategy) {
   log.info(`Configuring ${strategy.title} authentication`);
@@ -106,6 +110,7 @@ function configure(strategy) {
   }
 
   app.get(`/auth/${strategy.name}/callback`,
+    oidcSession,
     authenticate,
     function (req, res) {
       if (req.query.state === 'mobile') {
@@ -153,6 +158,7 @@ function initialize(strategy) {
   setDefaults(strategy);
 
   app.get(`/auth/${strategy.name}/signin`,
+    oidcSession,
     function (req, res, next) {
       passport.authenticate(strategy.name, {
         scope: strategy.settings.scope,

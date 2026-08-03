@@ -151,7 +151,8 @@ class AuthenticationInitializer {
     require('./anonymous').initialize();
 
     return {
-      passport: passport
+      passport: passport,
+      bearerAuthentication: passport.authenticate('bearer', { session: false })
     };
   }
 }

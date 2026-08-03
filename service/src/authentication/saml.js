@@ -145,21 +145,15 @@ function configure(strategy) {
         return next();
       }
 
-      // DEPRECATED session authorization, remove req.login which creates session in next version
-      req.login(user, function (err) {
-        if (err) {
-          return next(err);
-        }
-        AuthenticationInitializer.tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
-          .then(token => {
-            req.token = token;
-            req.user = user;
-            req.info = info
-            next();
-          }).catch(err => {
-            next(err);
-          });
-      });
+      AuthenticationInitializer.tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+        .then(token => {
+          req.token = token;
+          req.user = user;
+          req.info = info
+          next();
+        }).catch(err => {
+          next(err);
+        });
     })(req, res, next);
   }
 

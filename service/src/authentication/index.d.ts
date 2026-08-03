@@ -9,6 +9,7 @@ declare namespace AuthenticationInitializer {
 
   export interface AuthLayer {
     passport: passport.PassportStatic
+    bearerAuthentication: express.RequestHandler
   }
 }
 

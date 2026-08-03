@@ -1,14 +1,13 @@
 module.exports = function(app, security) {
   const access = require('../access')
     , Setting = require('../models/setting')
-    , log = require('../logger').child({ component: 'settings' })
-    , passport = security.authentication.passport;
+    , log = require('../logger').child({ component: 'settings' });
 
-  app.all('/api/settings*', passport.authenticate('bearer'));
+  app.all('/api/settings*', security.authentication.bearerAuthentication);
 
   app.get(
     '/api/settings',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_SETTINGS'),
     function (req, res, next) {
       Setting.getSettings()
@@ -28,7 +27,7 @@ module.exports = function(app, security) {
 
   app.put(
     '/api/settings/:type(banner|disclaimer|contactinfo)',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_SETTINGS'),
     function(req, res, next) {
       Setting.getSetting(req.params.type)
