@@ -60,7 +60,7 @@ Configured through the MAGE admin panel under **Admin → Plugins → SFTP**. Ke
 | SFTP host / port / path | Remote server connection details | — |
 | SFTP username | Login username for the remote server | — |
 
-Authentication uses a private key file. The key is provided via the admin UI and stored on the server; its path is set via the `MAGE_SFTP_KEY_FILE` environment variable.
+Authentication uses a private key. The key is uploaded via the admin UI and stored with the rest of the plugin's configuration in MongoDB.
 
 ---
 
@@ -80,7 +80,7 @@ ssh-keygen -t rsa -b 4096 -f sftp-test/id_rsa -N ""
 ```
 
 This produces two files:
-- `sftp-test/id_rsa` — private key, mounted into the MAGE server container
+- `sftp-test/id_rsa` — private key, uploaded via the admin UI
 - `sftp-test/id_rsa.pub` — public key, mounted into the SFTP server container
 
 > **Do not commit these files.** `sftp-test/` should be in `.gitignore`.
@@ -89,15 +89,9 @@ This produces two files:
 
 The following lines in `docker-compose.yml` must be present and uncommented.
 
-**Under `mage-server` → `volumes`** (line 30):
-```yaml
-- ./sftp-test/id_rsa:/run/secrets/sftp_key:ro
-```
-
-**Under `mage-server` → `environment`** (lines 44–46):
+**Under `mage-server` → `environment`**:
 ```yaml
 SFTP_PLUGIN_CONFIG_SALT: "A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"
-MAGE_SFTP_KEY_FILE: /run/secrets/sftp_key
 MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service",...],"webUIPlugins":["@ngageoint/mage.sftp.web",...]}'
 ```
 

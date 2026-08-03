@@ -21,7 +21,6 @@ services:
     platform: linux/amd64
     volumes:
       - ./server/resources:/var/lib/mage
-      # - ./sftp-test/id_rsa:/run/secrets/sftp_key:ro
     # Comment the ports block to disallow connections directly to the node
     # server when running the mage-web-proxy below.
     ports:
@@ -35,7 +34,6 @@ services:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
       MAGE_TOKEN_EXPIRATION: "28800"
       MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service", "@ngageoint/mage.arcgis.service"],"webUIPlugins":["@ngageoint/mage.sftp.web", "@ngageoint/mage.arcgis.web-app"]}'
-      MAGE_SFTP_KEY_FILE: /var/lib/mage/sftp_key
 
     # Uncomment this section to use Docker volumes instead of bind mounts for data directories:
     # volumes:

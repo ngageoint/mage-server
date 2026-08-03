@@ -1,4 +1,3 @@
-import fs from 'fs'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { MageEvent, MageEventAttrs, MageEventId, MageEventRepository, copyMageEventAttrs } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
@@ -76,7 +75,10 @@ describe('automated processing', () => {
   class TestPluginStateRepository implements PluginStateRepository<SFTPPluginConfig> {
     state: SFTPPluginConfig | null = null
     async get(): Promise<SFTPPluginConfig | null> {
-      return this.state
+      if (!this.state) {
+        return null
+      }
+      return { ...this.state, privateKey: this.state.privateKey ?? 'mock ssh key content' }
     }
     async put(x: SFTPPluginConfig): Promise<SFTPPluginConfig> {
       this.state = { ...x }
@@ -116,9 +118,6 @@ describe('automated processing', () => {
 
     stateRepository = new TestPluginStateRepository()
     clock = jasmine.clock().install()
-    process.env['MAGE_SFTP_KEY_FILE'] = '/tmp/mock_sftp_key'
-    spyOn(fs, 'existsSync').and.returnValue(true)
-    spyOn(fs, 'readFileSync').and.returnValue(Buffer.from('mock ssh key content'))
 
     // Create a spy on the SFTPClient constructor
     spyOn(SFTPClient.prototype, 'connect').and.resolveTo();
@@ -139,7 +138,6 @@ describe('automated processing', () => {
 
   afterEach(() => {
     clock.uninstall()
-    delete process.env['MAGE_SFTP_KEY_FILE']
   })
 
   it('waits for the current processing interval to finish then stops', async () => {
