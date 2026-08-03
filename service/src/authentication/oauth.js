@@ -11,11 +11,6 @@ const crypto = require('crypto')
    , Role = require('../models/role')
    , { app, passport, tokenService } = require('./index');
 
-// OAuth2 is the only authentication strategy that needs a session: passport-oauth2's
-// CSRF `state` store (enabled via `store: true` below) and our own origin stash both
-// require req.session. Scope it to just these two routes so no other request in the
-// app (bearer-authenticated API calls, SAML, OIDC, static assets, etc.) carries or
-// depends on a session cookie.
 const oauthSession = session({ secret: crypto.randomBytes(64).toString('hex') });
 
 class OAuth2ProfileStrategy extends OAuth2Strategy {
@@ -157,10 +152,6 @@ function setDefaults(strategy) {
 function initialize(strategy) {
    setDefaults(strategy);
 
-   // TODO lets test with newer geoaxis server to see if this is still needed
-   // If it is, this should be a admin client side option, would also need to modify the
-   // renderer to provide a more generic message
-   strategy.redirect = false;
    configure(strategy);
 
    function authenticate(req, res, next) {
@@ -217,11 +208,7 @@ function initialize(strategy) {
                uri = `mage://app/authentication?token=${req.token}`
             }
 
-            if (strategy.redirect) {
-               res.redirect(uri);
-            } else {
-               res.render('oauth', { uri: uri });
-            }
+            res.render('oauth', { uri: uri });
          } else {
             res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
          }
