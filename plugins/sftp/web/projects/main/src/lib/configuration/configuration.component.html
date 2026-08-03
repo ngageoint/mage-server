@@ -177,11 +177,10 @@
 
           <div *ngIf="showKeyInput" class="key-input-section">
             <mat-form-field appearance="fill">
-              <mat-label>Paste OpenSSH Private Key</mat-label>
+              <mat-label>OpenSSH Private Key</mat-label>
               <textarea matInput [(ngModel)]="privateKeyText" rows="8"
                 placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"></textarea>
-              <mat-hint>Paste your OpenSSH private key (PEM format). The key is stored securely on the server and is
-                never displayed after saving.</mat-hint>
+              <mat-hint>Paste your OpenSSH private key (PEM format)</mat-hint>
             </mat-form-field>
             <div class="key-input-actions">
               <button mat-flat-button color="primary" (click)="savePrivateKey()"
