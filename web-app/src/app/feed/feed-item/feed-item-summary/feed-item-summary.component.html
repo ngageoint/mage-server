@@ -2,8 +2,8 @@
   <mat-card-content class="item" (click)="onItemSelect()" (mousedown)="onRipple()">
     <div class="item-header">
       <div class="item__icon">
-        <mat-icon *ngIf="!iconUrl">place</mat-icon>
-        <mage-static-icon-img *ngIf="feed?.icon" [iconRef]="feed.icon"></mage-static-icon-img>
+        <mat-icon *ngIf="!feed.mapStyle?.icon">place</mat-icon>
+        <mage-static-icon-img *ngIf="feed.mapStyle?.icon" [iconRef]="feed.mapStyle.icon"></mage-static-icon-img>
       </div>
 
       <div class="item__content">

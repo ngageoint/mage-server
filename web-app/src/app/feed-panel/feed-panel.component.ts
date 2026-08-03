@@ -42,11 +42,11 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   defaultTabs = [{
     id: 'observations',
     title: 'Observations',
-    icon: 'location_on'
+    icon: { name: 'place' }
   }, {
     id: 'people',
     title: 'People',
-    icon: 'people'
+    icon: { name: 'people' }
   }]
   tabs = this.defaultTabs.slice()
 
@@ -275,12 +275,11 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
   onFeedsChanged(feeds): void {
     this.tabs = this.defaultTabs.concat(feeds.map(feed => {
-      const style = feed.mapStyle || {}
       return {
         id: `feed-${feed.id}`,
         title: feed.title,
-        iconUrl: style.iconUrl,
-        feed: feed
+        feed: feed,
+        icon: feed.icon
       }
     }))
   }

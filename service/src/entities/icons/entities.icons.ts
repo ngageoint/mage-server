@@ -22,7 +22,7 @@ export interface StaticIcon {
    * outside the URL namespace of a particular MAGE server.  For example, this
    * could be an HTTP URL that MAGE can use to retrieve and cache the icon.
    */
-  sourceUrl: URL
+  sourceUrl?: URL
   id: StaticIconId
   registeredTimestamp: number
   /**
@@ -86,8 +86,13 @@ export enum StaticIconImportFetch {
 }
 
 export interface StaticIconRepository {
-  findOrImportBySourceUrl(stub: StaticIconStub | URL, fetch?: StaticIconImportFetch): Promise<StaticIcon | UrlResolutionError>
-  createLocal(stub: LocalStaticIconStub, content: NodeJS.ReadableStream): Promise<StaticIcon>
+  findOrImportBySourceUrl(
+    sourceUrl: URL,
+    stub: StaticIconStub | null,
+    fetch?: StaticIconImportFetch
+  ): Promise<StaticIcon | UrlResolutionError | StaticIconStoreError>
+  createLocal(stub: LocalStaticIconStub, iconStream: NodeJS.ReadableStream): Promise<StaticIcon | StaticIconStoreError>
+
   findByReference(ref: StaticIconReference): Promise<StaticIcon | null>
   find(paging?: PagingParameters): Promise<PageOf<StaticIcon>>
   /**
@@ -99,7 +104,7 @@ export interface StaticIconRepository {
    * a `UrlResolutionError`.
    * @param id
    */
-  loadContent(id: StaticIconId): Promise<[StaticIcon, NodeJS.ReadableStream] | null | UrlResolutionError>
+  loadContent(id: StaticIconId): Promise<[StaticIcon, NodeJS.ReadableStream] | null | UrlResolutionError | StaticIconStoreError>
 }
 
 export interface RegisteredStaticIconReference {
@@ -115,6 +120,27 @@ export interface SourceUrlStaticIconReference {
 export type StaticIconReference = RegisteredStaticIconReference | SourceUrlStaticIconReference
 
 export interface StaticIconContentStore {
-  putContent(icon: StaticIcon, content: NodeJS.ReadableStream): Promise<void>
-  loadContent(id: StaticIconId): Promise<NodeJS.ReadableStream | null>
+  putContent(icon: StaticIcon, content: NodeJS.ReadableStream): Promise<void | StaticIconStoreError>
+  loadContent(icon: StaticIcon): Promise<NodeJS.ReadableStream | StaticIconStoreError>
 }
+
+export class StaticIconStoreError extends Error {
+  constructor(readonly errorCode: StaticIconStoreErrorCode, message?: string) {
+    super(message)
+    this.name = errorCode
+  }
+}
+
+export enum StaticIconStoreErrorCode {
+  /**
+   * The content for the given attachment ID was not found in the attachment
+   * store.
+   */
+  ContentNotFound = 'StaticIconStoreError.ContentNotFound',
+  /**
+   * The underlying storage system, e.g. file system, raised an error during
+   * some I/O operation.
+   */
+  StorageError = 'StaticIconStoreError.StorageError'
+}
+

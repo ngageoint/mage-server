@@ -2,33 +2,28 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
-import { FeedPanelTabComponent } from './feed-panel-tab.component';
+import { FeedIconComponent } from './feed-icon.component';
 
-
-describe('FeedTabComponent', () => {
-  let component: FeedPanelTabComponent;
-  let fixture: ComponentFixture<FeedPanelTabComponent>;
+describe('Feed Icon Component', () => {
+  let component: FeedIconComponent;
+  let fixture: ComponentFixture<FeedIconComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        MatIconModule,
-        MatTooltipModule,
-        FeedIconModule
-      ],
-      declarations: [FeedPanelTabComponent ],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
-      ]
+      ],
+      imports: [
+        MatIconModule
+      ],
+      declarations: [ FeedIconComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(FeedPanelTabComponent);
+    fixture = TestBed.createComponent(FeedIconComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -99,6 +99,7 @@ import { FeedPanelTabComponent } from '../feed-panel/feed-panel-tab.component';
 import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
 import { DatetimePickerComponent } from '../datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from '../observation/observation-view/observation-options.component';
@@ -255,6 +256,7 @@ class AngularModule { }
   imports: [
     AngularModule,
     ColorPickerModule,
+    FeedIconModule,
     FeedItemSummaryModule,
     GeometryModule,
     MapClipModule,

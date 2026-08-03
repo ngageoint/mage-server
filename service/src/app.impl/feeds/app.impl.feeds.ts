@@ -322,17 +322,16 @@ async function resolveFeedCreate(topic: FeedTopic, feedMinimal: api.FeedCreateMi
   }
   const errors: KeyPathError[] = []
   const icons = await Promise.all(unresolved.unresolvedIcons.map(iconUrl => {
-    return iconRepo.findOrImportBySourceUrl(iconUrl, iconFetch).then(icon => {
+    return iconRepo.findOrImportBySourceUrl(iconUrl, null, iconFetch).then(icon => {
       /*
       TODO: this probably should not cause the entire operation to fail. some
       icon urls might succeed while some fail, and a broken icon reference is
       not a fatal error for the feed.
       */
-      if (icon instanceof UrlResolutionError) {
+      if (icon instanceof Error) {
          errors.push([ `error resolving icon url: ${iconUrl}`, ...keyPathOfIconUrl(iconUrl, feedMinimal) ])
          return errors
-      }
-      else {
+      } else {
         return ({ [String(iconUrl)]: icon.id })
       }
     })
