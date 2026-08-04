@@ -686,7 +686,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         searchTerm: req.query.term,
         pageSize: parseInt(String(req.query.page_size)) || 2,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+        includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined
       }
 
       EventModel.getMembers(parseInt(req.params.id), options).then(page => {

@@ -28,7 +28,7 @@ export function TeamsRoutes(app: TeamsAppLayer, createAppRequest: WebAppRequestF
         nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: req.query.total ? /^true$/i.test(String(req.query.total)) : true,
+        includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined,
         withMembers: queryParamArray(req.query.with_members),
         withoutMembers: queryParamArray(req.query.without_members)
       };

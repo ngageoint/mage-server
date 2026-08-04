@@ -17,9 +17,9 @@ export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestF
         nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: req.query.total ? /^true$/i.test(String(req.query.total)) : true,
-        active: 'active' in req.query ? /^true$/i.test(String(req.query.active)) : undefined,
-        enabled: 'enabled' in req.query ? /^true$/i.test(String(req.query.enabled)) : undefined
+        includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined,
+        active: typeof req.query.active === 'string' ? 'true' === String(req.query.active).toLowerCase() : undefined,
+        enabled: typeof req.query.enabled === 'string' ? 'true' === String(req.query.enabled).toLowerCase() : undefined
       }
       const appReq = createAppRequest(req, { userSearch })
       const appRes = await app.searchUsers(appReq)
