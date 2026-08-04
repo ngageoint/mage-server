@@ -175,16 +175,20 @@ export class SftpController {
     let config: SFTPPluginConfig = this.configuration
       ?? await this.stateRepository.get()
       ?? await this.stateRepository.put(defaultSFTPPluginConfig);
-    return { ...config, hasPrivateKey: await this.privateKeyStore.hasPrivateKey() }
+    const { privateKey, hasPrivateKey, ...rest } = config
+    return { ...rest, hasPrivateKey: await this.privateKeyStore.hasPrivateKey() }
   }
 
   /**
-   * Updates new configuration in the state repository.
-   * @param configuration The new config to put into the state repo.
+   * Updates new configuration in the state repository. Uses patch (not put) so
+   * fields not present here - namely privateKey, which the client never
+   * receives - are left untouched in storage rather than wiped.
+   * @param configuration The new config to patch into the state repo.
    */
   public async updateConfiguration(configuration: SFTPPluginConfig) {
     try {
-      await this.stateRepository.put(configuration)
+      const { privateKey, hasPrivateKey, ...rest } = configuration
+      await this.stateRepository.patch(rest)
     } catch (err) {
       this.console.log(`ERROR: updateConfiguration: ${err}`)
     }
