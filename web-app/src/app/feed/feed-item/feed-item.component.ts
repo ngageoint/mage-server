@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed, StyledFeature } from '@ngageoint/mage.web-core-lib/feed';
+import { SidebarService } from 'src/app/sidebar/sidebar.service';
 import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { MapService } from '../../map/map.service';
 import { MomentPipe } from '../../moment/moment.pipe';
@@ -24,7 +24,7 @@ export class FeedItemComponent implements OnChanges {
   properties = []
 
   constructor(
-    private feedPanelService: FeedPanelService,
+    private sidebarService: SidebarService,
     private momentPipe: MomentPipe,
     private mapService: MapService,
     private sessionService: SessionService
@@ -81,7 +81,7 @@ export class FeedItemComponent implements OnChanges {
   }
 
   close(): void {
-    this.feedPanelService.deselectFeedItem(this.feed, this.item);
+    this.sidebarService.deselectFeedItem(this.feed, this.item);
   }
 
   onLocationClick(): void {

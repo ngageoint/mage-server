@@ -1,78 +1,78 @@
 import { TestBed } from '@angular/core/testing';
-import { ExportService, Export } from './export.service';
+import { ExportService } from './export.service';
+import { Export, ExportFormat, ExportRequest, ExportStatus } from './entities.export';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+
+function stubExport(id: string): Export {
+  return {
+    id,
+    physicalPath: '/tmp/test.kml',
+    filename: 'test.kml',
+    exportType: 'kml',
+    url: `/api/exports/mine/${id}`,
+    status: ExportStatus.Running,
+    options: {}
+  };
+}
 
 describe('ExportService', () => {
-  let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
+  let service: ExportService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-    imports: [],
-    providers: [ExportService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-});
+      imports: [],
+      providers: [ExportService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+    });
 
-    // Inject the http service and test controller for each test
-    httpClient = TestBed.inject(HttpClient);
+    TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
+    service = TestBed.inject(ExportService);
   });
 
   afterEach(() => {
-    // After every test, assert that there are no more pending requests.
     httpTestingController.verify();
   });
 
-  it('should get my metadata', () => {
-    const data: Export[] = [{
-      id: 1,
-      userId: 1,
-      physicalPath: '/tmp/test.kml',
-      filename: 'test.kml',
-      exportType: 'kml',
-      url: '/api/exports/1',
-      status: 'Running',
-      options: {}
-    }];
+  it('should fetch my exports and publish them', () => {
+    const data: Export[] = [stubExport('1')];
 
-    const service: ExportService = TestBed.inject(ExportService);
-    expect(service).toBeTruthy();
-
-    service.getExports().subscribe(exports => {
-      expect(exports).toEqual(data, 'expected metadata');
+    service.fetchExports().subscribe(exports => {
+      expect(exports).toEqual(data);
     });
 
-    // The following `expectOne()` will match the request's URL.
-    // If no requests or multiple requests matched that URL
-    // `expectOne()` would throw.
-    const req = httpTestingController.expectOne('/api/exports/myself');
-
-    // Assert that the request is a GET.
+    const req = httpTestingController.expectOne('/api/exports/mine');
     expect(req.request.method).toEqual('GET');
-
-    // Respond with mock data, causing Observable to resolve.
-    // Subscribe callback asserts that correct data was returned.
     req.flush(data);
 
-    // Finally, assert that there are no outstanding requests.
-    httpTestingController.verify();
+    service.exports$.subscribe(exports => {
+      expect(exports.length).toEqual(1);
+    });
   });
 
-  it('should fail to get my metadata due to error', () => {
-    const emsg = 'deliberate 404 error';
+  it('should create an export scoped to an event', () => {
+    const request: ExportRequest = {
+      format: ExportFormat.KML,
+      observations: true,
+      locations: false
+    };
+    const created = stubExport('2');
 
-    const service: ExportService = TestBed.inject(ExportService);
-    expect(service).toBeTruthy();
-    service.getExports().subscribe(data => fail('should have failed with the 404 error'),
-      (error: HttpErrorResponse) => {
-        expect(error.status).toEqual(404, 'status');
-        expect(error.error).toEqual(emsg, 'message');
-      }
-    );
+    service.export(5, request).subscribe(e => {
+      expect(e).toEqual(created);
+    });
 
-    const req = httpTestingController.expectOne('/api/exports/myself');
+    const req = httpTestingController.expectOne('/api/events/5/exports');
+    expect(req.request.method).toEqual('POST');
+    req.flush(created);
+  });
 
-    // Respond with mock error
-    req.flush(emsg, { status: 404, statusText: 'Not Found' });
+  it('should delete an export', () => {
+    service.deleteExport('3').subscribe();
+
+    const req = httpTestingController.expectOne('/api/exports/mine/3');
+    expect(req.request.method).toEqual('DELETE');
+    req.flush(null);
   });
 });

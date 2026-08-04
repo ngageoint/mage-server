@@ -1,0 +1,14 @@
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  cursor: pointer;
+}
+
+.tab__icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}

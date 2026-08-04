@@ -1,12 +1,14 @@
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationReadStreamOptions, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
-import mongoose from 'mongoose'
+import mongoose, { FilterQuery } from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
 import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
+import { asyncIterable } from '../adapters.db.mongoose'
+import moment from 'moment'
 
 export type ObservationIdDocument = mongoose.Document
 export type ObservationIdModel = mongoose.Model<ObservationIdDocument>
@@ -70,6 +72,86 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       this.domainEvents.emit(e.type, Object.freeze({ ...e, observation: saved }))
     }
     return saved
+  }
+
+  find(event: MageEvent, options: ObservationReadStreamOptions): AsyncIterable<ObservationAttrs> {
+    const conditions: FilterQuery<legacy.ObservationDocument> = {};
+
+    const filter = options.filter || {};
+    // Filter by geometry
+    if (filter.geometry) {
+      conditions.geometry = {
+        $geoIntersects: {
+          $geometry: filter.geometry
+        }
+      };
+    }
+
+    if (filter.startDate || filter.endDate) {
+      conditions.lastModified = {};
+      if (filter.startDate) {
+        conditions.lastModified.$gte = filter.startDate;
+      }
+
+      if (filter.endDate) {
+        conditions.lastModified.$lt = filter.endDate;
+      }
+    }
+
+    if (filter.observationStartDate || filter.observationEndDate) {
+      conditions['properties.timestamp'] = {};
+      if (filter.observationStartDate) {
+        conditions['properties.timestamp'].$gte = moment(filter.observationStartDate).toDate()
+      }
+
+      if (filter.observationEndDate) {
+        conditions['properties.timestamp'].$lt = moment(filter.observationEndDate).toDate()
+      }
+    }
+
+    if (filter.states) {
+      conditions['states.0.name'] = { $in: filter.states };
+    }
+
+    if (filter.favorites && filter.favorites.userId) {
+      conditions['favoriteUserIds'] = { $in: [filter.favorites.userId] };
+    }
+
+    if (filter.important) {
+      conditions['important'] = { $exists: true };
+    }
+
+    const queryOptions = {}
+    if (options.sort) {
+      options.sort = options.sort
+    }
+
+    const fields = parseFields(options.fields)
+    if (!filter.includeAttachments) {
+      fields.attachments = { $slice: 0 }
+    }
+
+    let query: any = this.model.find(conditions, fields, queryOptions)
+
+    if (options.lean) {
+      query = query.lean()
+    }
+
+    if (options.populate) {
+      query
+        .populate({
+          path: 'userId',
+          select: 'displayName'
+        })
+        .populate({
+          path: 'important.userId',
+          select: 'displayName'
+        })
+    }
+
+    const cursor = query.cursor()
+
+    return asyncIterable(cursor, (doc: any) => this.entityForDocument(doc), () => { cursor.close() })
   }
 
   async findById(id: ObservationId): Promise<Observation | null> {
@@ -264,5 +346,44 @@ function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
     size: attrs.size,
     width: attrs.width,
     height: attrs.height,
+  }
+}
+
+function convertFieldForQuery(field: any, keys?: any, fields?: any) {
+  keys = keys || [];
+  fields = fields || {};
+
+  for (const childField in field) {
+    keys.push(childField);
+    if (Object(field[childField]) === field[childField]) {
+      convertFieldForQuery(field[childField], keys, fields);
+    } else {
+      const key = keys.join(".");
+      if (field[childField]) {
+        fields[key] = field[childField];
+      }
+      keys.pop();
+    }
+  }
+
+  return fields;
+}
+
+function parseFields(fields: any) {
+  if (fields) {
+    const state = fields.state ? true : false;
+    delete fields.state;
+
+    fields = convertFieldForQuery(fields);
+    if (fields.id === undefined) fields.id = true; // default is to return id if not specified
+    if (fields.type === undefined) fields.type = true; // default is to return type if not specified
+
+    if (state) {
+      fields.states = { $slice: 1 };
+    }
+
+    return fields;
+  } else {
+    return { states: { $slice: 1 } };
   }
 }

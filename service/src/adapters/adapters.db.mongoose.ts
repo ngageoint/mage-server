@@ -65,3 +65,18 @@ export const MongoDbObjectIdFactory: EntityIdFactory = {
     return (new mongoose.Types.ObjectId()).toHexString()
   }
 }
+
+export function asyncIterable<T, U>(
+  iterable: AsyncIterable<T>,
+  mapFn: (item: T) => U | Promise<U>,
+  close?: () => void
+): AsyncIterable<U> & { close?: () => void } {
+  return {
+    async *[Symbol.asyncIterator](): AsyncIterator<U> {
+      for await (const item of iterable) {
+        yield await mapFn(item);
+      }
+    },
+    close
+  }
+}

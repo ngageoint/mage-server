@@ -30,3 +30,24 @@ export interface UserLocationProperties {
   bearing?: number,
   battery_level?: number,
 }
+
+export interface UserLocationReadOptions {
+  filter: {
+    eventId?: MageEventId
+    userId?: string
+    startDate?: Date
+    endDate?: Date
+    lastLocationId?: string
+  }
+  /**
+   * E.g.,
+   */
+  sort?: any
+  limit?: number
+  lean?: boolean
+  stream?: false | null
+}
+
+export interface UserLocationRepository {
+  getLocations(options: UserLocationReadOptions): AsyncIterable<UserLocation> & { close?: () => void }
+}

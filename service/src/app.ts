@@ -150,11 +150,37 @@ import {
 } from './app.impl/settings/app.impl.settings';
 import { RoleBasedMapPermissionService } from './permissions/permissions.settings';
 import { SettingRepository } from './entities/settings/entities.settings';
+import * as exportsApi from './app.api/exports/app.api.exports';
+import * as exportsImpl from './app.impl/exports/app.impl.exports';
+import { ExportModel, MongooseExportsRepository } from './adapters/exports/adapters.exports.db.mongoose';
+import { ExportFormat, ExportsRepository, ExportStore } from './entities/exports/entities.exports';
+import { RoleBasedExportsPermissionService } from './permissions/permissions.exports';
+import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
+import { MongooseUserLocationRepository } from './adapters/locations/adapters.locations.db.mongoose';
+import { UserLocationModel } from './models/location';
+import { UserLocationRepository } from './entities/locations/entities.locations';
+import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
+import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
+import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
+import { DevicesRepository } from './entities/devices/entities.devices';
+import { DeviceModel, MongooseDeviceRepository } from './adapters/devices/adapters.devices.db.mongoose';
+import { KmlExportTransform } from './app.impl/exports/app.impl.exports.kml';
+import { MongooseObservationIconRepository, ObservationIconModel } from './adapters/observations/adapters.observations.icons.db.mongoose';
+import { ObservationIconContentStore, ObservationIconRepository } from './entities/observations/entities.observations.icons';
+import { FileSystemObservationIconContentStore } from './adapters/observations/adapters.observations.icon.file_system';
+import { FileSystemUserIconContentStore } from './adapters/users/adapters.users.icons.file_system';
+import { UserIconContentStore } from './entities/users/entities.users';
+import { GeoJsonExportTransform } from './app.impl/exports/app.impl.exports.geojson';
+import { GeoPackageExportTransform } from './app.impl/exports/app.impl.exports.geopackage';
 
 export interface MageService {
   webController: express.Application;
   server: httpLib.Server;
   open(): this;
+}
+
+export interface Task {
+  run(): Promise<void>;
 }
 
 /**
@@ -228,6 +254,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase();
   const repos = await initRepositories(dbLayer, config);
   const appLayer = await initAppLayer(repos);
+  const tasks = await initTasks(repos, log.child({ component: 'export-archive' }));
   const { webController, addPluginRoutes } = await initWebLayer(
     repos,
     appLayer,
@@ -304,10 +331,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     addPluginRoutes(pluginId, routesForPluginId[pluginId]);
   }
 
-  try {
-    await import('./schedule').then(jobSchedule => jobSchedule.initialize());
-  } catch (err) {
-    throw new Error('error initializing scheduled tasks: ' + err);
+  for (const task of tasks) {
+    await task.run();
   }
 
   const server = httpLib.createServer(webController);
@@ -331,6 +356,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 type DatabaseLayer = {
   conn: mongoose.Connection;
   connectionFactoryForPlugin: (pluginId: string) => GetDbConnection;
+  devices: {
+    device: DeviceModel;
+  };
   feeds: {
     feedServiceTypeIdentity: FeedServiceTypeIdentityModel;
     feedService: FeedServiceModel;
@@ -339,11 +367,20 @@ type DatabaseLayer = {
   events: {
     event: MageEventModel;
   };
+  exports: {
+    export: ExportModel;
+  };
   icons: {
     staticIcon: StaticIconModel;
   };
   users: {
     user: UserModel;
+  };
+  observations: {
+    icons: ObservationIconModel;
+  };
+  locations: {
+    location: UserLocationModel;
   };
   settings: {
     setting: SettingsModel;
@@ -381,6 +418,7 @@ type AppLayer = {
     updateFeed: feedsApi.UpdateFeed;
     deleteFeed: feedsApi.DeleteFeed;
   };
+  exports: ExportAppLayer;
   icons: StaticIconsAppLayer;
   users: UsersAppLayer;
   systemInfo: SystemInfoAppLayer;
@@ -442,10 +480,15 @@ async function initDatabase(): Promise<DatabaseLayer> {
   const userModel = require('./models/user').Model;
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const settingModel = require('./models/setting').Model;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const locationModel = require('./models/location').Model;
 
   return {
     conn,
     connectionFactoryForPlugin: PluginConnectionFactory,
+    devices: {
+      device: DeviceModel(conn)
+    },
     feeds: {
       feedServiceTypeIdentity: FeedServiceTypeIdentityModel(conn),
       feedService: FeedServiceModel(conn),
@@ -454,11 +497,20 @@ async function initDatabase(): Promise<DatabaseLayer> {
     events: {
       event: eventModel
     },
+    exports: {
+      export: ExportModel(conn)
+    },
     icons: {
       staticIcon: StaticIconModel(conn)
     },
     users: {
       user: userModel
+    },
+    observations: {
+      icons: ObservationIconModel(conn)
+    },
+    locations: {
+      location: locationModel
     },
     settings: {
       setting: settingModel
@@ -467,12 +519,21 @@ async function initDatabase(): Promise<DatabaseLayer> {
 }
 
 type Repositories = {
+  devices: {
+    deviceRepo: DevicesRepository;
+  };
   events: {
     eventRepo: MageEventRepository;
+  };
+  exports: {
+    exportRepo: ExportsRepository;
+    exportStore: ExportStore;
   };
   observations: {
     obsRepoFactory: ObservationRepositoryForEvent;
     attachmentStore: AttachmentStore;
+    iconRepo: ObservationIconRepository;
+    iconStore: ObservationIconContentStore;
   };
   feeds: {
     serviceTypeRepo: FeedServiceTypeRepository;
@@ -484,6 +545,10 @@ type Repositories = {
   };
   users: {
     userRepo: UserRepository;
+    iconStore: UserIconContentStore;
+  };
+  locations: {
+    locationRepo: UserLocationRepository;
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -523,6 +588,14 @@ async function initRepositories(
     new SimpleIdFactory()
   );
   const eventRepo = new MongooseMageEventRepository(models.events.event);
+  const deviceRepo = new MongooseDeviceRepository(models.devices.device);
+  const exportRepo = new MongooseExportsRepository(
+    models.exports.export,
+    environment.exportTtl * 1000
+  );
+  const exportStore = new FileSystemExportContentStore(
+    environment.exportDirectory
+  );
   const staticIconRepo = new MongooseStaticIconRepository(
     models.icons.staticIcon,
     new SimpleIdFactory(),
@@ -530,6 +603,18 @@ async function initRepositories(
     [new PluginUrlScheme(config.plugins?.servicePlugins || [])]
   );
   const userRepo = new MongooseUserRepository(models.users.user);
+  const userIconStore = new FileSystemUserIconContentStore(
+    environment.userBaseDirectory
+  );
+  const observationIconRepo = new MongooseObservationIconRepository(
+    models.observations.icons
+  );
+  const observationIconStore = new FileSystemObservationIconContentStore(
+    environment.iconBaseDirectory
+  );
+  const locationRepo = new MongooseUserLocationRepository(
+    models.locations.location
+  );
   const settingRepo = new MongooseSettingsRepository(models.settings.setting);
   const attachmentStore = await intializeAttachmentStore(
     environment.attachmentBaseDirectory
@@ -541,6 +626,9 @@ async function initRepositories(
   }
 
   return {
+    devices: {
+      deviceRepo
+    },
     feeds: {
       serviceTypeRepo,
       serviceRepo,
@@ -549,18 +637,28 @@ async function initRepositories(
     events: {
       eventRepo
     },
+    exports: {
+      exportRepo,
+      exportStore
+    },
     observations: {
       obsRepoFactory: createObservationRepositoryFactory(
         eventRepo,
         DomainEvents
       ),
+      iconRepo: observationIconRepo,
+      iconStore: observationIconStore,
       attachmentStore
     },
     icons: {
       staticIconRepo
     },
     users: {
-      userRepo
+      userRepo,
+      iconStore: userIconStore
+    },
+    locations: {
+      locationRepo
     },
     enviromentInfo: systemInfoService,
     settings: {
@@ -571,6 +669,7 @@ async function initRepositories(
 
 async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const events = await initEventsAppLayer(repos);
+  const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }));
   const observations = await initObservationsAppLayer(repos);
   const icons = await initIconsAppLayer(repos);
   const feeds = await initFeedsAppLayer(repos);
@@ -583,12 +682,93 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
 
   return {
     events,
+    exports,
     observations,
     feeds,
     icons,
     users,
     systemInfo,
     settings
+  };
+}
+
+async function initExportsAppLayer(
+  repos: Repositories,
+  logger: Logger
+): Promise<AppLayer['exports']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const exportPermissions = new RoleBasedExportsPermissionService(
+    eventPermissions.defaultEventPermissionsService
+  );
+
+  const exportFactory = (format: ExportFormat): exportsApi.ExportTransform => {
+    switch (format) {
+      case 'csv': {
+        return new CsvExportTransform(
+          repos.locations.locationRepo,
+          repos.observations.obsRepoFactory,
+          repos.observations.attachmentStore,
+          repos.devices.deviceRepo,
+          repos.users.userRepo
+        );
+      }
+      case 'kml': {
+        return new KmlExportTransform(
+          repos.locations.locationRepo,
+          repos.observations.obsRepoFactory,
+          repos.observations.iconRepo,
+          repos.observations.iconStore,
+          repos.observations.attachmentStore,
+          repos.users.userRepo,
+          repos.users.iconStore
+        );
+      }
+      case 'geojson': {
+        return new GeoJsonExportTransform(
+          repos.locations.locationRepo,
+          repos.observations.obsRepoFactory,
+          repos.observations.attachmentStore,
+          repos.devices.deviceRepo,
+          repos.users.userRepo
+        );
+      }
+      case 'geopackage': {
+        return new GeoPackageExportTransform(
+          repos.locations.locationRepo,
+          repos.observations.obsRepoFactory,
+          repos.observations.iconStore,
+          repos.observations.attachmentStore,
+          repos.observations.iconRepo,
+          repos.users.userRepo,
+          repos.users.iconStore,
+          logger
+        );
+      }
+    }
+  };
+
+  return {
+    createExport: exportsImpl.CreateExport(
+      exportFactory,
+      repos.exports.exportRepo,
+      repos.exports.exportStore,
+      exportPermissions,
+      logger
+    ),
+    getExports: exportsImpl.FetchExports(
+      repos.exports.exportRepo,
+      exportPermissions
+    ),
+    getExportContent: exportsImpl.GetExportContent(
+      repos.exports.exportRepo,
+      repos.exports.exportStore,
+      exportPermissions
+    ),
+    deleteExport: exportsImpl.DeleteExport(
+      repos.exports.exportRepo,
+      repos.exports.exportStore,
+      exportPermissions
+    )
   };
 }
 
@@ -814,6 +994,7 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined;
 }
 
+const exportEventScopeKey = 'exportEventScope' as const;
 const observationEventScopeKey = 'observationEventScope' as const;
 
 async function initWebLayer(
@@ -908,6 +1089,29 @@ async function initWebLayer(
   );
   webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
 
+  const exportRequestFactory: ExportWebAppRequestFactory = <
+    Params extends object | undefined
+  >(
+    req: express.Request,
+    params: Params
+  ) => {
+    const context: exportsApi.CreateExportRequestContext = {
+      ...baseAppRequestContext(req),
+      mageEvent: req[exportEventScopeKey]!.mageEvent
+    };
+
+    return { ...params, context };
+  };
+  const exportRoutes = ExportRoutes(app.exports, exportRequestFactory);
+  webController.use(`/api/events/:${exportEventScopeKey}/exports`, [
+    bearerAuthentication,
+    ensureExportEventScope(repos.events.eventRepo),
+    exportRoutes
+  ]);
+
+  const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
+  webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
+
   const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
     req,
     _res,
@@ -991,6 +1195,18 @@ async function initWebLayer(
   };
 }
 
+async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
+  const exportTask = new ExportArchiveTask(
+    environment.exportDirectory,
+    environment.exportSweepInterval,
+    repos.exports.exportStore,
+    repos.exports.exportRepo,
+    logger
+  );
+
+  return [exportTask];
+}
+
 function baseAppRequestContext(
   req: express.Request
 ): AppRequestContext<UserWithRole> {
@@ -1008,6 +1224,28 @@ function baseAppRequestContext(
         )
       });
     }
+  };
+}
+
+function ensureExportEventScope(
+  eventRepo: MageEventRepository
+): express.RequestHandler {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<void> => {
+    const eventIdFromPath = req.params[exportEventScopeKey];
+    const eventId: MageEventId = parseInt(eventIdFromPath);
+    const mageEvent = Number.isInteger(eventId)
+      ? await eventRepo.findById(eventId)
+      : null;
+    if (mageEvent) {
+      req[exportEventScopeKey] = { mageEvent };
+      next();
+      return;
+    }
+    res.status(404).json(`event not found: ${eventIdFromPath}`);
   };
 }
 
@@ -1039,6 +1277,9 @@ function ensureObservationEventScope(
 
 declare module 'express' {
   interface Request {
+    [exportEventScopeKey]?: {
+      mageEvent: MageEvent;
+    };
     [observationEventScopeKey]?: {
       mageEvent: MageEvent;
       observationRepository: EventScopedObservationRepository;
