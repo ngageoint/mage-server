@@ -179,7 +179,7 @@ function configure(strategy) {
 
           res.redirect(uri);
         } else {
-          res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
+          res.render('authentication', { success: true, login: { token: req.token, user: req.user } });
         }
       } else {
         if (req.user.active && req.user.enabled) {
@@ -188,6 +188,27 @@ function configure(strategy) {
           const action = !req.user.active ? 'inactive-account' : 'disabled-account';
           res.redirect(`/#/signin?strategy=${strategy.name}&action=${action}`);
         }
+      }
+    },
+    // eslint-disable-next-line no-unused-vars
+    function (err, req, res, next) {
+      log.error(strategy.title + ' authentication failed', err);
+
+      let state = {};
+      try {
+        state = JSON.parse(req.body.RelayState)
+      } catch (ignore) {
+        console.warn('saml: error parsing RelayState', ignore)
+      }
+
+      if (state.initiator === 'mage') {
+        if (state.client === 'mobile') {
+          res.redirect('mage://app/error_account');
+        } else {
+          res.render('authentication', { success: false, login: {} });
+        }
+      } else {
+        res.redirect(`/#/signin?strategy=${strategy.name}&action=error`);
       }
     }
   );

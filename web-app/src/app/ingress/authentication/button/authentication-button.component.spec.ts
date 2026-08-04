@@ -21,4 +21,12 @@ describe('Authentication Button Component', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should emit authenticate on click', () => {
+    spyOn(component.authenticate, 'emit');
+
+    component.onClick();
+
+    expect(component.authenticate.emit).toHaveBeenCalled();
+  });
 });

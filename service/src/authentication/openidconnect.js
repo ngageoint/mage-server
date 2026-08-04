@@ -123,7 +123,17 @@ function configure(strategy) {
 
         res.redirect(uri);
       } else {
-        res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
+        res.render('authentication', { success: true, login: { token: req.token, user: req.user } });
+      }
+    },
+    // eslint-disable-next-line no-unused-vars
+    function (err, req, res, next) {
+      log.error(strategy.title + ' authentication failed', err);
+
+      if (req.query.state === 'mobile') {
+        res.redirect('mage://app/error_account');
+      } else {
+        res.render('authentication', { success: false, login: {} });
       }
     }
   );
