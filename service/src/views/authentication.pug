@@ -2,9 +2,9 @@ html
   head
     script.
       (function() {
-        var login = !{JSON.stringify(login)};
+        const login = !{JSON.stringify(login)};
         // Ensure host is just the origin (protocol + host + port)
-        var targetOrigin = window.location.origin;
+        const targetOrigin = window.location.origin;
 
         // Safely send message to opener
         if (window.opener && targetOrigin) {
