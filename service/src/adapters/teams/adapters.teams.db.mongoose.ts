@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { RootFilterQuery } from 'mongoose'
 import { PageOf, pageOf } from '../../entities/entities.global'
 import { Team, TeamFindParameters, TeamId, TeamRepository } from '../../entities/teams/entities.teams'
 import * as legacy from '../../models/team'
@@ -44,15 +44,15 @@ export class MongooseTeamRepository extends BaseMongooseRepository<TeamDocument,
   }
 
   async find<T = Team>(which: TeamFindParameters, mapping?: (x: Team) => T): Promise<PageOf<T>> {
-    const { nameOrContactTerm, omitEventTeams } = which || {}
-    const searchRegex = new RegExp(_.escapeRegExp(nameOrContactTerm), 'i')
+    const { searchTerm, omitEventTeams } = which || {}
+    const searchRegex = new RegExp(_.escapeRegExp(searchTerm), 'i')
 
-    const termParams = nameOrContactTerm ? {
+    const termParams: RootFilterQuery<TeamDocument> = searchTerm ? {
       $or: [
         { name: searchRegex },
         { description: searchRegex }
       ]
-    } : {} as any
+    } : {}
 
     const params = omitEventTeams ? {
       $and: [

@@ -25,7 +25,7 @@ export function TeamsRoutes(app: TeamsAppLayer, createAppRequest: WebAppRequestF
 
       const teamSearch: TeamSearchRequest['teamSearch'] = {
         omitEventTeams: 'true' === String(req.query.omit_event_teams).toLowerCase(),
-        nameOrContactTerm: req.query.term as string | undefined,
+        searchTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
         includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined,

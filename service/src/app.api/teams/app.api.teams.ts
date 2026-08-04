@@ -6,7 +6,10 @@ import { Team } from '../../entities/teams/entities.teams'
 
 export interface TeamSearchRequest extends AppRequest {
   teamSearch: PagingParameters & {
-    nameOrContactTerm?: string | undefined,
+    /**
+     * Find teams whose name or description match the given search term.
+     */
+    searchTerm?: string | undefined,
     omitEventTeams?: boolean | undefined,
     withMembers?: string[],
     withoutMembers?: string[]

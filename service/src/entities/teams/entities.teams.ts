@@ -37,10 +37,20 @@ export interface TeamRepository {
 
 export interface TeamFindParameters extends PagingParameters {
   /**
-   * Search by user name, display name, email, or phone number.
+   * Search for teams whose name or description matches the given term.
    */
-  nameOrContactTerm?: string | undefined,
+  searchTerm?: string | undefined,
+  /**
+   * If `true`, exclude teams that exist only to group users directly into events.
+   * If omitted, the default is `false`.
+   */
   omitEventTeams?: boolean | undefined,
+  /**
+   * Include only teams that contain the given member user IDs.
+   */
   withMembers?: string[] | undefined,
+  /**
+   * Include only teams that do not contain the given member user IDs.
+   */
   withoutMembers?: string[] | undefined
 }

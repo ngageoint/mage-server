@@ -110,7 +110,7 @@ describe('event mongoose repository', function() {
       const parameters: TeamFindParameters = {
         pageSize: 2,
         pageIndex: 0,
-        nameOrContactTerm: 'two'
+        searchTerm: 'two'
       }
       const fetched = await repository.find(parameters)
       expect(fetched.totalCount).to.equal(2)
