@@ -11,12 +11,10 @@ describe('Idp Authentication Component', () => {
   let component: IdpAuthenticationComponent;
   let fixture: ComponentFixture<IdpAuthenticationComponent>;
 
-  let mockUserService: any;
+  let mockUserService: jasmine.SpyObj<UserService>;
 
   beforeEach(waitForAsync(() => {
-    mockUserService = {
-      idpSignin: jasmine.createSpy()
-    };
+    mockUserService = jasmine.createSpyObj<UserService>('UserService', ['idpSignin']);
 
     TestBed.configureTestingModule({
     declarations: [IdpAuthenticationComponent, AuthenticationButtonComponent],
