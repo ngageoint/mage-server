@@ -61,6 +61,10 @@ class InactiveAccount extends Ingress {
   state = IngressState.InactiveAccount;
 }
 
+class DisabledAccount extends Ingress {
+  state = IngressState.DisabledAccount;
+}
+
 class Initialize extends Ingress {
   state = IngressState.Initialize;
 }
@@ -138,9 +142,15 @@ export class IngressComponent implements OnChanges {
     this.emitTitle();
   }
 
-  signup($event: SignupEvent): void {
+  onCreated($event: SignupEvent): void {
     if ($event.reason === 'signup') {
-      this.ingress = $event.user.active ? new ActiveAccount() : new InactiveAccount();
+      if (!$event.user.active) {
+        this.ingress = new InactiveAccount();
+      } else if (!$event.user.enabled) {
+        this.ingress = new DisabledAccount();
+      } else {
+        this.ingress = new ActiveAccount();
+      }
     } else {
       this.ingress = new Signin();
     }

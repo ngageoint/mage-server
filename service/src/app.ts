@@ -1023,7 +1023,7 @@ async function initWebLayer(
     };
   };
 
-  const bearerAuthentication = webAuth.passport.authenticate('bearer');
+  const bearerAuthentication = webAuth.bearerAuthentication;
 
   // Attempts bearer authentication but never rejects the request - if a valid
   // token is present req.user is populated, otherwise req.user is set to an
