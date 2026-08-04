@@ -22,15 +22,11 @@ export class FeedItemSummaryComponent implements OnChanges {
   timestamp: number;
   primary: string;
   secondary: string;
-  iconUrl?: string;
 
   constructor(private sidebarService: SidebarService, private mapService: MapService) { }
 
   ngOnChanges(_changes: SimpleChanges): void {
     if (!this.feed || !this.item.properties) return;
-
-    // TODO: use mapStyle when that works
-    this.iconUrl = contentPathOfIcon(this.feed.icon);
 
     if (this.feed.itemTemporalProperty && this.item.properties[this.feed.itemTemporalProperty] != null) {
       this.timestamp = this.item.properties[this.feed.itemTemporalProperty];

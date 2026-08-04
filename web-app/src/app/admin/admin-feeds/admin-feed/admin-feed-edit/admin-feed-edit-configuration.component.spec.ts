@@ -13,11 +13,13 @@ import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/materia
 import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import * as _ from 'lodash';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon';
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { FeedTopic } from '@ngageoint/mage.web-core-lib/feed';
 import {
   AdminFeedEditConfigurationComponent,
@@ -41,7 +43,8 @@ const emptyMetaDataFormValue: FeedMetaDataNullable = {
   itemTemporalProperty: null,
   itemsHaveIdentity: null,
   itemsHaveSpatialDimension: null,
-  updateFrequencySeconds: null
+  updateFrequencySeconds: null,
+  mapStyle: { icon: null }
 };
 
 describe('FeedMetaDataComponent', () => {
@@ -91,10 +94,12 @@ describe('FeedMetaDataComponent', () => {
         MatCheckboxModule,
         MatExpansionModule,
         MatFormFieldModule,
+        MatIconModule,
         MatInputModule,
         NoopAnimationsModule,
         ReactiveFormsModule,
-        StaticIconModule],
+        StaticIconModule,
+        FeedIconModule],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));
@@ -138,7 +143,7 @@ describe('FeedMetaDataComponent', () => {
 
   describe('mapping meta-data to form value', () => {
     it('maps absent keys to null form values', () => {
-      expect(formValueForMetaData({})).toEqual(emptyMetaDataFormValue);
+      expect(formValueForMetaData({ mapStyle: { icon: null } })).toEqual(emptyMetaDataFormValue);
     });
 
     it('maps undefined keys to null form values', () => {
@@ -151,10 +156,11 @@ describe('FeedMetaDataComponent', () => {
         itemTemporalProperty: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
-        updateFrequencySeconds: undefined
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined
       };
 
-      expect(formValueForMetaData(undefinedKeys)).toEqual(emptyMetaDataFormValue);
+      expect(formValueForMetaData({ ...undefinedKeys, mapStyle: { icon: null } })).toEqual(emptyMetaDataFormValue);
     });
 
     it('maps defined values directly', () => {
@@ -167,7 +173,8 @@ describe('FeedMetaDataComponent', () => {
         itemTemporalProperty: 'prop3',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
-        updateFrequencySeconds: 60
+        updateFrequencySeconds: 60,
+        mapStyle: { icon: { sourceUrl: 'test://icon1.png' } }
       };
 
       expect(formValueForMetaData(metaData)).toEqual(metaData);
@@ -180,7 +187,8 @@ describe('FeedMetaDataComponent', () => {
         icon: { sourceUrl: 'test://icon1.png' },
         itemPrimaryProperty: 'prop1',
         itemTemporalProperty: 'prop3',
-        itemsHaveIdentity: false
+        itemsHaveIdentity: false,
+        mapStyle: { icon: null }
       };
 
       expect(formValueForMetaData(metaData)).toEqual({
@@ -215,7 +223,8 @@ describe('FeedMetaDataComponent', () => {
     ]);
     expect(metaDataChanges).toEqual([
       {
-        title: 'Test'
+        title: 'Test',
+        mapStyle: { icon: null }
       }
     ]);
 
@@ -233,7 +242,8 @@ describe('FeedMetaDataComponent', () => {
       title: 'Feed 1',
       itemPrimaryProperty: 'neverChanged',
       itemTemporalProperty: 'removed',
-      icon: { id: 'icon123' }
+      icon: { id: 'icon123' },
+      mapStyle: { icon: null }
     };
 
     host.topic = topic;
@@ -334,16 +344,18 @@ describe('FeedMetaDataComponent', () => {
     expect(formChanges).toEqual([
       {
         ...emptyMetaDataFormValue,
-        title: ''
+        title: '',
+        mapStyle: { icon: null }
       },
       {
         ...emptyMetaDataFormValue,
         title: '',
-        summary: 'Feed summary'
+        summary: 'Feed summary',
+        mapStyle: { icon: null }
       }
     ]);
-    expect(metaDataChanges).toEqual([{ summary: 'Feed summary' }]);
-    expect(target.feedMetaData).toEqual({ summary: 'Feed summary' });
+    expect(metaDataChanges).toEqual([{ summary: 'Feed summary', mapStyle: { icon: null } }]);
+    expect(target.feedMetaData).toEqual({ summary: 'Feed summary', mapStyle: { icon: null } });
 
     discardPeriodicTasks();
   }));
@@ -358,7 +370,8 @@ describe('FeedMetaDataComponent', () => {
       itemTemporalProperty: 'prop3',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
-      updateFrequencySeconds: 60
+      updateFrequencySeconds: 60,
+      mapStyle: { icon: { sourceUrl: 'test://icon1.png' } }
     };
     const topic: FeedTopic = {
       id: 'topic1',
@@ -383,7 +396,8 @@ describe('FeedMetaDataComponent', () => {
       itemTemporalProperty: 'prop3',
       updateFrequencySeconds: 90,
       itemsHaveIdentity: false,
-      itemsHaveSpatialDimension: false
+      itemsHaveSpatialDimension: false,
+      mapStyle: { icon: { id: 'icon2' }}
     });
     const feedMetaDataMod: Required<FeedMetaData> = Object.freeze({
       title: 'Test Mod',
@@ -394,7 +408,8 @@ describe('FeedMetaDataComponent', () => {
       itemTemporalProperty: 'prop2',
       updateFrequencySeconds: 900,
       itemsHaveIdentity: true,
-      itemsHaveSpatialDimension: true
+      itemsHaveSpatialDimension: true,
+      mapStyle: { icon: { id: 'icon3' } }
     });
     host.topic = { id: 'topic1', title: 'Topic 1' };
     host.feedMetaData = feedMetaData;
@@ -422,7 +437,8 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: false,
       itemPrimaryProperty: 'prop1',
-      updateFrequencySeconds: 3000
+      updateFrequencySeconds: 3000,
+      mapStyle: { icon: null }
     });
     const feedMetaData: FeedMetaData = Object.freeze({
       title: 'Feed Title',
@@ -430,7 +446,8 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveSpatialDimension: true,
       itemSecondaryProperty: 'prop2',
       icon: { id: 'feedicon1' },
-      updateFrequencySeconds: 0
+      updateFrequencySeconds: 0,
+      mapStyle: { icon: null }
     });
 
     host.topic = topic;
@@ -453,7 +470,8 @@ describe('FeedMetaDataComponent', () => {
         itemsHaveSpatialDimension: feedMetaData.itemsHaveSpatialDimension,
         itemPrimaryProperty: topic.itemPrimaryProperty,
         itemSecondaryProperty: feedMetaData.itemSecondaryProperty,
-        updateFrequencySeconds: feedMetaData.updateFrequencySeconds
+        updateFrequencySeconds: feedMetaData.updateFrequencySeconds,
+        mapStyle: feedMetaData.mapStyle
       })
     );
     expect(formChanges).toEqual([]);
@@ -470,7 +488,8 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveSpatialDimension: false,
       itemPrimaryProperty: 'prop1',
       itemSecondaryProperty: 'prop2Topic',
-      updateFrequencySeconds: 3000
+      updateFrequencySeconds: 3000,
+      mapStyle: { icon: null }
     });
     const feedMetaData: FeedMetaData = Object.freeze({
       title: 'Feed Title',
@@ -478,7 +497,8 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveSpatialDimension: true,
       itemSecondaryProperty: 'prop2',
       icon: { id: 'feedicon1' },
-      updateFrequencySeconds: 0
+      updateFrequencySeconds: 0,
+      mapStyle: { icon: null }
     });
 
     host.topic = topic;
@@ -497,7 +517,8 @@ describe('FeedMetaDataComponent', () => {
         itemsHaveSpatialDimension: feedMetaData.itemsHaveSpatialDimension,
         itemPrimaryProperty: topic.itemPrimaryProperty,
         itemSecondaryProperty: feedMetaData.itemSecondaryProperty,
-        updateFrequencySeconds: feedMetaData.updateFrequencySeconds
+        updateFrequencySeconds: feedMetaData.updateFrequencySeconds,
+        mapStyle: feedMetaData.mapStyle
       })
     );
     expect(formChanges).toEqual([]);
@@ -519,7 +540,8 @@ describe('FeedMetaDataComponent', () => {
         itemsHaveSpatialDimension: feedMetaData.itemsHaveSpatialDimension,
         itemPrimaryProperty: topic.itemPrimaryProperty,
         itemSecondaryProperty: null,
-        updateFrequencySeconds: feedMetaData.updateFrequencySeconds
+        updateFrequencySeconds: feedMetaData.updateFrequencySeconds,
+        mapStyle: feedMetaData.mapStyle
       })
     );
     expect(target.feedMetaData).toEqual({
@@ -529,15 +551,16 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveIdentity: topic.itemsHaveIdentity,
       itemsHaveSpatialDimension: feedMetaData.itemsHaveSpatialDimension,
       itemPrimaryProperty: topic.itemPrimaryProperty,
-      updateFrequencySeconds: feedMetaData.updateFrequencySeconds
+      updateFrequencySeconds: feedMetaData.updateFrequencySeconds,
+      mapStyle: feedMetaData.mapStyle
     });
 
     discardPeriodicTasks();
   }));
 
   it('resets form from topic and sets feed meta-data to null without emitting change when topic changes and feed meta-data does not change', fakeAsync(() => {
-    const topic1 = Object.freeze({ id: 'topic1', title: 'Topic 1' });
-    const topic2 = Object.freeze({ id: 'topic2', title: 'Topic 2' });
+    const topic1 = Object.freeze({ id: 'topic1', title: 'Topic 1', mapStyle: { icon: null } });
+    const topic2 = Object.freeze({ id: 'topic2', title: 'Topic 2', mapStyle: { icon: null } });
 
     host.topic = topic1;
     fixture.detectChanges();
@@ -548,10 +571,11 @@ describe('FeedMetaDataComponent', () => {
     expect(target.feedMetaDataForm.dirty).toEqual(false);
 
     setUserValue('title', 'Dirty');
+    const expectedFormValue = { title: 'Dirty', mapStyle: { icon: null } };
 
     expect(target.feedMetaDataForm.pristine).toEqual(false);
     expect(target.feedMetaDataForm.dirty).toEqual(true);
-    expect(formChanges).toEqual([{ ...emptyMetaDataFormValue, title: 'Dirty' }]);
+    expect(formChanges).toEqual([{ ...emptyMetaDataFormValue, ...expectedFormValue }]);
     expect(target.feedMetaData).toBeNull();
     expect(metaDataChanges).toEqual([]);
 
@@ -560,8 +584,8 @@ describe('FeedMetaDataComponent', () => {
 
     expect(target.feedMetaDataForm.pristine).toEqual(false);
     expect(target.feedMetaDataForm.dirty).toEqual(true);
-    expect(target.feedMetaData).toEqual({ title: 'Dirty' });
-    expect(metaDataChanges).toEqual([{ title: 'Dirty' }]);
+    expect(target.feedMetaData).toEqual(expectedFormValue);
+    expect(metaDataChanges).toEqual([expectedFormValue]);
 
     host.topic = topic2;
     fixture.detectChanges();
@@ -571,8 +595,8 @@ describe('FeedMetaDataComponent', () => {
     expect(target.feedMetaDataForm.dirty).toEqual(false);
     expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData(topic2));
     expect(target.feedMetaData).toBeNull();
-    expect(formChanges).toEqual([{ ...emptyMetaDataFormValue, title: 'Dirty' }]);
-    expect(metaDataChanges).toEqual([{ title: 'Dirty' }]);
+    expect(formChanges).toEqual([{ ...emptyMetaDataFormValue, ...expectedFormValue }]);
+    expect(metaDataChanges).toEqual([expectedFormValue]);
 
     discardPeriodicTasks();
   }));
@@ -592,10 +616,11 @@ describe('FeedMetaDataComponent', () => {
         itemTemporalProperty: null,
         itemsHaveIdentity: null,
         itemsHaveSpatialDimension: null,
-        updateFrequencySeconds: 111
+        updateFrequencySeconds: 111,
+        mapStyle: { icon: null }
       }
     ]);
-    expect(metaDataChanges).toEqual([{ updateFrequencySeconds: 111 }]);
+    expect(metaDataChanges).toEqual([{ updateFrequencySeconds: 111, mapStyle: { icon: null } }]);
 
     discardPeriodicTasks();
   }));
@@ -608,7 +633,8 @@ describe('FeedMetaDataComponent', () => {
       itemPrimaryProperty: null,
       itemSecondaryProperty: null,
       itemTemporalProperty: null,
-      updateFrequencySeconds: null
+      updateFrequencySeconds: null,
+      mapStyle: { icon: null }
     });
 
     it('parses boolean form values as booleans', fakeAsync(() => {
@@ -622,7 +648,8 @@ describe('FeedMetaDataComponent', () => {
       tick(debounceTimeMs + 50);
 
       expect(observedMetaData).toEqual({
-        itemsHaveIdentity: true
+        itemsHaveIdentity: true,
+        mapStyle: { icon: null }
       });
 
       setUserValue('itemsHaveSpatialDimension', true);
@@ -631,7 +658,8 @@ describe('FeedMetaDataComponent', () => {
 
       expect(observedMetaData).toEqual({
         itemsHaveIdentity: true,
-        itemsHaveSpatialDimension: true
+        itemsHaveSpatialDimension: true,
+        mapStyle: { icon: null }
       });
 
       discardPeriodicTasks();
@@ -646,7 +674,8 @@ describe('FeedMetaDataComponent', () => {
       host.topic = {
         id: 'topic1',
         title: 'Topic 1',
-        ...topicMetaData
+        ...topicMetaData,
+        mapStyle: { icon: null }
       };
       host.feedMetaData = {};
       fixture.detectChanges();
@@ -708,7 +737,8 @@ describe('FeedMetaDataComponent', () => {
       host.topic = {
         id: 'topic1',
         title: 'Topic 1',
-        ...topicMetaData
+        ...topicMetaData,
+        mapStyle: { icon: null }
       };
       host.feedMetaData = feedMetaDataWithCheckboxKeys;
       fixture.detectChanges();
@@ -751,7 +781,8 @@ describe('FeedMetaDataComponent', () => {
     it('includes checkbox values in the meta-data only if dirty when not in topic', fakeAsync(() => {
       host.topic = {
         id: 'topic1',
-        title: 'Topic 1'
+        title: 'Topic 1',
+        mapStyle: { icon: null }
       };
       const topicMetaData = feedMetaDataLean(host.topic);
       fixture.detectChanges();
@@ -777,11 +808,12 @@ describe('FeedMetaDataComponent', () => {
       tick(debounceTimeMs + 50);
 
       expect(metaDataChanges).toEqual([
-        { title: topicMetaData.title, summary: 'No Checkboxes' }
+        { title: topicMetaData.title, summary: 'No Checkboxes', mapStyle: { icon: null } }
       ]);
       expect(target.feedMetaData).toEqual({
         title: topicMetaData.title,
-        summary: 'No Checkboxes'
+        summary: 'No Checkboxes',
+        mapStyle: { icon: null }
       });
 
       setUserValue('itemsHaveIdentity', true);
@@ -789,17 +821,19 @@ describe('FeedMetaDataComponent', () => {
       tick(debounceTimeMs + 50);
 
       expect(metaDataChanges).toEqual([
-        { title: topicMetaData.title, summary: 'No Checkboxes' },
+        { title: topicMetaData.title, summary: 'No Checkboxes', mapStyle: { icon: null } },
         {
           title: topicMetaData.title,
           summary: 'No Checkboxes',
-          itemsHaveIdentity: true
+          itemsHaveIdentity: true,
+          mapStyle: { icon: null }
         }
       ]);
       expect(target.feedMetaData).toEqual({
         title: topicMetaData.title,
         summary: 'No Checkboxes',
-        itemsHaveIdentity: true
+        itemsHaveIdentity: true,
+        mapStyle: { icon: null }
       });
 
       setUserValue('itemsHaveIdentity', false);
@@ -807,23 +841,26 @@ describe('FeedMetaDataComponent', () => {
       tick(debounceTimeMs + 50);
 
       expect(metaDataChanges).toEqual([
-        { title: topicMetaData.title, summary: 'No Checkboxes' },
+        { title: topicMetaData.title, summary: 'No Checkboxes', mapStyle: { icon: null } },
         {
           title: topicMetaData.title,
           summary: 'No Checkboxes',
-          itemsHaveIdentity: true
+          itemsHaveIdentity: true,
+          mapStyle: { icon: null }
         },
         {
           title: topicMetaData.title,
           summary: 'No Checkboxes',
-          itemsHaveIdentity: false
+          itemsHaveIdentity: false,
+          mapStyle: { icon: null }
         }
       ]);
 
       expect(target.feedMetaData).toEqual({
         title: topicMetaData.title,
         summary: 'No Checkboxes',
-        itemsHaveIdentity: false
+        itemsHaveIdentity: false,
+        mapStyle: { icon: null }
       });
 
       discardPeriodicTasks();
@@ -831,28 +868,29 @@ describe('FeedMetaDataComponent', () => {
   });
 
   it('resets the form to topic meta-data when feed meta-data changes to null', fakeAsync(() => {
-    host.topic = { id: 'topic1', title: 'Topic 1' };
+    host.topic = { id: 'topic1', title: 'Topic 1', mapStyle: { icon: null } };
     fixture.detectChanges();
 
     expect(target.feedMetaDataForm.pristine).toEqual(true);
     expect(target.feedMetaDataForm.dirty).toEqual(false);
 
     setUserValue('title', 'Dirty');
+    const expectedChange = { title: 'Dirty', mapStyle: { icon: null } };
 
     expect(target.feedMetaDataForm.pristine).toEqual(false);
     expect(target.feedMetaDataForm.dirty).toEqual(true);
-    expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData({ title: 'Dirty' }));
+    expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData(expectedChange));
     expect(target.feedMetaData).toEqual(null);
 
     fixture.detectChanges();
     tick(debounceTimeMs + 50);
 
-    expect(target.feedMetaData).toEqual({ title: 'Dirty' });
+    expect(target.feedMetaData).toEqual(expectedChange);
 
     host.feedMetaData = target.feedMetaData;
     fixture.detectChanges();
 
-    expect(target.feedMetaData).toEqual({ title: 'Dirty' });
+    expect(target.feedMetaData).toEqual(expectedChange);
 
     host.feedMetaData = null;
     fixture.detectChanges();
@@ -861,8 +899,8 @@ describe('FeedMetaDataComponent', () => {
     expect(target.feedMetaData).toBeNull();
     expect(target.feedMetaDataForm.pristine).toEqual(true);
     expect(target.feedMetaDataForm.dirty).toEqual(false);
-    expect(formChanges).toEqual([formValueForMetaData({ title: 'Dirty' })]);
-    expect(metaDataChanges).toEqual([{ title: 'Dirty' }]);
+    expect(formChanges).toEqual([formValueForMetaData(expectedChange)]);
+    expect(metaDataChanges).toEqual([expectedChange]);
 
     discardPeriodicTasks();
   }));
@@ -874,7 +912,8 @@ describe('FeedMetaDataComponent', () => {
         title: 'Topic 1',
         itemPrimaryProperty: 'prop1',
         itemSecondaryProperty: 'prop2',
-        itemsHaveSpatialDimension: true
+        itemsHaveSpatialDimension: true,
+        mapStyle: { icon: null }
       };
 
       const topicMetaData = feedMetaDataLean(topic);
@@ -948,7 +987,8 @@ describe('FeedMetaDataComponent', () => {
         title: 'Topic 1',
         itemPrimaryProperty: 'prop1',
         itemSecondaryProperty: 'prop2',
-        itemsHaveSpatialDimension: true
+        itemsHaveSpatialDimension: true,
+        mapStyle: { icon: null }
       };
 
       const topicMetaData = feedMetaDataLean(topic);
@@ -1036,7 +1076,7 @@ describe('FeedMetaDataComponent', () => {
         itemPrimaryProperty: ''
       });
 
-      expect(accepted).toEqual([{}]);
+      expect(accepted).toEqual([{ mapStyle: { icon: null } }]);
 
       discardPeriodicTasks();
     }));

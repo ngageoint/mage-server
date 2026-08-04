@@ -1,10 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { IconReference } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 
 export interface FeedTab {
   id: string,
   title: string;
-  icon?: string;
-  iconUrl?: string;
+  icon?: IconReference;
   count?: number;
   feed?: any;
 }
@@ -15,23 +15,7 @@ export interface FeedTab {
     styleUrls: ['./sidebar-tab.component.scss'],
     standalone: false
 })
-export class SidebarTabComponent implements OnInit {
+export class SidebarTabComponent {
   @Input() tab: FeedTab;
   @Input() active: boolean;
-
-  imageStyle: object;
-
-  ngOnInit(): void {
-    if (!this.tab) {
-      return;
-    }
-    if (this.tab.iconUrl) {
-      this.imageStyle = {
-        'mask-image': `url(${this.tab.iconUrl})`,
-        '-webkit-mask-image': `url(${this.tab.iconUrl})`
-      }
-    } else if (!this.tab.icon) {
-      this.tab.icon = 'rss_feed';
-    }
-  }
 }

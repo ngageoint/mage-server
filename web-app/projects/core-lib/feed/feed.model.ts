@@ -21,7 +21,7 @@ export interface Feed {
 }
 
 export interface MapStyle {
-  icon?: SourceUrlStaticIconReference
+  icon?: StaticIconReference
 }
 
 export interface RegisteredMapStyle {
@@ -87,6 +87,8 @@ export interface FeedPreview {
   content?: FeedContent
 }
 
-export type FeedPost = Partial<Omit<Feed, 'service' | 'topic' | 'icon'>> & Pick<Feed, 'service' | 'topic'> & {
+export type FeedPost = Partial<Omit<Feed, 'service' | 'topic' | 'icon' | 'mapStyle'>> & Pick<Feed, 'service' | 'topic'> & {
   icon?: StaticIconReference
+} & {
+  mapStyle?: MapStyle
 }

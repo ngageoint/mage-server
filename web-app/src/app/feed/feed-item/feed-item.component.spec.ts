@@ -1,8 +1,11 @@
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatCardModule as MatCardModule } from '@angular/material/card'
 import { MatDividerModule } from '@angular/material/divider'
 import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
 import { GeometryModule } from 'src/app/geometry/geometry.module';
 import { MapClipComponent } from 'src/app/map/clip/clip.component';
 import { FeedItemComponent } from './feed-item.component';
@@ -11,6 +14,7 @@ import { MomentPipe } from 'src/app/moment/moment.pipe';
 import { Feed } from 'core-lib-src/feed';
 import { MapService } from 'src/app/map/map.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 class MockLocalStorageService {
   getTimeFormat(): string {
@@ -29,6 +33,12 @@ class MockLocalStorageService {
     return {
       center: [0, 0]
     }
+  }
+}
+
+class MockSessionService {
+  getToken(): string {
+    return 'test-token'
   }
 }
 
@@ -89,16 +99,23 @@ describe('FeedItemComponent', () => {
       }, {
         provide: LocalStorageService,
         useClass: MockLocalStorageService
+      }, {
+        provide: SessionService,
+        useClass: MockSessionService
       },{
         provide: MomentPipe,
         useClass: MomentPipe
-      }],
+      },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
+      ],
       imports: [
         MatIconModule,
         MatToolbarModule,
         MatDividerModule,
         MatCardModule,
-        GeometryModule
+        GeometryModule,
+        FeedIconModule
       ],
       declarations: [
         FeedItemComponent,

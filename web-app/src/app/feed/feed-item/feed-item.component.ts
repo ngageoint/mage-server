@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed, StyledFeature } from '@ngageoint/mage.web-core-lib/feed';
 import { SidebarService } from 'src/app/sidebar/sidebar.service';
+import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon';
+import { SessionService } from 'mage-web-app/http/session.service';
 import { MapService } from '../../map/map.service';
 import { MomentPipe } from '../../moment/moment.pipe';
 
@@ -24,7 +26,8 @@ export class FeedItemComponent implements OnChanges {
   constructor(
     private sidebarService: SidebarService,
     private momentPipe: MomentPipe,
-    private mapService: MapService
+    private mapService: MapService,
+    private sessionService: SessionService
     ) {}
 
   ngOnChanges(_changes: SimpleChanges): void {
@@ -36,7 +39,10 @@ export class FeedItemComponent implements OnChanges {
       return
     }
 
-    this.mapFeature = { ...this.item }
+    const mapStyle = this.feed.mapStyle?.icon ? {
+      iconUrl: `${contentPathOfIcon(this.feed.mapStyle.icon)}?access_token=${this.sessionService.getToken()}`
+    } : null
+    this.mapFeature = { style: mapStyle, ...this.item }
 
     if (!this.item.properties) {
       return
