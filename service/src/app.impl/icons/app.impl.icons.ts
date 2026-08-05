@@ -1,21 +1,26 @@
 import { URL } from 'url'
-import { entityNotFound, invalidInput } from '../../app.api/app.api.errors'
+import { entityNotFound, infrastructureError, invalidInput } from '../../app.api/app.api.errors'
 import { KnownErrorsOf, withPermission } from '../../app.api/app.api.global'
 import { CreateLocalStaticIcon, CreateLocalStaticIconRequest, ListStaticIcons, ListStaticIconsRequest, GetStaticIcon, GetStaticIconContent, GetStaticIconContentRequest, GetStaticIconRequest, StaticIconPermissionService, iconSourceUrlFetchError, StaticIconWithContent } from '../../app.api/icons/app.api.icons'
 import { UrlResolutionError } from '../../entities/entities.global'
-import { StaticIcon, StaticIconReference, StaticIconRepository } from '../../entities/icons/entities.icons'
+import { StaticIcon, StaticIconReference, StaticIconRepository, StaticIconStoreError } from '../../entities/icons/entities.icons'
 
-
-export function CreateStaticIcon(permissions: StaticIconPermissionService): CreateLocalStaticIcon {
+export function CreateStaticIcon(permissions: StaticIconPermissionService, repo: StaticIconRepository): CreateLocalStaticIcon {
   return function(req: CreateLocalStaticIconRequest): ReturnType<CreateLocalStaticIcon> {
-    return withPermission(
+    return withPermission<StaticIcon, KnownErrorsOf<CreateLocalStaticIcon>>(
       permissions.ensureCreateStaticIconPermission(req.context),
-      () => {
-        throw new Error('todo')
+      async () => {
+        const reponse = await repo.createLocal(req.iconInfo, req.iconContent)
+        if (reponse instanceof StaticIconStoreError) {
+          return infrastructureError(reponse)
+        }
+
+        return reponse
       }
     )
   }
 }
+
 
 export function GetStaticIcon(permissions: StaticIconPermissionService, repo: StaticIconRepository): GetStaticIcon {
   return function getStaticIcon(req: GetStaticIconRequest): ReturnType<GetStaticIcon> {
@@ -27,12 +32,10 @@ export function GetStaticIcon(permissions: StaticIconPermissionService, repo: St
         if (typeof ref.sourceUrl === 'string') {
           try {
             parsedRef = { sourceUrl: new URL(ref.sourceUrl) }
-          }
-          catch (err) {
+          } catch (err) {
             return invalidInput('invalid icon source url', [ `invalid url: ${ref.sourceUrl}`, 'iconRef', 'sourceUrl' ])
           }
-        }
-        else {
+        } else {
           parsedRef = ref as StaticIconReference
         }
         const icon = await repo.findByReference(parsedRef)
@@ -55,7 +58,7 @@ export function GetStaticIconContent(permissions: StaticIconPermissionService, r
       async () => {
         // TODO: support caching parameters to suppress fetch/load
         const content = await repo.loadContent(req.iconId)
-        if (content instanceof UrlResolutionError) {
+        if (content instanceof Error) {
           return iconSourceUrlFetchError(content, req.iconId)
         }
         if (content) {

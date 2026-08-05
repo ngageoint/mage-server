@@ -4,7 +4,7 @@ import { UserLocation, UserLocationProperties } from '../entities/locations/enti
 
 
 export type UserLocationDocument = mongoose.Document & Omit<UserLocation, 'eventId' | 'userId' | 'properties'> & {
-  eventId: mongoose.Types.ObjectId
+  eventId: MageEventId
   userId: mongoose.Types.ObjectId
   properties: UserLocationDocumentProperties
 }
@@ -38,3 +38,5 @@ export type UserLocationReadStreamOptions = Omit<UserLocationReadOptions, 'strea
 
 export function getLocations(options: UserLocationReadOptions, callback: (err: any | null, results?: UserLocationDocument[]) => any): void
 export function getLocations(options: UserLocationReadStreamOptions): mongoose.Cursor<UserLocationDocument>
+
+export declare const Model: mongoose.Model<UserLocationDocument>

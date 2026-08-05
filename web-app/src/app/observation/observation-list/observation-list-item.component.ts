@@ -3,7 +3,7 @@ import moment from 'moment';
 import { MatRipple } from '@angular/material/core';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { animate, style, transition, trigger } from '@angular/animations'
-import { FeedPanelService } from '../../feed-panel/feed-panel.service'
+import { SidebarService } from '../../sidebar/sidebar.service'
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -56,7 +56,7 @@ export class ObservationListItemComponent implements OnChanges {
     private mapService: MapService,
     private sessionService: SessionService,
     private eventService: EventService,
-    private feedPanelService: FeedPanelService,
+    private sidebarService: SidebarService,
     private snackBar: MatSnackBar) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -125,7 +125,7 @@ export class ObservationListItemComponent implements OnChanges {
 
   viewObservation(): void {
     this.onObservationLocationClick()
-    this.feedPanelService.viewObservation(this.observation)
+    this.sidebarService.viewObservation(this.observation)
   }
 
   onObservationLocationClick(): void {

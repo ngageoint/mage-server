@@ -845,6 +845,32 @@ export class AttachmentNotFoundError extends Error {
   }
 }
 
+export interface ObservationReadOptions {
+  filter?: {
+    geometry?: Geometry
+    startDate?: Date
+    endDate?: Date
+    observationStartDate?: Date
+    observationEndDate?: Date
+    states?: ObservationState['name'][]
+    favorites?: false | { userId?: string }
+    important?: boolean
+    includeAttachments?: boolean
+  },
+  projection?: {
+
+  }, // todo use fields
+  sort: any
+  fields?: any
+  attachments?: boolean
+  lean?: boolean
+  populate?: boolean
+  stream?: false
+}
+export type ObservationReadStreamOptions = Omit<ObservationReadOptions, 'stream'> & {
+  stream: true
+}
+
 /**
  * This repository provides persistence operations for `Observation` entities
  * within the scope of one MAGE event.
@@ -863,6 +889,9 @@ export interface EventScopedObservationRepository {
    */
   save(observation: Observation): Promise<Observation | ObservationRepositoryError>
   findById(id: ObservationId): Promise<Observation | null>
+
+  find(event: MageEvent, options: ObservationReadStreamOptions): AsyncIterable<ObservationAttrs> & { close?: () => void }
+
   /**
    * Return the most recent observation in the event as determined by
    * the observation's `lastModified` timestamp.  Return null if there are no

@@ -83,7 +83,9 @@ export class StaticIconService {
     throw new Error('unimplemented')
   }
 
-  uploadIcon(): void {
-    throw new Error('unimplemented')
+  uploadIcon(icon: File): Observable<StaticIcon> {
+    const formData = new FormData()
+    formData.append('icon', icon)
+    return this.webClient.post<StaticIcon>("/api/icons", formData)
   }
 }

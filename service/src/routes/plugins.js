@@ -1,12 +1,11 @@
 module.exports = function (app, security) {
   const fs = require('fs')
     , path = require('path')
-    , access = require('../access')
-    , passport = security.authentication.passport;
+    , access = require('../access');
 
   app.get(
     '/api/plugins',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_SETTINGS'), // TODO add new permission
     function (req, res, next) {
       console.log('get plugins');

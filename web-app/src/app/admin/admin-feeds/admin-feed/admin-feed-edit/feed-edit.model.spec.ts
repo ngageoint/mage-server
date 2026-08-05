@@ -54,7 +54,8 @@ describe('feedMetaDataLean', () => {
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
       updateFrequencySeconds: 10000,
-      icon: { sourceUrl: 'hurr://durr/derp.png' }
+      icon: { sourceUrl: 'hurr://durr/derp.png' },
+      mapStyle: {}
     });
   });
 
@@ -99,7 +100,8 @@ describe('feedMetaDataLean', () => {
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
       updateFrequencySeconds: 10000,
-      icon: { id: 'icon1' }
+      icon: { id: 'icon1' },
+      mapStyle: {}
     });
   });
 
@@ -113,7 +115,8 @@ describe('feedMetaDataLean', () => {
       itemsHaveIdentity: null,
       itemsHaveSpatialDimension: null,
       updateFrequencySeconds: null,
-      icon: null
+      icon: null,
+      mapStyle: null
     };
     const lean = feedMetaDataLean(nullSource);
 
@@ -130,7 +133,8 @@ describe('feedMetaDataLean', () => {
       itemsHaveIdentity: undefined,
       itemsHaveSpatialDimension: undefined,
       updateFrequencySeconds: undefined,
-      icon: undefined
+      icon: undefined,
+      mapStyle: undefined
     };
     const lean = feedMetaDataLean(undefinedSource);
 
@@ -212,7 +216,8 @@ describe('feedPostFromEditState', () => {
       itemTemporalProperty: 'feedTime',
       itemsHaveIdentity: false,
       itemsHaveSpatialDimension: false,
-      updateFrequencySeconds: 4000
+      updateFrequencySeconds: 4000,
+      mapStyle: { icon: { id: 'icon6' } }
     };
 
     const state: FeedEditState = {

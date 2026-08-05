@@ -1,8 +1,21 @@
+// Need this to override bootstrap, can be removed when bootstrap is removed
+input[type="file"] {
+    display: none;
+}
 
 $icon-size: 3em;
+
+.form {
+    display: flex;
+    gap: 16px;
+}
 
 .icon-image {
     display: block;
     height: $icon-size;
     width: $icon-size;
+}
+
+.icon-image:hover {
+    cursor: pointer;
 }

@@ -9,10 +9,12 @@ import {
 } from '@ngageoint/mage.web-core-lib/feed';
 import { feedPostFromEditState } from './feed-edit.model';
 import * as _ from 'lodash';
+import { StaticIconService } from '@ngageoint/mage.web-core-lib/static-icon';
 
 describe('FeedEditService', () => {
   let feedEdit: FeedEditService;
   let feedService: jasmine.SpyObj<FeedService>;
+  let iconService: jasmine.SpyObj<StaticIconService>;
 
   const makeService = (id: string): Service =>
     ({
@@ -51,7 +53,15 @@ describe('FeedEditService', () => {
       'createFeed',
       'updateFeed'
     ]);
-    feedEdit = new FeedEditService(feedService);
+    iconService = jasmine.createSpyObj<StaticIconService>('StaticIconService', [
+      'fetchIcons',
+      'fetchIconById',
+      'fetchIconByReference',
+      'fetchIconBySourceUrl',
+      'registerIconUrl',
+      'uploadIcon'
+    ]);
+    feedEdit = new FeedEditService(feedService, iconService);
   });
 
   it('starts with an empty-ish state', () => {

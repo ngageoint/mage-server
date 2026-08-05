@@ -12,9 +12,9 @@ export class AuthenticationButtonComponent {
   @Input() text: string
   @Input() textColor: string
 
-  @Output() click = new EventEmitter<void>()
+  @Output() authenticate = new EventEmitter<void>()
 
   onClick(): void {
-    this.click.emit()
+    this.authenticate.emit()
   }
 }

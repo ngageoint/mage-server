@@ -80,4 +80,13 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
     return finalResult;
 
   }
+
+  async findById(id: UserId): Promise<User | null> {
+    const doc = await this.model.findById(id)
+    if (doc) {
+      return this.entityForDocument(doc)
+    }
+
+    return null
+  }
 }

@@ -28,9 +28,17 @@
 }
 
 .icon {
+  display: block;
   width: 40px;
   height: 40px;
   flex: 0 0 auto;
+
+  ::ng-deep mat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+    line-height: 40px;
+  }
 }
 
 .page-content {

@@ -123,7 +123,7 @@ line switch.  The `mage.service` script merges options from command line switche
 object, in descending order of precedence.  This enables you to have a base configuration file, then override the
 file's entries with environment variables and/or command line switches as desired.  The full configuration object for
 the `-C`/`MAGE_CONFIG` environment variable must have the following form.
-```json
+```json lines
 {
   "mage": {
     "address": "0.0.0.0",
@@ -156,7 +156,7 @@ print the configuration as a JSON string and exit without starting the server.
 ```
 By default, the Mage server will attempt to create and use a directory at `/var/lib/mage` for storing data and media
 such as videos, photos, and icons.  If the system user account that runs the Mage server does not have permission to
-create that directory, you must create it before starting the server.  Of course you can change the directories the
+create that directory, you must create it before starting the server.  Of course, you can change the directories the
 server uses through the script command line switches and/or environment variables.
 
 For convenience, the Mage server project contains an [environment script](./service/src/environment/magerc.sh) that you
@@ -178,7 +178,7 @@ When running a publicly accessible production server, consider the following poi
 If all of your Mage server configuration options come from environment variables, as should be the case with most
 cloud server deployments, you will not need to worry about the location of a configuration file.  If you are using
 a JSON or JavaScript module configuration file, be sure to the store the file in a location outside where you have
-install the Mage server packages.  For example, if you installed the Mage server in `/opt/mage`, keep your
+installed the Mage server packages.  For example, if you installed the Mage server in `/opt/mage`, keep your
 configuration in some non-overlapping directory like `/etc/mage.json`.  That way, if you decide to delete the contents
 of `/opt/mage` and start fresh, your configuration will remain intact.
 
@@ -200,13 +200,14 @@ on community updates.  Try using the newer tools [pm2](https://pm2.keymetrics.io
 for running `mage.service` persistently in production.
 
 #### Running as a Windows Service
-To continuously run mage.service on a windows environment, it is recommended to create a windows service using a tool such as [`node-windows`](https://github.com/coreybutler/node-windows).
+To continuously run mage.service on a Windows environment, it is recommended to create a Windows service using a tool 
+such as [`node-windows`](https://github.com/coreybutler/node-windows).
 
 First you'll need to install `node-windows`
 ```bash
 npm install -g node-windows
 ```
-Then a script is needed to configure and create the windows service.
+Then a script is needed to configure and create the Windows service.
 ```js
 var Service = require('node-windows').Service;
 
@@ -229,14 +230,14 @@ svc.on('install',function(){
 
 svc.install();
 ```
-Upon running the created script, a new Windows service will be created matching the name given. This service can then be configured to automatically start by the windows server.
+Running the script creates a new Windows service with the given name. You can then configure the Windows server to
+automatically start the Mage service.
 
 #### HTTPS/TLS
 
-When running a Mage server in a publicly accessible production environment, as with any web application, you should use
-a reverse proxy such as [Apache HTTP Server](https://httpd.apache.org/) or [NGINX](https://nginx.org/) to force
-external connections to use HTTPS and run the Mage server Node process on a private subnet host.  The Mage server Node
-application itself does not support HTTPS/TLS connections.
+As with any production web application, you should use a reverse proxy such as [Apache HTTP Server](https://httpd.apache.org/) or [NGINX](https://nginx.org/) 
+to force external connections to use HTTPS and run the Mage server Node process on a private subnet host.  The Mage 
+server Node application itself does not support HTTPS/TLS connections.
 
 **IMPORTANT:** Be sure your reverse proxy properly sets the `X-Forwarded-Host` and `X-Forwarded-Proto` headers properly.
 The Mage Node.js app builds URLs, via [Express.js](https://expressjs.com/en/4x/api.html#req.hostname), that Mage clients
@@ -290,7 +291,7 @@ Run the app with the `instance/config.ts` settings
 
     npm start
 
-If the monogo database is up and running and everything is built, you should see a message like:
+If the MongoDB database is up and running and everything is built, you should see a message like:
 
     2025-05-13T20:12:36.120Z - info: Mage Server listening at address 127.0.0.1 on port 4242
 
@@ -304,61 +305,6 @@ To run the Mage server directly from your _built_ source tree, build the `servic
 you want to run as described in the above section.  Then, from the `instance` directory, run
 ```shell
 npm run start
-```
-That [NPM script](./instance/package.json) will run the `mage.service` script from your working tree using the 
-[configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
-your needs.
-
-### Local runtime issues
-
-You may run into some problems running the Mage instance from your working tree due to NPM's dependency installation
-behavior and/or Node's module resolution algorithm.  For example, if you are working on a plugin within this core
-Mage repository, you may see errors as plugins initialize.  This is usually a null reference error that looks something 
-like
-```
-2024-08-23T02:42:52.783Z - [mage.image] intializing image plugin ...
-...
-/<...>/mage-server/plugins/image/service/lib/processor.js:53
-            return yield stateRepo.get().then(x => !!x ? x : stateRepo.put(exports.defaultImagePluginConfig));
-                                   ^
-
-TypeError: Cannot read properties of undefined (reading 'get')
-    at /<...>/mage-server/plugins/image/service/lib/processor.js:53:36
-```
-This is usually because the plugin package has a peer depedency on `@ngageoint/mage.service`, which NPM pulls from the
-public [registry](https://www.npmjs.com/package/@ngageoint/mage.service) and installs into the plugin's `node_modules` 
-directory.  However, your local Mage instance references `@ngageoint/mage.service` package from the local relative
-path.  This results in your instance having two copies of `@ngageoint/mage.service` - one from your local build linked
-in the top-level `instance/node_modules` directory, and one from the registry in the plugin's `node_modules` directory.
-In the case of the error above, this results in a discrepancy during dependency injection because the Mage service
-defines unique `Symbol` constants for plugins to indicate which elements they need from their host Mage service.  In 
-the plugin's modules, Node resolves these symbol constants and any other core `@ngageoint/mage.service` modules from
-the plugin's copy of the package, as opposed to the relative package installed at the instance level.  This is why you
-must ensure that you link the working tree core Mage service package in your plugin working tree, as the above 
-instructions state.
-```shell
-~/my_plugin % npm ci
-~/my_plugin % npm link <relative path to mage server repo>/service
-```
-Be aware that NPM's dependency resolution will delete this symbolic link every time you run `npm install`, 
-`npm install <dependency>`, or `npm ci` for the plugin, so always `npm link` your relative Mage service
-dependency again after those commands.
-
-If you encounter other unexpected issues running locally with plugins, especially reference errors, or other
-discrepancies in values the core modules define, check that the core service package is still linked properly
-in your plugin working tree.  You can check using the `npm ls` command as follows.
-```shell
-% npm ls @ngageoint/mage.service
-@ngageoint/mage.image.service@1.1.0-beta.1 /<...>/mage-server/plugins/image/service
-└── @ngageoint/mage.service@6.3.0-beta.6 -> ./../../../service
-```
-
-## Running from source
-
-To run the Mage server directly from your _built_ source tree, build the `service`, `web-app`, and any plugin packages 
-you want to run as described in the above section.  Then, from the `instance` directory, run
-```shell
-npm run start:dev
 ```
 That [NPM script](./instance/package.json) will run the `mage.service` script from your working tree using the 
 [configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
@@ -423,7 +369,7 @@ include.
 Then `mage-web-proxy` service is optional when developing and running on
 localhost, but highly recommended when running Mage Server on publicly
 accessible servers.  The service in `docker-compose.yml` uses the official
-nginx docker image with an appropriate [configuration](web/nginx.conf).  This
+nginx docker image with a configuration you create at server/web/nginx.conf).  This
 is an example of setting up a reverse proxy in front of the Node server to
 enforce HTTPS/TLS connections to the server.  Of course, you could use any
 reverse proxy you see fit, such as [Apache HTTP Server](https://httpd.apache.org/)
@@ -436,7 +382,7 @@ reverse proxy, peform the following modifications to `docker-compose.yml`.
 For testing in a development environment, you can create a self-signed server
 certificate for nginx to use.  The following OpenSSL command, run from the
 directory of this README, will create a self-signed server certificate and
-private key in the `web` directory that should allow the Mage mobile app to
+private key in the `server/web` directory that should allow the Mage mobile app to
 connect to nginx.  Replace the values of the `SUBJ_*` variables at the
 beginning of the command with your own values.
 ```
@@ -447,7 +393,7 @@ SUBJ_O="Organization" \
 SUBJ_OU="Organizational_Unit" \
 SUBJ_CN="HOST_NAME_OR_IP"; \
 openssl req -new -nodes -x509 -newkey rsa:4096 -sha256 -days 1095 \
--out web/mage-web.crt -keyout web/mage-web.key \
+-out ./server/web/mage-web.crt -keyout ./server/web/mage-web.key \
 -config <(cat /etc/ssl/openssl.cnf <(printf "[mage]\n  \
 subjectAltName=DNS:$SUBJ_CN\n  \
 basicConstraints=CA:true")) \
@@ -455,7 +401,7 @@ basicConstraints=CA:true")) \
 -extensions mage; \
 unset SUBJ_C SUBJ_ST SUBJ_L SUBJ_O SUBJ_OU SUBJ_CN
 ```
-The preceding command creates `web/mage-web.crt` and `web/mage-web.key`, which
+The preceding command creates `server/web/mage-web.crt` and `server/web/mage-web.key`, which
 the nginx configuration file references.  The `<(...)` operator is Unix process
 substitution and allows treating the enclosed command output as a file.  The
 `subjectAltName` and `basicConstraints` arguments are necessary to install the
@@ -475,11 +421,10 @@ connecting from a mobile device on the same network.
 ### Bind mounts
 
 The Compose file uses [bind mounts](https://docs.docker.com/storage/bind-mounts/)
-for the MongoDB database directory, database log path, and Mage server
-[resources](../README.md#mage-local-media-directory).  By default, the source
-paths of those bind mounts are `database/data`, `database/log`, and
-`server/resources`, respectively.  You can change the source paths according to
-your environment and needs.
+for the MongoDB database directory, database log path, and Mage server media directory.  
+By default, the source paths of those bind mounts are `database/data`, `database/log`, and
+`server/resources`, respectively.  You can change the source paths according to your 
+environment and needs.
 
 With these bind mounts, the Mage server will retain its data on your host file
 system in directories you can explore and manage yourself.  For example, this

@@ -1,63 +1,42 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
-export interface Export {
-  id: any,
-  userId: any,
-  physicalPath: string,
-  filename?: string,
-  exportType: string,
-  url: string,
-  status: string,
-  options: any
-}
-
-export interface ExportRequest {
-  eventId: number,
-  exportType: string,
-  observations: boolean,
-  locations: boolean,
-  attachments?: boolean,
-  favorites?: boolean,
-  important?: boolean,
-  startDate?: string,
-  endDate?: string
-}
-
-export interface ExportResponse {
-  id: string
-}
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Export, ExportRequest } from './entities.export';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExportService {
 
-  constructor(private webClient: HttpClient) { }
+  private _exports = new BehaviorSubject<Export[]>([])
+  exports$ = this._exports.asObservable()
 
-  getExports(): Observable<Export[]> {
-    return this.webClient.get<Export[]>('/api/exports/myself');
-  }
+  constructor(private httpClient: HttpClient) { }
 
-  getAllExports(): Observable<Export[]> {
-    return this.webClient.get<Export[]>('/api/exports');
-  }
-
-  export(request: ExportRequest): Observable<ExportResponse> {
-    return this.webClient.post<ExportResponse>('/api/exports', request, {
+  export(eventId: number, request: ExportRequest): Observable<Export> {
+    return this.httpClient.post<Export>(`/api/events/${eventId}/exports`, request, {
       headers: { "Content-Type": "application/json" }
-    });
+    }).pipe(
+      tap((e: Export) => {
+        const exports = [e].concat(this._exports.value)
+        this._exports.next(exports)
+      })
+    )
+  }
+
+  fetchExports(): Observable<Export[]> {
+    return this.httpClient.get<Export[]>('/api/exports/mine').pipe(
+      tap(exports => this._exports.next(JSON.parse(JSON.stringify(exports))))
+    )
   }
 
   deleteExport(exportId: string): Observable<Object> {
-    const url = "/api/exports/" + exportId;
-    return this.webClient.delete(url);
-  }
-
-  retryExport(retry: Export): Observable<ExportResponse> {
-    return this.webClient.post<ExportResponse>(`/api/exports/${retry.id}/retry`, {}, {
-      headers: { "Content-Type": "application/json" }
-    });
+    return this.httpClient.delete(`/api/exports/mine/${exportId}`)
+      .pipe(
+        tap(() => {
+          const exports = this._exports.value.filter(e => e.id !== exportId)
+          this._exports.next(exports)
+        })
+      )
   }
 }

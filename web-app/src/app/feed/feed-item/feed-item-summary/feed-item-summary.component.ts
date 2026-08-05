@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/
 import { MatRipple } from '@angular/material/core';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 import { Feature } from 'geojson';
-import { FeedPanelService } from '../../../feed-panel/feed-panel.service';
+import { SidebarService } from '../../../sidebar/sidebar.service';
 import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MapService } from '../../../map/map.service';
 
@@ -22,15 +22,11 @@ export class FeedItemSummaryComponent implements OnChanges {
   timestamp: number;
   primary: string;
   secondary: string;
-  iconUrl?: string;
 
-  constructor(private feedPanelService: FeedPanelService, private mapService: MapService) { }
+  constructor(private sidebarService: SidebarService, private mapService: MapService) { }
 
   ngOnChanges(_changes: SimpleChanges): void {
     if (!this.feed || !this.item.properties) return;
-
-    // TODO: use mapStyle when that works
-    this.iconUrl = contentPathOfIcon(this.feed.icon);
 
     if (this.feed.itemTemporalProperty && this.item.properties[this.feed.itemTemporalProperty] != null) {
       this.timestamp = this.item.properties[this.feed.itemTemporalProperty];
@@ -49,7 +45,7 @@ export class FeedItemSummaryComponent implements OnChanges {
   }
 
   onItemSelect(): void {
-    this.feedPanelService.selectFeedItem(this.feed, this.item);
+    this.sidebarService.selectFeedItem(this.feed, this.item);
     this.mapService.zoomToFeatureInLayer(this.item, `feed-${this.feed.id}`);
   }
 
