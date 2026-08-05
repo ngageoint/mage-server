@@ -19,7 +19,6 @@ export class ArcLayerComponent implements OnChanges {
   @Output() configChanged = new EventEmitter<ArcGISPluginConfig>()
 
   layers: ArcLayerSelectable[]
-  events: string[] = []
 
   // service capabilities are fetched lazily and cached by url, since they aren't part of the saved config
   private serviceCapabilities = new Map<string, string | undefined>()
@@ -27,10 +26,6 @@ export class ArcLayerComponent implements OnChanges {
   constructor(private arcService: ArcService, private dialog: MatDialog) {
     this.config = defaultArcGISPluginConfig
     this.layers = new Array<ArcLayerSelectable>()
-
-    arcService.fetchEvents().subscribe(events => {
-      this.events = events.map(event => event.name)
-    })
   }
 
   ngOnChanges(): void {
@@ -115,16 +110,16 @@ export class ArcLayerComponent implements OnChanges {
       featureServer.layers = featureServer.layers.map((layer: FeatureLayerConfig) => {
         return {
           ...layer,
-          events: JSON.parse(JSON.stringify(this.events))
+          events: []
         }
       })
-      
+
       this.config.featureServices.push(featureServer)
     } else {
       existingFeatureServer.layers = featureServer.layers.map(layer => {
         const existing = existingFeatureServer.layers.some(edit => edit.layer === layer.layer)
         if (!existing) {
-          layer.events = JSON.parse(JSON.stringify(this.events))
+          layer.events = []
         }
 
         return layer

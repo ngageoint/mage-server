@@ -47,6 +47,13 @@ type InjectedServices = {
 
 const pluginWebRoute = "plugins/@ngageoint/mage.arcgis.service";
 
+const describeArcGISError = (err: unknown): string => {
+  if (err instanceof ArcGISRequestError) {
+    return `${err.message}${err.response?.error?.message ? ` (${err.response.error.message})` : ''}`;
+  }
+  return err instanceof Error ? err.message : String(err);
+};
+
 const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>> => {
   let authenticated = false;
   try {
@@ -70,6 +77,7 @@ type DiscoveredFeatureService = {
   owner: string
   // undefined if the service's own definition couldn't be fetched, meaning read-only status is unknown
   capabilities?: string
+  permission: string
 }
 
 type DiscoveredFeatureServicesPage = {
@@ -110,15 +118,18 @@ const discoverFeatureServices = async (identityManager: ArcGISIdentityManager, s
         const response = await request(item.url, { authentication: identityManager });
         capabilities = response.capabilities;
       } catch (err) {
-        console.error(`Could not get capabilities for discovered feature service ${item.url}`, err);
+        console.error(`Could not get capabilities for discovered feature service ${item.url}: ${describeArcGISError(err)}`);
       }
+
+      const serviceHasEditCapability = !!capabilities?.split(',').some(c => ['Create', 'Update', 'Delete', 'Editing'].includes(c));
 
       return {
         id: item.id,
         title: item.title,
         url: item.url,
         owner: item.owner,
-        capabilities
+        capabilities,
+        permission: serviceHasEditCapability ? '' : 'Read only'
       };
     }));
   return { services, total: result.total, start, num };
@@ -177,7 +188,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, identityService, console);
     // don't block server startup on the first ArcGIS sync cycle, which can involve
     // several rounds of network I/O against the configured ArcGIS server(s)
-    processor.start().catch((err) => console.error('Error starting ArcGIS observation processor: ', err));
+    processor.start().catch((err) => console.error(`Error starting ArcGIS observation processor: ${describeArcGISError(err)}`));
     return {
       webRoutes: {
         public: () => {
@@ -480,15 +491,16 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
                   const layerInfo = await request(`${url}/${layer.id}`, { authentication: identityManager });
                   return { ...layer, capabilities: layerInfo.capabilities || response.capabilities };
                 } catch (err) {
-                  console.error(`Could not get capabilities for layer ${layer.id}`, err);
+                  console.error(`Could not get capabilities for layer ${layer.id}: ${describeArcGISError(err)}`);
                   return { ...layer, capabilities: response.capabilities };
                 }
               }));
 
               res.send(layers);
             } catch (err) {
-              console.error(err);
-              res.status(500).json({ message: 'Could not get ArcGIS layer info', error: err });
+              const message = describeArcGISError(err);
+              console.error(message);
+              res.status(500).json({ message: 'Could not get ArcGIS layer info', error: message });
             }
           });
 
@@ -507,8 +519,9 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               });
               res.send({ capabilities: response.capabilities });
             } catch (err) {
-              console.error(err);
-              res.status(500).json({ message: 'Could not get ArcGIS feature service capabilities', error: err });
+              const message = describeArcGISError(err);
+              console.error(message);
+              res.status(500).json({ message: 'Could not get ArcGIS feature service capabilities', error: message });
             }
           });
 

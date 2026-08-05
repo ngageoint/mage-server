@@ -80,7 +80,9 @@ export class ObservationsSender {
         } catch (error) {
             this._console.error('Error in ObservationSender.sendAdds :: ' + error)
             if (error instanceof ArcGISRequestError) {
-                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+                const message = error.response?.error?.message || "<unknown>";
+                const details = error?.response?.error?.details || "<unknown>";
+                this._console.error(`  message: ${message}, details: ${details}${editFailureHint(message, String(details))}`);
             }
         }
     }
@@ -103,7 +105,9 @@ export class ObservationsSender {
         } catch (error) {
             this._console.error('Error in ObservationSender.sendUpdates :: ' + error)
             if (error instanceof ArcGISRequestError) {
-                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+                const message = error.response?.error?.message || "<unknown>";
+                const details = error?.response?.error?.details || "<unknown>";
+                this._console.error(`  message: ${message}, details: ${details}${editFailureHint(message, String(details))}`);
             }
         }
     }
@@ -194,7 +198,8 @@ export class ObservationsSender {
                             }
                         }
                     } else if (result.error != null) {
-                        console.error('ArcGIS Error. Code: ' + result.error.code + ', Description: ' + result.error.description);
+                        const description = result.error.description || '';
+                        console.error('ArcGIS Error. Code: ' + result.error.code + ', Description: ' + description + editFailureHint(description, String(result.error.code)));
                     }
                 }
             }
@@ -417,3 +422,14 @@ export class ObservationsSender {
     }
 
 }
+
+const editFailureHint = (message: string, details: string): string => {
+    const text = `${message} ${details}`.toLowerCase();
+    if (/permission|not authorized|unauthorized|access is denied|\b403\b/.test(text)) {
+        return ' -- this usually means the signed-in ArcGIS user does not have edit permissions on this layer/service';
+    }
+    if (/not supported|invalid request|editing.{0,15}disabled|capabilit/.test(text)) {
+        return ' -- this usually means the layer/service does not have editing capabilities enabled';
+    }
+    return '';
+};

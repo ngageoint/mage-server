@@ -28,7 +28,7 @@
               <div class="arcEvent__row">
                 <span class="arcEvent__toggle">
                   <mat-slide-toggle color="primary" [checked]="event.selected"
-                    [disabled]="!config.featureServices.length"
+                    [disabled]="!event.layers.length"
                     (change)="onToggleEvent(event, $event.checked)"></mat-slide-toggle>
                 </span>
                 <div class="arcEvent__info">

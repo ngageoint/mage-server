@@ -58,6 +58,7 @@ export interface DiscoveredFeatureService {
   url: string
   owner: string
   capabilities?: string
+  permission: string
 }
 
 export interface DiscoveryResult {

@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -16,7 +17,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ArcEventsModel } from './ArcEventsModel';
 import { ArcEvent } from './ArcEvent';
 import { ArcEventLayer } from './ArcEventLayer';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   standalone: false,
@@ -24,7 +25,7 @@ import { Observable } from 'rxjs';
   templateUrl: './arc-event.component.html',
   styleUrls: ['./arc-event.component.scss']
 })
-export class ArcEventComponent implements OnInit, OnChanges {
+export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input('config') config: ArcGISPluginConfig = defaultArcGISPluginConfig;
   private configSet = false;
@@ -60,12 +61,32 @@ export class ArcEventComponent implements OnInit, OnChanges {
   @ViewChild('editEventDialog', { static: true })
   private editEventTemplate: TemplateRef<unknown>
 
+  private configChangedSubscription?: Subscription;
+
   constructor(private arcService: ArcService, private dialog: MatDialog) {
     this.config = defaultArcGISPluginConfig;
     this._model = new ArcEventsModel();
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    // detect changes in other tabs
+    this.configChangedSubscription = this.configChangedNotifier?.subscribe(() => this.refreshEventLayers());
+  }
+
+  ngOnDestroy(): void {
+    this.configChangedSubscription?.unsubscribe();
+  }
+
+  // re-derives each event's layer list from the current config, so layers belonging to a feature
+  // service that was since deleted no longer appear as selectable/selected for any event
+  private refreshEventLayers(): void {
+    for (const event of this.model.allEvents) {
+      event.layers = this.eventLayers(event.name);
+      if (event.layers.length === 0) {
+        event.selected = false;
+      }
+    }
+  }
 
   /// Activates On Every View Change, Is Configured to Set Initial State
   /// As Soon As Data is Available, Then locks Changes to Not Activate Unless

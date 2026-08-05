@@ -98,7 +98,7 @@
                 [class.read-only-service]="isReadOnly(service)"
                 [matTooltip]="isReadOnly(service) ? 'This feature service does not allow editing' : ''">
                 <span matListItemTitle>{{service.title}}</span>
-                <span matListItemLine class="discovered-service-owner">{{service.owner}}<ng-container *ngIf="service.capabilities"> &middot; {{service.capabilities}}</ng-container></span>
+                <span matListItemLine class="discovered-service-owner">{{service.permission}}</span>
                 <span matListItemLine class="discovered-service-url">{{service.url}}</span>
               </mat-list-option>
             </mat-selection-list>
