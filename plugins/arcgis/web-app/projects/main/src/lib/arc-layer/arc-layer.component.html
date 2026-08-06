@@ -2,7 +2,7 @@
   <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title>Feature Layers</mat-card-title>
-      <mat-card-subtitle>ArcGIS feature service URLs and layers to sychronize MAGE data.</mat-card-subtitle>
+      <mat-hint>ArcGIS feature service URLs and layers to receive Mage data.</mat-hint>
     </mat-card-header>
     <mat-card-content>
       <div *ngIf="!config.featureServices.length" class="no-mappings">
@@ -12,7 +12,7 @@
           <mat-icon class="no-mappings__icon no-mappings__icon--margin material-icons-outlined" fontSet="material-icons-outlined">map</mat-icon>
         </div>
 
-        <div class="no-mappings__title">Create ArcGIS feature services used to synchronize MAGE data. Feature services you create will show up here.</div>
+        <div class="no-mappings__title">Create ArcGIS feature services used to synchronize Mage data. Feature services you create will show up here.</div>
       </div>
 
       <mat-list>

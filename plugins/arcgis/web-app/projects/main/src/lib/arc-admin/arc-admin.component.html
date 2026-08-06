@@ -7,12 +7,12 @@
             <mat-card-title>
               Processing
             </mat-card-title>
-            <mat-card-subtitle>MAGE ArcGIS plugin processing settings.</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div style="width: 100%;">
               <div class="edit-processing-form">
                 <div class="edit-enabled-field">
+                  <mat-hint>Sync observations from Mage to your configured ArcGIS feature layers. Select the target feature layers from your ArcGIS server and choose which Mage events will send data.</mat-hint>
                   <mat-slide-toggle
                     [checked]="editConfig.enabled"
                     [(ngModel)]="editConfig.enabled"
@@ -20,7 +20,6 @@
                     (change)="setField('enabled', $event.checked)">
                     Enable Observation Processing
                   </mat-slide-toggle>
-                  <mat-hint>Process observations and send to configured ArcGIS feature layers</mat-hint>
                 </div>
                 <div class="edit-base-url-field">
                   <mat-form-field appearance="fill" floatLabel="always">
@@ -83,9 +82,15 @@
               </div>
             </div>
           </mat-card-content>
-          <mat-card-actions>
-            <button mat-flat-button color="primary" (click)="saveEdit()">SAVE</button>
-            <button mat-button (click)="cancelEdit()">CANCEL</button>
+          <mat-card-actions class="nav-actions">
+            <button matButton="outlined" class="cancel-button" type="button" (click)="cancelEdit()">
+              <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+              Cancel
+            </button>
+            <button matButton="filled" type="button" (click)="saveEdit()">
+              <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
+              Save
+            </button>
           </mat-card-actions>
         </mat-card>
       </div>
@@ -107,8 +112,8 @@
       <div class="tab-content">
         <mat-card appearance="outlined">
           <mat-card-header>
-            <mat-card-title>Attributes</mat-card-title>
-            <mat-card-subtitle>MAGE Field to ArcGIS Attribute mappings.</mat-card-subtitle>
+            <mat-card-title>Observation Field Attributes</mat-card-title>
+            <mat-hint>Define each field on the ArcGIS layer to map the Mage observation fields to.  The plugin will attempt to create any fields on the ArcGIS layer if they do not already exist.</mat-hint>
           </mat-card-header>
           <mat-card-content>
             <form [formGroup]="attributesForm" (ngSubmit)="onSubmit()">
@@ -117,7 +122,7 @@
                   <mat-form-field appearance="fill">
                     <mat-label>Observation Id Field</mat-label>
                     <input type="text" matInput formControlName="observationIdField" />
-                    <mat-hint>The ArcGIS layer text field attribute name to store the MAGE observation id</mat-hint>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the Mage observation id</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="id-separator-field">
@@ -131,56 +136,56 @@
                   <mat-form-field appearance="fill">
                     <mat-label>Event Id Field</mat-label>
                     <input type="text" matInput formControlName="eventIdField" />
-                    <mat-hint>The ArcGIS layer integer field attribute name to store the MAGE event id</mat-hint>
+                    <mat-hint>The ArcGIS layer integer field attribute name to store the Mage event id</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="event-name-field">
                   <mat-form-field appearance="fill">
                     <mat-label>Event Name Field</mat-label>
                     <input type="text" matInput formControlName="eventNameField" />
-                    <mat-hint>The ArcGIS layer text field attribute name to store the MAGE event name</mat-hint>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the Mage event name</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="user-id-field">
                   <mat-form-field appearance="fill">
                     <mat-label>User Id Field</mat-label>
                     <input type="text" matInput formControlName="userIdField" />
-                    <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user id</mat-hint>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the Mage user id</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="username-field">
                   <mat-form-field appearance="fill">
                     <mat-label>Username Field</mat-label>
                     <input type="text" matInput formControlName="usernameField" />
-                    <mat-hint>The ArcGIS layer text field attribute name to store the MAGE username</mat-hint>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the Mage username</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="user-display-name-field">
                   <mat-form-field appearance="fill">
                     <mat-label>User Display Name Field</mat-label>
                     <input type="text" matInput formControlName="userDisplayNameField" />
-                    <mat-hint>The ArcGIS layer text field attribute name to store the MAGE user display name</mat-hint>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the Mage user display name</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="device-id-field">
                   <mat-form-field appearance="fill">
                     <mat-label>Device Id Field</mat-label>
                     <input type="text" matInput formControlName="deviceIdField" />
-                    <mat-hint>The ArcGIS layer text field attribute name to store the MAGE device id</mat-hint>
+                    <mat-hint>The ArcGIS layer text field attribute name to store the Mage device id</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="created-at-field">
                   <mat-form-field appearance="fill">
                     <mat-label>Created At Field</mat-label>
                     <input type="text" matInput formControlName="createdAtField" />
-                    <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE created at date</mat-hint>
+                    <mat-hint>The ArcGIS layer date time field attribute name to store the Mage created at date</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="last-modified-field">
                   <mat-form-field appearance="fill">
                     <mat-label>Last Modified Field</mat-label>
                     <input type="text" matInput formControlName="lastModifiedField" />
-                    <mat-hint>The ArcGIS layer date time field attribute name to store the MAGE last modified date</mat-hint>
+                    <mat-hint>The ArcGIS layer date time field attribute name to store the Mage last modified date</mat-hint>
                   </mat-form-field>
                 </div>
                 <div class="geometry-type-field">
@@ -197,9 +202,15 @@
                     <mat-hint>The ArcGIS layer text field attribute name to store the icon symbol name</mat-hint>
                   </mat-form-field>
                 </div>
-                <div class="button-group">
-                  <button mat-raised-button color="primary" type="submit" [disabled]="attributesForm.invalid">Save</button>
-                  <button mat-button type="button" (click)="onCancel()">Cancel</button>
+                <div class="button-group nav-actions">
+                  <button matButton="outlined" class="cancel-button" type="button" (click)="onCancel()">
+                    <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+                    Cancel
+                  </button>
+                  <button matButton="filled" type="submit" [disabled]="attributesForm.invalid">
+                    <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
+                    Save
+                  </button>
                 </div>
               </div>
             </form>
@@ -212,14 +223,14 @@
         <mat-card appearance="outlined">
           <mat-card-header>
             <mat-card-title>Field Mappings &amp; Attribute Settings</mat-card-title>
-            <mat-card-subtitle>Override mappings between MAGE event form fields and ArcGIS attributes, and configure per-attribute value behavior.</mat-card-subtitle>
+            <mat-hint>Override mappings between Mage event form fields and ArcGIS attributes, and configure per-attribute value behavior.</mat-hint>
           </mat-card-header>
           <mat-card-content>
     <div class="fieldOverrides">
       <div class="section-header">
         <span>Field Mappings</span>
         <button class="info-button" mat-icon-button
-          (click)="showInfo('Field Mappings', 'Override mappings between MAGE event form fields and ArcGIS attributes')">
+          (click)="showInfo('Field Mappings', 'Override mappings between Mage event form fields and ArcGIS attributes')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
         <button mat-stroked-button class="edit-toggle-button"
@@ -281,7 +292,7 @@
             <table class="mappings-table">
               <thead>
                 <tr>
-                  <th>MAGE Field</th>
+                  <th>Mage Field</th>
                   <th>ArcGIS Attribute</th>
                   <th *ngIf="editFieldMappings" class="actions-col"></th>
                 </tr>
@@ -437,7 +448,7 @@
               <table class="mappings-table">
                 <thead>
                   <tr>
-                    <th>MAGE Value</th>
+                    <th>Mage Value</th>
                     <th>ArcGIS Value</th>
                     <th *ngIf="editAttributes" class="actions-col"></th>
                   </tr>
@@ -638,7 +649,7 @@
             (keyup)="setField('observationIdField', observationIdField.value)" #observationIdField />
         </mat-form-field>
         <button class="info-button" mat-icon-button
-          (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the MAGE observation id')">
+          (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the Mage observation id')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
       </div>
@@ -661,7 +672,7 @@
           (keyup)="setField('eventIdField', eventIdField.value)" #eventIdField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the MAGE event id')">
+        (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the Mage event id')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -672,7 +683,7 @@
           (keyup)="setField('eventNameField', eventNameField.value)" #eventNameField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the MAGE event name')">
+        (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the Mage event name')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -683,7 +694,7 @@
           (keyup)="setField('userIdField', userIdField.value)" #userIdField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the MAGE user id')">
+        (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the Mage user id')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -694,7 +705,7 @@
           (keyup)="setField('usernameField', usernameField.value)" #usernameField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the MAGE username')">
+        (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the Mage username')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -705,7 +716,7 @@
           (keyup)="setField('userDisplayNameField', userDisplayNameField.value)" #userDisplayNameField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the MAGE user display name')">
+        (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the Mage user display name')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -716,7 +727,7 @@
           (keyup)="setField('deviceIdField', deviceIdField.value)" #deviceIdField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the MAGE device id')">
+        (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the Mage device id')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -727,7 +738,7 @@
           (keyup)="setField('createdAtField', createdAtField.value)" #createdAtField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the MAGE created at date')">
+        (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the Mage created at date')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>
@@ -738,7 +749,7 @@
           (keyup)="setField('lastModifiedField', lastModifiedField.value)" #lastModifiedField />
       </mat-form-field>
       <button class="info-button" mat-icon-button
-        (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date')">
+        (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the Mage last modified date')">
         <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
       </button>
     </div>

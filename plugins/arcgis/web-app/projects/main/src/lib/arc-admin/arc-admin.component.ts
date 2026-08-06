@@ -828,7 +828,9 @@ export class ArcAdminComponent implements OnInit {
   }
 
   private saveConfig() {
-    this.arcService.putArcConfig(this.config)
+    this.arcService.putArcConfig(this.config).subscribe({
+      error: error => console.error('Failed to save config:', error)
+    })
   }
 
   private updateConfigForDeletion() {

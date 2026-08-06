@@ -3,6 +3,11 @@
     max-width: 93%
 }
 
+mat-card-header mat-hint {
+    display: block;
+    padding-bottom: 16px;
+}
+
 .arcEvent__button {
     width: 7%;
 }
@@ -60,4 +65,14 @@
     align-items: center;
     margin-right: 12px;
     flex-shrink: 0;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cancel-button {
+    color: var(--mat-sys-primary) !important;
+    border-color: var(--mat-sys-primary) !important;
 }

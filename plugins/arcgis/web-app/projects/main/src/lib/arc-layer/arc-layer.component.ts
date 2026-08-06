@@ -96,7 +96,9 @@ export class ArcLayerComponent implements OnChanges {
         })
 
         this.configChanged.emit(this.config)
-        this.arcService.putArcConfig(this.config)
+        this.arcService.putArcConfig(this.config).subscribe({
+          error: error => console.error('Failed to save config:', error)
+        })
       }
     })
   }
@@ -127,7 +129,9 @@ export class ArcLayerComponent implements OnChanges {
     }
 
     this.configChanged.emit(this.config)
-    this.arcService.putArcConfig(this.config)
+    this.arcService.putArcConfig(this.config).subscribe({
+      error: error => console.error('Failed to save config:', error)
+    })
     this.refreshCapabilities()
   }
 }

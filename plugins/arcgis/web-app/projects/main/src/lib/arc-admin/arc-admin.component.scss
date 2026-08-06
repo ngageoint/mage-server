@@ -11,17 +11,42 @@
   padding: 16px 0;
 }
 
+.nav-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cancel-button {
+  color: var(--mat-sys-primary) !important;
+  border-color: var(--mat-sys-primary) !important;
+}
+
 .edit-processing-form .mat-mdc-form-field {
   margin-bottom: 1.5rem !important;
 }
 
 .edit-enabled-field {
   display: grid;
-  margin-bottom: 32px;
+  margin-bottom: 0px;
 }
 
-.edit-enabled-field .mat-hint {
-  font-size: 75%;
+.edit-enabled-field mat-slide-toggle {
+  padding-bottom: 16px;
+}
+
+.edit-enabled-field mat-hint {
+  display: block;
+  padding-bottom: 16px;
+}
+
+mat-card-header {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+mat-card-header mat-hint {
+  display: block;
+  padding-bottom: 16px;
 }
 
 section {

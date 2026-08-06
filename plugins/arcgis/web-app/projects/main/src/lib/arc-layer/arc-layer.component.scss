@@ -2,6 +2,15 @@ mat-card {
 	margin-bottom: 16px;
 }
 
+mat-card-header {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+mat-card-header mat-hint {
+	display: block;
+}
+
 .mat-list-icon {
 	color: rgba(0, 0, 0, 0.54);
 }

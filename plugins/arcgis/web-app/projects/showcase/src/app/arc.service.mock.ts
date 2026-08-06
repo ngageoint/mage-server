@@ -143,7 +143,9 @@ export class MockArcService implements ArcServiceInterface {
     return of([mockArcGISEventResult1, mockArcGISEventResult2, mockArcGISEventResult3]);
   }
 
-  putArcConfig(config: ArcGISPluginConfig) {}
+  putArcConfig(config: ArcGISPluginConfig) {
+    return of(config);
+  }
 
   removeUserTrack(userTrackId: string): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig);

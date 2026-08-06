@@ -3,7 +3,7 @@
     <mat-card-header class="w-100">
       <div class="arcEvent__info">
         <mat-card-title>Events</mat-card-title>
-        <mat-card-subtitle>Change the ArcGIS layers each MAGE event sends its observations to.</mat-card-subtitle>
+        <mat-hint>Choose which ArcGIS layers each Mage event sends observations to.</mat-hint>
       </div>
     </mat-card-header>
     <mat-card-content>
@@ -53,13 +53,20 @@
         </mat-list>
       </section>
     </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-flat-button color="primary" (click)="saveChanges()">SAVE</button>
+    <mat-card-actions class="nav-actions">
+      <button matButton="outlined" class="cancel-button" type="button" [disabled]="!hasChanges" (click)="cancelChanges()">
+        <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+        Cancel
+      </button>
+      <button matButton="filled" type="button" [disabled]="!hasChanges || isSaving" (click)="saveChanges()">
+        <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
+        Save
+      </button>
     </mat-card-actions>
   </mat-card>
 
   <ng-template #editEventDialog let-data>
-    <h2 matDialogTitle>ArcGIS layers that MAGE event named {{currentEditingEvent.name}} is synchronizing</h2>
+    <h2 matDialogTitle>ArcGIS layers that Mage event named {{currentEditingEvent.name}} is synchronizing</h2>
     <mat-dialog-content>
       <div class="arc-layers" *ngFor="let arcLayer of layers">
         <div class="featureLayer__value">

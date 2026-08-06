@@ -9,7 +9,7 @@ export const apiBaseUrl = '/api'
 
 export interface ArcServiceInterface {
   fetchArcConfig(): Observable<ArcGISPluginConfig>
-  putArcConfig(config: ArcGISPluginConfig): void
+  putArcConfig(config: ArcGISPluginConfig): Observable<ArcGISPluginConfig>
   fetchEvents(): Observable<MageEvent[]>
   fetchPopulatedEvents(): Observable<MageEvent[]>
   fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]>
@@ -164,6 +164,6 @@ export class ArcService implements ArcServiceInterface {
   }
 
   putArcConfig(config: ArcGISPluginConfig) {
-    this.http.put(`${baseUrl}/config`, config).subscribe()
+    return this.http.put<ArcGISPluginConfig>(`${baseUrl}/config`, config)
   }
 }

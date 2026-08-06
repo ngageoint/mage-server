@@ -62,6 +62,8 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
   private editEventTemplate: TemplateRef<unknown>
 
   private configChangedSubscription?: Subscription;
+  isSaving: boolean;
+  private savedSnapshot: string = '[]';
 
   constructor(private arcService: ArcService, private dialog: MatDialog) {
     this.config = defaultArcGISPluginConfig;
@@ -86,6 +88,41 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
         event.selected = false;
       }
     }
+    this.captureSnapshot();
+  }
+
+  // serializes the event/layer selection state so it can be compared against or restored later
+  private serializeEventsState(): string {
+    return JSON.stringify(
+      this.model.allEvents.map(event => ({
+        name: event.name,
+        selected: event.selected,
+        layers: event.layers.map(layer => ({ name: layer.name, isSelected: layer.isSelected }))
+      }))
+    );
+  }
+
+  // captures the current event/layer selection state as the baseline to compare pending changes against
+  private captureSnapshot(): void {
+    this.savedSnapshot = this.serializeEventsState();
+  }
+
+  get hasChanges(): boolean {
+    return this.serializeEventsState() !== this.savedSnapshot;
+  }
+
+  // reverts all pending event/layer selection changes back to the last saved state
+  cancelChanges(): void {
+    const snapshot: { name: string, selected: boolean, layers: { name: string, isSelected: boolean }[] }[] = JSON.parse(this.savedSnapshot);
+    for (const saved of snapshot) {
+      const event = this.model.allEvents.find(e => e.name === saved.name);
+      if (!event) continue;
+      event.selected = saved.selected;
+      for (const savedLayer of saved.layers) {
+        const layer = event.layers.find(l => l.name === savedLayer.name);
+        if (layer) layer.isSelected = savedLayer.isSelected;
+      }
+    }
   }
 
   /// Activates On Every View Change, Is Configured to Set Initial State
@@ -102,6 +139,7 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     else if (!this.eventSet && this.configSet && this.model.allEvents.length > 0) {
       this.eventSet = true;
       this.LoadSelectedEvents();
+      this.captureSnapshot();
     }
   }
 
@@ -236,11 +274,17 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
 
   saveChanges() {
     console.log('Saving changes to event sync');
+    this.isSaving = true;
     for (const featureService of this.config.featureServices) {
       featureService.layers = this.getEventsInFeatureFormat(featureService);
     }
     this.configChanged.emit(this.config);
-    this.arcService.putArcConfig(this.config);
+    this.captureSnapshot();
+    this.isSaving = false;
+
+    this.arcService.putArcConfig(this.config).subscribe({
+      error: (error) => console.error('Failed to save event synchronization:', error)
+    });
   }
 
   private domain(featureService: FeatureServiceConfig): string {
