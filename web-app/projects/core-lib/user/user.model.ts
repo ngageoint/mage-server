@@ -63,6 +63,24 @@ export interface User {
   recentEventIds: number[]
 }
 
+export interface UserPreference {
+  events?: { [key: number]: EventPreference }
+}
+
+export interface EventPreference {
+  forms?: { [key: number]: FormPreference }
+}
+
+export interface FormPreference {
+  fields?: { [key: string]: FieldPreference }
+}
+
+export interface FieldPreference {
+  recentChoices?: RecentChoice[]
+}
+
+export type RecentChoice = string
+
 export interface UserPhone {
   type: string
   number: string

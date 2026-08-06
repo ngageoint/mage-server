@@ -275,7 +275,7 @@ export class Observation implements Readonly<ObservationAttrs> {
    * @param update
    * @returns
    */
-  static assignTo(target: Observation, update: ObservationAttrs): Observation | ObservationUpdateError {
+  static assignTo(target: Observation, update: ObservationAttrs, userId?: UserId): Observation | ObservationUpdateError {
     if (update.eventId !== target.eventId) {
       return ObservationUpdateError.eventIdMismatch(target.eventId, update.eventId)
     }
@@ -289,7 +289,10 @@ export class Observation implements Readonly<ObservationAttrs> {
     }, new Map<AttachmentId, Attachment>())
     const removedAttachments = target.attachments.filter(x => !updateAttachments.has(x.id))
     // TODO: whatever other mods generate events that matter
-    const updateEvents = removedAttachments.length ? [AttachmentsRemovedDomainEvent(target, removedAttachments)] : [] as PendingObservationDomainEvent[]
+    const updateEvents: PendingObservationDomainEvent[] = [ObservationSavedDomainEvent(target, userId)]
+    if (removedAttachments.length) {
+      updateEvents.push(AttachmentsRemovedDomainEvent(target, removedAttachments))
+    }
     const pendingEvents = mergePendingDomainEvents(target, updateEvents)
     return createObservation(update, target.mageEvent, pendingEvents)
   }
@@ -390,6 +393,7 @@ export class Observation implements Readonly<ObservationAttrs> {
 }
 
 export enum ObservationDomainEventType {
+  ObservationSaved = 'Observation.Saved',
   AttachmentsRemoved = 'Observation.AttachmentsRemoved',
 }
 
@@ -402,6 +406,10 @@ export enum ObservationDomainEventType {
 export type PendingObservationDomainEvent = {
   readonly type: ObservationDomainEventType
 } & (
+    | {
+      type: ObservationDomainEventType.ObservationSaved
+      readonly userId?: UserId
+    }
     | {
       type: ObservationDomainEventType.AttachmentsRemoved
       readonly removedAttachments: readonly Readonly<Attachment>[]
@@ -431,6 +439,7 @@ export type ObservationEmitted<Pending extends PendingObservationDomainEvent> = 
   readonly observation: Observation
 }
 
+export type ObservationSavedDomainEvent = Extract<PendingObservationDomainEvent, { type: ObservationDomainEventType.ObservationSaved }>
 export type AttachmentsRemovedDomainEvent = Extract<PendingObservationDomainEvent, { type: ObservationDomainEventType.AttachmentsRemoved }>
 
 export interface ObservationValidationResult {
@@ -1336,6 +1345,13 @@ class ObservationValidationContext {
   }
 }
 
+function ObservationSavedDomainEvent(observation: Observation, userId: UserId | undefined): ObservationSavedDomainEvent {
+  return Object.freeze<ObservationSavedDomainEvent>({
+    type: ObservationDomainEventType.ObservationSaved,
+    userId
+  })
+}
+
 function AttachmentsRemovedDomainEvent(observation: Observation, removedAttachments: Attachment[]): AttachmentsRemovedDomainEvent {
   return Object.freeze<AttachmentsRemovedDomainEvent>({
     type: ObservationDomainEventType.AttachmentsRemoved,
@@ -1350,9 +1366,10 @@ function mergePendingDomainEvents(from: Observation, nextEvents: PendingObservat
       removedAttachments.push(...e.removedAttachments)
       return merged
     }
-    else {
-      return [...merged, e]
+    if (merged.some(m => m.type === e.type)) {
+      return merged
     }
+    return [...merged, e]
   }, [] as PendingObservationDomainEvent[])
   if (removedAttachments.length) {
     merged.push(AttachmentsRemovedDomainEvent(from, removedAttachments))

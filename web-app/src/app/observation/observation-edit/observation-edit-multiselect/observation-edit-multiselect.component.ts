@@ -5,6 +5,7 @@ import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/m
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { RecentChoice } from 'core-lib-src/user';
 
 interface Choice {
   title: string;
@@ -27,24 +28,43 @@ export class ObservationEditMultiselectComponent implements OnInit {
   @Input() formGroup!: UntypedFormGroup
   @Input() definition!: MultiSelectField
 
+  private _recentChoices: RecentChoice[] = []
+  @Input()
+  set recentChoices(value: RecentChoice[]) {
+    this._recentChoices = value ?? []
+  }
+  get recentChoices(): RecentChoice[] {
+    return this._recentChoices
+  }
+
   @ViewChild('choiceInput', { static: false }) choiceInput!: ElementRef<HTMLInputElement>
   @ViewChild(MatAutocompleteTrigger, { static: false }) autocomplete!: MatAutocompleteTrigger
 
   separatorKeysCodes: number[] = [ENTER, COMMA]
   control!: UntypedFormControl
   choiceControl = new UntypedFormControl()
-  filteredChoices: Observable<Choice[]>
+  recentChoicesFromDefinition: Choice[] = []
+  filteredChoices$: Observable<Choice[]>
+  recentChoices$: Observable<Choice[]>
 
-  constructor() {
-    this.filteredChoices = this.choiceControl.valueChanges.pipe(
+  ngOnInit(): void {
+    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
+
+    this.recentChoicesFromDefinition = this.recentChoices
+      .map(recent => this.definition.choices.find(choice => choice.title === recent))
+      .filter(choice => !!choice)
+
+    this.filteredChoices$ = this.choiceControl.valueChanges.pipe(
       startWith(''),
       map(value => !value || typeof value === 'string' ? value : value.title),
       map(title => title ? this.filter(title) : this.definition.choices.slice())
     )
-  }
 
-  ngOnInit(): void {
-    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
+    this.recentChoices$ = this.choiceControl.valueChanges.pipe(
+      startWith(''),
+      map(value => !value || typeof value === 'string' ? value : value.title),
+      map(title => title ? this.recentFilter(title) : this.recentChoicesFromDefinition.slice())
+    )
   }
 
   add(event: MatChipInputEvent): void {
@@ -77,7 +97,13 @@ export class ObservationEditMultiselectComponent implements OnInit {
     const choices = new Set(this.control.value)
     choices.add(choice)
     this.control.setValue(Array.from(choices))
+    this.control.markAsDirty()
     this.choiceControl.setValue(null)
+  }
+
+  private recentFilter(title: string): Choice[] {
+    const filterValue = title.toLowerCase()
+    return this.recentChoicesFromDefinition.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0)
   }
 
   private filter(value: string): Choice[] {

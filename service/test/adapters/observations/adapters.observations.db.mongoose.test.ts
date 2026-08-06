@@ -730,13 +730,15 @@ describe('mongoose observation repository', function () {
       const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
       const saved = await repo.save(mod) as Observation
 
-      expect(mod.pendingEvents).to.have.length(1)
+      expect(mod.pendingEvents).to.have.length(2)
       expect(saved.pendingEvents).to.deep.equal([])
-      domainEvents.received(1).emit(Arg.all())
-      domainEvents.received(1).emit(
-        mod.pendingEvents[0].type,
-        Arg.deepEquals({ ...mod.pendingEvents[0], observation: saved })
-      )
+      domainEvents.received(2).emit(Arg.all())
+      for (const pending of mod.pendingEvents) {
+        domainEvents.received(1).emit(
+          pending.type,
+          Arg.deepEquals({ ...pending, observation: saved })
+        )
+      }
     })
 
     it('emits readonly events', async function () {

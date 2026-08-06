@@ -1152,10 +1152,10 @@ describe('observation entities', function () {
         const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
         const afterAttrs = copyObservationAttrs(beforeAttrs)
         afterAttrs.geometry = afterGeom
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
-        const beforeUnchanged = _.omit(before, 'geometry', 'lastModified')
-        const afterUnchanged = _.omit(after, 'geometry', 'lastModified')
+        const beforeUnchanged = _.omit(before, 'geometry', 'lastModified', 'pendingEvents')
+        const afterUnchanged = _.omit(after, 'geometry', 'lastModified', 'pendingEvents')
         expect(afterUnchanged).to.deep.equal(beforeUnchanged)
         expect(before.geometry).to.deep.equal(beforeGeom)
         expect(after.geometry).to.deep.equal(afterGeom)
@@ -1172,10 +1172,10 @@ describe('observation entities', function () {
         const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
         const afterAttrs = copyObservationAttrs(beforeAttrs)
         afterAttrs.properties.timestamp = new Date(now)
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
-        const beforeUnchanged = _.omit(before, 'properties.timestamp', 'lastModified')
-        const afterUnchanged = _.omit(after, 'properties.timestamp', 'lastModified')
+        const beforeUnchanged = _.omit(before, 'properties.timestamp', 'lastModified', 'pendingEvents')
+        const afterUnchanged = _.omit(after, 'properties.timestamp', 'lastModified', 'pendingEvents')
         expect(afterUnchanged).to.deep.equal(beforeUnchanged)
         expect(before.properties.timestamp.getTime()).to.equal(then)
         expect(after.properties.timestamp.getTime()).to.equal(now)
@@ -1192,7 +1192,7 @@ describe('observation entities', function () {
         const before = Observation.evaluate(beforeAttrs, mageEvent)
         const afterAttrs = copyObservationAttrs(beforeAttrs)
         afterAttrs.createdAt = new Date(now)
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
         const beforeUnchanged = _.omit(copyObservationAttrs(before), 'createdAt', 'lastModified')
         const afterUnchanged = _.omit(copyObservationAttrs(after), 'createdAt', 'lastModified')
@@ -1216,7 +1216,7 @@ describe('observation entities', function () {
             field1: 'a new form entry'
           }
         ]
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
         const beforeUnchanged = _.omit(before, 'properties.forms', 'lastModified')
         const afterUnchanged = _.omit(before, 'properties.forms', 'lastModified')
@@ -1248,7 +1248,7 @@ describe('observation entities', function () {
             field1: 'form entry after'
           }
         ]
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
         const beforeUnchanged = _.omit(before, 'properties.forms')
         const afterUnchanged = _.omit(before, 'properties.forms')
@@ -1298,7 +1298,8 @@ describe('observation entities', function () {
             field1: 'form entry 2 after'
           }
         ]
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const userId = uniqid()
+        const after = Observation.assignTo(before, afterAttrs, userId) as Observation
 
         const beforeUnchanged = _.omit(before, 'properties.forms')
         const afterUnchanged = _.omit(before, 'properties.forms')
@@ -1324,7 +1325,12 @@ describe('observation entities', function () {
             field1: 'form entry 2 after'
           }
         ])
-        expect(after.pendingEvents).to.deep.equal([])
+        expect(after.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.ObservationSaved,
+            userId
+          }
+        ])
       })
 
       it.skip('removes child attachments of removed form entries', function () {
@@ -1380,7 +1386,7 @@ describe('observation entities', function () {
           }
         ]
         const before = Observation.evaluate(beforeAttrs, mageEvent)
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
         const beforeUnchanged = _.omit(before, 'attachments', 'lastModified')
         const afterUnchanged = _.omit(before, 'attachments', 'lastModified')
@@ -1464,8 +1470,10 @@ describe('observation entities', function () {
         const afterAttrs2 = copyObservationAttrs(beforeAttrs)
         afterAttrs2.attachments = []
         const before = Observation.evaluate(beforeAttrs, mageEvent)
-        const after1 = Observation.assignTo(before, afterAttrs1) as Observation
-        const after2 = Observation.assignTo(after1, afterAttrs2) as Observation
+        const userId1 = uniqid()
+        const userId2 = uniqid()
+        const after1 = Observation.assignTo(before, afterAttrs1, userId1) as Observation
+        const after2 = Observation.assignTo(after1, afterAttrs2, userId2) as Observation
 
         const beforeUnchanged = _.omit(before, 'lastModified', 'attachments', 'pendingEvents')
         const after1Unchanged = _.omit(after1, 'lastModified', 'attachments', 'pendingEvents')
@@ -1478,6 +1486,10 @@ describe('observation entities', function () {
         expect(after1.attachments).to.deep.equal([copyAttachmentAttrs(before.attachments[0])])
         expect(after1.pendingEvents).to.deep.equal([
           {
+            type: ObservationDomainEventType.ObservationSaved,
+            userId: userId1
+          },
+          {
             type: ObservationDomainEventType.AttachmentsRemoved,
             removedAttachments: [copyAttachmentAttrs(before.attachments[1])]
           }
@@ -1486,6 +1498,10 @@ describe('observation entities', function () {
         expect(after2.lastModified.getTime()).to.be.closeTo(Date.now(), 150)
         expect(after2.attachments).to.deep.equal([])
         expect(after2.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.ObservationSaved,
+            userId: userId1
+          },
           {
             type: ObservationDomainEventType.AttachmentsRemoved,
             removedAttachments: [copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0])]
@@ -1514,7 +1530,7 @@ describe('observation entities', function () {
             field1: validFieldEntry
           }
         ]
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as Observation
 
         const beforeUnchanged = _.omit(before, 'properties.forms')
         const afterUnchanged = _.omit(before, 'properties.forms')
@@ -1546,7 +1562,7 @@ describe('observation entities', function () {
         const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
         const afterAttrs = copyObservationAttrs(beforeAttrs)
         afterAttrs.eventId = beforeAttrs.eventId + 1
-        const after = Observation.assignTo(before, afterAttrs) as ObservationUpdateError
+        const after = Observation.assignTo(before, afterAttrs, uniqid()) as ObservationUpdateError
 
         expect(after).to.be.instanceOf(ObservationUpdateError)
         expect(after.reason).to.equal(ObservationUpdateErrorReason.EventId)
@@ -1574,11 +1590,16 @@ describe('observation entities', function () {
         const afterAttrs = copyObservationAttrs(beforeAttrs)
         afterAttrs.properties.forms = [beforeAttrs.properties.forms[1]]
         afterAttrs.attachments = [beforeAttrs.attachments[1]]
-        const after = Observation.assignTo(before, afterAttrs) as Observation
+        const userId = uniqid()
+        const after = Observation.assignTo(before, afterAttrs, userId) as Observation
 
         expect(before.validation.hasErrors).to.be.false
         expect(after.validation.hasErrors).to.be.false
         expect(after.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.ObservationSaved,
+            userId
+          },
           {
             type: ObservationDomainEventType.AttachmentsRemoved,
             removedAttachments: [
