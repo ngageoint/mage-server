@@ -99,7 +99,11 @@ import {
   UsersRoutes
 } from './adapters/users/adapters.users.controllers.web';
 import { SearchUsers } from './app.impl/users/app.impl.users';
-import { RoleBasedUsersPermissionService } from './permissions/permissions.users';
+import { RoleBasedUsersPermissionService, RoleBasedUserPreferencesPermissionService } from './permissions/permissions.users';
+import { UserPreferencesAppLayer, UserPreferencesRoutes } from './adapters/preferences/adapters.preferences.controllers.web';
+import { GetEventPreferences } from './app.impl/preferences/app.impl.preferences';
+import { UserPreferenceRepository } from './entities/users/entities.users';
+import { MongoosePreferenceRepository, UserPreferenceModel } from './adapters/preferences/adapters.preferences.db.mongoose';
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose';
 import path from 'path';
 import { MageEventDocument } from './models/event';
@@ -375,6 +379,7 @@ type DatabaseLayer = {
   };
   users: {
     user: UserModel;
+    preference: UserPreferenceModel;
   };
   observations: {
     icons: ObservationIconModel;
@@ -421,6 +426,7 @@ type AppLayer = {
   exports: ExportAppLayer;
   icons: StaticIconsAppLayer;
   users: UsersAppLayer;
+  userPreferences: UserPreferencesAppLayer;
   systemInfo: SystemInfoAppLayer;
   settings: SettingsAppLayer;
 };
@@ -504,7 +510,8 @@ async function initDatabase(): Promise<DatabaseLayer> {
       staticIcon: StaticIconModel(conn)
     },
     users: {
-      user: userModel
+      user: userModel,
+      preference: UserPreferenceModel(conn)
     },
     observations: {
       icons: ObservationIconModel(conn)
@@ -545,6 +552,7 @@ type Repositories = {
   };
   users: {
     userRepo: UserRepository;
+    preferenceRepo: UserPreferenceRepository;
     iconStore: UserIconContentStore;
   };
   locations: {
@@ -615,6 +623,9 @@ async function initRepositories(
   const locationRepo = new MongooseUserLocationRepository(
     models.locations.location
   );
+  const userPreferenceRepo = new MongoosePreferenceRepository(
+    models.users.preference
+  );
   const settingRepo = new MongooseSettingsRepository(models.settings.setting);
   const attachmentStore = await intializeAttachmentStore(
     environment.attachmentBaseDirectory
@@ -655,6 +666,7 @@ async function initRepositories(
     },
     users: {
       userRepo,
+      preferenceRepo: userPreferenceRepo,
       iconStore: userIconStore
     },
     locations: {
@@ -674,6 +686,7 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const icons = await initIconsAppLayer(repos);
   const feeds = await initFeedsAppLayer(repos);
   const users = await initUsersAppLayer(repos);
+  const userPreferences = initUserPreferencesAppLayer(repos);
   const systemInfo = initSystemInfoAppLayer(repos);
   const settings = await initSettingsAppLayer(
     repos,
@@ -687,6 +700,7 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
     feeds,
     icons,
     users,
+    userPreferences,
     systemInfo,
     settings
   };
@@ -782,6 +796,16 @@ async function initUsersAppLayer(
   };
 }
 
+function initUserPreferencesAppLayer(repos: Repositories): UserPreferencesAppLayer {
+  const permissions = new RoleBasedUserPreferencesPermissionService();
+  return {
+    getEventPreferences: GetEventPreferences(
+      repos.users.preferenceRepo,
+      permissions
+    )
+  };
+}
+
 async function initEventsAppLayer(
   repos: Repositories
 ): Promise<AppLayer['events']> {
@@ -827,7 +851,14 @@ async function initObservationsAppLayer(
 
   observationsImpl.registerDeleteRemovedAttachmentsHandler(
     DomainEvents,
-    repos.observations.attachmentStore
+    repos.observations.attachmentStore,
+    log.child({ component: 'observations' })
+  );
+
+  observationsImpl.registerRecordRecentFormFieldChoicesHandler(
+    DomainEvents,
+    repos.users.preferenceRepo,
+    log.child({ component: 'observations' })
   );
 
   return {
@@ -1111,6 +1142,9 @@ async function initWebLayer(
 
   const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
   webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
+
+  const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
+  webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
 
   const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
     req,

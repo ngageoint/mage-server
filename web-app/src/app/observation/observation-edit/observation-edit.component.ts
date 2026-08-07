@@ -3,6 +3,7 @@ import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
 
 import {
   Component,
+  DestroyRef,
   ElementRef,
   EventEmitter,
   Inject,
@@ -14,8 +15,10 @@ import {
   SimpleChanges,
   ViewChild,
   ViewChildren,
-  DOCUMENT
+  DOCUMENT,
+  inject
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
   UntypedFormArray,
   UntypedFormBuilder,
@@ -24,7 +27,8 @@ import {
   Validators,
 } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
-import { first } from "rxjs/operators";
+import { catchError, distinctUntilChanged, first, switchMap } from "rxjs/operators";
+import { of, Subject } from "rxjs";
 import { ObservationEditFormPickerComponent } from "./observation-edit-form-picker.component";
 import moment from 'moment';
 import { ObservationEditDiscardComponent } from "./observation-edit-discard/observation-edit-discard.component";
@@ -49,6 +53,7 @@ import { EventService } from "src/app/event/event.service";
 import { FilterService } from "src/app/filter/filter.service";
 import { ObservationService } from "../observation.service";
 import { SessionService } from "mage-web-app/http/session.service";
+import { EventPreference } from "core-lib-src/user";
 
 export type ObservationFormControl = UntypedFormControl & { definition: any };
 
@@ -87,9 +92,13 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   @ViewChild("dragHandle", { static: true }) dragHandle: ElementRef;
   @ViewChildren("form") formElements: QueryList<ElementRef>;
 
+  private destroyRef = inject(DestroyRef);
+  private loadEventPreferences$ = new Subject<number>();
+
   event: any;
   formGroup: UntypedFormGroup;
   formDefinitions: any;
+  eventPreferences: EventPreference | null;
   timestampDefinition = {
     title: "",
     type: "date",
@@ -147,6 +156,20 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       "handle",
       sanitizer.bypassSecurityTrustResourceUrl("assets/images/handle-24px.svg")
     );
+
+    this.loadEventPreferences$
+      .pipe(
+        distinctUntilChanged(),
+        switchMap((eventId) =>
+          this.userService
+            .getEventPreferences(eventId)
+            .pipe(catchError(() => of(null)))
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((preferences) => {
+        this.eventPreferences = preferences;
+      });
   }
 
   ngOnInit(): void {
@@ -188,9 +211,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
       this.toFormGroup(this.observation);
       this.updatePrimarySecondary();
+      this.loadEventPreferences$.next(this.event.id);
     }
   }
-
 
   hasEventUpdatePermission(): boolean {
     return this.sessionService.user.role.permissions.includes('DELETE_OBSERVATION')
