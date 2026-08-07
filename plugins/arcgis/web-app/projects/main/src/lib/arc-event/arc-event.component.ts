@@ -135,8 +135,14 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     ) {
       this.configSet = true;
       this.arcService.fetchEvents().subscribe(x => this.setAllEvents(x));
+      return;
     }
-    else if (!this.eventSet && this.configSet && this.model.allEvents.length > 0) {
+
+    if (this.model.allEvents.length > 0 && changes['config'] && !changes['config'].firstChange) {
+      this.refreshEventLayers();
+    }
+
+    if (!this.eventSet && this.configSet && this.model.allEvents.length > 0) {
       this.eventSet = true;
       this.LoadSelectedEvents();
       this.captureSnapshot();
