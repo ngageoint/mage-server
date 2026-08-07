@@ -26,6 +26,7 @@ class TestHostComponent {
     name: 'select',
     required: false,
     title: 'Colors',
+    maxRecent: 5,
     choices: [{
       title: 'red'
     }, {
@@ -137,6 +138,19 @@ describe('ObservationEditMultiselectComponent', () => {
 
       freshHost.component.recentChoices$.subscribe(recent => {
         expect(recent.map(c => c.title)).toEqual(['red'])
+        done()
+      })
+    })
+
+    it('ignores stale recent choices when the field no longer has recents enabled', (done) => {
+      const freshFixture = TestBed.createComponent(TestHostComponent)
+      const freshHost = freshFixture.componentInstance
+      freshHost.definition.maxRecent = undefined
+      freshHost.recentChoices = ['green', 'blue', 'red']
+      freshFixture.detectChanges()
+
+      freshHost.component.recentChoices$.subscribe(recent => {
+        expect(recent).toEqual([])
         done()
       })
     })

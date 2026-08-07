@@ -36,8 +36,8 @@ describe('FieldDialogComponent', () => {
       configureWith({ fieldTypes, attachmentAllowedTypes: [] });
     }));
 
-    it('defaults maxRecent to 5', () => {
-      expect(component.field.maxRecent).toEqual(5);
+    it('leaves maxRecent undefined so recent choices are off by default', () => {
+      expect(component.field.maxRecent).toBeUndefined();
     });
   });
 

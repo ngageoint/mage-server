@@ -73,7 +73,7 @@ export class MongoosePreferenceRepository extends BaseMongooseRepository<UserPre
       const path = `events.${eventId}.forms.${formId}.fields.${fieldName}.recentChoices`
       const currentChoices = byPath[path] ?? preferences?.events?.[eventId]?.forms?.[formId]?.fields?.[fieldName]?.recentChoices ?? []
       const uniqueChoices = currentChoices.filter((currentChoice) => currentChoice !== choice)
-      byPath[path] = [choice, ...uniqueChoices].slice(0, entry.recentChoicesLimit || 5)
+      byPath[path] = [choice, ...uniqueChoices].slice(0, entry.recentChoicesLimit || 0)
       return byPath
     }, {} as Record<string, RecentChoice[]>)
 
