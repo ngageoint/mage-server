@@ -64,6 +64,7 @@ export interface DiscoveredFeatureService {
 export interface DiscoveryResult {
   identityManager: string
   portalUrl?: string
+  mayLackEditPrivilege?: boolean
   services: DiscoveredFeatureService[]
   total: number
   start: number

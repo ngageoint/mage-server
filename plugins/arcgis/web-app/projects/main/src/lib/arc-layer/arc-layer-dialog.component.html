@@ -82,6 +82,11 @@
                 </mat-form-field>
               </div>
             </ng-container>
+
+            <div class="limited-permission-warning" *ngIf="showLimitedPermissionWarning">
+              <mat-icon>error_outline</mat-icon>
+              <span>Your account privileges don't include the ability to edit features (features:user:edit). Ask your administrator for more info.</span>
+            </div>
           </form>
 
           <div class="discovered-services" *ngIf="entryMode === EntryMode.Portal && hasBrowsed">
@@ -98,8 +103,8 @@
                 [class.read-only-service]="isReadOnly(service)"
                 [matTooltip]="isReadOnly(service) ? 'This feature service does not allow editing' : ''">
                 <span matListItemTitle>{{service.title}}</span>
-                <span matListItemLine class="discovered-service-owner">{{service.permission}}</span>
                 <span matListItemLine class="discovered-service-url">{{service.url}}</span>
+                <span matListItemLine class="discovered-service-owner">{{service.permission}}</span>
               </mat-list-option>
             </mat-selection-list>
             <div class="discovered-services-paging" *ngIf="discoveredServices.length > 0">

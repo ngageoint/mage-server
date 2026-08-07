@@ -49,6 +49,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	private discoveredStart = 1
 	private discoveredIdentityManager: string
 	private discoveredPortalUrl: string | undefined
+	discoveredMayLackEditPrivilege: boolean | undefined
 
 	AuthenticationType = AuthenticationType
 	authenticationStates: AuthenticationState[] = [{
@@ -128,6 +129,12 @@ export class ArcLayerDialogComponent implements OnDestroy {
 
 	get hasNonEditableLayers(): boolean {
 		return !!this.layers?.some(layer => !this.canEdit(layer))
+	}
+
+	// only warn when we positively confirmed the privilege is missing; undefined means the check
+	// couldn't be performed (e.g. no known portal URL, or the request failed) and should stay silent.
+	get showLimitedPermissionWarning(): boolean {
+		return this.featureService?.mayLackEditPrivilege === true || this.discoveredMayLackEditPrivilege === true
 	}
 
 	// unlike canEdit(), a missing capabilities string here just means we don't know (most portals
@@ -281,6 +288,10 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	private onDiscovered(result: DiscoveryResult): void {
 		this.discoveredIdentityManager = result.identityManager
 		this.discoveredPortalUrl = result.portalUrl
+		// only a fresh sign-in includes this
+		if (result.mayLackEditPrivilege !== undefined) {
+			this.discoveredMayLackEditPrivilege = result.mayLackEditPrivilege
+		}
 		this.discoveredServices = result.services
 		this.discoveredTotal = result.total
 		this.discoveredStart = result.start

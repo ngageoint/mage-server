@@ -54,11 +54,29 @@ const describeArcGISError = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
 };
 
-const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean }, 'identityManager'>> => {
-  let authenticated = false;
+// checks whether the authenticated user's ArcGIS privileges include features:user:edit, required
+// to write observations to feature layers
+const checkEditPrivilege = async (portalUrl: string, identityManager: ArcGISIdentityManager): Promise<boolean | undefined> => {
   try {
-    await identityService.signin(config);
+    const self = await request(`${portalUrl}/community/self`, { authentication: identityManager });
+    const privileges: string[] = self?.privileges ?? [];
+    console.debug(`ArcGIS user ${self?.username} has privileges: ${privileges.join(', ')}`);
+    return !privileges.includes('features:user:edit');
+  } catch (err) {
+    console.error(`Could not check ArcGIS user privileges: ${describeArcGISError(err)}`);
+    return undefined;
+  }
+};
+
+const sanitizeFeatureService = async (config: FeatureServiceConfig, identityService: ArcGISIdentityService): Promise<Omit<FeatureServiceConfig & { authenticated: boolean, mayLackEditPrivilege?: boolean }, 'identityManager'>> => {
+  let authenticated = false;
+  let mayLackEditPrivilege: boolean | undefined;
+  try {
+    const identityManager = await identityService.signin(config);
     authenticated = true;
+    if (config.portalUrl) {
+      mayLackEditPrivilege = await checkEditPrivilege(config.portalUrl, identityManager);
+    }
   } catch (error) {
     console.error('Error in sanitizeFeatureService');
     if (error instanceof ArcGISRequestError) {
@@ -67,7 +85,7 @@ const sanitizeFeatureService = async (config: FeatureServiceConfig, identityServ
   }
 
   const { identityManager, ...sanitized } = config;
-  return { ...sanitized, authenticated };
+  return { ...sanitized, authenticated, mayLackEditPrivilege };
 };
 
 type DiscoveredFeatureService = {
@@ -251,8 +269,9 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             };
             ArcGISIdentityManager.exchangeAuthorizationCode(creds, code).then(async (idManager: ArcGISIdentityManager) => {
               if (state.discover) {
+                const mayLackEditPrivilege = state.portalUrl ? await checkEditPrivilege(state.portalUrl, idManager) : undefined;
                 const page = await discoverFeatureServices(idManager);
-                postMessageResponse({ identityManager: idManager.serialize(), portalUrl: state.portalUrl, ...page });
+                postMessageResponse({ identityManager: idManager.serialize(), portalUrl: state.portalUrl, mayLackEditPrivilege, ...page });
                 return;
               }
 
@@ -413,18 +432,21 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
 
             try {
               let identityManager: ArcGISIdentityManager;
+              let mayLackEditPrivilege: boolean | undefined;
               if (serializedIdentityManager) {
                 identityManager = ArcGISIdentityManager.deserialize(serializedIdentityManager);
               } else if (token) {
                 identityManager = await ArcGISIdentityManager.fromToken({ token, portal: portalUrl });
+                mayLackEditPrivilege = await checkEditPrivilege(portalUrl, identityManager);
               } else if (username && password) {
                 identityManager = await ArcGISIdentityManager.signIn({ username, password, portal: portalUrl });
+                mayLackEditPrivilege = await checkEditPrivilege(portalUrl, identityManager);
               } else {
                 return res.sendStatus(400);
               }
 
               const page = await discoverFeatureServices(identityManager, start, num, filter);
-              return res.send({ identityManager: identityManager.serialize(), portalUrl, ...page });
+              return res.send({ identityManager: identityManager.serialize(), portalUrl, mayLackEditPrivilege, ...page });
             } catch (err) {
               return res.status(400).send('Invalid credentials provided to communicate with portal' + err);
             }
