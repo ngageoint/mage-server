@@ -318,8 +318,25 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               const config = await processor.safeGetConfig();
               const { featureServices, ...remaining } = config;
 
+              // the client only understands event names (layer.events), not the ids persisted
+              // server-side (layer.eventIds) - convert back so previously saved selections survive a reload
+              const allEvents = await eventRepo.findAll();
+              const eventIdToNameMap = new Map<MageEventId, string>();
+              allEvents.forEach(event => eventIdToNameMap.set(event.id, event.name));
+
               const sanitizeFeatureServices = await Promise.all(
-                featureServices.map(async (service) => await sanitizeFeatureService(service, identityService))
+                featureServices.map(async (service) => {
+                  const sanitized = await sanitizeFeatureService(service, identityService);
+                  return {
+                    ...sanitized,
+                    layers: sanitized.layers.map(layer => ({
+                      ...layer,
+                      events: (layer.eventIds || [])
+                        .map(eventId => eventIdToNameMap.get(eventId))
+                        .filter((name): name is string => name !== undefined)
+                    }))
+                  };
+                })
               );
 
               res.json({ ...remaining, featureServices: sanitizeFeatureServices });
@@ -544,6 +561,24 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               const message = describeArcGISError(err);
               console.error(message);
               res.status(500).json({ message: 'Could not get ArcGIS feature service capabilities', error: message });
+            }
+          });
+
+          routes.get('/pushStatus', async (req, res) => {
+            const eventId = Number(req.query.eventId);
+            if (!Number.isFinite(eventId)) {
+              return res.status(400).send('eventId query param is required');
+            }
+            const pageIndex = Math.max(0, Number(req.query.pageIndex) || 0);
+            const pageSize = Math.min(200, Math.max(1, Number(req.query.pageSize) || 25));
+
+            try {
+              const page = await processor.getPushedObservations(eventId, { pageIndex, pageSize });
+              res.send(page);
+            } catch (err) {
+              const message = err instanceof Error ? err.message : String(err);
+              console.error(`Could not get pushed observations for event ${eventId}: ${message}`);
+              res.status(500).json({ message: 'Could not get pushed observations', error: message });
             }
           });
 

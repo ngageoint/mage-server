@@ -15,6 +15,21 @@ export interface ArcServiceInterface {
   fetchFeatureServiceLayers(featureServiceUrl: string): Observable<FeatureLayer[]>
   fetchFeatureServiceCapabilities(featureServiceUrl: string): Observable<{ capabilities?: string }>
   validateFeatureService(request: ValidationRequest): Observable<FeatureServiceConfig>
+  fetchPushStatus(eventId: number, pageIndex: number, pageSize: number): Observable<PushedObservationsPage>
+}
+
+// a MAGE observation that has already been synced to an ArcGIS feature layer
+export interface PushedObservation {
+  id: string
+  createdAt: string
+  lastModified: string
+}
+
+export interface PushedObservationsPage {
+  items: PushedObservation[]
+  totalCount: number
+  pageIndex: number
+  pageSize: number
 }
 
 export class MageEvent {
@@ -166,5 +181,9 @@ export class ArcService implements ArcServiceInterface {
 
   putArcConfig(config: ArcGISPluginConfig) {
     return this.http.put<ArcGISPluginConfig>(`${baseUrl}/config`, config)
+  }
+
+  fetchPushStatus(eventId: number, pageIndex: number, pageSize: number): Observable<PushedObservationsPage> {
+    return this.http.get<PushedObservationsPage>(`${baseUrl}/pushStatus?eventId=${eventId}&pageIndex=${pageIndex}&pageSize=${pageSize}`)
   }
 }

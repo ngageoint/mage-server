@@ -147,6 +147,10 @@ export class MockArcService implements ArcServiceInterface {
     return of(config);
   }
 
+  fetchPushStatus(eventId: number, pageIndex: number, pageSize: number) {
+    return of({ items: [], totalCount: 0, pageIndex, pageSize });
+  }
+
   removeUserTrack(userTrackId: string): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig);
   }

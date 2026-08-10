@@ -91,6 +91,26 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     this.captureSnapshot();
   }
 
+  // true once this.config has actually been replaced with fetched data, rather than still being
+  // the shared default placeholder the parent starts with before its own config fetch resolves
+  private get configReady(): boolean {
+    return this.config !== defaultArcGISPluginConfig;
+  }
+
+  // applying the persisted event selection depends on both the events list (from this component's
+  // own fetchEvents() call) and the real config (fetched independently by the parent) being ready;
+  // whichever of those two async loads finishes last calls this to do the one-time initial application,
+  // so it works correctly regardless of which one happens to resolve first
+  private tryApplyInitialSelection(): void {
+    if (this.eventSet || this.model.allEvents.length === 0 || !this.configReady) {
+      return;
+    }
+    this.eventSet = true;
+    this.refreshEventLayers();
+    this.LoadSelectedEvents();
+    this.captureSnapshot();
+  }
+
   // serializes the event/layer selection state so it can be compared against or restored later
   private serializeEventsState(): string {
     return JSON.stringify(
@@ -139,13 +159,14 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (this.model.allEvents.length > 0 && changes['config'] && !changes['config'].firstChange) {
-      this.refreshEventLayers();
-    }
-
-    if (!this.eventSet && this.configSet && this.model.allEvents.length > 0) {
-      this.eventSet = true;
-      this.LoadSelectedEvents();
-      this.captureSnapshot();
+      if (this.eventSet) {
+        // already applied the initial selection - just recompute layer availability from the
+        // updated config, preserving any pending (unsaved) selection the user has made
+        this.refreshEventLayers();
+      } else {
+        // the real config arrived after events were already loaded from the placeholder config
+        this.tryApplyInitialSelection();
+      }
     }
   }
 
@@ -174,6 +195,9 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.model.allEvents = allEvents;
     this.eventSet = false;
+    // config may already be real by the time this async call resolves (or may still be the
+    // placeholder, in which case ngOnChanges will pick this up once the real config arrives)
+    this.tryApplyInitialSelection();
   }
 
   /// On Initial Load, this checks the database loaded value for selected events
@@ -264,15 +288,15 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
   getEventsInFeatureFormat(featureService: FeatureServiceConfig): FeatureLayerConfig[] {
     let values: FeatureLayerConfig[] = [];
     for (let l of featureService.layers) {
+      // layer identifiers may be numbers (once ArcGIS sync normalizes them to the layer id) while
+      // ArcEventLayer.name is always a string, so compare as strings to avoid a silent type mismatch
+      const layerName = String(l.layer);
       values.push({
         layer: l.layer,
         geometryType: l.geometryType,
-        events: [...this.model.events.filter((x) => x.layers.map((y) => {
-          if (y.name === l.layer && y.isSelected) {
-            return y.name
-          } else return ""
-        }).indexOf(l.layer as string) >= 0)
-          .map((z) => z.name)]
+        events: this.model.events
+          .filter((x) => x.layers.some((y) => y.name === layerName && y.isSelected))
+          .map((z) => z.name)
       })
     }
     return values;

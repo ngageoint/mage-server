@@ -11,6 +11,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatListModule } from '@angular/material/list'
+import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatSelectModule } from '@angular/material/select'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTableModule } from '@angular/material/table'
@@ -23,6 +24,7 @@ import { ArcLayerComponent } from './arc-layer/arc-layer.component';
 import { ArcEventComponent } from './arc-event/arc-event.component';
 import { ArcLayerDialogComponent } from './arc-layer/arc-layer-dialog.component';
 import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dialog.component';
+import { ArcPushStatusComponent } from './arc-push-status/arc-push-status.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +32,7 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
     ArcLayerComponent,
     ArcLayerDialogComponent,
     ArcLayerDeleteDialogComponent,
+    ArcPushStatusComponent,
     ArcAdminComponent
   ],
   imports: [
@@ -45,6 +48,7 @@ import { ArcLayerDeleteDialogComponent } from './arc-layer/arc-layer-delete-dial
     MatIconModule,
     MatInputModule,
     MatListModule,
+    MatPaginatorModule,
     MatSelectModule,
     MatSlideToggleModule,
     MatTableModule,

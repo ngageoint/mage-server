@@ -1,0 +1,55 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.event-select {
+  min-width: 280px;
+}
+
+.refresh-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.push-status-table {
+  width: 100%;
+
+  .mat-mdc-row, .mat-mdc-header-row {
+    .mat-mdc-cell, .mat-mdc-header-cell {
+      border-bottom: none;
+    }
+  }
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 0;
+  opacity: 0.6;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}

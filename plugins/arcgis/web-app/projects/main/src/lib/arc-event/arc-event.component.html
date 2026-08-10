@@ -65,6 +65,18 @@
     </mat-card-actions>
   </mat-card>
 
+  <mat-card appearance="outlined" class="d-flow-root push-status-card">
+    <mat-card-header class="w-100">
+      <div class="arcEvent__info">
+        <mat-card-title>Push Status</mat-card-title>
+        <mat-hint>Observations that have been sent to the configured ArcGIS layer(s).</mat-hint>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <arc-push-status></arc-push-status>
+    </mat-card-content>
+  </mat-card>
+
   <ng-template #editEventDialog let-data>
     <h2 matDialogTitle>ArcGIS layers that Mage event named {{currentEditingEvent.name}} is synchronizing</h2>
     <mat-dialog-content>

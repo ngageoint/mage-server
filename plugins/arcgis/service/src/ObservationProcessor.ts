@@ -196,6 +196,46 @@ export class ObservationProcessor {
 	}
 
 	/**
+	 * Finds MAGE observations belonging to the given event that also already exist as features on any
+	 * ArcGIS feature layer configured to sync that event, i.e. observations already pushed to ArcGIS.
+	 * @param {MageEventId} eventId The MAGE event id to find pushed observations for.
+	 * @param {PagingParameters} paging Which page of the (newest-modified-first) results to return.
+	 * @returns {Promise<PushedObservationsPage>} The requested page of observations found on both MAGE and the ArcGIS layer(s), and the total count across all pages.
+	 */
+	public async getPushedObservations(eventId: MageEventId, paging: PagingParameters): Promise<PushedObservationsPage> {
+		const layerProcessors = this._layerProcessors.filter(layerProcessor => layerProcessor.layerInfo.hasEvent(eventId));
+
+		const arcObservationIds = new Set<string>();
+		await Promise.all(layerProcessors.map(layerProcessor =>
+			layerProcessor.featureQuerier.queryObservationsForEvent(eventId, (observationIds) => {
+				observationIds.forEach(id => arcObservationIds.add(id));
+			})
+		));
+
+		if (arcObservationIds.size === 0) {
+			return { items: [], totalCount: 0, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+		}
+
+		const obsRepo = await this._obsRepos(eventId);
+		const pushedObservations: PushedObservation[] = [];
+		for (const observationId of arcObservationIds) {
+			const observation = await obsRepo.findById(observationId);
+			if (observation) {
+				pushedObservations.push({
+					id: observation.id,
+					createdAt: observation.createdAt.toISOString(),
+					lastModified: observation.lastModified.toISOString()
+				});
+			}
+		}
+
+		pushedObservations.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
+		const start = paging.pageIndex * paging.pageSize;
+		const items = pushedObservations.slice(start, start + paging.pageSize);
+		return { items, totalCount: pushedObservations.length, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+	}
+
+	/**
 	 * Starts the processor.
 	 */
 	async start() {
@@ -391,4 +431,23 @@ export class ObservationProcessor {
 
 		return newNumberLeft;
 	}
+}
+
+/**
+ * A MAGE observation that has already been synced to an ArcGIS feature layer.
+ */
+export interface PushedObservation {
+	id: string
+	createdAt: string
+	lastModified: string
+}
+
+/**
+ * A page of pushed observations, newest-modified-first, plus the total count across all pages.
+ */
+export interface PushedObservationsPage {
+	items: PushedObservation[]
+	totalCount: number
+	pageIndex: number
+	pageSize: number
 }

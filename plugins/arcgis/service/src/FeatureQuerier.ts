@@ -3,6 +3,7 @@ import { LayerInfo } from "./LayerInfo";
 import { QueryObjectResult } from "./types/QueryObjectResult";
 import { ArcGISIdentityManager, ArcGISRequestError } from "@esri/arcgis-rest-request";
 import { queryFeatures, IQueryFeaturesOptions } from '@esri/arcgis-rest-feature-service';
+import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 
 /**
  * Performs various queries on observations for a specific arc feature layer.
@@ -97,6 +98,48 @@ export class FeatureQuerier {
                 this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
             }
         }
+    }
+
+    /**
+     * Queries for the MAGE observation ids of all features on this layer belonging to the given event.
+     * @param {MageEventId} eventId - The MAGE event id to find synced observations for.
+     * @param {function(string[]): void} handleResponse - Callback function called with the resolved MAGE observation ids.
+     */
+    async queryObservationsForEvent(eventId: MageEventId, handleResponse: (observationIds: string[]) => void) {
+        const where = this._config.eventIdField
+            ? `${this._config.eventIdField} = '${eventId}'`
+            : `${this._config.observationIdField} LIKE '%${this._config.idSeparator}${eventId}'`;
+        this._console.info(`ArcGIS query observations for event ${eventId}: ${this._url.toString()}`);
+        try {
+            const response = await queryFeatures({
+                url: this._url.toString(),
+                authentication: this._identityManager,
+                where,
+                returnGeometry: false,
+                outFields: [this._config.observationIdField]
+            }) as QueryObjectResult;
+            const observationIds = response.features
+                .map(feature => this.extractObservationId(feature.attributes[this._config.observationIdField] as string))
+                .filter((id): id is string => !!id);
+            handleResponse(observationIds);
+        } catch (error) {
+            this._console.error(`Error in FeatureQuerier.queryObservationsForEvent :: ` + error);
+            if (error instanceof ArcGISRequestError) {
+                this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
+            }
+        }
+    }
+
+    // when eventIdField is configured, observationIdField holds the plain MAGE observation id; otherwise
+    // the id and event id are concatenated (observationId + idSeparator + eventId), so recover just the id
+    private extractObservationId(rawValue: string): string | undefined {
+        if (!rawValue) {
+            return undefined;
+        }
+        if (this._config.eventIdField) {
+            return rawValue;
+        }
+        return rawValue.split(this._config.idSeparator)[0];
     }
 
     /**
