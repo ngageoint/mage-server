@@ -13,7 +13,7 @@ import { By } from '@angular/platform-browser'
 
 @Component({
     selector: `host-component`,
-    template: `<observation-edit-multiselect [definition]="definition" [formGroup]="formGroup"></observation-edit-multiselect>`,
+    template: `<observation-edit-multiselect [definition]="definition" [formGroup]="formGroup" [recentChoices]="recentChoices"></observation-edit-multiselect>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
@@ -34,6 +34,8 @@ class TestHostComponent {
       title: 'blue'
     }]
   }
+
+  recentChoices: string[] = []
 
   @ViewChild(ObservationEditMultiselectComponent) component: ObservationEditMultiselectComponent
 }
@@ -104,6 +106,40 @@ describe('ObservationEditMultiselectComponent', () => {
 
     const control = component.formGroup.get('select')
     expect(control.value).toEqual(['red'])
+  })
+
+  describe('recent choices', () => {
+
+    it('is empty when no recent choices are given', (done) => {
+      component.recentChoices$.subscribe(recent => {
+        expect(recent).toEqual([])
+        done()
+      })
+    })
+
+    it('preserves the given order, most recent first, as provided by the server', (done) => {
+      const freshFixture = TestBed.createComponent(TestHostComponent)
+      const freshHost = freshFixture.componentInstance
+      freshHost.recentChoices = ['green', 'blue', 'red']
+      freshFixture.detectChanges()
+
+      freshHost.component.recentChoices$.subscribe(recent => {
+        expect(recent.map(c => c.title)).toEqual(['green', 'blue', 'red'])
+        done()
+      })
+    })
+
+    it('excludes recent choices that are no longer valid choices for the field', (done) => {
+      const freshFixture = TestBed.createComponent(TestHostComponent)
+      const freshHost = freshFixture.componentInstance
+      freshHost.recentChoices = ['red', 'not-a-real-choice']
+      freshFixture.detectChanges()
+
+      freshHost.component.recentChoices$.subscribe(recent => {
+        expect(recent.map(c => c.title)).toEqual(['red'])
+        done()
+      })
+    })
   })
 
   it('should add choice', () => {

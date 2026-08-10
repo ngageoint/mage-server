@@ -20,6 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
     template: `<observation-edit-dropdown
     [definition]="definition"
     [formGroup]="formGroup"
+    [recentChoices]="recentChoices"
   ></observation-edit-dropdown>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
@@ -44,6 +45,8 @@ class TestHostComponent {
       }
     ]
   };
+
+  recentChoices: string[] = [];
 
   @ViewChild(ObservationEditSelectComponent)
   component: ObservationEditSelectComponent;
@@ -106,6 +109,46 @@ describe('ObservationEditSelectComponent', () => {
     await fixture.whenStable();
 
     expect(control.valid).toBe(false);
+  });
+
+  describe('recent choices', () => {
+
+    it('is empty when no recent choices are given', (done) => {
+      component.recentChoices$.subscribe(recent => {
+        expect(recent).toEqual([]);
+        done();
+      });
+    });
+
+    it('preserves the given order, most recent first, as provided by the server', (done) => {
+      let freshFixture: ComponentFixture<TestHostComponent>;
+      let freshHost: TestHostComponent;
+
+      freshFixture = TestBed.createComponent(TestHostComponent);
+      freshHost = freshFixture.componentInstance;
+      freshHost.recentChoices = ['green', 'blue', 'red'];
+      freshFixture.detectChanges();
+
+      freshHost.component.recentChoices$.subscribe(recent => {
+        expect(recent.map(c => c.title)).toEqual(['green', 'blue', 'red']);
+        done();
+      });
+    });
+
+    it('excludes recent choices that are no longer valid choices for the field', (done) => {
+      let freshFixture: ComponentFixture<TestHostComponent>;
+      let freshHost: TestHostComponent;
+
+      freshFixture = TestBed.createComponent(TestHostComponent);
+      freshHost = freshFixture.componentInstance;
+      freshHost.recentChoices = ['red', 'not-a-real-choice'];
+      freshFixture.detectChanges();
+
+      freshHost.component.recentChoices$.subscribe(recent => {
+        expect(recent.map(c => c.title)).toEqual(['red']);
+        done();
+      });
+    });
   });
 
   // it('should show error on invalid and touched', async () => {

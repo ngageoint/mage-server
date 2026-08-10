@@ -126,6 +126,12 @@
       </div>
     </div>
 
+    <mat-form-field appearance="fill" *ngIf="field.type === 'dropdown' && !data.isMemberField">
+      <mat-label>Maximum Number of Recent Choices</mat-label>
+      <input matInput type="number" [(ngModel)]="field.maxRecent" name="maxRecent" min="0">
+      <mat-hint>Maximum number of recent choices displayed first in the list.</mat-hint>
+    </mat-form-field>
+
     <mat-form-field appearance="fill"
       *ngIf="field.type === 'dropdown' && !field.multiselect && !data.isMemberField">
       <mat-label>Default Value</mat-label>

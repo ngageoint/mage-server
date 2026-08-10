@@ -184,15 +184,61 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
   }
 }
 
-export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitter, attachmentStore: AttachmentStore): void {
+export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitter, attachmentStore: AttachmentStore, log: Logger = NoopLogger): void {
   domainEvents.on(ObservationDomainEventType.AttachmentsRemoved, (e: ObservationEmitted<AttachmentsRemovedDomainEvent>) => {
     setTimeout(async () => {
       const attachments = e.removedAttachments
       for (const att of attachments) {
-        console.info(`deleting removed attachment content ${att.id} from observation ${e.observation.id}`)
+        log.info(`deleting removed attachment content ${att.id} from observation ${e.observation.id}`)
         attachmentStore.deleteContent(att, e.observation).catch(err => {
-          console.error(`error deleting content of attachment ${att.id} on observation ${e.observation.id}:`, err)
+          log.error(`error deleting content of attachment ${att.id} on observation ${e.observation.id}:`, err)
         })
+      }
+    })
+  })
+}
+
+/**
+ * This re-scans and re-records every current dropdown/multiselect value on
+ * the observation each time `ObservationSaved` fires, rather than only
+ * fields that actually changed in this save.  Diffing would mean threading
+ * the prior field values through the event; recomputing from the saved
+ * observation is simpler and, since writes are idempotent, harmless -- just
+ * some wasted work on saves that didn't touch a dropdown.
+ */
+export function registerRecordRecentFormFieldChoicesHandler(domainEvents: EventEmitter, userPreferenceRepository: UserPreferenceRepository, log: Logger = NoopLogger): void {
+  domainEvents.on(ObservationDomainEventType.ObservationSaved, (e: ObservationEmitted<ObservationSavedDomainEvent>) => {
+    const userId = e.userId
+    if (!userId) {
+      return
+    }
+    setTimeout(async () => {
+      const observation = e.observation
+      const entries: AddRecentFormFieldChoiceEntry[] = observation.formEntries.flatMap((formEntry) => {
+        const formFields = observation.mageEvent.activeFieldsForForm(formEntry.formId) || []
+        return formFields
+          .filter((field) => field.type === FormFieldType.Dropdown || field.type === FormFieldType.MultiSelectDropdown)
+          .flatMap((field) => {
+            const value = formEntry[field.name]
+            const choices = Array.isArray(value) ? value : [value]
+            return choices
+              .filter((choice) => choice != null && choice !== '')
+              .map((choice) => ({
+                eventId: observation.eventId,
+                formId: formEntry.formId,
+                fieldName: field.name,
+                choice: String(choice),
+                recentChoicesLimit: field.maxRecent
+              }))
+          })
+      })
+
+      if (entries.length) {
+        try {
+          await userPreferenceRepository.addRecentFormFieldChoices(userId, entries)
+        } catch (err) {
+          log.error(`error recording recent form field choices on observation ${observation.id}:`, err)
+        }
       }
     })
   })
@@ -240,9 +286,8 @@ async function prepareObservationMod(mod: api.ExoObservationMod, observationToUp
   if (afterRemovedFormEntryAttachments) {
     modAttrs.attachments = afterRemovedFormEntryAttachments.attachments
   }
-  const afterFormEntriesRemoved = afterRemovedFormEntryAttachments ?
-    Observation.assignTo(afterRemovedFormEntryAttachments, modAttrs) as Observation :
-    Observation.evaluate(modAttrs, event)
+  const beforeFormEntriesRemoved = afterRemovedFormEntryAttachments || Observation.evaluate(modAttrs, event)
+  const afterFormEntriesRemoved = Observation.assignTo(beforeFormEntriesRemoved, modAttrs, context.userId) as Observation
   const afterAttachmentMods = attachmentMods.reduce<Observation | InvalidInputError>((obs, attachmentMod) => {
     if (obs instanceof MageError) {
       return obs

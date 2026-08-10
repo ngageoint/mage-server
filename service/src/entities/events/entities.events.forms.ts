@@ -101,6 +101,7 @@ export function copyFormFieldAttrs(x: FormField): FormField {
     max: x.max,
     value: x.value,
     choices: x.choices?.map(copyFormFieldChoiceAttrs),
+    maxRecent: x.maxRecent,
     allowedAttachmentTypes: x.allowedAttachmentTypes ? [...x.allowedAttachmentTypes] : undefined
   }
 }
@@ -146,6 +147,7 @@ export interface FormField {
   required: boolean,
   value?: any,
   choices?: FormFieldChoice[],
+  maxRecent?: number,
   /**
    * The absence of any media type constraints indicates the field allows any
    * file type as an attachment.
