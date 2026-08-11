@@ -67,6 +67,10 @@ export class MongooseTeamRepository extends BaseMongooseRepository<TeamDocument,
         .map(id => new mongoose.Types.ObjectId(id));
     }
 
+    /*
+      TODO: make the type of the parameters enforce this mutual exclusion,
+      or just allow both parameters in the query.
+     */
     if (which.withMembers) {
       params.userIds = { $in: toObjectIds(which.withMembers) }
     } else if (which.withoutMembers) {

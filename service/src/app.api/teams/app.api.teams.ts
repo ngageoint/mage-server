@@ -16,10 +16,8 @@ export interface TeamSearchRequest extends AppRequest {
   }
 }
 
-export type TeamSearchResult = Pick<Team, 'id' | 'name' | 'description' >
-
 export interface SearchTeams {
-  (req: TeamSearchRequest): Promise<AppResponse<PageOf<TeamSearchResult>, PermissionDeniedError>>
+  (req: TeamSearchRequest): Promise<AppResponse<PageOf<Team>, PermissionDeniedError>>
 }
 
 export interface TeamsPermissionService {
