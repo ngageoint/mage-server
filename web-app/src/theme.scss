@@ -30,3 +30,10 @@ html {
 @include mat.list-overrides((
   active-indicator-shape: var(--mat-sys-corner-extra-small),
 ));
+
+// Angular Material's MDC-based mat-optgroup has no density token for its
+// label row (min-height/padding are hardcoded at 48px), so shrink it here.
+.mat-mdc-optgroup .mat-mdc-optgroup-label {
+  min-height: 32px;
+  padding: 0 16px;
+}

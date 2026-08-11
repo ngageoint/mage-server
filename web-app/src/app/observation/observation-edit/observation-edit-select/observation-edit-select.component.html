@@ -5,7 +5,7 @@
       <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{definition.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
     </mat-option>
 
-    <mat-option [value]="null"></mat-option>
+    <mat-option *ngIf="!definition.required" [value]="null"></mat-option>
     <ng-container *ngIf="recentChoices$ | async as recentChoices">
       <mat-optgroup [label]="'Recents'" *ngIf="recentChoices.length !== 0">
         <mat-option *ngFor="let choice of recentChoices" [value]="choice.title">
