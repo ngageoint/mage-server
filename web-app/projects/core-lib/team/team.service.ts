@@ -92,7 +92,7 @@ export interface TeamSearch extends PagingParameters {
    */
   term?: string | null | undefined
   /**
-   * Return only teams that have the given users IDs as members.
+   * Return only teams that have the given users' IDs as members.
    */
   members?: Array<User['id']>
   /**
@@ -102,8 +102,9 @@ export interface TeamSearch extends PagingParameters {
   omitEventTeams?: boolean
 }
 
-export interface TeamMemberSearch extends TeamSearch {
+export interface TeamMemberSearch extends PagingParameters {
   teamId: Team['id']
+  term?: string | null | undefined
 }
 
 export type TeamSearchResult = Pick<Team, 'id' | 'name' | 'description' | 'acl'>
