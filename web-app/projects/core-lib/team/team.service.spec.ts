@@ -1,24 +1,26 @@
-import { TEAM_READ_BASE_URL as BASE_URL, TeamReadService, TeamSearchResult, TeamSearchParams } from './team-read.service'
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
-import { TestBed } from '@angular/core/testing'
-import { HttpClient } from '@angular/common/http'
+import { firstValueFrom } from 'rxjs'
+import { TeamService, TeamSearchResult, TeamSearch } from './team.service'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
+import { TestBed, waitForAsync } from '@angular/core/testing'
+import { provideHttpClient } from '@angular/common/http'
 import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 
-describe('team read service', () => {
+const BASE_URL = '/api/next-teams'
 
-  let http: HttpClient
+describe('team service', () => {
+
   let httpTest: HttpTestingController
-  let service: TeamReadService
+  let service: TeamService
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
       ]
     })
-    http = TestBed.inject(HttpClient)
     httpTest = TestBed.inject(HttpTestingController)
-    service = TestBed.inject(TeamReadService)
+    service = TestBed.inject(TeamService)
   })
 
   afterEach(() => {
@@ -27,9 +29,9 @@ describe('team read service', () => {
 
   describe('paged searching', () => {
 
-    it('sends the paging parameters', () => {
+    it('sends the paging parameters', waitForAsync(async () => {
 
-      const searchParams: TeamSearchParams = {
+      const searchParams: TeamSearch = {
         term: 'boo@ner.bur',
         pageIndex: 3,
         pageSize: 25,
@@ -41,17 +43,13 @@ describe('team read service', () => {
         totalCount: 120,
         items: []
       }
-
-      let page: PageOf<TeamSearchResult>
-      service.search(searchParams).subscribe(x => {
-        page = x
-      })
-
+      const pendingPage = firstValueFrom(service.search(searchParams))
       const testReq = httpTest.expectOne(req => {
         return req.method === 'GET' && req.url === `${BASE_URL}/search`
       })
       testReq.flush(resBody)
 
+      const page = await pendingPage
       const expectedParams = {
         term: searchParams.term,
         page: '3',
@@ -64,11 +62,11 @@ describe('team read service', () => {
       for (const reqParam of receivedParams.keys()) {
         expect(receivedParams.get(reqParam)).toEqual(expectedParams[reqParam], reqParam)
       }
-    })
+    }))
 
     it('does not send undefined parameters', () => {
 
-      service.search({ pageIndex: 10, pageSize: 12 }).subscribe(x => null)
+      service.search({ pageIndex: 10, pageSize: 12 }).subscribe(() => {})
 
       const testReq = httpTest.expectOne(req => {
         return req.method === 'GET' && req.url === `${BASE_URL}/search`

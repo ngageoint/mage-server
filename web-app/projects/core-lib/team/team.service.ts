@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core'
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { Team } from './team.model'
-import { PageOf, PagingParameters } from 'core-lib-src/paging'
-import { User } from 'core-lib-src/user'
+import { PageOf, PagingParameters } from '@ngageoint/mage.web-core-lib/paging'
+import { User } from '@ngageoint/mage.web-core-lib/user'
 
 @Injectable({
   providedIn: 'root'
