@@ -25,7 +25,16 @@
     </div>
 
     <div class="table-container" *ngIf="!isLoading">
+      <div class="total-count" *ngIf="totalCount > 0">{{ totalCount }} observation{{ totalCount === 1 ? '' : 's' }} pushed to ArcGIS</div>
+
       <table mat-table [dataSource]="pushedObservations" class="push-status-table">
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-chip" [class]="row.status">{{ row.status }}</span>
+          </td>
+        </ng-container>
 
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef>Observation ID</th>

@@ -19,6 +19,12 @@
   overflow-x: auto;
 }
 
+.total-count {
+  font-size: 90%;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
 .push-status-table {
   width: 100%;
 
@@ -26,6 +32,25 @@
     .mat-mdc-cell, .mat-mdc-header-cell {
       border-bottom: none;
     }
+  }
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+
+  &.sent {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.archived {
+    background-color: #f5f5f5;
+    color: #616161;
   }
 }
 

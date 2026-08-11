@@ -1,7 +1,7 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
 import { MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { EventScopedObservationRepository, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { EventScopedObservationRepository, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { ObservationsTransformer } from './ObservationsTransformer'
@@ -224,7 +224,8 @@ export class ObservationProcessor {
 				pushedObservations.push({
 					id: observation.id,
 					createdAt: observation.createdAt.toISOString(),
-					lastModified: observation.lastModified.toISOString()
+					lastModified: observation.lastModified.toISOString(),
+					status: this.isArchived(observation) ? 'archived' : 'sent'
 				});
 			}
 		}
@@ -233,6 +234,10 @@ export class ObservationProcessor {
 		const start = paging.pageIndex * paging.pageSize;
 		const items = pushedObservations.slice(start, start + paging.pageSize);
 		return { items, totalCount: pushedObservations.length, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+	}
+
+	private isArchived(observation: ObservationAttrs): boolean {
+		return observation.states.length > 0 && observation.states[0].name.startsWith('archive');
 	}
 
 	/**
@@ -434,12 +439,20 @@ export class ObservationProcessor {
 }
 
 /**
+ * A MAGE observation's ArcGIS push status.
+ * - 'sent': found on the ArcGIS layer and still active in MAGE.
+ * - 'archived': found on the ArcGIS layer, but has since been archived (deleted) in MAGE.
+ */
+export type PushStatus = 'sent' | 'archived'
+
+/**
  * A MAGE observation that has already been synced to an ArcGIS feature layer.
  */
 export interface PushedObservation {
 	id: string
 	createdAt: string
 	lastModified: string
+	status: PushStatus
 }
 
 /**

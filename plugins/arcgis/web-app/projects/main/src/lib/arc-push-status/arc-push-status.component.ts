@@ -14,7 +14,7 @@ export class ArcPushStatusComponent implements OnInit {
   selectedEventId: number | undefined;
 
   pushedObservations: PushedObservation[] = [];
-  readonly displayedColumns = ['id', 'lastModified', 'createdAt'];
+  readonly displayedColumns = ['status', 'id', 'lastModified', 'createdAt'];
 
   totalCount = 0;
   pageIndex = 0;

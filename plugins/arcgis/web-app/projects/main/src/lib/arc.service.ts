@@ -18,11 +18,16 @@ export interface ArcServiceInterface {
   fetchPushStatus(eventId: number, pageIndex: number, pageSize: number): Observable<PushedObservationsPage>
 }
 
+// 'sent': found on the ArcGIS layer and still active in MAGE.
+// 'archived': found on the ArcGIS layer, but has since been archived (deleted) in MAGE.
+export type PushStatus = 'sent' | 'archived'
+
 // a MAGE observation that has already been synced to an ArcGIS feature layer
 export interface PushedObservation {
   id: string
   createdAt: string
   lastModified: string
+  status: PushStatus
 }
 
 export interface PushedObservationsPage {
