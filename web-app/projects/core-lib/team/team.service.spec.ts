@@ -1,5 +1,6 @@
 import { firstValueFrom } from 'rxjs'
-import { TeamService, TeamSearchResult, TeamSearch } from './team.service'
+import { Team } from './team.model'
+import { TeamService, TeamSearch } from './team.service'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
 import { TestBed, waitForAsync } from '@angular/core/testing'
 import { provideHttpClient } from '@angular/common/http'
@@ -37,7 +38,7 @@ describe('team service', () => {
         pageSize: 25,
         includeTotalCount: true
       }
-      const resBody: PageOf<TeamSearchResult> = {
+      const resBody: PageOf<Team> = {
         pageIndex: 3,
         pageSize: 25,
         totalCount: 120,
@@ -72,7 +73,7 @@ describe('team service', () => {
         return req.method === 'GET' && req.url === `${BASE_URL}/search`
       })
 
-      const resBody: PageOf<TeamSearchResult> = {
+      const resBody: PageOf<Team> = {
         pageIndex: 10,
         pageSize: 12,
         items: []

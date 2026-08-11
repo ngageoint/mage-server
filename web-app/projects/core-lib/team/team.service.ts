@@ -69,7 +69,7 @@ export class TeamService {
     return this.http.put<Team>(`/api/teams/${teamId}/acl/${userId}`, { role });
   }
 
-  search(which: TeamSearch): Observable<PageOf<TeamSearchResult>> {
+  search(which: TeamSearch): Observable<PageOf<Team>> {
     const queryParams: SearchQueryParams = {
       page_size: String(which.pageSize),
       page: String(which.pageIndex),
@@ -80,7 +80,7 @@ export class TeamService {
     if (typeof which.includeTotalCount === 'boolean') {
       queryParams.total = which.includeTotalCount ? 'true' : 'false'
     }
-    return this.http.get<PageOf<TeamSearchResult>>('/api/next-teams/search', {
+    return this.http.get<PageOf<Team>>('/api/next-teams/search', {
       params: queryParams
     })
   }
@@ -106,8 +106,6 @@ export interface TeamMemberSearch extends PagingParameters {
   teamId: Team['id']
   term?: string | null | undefined
 }
-
-export type TeamSearchResult = Pick<Team, 'id' | 'name' | 'description' | 'acl'>
 
 type SearchQueryParams = {
   page_size: string,
