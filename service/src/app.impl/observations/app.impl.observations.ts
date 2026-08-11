@@ -178,6 +178,7 @@ export function registerRecordRecentFormFieldChoicesHandler(domainEvents: EventE
         const formFields = observation.mageEvent.activeFieldsForForm(formEntry.formId) || []
         return formFields
           .filter((field) => field.type === FormFieldType.Dropdown || field.type === FormFieldType.MultiSelectDropdown)
+          .filter((field) => field.maxRecent && field.maxRecent > 0)
           .flatMap((field) => {
             const value = formEntry[field.name]
             const choices = Array.isArray(value) ? value : [value]

@@ -62,8 +62,7 @@ export class FieldDialogComponent {
                 title: '',
                 required: false,
                 multiselect: false,
-                choices: [],
-                maxRecent: 5
+                choices: []
             };
         }
 

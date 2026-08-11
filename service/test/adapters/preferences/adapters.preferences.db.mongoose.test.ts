@@ -54,7 +54,7 @@ describe('user preferences mongoose repository', function() {
     it('creates the preference document if none existed', async function() {
 
       const created = await repo.addRecentFormFieldChoices(userId, [
-        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' }
+        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 }
       ])
 
       expect(created.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal(['blue'])
@@ -62,31 +62,30 @@ describe('user preferences mongoose repository', function() {
 
     it('adds a new choice to the front of the list', async function() {
 
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' }])
-      const updated = await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'green' }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 }])
+      const updated = await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'green', recentChoicesLimit: 5 }])
 
       expect(updated.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal(['green', 'blue'])
     })
 
     it('moves a re-selected choice back to the front instead of duplicating it', async function() {
 
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' }])
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'green' }])
-      const updated = await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'green', recentChoicesLimit: 5 }])
+      const updated = await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 }])
 
       expect(updated.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal(['blue', 'green'])
     })
 
-    it('truncates to the default limit of 5 when no limit is given', async function() {
+    it('records no recent choices when no limit is given', async function() {
 
-      for (const choice of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      for (const choice of ['a', 'b', 'c']) {
         await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice }])
       }
 
       const preferences = await repo.getPreferences(userId)
 
-      expect(preferences?.events[1].forms[1].fields['field1'].recentChoices)
-        .to.deep.equal(['f', 'e', 'd', 'c', 'b'])
+      expect(preferences?.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal([])
     })
 
     it('truncates to the given recentChoicesLimit', async function() {
@@ -101,12 +100,21 @@ describe('user preferences mongoose repository', function() {
         .to.deep.equal(['c', 'b'])
     })
 
+    it('records no recent choices when recentChoicesLimit is explicitly 0', async function() {
+
+      const updated = await repo.addRecentFormFieldChoices(userId, [
+        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 0 }
+      ])
+
+      expect(updated.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal([])
+    })
+
     it('keeps preferences for different fields, forms, and events independent of each other', async function() {
 
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' }])
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field2', choice: 'big' }])
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 2, fieldName: 'field1', choice: 'square' }])
-      await repo.addRecentFormFieldChoices(userId, [{ eventId: 2, formId: 1, fieldName: 'field1', choice: 'north' }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 1, fieldName: 'field2', choice: 'big', recentChoicesLimit: 5 }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 1, formId: 2, fieldName: 'field1', choice: 'square', recentChoicesLimit: 5 }])
+      await repo.addRecentFormFieldChoices(userId, [{ eventId: 2, formId: 1, fieldName: 'field1', choice: 'north', recentChoicesLimit: 5 }])
 
       const preferences = await repo.getPreferences(userId)
 
@@ -119,9 +127,9 @@ describe('user preferences mongoose repository', function() {
     it('applies multiple choices for one observation in a single write', async function() {
 
       const updated = await repo.addRecentFormFieldChoices(userId, [
-        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' },
-        { eventId: 1, formId: 1, fieldName: 'field2', choice: 'big' },
-        { eventId: 1, formId: 2, fieldName: 'field1', choice: 'square' }
+        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 },
+        { eventId: 1, formId: 1, fieldName: 'field2', choice: 'big', recentChoicesLimit: 5 },
+        { eventId: 1, formId: 2, fieldName: 'field1', choice: 'square', recentChoicesLimit: 5 }
       ])
 
       expect(updated.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal(['blue'])
@@ -132,8 +140,8 @@ describe('user preferences mongoose repository', function() {
     it('applies repeated choices for the same field within one batch in order', async function() {
 
       const updated = await repo.addRecentFormFieldChoices(userId, [
-        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue' },
-        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'green' }
+        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'blue', recentChoicesLimit: 5 },
+        { eventId: 1, formId: 1, fieldName: 'field1', choice: 'green', recentChoicesLimit: 5 }
       ])
 
       expect(updated.events[1].forms[1].fields['field1'].recentChoices).to.deep.equal(['green', 'blue'])

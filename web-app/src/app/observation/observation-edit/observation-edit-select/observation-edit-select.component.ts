@@ -12,7 +12,8 @@ interface SelectField {
   title: string,
   name: string,
   required: boolean,
-  choices: Choice[]
+  choices: Choice[],
+  maxRecent?: number
 }
 
 @Component({
@@ -40,9 +41,11 @@ export class ObservationEditSelectComponent implements OnInit {
   recentChoices$: Observable<any[]>;
 
   ngOnInit(): void {
-    this.recentChoicesFromDefinition = this.recentChoices
-      .map(recent => this.definition.choices.find(choice => choice.title === recent))
-      .filter(choice => !!choice)
+    this.recentChoicesFromDefinition = this.definition.maxRecent
+      ? this.recentChoices
+        .map(recent => this.definition.choices.find(choice => choice.title === recent))
+        .filter((choice): choice is Choice => choice !== undefined)
+      : []
 
     this.filteredChoices$ = this.searchControl.valueChanges.pipe(
       startWith(''),
