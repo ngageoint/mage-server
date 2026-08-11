@@ -3,6 +3,7 @@ import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,8 +14,6 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { User as MageUser } from '@ngageoint/mage.web-core-lib/user';
-import { Team } from '../../admin-teams/team';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -109,7 +108,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
   constructor(
     private eventsService: AdminEventsService,
-    private teamsService: AdminTeamsService,
+    private teamService: TeamService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
@@ -207,7 +206,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     const eventTeamId = String(this.eventTeam.id);
 
-    this.teamsService
+    this.teamService
       .removeMember(eventTeamId, String(user.id))
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -216,7 +215,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
           const snackBarRef = this.snackBar.open(`Removed ${user.displayName} from team`, 'Undo', { duration: 5000 });
           snackBarRef.onAction().subscribe(() => {
-            this.teamsService.addUserToTeam(eventTeamId, user).subscribe({
+            this.teamService.addUserToTeam(eventTeamId, user).subscribe({
               next: () => this.getMembersPage(),
               error: (error) => {
                 console.error('Error restoring member:', error);
@@ -524,7 +523,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   updateUserRole(user: MageUser, newRole: string): void {
     if (!this.eventTeam?.id || !newRole) return;
 
-    this.teamsService
+    this.teamService
       .updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -678,7 +677,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
       if (result?.selectedItem && this.eventTeam?.id) {
-        this.teamsService.addUserToTeam(String(this.eventTeam.id), result.selectedItem).subscribe({
+        this.teamService.addUserToTeam(String(this.eventTeam.id), result.selectedItem).subscribe({
           next: () => this.getMembersPage(),
           error: (error) => console.error('Error adding member:', error)
         });
