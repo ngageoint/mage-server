@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { Attachment } from '../../filter/filter.types';
+import { Attachment, AttachmentProcessingStatus } from '../../filter/filter.types';
 
 @Component({
   selector: 'attachment-carousel',
@@ -15,6 +15,18 @@ export class AttachmentCarouselComponent {
   currentIndex = 0
 
   private scrollDebounce: ReturnType<typeof setTimeout>
+
+  // Passed attachments (in their existing relative order) first, then failed ones (in their
+  // existing relative order) - so a real image always leads the carousel on mixed pass/fail
+  // observations, mirroring mage-ios's AttachmentSlideshow.populate().
+  get orderedAttachments(): Attachment[] {
+    const isFailed = (attachment: Attachment) =>
+      attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error
+    return [
+      ...this.attachments.filter(a => !isFailed(a)),
+      ...this.attachments.filter(a => isFailed(a))
+    ]
+  }
 
   onScroll(): void {
     clearTimeout(this.scrollDebounce)

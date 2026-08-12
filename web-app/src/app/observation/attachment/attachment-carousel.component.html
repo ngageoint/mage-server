@@ -1,5 +1,5 @@
 <div class="carousel" #scrollContainer (scroll)="onScroll()">
-  <div class="carousel__slide" *ngFor="let attachment of attachments">
+  <div class="carousel__slide" *ngFor="let attachment of orderedAttachments">
     <observation-attachment [attachment]="attachment"></observation-attachment>
   </div>
 </div>
