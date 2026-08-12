@@ -14,6 +14,7 @@ export interface Feed {
   itemSecondaryProperty?: string;
   itemsHaveSpatialDimension?: boolean;
   itemsHaveIdentity?: boolean;
+  showOnMapByDefault?: boolean;
   constantParams?: any;
   variableParamsSchema?: any;
   updateFrequencySeconds?: number;
@@ -64,6 +65,7 @@ export interface FeedTopic {
   updateFrequencySeconds?: number;
   itemsHaveIdentity?: boolean;
   itemsHaveSpatialDimension?: boolean;
+  showOnMapByDefault?: boolean;
   itemTemporalProperty?: string;
   itemPrimaryProperty?: string;
   itemSecondaryProperty?: string;
