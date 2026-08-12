@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import * as Papa from 'papaparse';
 import { BulkUserComponent } from './bulk-user.component';
 import { Role } from '../user';
-import { Team } from '../../admin-teams/team';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule as MatSelectModule } from '@angular/material/select';
@@ -13,7 +13,6 @@ import { MatTableModule as MatTableModule } from '@angular/material/table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { UserService } from '../../../user/user.service';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 
 describe('BulkUserComponent', () => {
   let component: BulkUserComponent;
@@ -31,20 +30,20 @@ describe('BulkUserComponent', () => {
 
   const teams: Team[] = [
     {
-      id: "10",
+      id: '10',
       name: 'Team X',
       description: '',
-      teamEventId: '',
-      users: [],
-      acl: undefined
+      teamEventId: null,
+      userIds: [],
+      acl: {}
     },
     {
-      id: "11",
+      id: '11',
       name: 'Team Y',
       description: '',
-      teamEventId: '',
-      users: [],
-      acl: undefined
+      teamEventId: null,
+      userIds: [],
+      acl: {}
     }
   ];
 
@@ -87,7 +86,7 @@ describe('BulkUserComponent', () => {
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { roles, teams } },
         { provide: UserService, useValue: mockUserService },
-        { provide: AdminTeamsService, useValue: mockTeamsService }
+        { provide: TeamService, useValue: mockTeamsService }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -130,8 +129,8 @@ describe('BulkUserComponent', () => {
     expect(component.columns()).toEqual(header);
     expect(component.displayedColumns()).toEqual(['team', 'role', ...header]);
     expect(component.users().length).toBe(1);
-    expect((component.users()[0] as any)['Username']).toBe('user1');
-    expect((component.users()[0] as any).team?.id).toBe("11");
+    expect((component.users()[0] as any).Username).toBe('user1');
+    expect((component.users()[0] as any).team?.id).toBe('11');
     expect((component.users()[0] as any).role?.id).toBe('1');
     expect(component.unmappedFields().length).toBe(0);
   });
@@ -219,7 +218,7 @@ describe('BulkUserComponent', () => {
     component.onFileChange(makeFileChangeEvent(new File(['b'], 'b.csv')));
 
     expect(component.users().length).toBe(1);
-    const ids = component.users().map((u: any) => u['Username']);
+    const ids = component.users().map((u: any) => u.Username);
     expect(ids).toEqual(['userB']);
   });
 
@@ -256,7 +255,7 @@ describe('BulkUserComponent', () => {
         password: 'p9',
         passwordconfirm: 'p9',
         roleId: '1',
-        team: "10",
+        team: '10',
         avatar: null,
         icon: null,
         iconMetadata: null
