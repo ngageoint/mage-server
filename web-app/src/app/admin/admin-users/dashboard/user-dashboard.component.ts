@@ -9,8 +9,6 @@ import { User } from '@ngageoint/mage.web-core-lib/user';
 import { CreateUserModalComponent } from '../create-user/create-user.component';
 import { Role } from '../user';
 import { BulkUserComponent } from '../bulk-user/bulk-user.component';
-import { AdminTeamsService } from '../../services/admin-teams-service';
-import { Team } from '../../admin-teams/team';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { UserService } from '../../../user/user.service';
@@ -47,7 +45,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   stateAndData: any;
 
   roles: Role[] = [];
-  teams: Team[] = [];
 
   breadcrumbs: AdminBreadcrumb[] = [{ title: 'Users', icon: 'person' }];
 
@@ -58,12 +55,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  loadingUsers = false;
-
   constructor(
     private dialog: MatDialog,
     private userService: UserService,
-    private teamService: AdminTeamsService,
     private sessionService: SessionService,
     private userPagingService: UserPagingService,
     private toastService: AdminToastService,
@@ -78,7 +72,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     this.refreshUsers();
     this.loadRoles();
-    this.fetchTeams();
   }
 
   ngOnDestroy(): void {
@@ -96,27 +89,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  private fetchTeams(): void {
-    this.teamService
-      .getTeams({
-        limit: 9999,
-        sort: { name: 1 },
-        omit_event_teams: true
-      })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((results: any) => {
-        const page = Array.isArray(results) ? results[0] : results;
-        this.teams = (page?.items ?? []) as Team[];
-      });
-  }
-
   getFilter(): UserFilter {
     const filterObject: UserFilter = {
       limit: this.pageSize,
       page: this.pageIndex
     };
 
-    if (this.userStatusFilter === 'all') return filterObject;
+    if (this.userStatusFilter === 'all') {
+      return filterObject;
+    }
 
     if (this.userStatusFilter === 'disabled') {
       filterObject.active = true;
@@ -211,7 +192,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe((createdUser) => {
-        if (!createdUser) return;
+        if (!createdUser) {
+          return;
+        }
         this.refreshUsers(() => {
           this.toastService.show(
             'User created successfully',
@@ -228,7 +211,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         width: '75vw',
         maxWidth: '75vw',
         disableClose: true,
-        data: { roles: this.roles, teams: this.teams }
       })
       .afterClosed()
       .pipe(takeUntil(this.destroy$))
