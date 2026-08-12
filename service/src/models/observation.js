@@ -42,7 +42,7 @@ const AttachmentSchema = new Schema({
   height: { type: Number, required: false },
   oriented: { type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema],
-  processingStatus: { type: String, enum: ['pending', 'clean', 'rejected', 'error'], required: false },
+  processingStatus: { type: String, enum: ['pending', 'success', 'rejected', 'error'], required: false },
   processingMessage: { type: String, required: false },
   processingHook: { type: String, required: false },
   stagedContentId: { type: String, required: false },
