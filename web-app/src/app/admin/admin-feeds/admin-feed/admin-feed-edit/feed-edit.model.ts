@@ -13,6 +13,7 @@ type FeedMetaDataKeys =
   | 'summary'
   | 'itemsHaveIdentity'
   | 'itemsHaveSpatialDimension'
+  | 'showOnMapByDefault'
   | 'itemPrimaryProperty'
   | 'itemSecondaryProperty'
   | 'itemTemporalProperty'
@@ -36,6 +37,7 @@ export const feedMetaDataLean = <T extends FeedMetaDataNullable | FeedMetaData>(
   source.summary && (metaData.summary = source.summary)
   typeof source.itemsHaveIdentity === 'boolean' && (metaData.itemsHaveIdentity = source.itemsHaveIdentity)
   typeof source.itemsHaveSpatialDimension === 'boolean' && (metaData.itemsHaveSpatialDimension = source.itemsHaveSpatialDimension)
+  typeof source.showOnMapByDefault === 'boolean' && (metaData.showOnMapByDefault = source.showOnMapByDefault)
   source.itemPrimaryProperty && (metaData.itemPrimaryProperty = source.itemPrimaryProperty)
   source.itemSecondaryProperty && (metaData.itemSecondaryProperty = source.itemSecondaryProperty)
   source.itemTemporalProperty && (metaData.itemTemporalProperty = source.itemTemporalProperty)

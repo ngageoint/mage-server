@@ -34,6 +34,7 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
     mapStyle: new FormGroup({ icon: new FormControl }),
     itemsHaveIdentity: new UntypedFormControl(),
     itemsHaveSpatialDimension: new UntypedFormControl(),
+    showOnMapByDefault: new UntypedFormControl(),
     itemPrimaryProperty: new UntypedFormControl(),
     itemSecondaryProperty: new UntypedFormControl(),
     itemTemporalProperty: new UntypedFormControl(),
@@ -123,6 +124,7 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
       itemTemporalProperty: formUpdateValueForTextControl('itemTemporalProperty', form, metaData),
       itemsHaveIdentity: formUpdateValueForBooleanControl('itemsHaveIdentity', form, metaData),
       itemsHaveSpatialDimension: formUpdateValueForBooleanControl('itemsHaveSpatialDimension', form, metaData),
+      showOnMapByDefault: formUpdateValueForBooleanControl('showOnMapByDefault', form, metaData),
       updateFrequencySeconds: formUpdateValueForNumberControl('updateFrequencySeconds', form, metaData)
     }
     form.setValue(updateValue, { emitEvent: false })
@@ -173,6 +175,7 @@ export function formValueForMetaData(metaData: FeedMetaData): Required<FeedMetaD
     itemTemporalProperty: metaData.itemTemporalProperty || null,
     itemsHaveIdentity: typeof metaData.itemsHaveIdentity === 'boolean' ? metaData.itemsHaveIdentity : null,
     itemsHaveSpatialDimension: typeof metaData.itemsHaveSpatialDimension === 'boolean' ? metaData.itemsHaveSpatialDimension : null,
+    showOnMapByDefault: typeof metaData.showOnMapByDefault === 'boolean' ? metaData.showOnMapByDefault : null,
     updateFrequencySeconds: typeof metaData.updateFrequencySeconds === 'number' ? metaData.updateFrequencySeconds : null
   }
 }
@@ -186,5 +189,3 @@ function mergedMetaData(feedMetaData: FeedMetaData | null, topic: FeedMetaData |
   const mergedMetaData = { ...topicMetaData, ...feedMetaData }
   return mergedMetaData
 }
-
-

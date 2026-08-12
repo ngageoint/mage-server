@@ -32,7 +32,7 @@ import {
 } from './feed-edit.model';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
-type FeedMetaDataBooleanKeys = 'itemsHaveIdentity' | 'itemsHaveSpatialDimension';
+type FeedMetaDataBooleanKeys = 'itemsHaveIdentity' | 'itemsHaveSpatialDimension' | 'showOnMapByDefault';
 
 const emptyMetaDataFormValue: FeedMetaDataNullable = {
   title: null,
@@ -43,6 +43,7 @@ const emptyMetaDataFormValue: FeedMetaDataNullable = {
   itemTemporalProperty: null,
   itemsHaveIdentity: null,
   itemsHaveSpatialDimension: null,
+  showOnMapByDefault: null,
   updateFrequencySeconds: null,
   mapStyle: { icon: null }
 };
@@ -156,6 +157,7 @@ describe('FeedMetaDataComponent', () => {
         itemTemporalProperty: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined
       };
@@ -173,6 +175,7 @@ describe('FeedMetaDataComponent', () => {
         itemTemporalProperty: 'prop3',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: false,
         updateFrequencySeconds: 60,
         mapStyle: { icon: { sourceUrl: 'test://icon1.png' } }
       };
@@ -370,6 +373,7 @@ describe('FeedMetaDataComponent', () => {
       itemTemporalProperty: 'prop3',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       updateFrequencySeconds: 60,
       mapStyle: { icon: { sourceUrl: 'test://icon1.png' } }
     };
@@ -397,6 +401,7 @@ describe('FeedMetaDataComponent', () => {
       updateFrequencySeconds: 90,
       itemsHaveIdentity: false,
       itemsHaveSpatialDimension: false,
+      showOnMapByDefault: false,
       mapStyle: { icon: { id: 'icon2' }}
     });
     const feedMetaDataMod: Required<FeedMetaData> = Object.freeze({
@@ -409,6 +414,7 @@ describe('FeedMetaDataComponent', () => {
       updateFrequencySeconds: 900,
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       mapStyle: { icon: { id: 'icon3' } }
     });
     host.topic = { id: 'topic1', title: 'Topic 1' };
@@ -616,6 +622,7 @@ describe('FeedMetaDataComponent', () => {
         itemTemporalProperty: null,
         itemsHaveIdentity: null,
         itemsHaveSpatialDimension: null,
+        showOnMapByDefault: null,
         updateFrequencySeconds: 111,
         mapStyle: { icon: null }
       }
@@ -668,7 +675,8 @@ describe('FeedMetaDataComponent', () => {
     it('sets boolean checkboxes from topic meta-data when not present in feed meta-data', () => {
       const topicMetaData: Required<Pick<FeedTopic, FeedMetaDataBooleanKeys>> = {
         itemsHaveIdentity: true,
-        itemsHaveSpatialDimension: true
+        itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true
       };
 
       host.topic = {
@@ -696,11 +704,13 @@ describe('FeedMetaDataComponent', () => {
     it('does not set boolean checkboxes from topic meta-data when present in feed meta-data', fakeAsync(() => {
       const topicMetaData: Required<Pick<FeedMetaData, FeedMetaDataBooleanKeys>> = {
         itemsHaveIdentity: true,
-        itemsHaveSpatialDimension: true
+        itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true
       };
       const feedMetaData: Required<Pick<FeedMetaData, FeedMetaDataBooleanKeys>> = {
         itemsHaveIdentity: false,
-        itemsHaveSpatialDimension: false
+        itemsHaveSpatialDimension: false,
+        showOnMapByDefault: false
       };
 
       host.topic = {
@@ -726,12 +736,14 @@ describe('FeedMetaDataComponent', () => {
     it('sets the checkboxes from the topic meta-data when feed meta-data changes and does not have the checkbox keys', () => {
       const topicMetaData: Pick<FeedMetaDataNullable, FeedMetaDataBooleanKeys> = {
         itemsHaveIdentity: true,
-        itemsHaveSpatialDimension: true
+        itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true
       };
 
       const feedMetaDataWithCheckboxKeys: Pick<FeedMetaDataNullable, FeedMetaDataBooleanKeys> = {
         itemsHaveIdentity: false,
-        itemsHaveSpatialDimension: false
+        itemsHaveSpatialDimension: false,
+        showOnMapByDefault: false
       };
 
       host.topic = {
@@ -758,7 +770,8 @@ describe('FeedMetaDataComponent', () => {
 
       const unspecifiedCheckboxKeys: Record<FeedMetaDataBooleanKeys, undefined> = {
         itemsHaveIdentity: undefined,
-        itemsHaveSpatialDimension: undefined
+        itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined
       };
 
       host.feedMetaData = unspecifiedCheckboxKeys;
@@ -792,7 +805,8 @@ describe('FeedMetaDataComponent', () => {
         ...nullNonCheckboxKeys,
         ...topicMetaData,
         itemsHaveIdentity: null,
-        itemsHaveSpatialDimension: null
+        itemsHaveSpatialDimension: null,
+        showOnMapByDefault: null,
       });
 
       for (const key of Object.getOwnPropertyNames(topicMetaData)) {

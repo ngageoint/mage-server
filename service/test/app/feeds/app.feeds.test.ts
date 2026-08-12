@@ -558,7 +558,8 @@ describe('feeds use case interactions', function () {
               topic: uniqid(),
               title: 'Cascade Delete 1',
               itemsHaveIdentity: true,
-              itemsHaveSpatialDimension: true
+              itemsHaveSpatialDimension: true,
+              showOnMapByDefault: true,
             },
             {
               id: uniqid(),
@@ -566,7 +567,8 @@ describe('feeds use case interactions', function () {
               topic: uniqid(),
               title: 'Cascade Delete 2',
               itemsHaveIdentity: true,
-              itemsHaveSpatialDimension: true
+              itemsHaveSpatialDimension: true,
+              showOnMapByDefault: true,
             }
           ]
           app.registerFeeds(...feeds)
@@ -1199,6 +1201,7 @@ describe('feeds use case interactions', function () {
             summary: topics[0].summary,
             itemsHaveIdentity: false,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: false,
           }
           const previewItems: FeatureCollection = {
             type: 'FeatureCollection',
@@ -1754,6 +1757,7 @@ describe('feeds use case interactions', function () {
                 itemTemporalProperty: 'topic1:published',
                 itemsHaveIdentity: false,
                 itemsHaveSpatialDimension: true,
+                showOnMapByDefault: true,
                 paramsSchema: {
                   title: 'Topic 1 Params'
                 },
@@ -1791,6 +1795,7 @@ describe('feeds use case interactions', function () {
                 itemTemporalProperty: 'topic2:published',
                 itemsHaveIdentity: false,
                 itemsHaveSpatialDimension: true,
+                showOnMapByDefault: true,
                 paramsSchema: {
                   title: 'Topic 2 Params'
                 },
@@ -1818,6 +1823,7 @@ describe('feeds use case interactions', function () {
             topic: services[0].topics[0].id,
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: false,
+            showOnMapByDefault: true,
             variableParamsSchema: {
               properties: {
                 search: { type: 'string' }
@@ -1832,6 +1838,7 @@ describe('feeds use case interactions', function () {
             topic: services[1].topics[0].id,
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             constantParams: {
               limit: 50
             },
@@ -1897,6 +1904,7 @@ describe('feeds use case interactions', function () {
             itemTemporalProperty: 'updatedTemporal',
             itemsHaveIdentity: !feeds[1].itemsHaveIdentity,
             itemsHaveSpatialDimension: !feeds[1].itemsHaveSpatialDimension,
+            showOnMapByDefault: true,
             constantParams: {
               updated: true
             },
@@ -2019,6 +2027,7 @@ describe('feeds use case interactions', function () {
             itemTemporalProperty: null,
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             icon: null,
             mapStyle: null,
             updateFrequencySeconds: null,
@@ -2033,7 +2042,8 @@ describe('feeds use case interactions', function () {
             topic: feeds[0].topic,
             title: feedMod.title,
             itemsHaveIdentity: feedMod.itemsHaveIdentity,
-            itemsHaveSpatialDimension: feedMod.itemsHaveSpatialDimension
+            itemsHaveSpatialDimension: feedMod.itemsHaveSpatialDimension,
+            showOnMapByDefault: true,
           }
           const inDb = app.feedRepo.db.get(feeds[0].id)
           expect(inDb).to.deep.equal(expected)
@@ -2055,6 +2065,7 @@ describe('feeds use case interactions', function () {
             itemSecondaryProperty: null,
             itemTemporalProperty: null,
             itemPropertiesSchema: null,
+            showOnMapByDefault: true,
             updateFrequencySeconds: null,
           }
           const feedIcon: StaticIcon = {
@@ -2080,6 +2091,7 @@ describe('feeds use case interactions', function () {
             title: services[0].topics[0].title,
             itemsHaveIdentity: services[0].topics[0].itemsHaveIdentity,
             itemsHaveSpatialDimension: services[0].topics[0].itemsHaveSpatialDimension,
+            showOnMapByDefault: services[0].topics[0].showOnMapByDefault,
             icon: { id: feedIcon.id },
             mapStyle: {
               icon: { id: mapIcon.id }
@@ -2225,7 +2237,8 @@ describe('feeds use case interactions', function () {
             service: uniqid(),
             topic: 'topic1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: false
+            itemsHaveSpatialDimension: false,
+            showOnMapByDefault: true,
           },
           {
             id: uniqid(),
@@ -2235,6 +2248,7 @@ describe('feeds use case interactions', function () {
             topic: 'topic1',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             constantParams: {
               limit: 100
             },
@@ -2289,7 +2303,8 @@ describe('feeds use case interactions', function () {
             topic: uniqid(),
             title: 'Feed 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           },
           {
             id: uniqid(),
@@ -2297,7 +2312,8 @@ describe('feeds use case interactions', function () {
             topic: uniqid(),
             title: 'Feed 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }
         ]
         otherFeed = {
@@ -2306,7 +2322,8 @@ describe('feeds use case interactions', function () {
           topic: uniqid(),
           title: 'Other 1',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
         app.registerFeeds(...serviceFeeds, otherFeed)
         app.registerServices(
@@ -2387,6 +2404,7 @@ describe('feeds use case interactions', function () {
         },
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemTemporalProperty: 'when',
         itemPrimaryProperty: 'address',
       }

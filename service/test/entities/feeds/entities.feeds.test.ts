@@ -14,6 +14,7 @@ describe('feed-create attribute factory', function() {
       icon: { sourceUrl: new URL('test:///topic.png') },
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       itemPrimaryProperty: 'topicPrimary',
       itemSecondaryProperty: 'topicSecondary',
       itemTemporalProperty: 'topicTemporal',
@@ -39,6 +40,7 @@ describe('feed-create attribute factory', function() {
       icon: { id: uniqid() },
       itemsHaveIdentity: false,
       itemsHaveSpatialDimension: false,
+      showOnMapByDefault: true,
       itemPrimaryProperty: null,
       itemSecondaryProperty: null,
       itemTemporalProperty: 'feedTemporal',
@@ -84,6 +86,7 @@ describe('feed-create attribute factory', function() {
       icon: minimal.icon!,
       itemsHaveIdentity: false,
       itemsHaveSpatialDimension: false,
+      showOnMapByDefault: true,
       itemTemporalProperty: minimal.itemTemporalProperty!,
       updateFrequencySeconds: minimal.updateFrequencySeconds!,
       constantParams: minimal.constantParams!,
@@ -109,6 +112,7 @@ describe('feed-create attribute factory', function() {
       icon: { sourceUrl: new URL('test://icons/topic.png') },
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       itemPrimaryProperty: 'topicPrimary',
       itemSecondaryProperty: 'topicSecondary',
       itemTemporalProperty: 'topicTemporal',
@@ -151,6 +155,7 @@ describe('feed-create attribute factory', function() {
       summary: minimal.summary,
       itemsHaveIdentity: topic.itemsHaveIdentity,
       itemsHaveSpatialDimension: topic.itemsHaveSpatialDimension,
+      showOnMapByDefault: topic.showOnMapByDefault,
       itemPrimaryProperty: topic.itemPrimaryProperty,
       itemSecondaryProperty: topic.itemSecondaryProperty,
       updateFrequencySeconds: topic.updateFrequencySeconds,
@@ -166,6 +171,54 @@ describe('feed-create attribute factory', function() {
     })
   })
 
+  it('defaults showOnMapByDefault to false when neither the feed nor the topic specify it', function() {
+
+    const topic: FeedTopic = {
+      id: uniqid(),
+      title: 'Topic Title'
+    }
+    const minimal: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: topic.id
+    }
+    const createAttrs = FeedCreateUnresolved(topic, minimal)
+
+    expect((createAttrs as FeedCreateUnresolved).showOnMapByDefault).to.equal(false)
+  })
+
+  it('uses the topic showOnMapByDefault when the feed does not specify it', function() {
+
+    const topic: FeedTopic = {
+      id: uniqid(),
+      title: 'Topic Title',
+      showOnMapByDefault: true
+    }
+    const minimal: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: topic.id
+    }
+    const createAttrs = FeedCreateUnresolved(topic, minimal)
+
+    expect((createAttrs as FeedCreateUnresolved).showOnMapByDefault).to.equal(true)
+  })
+
+  it('lets the feed override the topic showOnMapByDefault', function() {
+
+    const topic: FeedTopic = {
+      id: uniqid(),
+      title: 'Topic Title',
+      showOnMapByDefault: true
+    }
+    const minimal: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: topic.id,
+      showOnMapByDefault: false
+    }
+    const createAttrs = FeedCreateUnresolved(topic, minimal)
+
+    expect((createAttrs as FeedCreateUnresolved).showOnMapByDefault).to.equal(false)
+  })
+
   it('deep copies the map style', function() {
 
     const topic: Required<FeedTopic> = {
@@ -175,6 +228,7 @@ describe('feed-create attribute factory', function() {
       icon: { sourceUrl: new URL('test:///topic.png') },
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       itemPrimaryProperty: 'topicPrimary',
       itemSecondaryProperty: 'topicSecondary',
       itemTemporalProperty: 'topicTemporal',
@@ -224,6 +278,7 @@ describe('feed-create attribute factory', function() {
       title: 'Test',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       icon: { sourceUrl: unresolvedIcons[0] },
       mapStyle: {
         icon: { sourceUrl: unresolvedIcons[1] }
@@ -248,6 +303,7 @@ describe('feed-create attribute factory', function() {
       title: 'Test',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       icon: { sourceUrl: unresolvedIcons[0] },
       mapStyle: {
         icon: { id: 'registered1' }
