@@ -20,6 +20,7 @@ export interface FieldResult {
     value?: any;
     min?: number;
     max?: number;
+    maxRecent?: number;
     allowedAttachmentTypes?: string[];
 }
 
@@ -61,7 +62,8 @@ export class FieldDialogComponent {
                 title: '',
                 required: false,
                 multiselect: false,
-                choices: []
+                choices: [],
+                maxRecent: 5
             };
         }
 

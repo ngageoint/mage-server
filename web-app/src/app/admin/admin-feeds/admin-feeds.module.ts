@@ -41,6 +41,7 @@ import { AdminFeedEditTopicConfigurationComponent } from './admin-feed/admin-fee
 import { JsonSchemaModule } from '../json-schema/json-schema.module';
 import { FeedItemSummaryModule } from '../../feed/feed-item/feed-item-summary/feed-item-summary.module';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
@@ -88,6 +89,7 @@ import { RouterModule } from '@angular/router';
     MatChipsModule,
     MatSidenavModule,
     MomentModule,
+    FeedIconModule,
     FeedItemSummaryModule,
     JsonSchemaModule,
     StaticIconModule,

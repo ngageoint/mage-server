@@ -37,8 +37,16 @@
           <observation-edit-attachment *ngSwitchCase="'attachment'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]" [attachments]="observation?.attachments" [url]="attachmentUrl"></observation-edit-attachment>
           <observation-edit-checkbox *ngSwitchCase="'checkbox'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-checkbox>
           <observation-edit-date *ngSwitchCase="'date'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-date>
-          <observation-edit-dropdown *ngSwitchCase="'dropdown'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-dropdown>
-          <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-multiselect>
+          <observation-edit-dropdown *ngSwitchCase="'dropdown'"
+            [formGroup]="formGroup"
+            [definition]="fieldDefinitions[fieldName]"
+            [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
+          </observation-edit-dropdown>
+          <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'"
+            [formGroup]="formGroup"
+            [definition]="fieldDefinitions[fieldName]"
+            [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
+          </observation-edit-multiselect>
           <observation-edit-email *ngSwitchCase="'email'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-email>
           <observation-edit-number *ngSwitchCase="'numberfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-number>
           <observation-edit-radio *ngSwitchCase="'radio'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-radio>

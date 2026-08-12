@@ -843,7 +843,7 @@ describe('observations use case interactions', function() {
             forms: [ { id: obsBefore.formEntries[0].id, formId: obsBefore.formEntries[0].formId, field1: 'updated field' } ]
           }
         }
-        const obsAfter = Observation.assignTo(obsBefore, obsAfterAttrs) as Observation
+        const obsAfter = Observation.assignTo(obsBefore, obsAfterAttrs, context.userId) as Observation
         const req: api.SaveObservationRequest = { context, observation: modExtra }
         obsRepo.save(Arg.all()).resolves(obsAfter)
         const res = await saveObservation(req)

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { FeedPanelService } from '../../feed-panel/feed-panel.service';
+import { SidebarService } from '../../sidebar/sidebar.service';
 import moment from 'moment';
 import { MapService } from '../../map/map.service';
 
@@ -18,7 +18,7 @@ export class UserPopupComponent implements OnInit, OnChanges {
   followingUser: any
 
   constructor(
-    private feedPanelService: FeedPanelService,
+    private sidebarService: SidebarService,
     private mapService: MapService) { }
 
   ngOnInit(): void {
@@ -39,7 +39,7 @@ export class UserPopupComponent implements OnInit, OnChanges {
   }
 
   onInfo(): void {
-    this.feedPanelService.viewUser(this.userWithLocation)
+    this.sidebarService.viewUser(this.userWithLocation)
   }
 
   onZoom(): void {

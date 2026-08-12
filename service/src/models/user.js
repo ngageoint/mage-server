@@ -184,6 +184,7 @@ exports.transform = DbUserToObject;
 // Creates the Model for the User Schema
 const User = mongoose.model('User', UserSchema);
 exports.Model = User;
+exports.Schema = UserSchema;
 
 exports.getUserById = function (id, callback) {
   let result = User.findById(id).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });

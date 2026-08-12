@@ -11,7 +11,6 @@ const log = require('../logger')
 
 module.exports = function (app, security) {
 
-  const passport = security.authentication.passport;
   const blacklist = AuthenticationConfiguration.blacklist;
   const lock = new AsyncLock();
   const enabledKey = 'checkAuthEnabled';
@@ -34,7 +33,7 @@ module.exports = function (app, security) {
 
   app.get(
     '/api/authentication/configuration/',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_AUTH_CONFIG'),
     function (req, res, next) {
       const includeDisabled = req.query.includeDisabled === 'true' ? true :
@@ -69,7 +68,7 @@ module.exports = function (app, security) {
 
   app.get(
     '/api/authentication/configuration/count/:id',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_AUTH_CONFIG'),
     function (req, res, next) {
       Authentication.countAuthenticationsByAuthConfigId(req.params.id).then(cnt => {
@@ -84,7 +83,7 @@ module.exports = function (app, security) {
 
   app.put(
     '/api/authentication/configuration/:id',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_AUTH_CONFIG'),
     function (req, res, next) {
       const updatedConfig = {
@@ -168,7 +167,7 @@ module.exports = function (app, security) {
 
   app.post(
     '/api/authentication/configuration/',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_AUTH_CONFIG'),
     function (req, res, next) {
       const newConfig = {
@@ -247,7 +246,7 @@ module.exports = function (app, security) {
 
   app.delete(
     '/api/authentication/configuration/:id',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_AUTH_CONFIG'),
     function (req, res, next) {
 

@@ -1,0 +1,103 @@
+mat-toolbar {
+  background-color: white;
+  color: var(--mat-sys-primary);
+  flex-shrink: 0;
+}
+
+mat-card-content {
+  flex: 1;
+}
+
+mat-panel-title {
+  flex-grow: 2;
+}
+
+mat-panel-description {
+  flex-grow: 1;
+}
+
+mat-card-subtitle {
+  margin-bottom: 16px;
+}
+
+mat-expansion-panel {
+  --mat-expansion-container-background-color: white;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.chips {
+  margin-bottom: 16px;
+}
+
+.chip__complete {
+  --mat-chip-label-text-color: var(--mat-sys-primary);
+  --mat-chip-with-icon-icon-color: var(--mat-sys-primary);
+}
+
+.chip__running {
+  --mat-chip-label-text-color: var(--mat-sys-tertiary);
+  ::ng-deep circle {
+    stroke: var(--mat-sys-tertiary);
+  }
+}
+
+.chip__failed {
+  --mat-chip-label-text-color: var(--mat-sys-error);
+  --mat-chip-with-icon-icon-color: var(--mat-sys-error);
+  --mat-chip-with-icon-icon-color: var(--mat-sys-on-error-container);
+}
+
+.item {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  background-color: #e1e2e1;
+}
+
+.card {
+  --mat-card-elevated-container-color: white;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 8px;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.title {
+  margin-bottom: 8px;
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+}
+
+.export-options__category {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.export-options__subcategory {
+  margin-left: 16px;
+}
+
+.expansion-header-icon {
+  margin-left: 4px;
+}
+
+.form__field {
+  margin-left: 16px;
+}
