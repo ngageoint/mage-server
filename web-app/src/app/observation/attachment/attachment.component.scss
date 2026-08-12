@@ -12,7 +12,7 @@
   margin-right: 16px;
   margin-top: 16px;
 
-  mat-chip-option {
+  mat-chip {
     --mat-chip-elevated-container-color: var(--mat-sys-surface-container-highest);
     --mat-chip-label-text-color: var(--mat-sys-on-surface);
   }
@@ -41,6 +41,7 @@
 .media-unknown__hint {
   font-size: 11px;
   opacity: 0.75;
+  margin-top: 4px;
 }
 
 .media-delete__mask {

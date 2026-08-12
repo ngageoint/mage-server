@@ -16,9 +16,9 @@
     </div>
 
     <div *ngIf="label" class="media-chip">
-      <mat-chip-listbox>
-        <mat-chip-option>{{label}}</mat-chip-option>
-      </mat-chip-listbox>
+      <mat-chip-set>
+        <mat-chip>{{label}}</mat-chip>
+      </mat-chip-set>
     </div>
 
     <div *ngIf="canEdit" class="attachment__delete">
