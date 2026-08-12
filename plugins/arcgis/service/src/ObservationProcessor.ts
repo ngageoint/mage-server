@@ -1,5 +1,6 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
+import { FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
 import { MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { EventScopedObservationRepository, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
@@ -217,15 +218,25 @@ export class ObservationProcessor {
 		}
 
 		const obsRepo = await this._obsRepos(eventId);
+		const mageEvent = await this._eventRepo.findById(eventId);
+		const fieldTitlesByFormId = new Map<FormId, Map<string, string>>();
+		for (const form of mageEvent?.forms || []) {
+			fieldTitlesByFormId.set(form.id, new Map(form.fields.map(field => [field.name, field.title])));
+		}
+
 		const pushedObservations: PushedObservation[] = [];
 		for (const observationId of arcObservationIds) {
 			const observation = await obsRepo.findById(observationId);
 			if (observation) {
+				const position = this.observationPosition(observation);
 				pushedObservations.push({
 					id: observation.id,
 					createdAt: observation.createdAt.toISOString(),
 					lastModified: observation.lastModified.toISOString(),
-					status: this.isArchived(observation) ? 'archived' : 'sent'
+					status: this.isArchived(observation) ? 'archived' : 'sent',
+					fields: this.extractFormFields(observation, fieldTitlesByFormId),
+					latitude: position?.[1],
+					longitude: position?.[0]
 				});
 			}
 		}
@@ -238,6 +249,31 @@ export class ObservationProcessor {
 
 	private isArchived(observation: ObservationAttrs): boolean {
 		return observation.states.length > 0 && observation.states[0].name.startsWith('archive');
+	}
+
+	// returns the observation's [longitude, latitude] if its geometry is a Point, undefined otherwise
+	private observationPosition(observation: ObservationAttrs): [number, number] | undefined {
+		if (observation.geometry.type === 'Point') {
+			const [longitude, latitude] = observation.geometry.coordinates;
+			return [longitude, latitude];
+		}
+		return undefined;
+	}
+
+	/** 
+	 * strips the form/entry bookkeeping keys (id, formId) off each form entry, and translates each
+	 * field's internal name (e.g. 'field0') to its human-readable form field title, for display in
+	 * the push status hover
+	 */
+	private extractFormFields(observation: ObservationAttrs, fieldTitlesByFormId: Map<FormId, Map<string, string>>): Record<string, unknown>[] {
+		return observation.properties.forms.map(({ id, formId, ...fields }) => {
+			const fieldTitles = fieldTitlesByFormId.get(formId);
+			const titledFields: Record<string, unknown> = {};
+			for (const [name, value] of Object.entries(fields)) {
+				titledFields[fieldTitles?.get(name) || name] = value;
+			}
+			return titledFields;
+		});
 	}
 
 	/**
@@ -453,6 +489,10 @@ export interface PushedObservation {
 	createdAt: string
 	lastModified: string
 	status: PushStatus
+	fields: Record<string, unknown>[]
+	// undefined if the observation's geometry isn't a Point (e.g. a line/polygon)
+	latitude?: number
+	longitude?: number
 }
 
 /**

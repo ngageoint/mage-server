@@ -14,7 +14,7 @@ export class ArcPushStatusComponent implements OnInit {
   selectedEventId: number | undefined;
 
   pushedObservations: PushedObservation[] = [];
-  readonly displayedColumns = ['status', 'id', 'lastModified', 'createdAt'];
+  readonly displayedColumns = ['status', 'id', 'location', 'lastModified', 'createdAt'];
 
   totalCount = 0;
   pageIndex = 0;
@@ -22,6 +22,10 @@ export class ArcPushStatusComponent implements OnInit {
   pageSize = this.pageSizeOptions[1];
 
   isLoading = false;
+
+  hoveredRow: PushedObservation | null = null;
+  tooltipX = 0;
+  tooltipY = 0;
 
   constructor(private arcService: ArcService) { }
 
@@ -44,6 +48,37 @@ export class ArcPushStatusComponent implements OnInit {
 
   refresh(): void {
     this.load();
+  }
+
+  // formats an observation's form field values as multi-line text for the row hover tooltip
+  fieldsTooltip(row: PushedObservation): string {
+    if (!row.fields.length) {
+      return 'No form data';
+    }
+    return row.fields
+      .map(form => Object.entries(form)
+        .filter(([, value]) => value !== null && value !== undefined && value !== '')
+        .map(([name, value]) => `${name}: ${this.formatFieldValue(value)}`)
+        .join('\n'))
+      .filter(formText => formText.length > 0)
+      .join('\n\n') || 'No form data';
+  }
+
+  private formatFieldValue(value: unknown): string {
+    return typeof value === 'object' ? JSON.stringify(value) : String(value);
+  }
+
+  // keeps the fields tooltip positioned next to the cursor rather than anchored to the row
+  onRowMouseMove(event: MouseEvent): void {
+    this.tooltipX = event.clientX;
+    this.tooltipY = event.clientY;
+  }
+
+  locationDisplay(row: PushedObservation): string {
+    if (row.latitude == null || row.longitude == null) {
+      return '--';
+    }
+    return `${row.latitude.toFixed(5)}, ${row.longitude.toFixed(5)}`;
   }
 
   private load(): void {

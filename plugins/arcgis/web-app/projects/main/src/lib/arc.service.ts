@@ -28,6 +28,10 @@ export interface PushedObservation {
   createdAt: string
   lastModified: string
   status: PushStatus
+  fields: Record<string, unknown>[]
+  // undefined if the observation's geometry isn't a Point (e.g. a line/polygon)
+  latitude?: number
+  longitude?: number
 }
 
 export interface PushedObservationsPage {
