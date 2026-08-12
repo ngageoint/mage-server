@@ -52,10 +52,7 @@
     </div>
 
     <div *ngIf="attachments?.length" class="item-media">
-      <observation-attachment
-        [attachment]="representativeAttachment()"
-        [label]="attachments.length > 1 ? '1 of ' + attachments.length : false">
-      </observation-attachment>
+      <attachment-carousel [attachments]="attachments"></attachment-carousel>
     </div>
 
     <div *ngIf="hasFailedAttachment()" class="item-media-chip">

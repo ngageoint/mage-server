@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  position: relative;
+  height: 100%;
+}
+
+.carousel {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.carousel__slide {
+  flex: 0 0 100%;
+  height: 100%;
+  position: relative;
+  scroll-snap-align: start;
+}
+
+.carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  background-color: rgba(0, 0, 0, 0.35);
+  color: white;
+
+  &.carousel__arrow--prev {
+    left: 8px;
+  }
+
+  &.carousel__arrow--next {
+    right: 8px;
+  }
+}
+
+.carousel__counter {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2;
+
+  mat-chip {
+    --mat-chip-elevated-container-color: var(--mat-sys-surface-container-highest);
+    --mat-chip-label-text-color: var(--mat-sys-on-surface);
+  }
+}

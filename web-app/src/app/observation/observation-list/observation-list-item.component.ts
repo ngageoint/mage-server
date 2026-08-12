@@ -208,11 +208,6 @@ export class ObservationListItemComponent implements OnChanges {
     this.favorites = this.observation.favoriteUserIds.length
   }
 
-  // If observation shows multiple attachments, always show the 'passed' as the thumbnail but ensure a flag is also shown for the failed
-  representativeAttachment(): any {
-    return this.attachments.find(attachment => attachment.processingStatus !== AttachmentProcessingStatus.Rejected && attachment.processingStatus !== AttachmentProcessingStatus.Error) || this.attachments[0]
-  }
-
   hasFailedAttachment(): boolean {
     return this.attachments.some(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error)
   }

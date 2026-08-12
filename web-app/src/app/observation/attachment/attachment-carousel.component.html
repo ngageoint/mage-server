@@ -1,0 +1,31 @@
+<div class="carousel" #scrollContainer (scroll)="onScroll()">
+  <div class="carousel__slide" *ngFor="let attachment of attachments">
+    <observation-attachment [attachment]="attachment"></observation-attachment>
+  </div>
+</div>
+
+<ng-container *ngIf="attachments?.length > 1">
+  <button
+    *ngIf="currentIndex > 0"
+    mat-icon-button
+    class="carousel__arrow carousel__arrow--prev"
+    (click)="goToPrevious($event)"
+    aria-label="Previous attachment">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+
+  <button
+    *ngIf="currentIndex < attachments.length - 1"
+    mat-icon-button
+    class="carousel__arrow carousel__arrow--next"
+    (click)="goToNext($event)"
+    aria-label="Next attachment">
+    <mat-icon>chevron_right</mat-icon>
+  </button>
+
+  <div class="carousel__counter">
+    <mat-chip-set>
+      <mat-chip>{{ currentIndex + 1 }} of {{ attachments.length }}</mat-chip>
+    </mat-chip-set>
+  </div>
+</ng-container>
