@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { EMPTY, Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
@@ -45,6 +46,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   stateAndData: any;
 
   roles: Role[] = [];
+  teams: Team[] = [];
 
   breadcrumbs: AdminBreadcrumb[] = [{ title: 'Users', icon: 'person' }];
 
@@ -58,6 +60,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private dialog: MatDialog,
     private userService: UserService,
+    private teamService: TeamService,
     private sessionService: SessionService,
     private userPagingService: UserPagingService,
     private toastService: AdminToastService,
@@ -72,6 +75,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     this.refreshUsers();
     this.loadRoles();
+    this.fetchTeams();
   }
 
   ngOnDestroy(): void {
@@ -86,6 +90,25 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((roles: any[]) => {
         this.roles = roles || [];
+      });
+  }
+
+  private fetchTeams(): void {
+    /*
+    TODO: make a team select component that the bulk import component
+    can use instead of eagerly loading all the teams here just in
+    case the user clicks the bulk import button.
+     */
+    this.teamService
+      .search({
+        pageSize: 9999,
+        pageIndex: 0,
+        omitEventTeams: true
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((results: any) => {
+        const page = Array.isArray(results) ? results[0] : results;
+        this.teams = (page?.items ?? []) as Team[];
       });
   }
 
@@ -211,6 +234,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         width: '75vw',
         maxWidth: '75vw',
         disableClose: true,
+        data: { roles: this.roles, teams: this.teams }
       })
       .afterClosed()
       .pipe(takeUntil(this.destroy$))
