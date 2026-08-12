@@ -4,10 +4,11 @@ import util from 'util'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
+import { Logger, NoopLogger } from '../../entities/entities.logging'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
-import { UserId, UserRepository } from '../../entities/users/entities.users'
+import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, ObservationSavedDomainEvent, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
+import { AddRecentFormFieldChoiceEntry, UserId, UserPreferenceRepository, UserRepository } from '../../entities/users/entities.users'
 import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
 
 const pipeline = util.promisify(stream.pipeline)

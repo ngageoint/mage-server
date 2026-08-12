@@ -361,6 +361,45 @@ function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
   }
 }
 
+function convertFieldForQuery(field: any, keys?: any, fields?: any) {
+  keys = keys || [];
+  fields = fields || {};
+
+  for (const childField in field) {
+    keys.push(childField);
+    if (Object(field[childField]) === field[childField]) {
+      convertFieldForQuery(field[childField], keys, fields);
+    } else {
+      const key = keys.join(".");
+      if (field[childField]) {
+        fields[key] = field[childField];
+      }
+      keys.pop();
+    }
+  }
+
+  return fields;
+}
+
+function parseFields(fields: any) {
+  if (fields) {
+    const state = fields.state ? true : false;
+    delete fields.state;
+
+    fields = convertFieldForQuery(fields);
+    if (fields.id === undefined) fields.id = true; // default is to return id if not specified
+    if (fields.type === undefined) fields.type = true; // default is to return type if not specified
+
+    if (state) {
+      fields.states = { $slice: 1 };
+    }
+
+    return fields;
+  } else {
+    return { states: { $slice: 1 } };
+  }
+}
+
 // Define the function to check for pending attachments
 export async function findPendingAttachments(limit: number): Promise<PendingAttachmentReference[]> {
   
