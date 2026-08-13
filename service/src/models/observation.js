@@ -86,6 +86,7 @@ ObservationSchema.index({ 'attachments.lastModified': 1 });
 ObservationSchema.index({ 'attachments.oriented': 1 });
 ObservationSchema.index({ 'attachments.contentType': 1 });
 ObservationSchema.index({ 'attachments.thumbnails.minDimension': 1 });
+ObservationSchema.index({ 'attachments.processingStatus': 1 });
 
 function transformAttachment(attachment, observation) {
   attachment.id = attachment._id;
