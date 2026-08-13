@@ -3,7 +3,7 @@ import { scan } from './scan'
 import { AttachmentHook } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.attachments'
 
 // ClamAV hook start
-export const clamavHook: AttachmentHook = async (attachment, stagedFilePath) => {
+export const clamavHook: AttachmentHook = async function clamavHook(attachment, stagedFilePath) {
     const host = process.env.MAGE_CLAMAV_HOST
     const port = process.env.MAGE_CLAMAV_PORT ? Number(process.env.MAGE_CLAMAV_PORT) : undefined
 

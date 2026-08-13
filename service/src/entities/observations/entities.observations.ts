@@ -958,7 +958,7 @@ export interface ObservationRepositoryForEvent {
   (event: MageEventId): Promise<EventScopedObservationRepository>
 }
 
-export type StagedAttachmentContentId = unknown
+export type StagedAttachmentContentId = string
 
 export class StagedAttachmentContentRef {
   constructor(readonly id: StagedAttachmentContentId) { }
@@ -1016,7 +1016,7 @@ export interface AttachmentStore {
    * attributes suitable to pass to {@link putAttachmentThumbnailForMinDimension}
    * to update the observation with the new attachment thumbnail.
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | ThumbnailContentPatchAttrs | AttachmentStoreError>
+  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentRef, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | ThumbnailContentPatchAttrs | AttachmentStoreError>
   /**
    * Return a read stream of the content for the given attachment.  The client
    * can specify an optional zero-based range of bytes to read from the

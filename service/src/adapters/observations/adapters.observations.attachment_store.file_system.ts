@@ -23,12 +23,12 @@ export class FileSystemAttachmentStore implements AttachmentStore {
 
   // Define the staged content path
   async stagedContentPath(stagedContentId: StagedAttachmentContentId): Promise<string | AttachmentStoreError> {
-    return path.join(this.pendingDirPath, stagedContentId as string)
+    return path.join(this.pendingDirPath, stagedContentId)
   }
 
   // Define delete staged content
   async deleteStagedContent(stagedContentId: StagedAttachmentContentId): Promise<void | AttachmentStoreError> {
-    const tempPath = path.join(this.pendingDirPath, stagedContentId as string)
+    const tempPath = path.join(this.pendingDirPath, stagedContentId)
     try{
       // Cleanly removing path
       await util.promisify(fs.rm)(tempPath)

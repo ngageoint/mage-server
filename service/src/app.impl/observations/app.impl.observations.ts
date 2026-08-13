@@ -94,7 +94,7 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
       content (not a fresh stream) - nothing to write here, just record its
       existing id so the background job can find it later.
       */
-      attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: req.content.bytes.id as string }
+      attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: req.content.bytes.id }
     }
     else {
       /*
@@ -107,7 +107,7 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
       const staged = await attachmentStore.stagePendingContent()
       try {
         await pipeline(req.content.bytes, staged.tempLocation)
-        attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: staged.id as string }
+        attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: staged.id }
       }
       catch (err) {
         const message = `error staging attachment content for attachment ${attachmentBefore.id} on observation ${obsBefore.id}`
