@@ -12,7 +12,7 @@ export const clamavHook: AttachmentHook = async (attachment, stagedFilePath) => 
 
     // Message return for a rejected statement
     if (outcome.outcome === 'reject' ) {
-        return { outcome: 'reject', reason: `This file/attachment was flagged as potentially malicious and could not be uploaded - (${outcome.reason})` }
+        return { outcome: 'reject', reason: `This attachment (${attachment.name}) was flagged as potentially malicious and could not be uploaded - (${outcome.reason})` }
     }
 
     // Message return for errors (not including malicious attachments)
