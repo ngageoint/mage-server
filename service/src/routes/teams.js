@@ -1,5 +1,4 @@
 const { userRoleHasPermission } = require('../permissions/permissions.role-based.base')
-const Team = require('../models/team')
 
 module.exports = function(app, security) {
   const Team = require('../models/team')
