@@ -185,10 +185,10 @@ describe('TeamDetailsComponent', () => {
       component.getMembers();
 
       expect(mockTeamsService.getMembers).toHaveBeenCalledWith({
-        id: mockTeam.id,
+        teamId: mockTeam.id,
         term: component.memberSearchTerm,
-        page: component.membersPageIndex,
-        page_size: component.membersPageSize
+        pageIndex: component.membersPageIndex,
+        pageSize: component.membersPageSize
       });
       expect(component.loadingMembers).toBeFalse();
       expect(component.membersDataSource.data).toEqual([mockMember]);
