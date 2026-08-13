@@ -61,7 +61,7 @@ describe('TeamDashboardComponent', () => {
   }
 
   beforeEach(waitForAsync(() => {
-    mockTeamsService = jasmine.createSpyObj('AdminTeamsService', ['getTeams']);
+    mockTeamsService = jasmine.createSpyObj('AdminTeamsService', ['search']);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
     toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
@@ -140,7 +140,7 @@ describe('TeamDashboardComponent', () => {
     expect(mockTeamsService.search).toHaveBeenCalledWith({
       term: '',
       pageSize: 25,
-      pageIndex: 0,
+      pageIndex: 1,
       omitEventTeams: true,
     });
   });
