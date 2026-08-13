@@ -1,5 +1,5 @@
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationReadStreamOptions, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationReadStreamOptions, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
 import mongoose, { FilterQuery } from 'mongoose'
 import * as legacy from '../../models/observation'
@@ -228,6 +228,13 @@ export function docToEntity(doc: legacy.ObservationDocument, eventId: MageEventI
   return createDocumentMapping(eventId)(doc)
 }
 
+// Define what a pending attachment looks like
+export type PendingAttachmentReference = {
+  eventId: MageEventId
+  observationId: ObservationId
+  attachmentId: AttachmentId
+}
+
 function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.ObservationDocument, ObservationAttrs> {
   return doc => {
     const attrs: ObservationAttrs = {
@@ -287,6 +294,11 @@ function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
     oriented: doc.oriented,
     contentLocator: doc.relativePath,
     thumbnails: doc.thumbnails.map(thumbnailAttrsForDoc),
+    processingStatus: doc.processingStatus,
+    processingMessage: doc.processingMessage,
+    processingHook: doc.processingHook,
+    stagedContentId: doc.stagedContentId,
+    processingRetryCount: doc.processingRetryCount,
   }
 }
 
@@ -386,4 +398,44 @@ function parseFields(fields: any) {
   } else {
     return { states: { $slice: 1 } };
   }
+}
+
+// Define the function to check for pending attachments
+export async function findPendingAttachments(limit: number): Promise<PendingAttachmentReference[]> {
+  
+  // Set the array of documents
+  const eventDocs = await mongoose.connection.collection<{ _id: number, collectionName: string }>('events').find({}).toArray()
+
+  // Loop through each document
+  const references: PendingAttachmentReference[] = []
+  for (const eventDoc of eventDocs) {
+    if (references.length >= limit) {
+      break
+    }
+    const model = legacy.observationModel({ id: eventDoc._id, collectionName: eventDoc.collectionName })
+
+    // mongo aggregation pipeline
+    const remaining = limit - references.length
+    const pipeline = [
+      { $match: { 'attachments.processingStatus': AttachmentProcessingStatus.Pending } },
+      { $project: { _id: true, attachments: true } },
+      { $unwind: '$attachments' },
+      { $match: { 'attachments.processingStatus': AttachmentProcessingStatus.Pending } },
+      { $project: { _id: false, observationId: '$_id', attachmentId: '$attachments._id' } },
+      { $limit: remaining },
+    ]
+
+    // Run the pipeline against the model
+    const matches = await model.aggregate(pipeline)
+
+    // loop over the matches
+    for (const match of matches) {
+      references.push({
+        eventId: eventDoc._id,
+        observationId: match.observationId.toString(),
+        attachmentId: match.attachmentId.toString()
+      })
+    }
+  } 
+  return references
 }

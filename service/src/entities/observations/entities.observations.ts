@@ -91,6 +91,16 @@ export interface FormEntry {
 export type FormFieldEntryItem = Exclude<JsonPrimitive, null> | Geometry | Date
 export type FormFieldEntry = FormFieldEntryItem | FormFieldEntryItem[] | null
 
+export const AttachmentProcessingStatus = Object.freeze({
+  Pending: 'pending',
+  Success: 'success',
+  Rejected: 'rejected',
+  Error: 'error'
+} as const)
+
+export type AttachmentProcessingStatus = (typeof AttachmentProcessingStatus)[keyof typeof AttachmentProcessingStatus]
+
+
 export type AttachmentId = string
 /**
  * TODO: Currently the web app uses the `name` and `contentType` keys in the
@@ -150,6 +160,20 @@ export interface Attachment {
    */
   oriented: boolean
   thumbnails: Thumbnail[]
+  processingStatus?: AttachmentProcessingStatus
+  processingMessage?: string
+  processingHook?: string
+  /**
+   * The ID of this attachment's staged content, if any, returned from
+   * {@link AttachmentStore.stagePendingContent}.  Persisted so a later,
+   * separate process (e.g. a background attachment-processing job) can find
+   * and finalize or discard the staged file, since the original upload
+   * request's local reference to it does not survive past that request.
+   */
+  stagedContentId?: string
+
+  // 
+  processingRetryCount?: number
 }
 
 export interface Thumbnail {
@@ -202,7 +226,12 @@ export function copyAttachmentAttrs(from: Attachment): Attachment {
     height: from.height,
     oriented: from.oriented,
     thumbnails: from.thumbnails.map(copyThumbnailAttrs),
-    contentLocator: from.contentLocator
+    contentLocator: from.contentLocator,
+    processingStatus: from.processingStatus,
+    processingMessage: from.processingMessage,
+    processingHook: from.processingHook,
+    stagedContentId: from.stagedContentId,
+    processingRetryCount: from.processingRetryCount
   }
 }
 
@@ -735,6 +764,11 @@ export function patchAttachment(observation: Observation, attachmentId: Attachme
   patched.size = patchHasProperty('size') ? patch.size : patched.size
   patched.contentLocator = patchHasProperty('contentLocator') ? patch.contentLocator : patched.contentLocator
   patched.thumbnails = patchHasProperty('thumbnails') ? patch.thumbnails?.map(copyThumbnailAttrs) as Thumbnail[] : patched.thumbnails
+  patched.processingStatus = patchHasProperty('processingStatus') ? patch.processingStatus : patched.processingStatus
+  patched.processingMessage = patchHasProperty('processingMessage') ? patch.processingMessage : patched.processingMessage
+  patched.processingHook = patchHasProperty('processingHook') ? patch.processingHook : patched.processingHook
+  patched.stagedContentId = patchHasProperty('stagedContentId') ? patch.stagedContentId : patched.stagedContentId
+  patched.processingRetryCount = patchHasProperty('processingRetryCount') ? patch.processingRetryCount : patched.processingRetryCount
   patched.lastModified = new Date()
   const patchedObservation = copyObservationAttrs(observation)
   const before = patchedObservation.attachments.slice(0, targetPos)
@@ -924,7 +958,7 @@ export interface ObservationRepositoryForEvent {
   (event: MageEventId): Promise<EventScopedObservationRepository>
 }
 
-export type StagedAttachmentContentId = unknown
+export type StagedAttachmentContentId = string
 
 export class StagedAttachmentContentRef {
   constructor(readonly id: StagedAttachmentContentId) { }
@@ -982,7 +1016,7 @@ export interface AttachmentStore {
    * attributes suitable to pass to {@link putAttachmentThumbnailForMinDimension}
    * to update the observation with the new attachment thumbnail.
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | ThumbnailContentPatchAttrs | AttachmentStoreError>
+  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentRef, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | ThumbnailContentPatchAttrs | AttachmentStoreError>
   /**
    * Return a read stream of the content for the given attachment.  The client
    * can specify an optional zero-based range of bytes to read from the
@@ -1004,6 +1038,12 @@ export interface AttachmentStore {
    * the attachment.
    */
   deleteContent(attachment: Attachment, observation: Observation): Promise<null | AttachmentPatchAttrs | AttachmentStoreError>
+
+  // Return real file path for attachment
+  stagedContentPath(stagedContentId: StagedAttachmentContentId): Promise<string | AttachmentStoreError>
+
+  // Delete staged content
+  deleteStagedContent(stagedContentId: StagedAttachmentContentId): Promise<void | AttachmentStoreError>
 }
 
 export class AttachmentStoreError extends Error {

@@ -39,8 +39,7 @@ export class ObservationEditAttachmentComponent implements OnInit {
   allAttachments(): any[] {
     const observationFormId = this.formGroup.get('id')?.value
     const attachments = (this.attachments || []).filter(attachment => {
-      return attachment.url &&
-        attachment.observationFormId === observationFormId &&
+      return attachment.observationFormId === observationFormId &&
         attachment.fieldName === this.definition.name
     });
 
