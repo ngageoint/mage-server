@@ -418,6 +418,7 @@ export async function findPendingAttachments(limit: number): Promise<PendingAtta
     const remaining = limit - references.length
     const pipeline = [
       { $match: { 'attachments.processingStatus': AttachmentProcessingStatus.Pending } },
+      { $project: { _id: true, attachments: true } },
       { $unwind: '$attachments' },
       { $match: { 'attachments.processingStatus': AttachmentProcessingStatus.Pending } },
       { $project: { _id: false, observationId: '$_id', attachmentId: '$attachments._id' } },
