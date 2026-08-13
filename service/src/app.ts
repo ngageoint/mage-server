@@ -1146,36 +1146,10 @@ async function initWebLayer(
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
   webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
 
-  const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
-    req,
-    _res,
-    next
-  ): void => {
-    const token =
-      typeof req.query.access_token === 'string'
-        ? req.query.access_token
-        : null;
-
-    if (token && !req.headers.authorization) {
-      req.headers.authorization = `Bearer ${token}`;
-    }
-
-    next();
-  };
-
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 
-  const uiPluginsAuth: express.RequestHandler = (req, res, next): void => {
-    if (req.user) {
-      next();
-      return;
-    }
-    bearerAuthentication(req, res, next);
-  };
-
   webController.use('/ui_plugins', [
-    uiPluginsAccessTokenToAuthHeader,
-    uiPluginsAuth,
+    bearerAuthentication,
     webUiPluginRoutes
   ]);
 
