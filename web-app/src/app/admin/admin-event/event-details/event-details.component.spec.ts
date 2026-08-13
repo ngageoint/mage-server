@@ -10,6 +10,7 @@ import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TeamService } from '@ngageoint/mage.web-core-lib/team'
+import { AdminBreadcrumbService } from 'mage-web-app/admin/admin-breadcrumb/admin-breadcrumb.service'
 import { of, throwError } from 'rxjs';
 
 import { EventDetailsComponent } from './event-details.component';
@@ -23,6 +24,7 @@ describe('EventDetailsComponent', () => {
   let teamsService: jasmine.SpyObj<TeamService>;
   let dialog: jasmine.SpyObj<MatDialog>;
   let router: jasmine.SpyObj<Router>;
+  let breadcrumbService: jasmine.SpyObj<AdminBreadcrumbService>;
 
   const USER_RANMA: any = {
     id: '1',
@@ -79,6 +81,10 @@ describe('EventDetailsComponent', () => {
       'navigate',
       'navigateByUrl'
     ]);
+    const breadcrumbServiceSpy = jasmine.createSpyObj('BreadcrumbService', [
+      'setBreadcrumbs',
+      'setActions'
+    ]);
 
     const routeStub = {
       snapshot: {
@@ -94,7 +100,8 @@ describe('EventDetailsComponent', () => {
         { provide: TeamService, useValue: teamsServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: ActivatedRoute, useValue: routeStub }
+        { provide: ActivatedRoute, useValue: routeStub },
+        { provide: AdminBreadcrumbService, useValue: breadcrumbServiceSpy }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -103,6 +110,7 @@ describe('EventDetailsComponent', () => {
     teamsService = TestBed.inject(TeamService) as jasmine.SpyObj<TeamService>;
     dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    breadcrumbService = TestBed.inject(AdminBreadcrumbService) as jasmine.SpyObj<AdminBreadcrumbService>;
 
     eventsService.getEventById.and.returnValue(of(makeEvent()));
     eventsService.getTeamsInEvent.and.returnValue(of(makeTeamsPage([])));
@@ -211,13 +219,9 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should clean up on destroy', () => {
-      const nextSpy = spyOn((component as any).destroy$, 'next');
-      const completeSpy = spyOn((component as any).destroy$, 'complete');
-
       component.ngOnDestroy();
 
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+      expect(breadcrumbService.setActions).toHaveBeenCalledWith(null);
     });
   });
 

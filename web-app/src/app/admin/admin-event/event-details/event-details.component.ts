@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, DestroyRef, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
-import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -53,7 +54,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   event: ExtendedEvent | null = null;
   eventTeam: Team | null = null;
 
-  #destroy$ = new Subject<void>();
   #breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Events',
     icon: 'event',
@@ -102,6 +102,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   eventLayers: Layer[] = [];
   layersDataSource = new MatTableDataSource<Layer>();
 
+  #destroyRef = inject(DestroyRef)
+  #takeUntilDestroyed = <T>() => takeUntilDestroyed<T>(this.#destroyRef)
+
   constructor(
     private eventsService: AdminEventsService,
     private teamService: TeamService,
@@ -132,7 +135,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         total: false
       })
     })
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: ({ event, teams }) => {
           this.event = event;
@@ -159,8 +162,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.#destroy$.next();
-    this.#destroy$.complete();
   }
 
   getMembersPage(): void {
@@ -174,7 +175,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         term: this.memberSearchTerm,
         total: true
       })
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (page) => {
           this.loadingMembers = false;
@@ -205,7 +206,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     this.teamService
       .removeMember(eventTeamId, String(user.id))
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => {
           this.getMembersPage();
@@ -242,7 +243,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         total: true,
         omit_event_teams: true
       })
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (page) => {
           this.loadingTeams = false;
@@ -272,7 +273,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     this.eventsService
       .removeEventFromTeam(eventId, String(team.id))
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => {
           this.getTeamsPage();
@@ -303,7 +304,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
     this.eventsService
       .getLayersForEvent(String(this.event.id))
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (layers) => {
           this.loadingLayers = false;
@@ -356,7 +357,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
     this.eventsService
       .addLayerToEvent(String(this.event.id), { id: layer.id })
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => this.loadLayers(),
         error: (error) => console.error('Error adding layer:', error)
@@ -374,7 +375,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     this.eventsService
       .removeLayerFromEvent(eventId, layer.id)
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => {
           this.loadLayers();
@@ -416,7 +417,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     this.eventsService
       .updateEvent(String(this.event.id), eventUpdate)
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updatedEvent: any) => {
           if (!this.event) {
@@ -476,7 +477,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.formsAnimationState++;
     this.eventsService
       .updateEvent(String(this.event.id), { forms })
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updatedEvent) => {
           this.event = updatedEvent as any;
@@ -485,7 +486,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           console.error('Error updating forms order:', error);
           this.eventsService
             .getEventById(String(this.event.id))
-            .pipe(takeUntil(this.#destroy$))
+            .pipe(this.#takeUntilDestroyed())
             .subscribe({
               next: (event) => {
                 this.event = event as any;
@@ -532,7 +533,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     }
     this.teamService
       .updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updatedTeam: Team) => {
           this.eventTeam = updatedTeam;
@@ -567,7 +568,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     const updatedEvent = { ...mageEvent, complete: true };
     this.eventsService
       .updateEvent(String(mageEvent.id), updatedEvent)
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updated) => (this.event = updated as any),
         error: (error) => console.error('Error completing event:', error)
@@ -581,7 +582,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     const updatedEvent = { ...mageEvent, complete: false };
     this.eventsService
       .updateEvent(String(mageEvent.id), updatedEvent)
-      .pipe(takeUntil(this.#destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updated) => (this.event = updated as any),
         error: (error) => console.error('Error activating event:', error)
