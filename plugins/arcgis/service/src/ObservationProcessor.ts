@@ -315,10 +315,16 @@ export class ObservationProcessor {
 							if (featureLayer.geometryType != null) {
 								// TODO The featureLayerConfig should contain the layer id
 								featureLayerConfig.layer = featureLayer.id;
-								const admin = new FeatureServiceAdmin(config, this._identityService, this._console, VERBOSE_DEBUG)
 								const eventIds = featureLayerConfig.eventIds || []
-								const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
-								const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+								// don't touch the layer's schema (addFields/deleteFields/drawingInfo) until at least
+								// one event is actually configured to sync to it
+								let layerInfoResult = layerInfo as LayerInfoResult;
+								if (eventIds.length > 0) {
+									const admin = new FeatureServiceAdmin(config, this._identityService, this._console, VERBOSE_DEBUG)
+									const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
+									layerInfoResult = { ...layerInfo, fields: layerFields } as LayerInfoResult;
+								}
+								const info = new LayerInfo(url, eventIds, layerInfoResult);
 								const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
 								this._layerProcessors.push(layerProcessor);
 							}
@@ -357,12 +363,13 @@ export class ObservationProcessor {
 				}
 				await Promise.all(pendingPromises);
 				this._console.info('ArcGIS plugin processing new observations...');
-				const enabledEvents = (await this._eventRepo.findActiveEvents()).filter(event =>
+				const activeEvents = await this._eventRepo.findActiveEvents();
+				const enabledEvents = activeEvents.filter(event =>
 					this._layerProcessors.some(layerProcessor =>
 						layerProcessor.layerInfo.hasEvent(event.id)
 					)
 				);
-				this._eventDeletionHandler.checkForEventDeletion(enabledEvents, this._layerProcessors, this._firstRun);
+				this._eventDeletionHandler.checkForEventDeletion(activeEvents, this._layerProcessors, this._firstRun);
 				const eventsToProcessors = this._organizer.organize(enabledEvents, this._layerProcessors);
 				const nextQueryTime = Date.now();
 				const promises = [];
@@ -446,12 +453,19 @@ export class ObservationProcessor {
 			const eventTransform = new EventTransform(config, mageEvent);
 			const arcObjects = new ArcObjects();
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
+
+			const syncAfter = mageEvent ? config.syncAfterByEventId?.[mageEvent.id] : undefined;
+			const syncAfterTime = syncAfter ? new Date(syncAfter).getTime() : undefined;
+
 			for (const observation of observations) {
 				// TODO: Should archived observations be removed after a certain time? Also this uses 'startsWith' because not all deleted observations use 'archived' which is a bug
 				if (observation.states.length > 0 && observation.states[0].name.startsWith('archive')) {
 					const arcObservation = this._transformer.createObservation(observation);
 					arcObjects.deletions.push(arcObservation);
 				} else {
+					if (syncAfterTime !== undefined && observation.properties.timestamp.getTime() < syncAfterTime) {
+						continue;
+					}
 					let user = null;
 					if (observation.userId != null) {
 						user = await this._userRepo.findById(observation.userId);

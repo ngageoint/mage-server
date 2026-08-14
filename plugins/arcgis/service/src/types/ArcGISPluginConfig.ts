@@ -133,6 +133,14 @@ export interface ArcGISPluginConfig {
    */
   attributes?: { [attribute: string]: AttributeConfig }
 
+  /**
+   * Per-event observation sync filter. Maps a MAGE event id to a datetime
+   * string; only observations whose properties.timestamp is at or after
+   * that value are synced to ArcGIS for that event. An event with no
+   * entry (or this field entirely absent) syncs all observations (default).
+   */
+  syncAfterByEventId?: { [eventId: number]: string }
+
 }
 
 export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
@@ -159,6 +167,7 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
   geometryType: 'geometry_type',
   iconSymbolField: 'icon_symbol',
   fieldAttributes: {},
+  syncAfterByEventId: {},
   attributes: {
     'symbolid': {
       defaults: [

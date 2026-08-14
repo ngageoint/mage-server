@@ -87,6 +87,11 @@
               <mat-icon>error_outline</mat-icon>
               <span>Your account privileges don't include the ability to edit features (features:user:edit). Ask your administrator for more info.</span>
             </div>
+
+            <div class="validation-error" *ngIf="validationError">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{validationError}}</span>
+            </div>
           </form>
 
           <div class="discovered-services" *ngIf="entryMode === EntryMode.Portal && hasBrowsed">

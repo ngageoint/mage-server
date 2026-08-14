@@ -80,3 +80,14 @@ mat-card-header mat-hint {
 .push-status-card {
     margin-top: 24px;
 }
+
+.sync-after-datetime {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+
+    mat-form-field {
+        width: 100%;
+    }
+}

@@ -109,8 +109,10 @@ export class EventDeletionHandler {
                         arcEventIds.add(eventId);
                     }
                 } else {
-                    const value = feature.attributes[this._config.eventIdField] as string;
-                    arcEventIds.add(value);
+                    const value = feature.attributes[this._config.eventIdField];
+                    if (value != null) {
+                        arcEventIds.add(String(value));
+                    }
                 }
             }
 

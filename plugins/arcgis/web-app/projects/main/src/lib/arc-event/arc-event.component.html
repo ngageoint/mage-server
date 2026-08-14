@@ -86,6 +86,25 @@
           {{layerDisplay(arcLayer)}}
         </div>
       </div>
+
+      <mat-divider></mat-divider>
+      <h3>Filter</h3>
+      <mat-slide-toggle color="primary" [checked]="filterEnabled" (change)="onFilterToggle($event.checked)">
+        Only sync observations after a specific date/time
+      </mat-slide-toggle>
+      <div class="sync-after-datetime" *ngIf="filterEnabled">
+        <mat-form-field appearance="fill">
+          <mat-label>Sync After Date</mat-label>
+          <input matInput [matDatepicker]="syncAfterDatePicker" [ngModel]="editingSyncAfterDate" (ngModelChange)="onSyncAfterDateChange($event)" autocomplete="off" />
+          <mat-datepicker-toggle matSuffix [for]="syncAfterDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #syncAfterDatePicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Sync After Time</mat-label>
+          <input matInput type="time" [ngModel]="editingSyncAfterTime" (ngModelChange)="onSyncAfterTimeChange($event)" autocomplete="off" />
+        </mat-form-field>
+      </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button matDialogClose>CLOSE</button>

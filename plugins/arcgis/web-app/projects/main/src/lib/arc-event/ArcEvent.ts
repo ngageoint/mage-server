@@ -5,6 +5,7 @@ export class ArcEvent {
     id: number;
     layers: ArcEventLayer[];
     selected: boolean;
+    syncAfter?: string;
 
     constructor(name: string, id: number, layers: ArcEventLayer[], selected = false) {
         this.name = name;

@@ -70,6 +70,18 @@ mat-dialog-content {
   }
 }
 
+.validation-error {
+  color: #F44336;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  mat-icon {
+    flex-shrink: 0;
+  }
+}
+
 .actions {
   width: 100%;
   display: flex;

@@ -40,6 +40,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	entryMode: EntryMode = EntryMode.Url
 
 	loading = false
+	validationError: string | undefined
 	hasBrowsed = false
 	discoveredServices: DiscoveredFeatureService[] = []
 	discoveredTotal = 0
@@ -168,23 +169,33 @@ export class ArcLayerDialogComponent implements OnDestroy {
 
 	onValidate(): void {
 		this.loading = true
+		this.validationError = undefined
 		// use the "raw" value, since it will include the URL from the possibly-disabled input field
 		const { url, portalUrl, authenticationType } = this.layerForm.getRawValue()
 
 		switch (authenticationType) {
 			case AuthenticationType.Token: {
 				const { token } = this.layerForm.controls.token.value
-				this.arcService.validateFeatureService({ url, portalUrl, token }).subscribe((service) => this.validated(service))
+				this.arcService.validateFeatureService({ url, portalUrl, token }).subscribe({
+					next: (service) => this.validated(service),
+					error: (error) => this.onValidateError(error)
+				})
 				break;
 			}
 			case AuthenticationType.OAuth: {
 				const { clientId } = this.layerForm.controls.oauth.value
-				this.arcService.oauth(url, clientId, portalUrl).subscribe((service) => this.validated(service))
+				this.arcService.oauth(url, clientId, portalUrl).subscribe({
+					next: (service) => this.validated(service),
+					error: (error) => this.onValidateError(error)
+				})
 				break;
 			}
 			case AuthenticationType.UsernamePassword: {
 				const { username, password } = this.layerForm.controls.local.value
-				this.arcService.validateFeatureService({ url, portalUrl, username, password }).subscribe((service) => this.validated(service))
+				this.arcService.validateFeatureService({ url, portalUrl, username, password }).subscribe({
+					next: (service) => this.validated(service),
+					error: (error) => this.onValidateError(error)
+				})
 				break;
 			}
 		}
@@ -196,11 +207,37 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		this.fetchLayers(service.url)
 	}
 
+	private onValidateError(error: unknown): void {
+		console.log('arc-layer validate feature service error: ' + error)
+		this.loading = false
+		this.validationError = this.extractErrorMessage(error)
+	}
+
+	private extractErrorMessage(error: unknown): string {
+		if (typeof error === 'string' && error) {
+			return error
+		}
+		if (error && typeof error === 'object') {
+			const httpError = error as { error?: unknown, message?: string, status?: number }
+			if (typeof httpError.error === 'string' && httpError.error) {
+				return httpError.error
+			}
+			if (httpError.status === 0) {
+				return 'Unable to reach the feature service. Check the URL and your network connection.'
+			}
+			if (httpError.message) {
+				return httpError.message
+			}
+		}
+		return 'Failed to authenticate with the feature service. Check your credentials and try again.'
+	}
+
 	onBrowse(): void {
 		this.discoveredServices = []
 		this.discoveredTotal = 0
 		this.discoveredStart = 1
 		this.hasBrowsed = true
+		this.validationError = undefined
 		const filter = this.filterControl.value || undefined
 		const { portalUrl, authenticationType } = this.layerForm.getRawValue()
 		if (!portalUrl) {
@@ -301,10 +338,12 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	private onDiscoverError(error: unknown): void {
 		console.log('arc-layer discover feature services error: ' + error);
 		this.loading = false
+		this.validationError = this.extractErrorMessage(error)
 	}
 
 	onSelectDiscoveredService(service: DiscoveredFeatureService): void {
 		this.loading = true
+		this.validationError = undefined
 		this.arcService.confirmFeatureService(service.url, this.discoveredPortalUrl, this.discoveredIdentityManager).subscribe({
 			next: (confirmed) => {
 				this.loading = false
@@ -313,6 +352,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 			error: (error) => {
 				console.log('arc-layer confirm feature service error: ' + error);
 				this.loading = false
+				this.validationError = this.extractErrorMessage(error)
 			}
 		})
 	}

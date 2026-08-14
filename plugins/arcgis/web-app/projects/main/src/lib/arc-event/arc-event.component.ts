@@ -108,7 +108,15 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     this.eventSet = true;
     this.refreshEventLayers();
     this.LoadSelectedEvents();
+    this.loadEventFilters();
     this.captureSnapshot();
+  }
+
+  // seeds each event's sync-after filter from the persisted config
+  private loadEventFilters(): void {
+    for (const event of this.model.allEvents) {
+      event.syncAfter = this.config.syncAfterByEventId?.[event.id];
+    }
   }
 
   // serializes the event/layer selection state so it can be compared against or restored later
@@ -117,6 +125,7 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
       this.model.allEvents.map(event => ({
         name: event.name,
         selected: event.selected,
+        syncAfter: event.syncAfter,
         layers: event.layers.map(layer => ({ name: layer.name, isSelected: layer.isSelected }))
       }))
     );
@@ -133,11 +142,12 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
 
   // reverts all pending event/layer selection changes back to the last saved state
   cancelChanges(): void {
-    const snapshot: { name: string, selected: boolean, layers: { name: string, isSelected: boolean }[] }[] = JSON.parse(this.savedSnapshot);
+    const snapshot: { name: string, selected: boolean, syncAfter?: string, layers: { name: string, isSelected: boolean }[] }[] = JSON.parse(this.savedSnapshot);
     for (const saved of snapshot) {
       const event = this.model.allEvents.find(e => e.name === saved.name);
       if (!event) continue;
       event.selected = saved.selected;
+      event.syncAfter = saved.syncAfter;
       for (const savedLayer of saved.layers) {
         const layer = event.layers.find(l => l.name === savedLayer.name);
         if (layer) layer.isSelected = savedLayer.isSelected;
@@ -245,11 +255,57 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     return eventsLayers
   }
 
+  filterEnabled = false;
+  editingSyncAfterDate: Date | null = null;
+  editingSyncAfterTime = '';
+
   onEditEvent(event: ArcEvent) {
     console.log('Editing event synchronization for event ' + event.name);
     this.layers = event.layers;
     this.currentEditingEvent = event;
+    this.filterEnabled = !!event.syncAfter;
+    const syncAfterDate = event.syncAfter ? new Date(event.syncAfter) : null;
+    this.editingSyncAfterDate = syncAfterDate;
+    this.editingSyncAfterTime = syncAfterDate ? this.toTimeString(syncAfterDate) : '';
     this.dialog.open<unknown, unknown, string>(this.editEventTemplate)
+  }
+
+  onFilterToggle(checked: boolean): void {
+    this.filterEnabled = checked;
+    if (checked) {
+      if (!this.editingSyncAfterDate) {
+        this.editingSyncAfterDate = new Date();
+        this.editingSyncAfterTime = this.toTimeString(this.editingSyncAfterDate);
+      }
+      this.applySyncAfter();
+    } else if (this.currentEditingEvent) {
+      this.currentEditingEvent.syncAfter = undefined;
+    }
+  }
+
+  onSyncAfterDateChange(value: Date | null): void {
+    this.editingSyncAfterDate = value;
+    this.applySyncAfter();
+  }
+
+  onSyncAfterTimeChange(value: string): void {
+    this.editingSyncAfterTime = value;
+    this.applySyncAfter();
+  }
+
+  private applySyncAfter(): void {
+    if (!this.currentEditingEvent || !this.editingSyncAfterDate) return;
+    const combined = new Date(this.editingSyncAfterDate);
+    const [hours, minutes] = this.editingSyncAfterTime
+      ? this.editingSyncAfterTime.split(':').map(Number)
+      : [0, 0];
+    combined.setHours(hours || 0, minutes || 0, 0, 0);
+    this.currentEditingEvent.syncAfter = combined.toISOString();
+  }
+
+  private toTimeString(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
   /// Turns an event's synchronization on or off
@@ -307,6 +363,12 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     this.isSaving = true;
     for (const featureService of this.config.featureServices) {
       featureService.layers = this.getEventsInFeatureFormat(featureService);
+    }
+    this.config.syncAfterByEventId = {};
+    for (const event of this.model.allEvents) {
+      if (event.syncAfter) {
+        this.config.syncAfterByEventId[event.id] = event.syncAfter;
+      }
     }
     this.configChanged.emit(this.config);
     this.captureSnapshot();
