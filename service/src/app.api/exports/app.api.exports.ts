@@ -47,8 +47,8 @@ export interface DeleteExport {
 
 export interface ExportAppLayerPermissionService {
   ensureCreateExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
-  ensureGetExportContentPermission(context: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError>
   ensureGetMyExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
+  ensureGetMyExportContentPermission(context: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError>
   ensureDeleteMyExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 
