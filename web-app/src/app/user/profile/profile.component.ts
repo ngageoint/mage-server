@@ -7,6 +7,7 @@ import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
 import { PasswordStrength, passwordStrengthScores } from '../../entities/password/password';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -23,13 +24,13 @@ export class ProfileComponent implements OnInit {
   avatar: any
   saving = false
 
-  info = new FormGroup({
+  profile = new FormGroup({
     username: new FormControl<string>({ value: '', disabled: true }, []),
     displayName: new FormControl<string>('', [Validators.required]),
     email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>('', []),
   })
-  infoError?: string
+  profileError?: string
 
   password = new FormGroup({
     currentPassword: new FormControl<string>('', [Validators.required]),
@@ -44,12 +45,13 @@ export class ProfileComponent implements OnInit {
     public dialog: MatDialog,
     private router: Router,
     private userService: UserService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private snackbar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
     this.user = this.sessionService.user
-    this.setInfo(this.user)
+    this.setProfile(this.user)
 
     zxcvbnOptions.setOptions({
       dictionary: {
@@ -62,27 +64,34 @@ export class ProfileComponent implements OnInit {
   }
 
   onSave(): void {
-    this.info.markAllAsTouched()
-    if (this.info.invalid) {
+    this.profile.markAllAsTouched()
+    if (this.profile.invalid) {
       return
     }
 
     this.saving = true
+    this.profileError = undefined
 
     this.userService.saveProfile({
       avatar: this.avatar,
-      displayName: this.info.controls.displayName.value,
-      email: this.info.controls.email.value,
-      phone: this.info.controls.phone.value,
+      displayName: this.profile.controls.displayName.value,
+      email: this.profile.controls.email.value,
+      phone: this.profile.controls.phone.value,
     }).subscribe({
       next: (event: HttpEvent<any>) => {
         if (event.type === HttpEventType.Response) {
           this.saving = false
           this.user = event.body
+          this.snackbar.open('Profile updated successfully', undefined, {
+            duration: 3000
+          })
+                  this.profileError = 'Error updating profile, please try again later.'
+
         }
       },
       error: () => {
-        this.infoError = 'Error updating profile, please try again later.'
+        this.saving = false
+        this.profileError = 'Error updating profile, please try again later.'
       }
     })
   }
@@ -145,15 +154,15 @@ export class ProfileComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.setInfo(this.user)
+    this.setProfile(this.user)
   }
 
   onBack(): void {
     this.router.navigate(['home'])
   }
 
-  private setInfo(user: any) {
-    this.info.setValue({
+  private setProfile(user: any) {
+    this.profile.setValue({
       username: user.username,
       displayName: user.displayName,
       email: user.email || "",
