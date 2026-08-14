@@ -134,8 +134,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
       if (newTeam) {
         this.toastService.show(
           'Team created successfully',
-          ['../teams', newTeam.id],
-          'View Team'
+          ['/admin/teams', newTeam.id],
+          'Go to Team'
         );
         this.fetchTeams();
       }

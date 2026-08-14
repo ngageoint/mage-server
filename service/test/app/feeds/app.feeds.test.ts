@@ -558,7 +558,8 @@ describe('feeds use case interactions', function () {
               topic: uniqid(),
               title: 'Cascade Delete 1',
               itemsHaveIdentity: true,
-              itemsHaveSpatialDimension: true
+              itemsHaveSpatialDimension: true,
+              showOnMapByDefault: true,
             },
             {
               id: uniqid(),
@@ -566,7 +567,8 @@ describe('feeds use case interactions', function () {
               topic: uniqid(),
               title: 'Cascade Delete 2',
               itemsHaveIdentity: true,
-              itemsHaveSpatialDimension: true
+              itemsHaveSpatialDimension: true,
+              showOnMapByDefault: true,
             }
           ]
           app.registerFeeds(...feeds)
@@ -953,7 +955,7 @@ describe('feeds use case interactions', function () {
               registeredTimestamp: Date.now(),
               tags: []
             }
-            app.iconRepo.findOrImportBySourceUrl(iconUrl, StaticIconImportFetch.EagerAwait).resolves(registeredIcon)
+            app.iconRepo.findOrImportBySourceUrl(iconUrl, null, StaticIconImportFetch.EagerAwait).resolves(registeredIcon)
             const feed = {
               service: service.id,
               topic: topic.id
@@ -970,7 +972,7 @@ describe('feeds use case interactions', function () {
               registeredIconId = (res.success as FeedExpanded).icon!.id as StaticIconId
             }
             expect(registeredIconId).to.equal(registeredIcon.id)
-            app.iconRepo.received(1).findOrImportBySourceUrl(iconUrl, StaticIconImportFetch.EagerAwait)
+            app.iconRepo.received(1).findOrImportBySourceUrl(iconUrl, null, StaticIconImportFetch.EagerAwait)
             app.iconRepo.received(1).findOrImportBySourceUrl(Arg.all())
           }
         ],
@@ -991,7 +993,7 @@ describe('feeds use case interactions', function () {
               registeredTimestamp: Date.now(),
               tags: []
             }
-            app.iconRepo.findOrImportBySourceUrl(iconUrl, StaticIconImportFetch.EagerAwait).resolves(registeredIcon)
+            app.iconRepo.findOrImportBySourceUrl(iconUrl, null, StaticIconImportFetch.EagerAwait).resolves(registeredIcon)
             const feed = {
               service: service.id,
               topic: topic.id
@@ -1012,20 +1014,20 @@ describe('feeds use case interactions', function () {
             }
             expect(resFeedIconId).to.be.undefined
             expect(resMapIconId).to.equal(registeredIcon.id)
-            app.iconRepo.received(1).findOrImportBySourceUrl(iconUrl, StaticIconImportFetch.EagerAwait)
+            app.iconRepo.received(1).findOrImportBySourceUrl(iconUrl, null, StaticIconImportFetch.EagerAwait)
             app.iconRepo.received(1).findOrImportBySourceUrl(Arg.all())
           }
         ],
         [
           'registers icons for the topic and topic map style',
           async function (appOperation: PreviewOrCreateOp) {
-            const topicIcon: StaticIcon = {
+            const topicIcon: StaticIcon & { sourceUrl: URL } = {
               id: uniqid(),
               sourceUrl: new URL('test:///icons/topic.png'),
               registeredTimestamp: Date.now(),
               tags: []
             }
-            const mapIcon: StaticIcon = {
+            const mapIcon: StaticIcon & { sourceUrl: URL } = {
               id: uniqid(),
               sourceUrl: new URL('test:///icons/map_marker.png'),
               registeredTimestamp: Date.now(),
@@ -1038,8 +1040,8 @@ describe('feeds use case interactions', function () {
                 icon: { sourceUrl: mapIcon.sourceUrl }
               }
             }
-            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(topicIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(topicIcon)
-            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(mapIcon)
+            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(topicIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(topicIcon)
+            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(mapIcon)
             serviceConn.fetchAvailableTopics().resolves([topic])
             const feed = {
               service: service.id,
@@ -1061,8 +1063,8 @@ describe('feeds use case interactions', function () {
             }
             expect(resFeedIconId).to.equal(topicIcon.id)
             expect(resMapIconId).to.equal(mapIcon.id)
-            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(topicIcon.sourceUrl)), StaticIconImportFetch.EagerAwait)
-            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), StaticIconImportFetch.EagerAwait)
+            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(topicIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
+            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
             app.iconRepo.received(2).findOrImportBySourceUrl(Arg.all())
           }
         ],
@@ -1119,8 +1121,8 @@ describe('feeds use case interactions', function () {
               registeredTimestamp: Date.now(),
               tags: []
             }
-            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(feedIcon)
-            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(mapIcon)
+            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(feedIcon)
+            app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(mapIcon)
             serviceConn.fetchAvailableTopics().resolves([topics[0]])
             const feed = {
               service: service.id,
@@ -1146,8 +1148,8 @@ describe('feeds use case interactions', function () {
             }
             expect(resFeedIconId).to.equal(feedIcon.id)
             expect(resMapIconId).to.equal(mapIcon.id)
-            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedIcon.sourceUrl)), StaticIconImportFetch.EagerAwait)
-            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), StaticIconImportFetch.EagerAwait)
+            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
+            app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
             app.iconRepo.received(2).findOrImportBySourceUrl(Arg.all())
           }
         ],
@@ -1199,6 +1201,7 @@ describe('feeds use case interactions', function () {
             summary: topics[0].summary,
             itemsHaveIdentity: false,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: false,
           }
           const previewItems: FeatureCollection = {
             type: 'FeatureCollection',
@@ -1625,7 +1628,7 @@ describe('feeds use case interactions', function () {
 
         it('registers the topic icon for immediate fetch', async function () {
 
-          const icon: StaticIcon = {
+          const icon: StaticIcon & { sourceUrl: URL } = {
             id: uniqid(),
             sourceUrl: new URL('test:///icon.png'),
             registeredTimestamp: Date.now()
@@ -1645,6 +1648,7 @@ describe('feeds use case interactions', function () {
           serviceConn.fetchAvailableTopics().resolves([topic])
           app.iconRepo.findOrImportBySourceUrl(
             Arg.is(x => String(x) === String(topic.icon.sourceUrl)),
+            null,
             Arg.is(x => x === StaticIconImportFetch.EagerAwait)
           ).resolves(icon)
           const res = await app.createFeed(req)
@@ -1654,6 +1658,7 @@ describe('feeds use case interactions', function () {
           expect(res.success?.icon).to.deep.equal({ id: icon.id })
           app.iconRepo.received(1).findOrImportBySourceUrl(
             Arg.is(x => String(x) === String(topic.icon.sourceUrl)),
+            null,
             Arg.is(x => x === StaticIconImportFetch.EagerAwait))
         })
 
@@ -1679,6 +1684,7 @@ describe('feeds use case interactions', function () {
           const req: CreateFeedRequest = requestBy(adminPrincipal, { feed })
           app.iconRepo.findOrImportBySourceUrl(
             Arg.is(x => String(x) === String(feed.icon?.sourceUrl)),
+            null,
             Arg.is(x => x === StaticIconImportFetch.EagerAwait)
           ).resolves(icon)
           const res = await app.createFeed(req)
@@ -1688,6 +1694,7 @@ describe('feeds use case interactions', function () {
           expect(res.success?.icon).to.deep.equal({ id: icon.id })
           app.iconRepo.received(1).findOrImportBySourceUrl(
             Arg.is(x => String(x) === String(feed.icon?.sourceUrl)),
+            null,
             Arg.is(x => x === StaticIconImportFetch.EagerAwait))
         })
 
@@ -1708,6 +1715,7 @@ describe('feeds use case interactions', function () {
           const req: CreateFeedRequest = requestBy(adminPrincipal, { feed })
           app.iconRepo.findOrImportBySourceUrl(
             Arg.is(x => String(x) === String(feed.icon?.sourceUrl)),
+            null,
             Arg.is(x => x === StaticIconImportFetch.EagerAwait)
           ).resolves(new UrlResolutionError(new URL('test:///icon.png')))
           const res = await app.createFeed(req)
@@ -1749,6 +1757,7 @@ describe('feeds use case interactions', function () {
                 itemTemporalProperty: 'topic1:published',
                 itemsHaveIdentity: false,
                 itemsHaveSpatialDimension: true,
+                showOnMapByDefault: true,
                 paramsSchema: {
                   title: 'Topic 1 Params'
                 },
@@ -1786,6 +1795,7 @@ describe('feeds use case interactions', function () {
                 itemTemporalProperty: 'topic2:published',
                 itemsHaveIdentity: false,
                 itemsHaveSpatialDimension: true,
+                showOnMapByDefault: true,
                 paramsSchema: {
                   title: 'Topic 2 Params'
                 },
@@ -1813,6 +1823,7 @@ describe('feeds use case interactions', function () {
             topic: services[0].topics[0].id,
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: false,
+            showOnMapByDefault: true,
             variableParamsSchema: {
               properties: {
                 search: { type: 'string' }
@@ -1827,6 +1838,7 @@ describe('feeds use case interactions', function () {
             topic: services[1].topics[0].id,
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             constantParams: {
               limit: 50
             },
@@ -1892,6 +1904,7 @@ describe('feeds use case interactions', function () {
             itemTemporalProperty: 'updatedTemporal',
             itemsHaveIdentity: !feeds[1].itemsHaveIdentity,
             itemsHaveSpatialDimension: !feeds[1].itemsHaveSpatialDimension,
+            showOnMapByDefault: true,
             constantParams: {
               updated: true
             },
@@ -1981,8 +1994,8 @@ describe('feeds use case interactions', function () {
             sourceUrl: services[1].topics[0].mapStyle.icon!.sourceUrl,
             registeredTimestamp: Date.now()
           }
-          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].icon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(topicIcon)
-          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].mapStyle?.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(mapIcon)
+          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].icon.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(topicIcon)
+          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].mapStyle?.icon?.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(mapIcon)
           const req: UpdateFeedRequest = requestBy(adminPrincipal, { feed: feedMod })
           const res = await app.updateFeed(req)
 
@@ -1995,8 +2008,8 @@ describe('feeds use case interactions', function () {
           expect(res.error).to.be.null
           expect(res.success).to.deep.equal(expanded)
           expect(inDb).to.deep.equal(withTopicAttrs)
-          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].icon.sourceUrl)), StaticIconImportFetch.EagerAwait)
-          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].mapStyle?.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait)
+          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].icon.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
+          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(services[1].topics[0].mapStyle?.icon?.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
           app.iconRepo.received(2).findOrImportBySourceUrl(Arg.all())
         })
 
@@ -2014,6 +2027,7 @@ describe('feeds use case interactions', function () {
             itemTemporalProperty: null,
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             icon: null,
             mapStyle: null,
             updateFrequencySeconds: null,
@@ -2028,7 +2042,8 @@ describe('feeds use case interactions', function () {
             topic: feeds[0].topic,
             title: feedMod.title,
             itemsHaveIdentity: feedMod.itemsHaveIdentity,
-            itemsHaveSpatialDimension: feedMod.itemsHaveSpatialDimension
+            itemsHaveSpatialDimension: feedMod.itemsHaveSpatialDimension,
+            showOnMapByDefault: true,
           }
           const inDb = app.feedRepo.db.get(feeds[0].id)
           expect(inDb).to.deep.equal(expected)
@@ -2050,6 +2065,7 @@ describe('feeds use case interactions', function () {
             itemSecondaryProperty: null,
             itemTemporalProperty: null,
             itemPropertiesSchema: null,
+            showOnMapByDefault: true,
             updateFrequencySeconds: null,
           }
           const feedIcon: StaticIcon = {
@@ -2062,8 +2078,8 @@ describe('feeds use case interactions', function () {
             sourceUrl: feedMod.mapStyle!.icon!.sourceUrl!,
             registeredTimestamp: Date.now()
           }
-          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(feedIcon)
-          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.mapStyle?.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(mapIcon)
+          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.icon?.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(feedIcon)
+          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.mapStyle?.icon?.sourceUrl)), null, StaticIconImportFetch.EagerAwait).resolves(mapIcon)
           const req: UpdateFeedRequest = requestBy(adminPrincipal, { feed: feedMod })
           const res = await app.updateFeed(req)
 
@@ -2075,14 +2091,15 @@ describe('feeds use case interactions', function () {
             title: services[0].topics[0].title,
             itemsHaveIdentity: services[0].topics[0].itemsHaveIdentity,
             itemsHaveSpatialDimension: services[0].topics[0].itemsHaveSpatialDimension,
+            showOnMapByDefault: services[0].topics[0].showOnMapByDefault,
             icon: { id: feedIcon.id },
             mapStyle: {
               icon: { id: mapIcon.id }
             },
             localization: services[0].topics[0].localization
           })
-          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait)
-          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.mapStyle?.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait)
+          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.icon?.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
+          app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.mapStyle?.icon?.sourceUrl)), null, StaticIconImportFetch.EagerAwait)
           app.iconRepo.received(2).findOrImportBySourceUrl(Arg.all())
         })
 
@@ -2099,8 +2116,8 @@ describe('feeds use case interactions', function () {
           const parsedMapIcon = new URL(feedMod.mapStyle?.icon?.sourceUrl as string)
           const iconId = uniqid()
           const mapIconId = uniqid()
-          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(parsedIcon)), Arg.any()).resolves({ id: iconId } as StaticIcon)
-          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(parsedMapIcon)), Arg.any()).resolves({ id: mapIconId } as StaticIcon)
+          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(parsedIcon)), null, Arg.any()).resolves({ id: iconId } as StaticIcon)
+          app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(parsedMapIcon)), null, Arg.any()).resolves({ id: mapIconId } as StaticIcon)
           const req: UpdateFeedRequest = requestBy(adminPrincipal, { feed: feedMod })
           const res = await app.updateFeed(req)
 
@@ -2220,7 +2237,8 @@ describe('feeds use case interactions', function () {
             service: uniqid(),
             topic: 'topic1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: false
+            itemsHaveSpatialDimension: false,
+            showOnMapByDefault: true,
           },
           {
             id: uniqid(),
@@ -2230,6 +2248,7 @@ describe('feeds use case interactions', function () {
             topic: 'topic1',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             constantParams: {
               limit: 100
             },
@@ -2284,7 +2303,8 @@ describe('feeds use case interactions', function () {
             topic: uniqid(),
             title: 'Feed 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           },
           {
             id: uniqid(),
@@ -2292,7 +2312,8 @@ describe('feeds use case interactions', function () {
             topic: uniqid(),
             title: 'Feed 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }
         ]
         otherFeed = {
@@ -2301,7 +2322,8 @@ describe('feeds use case interactions', function () {
           topic: uniqid(),
           title: 'Other 1',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
         app.registerFeeds(...serviceFeeds, otherFeed)
         app.registerServices(
@@ -2382,6 +2404,7 @@ describe('feeds use case interactions', function () {
         },
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemTemporalProperty: 'when',
         itemPrimaryProperty: 'address',
       }

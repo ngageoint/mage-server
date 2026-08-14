@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { Api, AuthenticationStrategy } from '../../api/api.entity'
 import { User } from 'core-lib-src/user'
 import * as _ from 'underscore'
+import { SignupEvent } from './@types/signup'
 
 export interface AuthenticationEvent {
   user: User,
@@ -19,6 +20,7 @@ export class AuthenticationComponent implements OnChanges {
   @Input() landing: boolean = false
 
   @Output() signup = new EventEmitter<void>()
+  @Output() created = new EventEmitter<SignupEvent>()
   @Output() authenticated = new EventEmitter<{ user: User, token: string}>()
 
   strategy: any
@@ -44,8 +46,12 @@ export class AuthenticationComponent implements OnChanges {
     return name === 'local'
   }
 
-  signin($event: { user: User, token: string }) {
+  onSignin($event: { user: User, token: string }) {
     this.authenticated.emit($event)
+  }
+
+  onCreated($event: SignupEvent) {
+    this.created.emit($event)
   }
 
   onSignup(): void {

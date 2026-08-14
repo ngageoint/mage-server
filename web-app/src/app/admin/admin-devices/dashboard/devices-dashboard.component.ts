@@ -138,7 +138,7 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
       if (newDevice) {
         this.toastService.show(
           'Device Created',
-          ['../devices', newDevice.id],
+          ['/admin/devices', newDevice.id],
           'Go to Device'
         );
         this.refreshDevices();

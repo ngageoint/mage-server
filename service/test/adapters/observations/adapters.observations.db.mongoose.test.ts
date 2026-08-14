@@ -10,7 +10,7 @@ import { MageEventDocument, MageEventModelInstance } from '../../../src/models/e
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentProcessingStatus, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
@@ -40,7 +40,21 @@ function observationStub(id: ObservationId, eventId: MageEventId): ObservationAt
 }
 
 function omitUndefinedValues<T extends object>(x: T): T {
-  return _.omitBy(x, (v, k) => v === undefined) as T
+  if (Array.isArray(x)) {
+    return x.map(v => isPlainRecursable(v) ? omitUndefinedValues(v) : v) as T
+  }
+  const omitted = _.omitBy(x, (v, k) => v === undefined) as T
+  for (const key of Object.keys(omitted) as (keyof T)[]) {
+    const value = omitted[key]
+    if (isPlainRecursable(value)) {
+      omitted[key] = omitUndefinedValues(value) as T[keyof T]
+    }
+  }
+  return omitted
+}
+
+function isPlainRecursable(v: unknown): v is object {
+  return !!v && typeof v === 'object' && (Array.isArray(v) || Object.getPrototypeOf(v) === Object.prototype)
 }
 
 function omitKeysAndUndefinedValues<T extends object, K extends keyof T>(x: T, ...keys: K[]): Omit<T, K> {
@@ -246,6 +260,7 @@ describe('mongoose observation repository', function () {
             width: undefined,
             contentLocator: 'a1s2d3',
             size: 12345,
+            processingRetryCount: 0,
           }
         ]
         attrs.states = [
@@ -275,8 +290,8 @@ describe('mongoose observation repository', function () {
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
-        expect(omitUndefinedValues(savedAttrs)).to.deep.equal(attrs)
-        expect(omitUndefinedValues(foundAttrs)).to.deep.equal(attrs)
+        expect(omitUndefinedValues(savedAttrs)).to.deep.equal(omitUndefinedValues(attrs))
+        expect(omitUndefinedValues(foundAttrs)).to.deep.equal(omitUndefinedValues(attrs))
         expect(count).to.equal(1)
       })
     })
@@ -542,6 +557,7 @@ describe('mongoose observation repository', function () {
       ]
       obs = Observation.evaluate(attrs, event)
       obs = await repo.save(obs) as Observation
+      obs = await repo.findById(obs.id) as Observation
 
       expect(obs).to.be.instanceOf(Observation)
       expect(obs.validation.hasErrors).to.be.false
@@ -574,7 +590,12 @@ describe('mongoose observation repository', function () {
         height: 800,
         name: 'patched.png',
         oriented: true,
-        thumbnails: [{ minDimension: 80, contentLocator: uniqid(), contentType: 'image/jpeg' }]
+        thumbnails: [{ minDimension: 80, contentLocator: uniqid(), contentType: 'image/jpeg' }],
+        processingStatus: AttachmentProcessingStatus.Success,
+        processingMessage: '',
+        processingHook: '',
+        stagedContentId: '',
+        processingRetryCount: 0
       }
       const updated = await repo.patchAttachment(obs, obs.attachments[0].id, patch) as Observation
       const fetched = await repo.findById(obs.id) as Observation
@@ -730,13 +751,15 @@ describe('mongoose observation repository', function () {
       const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
       const saved = await repo.save(mod) as Observation
 
-      expect(mod.pendingEvents).to.have.length(1)
+      expect(mod.pendingEvents).to.have.length(2)
       expect(saved.pendingEvents).to.deep.equal([])
-      domainEvents.received(1).emit(Arg.all())
-      domainEvents.received(1).emit(
-        mod.pendingEvents[0].type,
-        Arg.deepEquals({ ...mod.pendingEvents[0], observation: saved })
-      )
+      domainEvents.received(2).emit(Arg.all())
+      for (const pending of mod.pendingEvents) {
+        domainEvents.received(1).emit(
+          pending.type,
+          Arg.deepEquals({ ...pending, observation: saved })
+        )
+      }
     })
 
     it('emits readonly events', async function () {

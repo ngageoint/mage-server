@@ -2,7 +2,7 @@ import { HttpClient, HttpContext, HttpEvent, HttpParams } from '@angular/common/
 import { Injectable } from '@angular/core';
 import { Observable, Subject, tap } from 'rxjs';
 import { BYPASS_TOKEN, SUPPRESS_AUTH_DIALOG } from '../http/token.interceptor';
-import { User } from 'core-lib-src/user';
+import { EventPreference, User } from 'core-lib-src/user';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 @Injectable({
@@ -51,7 +51,7 @@ export class UserService {
     const subject = new Subject<any>();
 
     const url = '/auth/' + strategy + '/signin';
-    const authWindow = window.open(url, '_blank');
+    window.open(url, '_blank');
 
     function onMessage(event: any) {
       window.removeEventListener('message', onMessage, false);
@@ -62,8 +62,6 @@ export class UserService {
 
       subject.next(event.data);
       subject.complete();
-
-      authWindow?.close();
     }
 
     window.addEventListener('message', onMessage, false);
@@ -188,6 +186,10 @@ export class UserService {
   getRecentEventId() {
     const recentEventIds = this.sessionService.user?.recentEventIds
     return recentEventIds?.length > 0 ? recentEventIds[0] : null
+  }
+
+  getEventPreferences(eventId: number): Observable<EventPreference> {
+    return this.httpClient.get<EventPreference>(`/api/my/preferences/events/${eventId}`)
   }
 
   logout(): Observable<string> {

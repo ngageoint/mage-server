@@ -11,7 +11,7 @@ coverage/
 database/
 docker/database/
 docker/server/resources/
-server/resources
+/server
 npm-debug.log
 pnpm-debug.log
 scratch/
@@ -19,7 +19,7 @@ scratch/
 *.scratch.*
 /docker/auth-idp/ldap/config/*
 /docker/auth-idp/ldap/db/*
-# this line must be last
-!.gitkeep
 .angular
 .DS_STORE
+# this line must be last
+!.gitkeep

@@ -24,6 +24,7 @@ import { JsonSchemaWidgetAutocompleteComponent } from '../../../json-schema/json
 import { JsonSchemaModule } from '../../../json-schema/json-schema.module';
 import { MomentModule } from '../../../../../app/moment/moment.module';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
 import { AdminServiceEditComponent } from '../../admin-service/admin-service-edit/admin-service-edit.component';
 import { AdminFeedEditConfigurationComponent } from './admin-feed-edit-configuration.component';
 import { AdminFeedEditItemPropertiesComponent } from './admin-feed-edit-item-properties/admin-feed-edit-item-properties.component';
@@ -128,6 +129,7 @@ describe('FeedEditComponent', () => {
         MomentModule,
         MageCommonModule,
         StaticIconModule,
+        FeedIconModule,
         AdminBreadcrumbModule],
     providers: [
         { provide: FeedService, useValue: mockFeedService },

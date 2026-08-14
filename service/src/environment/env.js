@@ -1,16 +1,8 @@
 const mongodb = require('mongodb')
   , path = require('path')
-  , cfenv = require('cfenv')
   , log = require('winston');
 
-if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
-  // bit of whitebox to cfenv lib here, because it provides no
-  // way to override the port value in options at construction,
-  // and uses the ports (https://www.npmjs.com/package/ports) package
-  // to attempt to read or set a default port from a file based on
-  // the current app's name. this always ends up being 6001, and once
-  // ports assigns that, it writes the value out to ~/.ports.json,
-  // which i think is undesirable behavior.
+if (!(process.env.MAGE_PORT || process.env.PORT)) {
   process.env.MAGE_PORT = '4242';
 }
 let x509Key = process.env.MAGE_MONGO_X509_KEY;
@@ -54,41 +46,25 @@ if (process.env.MAGE_MONGO_MAX_POOL_SIZE) {
   maxMongoPoolSize = parseInt(process.env.MAGE_MONGO_POOL_SIZE);
 }
 
-const appEnv = cfenv.getAppEnv({
-  vcap: {
-    services: {
-      "user-provided": [
-        {
-          name: 'MongoInstance',
-          plan: 'unlimited',
-          credentials: {
-            url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
-            minPoolSize: minMongoPoolSize,
-            maxPoolSize: maxMongoPoolSize,
-            replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
-            username: process.env.MAGE_MONGO_USER,
-            password: process.env.MAGE_MONGO_PASSWORD,
-            tls: process.env.MAGE_MONGO_SSL || null,
-            x509Key: x509Key || null,
-            x509Cert: x509Cert || null,
-            x509CaCert: x509CaCert || null,
-            tlsInsecure: process.env.MAGE_MONGO_TLS_INSECURE || null
-          }
-        }
-      ]
-    }
-  }
-});
+const mongoConfig = {
+  url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
+  minPoolSize: minMongoPoolSize,
+  maxPoolSize: maxMongoPoolSize,
+  replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
+  username: process.env.MAGE_MONGO_USER,
+  password: process.env.MAGE_MONGO_PASSWORD,
+  tls: process.env.MAGE_MONGO_SSL || null,
+  x509Key: x509Key || null,
+  x509Cert: x509Cert || null,
+  x509CaCert: x509CaCert || null,
+  tlsInsecure: process.env.MAGE_MONGO_TLS_INSECURE || null
+};
 
-if (appEnv.isLocal) {
-  appEnv.port = [ process.env.MAGE_PORT, process.env.PORT, 4242 ].map(parseInt).find(x => typeof x === 'number' && !isNaN(x));
-}
-
-const mongoConfig = appEnv.getServiceCreds('MongoInstance');
+const port = [ process.env.MAGE_PORT, process.env.PORT, 4242 ].map(parseInt).find(x => typeof x === 'number' && !isNaN(x));
 
 const environment = {
   address: process.env.MAGE_ADDRESS || '0.0.0.0',
-  port: appEnv.port,
+  port: port,
   userBaseDirectory: path.resolve(process.env.MAGE_USER_DIR || '/var/lib/mage/users'),
   iconBaseDirectory: path.resolve(process.env.MAGE_ICON_DIR || '/var/lib/mage/icons'),
   attachmentBaseDirectory: path.resolve(process.env.MAGE_ATTACHMENT_DIR || '/var/lib/mage/attachments'),
@@ -116,8 +92,8 @@ const environment = {
   }
 };
 
-const user = mongoConfig.user || mongoConfig.username;
-const password = mongoConfig.pass || mongoConfig.password;
+const user = mongoConfig.username;
+const password = mongoConfig.password;
 
 if (mongoConfig.x509Key) {
   const mongoTls = String(mongoConfig.tls).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };

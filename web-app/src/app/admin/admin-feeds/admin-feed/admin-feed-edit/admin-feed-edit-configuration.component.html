@@ -22,6 +22,7 @@
     </mat-form-field>
     <mat-checkbox formControlName="itemsHaveIdentity">Items have unique ID</mat-checkbox>
     <mat-checkbox formControlName="itemsHaveSpatialDimension">Items are geospatial features</mat-checkbox>
+    <mat-checkbox class="checkbox-group-spacer" formControlName="showOnMapByDefault">Show on map by default</mat-checkbox>
     <mat-form-field>
       <mat-label>Primary property</mat-label>
       <input matInput type="text" formControlName="itemPrimaryProperty" [matAutocomplete]="itemPropertyAutoComplete"/>
@@ -42,8 +43,38 @@
       <input matInput type="number" formControlName="updateFrequencySeconds"/>
       <mat-hint>Hint how often to query for new feed data</mat-hint>
     </mat-form-field>
-    <div class="icon-field">
-      <span class="mat-hint">Icon</span> <mage-static-icon-form-field formControlName="icon"></mage-static-icon-form-field>
+    <div class="icon">
+      <div class="mat-hint">Feed Icon</div>
+      <div class="configuration-hint">
+        <mat-icon>info</mat-icon>
+        This icon appears small in the feed list, so pick something simple and solid-colored.
+      </div>
+      <mage-static-icon-form-field (change)="onFeedIconChange($event)" formControlName="icon"></mage-static-icon-form-field>
+      <div class="icon__preview-group">
+        <div class="mat-hint mat-caption icon__preview-label">Preview: how this icon will appear on the feed</div>
+        <div class="icon__layout">
+          <div class="icon__preview">
+            <button mat-icon-button>
+              <feed-icon class="icon__preview--icon" [icon]="feedIconContent" [active]="true"></feed-icon>
+            </button>
+            <div class="mat-hint mat-caption icon__preview-text">Active</div>
+          </div>
+          <div class="icon__preview">
+            <button mat-icon-button>
+              <feed-icon class="icon__preview--icon" [icon]="feedIconContent"></feed-icon>
+            </button>
+            <div class="mat-hint mat-caption icon__preview-text">Inactive</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="icon" formGroupName="mapStyle">
+      <div class="mat-hint">Map Icon</div>
+      <div class="configuration-hint">
+        <mat-icon>info</mat-icon>
+        Select an icon to represent this location on the map
+      </div>
+      <mage-static-icon-form-field formControlName="icon"></mage-static-icon-form-field>
     </div>
     <mat-autocomplete #itemPropertyAutoComplete="matAutocomplete">
       <mat-option *ngFor="let itemProperty of itemSchemaPropertyTitles" [value]="itemProperty.key">{{itemProperty.title}}</mat-option>

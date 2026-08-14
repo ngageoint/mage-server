@@ -333,7 +333,7 @@ module.exports = function(app, security) {
    */
   app.get(
     '/api/users',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     async function(req, res) {
       const limit = req.query.limit || null;
@@ -353,7 +353,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/users/count',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     function(req, res, next) {
       var filter = {};
@@ -382,7 +382,7 @@ module.exports = function(app, security) {
   );
 
   // get info for the user bearing a token, i.e get info for myself
-  app.get('/api/users/myself', passport.authenticate('bearer'), function(
+  app.get('/api/users/myself', security.authentication.bearerAuthentication, function(
     req,
     res
   ) {
@@ -394,7 +394,7 @@ module.exports = function(app, security) {
   // update myself
   app.put(
     '/api/users/myself',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     upload.single('avatar'),
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
@@ -428,7 +428,7 @@ module.exports = function(app, security) {
 
   app.put(
     '/api/users/myself/password',
-    passport.authenticate('local'),
+    passport.authenticate('local', { session: false }),
     function(req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.sendStatus(404);
@@ -459,7 +459,7 @@ module.exports = function(app, security) {
   );
 
   // update status for myself
-  app.put('/api/users/myself/status', passport.authenticate('bearer'), function(
+  app.put('/api/users/myself/status', security.authentication.bearerAuthentication, function(
     req,
     res
   ) {
@@ -479,7 +479,7 @@ module.exports = function(app, security) {
   // remove status for myself
   app.delete(
     '/api/users/myself/status',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     function(req, res) {
       req.user.status = undefined;
       new api.User().update(req.user, function(err, updatedUser) {
@@ -494,7 +494,7 @@ module.exports = function(app, security) {
   // get user by id
   app.get(
     '/api/users/:userId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     function(req, res) {
       var user = userTransformer.transform(req.userParam, {
@@ -507,7 +507,7 @@ module.exports = function(app, security) {
   // Update a specific user
   app.put(
     '/api/users/:userId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     parseIconUpload,
@@ -604,7 +604,7 @@ module.exports = function(app, security) {
   // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
   app.put(
     '/api/users/:userId/password',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER_ROLE'),
     function(req, res, next) {
       const user = req.userParam;
@@ -640,7 +640,7 @@ module.exports = function(app, security) {
   // Delete a specific user
   app.delete(
     '/api/users/:userId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('DELETE_USER'),
     function(req, res, next) {
       const user = req.userParam;
@@ -662,7 +662,7 @@ module.exports = function(app, security) {
   // get user avatar/icon by id
   app.get(
     '/api/users/:userId/:content(avatar|icon)',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     function(req, res, next) {
       new api.User()[req.params.content](req.userParam, function(err, content) {
@@ -685,7 +685,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/users/:userId/events/:eventId/recent',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     async function(req, res, next) {
       if (userRoleHasPermission(req.user, 'UPDATE_EVENT')) {
         return next();

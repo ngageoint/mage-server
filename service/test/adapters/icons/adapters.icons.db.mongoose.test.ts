@@ -5,7 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
-import { StaticIcon, StaticIconContentStore, StaticIconImportFetch, StaticIconStub } from '../../../lib/entities/icons/entities.icons'
+import { LocalStaticIconStub, StaticIcon, StaticIconContentStore, StaticIconImportFetch, StaticIconStub } from '../../../lib/entities/icons/entities.icons'
 import { MongooseStaticIconRepository, StaticIconDocument, StaticIconModel } from '../../../lib/adapters/icons/adapters.icons.db.mongoose'
 import { EntityIdFactory, UrlResolutionError, UrlScheme } from '../../../lib/entities/entities.global'
 import { Readable } from 'stream'
@@ -85,7 +85,7 @@ describe('static icon mongoose repository', function () {
       }
       const id = uniqid()
       idFactory.nextId().resolves(id)
-      const registered = await repo.findOrImportBySourceUrl(stub)
+      const registered = await repo.findOrImportBySourceUrl(sourceUrl, stub)
       const found = await model.find({})
 
       expect(found).to.have.length(1)
@@ -124,7 +124,7 @@ describe('static icon mongoose repository', function () {
         sourceUrl,
         contentHash: uniqid()
       }
-      const reg = await repo.findOrImportBySourceUrl(attrs) as StaticIcon
+      const reg = await repo.findOrImportBySourceUrl(sourceUrl, attrs) as StaticIcon
 
       expect(reg.contentTimestamp).to.be.closeTo(Date.now(), 100)
     })
@@ -160,12 +160,12 @@ describe('static icon mongoose repository', function () {
       }
       const id = uniqid()
       idFactory.nextId().resolves(id)
-      const orig = await repo.findOrImportBySourceUrl(origAttrs)
+      const orig = await repo.findOrImportBySourceUrl(sourceUrl, origAttrs)
       const origFound = await model.find({})
 
       expect(orig).to.deep.include({ id, ...origAttrs })
 
-      const updated = await repo.findOrImportBySourceUrl(updatedAttrs)
+      const updated = await repo.findOrImportBySourceUrl(sourceUrl, updatedAttrs)
       const updatedFound = await model.find({})
 
       expect(updated).to.deep.include({ id, ...updatedAttrs })
@@ -203,9 +203,9 @@ describe('static icon mongoose repository', function () {
       })
       const id = uniqid()
       idFactory.nextId().resolves(id)
-      const orig = await repo.findOrImportBySourceUrl(origAttrs)
+      const orig = await repo.findOrImportBySourceUrl(sourceUrl, origAttrs)
       const origFound = await model.find({})
-      const updated = await repo.findOrImportBySourceUrl(updatedAttrs)
+      const updated = await repo.findOrImportBySourceUrl(sourceUrl, updatedAttrs)
       const updatedFound = await model.find({})
 
       expect(origFound).to.have.length(1)
@@ -246,9 +246,9 @@ describe('static icon mongoose repository', function () {
       }
       const id = uniqid()
       idFactory.nextId().resolves(id)
-      const orig = await repo.findOrImportBySourceUrl(origAttrs)
+      const orig = await repo.findOrImportBySourceUrl(sourceUrl,origAttrs)
       const origFound = await model.find({})
-      const updated = await repo.findOrImportBySourceUrl(updatedAttrs)
+      const updated = await repo.findOrImportBySourceUrl(sourceUrl, updatedAttrs)
       const updatedFound = await model.find({})
 
       expect(origFound).to.have.length(1)
@@ -287,12 +287,12 @@ describe('static icon mongoose repository', function () {
       }
       const id = uniqid()
       idFactory.nextId().resolves(id)
-      const registered = await repo.findOrImportBySourceUrl(stub) as StaticIcon
+      const registered = await repo.findOrImportBySourceUrl(sourceUrl, stub) as StaticIcon
 
       expect(registered).to.deep.include({ id, ...stub })
       expect(registered.contentTimestamp).to.be.closeTo(Date.now(), 100)
 
-      const sameHashRegistered = await repo.findOrImportBySourceUrl(sameHashStub)
+      const sameHashRegistered = await repo.findOrImportBySourceUrl(sourceUrl, sameHashStub)
 
       expect(sameHashRegistered).to.deep.equal(registered)
     })
@@ -328,9 +328,9 @@ describe('static icon mongoose repository', function () {
       })
       const id = uniqid()
       idFactory.nextId().resolves(id)
-      const orig = await repo.findOrImportBySourceUrl(origAttrs)
+      const orig = await repo.findOrImportBySourceUrl(sourceUrl, origAttrs)
       const origFound = await model.find({})
-      const updated = await repo.findOrImportBySourceUrl(updatedAttrs)
+      const updated = await repo.findOrImportBySourceUrl(sourceUrl, updatedAttrs)
       const updatedFound = await model.find({})
 
       expect(orig).to.deep.equal({ id, registeredTimestamp: origFound[0].registeredTimestamp, ...origAttrs })
@@ -351,7 +351,7 @@ describe('static icon mongoose repository', function () {
           const sourceUrl = scheme1.urlWithPath('lazy.png')
           const iconId = uniqid()
           idFactory.nextId().resolves(iconId)
-          const icon = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Lazy) as StaticIcon
+          const icon = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Lazy) as StaticIcon
 
           expect(icon.id).to.equal(iconId)
           contentStore.didNotReceive().putContent(Arg.all())
@@ -388,7 +388,7 @@ describe('static icon mongoose repository', function () {
           const fetchPromise = new Promise(fetch)
           scheme3.resolveContent(Arg.sameStringValueAs(sourceUrl)).returns(fetchPromise)
           contentStore.putContent(Arg.all()).resolves()
-          const icon = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Eager) as StaticIcon
+          const icon = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Eager) as StaticIcon
           const iconDoc = await model.findById(iconId)
 
           expect(icon).to.deep.include({ id: iconId, sourceUrl })
@@ -425,7 +425,7 @@ describe('static icon mongoose repository', function () {
           const sourceUrl = scheme1.urlWithPath('eager/registered')
           const iconId = uniqid()
           idFactory.nextId().resolves(iconId)
-          const lazy = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Lazy) as StaticIcon
+          const lazy = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Lazy) as StaticIcon
           const lazyDoc = await model.findById(iconId)
 
           expect(lazy).to.deep.include({ id: iconId, sourceUrl })
@@ -441,7 +441,7 @@ describe('static icon mongoose repository', function () {
           })
           scheme1.resolveContent(Arg.sameStringValueAs(sourceUrl)).returns(fetchPromise)
           contentStore.putContent(Arg.all()).resolves()
-          const eager = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Eager)
+          const eager = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Eager)
           const eagerDoc = await model.findById(iconId)
 
           expect(eager).to.deep.equal(lazy)
@@ -482,7 +482,7 @@ describe('static icon mongoose repository', function () {
           })
           scheme1.resolveContent(Arg.all()).resolves(new UrlResolutionError(sourceUrl, 'unexpected fetch'))
           contentStore.putContent(Arg.all()).resolves()
-          const found = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Eager)
+          const found = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Eager)
           const sameDoc = await model.findById(iconId)
 
           expect(found).to.deep.equal(repo.entityForDocument(iconDoc))
@@ -499,7 +499,7 @@ describe('static icon mongoose repository', function () {
           idFactory.nextId().resolves(iconId)
           scheme2Local.resolveContent(Arg.any()).resolves(Readable.from(''))
           contentStore.putContent(Arg.all()).resolves()
-          const icon = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Eager) as StaticIcon
+          const icon = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Eager) as StaticIcon
           const iconDoc = await model.findById(iconId)
           const resolvedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
@@ -533,7 +533,7 @@ describe('static icon mongoose repository', function () {
           const content = Readable.from('')
           scheme3.resolveContent(Arg.sameStringValueAs(sourceUrl)).resolves(content)
           contentStore.putContent(Arg.all()).resolves()
-          const icon = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.EagerAwait) as StaticIcon
+          const icon = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.EagerAwait) as StaticIcon
           const iconDoc = await model.findById(iconId)
 
           expect(icon).to.deep.include({ id: iconId, sourceUrl })
@@ -550,7 +550,7 @@ describe('static icon mongoose repository', function () {
           const sourceUrl = scheme1.urlWithPath('eager-await/registered')
           const iconId = uniqid()
           idFactory.nextId().resolves(iconId)
-          const lazy = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Lazy) as StaticIcon
+          const lazy = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Lazy) as StaticIcon
           const lazyDoc = await model.findById(iconId)
 
           expect(lazy).to.deep.include({ id: iconId, sourceUrl })
@@ -560,7 +560,7 @@ describe('static icon mongoose repository', function () {
           const content = Readable.from('')
           scheme1.resolveContent(Arg.sameStringValueAs(sourceUrl)).resolves(content)
           contentStore.putContent(Arg.all()).resolves()
-          const eager = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.EagerAwait) as StaticIcon
+          const eager = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.EagerAwait) as StaticIcon
           const eagerDoc = await model.findById(iconId)
 
           expect(eager).to.deep.include(lazy)
@@ -584,7 +584,7 @@ describe('static icon mongoose repository', function () {
           })
           scheme1.resolveContent(Arg.all()).resolves(new UrlResolutionError(sourceUrl, 'unexpected fetch'))
           contentStore.putContent(Arg.all()).resolves()
-          const found = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.EagerAwait)
+          const found = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.EagerAwait)
           const sameDoc = await model.findById(iconId)
 
           expect(found).to.deep.equal(repo.entityForDocument(iconDoc))
@@ -601,7 +601,7 @@ describe('static icon mongoose repository', function () {
           idFactory.nextId().resolves(iconId)
           scheme2Local.resolveContent(Arg.sameStringValueAs(sourceUrl)).resolves(Readable.from(''))
           contentStore.putContent(Arg.all()).resolves()
-          const icon = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.EagerAwait) as StaticIcon
+          const icon = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.EagerAwait) as StaticIcon
           const iconDoc = await model.findById(iconId)
 
           expect(icon).to.deep.include({ id: iconId, sourceUrl })
@@ -672,6 +672,7 @@ describe('static icon mongoose repository', function () {
     let scheme1Icon: StaticIcon
     let scheme1IconUnresolved: StaticIcon
     let scheme2LocalIcon: StaticIcon
+    let scheme3LocalIcon: StaticIcon
 
     beforeEach(async function () {
 
@@ -695,10 +696,16 @@ describe('static icon mongoose repository', function () {
         resolvedTimestamp: Date.now(),
         tags: []
       }
+      scheme3LocalIcon = {
+        id: uniqid(),
+        registeredTimestamp: Date.now(),
+        tags: []
+      }
       await model.insertMany([
         { ...scheme1Icon, _id: scheme1Icon.id },
         { ...scheme2LocalIcon, _id: scheme2LocalIcon.id },
-        { ...scheme1IconUnresolved, _id: scheme1IconUnresolved.id }
+        { ...scheme1IconUnresolved, _id: scheme1IconUnresolved.id },
+        { ...scheme3LocalIcon, _id: scheme3LocalIcon.id }
       ])
     })
 
@@ -761,28 +768,89 @@ describe('static icon mongoose repository', function () {
     it('loads content from the store if the source url is not local', async function () {
 
       const content = Readable.from('')
-      contentStore.loadContent(scheme1Icon.id).resolves(content)
+      contentStore.loadContent(Arg.is(actualReq => {
+        expect(actualReq.id).to.deep.equal(scheme1Icon.id)
+        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+        return true
+      })).resolves(content)
       const loaded = await repo.loadContent(scheme1Icon.id)
 
       expect(loaded).to.deep.equal([scheme1Icon, content])
-      contentStore.received(1).loadContent(scheme1Icon.id)
+      contentStore.received(1).loadContent(Arg.is(actualReq => {
+        expect(actualReq.id).to.deep.equal(scheme1Icon.id)
+        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+        return true
+      }))
       scheme1.didNotReceive().resolveContent(Arg.all())
     })
 
-    it('imports the content if the url is registered but not yet resolved', async function () {
+    it('loads content from the store when there is no source url', async function() {
+      const content = Readable.from('')
+      contentStore.loadContent(Arg.is(actualReq => {
+        expect(actualReq.id).to.deep.equal(scheme3LocalIcon.id)
+        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+        return true
+      })).resolves(content)
+
+      const loaded = await repo.loadContent(scheme3LocalIcon.id) as Array<any>
+
+      expect(loaded[0]).to.deep.include(scheme3LocalIcon)
+      expect(loaded[1]).to.deep.equal(content)
+      scheme1.didNotReceive().resolveContent(Arg.all())
+    })
+
+    it('imports the content if the url is registered but not yet resolved', async function() {
 
       const fetchedContent = Readable.from('')
       const storedContent = Readable.from('')
       scheme1.resolveContent(Arg.sameStringValueAs(scheme1IconUnresolved.sourceUrl)).resolves(fetchedContent)
-      contentStore.putContent(Arg.is(x => x.id === scheme1IconUnresolved.id), fetchedContent).resolves()
-      contentStore.loadContent(scheme1IconUnresolved.id).resolves(storedContent)
+      contentStore.putContent(Arg.is(x => x === scheme1IconUnresolved), fetchedContent).resolves()
+      contentStore.loadContent(Arg.is(actualReq => {
+        expect(actualReq.id).to.deep.equal(scheme1IconUnresolved.id)
+        expect(actualReq.registeredTimestamp).to.equal(scheme1IconUnresolved.registeredTimestamp)
+        return true
+      })).resolves(storedContent)
+
       const loaded = await repo.loadContent(scheme1IconUnresolved.id)
       const resolvedIcon = await repo.findById(scheme1IconUnresolved.id)
 
       expect(resolvedIcon?.resolvedTimestamp).to.be.closeTo(Date.now(), 100)
-      expect(loaded).to.deep.equal([resolvedIcon, storedContent])
+      expect(loaded).to.deep.equal([ resolvedIcon, storedContent ])
       scheme1.received(1).resolveContent(Arg.sameStringValueAs(scheme1IconUnresolved.sourceUrl))
       contentStore.received(1).putContent(Arg.deepEquals(scheme1IconUnresolved), fetchedContent)
     })
+
   })
+
+  describe('creating local icon', function() {
+    it('creates a new local icon', async function() {
+      const staticIcon: LocalStaticIconStub = {
+        title: 'test'
+      }
+      const iconContent = Readable.from('1234567890')
+
+      contentStore.putContent(Arg.is(x => {
+        expect(x.title).to.equal(staticIcon.title)
+        return true
+      }), iconContent).resolves()
+      const createdStaticIcon = await repo.createLocal(staticIcon, iconContent)
+      const retrievedStaticIcon = await model.findOne()
+
+      contentStore.received(1).putContent(Arg.is((x: StaticIcon) => {
+        expect(x.registeredTimestamp).to.be.not.null
+        expect(x.registeredTimestamp).to.be.closeTo(Date.now(), 100)
+        expect(x.title).to.equal(staticIcon.title)
+        return true
+      }), iconContent)
+
+      expect(createdStaticIcon).to.be.not.null
+      expect(createdStaticIcon!.title).to.equal('test')
+      expect(createdStaticIcon!.registeredTimestamp).to.be.closeTo(Date.now(), 100)
+
+      expect(retrievedStaticIcon).to.be.not.null
+      expect(retrievedStaticIcon!.title).to.equal('test')
+      expect(retrievedStaticIcon!.registeredTimestamp).to.be.closeTo(Date.now(), 100)
+    })
+  })
+
 })

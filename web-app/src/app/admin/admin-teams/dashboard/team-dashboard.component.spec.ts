@@ -202,8 +202,8 @@ describe('TeamDashboardComponent', () => {
 
     expect(toastSpy.show).toHaveBeenCalledWith(
       'Team created successfully',
-      ['../teams', createdTeam.id],
-      'View Team'
+      ['/admin/teams', createdTeam.id],
+      'Go to Team'
     );
 
     expect(mockTeamsService.search).toHaveBeenCalled();

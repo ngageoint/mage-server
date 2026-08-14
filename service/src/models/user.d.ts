@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { RoleJson, RoleModelInstance } from './role'
+import { RoleJson } from './role'
 import { UserIcon, Avatar, Phone } from '../entities/users/entities.users'
 import { Authentication } from '../entities/authentication/entities.authentication'
 
@@ -24,28 +24,29 @@ export interface UserDocument {
 
 export declare const Model: mongoose.Model<UserDocument>
 export type UserModelInstance = mongoose.HydratedDocument<UserDocument>
+export declare const Schema: mongoose.Schema<UserDocument>
 
 export function getUserById(id: mongoose.Types.ObjectId): Promise<UserModelInstance | null>
 export function getUserById(id: mongoose.Types.ObjectId, callback: (err: null | any, result: UserModelInstance | null) => any): void
 
 type RoleReferenced = {
   roleId: string,
-  role: never
+  role?: never
 }
 
 type RolePopulated = {
-  roleId: never,
+  roleId?: never,
   role: RoleJson
 }
 
 type AuthenticationPopulated = {
-  authenticationId: never,
+  authenticationId?: never,
   authentication: Authentication
 }
 
 type AuthenticationReferenced = {
   authenticationId: string,
-  authentication: never
+  authentication?: never
 }
 
 

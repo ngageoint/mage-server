@@ -76,7 +76,7 @@ exports.getLocations = function (options, callback) {
   if (options.populate) {
     query.populate({
       path: 'userId',
-      select: 'icon displayName email phones'
+      select: 'icon avatar displayName email phones'
     })
   }
 

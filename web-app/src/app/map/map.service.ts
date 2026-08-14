@@ -227,7 +227,7 @@ export class MapService {
         },
         options: {
           iconWidth: 24,
-          selected: true,
+          selected: feed.showOnMapByDefault != undefined ? feed.showOnMapByDefault : false,
           popup: (layer, feature) => {
             this.mapPopupService.popupFeedItem(layer, feed, feature);
           },

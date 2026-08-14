@@ -16,9 +16,9 @@
     </div>
 
     <div *ngIf="label" class="media-chip">
-      <mat-chip-listbox>
-        <mat-chip-option>{{label}}</mat-chip-option>
-      </mat-chip-listbox>
+      <mat-chip-set>
+        <mat-chip>{{label}}</mat-chip>
+      </mat-chip-set>
     </div>
 
     <div *ngIf="canEdit" class="attachment__delete">
@@ -30,7 +30,7 @@
 </div>
 
 <div *ngIf="!attachment.url">
-  <ng-container *ngTemplateOutlet="pending"></ng-container>
+  <ng-container *ngTemplateOutlet="isFailed() ? failed : pending"></ng-container>
 </div>
 
 <ng-template #image>
@@ -57,7 +57,22 @@
   </div>
 
   <div *ngIf="canEdit" class="attachment__delete">
-    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.actions === actions.DELETE">
+    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #failed>
+  <div class="media media-unknown media-unknown--clickable" (click)="showFailureMessage()">
+    <mat-icon class="media__icon">error</mat-icon>
+    <div>{{attachment.name | filename:12}}</div>
+    <div>Upload Failed</div>
+    <div class="media-unknown__hint">Tap for details</div>
+  </div>
+
+  <div *ngIf="canEdit || edit" class="attachment__delete">
+    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

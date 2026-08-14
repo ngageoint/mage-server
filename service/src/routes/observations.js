@@ -10,7 +10,6 @@ module.exports = function (app, security) {
     { default: turfCentroid } = require("@turf/centroid"),
     geometryFormat = require("../format/geoJsonFormat"),
     observationXform = require("../transformers/observation"),
-    passport = security.authentication.passport,
     { userRoleHasPermission } = require('../permissions/permissions.role-based.base'),
     { defaultEventPermissionsService: eventPermissions} = require("../permissions/permissions.events");
 
@@ -241,7 +240,7 @@ module.exports = function (app, security) {
 
   app.get(
     "/api/events/:eventId/observations/(:observationId).zip",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     validateObservationReadAccess,
     getUserForObservation,
     getIconForObservation,
@@ -304,7 +303,7 @@ module.exports = function (app, security) {
 
   app.get(
     "/api/events/:eventId/observations/:observationIdInPath",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
@@ -331,7 +330,7 @@ module.exports = function (app, security) {
 
   app.get(
     "/api/events/:eventId/observations",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
@@ -356,7 +355,7 @@ module.exports = function (app, security) {
 
   app.put(
     "/api/events/:eventId/observations/:observationIdInPath/favorite",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     /*
     TODO: this is a strange permission check.  this is because the request
     modifies data, but there is a USER_NO_EDIT_ROLE role that has permission to
@@ -393,7 +392,7 @@ module.exports = function (app, security) {
 
   app.delete(
     "/api/events/:eventId/observations/:observationIdInPath/favorite",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     /* TODO: see above note on PUT favorite permission check */
     validateObservationCreateAccess(false),
     function (req, res, next) {
@@ -423,7 +422,7 @@ module.exports = function (app, security) {
 
   app.put(
     "/api/events/:eventId/observations/:observationId/important",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     authorizeEventAccess("UPDATE_EVENT", "update"),
     function (req, res, next) {
       const important = {
@@ -454,7 +453,7 @@ module.exports = function (app, security) {
 
   app.delete(
     "/api/events/:eventId/observations/:observationId/important",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     authorizeEventAccess("UPDATE_EVENT", "update"),
     function (req, res, next) {
       new api.Observation(req.event).removeImportant(
@@ -478,7 +477,7 @@ module.exports = function (app, security) {
 
   app.post(
     "/api/events/:eventId/observations/:observationId/states",
-    passport.authenticate("bearer"),
+    security.authentication.bearerAuthentication,
     authorizeDeleteAccess,
     function (req, res) {
       let state = req.body;

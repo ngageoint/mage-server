@@ -10,6 +10,7 @@ import { KmlFeature, kml } from '../utilities/transformKML';
 interface SecurityConfig {
     authentication: {
         passport: any;
+        bearerAuthentication: any;
     };
 }
 interface LayerRequest extends Request {
@@ -101,11 +102,10 @@ const validate = async (req: Request, res: Response, next: NextFunction): Promis
 }
 
 function importRoutes(app: Express, security: SecurityConfig): void {
-    const passport = security.authentication.passport;
 
     app.post(
         '/api/layers/:layerId/kml',
-        passport.authenticate('bearer'),
+        security.authentication.bearerAuthentication,
         access.authorize('CREATE_LAYER' as AnyPermission),
         upload.single('file'),
         validate,

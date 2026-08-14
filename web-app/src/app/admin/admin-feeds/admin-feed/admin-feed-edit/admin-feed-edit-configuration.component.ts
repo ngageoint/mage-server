@@ -1,19 +1,10 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { FormControl, FormGroup, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
 import { debounceTime, map } from 'rxjs/operators'
-import { FeedTopic } from '@ngageoint/mage.web-core-lib/feed'
+import { FeedTopic, MapStyle } from '@ngageoint/mage.web-core-lib/feed'
 import { StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
 import { FeedMetaData, feedMetaDataLean, FeedMetaDataNullable } from './feed-edit.model'
-
-export type IconModel = Readonly<
-  | { iconFile: string }
-  | { iconUrl: string }
-  | { iconId: string }
-  >
-
-export interface MapStyle {
-  icon: IconModel
-}
+import { IconReference } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 
 @Component({
     selector: 'app-feed-configuration',
@@ -33,12 +24,17 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   @Output() cancelled = new EventEmitter();
   @Output() opened = new EventEmitter();
 
+  feedIconContent: IconReference
+  mapIconContent: string | null
+
   feedMetaDataForm: UntypedFormGroup = new UntypedFormGroup({
     title: new UntypedFormControl(),
     summary: new UntypedFormControl(),
     icon: new UntypedFormControl(),
+    mapStyle: new FormGroup({ icon: new FormControl }),
     itemsHaveIdentity: new UntypedFormControl(),
     itemsHaveSpatialDimension: new UntypedFormControl(),
+    showOnMapByDefault: new UntypedFormControl(),
     itemPrimaryProperty: new UntypedFormControl(),
     itemSecondaryProperty: new UntypedFormControl(),
     itemTemporalProperty: new UntypedFormControl(),
@@ -84,6 +80,14 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
     }
   }
 
+  onFeedIconChange($event) {
+    const inputElement = $event.target as HTMLInputElement
+    const files = inputElement.files
+    if (files && files.length) {
+      this.feedIconContent =  { file: files[0] }
+    }
+  }
+
   onPreviousStep(): void {
     this.cancelled.emit()
   }
@@ -101,6 +105,7 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   private resetFormWithMergedMetaData(): void {
     const merged = mergedMetaData(this.feedMetaData, this.topic || {})
     this.feedMetaDataForm.reset(merged, { emitEvent: false })
+    this.feedIconContent = merged.icon
   }
 
   private updateFormFromMetaDataRespectingUserChanges(): void {
@@ -113,11 +118,13 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
       title: formUpdateValueForTextControl('title', form, metaData),
       summary: formUpdateValueForTextControl('summary', form, metaData),
       icon: formUpdateValueForIconControl('icon', form, metaData),
+      mapStyle: formUpdateValueForMapStyleControl('mapStyle', form, metaData),
       itemPrimaryProperty: formUpdateValueForTextControl('itemPrimaryProperty', form, metaData),
       itemSecondaryProperty: formUpdateValueForTextControl('itemSecondaryProperty', form, metaData),
       itemTemporalProperty: formUpdateValueForTextControl('itemTemporalProperty', form, metaData),
       itemsHaveIdentity: formUpdateValueForBooleanControl('itemsHaveIdentity', form, metaData),
       itemsHaveSpatialDimension: formUpdateValueForBooleanControl('itemsHaveSpatialDimension', form, metaData),
+      showOnMapByDefault: formUpdateValueForBooleanControl('showOnMapByDefault', form, metaData),
       updateFrequencySeconds: formUpdateValueForNumberControl('updateFrequencySeconds', form, metaData)
     }
     form.setValue(updateValue, { emitEvent: false })
@@ -151,17 +158,24 @@ function formUpdateValueForIconControl(key: keyof Pick<FeedMetaData, 'icon'>, fo
   return control.dirty ? control.value as StaticIconReference : (updateMetaData.icon || null)
 }
 
+function formUpdateValueForMapStyleControl(key: keyof Pick<FeedMetaData, 'mapStyle'>, form: FormGroup, updateMetaData: FeedMetaData): MapStyle | null {
+  const control = form.get(key)
+  return control.dirty ? control.value as MapStyle: (updateMetaData.mapStyle || null)
+}
+
 export function formValueForMetaData(metaData: FeedMetaData): Required<FeedMetaDataNullable> {
   metaData = metaData || {}
   return {
     title: metaData.title || null,
     summary: metaData.summary || null,
     icon: metaData.icon || null,
+    mapStyle: metaData.mapStyle || null,
     itemPrimaryProperty: metaData.itemPrimaryProperty || null,
     itemSecondaryProperty: metaData.itemSecondaryProperty || null,
     itemTemporalProperty: metaData.itemTemporalProperty || null,
     itemsHaveIdentity: typeof metaData.itemsHaveIdentity === 'boolean' ? metaData.itemsHaveIdentity : null,
     itemsHaveSpatialDimension: typeof metaData.itemsHaveSpatialDimension === 'boolean' ? metaData.itemsHaveSpatialDimension : null,
+    showOnMapByDefault: typeof metaData.showOnMapByDefault === 'boolean' ? metaData.showOnMapByDefault : null,
     updateFrequencySeconds: typeof metaData.updateFrequencySeconds === 'number' ? metaData.updateFrequencySeconds : null
   }
 }
@@ -175,5 +189,3 @@ function mergedMetaData(feedMetaData: FeedMetaData | null, topic: FeedMetaData |
   const mergedMetaData = { ...topicMetaData, ...feedMetaData }
   return mergedMetaData
 }
-
-

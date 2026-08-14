@@ -70,8 +70,9 @@ mat-toolbar {
 }
 
 .item-header-text {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-body-large);
   color: var(--mat-sys-primary);
+  margin-top: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

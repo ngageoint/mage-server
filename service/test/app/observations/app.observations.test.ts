@@ -4,7 +4,7 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, registerDeleteRemovedAttachmentsHandler, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentProcessingStatus, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
@@ -343,7 +343,12 @@ describe('observations use case interactions', function() {
           { minDimension: 200, contentLocator: void(0), size: 2000, contentType: 'image/jpeg', width: 200, height: 300, name: 'rainbow@200.jpg' },
           { minDimension: 300, contentLocator: void(0), size: 3000, contentType: 'image/jpeg', width: 300, height: 400, name: 'rainbow@300.jpg' },
           { minDimension: 400, contentLocator: void(0), size: 4000, contentType: 'image/jpeg', width: 400, height: 500, name: 'rainbow@400.jpg' },
-        ]
+        ],
+        processingStatus: AttachmentProcessingStatus.Success,
+        processingMessage: '',
+        processingHook: '',
+        stagedContentId: '',
+        processingRetryCount: 0
       }
 
       expect(api.exoAttachmentForThumbnail(0, att)).to.deep.equal({
@@ -843,7 +848,7 @@ describe('observations use case interactions', function() {
             forms: [ { id: obsBefore.formEntries[0].id, formId: obsBefore.formEntries[0].formId, field1: 'updated field' } ]
           }
         }
-        const obsAfter = Observation.assignTo(obsBefore, obsAfterAttrs) as Observation
+        const obsAfter = Observation.assignTo(obsBefore, obsAfterAttrs, context.userId) as Observation
         const req: api.SaveObservationRequest = { context, observation: modExtra }
         obsRepo.save(Arg.all()).resolves(obsAfter)
         const res = await saveObservation(req)
@@ -1614,7 +1619,7 @@ describe('observations use case interactions', function() {
         }
       ]
       obs = Observation.evaluate(baseObsAttrs, mageEvent)
-      storeAttachmentContent = StoreAttachmentContent(permissions, store)
+      storeAttachmentContent = StoreAttachmentContent(permissions, store, [])
 
       expect(obs.validation.hasErrors).to.be.false
     })

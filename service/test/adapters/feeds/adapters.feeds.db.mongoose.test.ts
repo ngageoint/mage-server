@@ -279,6 +279,7 @@ describe('feeds repositories', function () {
           icon: { id: uniqid() },
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           updateFrequencySeconds: 60,
           itemPrimaryProperty: 'great',
           itemSecondaryProperty: 'meh',
@@ -333,6 +334,7 @@ describe('feeds repositories', function () {
             summary: uniqid(),
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             itemPrimaryProperty: uniqid(),
             itemSecondaryProperty: uniqid(),
             itemTemporalProperty: uniqid(),
@@ -366,6 +368,7 @@ describe('feeds repositories', function () {
             summary: uniqid(),
             itemsHaveIdentity: !origAttrs.itemsHaveIdentity,
             itemsHaveSpatialDimension: !origAttrs.itemsHaveSpatialDimension,
+            showOnMapByDefault: true,
             itemPrimaryProperty: uniqid(),
             itemSecondaryProperty: uniqid(),
             itemTemporalProperty: uniqid(),
@@ -408,6 +411,7 @@ describe('feeds repositories', function () {
             summary: uniqid(),
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             itemPrimaryProperty: uniqid(),
             itemSecondaryProperty: uniqid(),
             itemTemporalProperty: uniqid(),
@@ -437,7 +441,8 @@ describe('feeds repositories', function () {
             topic: origAttrs.topic,
             title: uniqid(),
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
           const origDoc = await model.create({ ...origAttrs, _id: origAttrs.id, icon: origAttrs.icon.id })
           const updated = await repo.put(updatedAttrs)
@@ -456,7 +461,8 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: uniqid(),
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
           const updatedAttrs: Feed = Object.freeze({
             id: origAttrs.id,
@@ -464,7 +470,8 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: uniqid(),
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
           const origDoc = await model.create({ ...origAttrs, _id: origAttrs.id })
           const updated = await repo.put(updatedAttrs)
@@ -495,6 +502,7 @@ describe('feeds repositories', function () {
             },
             itemsHaveIdentity: false,
             itemsHaveSpatialDimension: false,
+            showOnMapByDefault: true,
           },
           {
             id: '2',
@@ -507,6 +515,7 @@ describe('feeds repositories', function () {
             },
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
             itemPrimaryProperty: 'crucialStuff',
             itemSecondaryProperty: 'details',
             itemTemporalProperty: 'when',
@@ -541,6 +550,7 @@ describe('feeds repositories', function () {
           title: 'Feed 0',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }))
         feeds.push(await repo.create({
           service: (new mongoose.Types.ObjectId()).toHexString(),
@@ -548,6 +558,7 @@ describe('feeds repositories', function () {
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }))
         feeds.push(await repo.create({
           service: (new mongoose.Types.ObjectId()).toHexString(),
@@ -555,6 +566,7 @@ describe('feeds repositories', function () {
           title: 'Feed 2',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }))
         const fetched = await repo.findAllByIds(['0', '2'])
 
@@ -572,7 +584,8 @@ describe('feeds repositories', function () {
           title: 'No Object IDs',
           summary: 'Testing',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
         idFactory.nextId().resolves('abc-123')
         const created = await repo.create(stub)
@@ -594,7 +607,8 @@ describe('feeds repositories', function () {
           title: 'No Version Keys',
           summary: 'Testing',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
         idFactory.nextId().resolves('abc-123')
         const created = await repo.create(stub)
@@ -622,21 +636,24 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: 'Feed 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service,
             topic: uniqid(),
             title: 'Feed 2',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service,
             topic: uniqid(),
             title: 'Feed 3',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
         ])
         const otherFeeds: Feed[] = await Promise.all([
@@ -645,14 +662,16 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service: (new mongoose.Types.ObjectId()).toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
         ])
         const found = await repo.findFeedsForService(service)
@@ -672,14 +691,16 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service: (new mongoose.Types.ObjectId()).toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
         ])
         const all = await repo.findAll()
@@ -700,7 +721,8 @@ describe('feeds repositories', function () {
           title: 'No Version Keys',
           summary: 'Testing',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         })
         idFactory.nextId().resolves('remove_test')
         const created = await repo.create({ ...stub })
@@ -731,14 +753,16 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: 'Feed 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service,
             topic: uniqid(),
             title: 'Feed 2',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
         ])
         const otherFeeds: Feed[] = await Promise.all([
@@ -747,14 +771,16 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service: (new mongoose.Types.ObjectId()).toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
         ])
         const allBeforeRemove = await repo.findAll()
@@ -775,14 +801,16 @@ describe('feeds repositories', function () {
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           }),
           repo.create({
             service: (new mongoose.Types.ObjectId()).toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
-            itemsHaveSpatialDimension: true
+            itemsHaveSpatialDimension: true,
+            showOnMapByDefault: true,
           })
         ])
         const removed = await repo.removeByServiceId((new mongoose.Types.ObjectId()).toHexString())

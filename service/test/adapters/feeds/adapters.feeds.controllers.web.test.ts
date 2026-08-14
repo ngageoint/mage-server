@@ -592,6 +592,7 @@ invalid request
           icon: { id: uniqid() },
           itemsHaveIdentity: false,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemTemporalProperty: 'when',
           itemPrimaryProperty: 'summary',
           itemSecondaryProperty: 'details',
@@ -634,6 +635,7 @@ invalid request
           icon: { id: appReqParams.feed.icon!.id! },
           itemsHaveIdentity: appReqParams.feed.itemsHaveIdentity,
           itemsHaveSpatialDimension: appReqParams.feed.itemsHaveSpatialDimension,
+          showOnMapByDefault: appReqParams.feed.showOnMapByDefault,
           itemPrimaryProperty: appReqParams.feed.itemTemporalProperty as string,
           itemSecondaryProperty: appReqParams.feed.itemSecondaryProperty as string,
           itemTemporalProperty: appReqParams.feed.itemTemporalProperty as string,
@@ -678,6 +680,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -699,6 +702,7 @@ invalid request
           title: 'Topic Title',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPrimaryProperty: 'topicPrimary',
         },
         content: {
@@ -733,6 +737,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -755,7 +760,8 @@ invalid request
           topic,
           title: 'Topic Title',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true
         }
       }
 
@@ -782,6 +788,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -803,7 +810,8 @@ invalid request
           topic,
           title: 'Topic Title',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         },
         content: {
           topic,
@@ -838,6 +846,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -860,6 +869,7 @@ invalid request
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
           itemPrimaryProperty: 'topicPrimary',
+          showOnMapByDefault: true,
         },
         content: {
           topic,
@@ -893,6 +903,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -914,6 +925,7 @@ invalid request
           title: 'Topic Title',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPrimaryProperty: 'topicPrimary',
         },
         content: {
@@ -947,6 +959,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -968,6 +981,7 @@ invalid request
           title: 'Topic Title',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPrimaryProperty: 'topicPrimary',
         },
         content: {
@@ -1020,6 +1034,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -1046,6 +1061,7 @@ invalid request
         summary: appReq.feed.summary!,
         itemsHaveIdentity: false,
         itemsHaveSpatialDimension: false,
+        showOnMapByDefault: true,
         constantParams: appReq.feed.constantParams || undefined,
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
@@ -1086,6 +1102,7 @@ invalid request
         },
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemTemporalProperty: 'date',
         itemPrimaryProperty: 'title',
         itemSecondaryProperty: 'summary',
@@ -1168,6 +1185,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -1194,6 +1212,7 @@ invalid request
         summary: appReq.feed.summary!,
         itemsHaveIdentity: false,
         itemsHaveSpatialDimension: false,
+        showOnMapByDefault: true,
         constantParams: appReq.feed.constantParams || undefined,
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
@@ -1236,6 +1255,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -1262,6 +1282,7 @@ invalid request
         summary: appReq.feed.summary!,
         itemsHaveIdentity: false,
         itemsHaveSpatialDimension: false,
+        showOnMapByDefault: true,
         constantParams: appReq.feed.constantParams || undefined,
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
@@ -1304,6 +1325,7 @@ invalid request
         icon: undefined,
         itemsHaveIdentity: undefined,
         itemsHaveSpatialDimension: undefined,
+        showOnMapByDefault: undefined,
         itemPrimaryProperty: undefined,
         itemSecondaryProperty: undefined,
         itemTemporalProperty: undefined,
@@ -1330,6 +1352,7 @@ invalid request
         summary: appReq.feed.summary!,
         itemsHaveIdentity: false,
         itemsHaveSpatialDimension: false,
+        showOnMapByDefault: true,
         constantParams: appReq.feed.constantParams || undefined,
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
@@ -1357,7 +1380,8 @@ invalid request
           topic: uniqid(),
           title: 'Turtles',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         },
         {
           id: uniqid(),
@@ -1365,7 +1389,8 @@ invalid request
           topic: uniqid(),
           title: 'Snakes',
           itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
       ]
       const appReq: ListServiceFeedsRequest = createAdminRequest({ service })
@@ -1410,7 +1435,8 @@ invalid request
           topic: 'tornadoes',
           title: 'Tornadoes',
           itemsHaveIdentity: false,
-          itemsHaveSpatialDimension: true
+          itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         },
         {
           id: uniqid(),
@@ -1419,6 +1445,7 @@ invalid request
           title: 'Grizzly Bears',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemTemporalProperty: 'when',
           constantParams: {
             type: 'grizzly'
@@ -1458,6 +1485,7 @@ invalid request
         summary: 'Get it and test it',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         constantParams: {
           test: 'yes'
         },
@@ -1499,6 +1527,7 @@ invalid request
         summary: 'Get it and test it',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         constantParams: {
           test: 'yes'
         },
@@ -1540,6 +1569,7 @@ invalid request
         summary: 'Get it and test it',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         constantParams: {
           test: 'yes'
         },
@@ -1581,6 +1611,7 @@ invalid request
         summary: 'Get it and test it',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         constantParams: {
           test: 'yes'
         },
@@ -1622,6 +1653,7 @@ invalid request
         summary: 'Get it and test it',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         constantParams: {
           test: 'yes'
         },
@@ -1655,6 +1687,7 @@ invalid request
         icon: { id: uniqid() },
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPrimaryProperty: 'updated1',
         itemSecondaryProperty: 'updated2',
         itemTemporalProperty: 'updatedTime',
@@ -1687,6 +1720,7 @@ invalid request
         summary: 'Update summary',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPrimaryProperty: 'updated1',
         itemSecondaryProperty: 'updated2',
         itemTemporalProperty: 'updatedTime',
@@ -1727,6 +1761,7 @@ invalid request
         icon: { id: uniqid() },
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPrimaryProperty: 'updated1',
         itemSecondaryProperty: 'updated2',
         itemTemporalProperty: 'updatedTime',

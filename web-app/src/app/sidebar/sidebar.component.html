@@ -1,0 +1,28 @@
+<div class="feeds-nav">
+  <div *ngFor="let tab of tabs" (click)="onTabSwitched(tab)">
+    <sidebar-tab [tab]="tab" [active]="tab.id === currentTab?.id"></sidebar-tab>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div (click)="onTabSwitched(exportTab)">
+    <sidebar-tab [tab]="exportTab" [active]="exportTab.id === currentTab?.id"></sidebar-tab>
+  </div>
+</div>
+
+<div class="feeds-content">
+  <user-view *ngIf="viewUser" @slide class="component__view" [user]="viewUser" [event]="event" (close)="onUserViewClose()"></user-view>
+
+  <observation-view *ngIf="viewObservation" @slide class="component__view" [event]="event" [observation]="viewObservation" (close)="onObservationViewClose()" (delete)="onObservationDelete($event)"></observation-view>
+  <observation-edit *ngIf="editObservation" @slide class="component__view" [observation]="editObservation" (close)="onObservationEditClose($event)"></observation-edit>
+  <observation-edit *ngIf="newObservation" @slide class="component__view" [observation]="newObservation" (close)="onObservationEditClose($event)"></observation-edit>
+
+  <feed-item *ngIf="feedItem" @slide class="component__view" [item]="feedItem.item" [feed]="feedItem.feed"></feed-item>
+
+  <export-view *ngIf="viewExport" @slide class="component__view" [item]="viewExport" (close)="onExportViewClose()"></export-view>
+
+  <observation-list class="feed-container" *ngIf="currentTab.id === 'observations'"></observation-list>
+  <user-list class="feed-container" *ngIf="currentTab.id === 'people'"></user-list>
+  <feed-list class="feed-container" [feed]="currentTab.feed" *ngIf="currentTab.feed"></feed-list>
+  <export class="feed-container" *ngIf="currentTab.id === 'export'"></export>
+</div>

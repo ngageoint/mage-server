@@ -1,9 +1,6 @@
-:host {
-  --mat-card-elevated-container-color: #ffffff;
-}
-
 mat-card {
   overflow: hidden;
+  --mat-card-elevated-container-color: white;
 }
 
 mat-card-content {
@@ -29,7 +26,7 @@ mat-card-actions {
 }
 
 .item-header-text {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-body-large);
   color: var(--mat-sys-primary);
   margin-top: 4px;
   white-space: nowrap;
@@ -94,6 +91,21 @@ mat-card-actions {
   width: 100%;
   object-fit: cover;
   display: block;
+}
+
+.item-media-chip {
+  margin-top: 8px;
+}
+
+.item-media-chip-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #ffebee;
+  color: #c62828;
 }
 
 .item-important {

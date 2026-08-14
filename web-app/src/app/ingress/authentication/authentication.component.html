@@ -5,13 +5,20 @@
   </div>
 
   <div class="authentications">
-    <local-authentication
-      *ngIf="localAuthenticationStrategy"
-      strategy="localAuthenticationStrategy"
-      [landing]="landing"
-      (signup)="onSignup()"
-      (authenticated)="signin($event)">
-    </local-authentication>
+    <div class="strategies">
+      <div *ngFor="let strategy of thirdPartyStrategies" >
+        <ng-container [ngSwitch]="strategy?.type">
+          <idp-authentication *ngSwitchCase="'oauth'" [strategy]="strategy"
+            (authenticated)="onSignin($event)" (created)="onCreated($event)"></idp-authentication>
+          <idp-authentication *ngSwitchCase="'saml'" [strategy]="strategy"
+            (authenticated)="onSignin($event)" (created)="onCreated($event)"></idp-authentication>
+          <idp-authentication *ngSwitchCase="'openidconnect'" [strategy]="strategy"
+            (authenticated)="onSignin($event)" (created)="onCreated($event)"></idp-authentication>
+          <ldap-authentication *ngSwitchCase="'ldap'" [api]="api" [strategy]="strategy"
+            (authenticated)="onSignin($event)"></ldap-authentication>
+        </ng-container>
+      </div>
+    </div>
 
     <div *ngIf="localAuthenticationStrategy && thirdPartyStrategies.length">
       <div class="or">
@@ -21,19 +28,13 @@
       </div>
     </div>
 
-    <div class="strategies">
-      <div *ngFor="let strategy of thirdPartyStrategies" >
-        <ng-container [ngSwitch]="strategy?.type">
-          <idp-authentication *ngSwitchCase="'oauth'" [strategy]="strategy"
-            (authenticated)="signin($event)"></idp-authentication>
-          <idp-authentication *ngSwitchCase="'saml'" [strategy]="strategy"
-            (authenticated)="signin($event)"></idp-authentication>
-          <idp-authentication *ngSwitchCase="'openidconnect'" [strategy]="strategy"
-            (authenticated)="signin($event)"></idp-authentication>
-          <ldap-authentication *ngSwitchCase="'ldap'" [api]="api" [strategy]="strategy"
-            (authenticated)="signin($event)"></ldap-authentication>
-        </ng-container>
-      </div>
-    </div>
+    <local-authentication
+      *ngIf="localAuthenticationStrategy"
+      strategy="localAuthenticationStrategy"
+      [landing]="landing"
+      (signup)="onSignup()"
+      (authenticated)="onSignin($event)">
+    </local-authentication>
+
   </div>
 </div>

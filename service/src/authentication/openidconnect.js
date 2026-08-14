@@ -1,10 +1,14 @@
-const OpenIdConnectStrategy = require('passport-openidconnect').Strategy
+const crypto = require('crypto')
+  , session = require('express-session')
+  , OpenIdConnectStrategy = require('passport-openidconnect').Strategy
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
   , { app, passport, tokenService } = require('./index');
+
+const oidcSession = session({ secret: crypto.randomBytes(64).toString('hex') });
 
 function configure(strategy) {
   log.info(`Configuring ${strategy.title} authentication`);
@@ -106,6 +110,7 @@ function configure(strategy) {
   }
 
   app.get(`/auth/${strategy.name}/callback`,
+    oidcSession,
     authenticate,
     function (req, res) {
       if (req.query.state === 'mobile') {
@@ -118,7 +123,17 @@ function configure(strategy) {
 
         res.redirect(uri);
       } else {
-        res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
+        res.render('authentication', { success: true, login: { token: req.token, user: req.user } });
+      }
+    },
+    // eslint-disable-next-line no-unused-vars
+    function (err, req, res, next) {
+      log.error(strategy.title + ' authentication failed', err);
+
+      if (req.query.state === 'mobile') {
+        res.redirect('mage://app/error_account');
+      } else {
+        res.render('authentication', { success: false, login: {} });
       }
     }
   );
@@ -153,6 +168,7 @@ function initialize(strategy) {
   setDefaults(strategy);
 
   app.get(`/auth/${strategy.name}/signin`,
+    oidcSession,
     function (req, res, next) {
       passport.authenticate(strategy.name, {
         scope: strategy.settings.scope,

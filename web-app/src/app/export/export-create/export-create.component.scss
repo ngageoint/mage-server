@@ -1,0 +1,99 @@
+// UNDO Bootstrap
+:host ::ng-deep label {
+  display: unset;
+  max-width: unset;
+  margin-bottom: unset;
+  font-weight: unset;
+}
+
+mat-panel-title {
+  flex-grow: 2;
+}
+
+mat-panel-description {
+  flex-grow: 1;
+}
+
+mat-expansion-panel {
+  --mat-expansion-container-background-color: white;
+}
+
+mat-toolbar {
+  background: white;
+}
+
+mat-checkbox {
+  margin: 0 10px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.export {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  height: 100%;
+}
+
+.export-content {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.export-info {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-title {
+  margin-bottom: 4px;
+}
+
+.export-choices {
+  margin-bottom: 8px;
+}
+
+.export-options {
+  margin-left: 16px;
+  margin-bottom: 16px;
+}
+
+.headline {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--mat-sys-on-surface);
+  margin-bottom: 4px
+}
+
+.export-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.export-format {
+  margin-bottom: 16px;
+}
+
+.expansion-header-icon {
+  margin-left: 4px;
+}
+
+.time-field {
+  width: 100%;
+  margin-bottom: -1.25em;
+}
+
+.form__field {
+  margin-left: 16px;
+}
+
+.event-option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

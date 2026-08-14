@@ -1,0 +1,39 @@
+:host {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  height: 100%;
+}
+
+.empty-state {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 16px;
+}
+
+.empty-state-icon {
+  font-size: 96px;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 4px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state-title {
+  margin: 0;
+  font-size: var(--mat-sys-title-large-size);
+  color: var(--mat-sys-on-surface);
+}
+
+.empty-state-text {
+  margin: 4px 0 32px;
+  font-size: var(--mat-sys-body-medium-size);
+  color: var(--mat-sys-on-surface-variant);
+  max-width: 350px;
+}

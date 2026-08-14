@@ -1,0 +1,16 @@
+<div class="export">
+  <mat-toolbar>
+    <span>Exports</span>
+  </mat-toolbar>
+
+  <div class="export__form">
+    <div *ngFor="let export of exports; trackBy: trackExport" (click)="onClick(export)" class="export__item" matRipple>
+      <export-list-item [item]="export"></export-list-item>
+      <mat-divider></mat-divider>
+    </div>
+  </div>
+
+  <button matMiniFab class="export__button" (click)="onCreate()">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

@@ -7,25 +7,26 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
     standalone: false
 })
 export class AccountStatusComponent implements OnChanges {
-  @Input() active: boolean
+  @Input() status: 'active' | 'inactive' | 'disabled'
   @Output() complete = new EventEmitter<void>()
 
   icon: string
-  color: string
   title: string
   message: string
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['active'].currentValue === true) {
+    if (changes['status'].currentValue === 'active') {
       this.icon = "check_circle"
-      this.color = "#4CAF50"
       this.title = "Account Created"
       this.message = "Your account has been successfully created."
-    } else if (changes['active'].currentValue === false) {
+    } else if (changes['status'].currentValue === 'inactive') {
       this.icon = "preliminary"
-      this.color = "#FFA000"
       this.title = "Account Pending"
       this.message = "Your account has been successfully created. A Mage administrator will need to activate your account before you can log in."
+    } else if (changes['status'].currentValue === 'disabled') {
+      this.icon = "block"
+      this.title = "Account Disabled"
+      this.message = "Your account has been disabled. Please contact a Mage administrator for assistance."
     }
   }
 

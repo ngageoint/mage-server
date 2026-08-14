@@ -1,0 +1,58 @@
+name: get package info
+description: Get NPM package name and version components from a given package.json file.
+inputs:
+  package_path:
+    type: string
+    required: true
+    description: The path to a package.json file
+    default: './package.json'
+outputs:
+  name:
+    description: The name of the package
+    value: ${{ steps.parse_package.outputs.name }}
+  version:
+    description: The full version string of the package, e.g., '3.2.1-beta.4'
+    value: ${{ steps.parse_package.outputs.version }}
+  version-base:
+    description: >
+      The base part of the version without any prerelease or build number suffix, e.g., 
+      base of '3.2.1-beta.4' would be '3.2.1'
+    value: ${{ steps.parse_package.outputs.version-base }}
+  version-prerelease_tag:
+    description: >
+      The prerelease tag name of the package version, without the associated number, e.g., 
+      '3.2.1-beta.4' would have prerelease tag 'beta'
+    value: ${{ steps.parse_package.outputs.version-prerelease_tag }}
+  version-prerelease_number:
+    description: >
+      The prerelease number of the package version, e.g., '3.2.1-beta.4' would have prerelease number '4'
+    value: ${{ steps.parse_package.outputs.version-prerelease_number }}
+
+runs:
+  using: "composite"
+  steps:
+  - name: setup node
+    uses: actions/setup-node@v7
+    with:
+      node-version: lts/*
+  - name: install_utils
+    shell: bash
+    run: |
+      npm i -g json semver
+  - name: parse_package
+    id: parse_package
+    shell: bash
+    run: |
+      export NODE_PATH=$(npm -g root)
+      package=${{ inputs.package_path }}
+      package_name=$(json name < ${package})
+      package_version=$(json version < ${package})
+      package_version_base=$(node -p "require('semver').truncate('${package_version}', 'patch') || ''")
+      package_version_prerelease_tag=$(node -p "require('semver').prerelease('${package_version}')?.[0] || ''")
+      package_version_prerelease_number=$(node -p "require('semver').prerelease('${package_version}')?.[1] || ''")
+      echo "name=${package_name}" >> $GITHUB_OUTPUT
+      echo "version=${package_version}" >> $GITHUB_OUTPUT
+      echo "version-base=${package_version_base}" >> $GITHUB_OUTPUT
+      echo "version-prerelease_tag=${package_version_prerelease_tag}" >> $GITHUB_OUTPUT
+      echo "version-prerelease_number=${package_version_prerelease_number}" >> $GITHUB_OUTPUT
+      echo "${{ inputs.package_path }} package info:" && cat $GITHUB_OUTPUT

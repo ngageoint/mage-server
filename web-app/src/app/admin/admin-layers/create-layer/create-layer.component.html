@@ -38,11 +38,18 @@
     </div>
 
     <div *ngIf="layerForm.get('type')?.value === 'GeoPackage' && !isEditMode" class="geopackage-section">
-      <button matButton="outlined" type="button" (click)="fileInput.click()">
+      <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="uploading">
         <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
         {{ geopackageFileName || 'Upload GeoPackage' }}
       </button>
       <input #fileInput type="file" class="file-input" accept=".gpkg" (change)="onGeoPackageFileSelected($event)">
+
+      <mat-progress-bar
+        *ngIf="uploading"
+        class="upload-progress"
+        [mode]="uploadProgress === null ? 'indeterminate' : 'determinate'"
+        [value]="uploadProgress"
+      ></mat-progress-bar>
     </div>
   </form>
 </mat-dialog-content>
@@ -53,6 +60,6 @@
 </div>
 
 <mat-dialog-actions>
-  <button matButton type="button" (click)="cancel()">Cancel</button>
-  <button matButton="filled" type="button" (click)="save()" [disabled]="canSave">{{ isEditMode ? 'Save Layer' : 'Create Layer' }}</button>
+  <button matButton type="button" (click)="cancel()" [disabled]="uploading">Cancel</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="canSave">{{ uploading ? (uploadProgress === null ? 'Processing…' : 'Uploading ' + uploadProgress + '%') : (isEditMode ? 'Save Layer' : 'Create Layer') }}</button>
 </mat-dialog-actions>

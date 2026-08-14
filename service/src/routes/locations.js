@@ -6,7 +6,6 @@ module.exports = function(app, security) {
   const { userRoleHasPermission } = require('../permissions/permissions.role-based.base');
   const { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
-  const passport = security.authentication.passport;
   const location = new Location();
 
   async function validateEventAccess(req, res, next) {
@@ -107,7 +106,7 @@ module.exports = function(app, security) {
   // max of 100 locations per user
   app.get(
     '/api/events/:eventId/locations/users',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
@@ -128,7 +127,7 @@ module.exports = function(app, security) {
   // Will only return locations for the teams that the user is a part of
   app.get(
     '/api/events/:eventId/locations',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
@@ -146,7 +145,7 @@ module.exports = function(app, security) {
   // create new location(s) for a specific user and event
   app.post(
     '/api/events/:eventId/locations',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res, next) {
