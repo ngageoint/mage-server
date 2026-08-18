@@ -138,6 +138,25 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		return this.featureService?.mayLackEditPrivilege === true || this.discoveredMayLackEditPrivilege === true
 	}
 
+	get canBrowse(): boolean {
+		const { portalUrl, authenticationType } = this.layerForm.getRawValue()
+		if (!portalUrl || !authenticationType) {
+			return false
+		}
+		switch (authenticationType) {
+			case AuthenticationType.Token:
+				return !!this.layerForm.controls.token.value.token
+			case AuthenticationType.OAuth:
+				return !!this.layerForm.controls.oauth.value.clientId
+			case AuthenticationType.UsernamePassword: {
+				const { username, password } = this.layerForm.controls.local.value
+				return !!username && !!password
+			}
+			default:
+				return false
+		}
+	}
+
 	// unlike canEdit(), a missing capabilities string here just means we don't know (most portals
 	// don't expose it on the item), so only flag services we can positively confirm are read-only
 	isReadOnly(service: DiscoveredFeatureService): boolean {

@@ -134,7 +134,7 @@
               </div>
             </button>
             <button *ngIf="entryMode === EntryMode.Portal && !featureService"
-              mat-flat-button color="primary" [disabled]="loading" (click)="onBrowse()">
+              mat-flat-button color="primary" [disabled]="loading || !canBrowse" (click)="onBrowse()">
               <div class="actions__save">
                 <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
                 <span>Browse</span>
