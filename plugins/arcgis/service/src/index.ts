@@ -54,6 +54,86 @@ const describeArcGISError = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
 };
 
+const describeAuthFailure = (label: string, err: unknown): string => {
+  if (err instanceof ArcGISRequestError && String(err.code ?? '').includes('404')) {
+    return `Could not find an ArcGIS endpoint at the ${label} URL. Check the URL and try again.`;
+  }
+  return `Invalid credentials provided to communicate with ${label}: ${describeArcGISError(err)}`;
+};
+
+// derives an ordered, de-duplicated list of portal "sharing/rest" URLs to try
+const portalUrlCandidates = (input: string | undefined): string[] => {
+  const trimmed = (input || '').trim().replace(/\/+$/, '');
+  if (!trimmed) {
+    return [];
+  }
+
+  const sharingMatch = trimmed.match(/^(.*\/sharing\/rest)\b/i);
+  const serverRoot = sharingMatch
+    ? sharingMatch[1].replace(/\/sharing\/rest$/i, '')
+    : trimmed.replace(/\/rest\/services\/.*$/i, '').replace(/\/rest\/?$/i, '');
+
+  const bareOrigin = /^https?:\/\/[^/]+$/i.test(serverRoot);
+  const roots = bareOrigin ? [serverRoot, `${serverRoot}/arcgis`] : [serverRoot];
+  return Array.from(new Set(roots.map(root => `${root}/sharing/rest`)));
+};
+
+// tries to sign in with username/password against each candidate portal url derived from the
+// user's input, in order, until one succeeds - returns the identity manager along with whichever
+// portal url actually worked so the caller can report it back / persist the corrected value
+const signInWithPortalCandidates = async (
+  username: string,
+  password: string,
+  portalUrlInput: string | undefined
+): Promise<{ identityManager: ArcGISIdentityManager, portalUrl: string }> => {
+  const candidates = portalUrlCandidates(portalUrlInput);
+  if (candidates.length === 0) {
+    throw new Error('portalUrl is required');
+  }
+
+  let lastErr: unknown;
+  for (const candidatePortalUrl of candidates) {
+    try {
+      const identityManager = await ArcGISIdentityManager.signIn({ username, password, portal: candidatePortalUrl });
+      console.log(`Signed in to portal ${candidatePortalUrl} as ${username}`);
+      return { identityManager, portalUrl: candidatePortalUrl };
+    } catch (err) {
+      console.debug(`Could not sign in to portal ${candidatePortalUrl}: ${describeArcGISError(err)}`);
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+};
+
+// tries a full "authenticate + search" attempt against each candidate portal url in order
+const discoverWithPortalCandidates = async (
+  portalUrlInput: string | undefined,
+  buildIdentity: (candidatePortalUrl: string) => Promise<ArcGISIdentityManager>,
+  start: number | undefined,
+  num: number | undefined,
+  filter: string | undefined
+): Promise<{ identityManager: ArcGISIdentityManager, portalUrl: string, mayLackEditPrivilege?: boolean, page: DiscoveredFeatureServicesPage }> => {
+  const candidates = portalUrlCandidates(portalUrlInput);
+  if (candidates.length === 0) {
+    throw new Error('portalUrl is required');
+  }
+
+  let lastErr: unknown;
+  for (const candidatePortalUrl of candidates) {
+    try {
+      const identityManager = await buildIdentity(candidatePortalUrl);
+      const page = await discoverFeatureServices(identityManager, start, num, filter);
+      const mayLackEditPrivilege = await checkEditPrivilege(candidatePortalUrl, identityManager);
+      console.log(`Successfully browsed portal ${candidatePortalUrl} as ${identityManager.username}`);
+      return { identityManager, portalUrl: candidatePortalUrl, mayLackEditPrivilege, page };
+    } catch (err) {
+      console.debug(`Could not browse portal ${candidatePortalUrl}: ${describeArcGISError(err)}`);
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+};
+
 // checks whether the authenticated user's ArcGIS privileges include features:user:edit, required
 // to write observations to feature layers
 const checkEditPrivilege = async (portalUrl: string, identityManager: ArcGISIdentityManager): Promise<boolean | undefined> => {
@@ -407,17 +487,16 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
 
             try {
               let identityManager: ArcGISIdentityManager;
+              let resolvedPortalUrl = portalUrl;
               if (token) {
                 identityManager = await ArcGISIdentityManager.fromToken({ token });
               } else if (username && password) {
                 const serverRoot = url.split(/\/rest\/services/i)[0];
                 const { owningSystemUrl } = await request(`${serverRoot}/rest/info`);
                 if (owningSystemUrl || portalUrl) {
-                  identityManager = await ArcGISIdentityManager.signIn({
-                    username,
-                    password,
-                    portal: portalUrl || `${owningSystemUrl}/sharing/rest`
-                  });
+                  const signedIn = await signInWithPortalCandidates(username, password, portalUrl || `${owningSystemUrl}/sharing/rest`);
+                  identityManager = signedIn.identityManager;
+                  resolvedPortalUrl = signedIn.portalUrl;
                 } else {
                   // stand-alone ArcGIS Server with no portal; sign in to the server's own token service
                   identityManager = new ArcGISIdentityManager({ username, password, server: serverRoot });
@@ -427,7 +506,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
                 return res.sendStatus(400);
               }
 
-              const service: FeatureServiceConfig = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
+              const service: FeatureServiceConfig = { url, portalUrl: resolvedPortalUrl, layers: [], identityManager: identityManager.serialize() };
               const existingService = config.featureServices.find(service => service.url === url);
               if (!existingService) {
                 config.featureServices.push(service);
@@ -437,7 +516,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               const sanitized = await sanitizeFeatureService(service, identityService);
               return res.send(sanitized);
             } catch (err) {
-              return res.status(400).send('Invalid credentials provided to communicate with feature service' + err);
+              return res.status(400).send(describeAuthFailure('feature service', err));
             }
           });
 
@@ -448,24 +527,32 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
             }
 
             try {
-              let identityManager: ArcGISIdentityManager;
-              let mayLackEditPrivilege: boolean | undefined;
               if (serializedIdentityManager) {
-                identityManager = ArcGISIdentityManager.deserialize(serializedIdentityManager);
-              } else if (token) {
-                identityManager = await ArcGISIdentityManager.fromToken({ token, portal: portalUrl });
-                mayLackEditPrivilege = await checkEditPrivilege(portalUrl, identityManager);
+                const identityManager = ArcGISIdentityManager.deserialize(serializedIdentityManager);
+                const mayLackEditPrivilege = await checkEditPrivilege(portalUrl, identityManager);
+                const page = await discoverFeatureServices(identityManager, start, num, filter);
+                return res.send({ identityManager: identityManager.serialize(), portalUrl, mayLackEditPrivilege, ...page });
+              }
+
+              if (token) {
+                const result = await discoverWithPortalCandidates(
+                  portalUrl,
+                  (candidatePortalUrl) => ArcGISIdentityManager.fromToken({ token, portal: candidatePortalUrl }),
+                  start, num, filter
+                );
+                return res.send({ identityManager: result.identityManager.serialize(), portalUrl: result.portalUrl, mayLackEditPrivilege: result.mayLackEditPrivilege, ...result.page });
               } else if (username && password) {
-                identityManager = await ArcGISIdentityManager.signIn({ username, password, portal: portalUrl });
-                mayLackEditPrivilege = await checkEditPrivilege(portalUrl, identityManager);
+                const result = await discoverWithPortalCandidates(
+                  portalUrl,
+                  (candidatePortalUrl) => ArcGISIdentityManager.signIn({ username, password, portal: candidatePortalUrl }),
+                  start, num, filter
+                );
+                return res.send({ identityManager: result.identityManager.serialize(), portalUrl: result.portalUrl, mayLackEditPrivilege: result.mayLackEditPrivilege, ...result.page });
               } else {
                 return res.sendStatus(400);
               }
-
-              const page = await discoverFeatureServices(identityManager, start, num, filter);
-              return res.send({ identityManager: identityManager.serialize(), portalUrl, mayLackEditPrivilege, ...page });
             } catch (err) {
-              return res.status(400).send('Invalid credentials provided to communicate with portal' + err);
+              return res.status(400).send(describeAuthFailure('portal', err));
             }
           });
 
@@ -484,7 +571,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
               const sanitized = await commitFeatureService(processor, identityService, config, url, portalUrl, identityManager);
               return res.send(sanitized);
             } catch (err) {
-              return res.status(400).send('Invalid credentials provided to communicate with feature service' + err);
+              return res.status(400).send(describeAuthFailure('feature service', err));
             }
           });
 

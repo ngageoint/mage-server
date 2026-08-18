@@ -40,7 +40,6 @@
                 [required]="entryMode === EntryMode.Portal && !featureService"
                 placeholder="http{s}://{domain}/arcgis/sharing/rest" />
               <mat-hint *ngIf="entryMode === EntryMode.Url">Leave empty to use default portal URL derived from feature service URL</mat-hint>
-              <mat-hint *ngIf="entryMode === EntryMode.Portal">Required to browse a portal's feature services</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="authentication-field">

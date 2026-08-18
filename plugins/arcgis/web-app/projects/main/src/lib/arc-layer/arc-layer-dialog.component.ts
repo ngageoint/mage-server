@@ -204,6 +204,8 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	validated(service: FeatureServiceConfig): void {
 		this.state = State.Layers
 		this.featureService = service
+		// the server may have resolved the portal url to something other than what was typed
+		this.layerForm.controls.portalUrl.setValue(service.portalUrl || '')
 		this.fetchLayers(service.url)
 	}
 
@@ -325,6 +327,10 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	private onDiscovered(result: DiscoveryResult): void {
 		this.discoveredIdentityManager = result.identityManager
 		this.discoveredPortalUrl = result.portalUrl
+		// the server may have resolved the portal url to something other than what was typed
+		if (result.portalUrl) {
+			this.layerForm.controls.portalUrl.setValue(result.portalUrl)
+		}
 		// only a fresh sign-in includes this
 		if (result.mayLackEditPrivilege !== undefined) {
 			this.discoveredMayLackEditPrivilege = result.mayLackEditPrivilege
