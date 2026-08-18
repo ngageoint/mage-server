@@ -1,14 +1,29 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
-import { ObservationStatusResponse } from '../entities/entities.format';
+import { EventObservationSummary, ObservationStatusResponse } from '../entities/entities.format';
 import { baseUrl } from '../configuration/configuration.service';
+
+export interface ObservationStatusApi {
+  getObservationStatusSummary(): Observable<EventObservationSummary[]>
+  getObservationStatuses(eventId: number, statusFilter?: string[]): Observable<ObservationStatusResponse>
+  requeueObservations(eventId: number, observationIds: string[]): Observable<{ queued: number }>
+}
 
 @Injectable({
   providedIn: 'root'
 })
-export class ObservationStatusService {
+export class ObservationStatusService implements ObservationStatusApi {
   constructor(private http: HttpClient) {}
+
+  getObservationStatusSummary(): Observable<EventObservationSummary[]> {
+    return this.http.get<EventObservationSummary[]>(`${baseUrl}/observations/summary`).pipe(
+      catchError(error => {
+        console.error('Failed to fetch observation status summary:', error)
+        return of([])
+      })
+    )
+  }
 
   getObservationStatuses(eventId: number, statusFilter?: string[]): Observable<ObservationStatusResponse> {
     let url = `${baseUrl}/observations?eventId=${eventId}`
