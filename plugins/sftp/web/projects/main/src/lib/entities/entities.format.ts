@@ -41,16 +41,6 @@ export interface ConnectionTestResult {
   timestamp?: Date
 }
 
-/**
- * Represents the current status of the SFTP plugin
- */
-export interface PluginStatus {
-  connected: boolean
-  lastError?: string
-  lastSync?: Date
-  lastConnectionAttempt?: Date
-}
-
 export type MageEventId = number
 
 export interface SftpObservationRecord {
@@ -65,6 +55,13 @@ export interface SftpObservationRecord {
 export interface ObservationStatusResponse {
   records: SftpObservationRecord[]
   counts: Record<string, number>
+}
+
+export interface EventObservationSummary {
+  eventId: number
+  eventName: string
+  counts: Record<string, number>
+  stuckPendingCount: number
 }
 
 /**
