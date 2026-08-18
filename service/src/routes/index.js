@@ -13,6 +13,9 @@ module.exports = function(app, security) {
     const moduleName = modulePath.slice(0, modulePath.indexOf('.'));
     log.debug(`loading ${moduleName} routes from ${modulePath}`);
     const initRoutes = require('./' + moduleName);
+    if (typeof initRoutes !== 'function') {
+      throw new Error(`${modulePath} does not provide a routes factory function`)
+    }
     initRoutes(app, security);
   });
 

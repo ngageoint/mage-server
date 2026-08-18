@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
+import { pick } from 'lodash'
 import * as api from '../../../lib/app.api/exports/app.api.exports'
 import * as impl from '../../../lib/app.impl/exports/app.impl.exports'
 import { EntityNotFoundError, ErrPermissionDenied, MageError, permissionDenied } from '../../../lib/app.api/app.api.errors'
@@ -9,10 +10,11 @@ import { UserWithRole } from '../../../lib/permissions/permissions.role-based.ba
 import { ExportPermission } from '../../../lib/entities/authorization/entities.permissions'
 import { UserIconType } from '../../../lib/entities/users/entities.users'
 import mongoose from 'mongoose'
+import { ExportExpanded } from '../../../src/entities/exports/entities.exports'
+import { RoleModelInstance } from '../../../src/models/role'
 import { UserJson } from '../../../src/models/user'
 import { Readable } from 'stream'
-import sinon, { SinonStub } from 'sinon'
-import { ExportTransform } from '../../../lib/app.api/exports/app.api.exports'
+import sinon from 'sinon'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { BufferWriteable } from '../../utils'
 import { Stats } from 'fs'
@@ -20,23 +22,18 @@ import { MongooseExportsRepository } from '../../../lib/adapters/exports/adapter
 import { FileSystemExportContentStore } from '../../../lib/adapters/exports/adapters.export_store.file_system'
 
 const mockUserId = new mongoose.Types.ObjectId()
-const mockUser = ({
+const mockUser = Object.freeze({
   _id: mockUserId,
   id: mockUserId.toHexString(),
   username: 'testUser',
   displayName: 'Test User',
-  phones: [],
-  active: true,
-  enabled: true,
   roleId: {
-    id: 'mockRoleId',
+    _id: new mongoose.Types.ObjectId(),
+    get id() { return this._id.toHexString() },
     permissions: [ExportPermission.READ_EXPORT]
-  },
-  authenticationId: 'mockAuthId',
-  recentEventIds: [],
-  createdAt: new Date(),
-  lastUpdated: new Date()
-} as unknown) as UserWithRole
+  } as RoleModelInstance,
+}) as unknown as Required<UserWithRole>
+const expandedUser: ExportExpanded['user'] = pick(mockUser, 'id', 'username', 'displayName')
 
 function requestBy<T extends object>(principal: UserWithRole, params?: T): AppRequest<UserWithRole> & T {
   if (!params) {
@@ -88,35 +85,17 @@ describe('export use case interactions', function() {
     })
 
     it('gets exports', async function() {
-      const user: UserJson = {
-        id: new mongoose.Types.ObjectId(),
-        roleId: '',
-        authenticationId: '',
-        username: '',
-        displayName: '',
-        email: '',
-        phones: [],
-        icon: {
-          type: UserIconType.Create,
-          text: 'icon',
-          color: 'red'
-        },
-        active: true,
-        enabled: true,
-        status: 'active',
-        recentEventIds: [],
-        createdAt: new Date(),
-        lastUpdated: new Date()
-      }
-
-      const exp: Export = {
+      const exp: ExportExpanded = {
         id: '1',
-        user,
+        userId: mockUser.id,
+        user: expandedUser,
         relativePath: 'some/path',
         filename: 'export',
         exportType: 'csv',
         status: ExportStatus.Completed,
         options: {
+          eventId: 1,
+          event: { id: 1, name: 'Test 1'},
           filter: undefined,
           projection: undefined
         },
@@ -125,13 +104,13 @@ describe('export use case interactions', function() {
         summary: {
           observations: {
             count: 0,
-            startTimestamp: new Date().getTime(),
-            endTimestamp: new Date().getTime(),
+            startTimestamp: new Date(),
+            endTimestamp: new Date(),
           },
           locations: {
             count: 0,
-            startTimestamp: new Date().getTime(),
-            endTimestamp: new Date().getTime()
+            startTimestamp: new Date(),
+            endTimestamp: new Date()
           }
         },
         lastUpdated: new Date()
@@ -148,36 +127,19 @@ describe('export use case interactions', function() {
       expect(res.success![0]).to.equal(exp)
     })
 
-    it('get export content', async function() {
-      const user: UserJson = {
-        id: new mongoose.Types.ObjectId(),
-        roleId: '',
-        authenticationId: '',
-        username: '',
-        displayName: '',
-        email: '',
-        phones: [],
-        icon: {
-          type: UserIconType.Create,
-          text: 'icon',
-          color: 'red'
-        },
-        active: true,
-        enabled: true,
-        status: 'active',
-        recentEventIds: [],
-        createdAt: new Date(),
-        lastUpdated: new Date()
-      }
+    it('gets export content', async function() {
 
-      const exp: Export = {
+      const exp: ExportExpanded = {
         id: '1',
-        user,
+        userId: mockUser.id,
+        user: expandedUser,
         relativePath: 'some/path',
         filename: 'export',
         exportType: 'csv',
         status: ExportStatus.Completed,
         options: {
+          eventId: 1,
+          event: { id: 1, name: 'Event 1' },
           filter: undefined,
           projection: undefined
         },
@@ -225,19 +187,22 @@ describe('export use case interactions', function() {
     })
 
     it('creates export', async function() {
-      const user: UserJson = { ...mockUser, id: mockUser._id } as unknown as UserJson
       const event: MageEvent = { id: 0, name: 'Test Event' } as MageEvent
       const content = new BufferWriteable()
       const contentSize = 1000
 
-      const exp: Export = {
+      const exp: ExportExpanded = {
         id: '1',
-        user,
+        userId: mockUser.id,
+        user: expandedUser,
         relativePath: 'some/path',
         filename: 'export',
         exportType: 'csv',
         status: ExportStatus.Completed,
-        options: { filter: undefined, projection: undefined },
+        options: {
+          eventId: 1,
+          event: { id: 1, name: 'Test Event 1' },
+          filter: undefined, projection: undefined },
         processingErrors: [],
         expirationDate: new Date(),
         summary: {},
@@ -278,7 +243,7 @@ describe('export use case interactions', function() {
       repository.updateExportForUser.callsFake(async (id, userId, patch) => {
         updateCount++
         if (updateCount === 2) resolveUpdates()
-        return { ...exp, ...patch }
+        return { ...exp, ...patch } as ExportExpanded
       })
 
       let resolveExport!: (value?: any) => void
@@ -298,30 +263,35 @@ describe('export use case interactions', function() {
 
       const [id1, userId1, patch1] = repository.updateExportForUser.getCall(0).args
       expect(id1).to.equal(exp.id)
-      expect(userId1).to.equal(user.id.toHexString())
+      expect(userId1).to.equal(mockUser.id)
       expect(patch1.status).to.equal(ExportStatus.Running)
 
       const [id2, userId2, patch2] = repository.updateExportForUser.getCall(1).args
       expect(id2).to.equal(exp.id)
-      expect(userId2).to.equal(user.id.toHexString())
+      expect(userId2).to.equal(mockUser.id)
       expect(patch2.status).to.equal(ExportStatus.Completed)
       expect(patch2.size).to.equal(contentSize)
     })
 
     it('removes content from store and updates export on exception', async function() {
-      const user: UserJson = { ...mockUser, id: mockUser._id } as unknown as UserJson
       const event: MageEvent = { id: 0, name: 'Test Event' } as MageEvent
       const content = new BufferWriteable()
       const contentSize = 1000
 
-      const exp: Export = {
+      const exp: ExportExpanded = {
         id: '1',
-        user,
+        userId: mockUser.id,
+        user: expandedUser,
         relativePath: 'some/path',
         filename: 'export',
         exportType: 'csv',
         status: ExportStatus.Completed,
-        options: { filter: undefined, projection: undefined },
+        options: {
+          eventId: 1,
+          event: { id: 1, name: 'Test Event 1' },
+          filter: undefined,
+          projection: undefined
+        },
         processingErrors: [],
         expirationDate: new Date(),
         summary: {},
@@ -361,7 +331,7 @@ describe('export use case interactions', function() {
       repository.updateExportForUser.callsFake(async (_id, _userId, patch) => {
         updateCount++
         if (updateCount === 2) resolveUpdates()
-        return { ...exp, ...patch }
+        return { ...exp, ...patch } as ExportExpanded
       })
 
       const exportPromise = new Promise((_resolve, reject) => { reject("test error") })
@@ -376,12 +346,12 @@ describe('export use case interactions', function() {
 
       const [id1, userId1, patch1] = repository.updateExportForUser.getCall(0).args
       expect(id1).to.equal(exp.id)
-      expect(userId1).to.equal(user.id.toHexString())
+      expect(userId1).to.equal(mockUser.id)
       expect(patch1.status).to.equal(ExportStatus.Running)
 
       const [id2, userId2, patch2] = repository.updateExportForUser.getCall(1).args
       expect(id2).to.equal(exp.id)
-      expect(userId2).to.equal(user.id.toHexString())
+      expect(userId2).to.equal(mockUser.id)
       expect(patch2.status).to.equal(ExportStatus.Failed)
     })
   })
@@ -417,12 +387,13 @@ describe('export use case interactions', function() {
 
       const exp: Export = {
         id: '1',
-        user,
+        userId: mockUser.id,
         relativePath: 'some/path',
         filename: 'export',
         exportType: 'csv',
         status: ExportStatus.Completed,
         options: {
+          eventId: 1,
           filter: undefined,
           projection: undefined
         },
@@ -431,13 +402,13 @@ describe('export use case interactions', function() {
         summary: {
           observations: {
             count: 0,
-            startTimestamp: new Date().getTime(),
-            endTimestamp: new Date().getTime(),
+            startTimestamp: new Date(),
+            endTimestamp: new Date(),
           },
           locations: {
             count: 0,
-            startTimestamp: new Date().getTime(),
-            endTimestamp: new Date().getTime()
+            startTimestamp: new Date(),
+            endTimestamp: new Date()
           }
         },
         lastUpdated: new Date()
@@ -480,12 +451,13 @@ describe('export use case interactions', function() {
 
       const exp: Export = {
         id: '1',
-        user,
+        userId: mockUser.id,
         relativePath: 'some/path',
         filename: 'export',
         exportType: 'csv',
         status: ExportStatus.Completed,
         options: {
+          eventId: 1,
           filter: undefined,
           projection: undefined
         },
@@ -494,13 +466,13 @@ describe('export use case interactions', function() {
         summary: {
           observations: {
             count: 0,
-            startTimestamp: new Date().getTime(),
-            endTimestamp: new Date().getTime(),
+            startTimestamp: new Date(),
+            endTimestamp: new Date(),
           },
           locations: {
             count: 0,
-            startTimestamp: new Date().getTime(),
-            endTimestamp: new Date().getTime()
+            startTimestamp: new Date(),
+            endTimestamp: new Date()
           }
         },
         lastUpdated: new Date()
@@ -513,7 +485,7 @@ describe('export use case interactions', function() {
 
       const res = await deleteExport(req)
       const err = res.error as EntityNotFoundError
-      
+
       expect(res.success).to.be.null
       expect(err).to.be.instanceOf(MageError)
       expect(err.data.entityId).to.equal(req.exportId)

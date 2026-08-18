@@ -85,7 +85,7 @@ export const ObservationIdSchema: mongoose.Schema
 export type ObservationIdDocument = mongoose.Document
 export const ObservationId: mongoose.Model<ObservationIdDocument>
 
-export function observationModel(event: Partial<MageEventDocument> & Pick<MageEventDocument, 'collectionName'>): ObservationModel
+export function observationModel(event: Partial<MageEventModelInstance> & Pick<MageEventDocument, 'collectionName'>): ObservationModel
 
 export interface ObservationReadOptions {
   filter?: {

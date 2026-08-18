@@ -1,6 +1,14 @@
 import { Archiver } from 'archiver'
-import { MageEvent, MageEventAttrs } from '../../entities/events/entities.events'
-import { Export, ExportCreateParams, ExportFormat, ExportOptions, ExportProjection, ExportSummary, IconStyle } from '../../entities/exports/entities.exports'
+import { MageEvent } from '../../entities/events/entities.events'
+import {
+  Export, ExportExpanded,
+  ExportFilter,
+  ExportFormat,
+  ExportOptions,
+  ExportProjection,
+  ExportSummary,
+  IconStyle
+} from '../../entities/exports/entities.exports'
 import { FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
@@ -9,7 +17,7 @@ import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
 export interface GetExportsRequest extends AppRequest<UserWithRole> {}
 
 export interface GetExports {
-  (req: GetExportsRequest): Promise<AppResponse<Export[], PermissionDeniedError>>
+  (req: GetExportsRequest): Promise<AppResponse<ExportExpanded[], PermissionDeniedError>>
 }
 
 export interface ExportContentResponse {
@@ -31,10 +39,18 @@ export interface CreateExportRequestContext<Principal = UserWithRole> extends Ap
 
 export interface ExportRequest<Principal = UserWithRole> extends AppRequest<Principal, CreateExportRequestContext<Principal>> {}
 
+export type ExportCreateParams = {
+  format: ExportFormat
+  filter: Omit<ExportFilter, 'favorites'> & {
+    favorites?: boolean
+  },
+  projection?: ExportProjection
+}
+
 export type CreateExportRequest<Principal = UserWithRole> = AppRequest<Principal, CreateExportRequestContext<Principal>> & ExportCreateParams;
 
 export interface CreateExport {
-  (req: CreateExportRequest): Promise<AppResponse<Export, PermissionDeniedError | InvalidInputError >>  
+  (req: CreateExportRequest): Promise<AppResponse<Export, PermissionDeniedError | InvalidInputError >>
 }
 
 export interface DeleteExportRequest<Principal = UserWithRole> extends AppRequest<Principal, AppRequestContext<Principal>> {
@@ -42,7 +58,7 @@ export interface DeleteExportRequest<Principal = UserWithRole> extends AppReques
 }
 
 export interface DeleteExport {
-  (req: DeleteExportRequest): Promise<AppResponse<Export, PermissionDeniedError | EntityNotFoundError >>  
+  (req: DeleteExportRequest): Promise<AppResponse<Export, PermissionDeniedError | EntityNotFoundError >>
 }
 
 export interface ExportAppLayerPermissionService {
@@ -62,7 +78,7 @@ export interface ExportFactory {
 export interface ExportTransform {
   export(
     event: MageEvent,
-    options: ExportOptions,
+    options: Omit<ExportOptions, 'eventId'>,
     fieldProjection: ObservationFormFieldProjection,
     archive: Archiver
   ): Promise<ExportSummary>

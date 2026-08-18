@@ -22,6 +22,17 @@ export interface UserDocument {
   lastUpdated: Date
 }
 
+
+// TODO: this probably needs an update now with new authentication changes
+export type UserJson = Omit<UserDocument, '_id' | 'avatar' | 'roleId' | 'authenticationId'>
+  & {
+    id: mongoose.Types.ObjectId,
+    icon: Omit<UserIcon, 'relativePath'>,
+    avatarUrl?: string,
+  }
+  & (RolePopulated | RoleReferenced)
+  & (AuthenticationPopulated | AuthenticationReferenced)
+
 export declare const Model: mongoose.Model<UserDocument>
 export type UserModelInstance = mongoose.HydratedDocument<UserDocument>
 export declare const Schema: mongoose.Schema<UserDocument>

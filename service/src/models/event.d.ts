@@ -45,7 +45,9 @@ export type MageEventModelInstance = mongoose.HydratedDocument<
     forms: FormSubdocumentModelInstance[],
     toObject: MageEventDocumentInstanceToObject,
     toJSON: MageEventDocumentInstanceToObject
-  }
+  },
+  object,
+  { id: number }
 >
 export type MageEventModel = mongoose.Model<MageEventDocument, object, object, object, MageEventModelInstance>
 
