@@ -1,11 +1,11 @@
-import { omit } from 'lodash'
+import { MageEventId } from '../../entities/events/entities.events'
 import {
   Export,
   ExportCreateAttrs,
   ExportId,
   ExportStatus,
   ExportsRepository,
-  ExportExpanded, ExportOptions, ExportSummary
+  ExportExpanded, ExportOptions
 } from '../../entities/exports/entities.exports'
 import mongoose, { HydratedDocument, Model, Schema } from 'mongoose'
 import { UserId } from '../../entities/users/entities.users'
@@ -115,20 +115,26 @@ type ExportPopulatedModelInstance = HydratedDocument<
 >
 
 function entityForDocument<M extends ExportModelInstance | ExportPopulatedModelInstance>(doc: M): Export {
-  return doc.toJSON({ virtuals: true})
+  return doc.toJSON({ virtuals: true })
 }
 
 function expandedEntityForDocument(doc: ExportPopulatedModelInstance): ExportExpanded {
   const { userId: docUser, options: { eventId: docEvent, ...docOptionsRemaining }, ...docRemaining } = doc.toObject({ virtuals: true })
+  const userId = doc.populated('userId') as mongoose.Types.ObjectId
+  const eventId = doc.populated('options.eventId') as MageEventId
   return {
     ...docRemaining,
-    userId: doc.populated('userId').toHexString(),
-    user: docUser ? omit(docUser, '_id') : null,
+    userId: userId.toHexString(),
+    /*
+    explicitly specify the user object to avoid including the authentication
+    mongoose virtual getter entry with a null value
+     */
+    user: docUser ? { id: userId.toHexString(), username: docUser.username, displayName: docUser.displayName } : null,
     options: {
       ...docOptionsRemaining,
-      eventId: doc.populated('options.eventId'),
+      eventId,
       // docEvent.id is the mongoose virtual getter that casts all IDs to string, in this case unnecessarily.
-      event: docEvent ? { id: docEvent._id, name: docEvent.name } : null
+      event: docEvent ? { id: eventId, name: docEvent.name } : null
     }
   }
 }

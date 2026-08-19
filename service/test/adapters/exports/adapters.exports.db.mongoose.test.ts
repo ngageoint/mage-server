@@ -26,7 +26,8 @@ describe('exports mongoose repository', function() {
 
     userModel = conn.model('User', new mongoose.Schema({
       username: { type: String },
-      displayName: { type: String }
+      displayName: { type: String },
+      extra: { type: String, default: 'omit me'}
     })) as any
 
     eventModel = conn.model('Event', new mongoose.Schema({
@@ -91,6 +92,7 @@ describe('exports mongoose repository', function() {
         filename: exp.filename,
         'user.username': 'user1',
         'options.event.name': 'event1',
+        'options.event.id': 1
       })
       expect(created.options.filter).to.deep.equal(exp.filter)
       expect(created.options.projection).to.deep.equal(exp.projection)

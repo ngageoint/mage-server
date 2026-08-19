@@ -9,9 +9,7 @@ import mongoose from 'mongoose'
 import { ExportAppLayer, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
 import { GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
 import { Export, ExportStatus } from '../../../lib/entities/exports/entities.exports'
-import { UserIconType } from '../../../lib/entities/users/entities.users'
 import { ExportExpanded } from '../../../src/entities/exports/entities.exports'
-import { UserJson } from '../../../src/models/user'
 import { Readable } from 'stream'
 import { UserWithRole } from '../../../src/permissions/permissions.role-based.base'
 import { entityNotFound, infrastructureError, permissionDenied } from '../../../lib/app.api/app.api.errors'
@@ -74,7 +72,7 @@ describe('exports web controller', function() {
     const exp: ExportExpanded = {
       id,
       userId: userId.toHexString(),
-      user: { id: validPrincipal.id, username: validPrincipal.username },
+      user: { id: validPrincipal.id, username: validPrincipal.username, displayName: validPrincipal.displayName },
       relativePath: 'some/path',
       filename: 'export',
       size: exportBytes.length,
@@ -116,7 +114,8 @@ describe('exports web controller', function() {
         id: exp.id,
         user: {
           id: validPrincipal.id,
-          username: validPrincipal.username
+          username: validPrincipal.username,
+          displayName: validPrincipal.displayName
         }
       })
     })
