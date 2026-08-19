@@ -6,7 +6,7 @@ import { Export, ExportCreateAttrs, ExportStatus } from '../../../lib/entities/e
 import { UserDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
 import { MageEventDocument } from '../../../lib/adapters/events/adapters.events.db.mongoose'
 
-describe.only('exports mongoose repository', function() {
+describe('exports mongoose repository', function() {
 
   let mongo: MongoMemoryServer
   let uri: string
@@ -25,7 +25,8 @@ describe.only('exports mongoose repository', function() {
     conn = await mongoose.createConnection(uri).asPromise()
 
     userModel = conn.model('User', new mongoose.Schema({
-      username: { type: String }
+      username: { type: String },
+      displayName: { type: String }
     })) as any
 
     eventModel = conn.model('Event', new mongoose.Schema({
@@ -99,7 +100,8 @@ describe.only('exports mongoose repository', function() {
   describe('finding exports', function() {
       const user1 = {
         _id: new mongoose.Types.ObjectId(),
-        username: 'user1'
+        username: 'user1',
+        displayName: 'User 1',
       }
 
       const user2 = {
@@ -182,10 +184,23 @@ describe.only('exports mongoose repository', function() {
       const fetched = await exportRepository.getExportsForUser(exports[0].userId.toHexString())
       expect(fetched).to.be.an('array')
       expect(fetched).to.be.an('array').with.length(1)
-      expect(fetched[0]).to.nested.include({
+      expect(fetched[0]).to.deep.include({
         id: exports[0]._id.toHexString(),
-        'user.username': 'user1',
-        'options.event.name': 'event1'
+        userId: user1._id.toHexString(),
+        user: {
+          id: user1._id.toHexString(),
+          username: 'user1',
+          displayName: 'User 1',
+        },
+        options: {
+          eventId: 1,
+          event: {
+            id: 1,
+            name: 'event1'
+          },
+          filter: exports[0].options.filter,
+          projection: exports[0].options.projection,
+        }
       })
     })
 
@@ -205,8 +220,10 @@ describe.only('exports mongoose repository', function() {
       expect(fetched).to.be.an('array').with.length(1)
       expect(fetched[0]).to.nested.include({
         id: exports[1]._id.toHexString(),
-        'user': undefined,
-        'options.event': undefined
+        userId: user2._id.toHexString(),
+        user: null,
+        'options.eventId': 2,
+        'options.event': null,
       })
     })
   })

@@ -70,9 +70,15 @@ export type Export = {
 }
 
 export type ExportExpanded = Export & {
-  user: Pick<User, 'id'> & Partial<Pick<User, | 'username' | 'displayName'>>,
+  /**
+   * The expanded user is `null` if the referenced user record no longer exists.
+   */
+  user: Pick<User, 'id'> & Partial<Pick<User, | 'username' | 'displayName'>> | null,
   options: ExportOptions & {
-    event: { id: MageEventId, name: string}
+    /**
+     * The expanded even is `null` if the referenced event record no longer exists.
+     */
+    event: { id: MageEventId, name: string} | null
   }
 }
 

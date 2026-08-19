@@ -1,3 +1,4 @@
+import { omit } from 'lodash'
 import {
   Export,
   ExportCreateAttrs,
@@ -118,16 +119,16 @@ function entityForDocument<M extends ExportModelInstance | ExportPopulatedModelI
 }
 
 function expandedEntityForDocument(doc: ExportPopulatedModelInstance): ExportExpanded {
-  const { userId: docUser, options: { eventId: docEventId, ...docOptionsRemaining }, ...docRemaining } = doc.toJSON({ virtuals: true })
-  doc.populated('userId')
+  const { userId: docUser, options: { eventId: docEvent, ...docOptionsRemaining }, ...docRemaining } = doc.toObject({ virtuals: true })
   return {
     ...docRemaining,
-    userId: docUser.id,
-    user: docUser,
+    userId: doc.populated('userId').toHexString(),
+    user: docUser ? omit(docUser, '_id') : null,
     options: {
       ...docOptionsRemaining,
-      eventId: docEventId.id,
-      event: docEventId
+      eventId: doc.populated('options.eventId'),
+      // docEvent.id is the mongoose virtual getter that casts all IDs to string, in this case unnecessarily.
+      event: docEvent ? { id: docEvent._id, name: docEvent.name } : null
     }
   }
 }
