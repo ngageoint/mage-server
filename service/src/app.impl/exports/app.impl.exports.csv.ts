@@ -219,16 +219,17 @@ export class CsvExportTransform implements ExportTransform {
     })
 
     if (observation.attachments) {
-      observation.attachments
-        .forEach(async attachment => {
-          const content = await this.attachmentStore.readContent(attachment.id, Observation.evaluate(observation, event))
-          if (content instanceof Readable) {
-            const name = attachment.name || `Attachment_${attachment.id}`
-            column.attachment = name
-            column.attachmentOriginalName = attachment.name
-            archive.append(content, { name })
-          }
-        })
+      const evaluatedObservation = Observation.evaluate(observation, event)
+      for (const attachment of observation.attachments) {
+        const content = await this.attachmentStore.readContent(attachment.id, evaluatedObservation)
+
+        if (content instanceof Readable) {
+          const name = attachment.name || `Attachment_${attachment.id}`
+          column.attachment = name
+          column.attachmentOriginalName = attachment.name
+          archive.append(content, { name })
+        }
+      }
     }
 
     return column
