@@ -28,18 +28,20 @@ export class ObservationService {
   }
 
   getObservationsForEvent(event: MageEvent, options: any): Observable<any> {
-    const parameters: any = {
-      eventId: event.id,
-      states: "active",
-      populate: "true",
-    };
-    if (options.interval) {
-      parameters.observationStartDate = options.interval.start;
-      parameters.observationEndDate = options.interval.end;
+    let params = new HttpParams()
+      .set("eventId", event.id.toString())
+      .set("states", "active")
+      .set("populate", "true");
+
+    if (options.interval?.start) {
+      params = params.set("observationStartDate", options.interval.start);
+    }
+    if (options.interval?.end) {
+      params = params.set("observationEndDate", options.interval.end);
     }
 
     return this.client
-      .get<any>(`/api/events/${event.id}/observations`, { params: parameters })
+      .get<any>(`/api/events/${event.id}/observations`, { params })
       .pipe(
         map((observations: any) => {
           return this.transformObservations(observations, event);
