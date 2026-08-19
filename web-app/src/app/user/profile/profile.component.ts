@@ -85,8 +85,6 @@ export class ProfileComponent implements OnInit {
           this.snackbar.open('Profile updated successfully', undefined, {
             duration: 3000
           })
-                  this.profileError = 'Error updating profile, please try again later.'
-
         }
       },
       error: () => {
