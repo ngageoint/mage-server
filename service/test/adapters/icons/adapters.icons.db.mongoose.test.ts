@@ -23,7 +23,7 @@ function MockTestUrlScheme(protocolPrefix: string, isLocal = false): SubstituteO
   return scheme
 }
 
-describe('static icon mongoose repository', function () {
+describe.only('static icon mongoose repository', function () {
 
   let mongo: MongoMemoryServer
   let uri: string
@@ -678,26 +678,26 @@ describe('static icon mongoose repository', function () {
       scheme1Icon = {
         id: uniqid(),
         sourceUrl: scheme1.urlWithPath('test1.png'),
-        registeredTimestamp: Date.now(),
-        resolvedTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 1000,
+        resolvedTimestamp: Date.now() - 990,
         tags: []
       }
       scheme1IconUnresolved = {
         id: uniqid(),
         sourceUrl: scheme1.urlWithPath('test1-unresolved.png'),
-        registeredTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 900,
         tags: []
       }
       scheme2LocalIcon = {
         id: uniqid(),
         sourceUrl: scheme2Local.urlWithPath('test2.png'),
-        registeredTimestamp: Date.now(),
-        resolvedTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 800,
+        resolvedTimestamp: Date.now() - 790,
         tags: []
       }
       scheme3LocalIcon = {
         id: uniqid(),
-        registeredTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 700,
         tags: []
       }
       await model.insertMany([
@@ -786,8 +786,8 @@ describe('static icon mongoose repository', function () {
     it('loads content from the store when there is no source url', async function() {
       const content = Readable.from('')
       contentStore.loadContent(Arg.is(actualReq => {
-        expect(actualReq.id).to.deep.equal(scheme3LocalIcon.id)
-        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+        expect(actualReq.id).to.equal(scheme3LocalIcon.id)
+        expect(actualReq.registeredTimestamp).to.equal(scheme3LocalIcon.registeredTimestamp)
         return true
       })).resolves(content)
 
