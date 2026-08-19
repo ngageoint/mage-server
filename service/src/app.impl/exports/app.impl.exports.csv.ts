@@ -219,8 +219,9 @@ export class CsvExportTransform implements ExportTransform {
     })
 
     if (observation.attachments) {
+      const evaluatedObservation = Observation.evaluate(observation, event)
       for (const attachment of observation.attachments) {
-        const content = await this.attachmentStore.readContent(attachment.id, Observation.evaluate(observation, event))
+        const content = await this.attachmentStore.readContent(attachment.id, evaluatedObservation)
 
         if (content instanceof Readable) {
           const name = attachment.name || `Attachment_${attachment.id}`
