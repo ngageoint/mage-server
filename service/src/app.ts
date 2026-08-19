@@ -160,9 +160,13 @@ import { ExportModel, MongooseExportsRepository } from './adapters/exports/adapt
 import { ExportFormat, ExportsRepository, ExportStore } from './entities/exports/entities.exports';
 import { RoleBasedExportsPermissionService } from './permissions/permissions.exports';
 import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
-import { MongooseUserLocationRepository } from './adapters/locations/adapters.locations.db.mongoose';
-import { UserLocationModel } from './models/location';
-import { UserLocationRepository } from './entities/locations/entities.locations';
+import { MongooseUserLocationRepository, UserLocationModel } from './adapters/locations/adapters.locations.db.mongoose';
+import { MongooseRecentUserLocationsRepository, RecentUserLocationsModel } from './adapters/locations/adapters.locations.recent.db.mongoose';
+import { RecentUserLocationsRepository, UserLocationRepository } from './entities/locations/entities.locations';
+import * as locationsApi from './app.api/locations/app.api.locations';
+import * as locationsImpl from './app.impl/locations/app.impl.locations';
+import { RoleBasedLocationsPermissionService } from './permissions/permissions.locations';
+import { LocationAppLayer, LocationRoutes, LocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
 import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
 import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
 import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
@@ -335,7 +339,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
         initPlugin,
         injectService,
         collectPluginRoutesToSort,
-        collectAttachmentHooks
+        collectAttachmentHooks,
+        DomainEvents
       );
     } catch (err) {
       console.error(`error loading plugin ${pluginId}`, err);
@@ -412,6 +417,7 @@ type DatabaseLayer = {
   };
   locations: {
     location: UserLocationModel;
+    recentUserLocation: RecentUserLocationsModel;
   };
   settings: {
     setting: SettingsModel;
@@ -450,6 +456,7 @@ type AppLayer = {
     deleteFeed: feedsApi.DeleteFeed;
   };
   exports: ExportAppLayer;
+  locations: LocationAppLayer;
   icons: StaticIconsAppLayer;
   users: UsersAppLayer;
   userPreferences: UserPreferencesAppLayer;
@@ -512,8 +519,6 @@ async function initDatabase(): Promise<DatabaseLayer> {
   const userModel = require('./models/user').Model;
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const settingModel = require('./models/setting').Model;
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const locationModel = require('./models/location').Model;
 
   return {
     conn,
@@ -543,7 +548,8 @@ async function initDatabase(): Promise<DatabaseLayer> {
       icons: ObservationIconModel(conn)
     },
     locations: {
-      location: locationModel
+      location: UserLocationModel(conn),
+      recentUserLocation: RecentUserLocationsModel(conn)
     },
     settings: {
       setting: settingModel
@@ -583,6 +589,7 @@ type Repositories = {
   };
   locations: {
     locationRepo: UserLocationRepository;
+    recentUserLocationRepo: RecentUserLocationsRepository;
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -649,6 +656,11 @@ async function initRepositories(
   const locationRepo = new MongooseUserLocationRepository(
     models.locations.location
   );
+  const recentUserLocationRepo = new MongooseRecentUserLocationsRepository(
+    models.locations.recentUserLocation
+  );
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/user').setLocationRepositories(locationRepo, recentUserLocationRepo);
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -696,7 +708,8 @@ async function initRepositories(
       iconStore: userIconStore
     },
     locations: {
-      locationRepo
+      locationRepo,
+      recentUserLocationRepo
     },
     enviromentInfo: systemInfoService,
     settings: {
@@ -708,6 +721,7 @@ async function initRepositories(
 async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook[]): Promise<AppLayer> {
   const events = await initEventsAppLayer(repos);
   const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }));
+  const locations = await initLocationsAppLayer(repos);
   const observations = await initObservationsAppLayer(repos, attachmentHooks);
   const icons = await initIconsAppLayer(repos);
   const feeds = await initFeedsAppLayer(repos);
@@ -722,6 +736,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   return {
     events,
     exports,
+    locations,
     observations,
     feeds,
     icons,
@@ -729,6 +744,30 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
     userPreferences,
     systemInfo,
     settings
+  };
+}
+
+async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['locations']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const locationPermissions = new RoleBasedLocationsPermissionService(
+    eventPermissions.defaultEventPermissionsService
+  );
+
+  return {
+    createLocations: locationsImpl.CreateLocations(
+      repos.locations.locationRepo,
+      repos.locations.recentUserLocationRepo,
+      locationPermissions,
+      DomainEvents
+    ),
+    readLocations: locationsImpl.ReadLocations(
+      repos.locations.locationRepo,
+      locationPermissions
+    ),
+    readLocationsGroupedByUser: locationsImpl.ReadLocationsGroupedByUser(
+      repos.locations.recentUserLocationRepo,
+      locationPermissions
+    )
   };
 }
 
@@ -1055,6 +1094,7 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
 
 const exportEventScopeKey = 'exportEventScope' as const;
 const observationEventScopeKey = 'observationEventScope' as const;
+const locationEventScopeKey = 'locationEventScope' as const;
 
 async function initWebLayer(
   repos: Repositories,
@@ -1170,6 +1210,26 @@ async function initWebLayer(
 
   const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
   webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
+
+  const locationRequestFactory: LocationWebAppRequestFactory = <
+    Params extends object | undefined
+  >(
+    req: express.Request,
+    params: Params
+  ) => {
+    const context: locationsApi.LocationRequestContext = {
+      ...baseAppRequestContext(req),
+      mageEvent: req[locationEventScopeKey]!.mageEvent
+    };
+
+    return { ...params, context };
+  };
+  const locationRoutes = LocationRoutes(app.locations, locationRequestFactory);
+  webController.use(`/api/events/:${locationEventScopeKey}/locations`, [
+    bearerAuthentication,
+    ensureLocationEventScope(repos.events.eventRepo),
+    locationRoutes
+  ]);
 
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
   webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
@@ -1311,6 +1371,28 @@ function ensureObservationEventScope(
   };
 }
 
+function ensureLocationEventScope(
+  eventRepo: MageEventRepository
+): express.RequestHandler {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<void> => {
+    const eventIdFromPath = req.params[locationEventScopeKey];
+    const eventId: MageEventId = parseInt(eventIdFromPath);
+    const mageEvent = Number.isInteger(eventId)
+      ? await eventRepo.findById(eventId)
+      : null;
+    if (mageEvent) {
+      req[locationEventScopeKey] = { mageEvent };
+      next();
+      return;
+    }
+    res.status(404).json(`event not found: ${eventIdFromPath}`);
+  };
+}
+
 declare module 'express' {
   interface Request {
     [exportEventScopeKey]?: {
@@ -1319,6 +1401,9 @@ declare module 'express' {
     [observationEventScopeKey]?: {
       mageEvent: MageEvent;
       observationRepository: EventScopedObservationRepository;
+    };
+    [locationEventScopeKey]?: {
+      mageEvent: MageEvent;
     };
   }
 }
