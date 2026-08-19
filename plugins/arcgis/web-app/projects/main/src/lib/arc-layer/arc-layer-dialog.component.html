@@ -126,7 +126,7 @@
 
           <div class="actions">
             <button *ngIf="entryMode === EntryMode.Url || featureService"
-              mat-flat-button color="primary" [disabled]="loading" (click)="onValidate()">
+              mat-flat-button color="primary" [disabled]="loading || !canValidate" (click)="onValidate()">
               <div class="actions__save">
                 <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
                 <span *ngIf="!featureService">Create Feature Server</span>
@@ -150,7 +150,7 @@
 
           <form [formGroup]="layerForm" class="form">
             <div>
-              <mat-selection-list #layerList color="primary" class="layers">
+              <mat-selection-list #layerList color="primary" class="layers" (selectionChange)="onLayerSelectionChange()">
                 <mat-list-option *ngFor="let layer of layers" [value]="layer.name" [selected]="hasLayer(layer)">
                   {{layer.name}}<span *ngIf="!canEdit(layer)" class="no-edit-indicator"
                     matTooltip="This layer does not appear to allow editing (Create/Update) for the connected account. Syncing observations to it may fail.">*</span>
@@ -160,7 +160,7 @@
             </div>
 
             <div class="actions">
-              <button mat-flat-button color="primary" [disabled]="loading" (click)="onSave()">
+              <button mat-flat-button color="primary" [disabled]="loading || !hasSelectedLayers" (click)="onSave()">
                 <div class="actions__save">
                   <mat-spinner *ngIf="loading" diameter="16"></mat-spinner>
                   <span>Set Layers</span>

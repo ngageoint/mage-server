@@ -140,9 +140,15 @@ export class ArcLayerDialogComponent implements OnDestroy {
 
 	get canBrowse(): boolean {
 		const { portalUrl, authenticationType } = this.layerForm.getRawValue()
-		if (!portalUrl || !authenticationType) {
-			return false
-		}
+		return !!portalUrl && !!authenticationType && this.hasRequiredAuthFields(authenticationType)
+	}
+
+	get canValidate(): boolean {
+		const { url, authenticationType } = this.layerForm.getRawValue()
+		return !!url && !!authenticationType && this.hasRequiredAuthFields(authenticationType)
+	}
+
+	private hasRequiredAuthFields(authenticationType: AuthenticationType): boolean {
 		switch (authenticationType) {
 			case AuthenticationType.Token:
 				return !!this.layerForm.controls.token.value.token
@@ -167,12 +173,18 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		return !capabilities.includes('Create') && !capabilities.includes('Editing')
 	}
 
+	hasSelectedLayers = false
+	onLayerSelectionChange(): void {
+		this.hasSelectedLayers = this.layerList.selectedOptions.selected.length > 0
+	}
+
 	fetchLayers(url: string): void {
 		this.loading = true
 		this.arcService.fetchFeatureServiceLayers(url).subscribe({
 			next: (layers) => {
 				this.layers = layers
 				this.loading = false
+				this.hasSelectedLayers = !!this.featureService?.layers?.length
 				layers.forEach(layer => console.log(`[${layer.name}] capabilities:`, layer.capabilities))
 			},
 			error: (error) => {
