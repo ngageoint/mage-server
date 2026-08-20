@@ -1,17 +1,8 @@
 import { MageEventId } from "../events/entities.events"
-import { UserJson } from "../../models/user"
-import { UserId } from "../users/entities.users"
+import { User, UserId } from '../users/entities.users'
 import { Stats } from "fs"
 
 export type ExportId = string
-
-export type ExportCreateParams = {
-  format: ExportFormat,
-  filter: Omit<ExportFilter, 'favorites'> & {
-    favorites?: Boolean
-  },
-  projection?: ExportProjection
-}
 
 export enum ExportStatus {
   Running = 'Running',
@@ -24,12 +15,13 @@ export type ExportFormat = typeof EXPORT_FORMATS[number];
 
 export type ExportItemSummary = {
   count?: number
-  startTimestamp?: number
-  endTimestamp?: number
+  startTimestamp?: Date
+  endTimestamp?: Date
 }
 
 export interface ExportOptions {
-  filter?: ExportFilter,
+  eventId: MageEventId
+  filter?: ExportFilter
   projection?: ExportProjection
 }
 
@@ -61,7 +53,7 @@ export type ExportError = {
 
 export type Export = {
   id: ExportId,
-  user?: UserJson,
+  userId: UserId,
   relativePath?: string,
   filename?: string,
   size?: number,
@@ -77,14 +69,32 @@ export type Export = {
   }
 }
 
+export type ExportExpanded = Export & {
+  /**
+   * The expanded user is `null` if the referenced user record no longer exists.
+   */
+  user: Pick<User, 'id'> & Partial<Pick<User, | 'username' | 'displayName'>> | null,
+  options: ExportOptions & {
+    /**
+     * The expanded even is `null` if the referenced event record no longer exists.
+     */
+    event: { id: MageEventId, name: string} | null
+  }
+}
+
 export type ExportSummary = {
   observations?: ExportItemSummary
   locations?: ExportItemSummary
 }
 
-export type ExportCreateAttrs = ExportCreateParams & {
+export type ExportCreateAttrs = {
   userId: string,
   eventId: MageEventId,
+  format: ExportFormat,
+  filter: Omit<ExportFilter, 'favorites'> & {
+    favorites?: boolean
+  },
+  projection?: ExportProjection
   status?: ExportStatus,
   relativePath?: string,
   filename?: string
@@ -93,10 +103,10 @@ export type ExportCreateAttrs = ExportCreateParams & {
 export interface ExportsRepository {
   getExports(): Promise<Export[]>
   updateExport(exportId: ExportId, attrs: Partial<Export>): Promise<Export | null>
-  getExportForUser(exportId: ExportId, userId: UserId): Promise<Export | null>
-  getExportsForUser(userId: string): Promise<Export[]>
-  createExport(attrs: ExportCreateAttrs): Promise<Export>
-  updateExportForUser(exportId: ExportId, userId: UserId, attrs: Partial<Export>): Promise<Export | null>
+  getExportForUser(exportId: ExportId, userId: UserId): Promise<ExportExpanded | null>
+  getExportsForUser(userId: string): Promise<ExportExpanded[]>
+  createExport(attrs: ExportCreateAttrs): Promise<ExportExpanded>
+  updateExportForUser(exportId: ExportId, userId: UserId, attrs: Partial<Export>): Promise<ExportExpanded | null>
   deleteExport(exportId: ExportId): Promise<Export | null>
   deleteExportForUser(id: ExportId, userId: UserId): Promise<Export | null>
 }
@@ -165,5 +175,3 @@ export interface IconStyle {
   primaryStyle?: string,
   secondaryStyle?: string
 }
-
-export type LocationFetchOptions = Pick<ExportFilter, 'startDate' | 'endDate'>

@@ -9,20 +9,22 @@ import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TeamService } from '@ngageoint/mage.web-core-lib/team'
+import { AdminBreadcrumbService } from 'mage-web-app/admin/admin-breadcrumb/admin-breadcrumb.service'
 import { of, throwError } from 'rxjs';
 
 import { EventDetailsComponent } from './event-details.component';
 import { AdminEventsService } from '../../services/admin-events.service';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 
 describe('EventDetailsComponent', () => {
   let component: EventDetailsComponent;
   let fixture: ComponentFixture<EventDetailsComponent>;
 
   let eventsService: jasmine.SpyObj<AdminEventsService>;
-  let teamsService: jasmine.SpyObj<AdminTeamsService>;
+  let teamsService: jasmine.SpyObj<TeamService>;
   let dialog: jasmine.SpyObj<MatDialog>;
   let router: jasmine.SpyObj<Router>;
+  let breadcrumbService: jasmine.SpyObj<AdminBreadcrumbService>;
 
   const USER_RANMA: any = {
     id: '1',
@@ -79,6 +81,10 @@ describe('EventDetailsComponent', () => {
       'navigate',
       'navigateByUrl'
     ]);
+    const breadcrumbServiceSpy = jasmine.createSpyObj('BreadcrumbService', [
+      'setBreadcrumbs',
+      'setActions'
+    ]);
 
     const routeStub = {
       snapshot: {
@@ -91,22 +97,20 @@ describe('EventDetailsComponent', () => {
       imports: [NoopAnimationsModule],
       providers: [
         { provide: AdminEventsService, useValue: eventsServiceSpy },
-        { provide: AdminTeamsService, useValue: teamsServiceSpy },
+        { provide: TeamService, useValue: teamsServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: ActivatedRoute, useValue: routeStub }
+        { provide: ActivatedRoute, useValue: routeStub },
+        { provide: AdminBreadcrumbService, useValue: breadcrumbServiceSpy }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
-    eventsService = TestBed.inject(
-      AdminEventsService
-    ) as jasmine.SpyObj<AdminEventsService>;
-    teamsService = TestBed.inject(
-      AdminTeamsService
-    ) as jasmine.SpyObj<AdminTeamsService>;
+    eventsService = TestBed.inject(AdminEventsService) as jasmine.SpyObj<AdminEventsService>;
+    teamsService = TestBed.inject(TeamService) as jasmine.SpyObj<TeamService>;
     dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    breadcrumbService = TestBed.inject(AdminBreadcrumbService) as jasmine.SpyObj<AdminBreadcrumbService>;
 
     eventsService.getEventById.and.returnValue(of(makeEvent()));
     eventsService.getTeamsInEvent.and.returnValue(of(makeTeamsPage([])));
@@ -215,13 +219,9 @@ describe('EventDetailsComponent', () => {
     });
 
     it('should clean up on destroy', () => {
-      const nextSpy = spyOn((component as any).destroy$, 'next');
-      const completeSpy = spyOn((component as any).destroy$, 'complete');
-
       component.ngOnDestroy();
 
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+      expect(breadcrumbService.setActions).toHaveBeenCalledWith(null);
     });
   });
 
@@ -304,11 +304,13 @@ describe('EventDetailsComponent', () => {
       component.eventTeam = {
         id: 'team-1',
         name: 'Test Team',
+        description: '',
+        userIds: ['1', '2'],
         acl: {
-          '1': { role: 'OWNER' },
-          '2': { role: 'MANAGER' }
+          [String(1)]: { role: 'OWNER', permissions: [] },
+          [String(2)]: { role: 'MANAGER', permissions: [] }
         }
-      } as any;
+      };
     });
 
     it('should get user role from ACL', () => {
@@ -332,7 +334,13 @@ describe('EventDetailsComponent', () => {
 
     it('should update user role via teams service', () => {
       teamsService.updateUserRole.and.returnValue(
-        of({ id: 'team-1', acl: { '1': { role: 'MANAGER' } } } as any)
+        of({
+          id: 'team-1',
+          name: 'Team 1',
+          description: '',
+          userIds: ['1'],
+          acl: { [String(1)]: { role: 'MANAGER', permissions: [] } }
+        })
       );
       component.membersDataSource.data = [USER_RANMA, USER_LILY];
 
@@ -788,10 +796,10 @@ describe('EventDetailsComponent', () => {
         })
       );
 
-      expect(component.event!.minObservationForms).toBe(1);
-      expect(component.event!.maxObservationForms).toBe(9);
-      expect((component.event!.forms as any)[0].min).toBe(1);
-      expect((component.event!.forms as any)[0].max).toBe(4);
+      expect(component.event.minObservationForms).toBe(1);
+      expect(component.event.maxObservationForms).toBe(9);
+      expect((component.event.forms as any)[0].min).toBe(1);
+      expect((component.event.forms as any)[0].max).toBe(4);
       expect(
         (component.restrictionsForm as any).form.markAsPristine
       ).toHaveBeenCalled();
@@ -1070,8 +1078,8 @@ describe('EventDetailsComponent', () => {
         '1',
         jasmine.objectContaining({ forms: reorderedForms })
       );
-      expect(component.event!.forms![0].id).toBe(2);
-      expect(component.event!.forms![1].id).toBe(1);
+      expect(component.event.forms[0].id).toBe(2);
+      expect(component.event.forms[1].id).toBe(1);
     }));
 
     it('should not reorder forms when event has no forms', () => {

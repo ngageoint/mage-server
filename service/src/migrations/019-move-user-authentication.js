@@ -1,12 +1,10 @@
 "use strict";
 
-const log = require('winston');
-
 exports.id = 'move-user-authentication';
 
 exports.up = async function (done) {
   try {
-    log.info('Moving authentication from user model to authentication model');
+    this.log('Moving authentication from user model to authentication model');
     const authenticationCollection = await this.db.collection('authentications');
     const userCollection = await this.db.collection('users');
     migrateAuthentication(authenticationCollection, userCollection)
@@ -14,7 +12,7 @@ exports.up = async function (done) {
       .catch(err => done(err));
 
   } catch (err) {
-    log.warn('Failed moving authentication to new model', err);
+    this.log('Failed moving authentication to new model', err);
     done(err);
   }
 };
@@ -38,22 +36,22 @@ async function migrateAuthentication(authenticationCollection, userCollection) {
       delete user.authentication;
       delete userAuthentication._id;
 
-      log.info("Creating new authentication record for user " + user.username);
+      this.log("Creating new authentication record for user " + user.username);
       await authenticationCollection.insertOne(userAuthentication);
-      log.info('Authentication record successfully created for user ' + user.username);
+      this.log('Authentication record successfully created for user ' + user.username);
 
       user.authenticationId = userAuthentication._id;
-      log.info("Removing authentication section for user " + user.username);
+      this.log("Removing authentication section for user " + user.username);
       await userCollection.updateOne({ _id: user._id }, user);
-      log.info("Successfully removed authentication section for user " + user.username);
+      this.log("Successfully removed authentication section for user " + user.username);
     } else {
-      log.info("Authentication section has already been moved for " + user.username);
+      this.log("Authentication section has already been moved for " + user.username);
     }
   }
 
   // Close the cursor, this is the same as reseting the query
   cursor.close(function (err) {
-    if (err) log.warn("Failed closing authentication move cursor", err);
+    if (err) this.log("Failed closing authentication move cursor", err);
   });
 
 }

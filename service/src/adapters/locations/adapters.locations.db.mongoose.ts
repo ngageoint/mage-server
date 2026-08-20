@@ -12,7 +12,7 @@ import { UserDocument } from '../users/adapters.users.db.mongoose'
 
 export const LocationModelName = 'Location'
 
-export type UserLocationDocument = mongoose.Document & Omit<UserLocation, 'userId' | 'properties'> & {
+export type UserLocationDocument = Omit<UserLocation, 'userId' | 'properties'> & {
   userId: PopulatedDoc<UserDocument> | null
   properties: Omit<UserLocation['properties'], 'deviceId'> & {
     deviceId: mongoose.Types.ObjectId | null
@@ -93,7 +93,7 @@ export class MongooseUserLocationRepository extends BaseMongooseRepository<UserL
       if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate
     }
 
-    let queryOptions: QueryOptions<UserLocation> = {}
+    const queryOptions: QueryOptions<UserLocation> = {}
 
     if(options.sort) {
       queryOptions.sort = options.sort

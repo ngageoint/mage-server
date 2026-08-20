@@ -1,8 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { Observable, forkJoin } from 'rxjs';
-import { Team } from '../team';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 import { UserService } from '../../../user/user.service';
 
 /**
@@ -31,7 +30,7 @@ export class DeleteTeamComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<DeleteTeamComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { team: Team },
-    private teamsService: AdminTeamsService,
+    private teamsService: TeamService,
     private adminUserService: UserService
   ) {
     this.team = data.team;
@@ -82,7 +81,7 @@ export class DeleteTeamComponent implements OnInit {
    * Deletes all users associated with the team.
    */
   private deleteUsers(): void {
-    const users = this.team.users || [];
+    const users = this.team.userIds || [];
 
     if (users.length === 0) {
       this.dialogRef.close(this.team);
@@ -90,8 +89,7 @@ export class DeleteTeamComponent implements OnInit {
     }
 
     const deleteRequests: Observable<any>[] = users
-      .filter(u => !!u?.id)
-      .map(u => this.adminUserService.deleteUser(String(u.id)));
+      .map(u => this.adminUserService.deleteUser(u));
 
     if (deleteRequests.length === 0) {
       this.dialogRef.close(this.team);

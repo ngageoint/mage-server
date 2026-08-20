@@ -66,7 +66,7 @@ export class GeoJsonExportTransform implements ExportTransform {
     archive: archiver.Archiver
   ): Promise<ExportItemSummary> {
     const { filter } = options
-    
+
     const repository: EventScopedObservationRepository = await this.observationRepository(event.id)
     const iterable = repository.find(event, {
       filter: {
@@ -87,7 +87,7 @@ export class GeoJsonExportTransform implements ExportTransform {
       let endTimestamp: number | undefined = undefined
       let user: User | null = null
       let device: any = null
-      
+
       for await (const observation of iterable) {
         if (startTimestamp === undefined || observation.properties.timestamp.getTime() < startTimestamp) {
           startTimestamp = observation.properties.timestamp.getTime()
@@ -135,7 +135,7 @@ export class GeoJsonExportTransform implements ExportTransform {
         count++
       }
 
-      return { count, startTimestamp, endTimestamp }
+      return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
     } finally {
       if (iterable.close) {
         iterable.close()
@@ -164,7 +164,7 @@ export class GeoJsonExportTransform implements ExportTransform {
     stream: stream.Transform
   ): Promise<ExportItemSummary> {
     stream.write('{"type": "FeatureCollection", "features": [')
-    
+
     let count = 0
     let startTimestamp: number | undefined = undefined
     let endTimestamp: number | undefined = undefined
@@ -204,7 +204,7 @@ export class GeoJsonExportTransform implements ExportTransform {
     }
 
     stream.write(']}')
-    return { count, startTimestamp, endTimestamp }
+    return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
   }
 
   mapObservationProperties(

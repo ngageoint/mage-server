@@ -370,7 +370,7 @@ exports.getEvents = async function (options, callback) {
     const buildAccessClause = async (userId) => {
       if (!userId) return null;
 
-      const teamDocs = await Team.TeamModel.find({ userIds: { $in: [userId] } }, { _id: 1 }).lean();
+      const teamDocs = await Team.Model.find({ userIds: { $in: [userId] } }, { _id: 1 }).lean();
       const teamIdsForUser = teamDocs.map(t => t._id);
       const readRoles = rolesWithPermission('read');
       const aclKey = `acl.${userId.toString()}`;
@@ -737,7 +737,7 @@ exports.getTeamsInEvent = async function (eventId, options) {
   }
   // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
   // add _id to sort to ensure consistent ordering
-  let teamQuery = Team.TeamModel.find(params).sort('name _id')
+  let teamQuery = Team.Model.find(params).sort('name _id')
   if (options.populate && options.populate.includes('users')) {
     teamQuery = teamQuery.populate({ path: 'userIds' })
   }
@@ -754,7 +754,7 @@ exports.getTeamsInEvent = async function (eventId, options) {
   };
   const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
   if (includeTotalCount) {
-    page.totalCount = await Team.TeamModel.countDocuments(params);
+    page.totalCount = await Team.Model.countDocuments(params);
   }
   return page;
 };
@@ -779,7 +779,7 @@ exports.getTeamsNotInEvent = async function (eventId, options) {
 
   // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
   // add _id to sort to ensure consistent ordering
-  const teams = await Team.TeamModel.find(params)
+  const teams = await Team.Model.find(params)
     .sort('name _id')
     .limit(options.pageSize)
     .skip(options.pageIndex * options.pageSize)
@@ -792,7 +792,7 @@ exports.getTeamsNotInEvent = async function (eventId, options) {
 
   const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
   if (includeTotalCount) {
-    page.totalCount = await Team.TeamModel.countDocuments(params);
+    page.totalCount = await Team.Model.countDocuments(params);
   }
 
   return page;

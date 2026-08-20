@@ -9,11 +9,10 @@ import moment from 'moment'
 import { fragment }  from 'xmlbuilder2'
 import { Feature } from 'geojson'
 import turfCentroid from '@turf/centroid'
-import { AllGeoJSON } from '@turf/helpers'
 import { PassThrough, Readable } from 'stream'
 import path from 'path'
 import { ObservationIcon, ObservationIconContentStore, ObservationIconRepository } from '../../entities/observations/entities.observations.icons'
-import { BaseFormStyle, copyBaseFormStyle, Form, FormField, PrimaryFieldStyle, VariantFieldStyle } from '../../entities/events/entities.events.forms'
+import { BaseFormStyle, copyBaseFormStyle, Form, PrimaryFieldStyle, VariantFieldStyle } from '../../entities/events/entities.events.forms'
 import { LineStyle } from '../../entities/entities.global'
 
 const mgrs = require('mgrs')
@@ -58,7 +57,7 @@ export class KmlExportTransform implements ExportTransform {
     if (options?.filter?.exportLocations) {
       response.locations = await this.exportLocations(event, options, stream, archive)
     }
-    
+
     stream.write('</Document></kml>')
     stream.end()
 
@@ -98,7 +97,7 @@ export class KmlExportTransform implements ExportTransform {
       let count = 0
       let startTimestamp: number | undefined = undefined
       let endTimestamp: number | undefined = undefined
-      
+
       for await (const observation of iterable) {
         if (startTimestamp === undefined || observation.properties.timestamp.getTime() < startTimestamp) {
           startTimestamp = observation.properties.timestamp.getTime()
@@ -106,7 +105,7 @@ export class KmlExportTransform implements ExportTransform {
         if (endTimestamp === undefined || observation.properties.timestamp.getTime() > endTimestamp) {
           endTimestamp = observation.properties.timestamp.getTime()
         }
-        
+
         const forms = projectObservationFormFields(observation, options.projection)
         stream.write(observationPlacemark(observation, forms, event))
 
@@ -116,7 +115,7 @@ export class KmlExportTransform implements ExportTransform {
             archive.append(content, { name: attachmentLocator(attachment) })
           }
         })
-      
+
         count++
       }
 
@@ -129,14 +128,14 @@ export class KmlExportTransform implements ExportTransform {
           archive.append(iconContent, { name: icon.contentLocator, prefix: 'icons'})
         }
       }
-      return { count, startTimestamp, endTimestamp }
+      return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
     } finally {
       if (iterable.close) {
         iterable.close()
       }
     }
   }
-  
+
   async exportLocations(
     event: MageEvent,
     options: ExportOptions,
@@ -156,8 +155,8 @@ export class KmlExportTransform implements ExportTransform {
     let startTimestamp: number | undefined = undefined
     let endTimestamp: number | undefined = undefined
     let user: User | null = null
-    let styles: string[] = []
     let placemarks: string[] = []
+    const styles: string[] = []
 
     const finalizeUser = async (user: User, placemarks: string[]) => {
       stream.write(placemarks.join())
@@ -186,7 +185,7 @@ export class KmlExportTransform implements ExportTransform {
         if (user) {
           placemarks.push(locationPlacemark(user, location))
         }
-        
+
         count++
         if (startTimestamp === undefined || location.properties.timestamp.getTime() < startTimestamp) {
           startTimestamp = location.properties.timestamp.getTime()
@@ -204,7 +203,7 @@ export class KmlExportTransform implements ExportTransform {
 
       log.info(`finished writing ${count} locations to kml`)
 
-      return { count, startTimestamp, endTimestamp }
+      return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
     } finally {
       if (iterable.close) {
         iterable.close()
@@ -322,7 +321,7 @@ function observationStyles(event: MageEvent, icons: ObservationIcon[]): string {
 function observationFormStyles(event: MageEvent, form: Form, icons: ObservationIcon[]): any[] {
   const styleKmlFragments = []
   const style = requiredStyle(form.style || event.style as BaseFormStyle)
-  let defaultIconPath = ''
+  const defaultIconPath = ''
   let strokeWidth = style.strokeWidth
   let strokeParts = splitRGBHexColor(style.stroke || '')
   let fillParts = splitRGBHexColor(style.fill || '')

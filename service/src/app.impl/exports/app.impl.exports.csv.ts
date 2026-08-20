@@ -87,7 +87,7 @@ export class CsvExportTransform implements ExportTransform {
           })
         return fields
       }))
-      
+
     if (filter?.includeAttachments) {
       observationFields.push({
         label: 'Attachment',
@@ -98,7 +98,7 @@ export class CsvExportTransform implements ExportTransform {
         label: 'Attachment Orig Name',
         value: 'attachmentOriginalName'
       })
-    }  
+    }
 
     const asyncParser = new json2csv.AsyncParser({ fields: observationFields }, { readableObjectMode: true, writableObjectMode: true })
     archive.append(asyncParser.processor as stream.Transform, { name: 'observations.csv' })
@@ -136,7 +136,7 @@ export class CsvExportTransform implements ExportTransform {
         user: null,
         device: null
       }
-      
+
       for await (const observation of iterable) {
         if (startTimestamp === undefined || observation.properties.timestamp.getTime() < startTimestamp) {
           startTimestamp = observation.properties.timestamp.getTime()
@@ -151,7 +151,7 @@ export class CsvExportTransform implements ExportTransform {
         count++
       }
 
-      return { count, startTimestamp, endTimestamp }
+      return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
     } finally {
       if (iterable.close) {
         iterable.close()
@@ -177,7 +177,7 @@ export class CsvExportTransform implements ExportTransform {
         cache.user = await this.userRepository.findById(observation.userId!)
       }
     }
-    
+
     if (!cache.device || cache.device.id.toString() !== observation.deviceId?.toString()) {
       if (observation.deviceId) {
         cache.device = await this.deviceRepository.getDeviceById(observation.deviceId)
@@ -294,7 +294,7 @@ export class CsvExportTransform implements ExportTransform {
         }
       }
 
-      return { count, startTimestamp, endTimestamp }
+      return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
     } finally {
       if (locations.close) {
         locations.close()

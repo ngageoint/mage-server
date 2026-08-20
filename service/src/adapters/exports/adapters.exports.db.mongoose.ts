@@ -1,23 +1,24 @@
-import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
-import { Export, ExportCreateAttrs, ExportId, ExportOptions, ExportStatus, ExportsRepository } from '../../entities/exports/entities.exports'
-import mongoose, { Model, PopulatedDoc, Schema } from 'mongoose'
-import { MageEvent } from '../../entities/events/entities.events'
-import { UserDocument } from '../users/adapters.users.db.mongoose'
-import { UserJson } from '../../models/user'
-import { MageEventDocument } from '../events/adapters.events.db.mongoose'
+import { MageEventId } from '../../entities/events/entities.events'
+import {
+  Export,
+  ExportCreateAttrs,
+  ExportId,
+  ExportStatus,
+  ExportsRepository,
+  ExportExpanded, ExportOptions
+} from '../../entities/exports/entities.exports'
+import mongoose, { HydratedDocument, Model, Schema } from 'mongoose'
 import { UserId } from '../../entities/users/entities.users'
+import { MageEventDocument } from '../events/adapters.events.db.mongoose'
+import { UserDocument } from '../users/adapters.users.db.mongoose'
 
-export type ExportDocument = Omit<Export, | 'userId' | 'options'> & mongoose.Document & {
+
+export type ExportDocument = Omit<Export, 'id' | 'userId'> & {
+  _id: mongoose.Types.ObjectId,
   relativePath: string,
   filename: string,
-  userId: PopulatedDoc<UserDocument> | null,
-  options: Omit<ExportOptions, 'event'> & {
-    eventId: PopulatedDoc<MageEventDocument> | null
-  }
+  userId: mongoose.Types.ObjectId,
 }
-
-export type ExportModel = Model<ExportDocument>
-export const ExportModelName = 'Export'
 
 const ErrorSchema = new Schema({
   type: { type: String, required: false },
@@ -28,7 +29,29 @@ const ErrorSchema = new Schema({
   timestamps: true
 })
 
-export const ExportSchema = new mongoose.Schema<any>({
+const exportSchemaOptions = {
+  versionKey: false,
+  timestamps: {
+    updatedAt: 'lastUpdated'
+  },
+  toObject: {
+    versionKey: false,
+    flattenObjectIds: true,
+    getters: true,
+  },
+  toJSON: {
+    versionKey: false,
+    flattenObjectIds: true,
+    getters: true,
+  }
+} satisfies mongoose.SchemaOptions
+
+const exportExpandedPopulateOptions = [
+  { path: 'userId', select: [ '_id', 'username', 'displayName' ] },
+  { path: 'options.eventId', select: [ '_id', 'name' ] },
+] as const satisfies mongoose.PopulateOptions[]
+
+export const ExportSchema = new mongoose.Schema<ExportDocument>({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   relativePath: { type: String },
   filename: { type: String },
@@ -58,84 +81,103 @@ export const ExportSchema = new mongoose.Schema<any>({
       endTimestamp: { type: Date }
     }
   }
-},{
-  versionKey: false,
-  timestamps: {
-    updatedAt: 'lastUpdated'
-  }
-})
+}, exportSchemaOptions)
+
+export type ExportModelInstance = HydratedDocument<ExportDocument, object, object, object, typeof exportSchemaOptions>
+export type ExportModel = Model<ExportDocument, object, object, object, ExportModelInstance, typeof exportSchemaOptions>
+export const ExportModelName = 'Export'
 
 export function ExportModel(conn: mongoose.Connection, collection?: string): ExportModel {
-  return conn.model(ExportModelName, ExportSchema, collection || 'exports') as any
+  return conn.model(ExportModelName, ExportSchema, collection || 'exports')
 }
 
-export class MongooseExportsRepository extends BaseMongooseRepository<ExportDocument, ExportModel, Export> implements ExportsRepository {
+type PopulatedUser = Pick<UserDocument, '_id' | 'username' | 'displayName'>
+type PopulatedMageEvent = Pick<MageEventDocument, '_id' | 'name'>
+type ExportPopulatedDocument = Omit<ExportDocument, 'userId' | 'options'> & {
+  userId: PopulatedUser,
+  options: Omit<ExportOptions, 'eventId'> & {
+    eventId: PopulatedMageEvent
+  }
+}
+type ExportPopulatedModelInstanceVirtuals = {
+  readonly id: string,
+  userId: PopulatedUser & { readonly id: string }
+  options: {
+    eventId: PopulatedMageEvent & { readonly id: number }
+  }
+}
+type ExportPopulatedModelInstance = HydratedDocument<
+  ExportPopulatedDocument,
+  object,
+  object,
+  ExportPopulatedModelInstanceVirtuals,
+  typeof exportSchemaOptions
+>
+
+function entityForDocument<M extends ExportModelInstance | ExportPopulatedModelInstance>(doc: M): Export {
+  return doc.toJSON({ virtuals: true })
+}
+
+function expandedEntityForDocument(doc: ExportPopulatedModelInstance): ExportExpanded {
+  const { userId: docUser, options: { eventId: docEvent, ...docOptionsRemaining }, ...docRemaining } = doc.toObject({ virtuals: true })
+  const userId = doc.populated('userId') as mongoose.Types.ObjectId
+  const eventId = doc.populated('options.eventId') as MageEventId
+  return {
+    ...docRemaining,
+    userId: userId.toHexString(),
+    /*
+    explicitly specify the user object to avoid including the authentication
+    mongoose virtual getter entry with a null value
+     */
+    user: docUser ? { id: userId.toHexString(), username: docUser.username, displayName: docUser.displayName } : null,
+    options: {
+      ...docOptionsRemaining,
+      eventId,
+      // docEvent.id is the mongoose virtual getter that casts all IDs to string, in this case unnecessarily.
+      event: docEvent ? { id: eventId, name: docEvent.name } : null
+    }
+  }
+}
+
+export class MongooseExportsRepository implements ExportsRepository {
+
+  readonly #model: ExportModel
+  readonly #exportTtlMillis: number
+
   constructor(
-    model: mongoose.Model<ExportDocument>,
-    private readonly explortTtlMillis: number
+    model: ExportModel,
+    exportTtlMillis: number
   ) {
-    super(model, {
-      docToEntity: doc => {
-        let user: UserJson | undefined
-        if (doc.populated('userId') && doc.userId) {
-          user = (doc.userId as UserDocument).toJSON()
-        }
-
-        let event: MageEvent | undefined
-        if (doc.populated('options.eventId') && doc.options.eventId) {
-          event = (doc.options.eventId as MageEventDocument).toJSON<MageEvent>({ flattenMaps: false })
-        }
-
-        const json = doc.toJSON<Export>()
-        const {
-          _id,
-          userId,
-          options: { eventId, ...strippedOptions },
-          ...stripped
-        } = json as unknown as ExportDocument
-
-        return {
-          ...stripped,
-          id: _id.toHexString(),
-          user,
-          options: {
-            ...strippedOptions,
-            event
-          }
-        }
-      }
-    })
+    this.#model = model
+    this.#exportTtlMillis = exportTtlMillis
   }
 
   async getExports(): Promise<Export[]> {
-    const documents = await this.model.find().sort({ _id: -1 }).exec()
-    return documents.map(x => this.entityForDocument(x))
+    const documents = await this.#model.find().sort({ _id: -1 })
+    return documents.map(x => entityForDocument(x))
   }
 
-  async getExportForUser(exportId: ExportId, userId: UserId): Promise<Export | null> {
-    const document = await this.model
-      .findOne({ _id: exportId, userId })
-      .populate('userId').populate({ path: 'options.eventId', select: 'name' })
+  async getExportForUser(exportId: ExportId, userId: UserId): Promise<ExportExpanded | null> {
+    const document = await this.#model.findOne({ _id: exportId, userId })
+      .populate<ExportPopulatedModelInstance>(exportExpandedPopulateOptions)
 
     if (!document) {
       return null
     }
 
-    return this.entityForDocument(document)
+    return expandedEntityForDocument(document)
   }
 
-  async getExportsForUser(userId: string): Promise<Export[]> {
-    const query = this.model
+  async getExportsForUser(userId: string): Promise<ExportExpanded[]> {
+    const documents = await this.#model
       .find({ userId })
-      .populate('userId').populate({ path: 'options.eventId', select: 'name' })
       .sort({ _id: 'descending' })
-
-    const documents = await query.exec()
-    return documents.map(x =>  this.entityForDocument(x))
+      .populate<ExportPopulatedModelInstance>(exportExpandedPopulateOptions)
+    return documents.map(expandedEntityForDocument)
   }
 
-  async createExport(create: ExportCreateAttrs): Promise<Export> {
-    const newExport ={
+  async createExport(create: ExportCreateAttrs): Promise<ExportExpanded> {
+    const newExport = {
       userId: new mongoose.Types.ObjectId(create.userId),
       exportType: create.format,
       status: ExportStatus.Running,
@@ -146,47 +188,49 @@ export class MongooseExportsRepository extends BaseMongooseRepository<ExportDocu
         filter: create.filter,
         projection: create.projection
       },
-      expirationDate: new Date(Date.now() + (this.explortTtlMillis))
+      expirationDate: new Date(Date.now() + (this.#exportTtlMillis))
     }
 
-    const document = await this.model.create(newExport)
-    const populated = await this.model.populate(document, [{ path: 'userId' }, { path: 'options.eventId', select: 'name' }])
-    return this.entityForDocument(populated)
+    const document = await this.#model.create(newExport)
+    const populated = await this.#model.populate<ExportPopulatedModelInstance>(document, exportExpandedPopulateOptions)
+    return expandedEntityForDocument(populated)
   }
 
   async updateExport(exportId: ExportId, attrs: Partial<Export>): Promise<Export | null> {
-    const document = await this.model.findByIdAndUpdate(exportId, attrs, { new: true })
+    const document = await this.#model.findByIdAndUpdate(exportId, attrs, { new: true })
     if (!document) {
       return null
     }
 
-    return this.entityForDocument(document)
+    return entityForDocument(document)
   }
 
-  async updateExportForUser(exportId: ExportId, userId: UserId, update: Partial<Export>): Promise<Export | null > {
-    const document = await this.model.findByIdAndUpdate(exportId, update, { new: true }).where('userId').equals(userId)
+  async updateExportForUser(exportId: ExportId, userId: UserId, update: Partial<Export>): Promise<ExportExpanded | null > {
+    const document = await this.#model
+      .findOneAndUpdate({ _id: exportId, userId: userId }, update, { new: true })
+      .populate<ExportPopulatedModelInstance>(exportExpandedPopulateOptions)
     if (!document) {
       return null
     }
 
-    return this.entityForDocument(document)
+    return expandedEntityForDocument(document)
   }
 
   async deleteExport(exportId: ExportId): Promise<Export | null> {
-    const document = await this.model.findByIdAndDelete(exportId)
+    const document = await this.#model.findByIdAndDelete(exportId)
     if (!document) {
       return null
     }
 
-    return this.entityForDocument(document)
+    return entityForDocument(document)
   }
 
   async deleteExportForUser(exportId: ExportId, userId: UserId): Promise<Export | null> {
-    const document = await this.model.findOneAndDelete({ _id: exportId, userId })
+    const document = await this.#model.findOneAndDelete({ _id: exportId, userId })
     if (!document) {
       return null
     }
 
-    return this.entityForDocument(document)
+    return entityForDocument(document)
   }
 }

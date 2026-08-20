@@ -10,7 +10,7 @@ import { BaseMongooseRepository } from '../../../lib/adapters/base/adapters.base
 import { FeedServiceRepository, FeedServiceTypeUnregistered, InvalidServiceConfigError, FeedServiceConnection, FeedServiceInfo, FeedTopic, FeedTopicId, FeedRepository, Feed, FeedServiceCreateAttrs, FeedCreateAttrs } from '../../../lib/entities/feeds/entities.feeds'
 import { FeedServiceTypeIdentityModel, FeedsModels, FeedServiceTypeIdentitySchema, FeedServiceModel, FeedServiceSchema, MongooseFeedServiceTypeRepository, MongooseFeedServiceRepository, FeedModel, FeedSchema, MongooseFeedRepository, FeedServiceDocument, FeedDocument } from '../../../lib/adapters/feeds/adapters.feeds.db.mongoose'
 import { FeedServiceType } from '../../../lib/entities/feeds/entities.feeds'
-import { Json, JsonObject } from '../../../src/entities/entities.json_types'
+import { Json, JsonObject } from '../../../lib/entities/entities.json_types'
 import { EntityIdFactory } from '../../../lib/entities/entities.global'
 
 describe('feeds repositories', function () {
@@ -43,8 +43,7 @@ describe('feeds repositories', function () {
     let repo: MongooseFeedServiceTypeRepository
 
     beforeEach(async function () {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection) as any
+      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection)
       repo = new MongooseFeedServiceTypeRepository(model)
     })
 
@@ -200,8 +199,7 @@ describe('feeds repositories', function () {
     let repo: FeedServiceRepository
 
     beforeEach(function () {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection) as any
+      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection)
       repo = new MongooseFeedServiceRepository(model)
     })
 
@@ -257,8 +255,7 @@ describe('feeds repositories', function () {
     let idFactory: SubstituteOf<EntityIdFactory>
 
     beforeEach(function () {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.Feed, FeedSchema, collection) as any
+      model = conn.model(FeedsModels.Feed, FeedSchema, collection)
       idFactory = Sub.for<EntityIdFactory>()
       repo = new MongooseFeedRepository(model, idFactory)
     })
@@ -331,7 +328,7 @@ describe('feeds repositories', function () {
 
           const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
             id: uniqid(),
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: new mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: uniqid(),
             summary: uniqid(),
@@ -395,7 +392,7 @@ describe('feeds repositories', function () {
               'x-derp-ner': { title: 'Title in Derp Ner' }
             }
           })
-          const origDoc: FeedDocument = await model.create({ _id: origAttrs.id, ...origAttrs, icon: origAttrs.icon.id })
+          const origDoc = await model.create({ _id: origAttrs.id, ...origAttrs, icon: origAttrs.icon.id })
           const updated = await repo.put(updatedAttrs)
           const updatedDoc = await model.findById(origAttrs.id)
 
@@ -590,6 +587,7 @@ describe('feeds repositories', function () {
           itemsHaveSpatialDimension: true,
           showOnMapByDefault: true,
         }
+        idFactory.nextId().resolves('abc-123')
         const created = await repo.create(stub)
         const fetched = await repo.findById(created.id)
         const rawFetched = await model.findOne({ _id: created.id }) as FeedDocument
@@ -612,6 +610,7 @@ describe('feeds repositories', function () {
           itemsHaveSpatialDimension: true,
           showOnMapByDefault: true,
         }
+        idFactory.nextId().resolves('abc-123')
         const created = await repo.create(stub)
         const fetched = await repo.findById(created.id)
         const rawFetched = await model.findOne({ _id: created.id }) as FeedDocument

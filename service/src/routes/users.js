@@ -1,4 +1,5 @@
 const { pageOf } = require('../entities/entities.global')
+const { userRoleHasPermission } = require('../permissions/permissions.role-based.base')
 
 module.exports = function(app, security) {
   const crypto = require('crypto'),
@@ -538,7 +539,7 @@ module.exports = function(app, security) {
       let roleChanged = false;
       if (
         req.param('roleId') &&
-        access.userHasPermission(req.user, 'UPDATE_USER_ROLE')
+        userRoleHasPermission(req.user, 'UPDATE_USER_ROLE')
       ) {
         const currentRoleId = user.roleId && user.roleId._id ? user.roleId._id.toString() : String(user.roleId);
         roleChanged = req.param('roleId') !== currentRoleId;
@@ -686,7 +687,7 @@ module.exports = function(app, security) {
     '/api/users/:userId/events/:eventId/recent',
     security.authentication.bearerAuthentication,
     async function(req, res, next) {
-      if (access.userHasPermission(req.user, 'UPDATE_EVENT')) {
+      if (userRoleHasPermission(req.user, 'UPDATE_EVENT')) {
         return next();
       } else {
         const hasPermission = await eventPermissions.userHasEventPermission(

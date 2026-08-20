@@ -1,9 +1,7 @@
-const log = require('winston');
-
 exports.id = 'copy-auth-from-config-to-db';
 
 exports.up = async function (done) {
-  log.info('Copying authentication strategies from config.js to the DB');
+  this.log('Copying authentication strategies from config.js to the DB');
 
   try {
     // config.js never statically defined authenticationStrategies, so this
@@ -12,7 +10,7 @@ exports.up = async function (done) {
     await collection.createIndex(['type', 'name'], { unique: true });
     done();
   } catch (err) {
-    log.warn("Failed while copying authentication strategies to the DB", err);
+    this.log("Failed while copying authentication strategies to the DB", err);
     done(err);
   }
 };

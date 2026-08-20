@@ -5,11 +5,13 @@ import { EntityIdFactory, pageOf, PageOf, PagingParameters, UrlResolutionError, 
 import { StaticIcon, StaticIconStub, StaticIconId, StaticIconRepository, LocalStaticIconStub, StaticIconReference, StaticIconContentStore, StaticIconImportFetch, StaticIconStoreError } from '../../entities/icons/entities.icons'
 import { BaseMongooseRepository, pageQuery } from '../base/adapters.base.db.mongoose'
 
-export type StaticIconDocument = Omit<StaticIcon, 'sourceUrl'> & mongoose.Document & {
+export type StaticIconDocument = Omit<StaticIcon, 'id' | 'sourceUrl'> & {
+  _id: string
   sourceUrl: string
 }
-export type StaticIconModel = mongoose.Model<StaticIconDocument>
 export const StaticIconModelName = 'StaticIcon'
+export type StaticIconModel = mongoose.Model<StaticIconDocument>
+export type StaticIconModelInstance = mongoose.HydratedDocument<StaticIconDocument>
 export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
   {
     _id: { type: String as any, required: true },
@@ -76,7 +78,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
     sourceUrl: URL,
     stub: StaticIconStub | null = null,
     fetch: StaticIconImportFetch = StaticIconImportFetch.Lazy
-  ): Promise<StaticIcon | UrlResolutionError | StaticIconStoreError> {    
+  ): Promise<StaticIcon | UrlResolutionError | StaticIconStoreError> {
     stub = { sourceUrl, ...stub }
 
     if (typeof stub.contentHash === 'string' && typeof stub.contentTimestamp !== 'number') {
@@ -89,24 +91,20 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
       const _id = await this.idFactory.nextId()
       doc = await this.model.create({ _id, sourceUrl, registeredTimestamp: Date.now(), ...stub })
     }
-    switch (fetch) {
-      case StaticIconImportFetch.EagerAwait:
-        const stored = await this.fetchAndStore(doc)
-        if (stored instanceof Error) {
-          return stored
-        }
-        doc = stored
-        break
-      case StaticIconImportFetch.Eager:
-        this.fetchAndStore(doc)
-        break
-      case StaticIconImportFetch.Lazy:
-      default:
+    if (fetch === StaticIconImportFetch.EagerAwait) {
+      const stored = await this.fetchAndStore(doc)
+      if (stored instanceof Error) {
+        return stored
+      }
+      doc = stored
+    }
+    else if (fetch === StaticIconImportFetch.Eager) {
+      this.fetchAndStore(doc)
     }
     return this.entityForDocument(doc)
   }
 
-  private async fetchAndStore(iconDoc: StaticIconDocument): Promise<StaticIconDocument | UrlResolutionError | StaticIconStoreError> {
+  private async fetchAndStore(iconDoc: StaticIconModelInstance): Promise<StaticIconModelInstance | UrlResolutionError | StaticIconStoreError> {
     if (typeof iconDoc.resolvedTimestamp === 'number') {
       return iconDoc
     }
@@ -132,7 +130,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
 
   async createLocal(iconContent: LocalStaticIconStub, iconStream: NodeJS.ReadableStream): Promise<StaticIcon> {
     const id = await this.idFactory.nextId()
-    const icon: StaticIcon = { 
+    const icon: StaticIcon = {
       id: id,
       registeredTimestamp: Date.now(),
       ...iconContent
@@ -160,7 +158,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
   }
 
   private async loadRemoteContent(
-    icon: StaticIconDocument
+    icon: StaticIconModelInstance
   ): Promise<[StaticIcon, NodeJS.ReadableStream] | UrlResolutionError | StaticIconStoreError> {
     let sourceUrl: URL
     try {
@@ -169,14 +167,13 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
       console.error(`error parsing source url ${icon.sourceUrl} of registered icon ${icon.id}:`, err)
       throw err
     }
-    
+
     const resolver = this.resolvers.find(x => x.canResolve(sourceUrl))
     if (!resolver) {
       console.warn(`no scheme for registered icon`, icon)
       return new UrlResolutionError(sourceUrl, `no scheme found to resolve source url ${icon.sourceUrl} of icon ${icon.id}`)
     }
-
-    let resolved: StaticIconDocument | UrlResolutionError | StaticIconStoreError = icon
+    let resolved: StaticIconModelInstance | UrlResolutionError | StaticIconStoreError = icon
     if (typeof icon.resolvedTimestamp !== 'number') {
       resolved = await this.fetchAndStore(icon)
       if (resolved instanceof Error) {
@@ -208,7 +205,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
   }
 
   private async loadLocalContent(
-    icon: StaticIconDocument
+    icon: StaticIconModelInstance
   ): Promise<[StaticIcon, NodeJS.ReadableStream] | StaticIconStoreError> {
     const content = await this.contentStore.loadContent({
       id: icon.id,
@@ -218,7 +215,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
     if (content instanceof StaticIconStoreError) {
       return content
     }
-    
+
     return [ this.entityForDocument(icon), content ]
   }
 
@@ -246,12 +243,12 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
     return pageOf(items, paging, counted.totalCount)
   }
 
-  private async findDocBySourceUrl(url: URL): Promise<StaticIconDocument | null> {
-    return await this.model.findOne({ sourceUrl: url.toString() })
+  private findDocBySourceUrl(url: URL): Promise<StaticIconModelInstance | null> {
+    return this.model.findOne({ sourceUrl: url.toString() })
   }
 }
 
-async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository, registered: StaticIconDocument, stub: StaticIconStub): Promise<StaticIconDocument> {
+async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository, registered: StaticIconModelInstance, stub: StaticIconStub): Promise<StaticIconModelInstance> {
   /*
   TODO: some of this logic could potentially be captured as an entity layer
   function, such as which properties a client is allowed to update when

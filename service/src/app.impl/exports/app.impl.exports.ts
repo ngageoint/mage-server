@@ -1,6 +1,14 @@
 import * as api from '../../app.api/exports/app.api.exports'
 import { AppResponse, KnownErrorsOf, withPermission } from '../../app.api/app.api.global'
-import { Export, ExportProjection, ExportsRepository, ExportStatus, ExportStore, ExportStoreError } from '../../entities/exports/entities.exports'
+import {
+  Export,
+  ExportExpanded,
+  ExportProjection,
+  ExportsRepository,
+  ExportStatus,
+  ExportStore,
+  ExportStoreError
+} from '../../entities/exports/entities.exports'
 import { FormEntry, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import { Stats } from 'fs'
@@ -10,7 +18,7 @@ import { Logger, NoopLogger } from '../../entities/entities.logging'
 
 export function FetchExports(repository: ExportsRepository, permissionService: api.ExportAppLayerPermissionService): api.GetExports {
   return async function getExports(req: api.GetExportsRequest): ReturnType<api.GetExports> {
-    return await withPermission<Export[], KnownErrorsOf<api.GetExports>>(
+    return await withPermission<ExportExpanded[], KnownErrorsOf<api.GetExports>>(
       permissionService.ensureGetMyExportPermission(req.context),
       async () => {
         const user = req.context.requestingPrincipal()
@@ -60,8 +68,8 @@ export function CreateExport(
   permissionService: api.ExportAppLayerPermissionService,
   log: Logger = NoopLogger
 ): api.CreateExport {
-  return async function getExports(req: api.CreateExportRequest): ReturnType<api.CreateExport> {
-    return await withPermission<Export, KnownErrorsOf<api.CreateExport>>( 
+  return async function createExport(req: api.CreateExportRequest): ReturnType<api.CreateExport> {
+    return await withPermission<Export, KnownErrorsOf<api.CreateExport>>(
       permissionService.ensureCreateExportPermission(req.context),
       async (): Promise<Export | InvalidInputError> => {
         const user = req.context.requestingPrincipal()
@@ -87,17 +95,21 @@ export function CreateExport(
 
         const archive = archiver('zip')
         archive.pipe(content)
-        exporter.export(req.context.mageEvent, {
-          filter: {
-            ...req.filter,
-            favorites: req.filter.favorites ? { userId: user.id } : false
+        exporter.export(
+          req.context.mageEvent,
+          {
+            filter: {
+              ...req.filter,
+              favorites: req.filter.favorites ? { userId: user.id } : false
+            },
+            projection: req.projection
           },
-          projection: req.projection
-        }, projectedObservationFormFields, archive).then(async result => {
+          projectedObservationFormFields,
+          archive
+        ).then(async result => {
           const streamClosed = once(content, 'close')
-          archive.finalize()
+          await archive.finalize()
           await streamClosed
-
           const stats = await contentStore.contentStats(newExport)
           const update = {
             status: ExportStatus.Completed,
@@ -107,12 +119,11 @@ export function CreateExport(
               locations: { ...result.locations }
             }
           }
-          
-          exportsRepository.updateExportForUser(newExport.id, user.id, update)
+          await exportsRepository.updateExportForUser(newExport.id, user.id, update)
         }).catch(async (err) => {
           log.error('Export error', err)
           await contentStore.deleteContent(newExport)
-          exportsRepository.updateExportForUser(newExport.id, user.id, { status: ExportStatus.Failed })
+          await exportsRepository.updateExportForUser(newExport.id, user.id, { status: ExportStatus.Failed })
           archive.abort()
         })
 
@@ -123,7 +134,7 @@ export function CreateExport(
 }
 
 export function DeleteExport(
-  repository: ExportsRepository, 
+  repository: ExportsRepository,
   contentStore: ExportStore,
   permissionService: api.ExportAppLayerPermissionService
 ): api.DeleteExport {
@@ -142,14 +153,14 @@ export function DeleteExport(
         return exp
       }
     )
-  }        
+  }
 }
 
 function projectedObservationFormFields(observation: ObservationAttrs, projection?: ExportProjection): FormEntry[] {
   if (!projection) {
     return Array.from(observation.properties.forms)
   }
-  
+
   return observation.properties.forms.filter(formEntry => {
     return projection.some(formProjection => formEntry.formId === formProjection.formId)
   }).map(formEntry => {

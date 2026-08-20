@@ -4,7 +4,7 @@ const userTransformer = require('../transformers/user')
 import async from 'async'
 import util from 'util'
 import fileType from 'file-type'
-import EventModel, { FormDocument, MageEventDocument } from '../models/event'
+import EventModel, { FormDocument, FormSubdocumentModelInstance, MageEventDocument } from '../models/event'
 import express from 'express'
 import access from '../access'
 import { AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
@@ -12,6 +12,7 @@ import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
 import { EventAccessType, MageEvent } from '../entities/events/entities.events'
+import { userRoleHasPermission } from '../permissions/permissions.role-based.base'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
 import { LineStyle, PagingParameters } from '../entities/entities.global'
@@ -21,7 +22,7 @@ const log = logger.child({ component: 'events' })
 
 declare module 'express-serve-static-core' {
   export interface Request {
-    event?: EventModel.MageEventDocument
+    event?: EventModel.MageEventModelInstance
     eventEntity?: MageEvent
     access?: { user: express.Request['user'], permission: EventAccessType }
     parameters?: EventQueryParams
@@ -31,7 +32,7 @@ declare module 'express-serve-static-core' {
 }
 
 function determineReadAccess(req: express.Request, res: express.Response, next: express.NextFunction): void {
-  if (!access.userHasPermission(req.user, MageEventPermission.READ_EVENT_ALL)) {
+  if (!userRoleHasPermission(req.user, MageEventPermission.READ_EVENT_ALL)) {
     req.access = { user: req.user, permission: EventAccessType.Read };
   }
   next();
@@ -368,7 +369,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     parseForm,
     function (req, res, next) {
       const form = req.form;
-      new api.Event(req.event).addForm(form, function (err: any, form: FormDocument) {
+      new api.Event(req.event).addForm(form, function (err: any, form: FormSubdocumentModelInstance) {
         if (err) return next(err);
 
         async.parallel([
@@ -684,7 +685,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         searchTerm: req.query.term,
         pageSize: parseInt(String(req.query.page_size)) || 2,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+        includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined
       }
 
       EventModel.getMembers(parseInt(req.params.id), options).then(page => {
