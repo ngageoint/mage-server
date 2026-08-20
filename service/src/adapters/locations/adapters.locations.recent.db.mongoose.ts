@@ -12,19 +12,26 @@ import { UserLocationSchema } from './adapters.locations.db.mongoose'
 export const RecentUserLocationsModelName = 'CappedLocation'
 const recentLocationsLimit = 100
 
-export type RecentUserLocationsDocument = mongoose.Document & Omit<RecentUserLocations, 'userId'> & {
-  userId: PopulatedDoc<UserDocument> | null
+type PopulatedUserDocument = Pick<UserDocument, '_id' | 'icon' | 'avatar' | 'displayName' | 'email' | 'phones'>
+type PopulatedUserModelInstance = mongoose.HydratedDocument<PopulatedUserDocument, object, object, object, { versionKey: false }>
+
+export type RecentUserLocationsDocument = Omit<RecentUserLocations, 'userId'> & {
+  userId: PopulatedDoc<PopulatedUserModelInstance>
 }
 
 export type RecentUserLocationsModel = mongoose.Model<RecentUserLocationsDocument>
+
+const schemaOptions = {
+  versionKey: false
+} as const satisfies mongoose.SchemaOptions
+
+type ModelInstance = mongoose.HydratedDocument<RecentUserLocationsDocument, object, object, object, typeof schemaOptions>
 
 export const RecentUserLocationsSchema = new Schema<RecentUserLocationsDocument>({
   userId: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
   eventId: { type: Number, required: false, ref: 'Event' },
   locations: [UserLocationSchema]
-}, {
-  versionKey: false
-})
+}, schemaOptions)
 
 RecentUserLocationsSchema.index({ eventId: 1 }, { sparse: true })
 RecentUserLocationsSchema.index({ 'locations.properties.timestamp': 1, eventId: 1 })
@@ -82,7 +89,7 @@ export class MongooseRecentUserLocationsRepository implements RecentUserLocation
     await this.model.deleteMany({ userId })
   }
 
-  private entityForDocument(doc: RecentUserLocationsDocument): RecentUserLocations {
+  private entityForDocument(doc: ModelInstance): RecentUserLocations {
     const json: any = doc.toJSON()
     const populated = doc.populated('userId')
     return {
