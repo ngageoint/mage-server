@@ -5,103 +5,38 @@ import { UserRepository } from "@ngageoint/mage.service/lib/entities/users/entit
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
-import { SFTPPluginConfig, defaultSFTPPluginConfig, EventFilterMode } from '../configuration/SFTPPluginConfig';
+import { SFTPPluginConfig, defaultSFTPPluginConfig } from '../configuration/SFTPPluginConfig';
 import { ArchiveFormat, ArchiveStatus, ArchiverFactory, ArchiveResult, TriggerRule } from '../format/entities.format';
+import { getEventsToSync } from '../entities/entities.events';
 import fs from 'fs';
 import path from 'path';
-import { SftpAttrs, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
-import { MongooseTeamsRepository } from '../adapters/adapters.sftp.teams';
+import { SftpAttrs, SftpObservationEventSummary, SftpObservationRepository, SftpStatus, MongooseSftpObservationRepository, SftpObservationModel } from '../adapters/adapters.sftp.mongoose';
 import { Connection } from 'mongoose';
 
 const { name: packageName } = require('../../package.json')
 
-/**
- * Represents the result of a connection test
- */
 export interface ConnectionTestResult {
   success: boolean
   message: string
   timestamp?: Date
 }
 
-/**
- * Represents the current status of the plugin
- */
-export interface PluginStatus {
-  connected: boolean
-  lastError?: string
-  lastSync?: Date
-  lastConnectionAttempt?: Date
-}
-
-/**
- * Class used to process observations for SFTP
- */
 export class SftpController {
 
-  /**
-   * True if the processor is currently active, false otherwise.
-   */
   private isRunning = false;
 
-  /**
-   * The next timeout, use this to cancel the next one if the processor is stopped.
-   */
   private nextTimeout: NodeJS.Timeout | undefined;
 
-  /**
-   * Plugin status tracking
-   */
-  private status: PluginStatus = {
-    connected: false,
-    lastError: undefined,
-    lastSync: undefined,
-    lastConnectionAttempt: undefined
-  };
-
-  /**
-   * Used to get all the active events.
-   */
   private eventRepository: MageEventRepository;
 
-  /**
-   * Used to get team information for observations.
-   */
-  private teamRepository: MongooseTeamsRepository;
-
-  /**
-   * Used to get user information for observations.
-   */
-  private userRepository: UserRepository;
-
-  /**
-   * Used to get new observations.
-   */
   private observationRepository: ObservationRepositoryForEvent;
 
-  /**
-  * Used to save sftp status for each observation
-  */
   private sftpObservationRepository: SftpObservationRepository
 
-  /**
-   * SFTP plugin state configuration
-   */
   private stateRepository: PluginStateRepository<SFTPPluginConfig>;
 
-  /**
-   * SFTP client configuration
-   */
-  private sftpClient: SFTPClient = new SFTPClient();
-
-  /**
-   * SFTP plugin configuration
-   */
   private configuration: SFTPPluginConfig | null = null;
 
-  /**
-   * Factory to retrieve archiver based on plugin configuration
-   */
   archiveFactory: ArchiverFactory
 
   /**
@@ -116,39 +51,19 @@ export class SftpController {
    */
   private readonly startupSkipDone = new Set<number>()
 
-  /**
-   * Console logger
-   */
   private console: Console;
 
-  /**
-   * Constructor.
-   * @param stateRepository The plugins configuration.
-   * @param eventRepository Used to get all the active events.
-   * @param observationRepository Used to get new observations.
-   * @param userRepository Used to get user information.
-   * @param console Used to log to the console.
-   */
   constructor(
     console: Console,
-    {
-      stateRepository,
-      eventRepository,
-      observationRepository,
-      userRepository,
-      attachmentStore
-    }: {
-      stateRepository: PluginStateRepository<SFTPPluginConfig>;
-      eventRepository: MageEventRepository;
-      observationRepository: ObservationRepositoryForEvent;
-      userRepository: UserRepository;
-      attachmentStore: AttachmentStore;
-    },
+    stateRepository: PluginStateRepository<SFTPPluginConfig>,
+    eventRepository: MageEventRepository,
+    observationRepository: ObservationRepositoryForEvent,
+    userRepository: UserRepository,
+    attachmentStore: AttachmentStore,
     dbConnection: Connection
   ) {
     const sftpObservationModel = SftpObservationModel(dbConnection, `${packageName}/observations`)
     const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
-    const teamRepo = new MongooseTeamsRepository(dbConnection)
     const archiverFactory = new ArchiverFactory(userRepository, attachmentStore)
 
     this.stateRepository = stateRepository;
@@ -157,14 +72,8 @@ export class SftpController {
     this.observationRepository = observationRepository;
     this.archiveFactory = archiverFactory
     this.console = console;
-    this.teamRepository = teamRepo;
-    this.userRepository = userRepository;
   }
 
-  /**
-   * Gets the current configuration from the database.
-   * @returns The current configuration from the database.
-   */
   public async getConfiguration(): Promise<SFTPPluginConfig> {
     let config: SFTPPluginConfig = this.configuration
       ?? await this.stateRepository.get()
@@ -172,10 +81,6 @@ export class SftpController {
     return { ...config, hasPrivateKey: this.privateKeyFileExists() }
   }
 
-  /**
-   * Updates new configuration in the state repository.
-   * @param configuration The new config to put into the state repo.
-   */
   public async updateConfiguration(configuration: SFTPPluginConfig) {
     try {
       await this.stateRepository.put(configuration)
@@ -184,9 +89,6 @@ export class SftpController {
     }
   }
 
-  /**
-   * Returns the configured SFTP key file path from MAGE_SFTP_KEY_FILE env var.
-   */
   private getSftpKeyFilePath(): string {
     const keyFile = process.env['MAGE_SFTP_KEY_FILE'] as string
     if (!keyFile) {
@@ -195,9 +97,6 @@ export class SftpController {
     return keyFile
   }
 
-  /**
-   * Checks whether a private key file exists at the configured path.
-   */
   private privateKeyFileExists(): boolean {
     try {
       const keyFile = this.getSftpKeyFilePath()
@@ -207,10 +106,6 @@ export class SftpController {
     }
   }
 
-  /**
-   * Saves a private key to the configured MAGE_SFTP_KEY_FILE path.
-   * @param keyText The OpenSSH private key text
-   */
   public savePrivateKey(keyText: string): void {
     const keyFile = this.getSftpKeyFilePath()
     const keyDir = path.dirname(keyFile)
@@ -220,9 +115,6 @@ export class SftpController {
     fs.writeFileSync(keyFile, keyText, { mode: 0o600 })
   }
 
-  /**
-   * Removes the private key file from the configured path.
-   */
   public removePrivateKey(): void {
     const keyFile = this.getSftpKeyFilePath()
     if (fs.existsSync(keyFile)) {
@@ -230,9 +122,6 @@ export class SftpController {
     }
   }
 
-  /**
-   * Resets the plugin to default configuration and removes the private key file.
-   */
   public async resetToDefaults(): Promise<void> {
     await this.stop()
     this.removePrivateKey()
@@ -240,10 +129,6 @@ export class SftpController {
     this.configuration = null
   }
 
-  /**
-   * Reads the private key from the configured MAGE_SFTP_KEY_FILE path.
-   * @returns The private key as a Buffer
-   */
   private resolvePrivateKey(): Buffer {
     const keyFile = this.getSftpKeyFilePath()
     if (!fs.existsSync(keyFile)) {
@@ -252,68 +137,22 @@ export class SftpController {
     return fs.readFileSync(keyFile)
   }
 
-  /**
-   * Starts the processor.
-   */
   async start() {
     this.configuration = await this.getConfiguration()
     if (!this.configuration.enabled) {
-      this.status.connected = false
-      this.status.lastError = undefined
       return
     }
 
     this.isRunning = true;
-    this.status.lastConnectionAttempt = new Date()
-
-    try {
-      const privateKey = this.resolvePrivateKey()
-      await this.sftpClient.connect({
-        host: this.configuration.sftpClient.host,
-        port: this.configuration.sftpClient.port,
-        username: this.configuration.sftpClient.username,
-        privateKey: privateKey
-      });
-      this.status.connected = true;
-      this.status.lastError = undefined;
-      this.setupConnectionListeners()
-      await this.processAndScheduleNext()
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e)
-      this.console.error("error connecting to sftp endpoint", e)
-      this.status.connected = false
-      this.status.lastError = `Connection failed: ${errorMessage}`
-      this.scheduleNext(this.configuration.interval)
-    }
+    await this.processAndScheduleNext()
   }
 
-  /**
-   * Stops the processor.
-   */
   async stop() {
     this.configuration = null
     this.isRunning = false
-    this.status.connected = false
-    try {
-      await this.sftpClient.end()
-    } catch (e) {
-      this.console.error("error disconnecting sftp client", e)
-    }
     clearTimeout(this.nextTimeout)
   }
 
-  /**
-   * Gets the current plugin status
-   * @returns The current status including connection state and any errors
-   */
-  public getStatus(): PluginStatus {
-    return { ...this.status }
-  }
-
-  /**
-   * Gets all active events for display in the configuration UI.
-   * @returns Array of active events with id and name.
-   */
   public async getActiveEvents(): Promise<{ id: number; name: string }[]> {
     try {
       const events = await this.eventRepository.findActiveEvents()
@@ -340,6 +179,33 @@ export class SftpController {
   }
 
   /**
+   * Returns sync status counts per event, so problem events can be spotted without
+   * loading each event's full record list. A PENDING record is considered "stuck" once
+   * it has sat unresolved longer than the configured attachment-wait timeout
+   * (initiation.timeout) — the same window sftpObservation() uses to keep retrying an
+   * incomplete archive before giving up.
+   */
+  public async getObservationStatusSummary(): Promise<(SftpObservationEventSummary & { eventName: string })[]> {
+    const configuration = await this.getConfiguration()
+    const events = getEventsToSync(await this.eventRepository.findActiveEvents(), configuration)
+
+    const timeoutMs = configuration.initiation.timeout * 60 * 1000
+    const stalePendingBefore = new Date(Date.now() - timeoutMs)
+    const summaries = await this.sftpObservationRepository.getSummaryByEvent(stalePendingBefore)
+    const summaryByEventId = new Map(summaries.map(s => [s.eventId, s]))
+
+    return events.map(mageEvent => {
+      const summary = summaryByEventId.get(mageEvent.id)
+      return {
+        eventId: mageEvent.id,
+        eventName: mageEvent.name,
+        counts: summary?.counts ?? { SUCCESS: 0, FAILED: 0, PENDING: 0, SKIPPED: 0 },
+        stuckPendingCount: summary?.stuckPendingCount ?? 0
+      }
+    })
+  }
+
+  /**
    * Requeues observations as PENDING so the next poll cycle retries them.
    */
   public async requeueObservations(eventId: number, observationIds: string[]): Promise<void> {
@@ -348,11 +214,6 @@ export class SftpController {
     }
   }
 
-  /**
-   * Tests the connection to an SFTP server with the given configuration
-   * @param config The SFTP client configuration to test
-   * @returns A result object indicating success or failure with a message
-   */
   public async testConnection(config?: Partial<SFTPPluginConfig>): Promise<ConnectionTestResult> {
     const testClient = new SFTPClient()
     const timestamp = new Date()
@@ -402,7 +263,7 @@ export class SftpController {
 
       return {
         success: true,
-        message: `Successfully connected to ${sftpConfig.host}:${sftpConfig.port} and verified access to path "${sftpConfig.path}"`,
+        message: `Connected to ${sftpConfig.host}:${sftpConfig.port} with access to "${sftpConfig.path}"`,
         timestamp
       }
     } catch (e) {
@@ -422,46 +283,47 @@ export class SftpController {
     }
   }
 
-  /**
-   * Processes any new observations and then schedules its next run if it hasn't been stopped.
-   */
   private async processAndScheduleNext() {
     const configuration = await this.getConfiguration();
     if (this.isRunning) {
-      if (!this.status.connected) {
-        try {
-          await this.connect()
-          this.console.log('Successfully reconnected to SFTP server')
-        } catch (e) {
-          this.console.error('SFTP reconnection failed, will retry on next interval', e)
-          const errorMessage = e instanceof Error ? e.message : String(e)
-          this.status.connected = false
-          this.status.lastError = `Connection failed: ${errorMessage}`
-          this.status.lastConnectionAttempt = new Date()
-        }
+      const events = getEventsToSync(await this.eventRepository.findActiveEvents(), configuration)
+
+      const eventObservations = new Map<number, Observation[]>()
+      let hasObservationsToSync = false
+      for (const attrs of events) {
+        const event = new MageEvent(attrs)
+        const observations = await this.gatherObservationsToSync(event, configuration)
+        if (observations.length) hasObservationsToSync = true
+        eventObservations.set(event.id, observations)
       }
 
-      if (this.status.connected) {
+      if (hasObservationsToSync) {
+        const client = new SFTPClient()
+        let connected = false
         try {
-          let events = await this.eventRepository.findActiveEvents();
-
-          const filterMode = configuration.eventFilterMode || EventFilterMode.All
-          if (filterMode === EventFilterMode.Include && configuration.events.length > 0) {
-            events = events.filter(e => configuration.events.includes(e.id))
-          } else if (filterMode === EventFilterMode.Exclude && configuration.events.length > 0) {
-            events = events.filter(e => !configuration.events.includes(e.id))
-          }
-
-          for (const attrs of events) {
-            const event = new MageEvent(attrs)
-            await this.processEvent(event, configuration)
-          }
-          this.status.lastSync = new Date()
-          this.status.lastError = undefined
+          const privateKey = this.resolvePrivateKey()
+          await client.connect({
+            host: configuration.sftpClient.host,
+            port: configuration.sftpClient.port,
+            username: configuration.sftpClient.username,
+            privateKey: privateKey
+          })
+          connected = true
         } catch (e) {
-          const errorMessage = e instanceof Error ? e.message : String(e)
-          this.console.error('sftp error', e)
-          this.status.lastError = `Sync error: ${errorMessage}`
+          this.console.error('SFTP connection failed, will retry on next interval', e)
+        }
+
+        if (connected) {
+          try {
+            for (const attrs of events) {
+              const event = new MageEvent(attrs)
+              await this.processEvent(event, configuration, eventObservations.get(event.id) ?? [], client)
+            }
+          } catch (e) {
+            this.console.error('sftp error', e)
+          } finally {
+            try { await client.end() } catch { }
+          }
         }
       }
 
@@ -469,27 +331,25 @@ export class SftpController {
     }
   }
 
-  /**
-   * Schedule next run.
-   * @param interval interval in seconds in which to schedule the next run from now
-   */
   private scheduleNext(interval: number) {
     if (this.isRunning) {
       this.nextTimeout = setTimeout(() => { this.processAndScheduleNext() }, interval * 1000);
     }
   }
 
-  private async processEvent(event: MageEvent, configuration: SFTPPluginConfig) {
+  private async gatherObservationsToSync(event: MageEvent, configuration: SFTPPluginConfig): Promise<Observation[]> {
     const observationRepository = await this.observationRepository(event.id);
 
     await this.skipMissedObservations(event, observationRepository)
+
+    const result: Observation[] = []
 
     this.console.debug('fetching pending observations for event ' + event.name);
     const pending = await this.sftpObservationRepository.findAllByStatus(event.id, [SftpStatus.PENDING])
     for (const sftpAttrs of pending) {
       const observation = await observationRepository.findById(sftpAttrs.observationId)
       if (observation !== null) {
-        await this.sftpObservation(observation, event, configuration.archiveFormat, configuration.sftpClient.path, configuration.initiation.timeout)
+        result.push(observation)
       }
     }
 
@@ -504,14 +364,20 @@ export class SftpController {
     this.console.debug('fetching observations modified after ' + new Date(queryTime).toISOString() + ' for event ' + event.name);
     let { items: observations } = await observationRepository.findLastModifiedAfter(queryTime, page);
     observations = await this.filterObservationsToSync(event, observations, configuration.initiation.rule)
+    for (const observationAttrs of observations) {
+      result.push(Observation.evaluate(observationAttrs, event))
+    }
 
-    if (observations.length) {
-      for (const observationAttrs of observations) {
-        const observation = Observation.evaluate(observationAttrs, event)
-        await this.sftpObservation(observation, event, configuration.archiveFormat, configuration.sftpClient.path, configuration.initiation.timeout)
-      }
-    } else {
+    return result
+  }
+
+  private async processEvent(event: MageEvent, configuration: SFTPPluginConfig, observations: Observation[], client: SFTPClient) {
+    if (!observations.length) {
       this.console.debug('no new or updated observations for event ' + event.name)
+      return
+    }
+    for (const observation of observations) {
+      await this.sftpObservation(observation, event, configuration.archiveFormat, configuration.sftpClient.path, configuration.initiation.timeout, client)
     }
   }
 
@@ -573,21 +439,22 @@ export class SftpController {
     event: MageEvent,
     format: ArchiveFormat,
     sftpPath: string,
-    timeout: number
+    timeoutMinutes: number,
+    client: SFTPClient
   ) {
     const archiver = this.archiveFactory.createArchiver(format)
     const result = await archiver.createArchive(observation, event)
+    const timeoutMs = timeoutMinutes * 60 * 1000
 
     if (result instanceof ArchiveResult) {
-      if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
+      if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeoutMs) > Date.now())) {
         try {
-          /** File naming is just observation id to reduce clutter */
           const filename = (`${observation.id}`)
 
           const stream = new PassThrough()
           result.archive.pipe(stream)
 
-          const uploadPromise = this.sftpClient.put(stream, `${sftpPath}/${filename}.zip`)
+          const uploadPromise = client.put(stream, `${sftpPath}/${filename}.zip`)
           const finalizePromise = result.archive.finalize()
 
           await Promise.all([uploadPromise, finalizePromise])
@@ -595,6 +462,7 @@ export class SftpController {
           await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS, observation.lastModified)
         } catch (error) {
           this.console.error(`error uploading observation ${observation.id}`, error)
+          await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.FAILED)
         }
       } else {
         this.console.info(`pending observation ${observation.id}`)
@@ -606,65 +474,4 @@ export class SftpController {
     }
   }
 
-  /**
-   * Establishes a fresh SFTP connection, closing any existing one first.
-   */
-  private async connect() {
-    try { await this.sftpClient.end() } catch { }
-    this.sftpClient = new SFTPClient()
-
-    const sftpKeyFilename = process.env['MAGE_SFTP_KEY_FILE'] as string
-    if (!sftpKeyFilename) {
-      throw new Error('MAGE_SFTP_KEY_FILE environment variable is not set')
-    }
-    const sftpKeyFile = fs.readFileSync(sftpKeyFilename)
-
-    if (!this.configuration) {
-      throw new Error('SFTP plugin configuration is not loaded')
-    }
-
-    await this.sftpClient.connect({
-      host: this.configuration.sftpClient.host,
-      port: this.configuration.sftpClient.port,
-      username: this.configuration.sftpClient.username,
-      privateKey: sftpKeyFile
-    })
-
-    this.status.connected = true
-    this.status.lastError = undefined
-    this.status.lastConnectionAttempt = undefined
-    this.setupConnectionListeners()
-  }
-
-  /**
-   * Registers event listeners on the SFTP client to detect connection loss.
-   */
-  private setupConnectionListeners() {
-    this.sftpClient.on('close', () => {
-      this.handleConnectionLost('Connection closed')
-    })
-
-    this.sftpClient.on('end', () => {
-      this.handleConnectionLost('Connection ended')
-    })
-
-    this.sftpClient.on('error', (err: Error) => {
-      this.handleConnectionLost(err.message)
-    })
-  }
-
-  /**
-   * Handles an unexpected connection loss detected via SFTP client events.
-   * The next scheduled sync interval will attempt to reconnect.
-   */
-  private handleConnectionLost(reason: string) {
-    if (!this.isRunning || !this.status.connected) return
-
-    this.console.log(`SFTP connection lost: ${reason}`)
-    this.status.connected = false
-    this.status.lastError = `Connection lost: ${reason}`
-    this.status.lastConnectionAttempt = new Date()
-
-    // Could have it attempt to reconnect immediately here, instead wait for next interval
-  }
 }

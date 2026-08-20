@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import { loadFeedsHooks } from './plugin_hooks/main.impl.plugin_hooks.feeds'
 import { loadIconsHooks } from './plugin_hooks/main.impl.plugin_hooks.icons'
 import { loadMageEventsHoooks } from './plugin_hooks/main.impl.plugin_hooks.events'
@@ -26,6 +27,7 @@ export async function integratePluginHooks(
   injectService: InjectableServices,
   addWebRoutesFromPlugin: AddPluginWebRoutes,
   collectAttachmentHooks: AddPluginAttachmentHooks,
+  domainEvents: EventEmitter,
 ): Promise<void> {
   let injection: Injection<any> | null = null
   let hooks: PluginHooks
@@ -39,7 +41,7 @@ export async function integratePluginHooks(
   else {
     hooks = await plugin.init()
   }
-  await loadMageEventsHoooks(pluginId, hooks)
+  await loadMageEventsHoooks(pluginId, hooks, domainEvents)
   await loadIconsHooks(pluginId, hooks, injectService(StaticIconRepositoryToken))
   await loadFeedsHooks(pluginId, hooks, injectService(FeedServiceTypeRepositoryToken))
   await loadAttachmentHooks(pluginId, hooks, collectAttachmentHooks)

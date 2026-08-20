@@ -1,15 +1,4 @@
-// /* You can add global styles to this file, and also import other style files */
-// @import '~@angular/material/theming';
-
-// /* You can add global styles to this file, and also import other style files */
-// @import "~@angular/material/prebuilt-themes/indigo-pink.css";
-// @import "~@ng-select/ng-select/themes/material.theme.css";
-
-// $app-primary: mat-palette($mat-blue, 600, 200, 800);
-// $app-accent: mat-palette($mat-orange, A700, A100, A700);
-// $app-warn: mat-palette($mat-red); // The warn palette is optional (defaults to red).
-
-@import "theme.scss";
+@use "theme.scss";
 
 html,
 body {

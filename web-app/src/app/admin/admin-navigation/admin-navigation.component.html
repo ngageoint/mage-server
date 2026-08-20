@@ -114,7 +114,7 @@
           <img *ngIf="plugin.icon?.path" class="nav-plugin-icon" [src]="'/ui_plugins/' + plugin.id + '/' + plugin.icon.path" [alt]="plugin.title" />
           <mat-icon *ngIf="plugin.icon?.matIconName" fontSet="material-symbols-outlined">{{ plugin.icon.matIconName }}</mat-icon>
           <mat-icon *ngIf="!plugin.icon?.path && !plugin.icon?.matIconName" fontSet="material-symbols-outlined">extension</mat-icon>
-          <span class="nav-label">{{ plugin.title }}</span>
+          <span class="nav-label nav-label--truncate">{{ plugin.title }}</span>
         </a>
       </div>
     </div>

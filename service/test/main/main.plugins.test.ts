@@ -2,6 +2,7 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import express, { Router } from 'express'
+import { EventEmitter } from 'events'
 import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import * as plugins from '../../lib/main.impl/main.impl.plugins'
 import { InitPluginHook, InjectionToken } from '../../lib/plugins.api'
@@ -65,7 +66,7 @@ describe('loading plugins', function() {
       }
     }
     initPlugin.inject = injectRequest
-    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, collectAttachmentHooks)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, collectAttachmentHooks, new EventEmitter())
 
     expect(injected).to.have.property('service1').instanceOf(Service1Impl)
     expect(injected).to.have.property('service2').instanceOf(Service2Impl)
@@ -98,7 +99,7 @@ describe('loading plugins', function() {
     }
     initPlugin.inject = injectRequest
     mockInitPluginRoutes.initPluginRoutes(Arg.all()).mimicks(initPluginRoutes)
-    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, mockInitPluginRoutes.initPluginRoutes, collectAttachmentHooks)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, mockInitPluginRoutes.initPluginRoutes, collectAttachmentHooks, new EventEmitter())
 
     mockInitPluginRoutes.received(1).initPluginRoutes(Arg.all())
     mockInitPluginRoutes.received(1).initPluginRoutes(pluginId, hook)
@@ -123,7 +124,7 @@ describe('loading plugins', function() {
     }
     initPlugin.inject = injectRequest
     mockCollectAttachmentHooks.collectAttachmentHooks(Arg.all()).mimicks(collectAttachmentHooks)
-    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, mockCollectAttachmentHooks.collectAttachmentHooks)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, mockCollectAttachmentHooks.collectAttachmentHooks, new EventEmitter())
 
     mockCollectAttachmentHooks.received(1).collectAttachmentHooks(Arg.all())
     mockCollectAttachmentHooks.received(1).collectAttachmentHooks(pluginId, hook.attachmentHooks)
@@ -144,7 +145,7 @@ describe('loading plugins', function() {
     }
     initPlugin.inject = injectRequest
     mockCollectAttachmentHooks.collectAttachmentHooks(Arg.all()).mimicks(collectAttachmentHooks)
-    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, mockCollectAttachmentHooks.collectAttachmentHooks)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, mockCollectAttachmentHooks.collectAttachmentHooks, new EventEmitter())
 
     mockCollectAttachmentHooks.didNotReceive().collectAttachmentHooks(Arg.all())
   })

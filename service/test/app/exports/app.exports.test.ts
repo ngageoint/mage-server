@@ -153,7 +153,7 @@ describe('export use case interactions', function() {
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
 
       const req: api.GetExportContentRequest = requestBy(mockUser, { exportId: exp.id })
-      permissions.ensureGetExportContentPermission(req.context).resolves(null)
+      permissions.ensureGetMyExportContentPermission(req.context).resolves(null)
       store.readContent(exp).resolves(bytes)
 
       repository.getExportForUser(exp.id, mockUser.id).resolves(exp)

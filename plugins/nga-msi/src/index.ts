@@ -22,17 +22,6 @@ const hooks: InitPluginHook = {
         async loadPluginStaticIcons(): Promise<PluginStaticIcon[]> {
           return [
             {
-              pluginRelativePath: 'icons/asam.png',
-              title: 'ASAM',
-              summary: 'The ASAM pirate skull and crossbones icon',
-              contentHash: '1',
-              imageType: 'raster',
-              mediaType: 'image/png',
-              fileName: 'asam.png',
-              sizePixels: { width: 60, height: 60 },
-              sizeBytes: 1684,
-              tags: [],
-            },{
               pluginRelativePath: 'icons/modu.png',
               title: 'MODU',
               summary: 'The MODU drill rig icon',

@@ -34,7 +34,7 @@ export function GetExportContent(
   permissionService: api.ExportAppLayerPermissionService
 ): api.GetExportContent {
   return async function readExportContent(req: api.GetExportContentRequest): ReturnType<api.GetExportContent> {
-    const denied = await permissionService.ensureGetExportContentPermission(req.context)
+    const denied = await permissionService.ensureGetMyExportContentPermission(req.context)
     if (denied) {
       return AppResponse.error(denied)
     }

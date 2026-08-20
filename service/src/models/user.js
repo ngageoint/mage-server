@@ -8,8 +8,6 @@ const mongoose = require('mongoose')
   , Event = require('./event')
   , Team = require('./team')
   , Observation = require('./observation')
-  , Location = require('./location')
-  , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
   , log = require('../logger').child({ component: 'users' })
@@ -100,15 +98,36 @@ UserSchema.pre('save', function (next) {
   }
 });
 
+let locationRepo = null;
+let recentUserLocationRepo = null;
+
+/**
+ * The Location and CappedLocation mongoose models are registered by the
+ * locations adapters at application boot time rather than self-registering
+ * on require like the other legacy models in this file, so this module
+ * cannot resolve them by name and instead needs the repositories injected
+ * from app.ts once they exist.
+ */
+exports.setLocationRepositories = function (userLocationRepo, userRecentLocationRepo) {
+  locationRepo = userLocationRepo;
+  recentUserLocationRepo = userRecentLocationRepo;
+};
+
 UserSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   const user = this;
 
   async.parallel({
     location: function (done) {
-      Location.removeLocationsForUser(user, done);
+      if (!locationRepo) {
+        return done();
+      }
+      locationRepo.removeLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
     },
     cappedlocation: function (done) {
-      CappedLocation.removeLocationsForUser(user, done);
+      if (!recentUserLocationRepo) {
+        return done();
+      }
+      recentUserLocationRepo.removeLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
     },
     token: function (done) {
       Token.removeTokensForUser(user, done);

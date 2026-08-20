@@ -5,6 +5,8 @@ import { UserId } from '../users/entities.users'
 
 export type LocationID = string
 
+export const LocationsAddedEvent = 'Locations.Added' as const
+
 export interface UserLocation extends Feature<Point, UserLocationProperties> {
   userId: UserId
   eventId: MageEventId
@@ -48,6 +50,35 @@ export interface UserLocationReadOptions {
   stream?: false | null
 }
 
+export type UserLocationCreateAttrs = Omit<UserLocation, 'teamIds'> & {
+  teamIds?: TeamId[]
+}
+
 export interface UserLocationRepository {
+  createLocations(locations: UserLocationCreateAttrs[]): Promise<UserLocation[]>
   getLocations(options: UserLocationReadOptions): AsyncIterable<UserLocation> & { close?: () => void }
+  removeLocationsForUser(userId: UserId): Promise<void>
+}
+
+export interface RecentUserLocations {
+  userId: UserId
+  eventId: MageEventId
+  user?: any
+  locations: UserLocation[]
+}
+
+export interface RecentUserLocationsReadOptions {
+  filter: {
+    eventId?: MageEventId
+    startDate?: Date
+    endDate?: Date
+  }
+  limit?: number
+  populate?: boolean
+}
+
+export interface RecentUserLocationsRepository {
+  addLocations(userId: UserId, eventId: MageEventId, locations: UserLocation[]): Promise<RecentUserLocations>
+  findLocations(options: RecentUserLocationsReadOptions): Promise<RecentUserLocations[]>
+  removeLocationsForUser(userId: UserId): Promise<void>
 }
