@@ -1,8 +1,10 @@
+import fs from 'fs';
 import { ArcGISIdentityManager } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from './ArcGISService';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { FeatureServiceConfig } from './types/ArcGISConfig';
 import { buildFeatureServicesForSave, commitFeatureService, IncomingFeatureServiceConfig } from './FeatureServiceConfigStore';
+import { decryptAndDeserialize, _resetKeyCacheForTests } from './CredentialEncryption';
 
 /**
  * Tests for saving feature services to the config
@@ -19,6 +21,19 @@ const fakeIdentityManager = (username: string): ArcGISIdentityManager => ({
   username,
   serialize: () => JSON.stringify({ username })
 } as unknown as ArcGISIdentityManager);
+
+// commitFeatureService encrypts the identityManager before persisting it. keep that isolated
+// from any real MAGE_SECURITY_DIR on the machine running these tests
+let tempSecurityDir: string;
+beforeEach(() => {
+  tempSecurityDir = fs.mkdtempSync('/tmp/featureServiceConfigStoreTest');
+  process.env.MAGE_SECURITY_DIR = tempSecurityDir;
+  _resetKeyCacheForTests();
+});
+afterEach(() => {
+  fs.rmSync(tempSecurityDir, { recursive: true });
+  _resetKeyCacheForTests();
+});
 
 describe('commitFeatureService', () => {
   it('adds a newly-selected feature service to the config with no layers yet, and persists it', async () => {
@@ -66,7 +81,9 @@ describe('commitFeatureService', () => {
 
     expect(config.featureServices).toHaveLength(1);
     expect(config.featureServices[0].portalUrl).toEqual('https://host/new-portal/sharing/rest');
-    expect(config.featureServices[0].identityManager).toEqual(JSON.stringify({ username: 'jdoe' }));
+    // the identityManager is encrypted before being persisted, not stored as plaintext JSON
+    expect(config.featureServices[0].identityManager.startsWith('v1:')).toBe(true);
+    expect(decryptAndDeserialize(config.featureServices[0].identityManager, silentConsole).username).toEqual('jdoe');
     expect(config.featureServices[0].layers).toEqual([{ layer: 'Incidents', eventIds: [42] }]);
   });
 });

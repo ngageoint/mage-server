@@ -21,6 +21,7 @@ import {
   signInWithPortalCandidates
 } from './PortalDiscovery'
 import { buildFeatureServicesForSave, commitFeatureService, sanitizeFeatureService } from './FeatureServiceConfigStore'
+import { serializeAndEncrypt } from './CredentialEncryption'
 
 // scope every log message from this plugin under MAGE's central winston logger
 // map console's method names to the child logger's methods explicitly
@@ -71,7 +72,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
     console.info('Intializing ArcGIS plugin...');
     const { stateRepo, eventRepo, obsRepoForEvent, userRepo } = services;
 
-    const identityService = createArcGISIdentityService(stateRepo);
+    const identityService = createArcGISIdentityService(stateRepo, console);
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, identityService, console);
     // don't block server startup on the first ArcGIS sync cycle, which can involve
     // several rounds of network I/O against the configured ArcGIS server(s)
@@ -149,11 +150,11 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
                 service = {
                   url: state.url,
                   portalUrl: state.portalUrl,
-                  identityManager: idManager.serialize(),
+                  identityManager: serializeAndEncrypt(idManager, console),
                   layers: []
                 };
               } else {
-                service.identityManager = idManager.serialize();
+                service.identityManager = serializeAndEncrypt(idManager, console);
                 if (state.portalUrl) {
                   service.portalUrl = state.portalUrl;
                 }
@@ -264,7 +265,7 @@ const arcgisPluginHooks: InitPluginHook<InjectedServices> = {
                 return res.sendStatus(400);
               }
 
-              const service: FeatureServiceConfig = { url, portalUrl: resolvedPortalUrl, layers: [], identityManager: identityManager.serialize() };
+              const service: FeatureServiceConfig = { url, portalUrl: resolvedPortalUrl, layers: [], identityManager: serializeAndEncrypt(identityManager, console) };
               const existingService = config.featureServices.find(service => service.url === url);
               if (!existingService) {
                 config.featureServices.push(service);

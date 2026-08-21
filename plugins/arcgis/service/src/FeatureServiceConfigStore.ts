@@ -4,6 +4,7 @@ import { FeatureServiceConfig, FeatureLayerConfig } from './types/ArcGISConfig';
 import { ArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { ArcGISIdentityService } from './ArcGISService';
 import { checkEditPrivilege } from './PortalDiscovery';
+import { serializeAndEncrypt } from './CredentialEncryption';
 
 export const sanitizeFeatureService = async (
   config: FeatureServiceConfig,
@@ -51,13 +52,13 @@ export const commitFeatureService = async (
   const existingService = config.featureServices.find(service => service.url === url);
   let service: FeatureServiceConfig;
   if (existingService) {
-    existingService.identityManager = identityManager.serialize();
+    existingService.identityManager = serializeAndEncrypt(identityManager, console);
     if (portalUrl) {
       existingService.portalUrl = portalUrl;
     }
     service = existingService;
   } else {
-    service = { url, portalUrl, layers: [], identityManager: identityManager.serialize() };
+    service = { url, portalUrl, layers: [], identityManager: serializeAndEncrypt(identityManager, console) };
     config.featureServices.push(service);
   }
   await patchConfig(config);
