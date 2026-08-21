@@ -1,102 +1,118 @@
-import mongoose, { PopulatedDoc, Schema } from 'mongoose'
-import {
-  RecentUserLocations,
-  RecentUserLocationsReadOptions,
-  RecentUserLocationsRepository,
-  UserLocation
-} from '../../entities/locations/entities.locations'
+import mongoose from 'mongoose'
+import { MageEventId } from '../../entities/events/entities.events'
+import { AddRecentUserLocationsSpec, FindRecentUserLocationsSpec, LocationUserExpanded, RecentUserLocations, RecentUserLocationsRepository, UserLocation } from '../../entities/locations/entities.locations'
 import { UserId } from '../../entities/users/entities.users'
-import { UserDocument } from '../users/adapters.users.db.mongoose'
-import { UserLocationSchema } from './adapters.locations.db.mongoose'
+import { UserLocationDocument, UserLocationSchema } from './adapters.locations.db.mongoose'
+
+const Schema = mongoose.Schema
 
 export const RecentUserLocationsModelName = 'CappedLocation'
-const recentLocationsLimit = 100
 
-type PopulatedUserDocument = Pick<UserDocument, '_id' | 'icon' | 'avatar' | 'displayName' | 'email' | 'phones'>
-type PopulatedUserModelInstance = mongoose.HydratedDocument<PopulatedUserDocument, object, object, object, { versionKey: false }>
+// TODO this should come from config somewhere
+const locationLimit = 100
 
-export type RecentUserLocationsDocument = Omit<RecentUserLocations, 'userId'> & {
-  userId: PopulatedDoc<PopulatedUserModelInstance>
+export type RecentUserLocationsDocument = mongoose.Document & {
+  userId: mongoose.Types.ObjectId
+  eventId: MageEventId
+  locations: UserLocationDocument[]
 }
 
 export type RecentUserLocationsModel = mongoose.Model<RecentUserLocationsDocument>
 
-const schemaOptions = {
-  versionKey: false
-} as const satisfies mongoose.SchemaOptions
+export const RecentUserLocationsSchema = new Schema<RecentUserLocationsDocument, RecentUserLocationsModel>(
+  {
+    userId: { type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User' },
+    eventId: { type: Number, required: false, sparse: true, ref: 'Event' },
+    locations: [UserLocationSchema]
+  },
+  { versionKey: false }
+)
 
-type ModelInstance = mongoose.HydratedDocument<RecentUserLocationsDocument, object, object, object, typeof schemaOptions>
-
-export const RecentUserLocationsSchema = new Schema<RecentUserLocationsDocument>({
-  userId: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
-  eventId: { type: Number, required: false, ref: 'Event' },
-  locations: [UserLocationSchema]
-}, schemaOptions)
-
-RecentUserLocationsSchema.index({ eventId: 1 }, { sparse: true })
+RecentUserLocationsSchema.index({ eventId: 1 })
+RecentUserLocationsSchema.index({ 'locations.properties.timestamp': 1 })
 RecentUserLocationsSchema.index({ 'locations.properties.timestamp': 1, eventId: 1 })
 
-export function RecentUserLocationsModel(conn: mongoose.Connection, collection?: string): RecentUserLocationsModel {
-  return conn.model(RecentUserLocationsModelName, RecentUserLocationsSchema, collection || 'cappedlocations') as any
+export function RecentUserLocationModel(conn: mongoose.Connection, collection?: string): RecentUserLocationsModel {
+  return conn.model<RecentUserLocationsDocument, RecentUserLocationsModel>(RecentUserLocationsModelName, RecentUserLocationsSchema)
 }
 
 export class MongooseRecentUserLocationsRepository implements RecentUserLocationsRepository {
 
-  constructor(private model: RecentUserLocationsModel) {}
+  constructor(readonly model: RecentUserLocationsModel) {}
 
-  async addLocations(userId: UserId, eventId: number, locations: UserLocation[]): Promise<RecentUserLocations> {
+  async addLocations(spec: AddRecentUserLocationsSpec): Promise<RecentUserLocations> {
     const update = {
       $push: {
-        locations: { $each: locations, $sort: { 'properties.timestamp': 1 }, $slice: -1 * recentLocationsLimit }
+        locations: {
+          $each: spec.locations,
+          $sort: { 'properties.timestamp': 1 },
+          $slice: -1 * locationLimit
+        }
       }
     }
-    const doc = await this.model.findOneAndUpdate({ userId, eventId }, update, { upsert: true, new: true })
-    return this.entityForDocument(doc!)
+    const doc = await this.model.findOneAndUpdate(
+      { userId: new mongoose.Types.ObjectId(spec.userId), eventId: spec.eventId },
+      update,
+      { upsert: true, new: true }
+    )
+    return entityForDocument(doc!)
   }
 
-  async findLocations(options: RecentUserLocationsReadOptions): Promise<RecentUserLocations[]> {
-    let limit = options.limit
-    limit = limit && limit <= recentLocationsLimit ? limit : recentLocationsLimit
+  async findLocations(spec: FindRecentUserLocationsSpec): Promise<RecentUserLocations[]> {
+    const { where, limit = locationLimit } = spec
+    const cappedLimit = Math.min(limit, locationLimit)
 
-    const filter = options.filter || {}
-    const conditions: any = {}
-    if (filter.eventId) {
-      conditions.eventId = filter.eventId
+    const query = this.model.find(
+      { eventId: where.eventId },
+      { userId: 1, locations: { $slice: -1 * cappedLimit } }
+    )
+
+    if (where.timestampAfter) {
+      query.where('locations.properties.timestamp').gte(where.timestampAfter as any)
+    }
+    if (where.timestampBefore) {
+      query.where('locations.properties.timestamp').lt(where.timestampBefore as any)
     }
 
-    const query = this.model.find(conditions, { userId: 1, eventId: 1, locations: { $slice: -1 * limit } })
-
-    if (filter.startDate) {
-      query.where('locations.properties.timestamp').gte(filter.startDate as any)
+    if (where.userIsAnyOf !== undefined) {
+      query.where({ 'userId': { $in: where.userIsAnyOf } })
     }
 
-    if (filter.endDate) {
-      query.where('locations.properties.timestamp').lt(filter.endDate as any)
-    }
-
-    if (options.populate) {
-      query.populate({
-        path: 'userId',
-        select: 'icon avatar displayName email phones'
-      })
+    if (spec.populate) {
+      query.populate({ path: 'userId', select: 'displayName icon' })
     }
 
     const docs = await query.exec()
-    return docs.map(doc => this.entityForDocument(doc))
+    return docs.map(entityForDocument)
   }
 
-  async removeLocationsForUser(userId: UserId): Promise<void> {
-    await this.model.deleteMany({ userId })
+  async deleteLocationsForUser(userId: UserId): Promise<void> {
+    await this.model.deleteMany({ userId: new mongoose.Types.ObjectId(userId) })
   }
+}
 
-  private entityForDocument(doc: ModelInstance): RecentUserLocations {
-    const json: any = doc.toJSON()
-    const populated = doc.populated('userId')
-    return {
-      userId: populated ? (doc.userId as any).id : (doc.userId as any)?.toHexString?.() ?? json.userId,
-      eventId: json.eventId,
-      user: populated ? (doc.userId as any).toJSON() : undefined,
-      locations: (json.locations || []).slice().reverse()
-    }
+function entityForDocument(doc: RecentUserLocationsDocument): RecentUserLocations {
+  const populatedUserId = doc.populated('userId') as mongoose.Types.ObjectId | undefined
+  const rawUserId = doc.userId as mongoose.Types.ObjectId | null
+  const userId: string = (populatedUserId ?? rawUserId)?.toHexString() ?? ''
+  const populatedUserDoc = populatedUserId && !(doc.userId instanceof mongoose.Types.ObjectId) ? doc.userId as any : null
+  const user: LocationUserExpanded | undefined = populatedUserDoc
+    ? { id: userId, displayName: populatedUserDoc.displayName, icon: populatedUserDoc.icon?.toObject() }
+    : undefined
+  return {
+    userId,
+    eventId: doc.eventId,
+    locations: (doc.locations || []).reverse().map(locationDoc => {
+      const json = locationDoc.toJSON<UserLocation>()
+      return {
+        ...json,
+        userId: locationDoc.userId.toHexString(),
+        properties: {
+          ...json.properties,
+          deviceId: locationDoc.properties.deviceId?.toHexString()
+        }
+      } as UserLocation
+    }),
+    user
   }
 }

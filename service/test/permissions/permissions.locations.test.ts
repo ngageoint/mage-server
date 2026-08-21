@@ -1,117 +1,130 @@
 import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
-import { expect } from 'chai'
-import uniqid from 'uniqid'
-import { RoleBasedLocationsPermissionService } from '../../lib/permissions/permissions.locations'
-import { LocationRequestContext } from '../../lib/app.api/locations/app.api.locations'
+import { EventAccessType, MageEvent } from '../../lib/entities/events/entities.events'
 import { EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { UserWithRole } from '../../lib/permissions/permissions.role-based.base'
-import { MageEvent } from '../../lib/entities/events/entities.events'
+import { expect } from 'chai'
 import { LocationPermission } from '../../lib/entities/authorization/entities.permissions'
+import { ErrPermissionDenied, MageError, PermissionDeniedError } from '../../lib/app.api/app.api.errors'
+import uniqid from 'uniqid'
+import { UserLocationPermissionServiceImpl } from '../../lib/permissions/permissions.locations'
+import { UserLocationRequestContext } from '../../lib/app.api/locations/app.api.locations'
 
-describe('locations permissions service', function() {
+describe('location permissions service', function() {
 
-  let permissions: RoleBasedLocationsPermissionService
+  let permissions: UserLocationPermissionServiceImpl
   let eventPermissions: SubstituteOf<EventPermissionServiceImpl>
   let mageEvent: MageEvent
-
-  function contextFor(permissionsForUser: LocationPermission[]): LocationRequestContext<UserWithRole> {
-    const user = {
-      id: uniqid(),
-      username: 'testuser',
-      roleId: {
-        id: uniqid(),
-        name: 'Role 1',
-        permissions: permissionsForUser
-      } as any
-    } as UserWithRole
-    return {
-      mageEvent,
-      requestToken: Symbol(),
-      requestingPrincipal() { return user },
-      locale() { return null }
-    }
-  }
+  let user: UserWithRole
+  let context: UserLocationRequestContext<UserWithRole>
 
   beforeEach(function() {
     eventPermissions = Sub.for<EventPermissionServiceImpl>()
-    permissions = new RoleBasedLocationsPermissionService(eventPermissions)
+    permissions = new UserLocationPermissionServiceImpl(eventPermissions)
     mageEvent = new MageEvent({
       id: 357,
-      name: 'Location Permissions Tests',
+      name: 'Obsevation Permissions Tests',
       forms: [],
       layerIds: [],
       feedIds: [],
       acl: {},
       style: {}
     })
+    user = {
+      id: uniqid(),
+      roleId: {
+        id: uniqid(),
+        name: 'Role 1',
+        permissions: []
+      } as any
+    } as any
+    context = {
+      mageEvent,
+      requestToken: Symbol(),
+      requestingPrincipal() { return user },
+      locale() { return null }
+    }
   })
 
   describe('create permission', function() {
 
-    it('grants when the user has create permission and is a participant in the event', async function() {
-      eventPermissions.userIsParticipantInEvent(Arg.all()).resolves(true)
-      const context = contextFor([LocationPermission.CREATE_LOCATION])
+    it('grants when the user role has create location permission and the user is a participant of the event', async function() {
 
-      const denied = await permissions.ensureCreateLocationsPermission(context)
+      eventPermissions.userIsParticipantInEvent(Arg.all()).resolves(true)
+      user.roleId.permissions = [ LocationPermission.CREATE_LOCATION ]
+      const denied = await permissions.ensureCreateLocationPermission(context)
 
       expect(denied).to.be.null
     })
 
-    it('denies when the user has create permission but is not a participant in the event', async function() {
+    it('denies when the context user is not an event participant', async function() {
+
       eventPermissions.userIsParticipantInEvent(Arg.all()).resolves(false)
-      const context = contextFor([LocationPermission.CREATE_LOCATION])
+      user.roleId.permissions = [ LocationPermission.CREATE_LOCATION ]
+      const denied = await permissions.ensureCreateLocationPermission(context) as PermissionDeniedError
 
-      const denied = await permissions.ensureCreateLocationsPermission(context)
-
-      expect(denied?.data.permission).to.equal(LocationPermission.CREATE_LOCATION)
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied.code).to.equal(ErrPermissionDenied)
     })
 
-    it('denies when the user does not have create permission', async function() {
+    it('denies when the context user role does not include create permission', async function() {
+
       eventPermissions.userIsParticipantInEvent(Arg.all()).resolves(true)
-      const context = contextFor([])
+      user.roleId.permissions = [ LocationPermission.READ_LOCATION_ALL ]
+      const denied = await permissions.ensureCreateLocationPermission(context) as PermissionDeniedError
 
-      const denied = await permissions.ensureCreateLocationsPermission(context)
-
-      expect(denied?.data.permission).to.equal(LocationPermission.CREATE_LOCATION)
-      eventPermissions.didNotReceive().userIsParticipantInEvent(Arg.all())
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied.code).to.equal(ErrPermissionDenied)
     })
   })
 
   describe('read permission', function() {
 
-    it('grants when the user has read-all permission', async function() {
-      const context = contextFor([LocationPermission.READ_LOCATION_ALL])
+    it('grants when the context user role has permission to read all locations globally', async function() {
 
-      const denied = await permissions.ensureReadLocationsPermission(context)
-
-      expect(denied).to.be.null
-      eventPermissions.didNotReceive().userHasEventPermission(Arg.all())
-    })
-
-    it('grants when the user has read-event permission and has event read access', async function() {
-      eventPermissions.userHasEventPermission(Arg.all()).resolves(true)
-      const context = contextFor([LocationPermission.READ_LOCATION_EVENT])
-
-      const denied = await permissions.ensureReadLocationsPermission(context)
+      user.roleId.permissions = [ LocationPermission.READ_LOCATION_ALL ]
+      const denied = await permissions.ensureReadLocationPermission(context)
 
       expect(denied).to.be.null
     })
 
-    it('denies when the user has read-event permission but lacks event read access', async function() {
-      eventPermissions.userHasEventPermission(Arg.all()).resolves(false)
-      const context = contextFor([LocationPermission.READ_LOCATION_EVENT])
+    it('grants when the context user role has event event-scoped read permission and the event acl has an entry for the user', async function() {
 
-      const denied = await permissions.ensureReadLocationsPermission(context)
+      user.roleId.permissions = [ LocationPermission.READ_LOCATION_EVENT ]
+      eventPermissions.userHasEventPermission(context.mageEvent, user.id, EventAccessType.Read).resolves(true)
+      const denied = await permissions.ensureReadLocationPermission(context)
 
-      expect(denied?.data.permission).to.equal(LocationPermission.READ_LOCATION_EVENT)
+      expect(denied).to.be.null
     })
 
-    it('denies when the user has neither read permission', async function() {
-      const context = contextFor([])
+    describe('denies', function() {
 
-      const denied = await permissions.ensureReadLocationsPermission(context)
-
-      expect(denied?.data.permission).to.equal(LocationPermission.READ_LOCATION_EVENT)
+      const denyTests: [ testName: string, setupContext: () => any ][] = [
+        [ 'with empty permissions', () => void(0) ],
+        [
+          'with participant read permission but without event read access',
+          () => {
+            user.roleId.permissions = [ LocationPermission.READ_LOCATION_EVENT ]
+            eventPermissions.userHasEventPermission(Arg.all()).resolves(false)
+          }
+        ],
+        [
+          'with event read access but without participant read permission',
+          () => {
+            user.roleId.permissions = []
+            eventPermissions.userHasEventPermission(Arg.all()).resolves(true)
+          }
+        ]
+      ]
+      denyTests.forEach(([ testName, setupContext ]) => {
+        it(testName, async function() {
+          setupContext()
+          const denied = await permissions.ensureReadLocationPermission(context)
+          expect(denied).to.be.instanceOf(MageError)
+          expect(denied?.code).to.equal(ErrPermissionDenied)
+          expect(denied?.data.permission).to.equal('READ_LOCATION')
+        })
+      })
     })
   })
+
 })

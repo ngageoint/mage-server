@@ -3,9 +3,7 @@ import { EventEmitter } from 'events'
 import uniqid from 'uniqid'
 import { loadMageEventsHoooks } from '../../lib/main.impl/plugin_hooks/main.impl.plugin_hooks.events'
 import { MageEventsPluginHooks } from '../../lib/plugins.api/plugins.api.events'
-import { LocationsAddedEvent, UserLocation } from '../../lib/entities/locations/entities.locations'
-import { MageEventAttrs } from '../../lib/entities/events/entities.events'
-import { User } from '../../lib/entities/users/entities.users'
+import { UserLocation, UserLocationDomainEventType, UserLocationSavedDomainEvent } from '../../lib/entities/locations/entities.locations'
 
 describe('plugin mage events hooks', function() {
 
@@ -15,45 +13,28 @@ describe('plugin mage events hooks', function() {
     type: 'Feature',
     eventId: 1,
     userId: uniqid(),
-    teamIds: [],
     geometry: { type: 'Point', coordinates: [1, 2] },
     properties: { timestamp: new Date() }
   }
 
-  const user: User = {
-    id: uniqid(),
-    username: 'testuser',
-    displayName: 'Test User',
-    active: true,
-    enabled: true,
-    createdAt: new Date(),
-    lastUpdated: new Date(),
-    phones: [],
-    roleId: uniqid()
-  } as unknown as User
-
-  const event: MageEventAttrs = {
-    id: 1,
-    name: 'Test Event',
-    layerIds: [],
-    feedIds: [],
-    forms: [],
-    style: {}
-  } as unknown as MageEventAttrs
+  const locationSavedEvent: UserLocationSavedDomainEvent = Object.freeze({
+    type: UserLocationDomainEventType.LocationSaved,
+    locations: [location]
+  })
 
   it('invokes the plugin onUserLocations hook when locations are added', async function() {
     const domainEvents = new EventEmitter()
-    let received: any[] = []
+    let received: UserLocationSavedDomainEvent | null = null
     const hooks: MageEventsPluginHooks = {
       mageEvent: {
-        onUserLocations: (...args: any[]) => { received = args }
+        onUserLocations: (event) => { received = event }
       }
     }
 
     await loadMageEventsHoooks(pluginId, hooks, domainEvents)
-    domainEvents.emit(LocationsAddedEvent, [location], user, event)
+    domainEvents.emit(UserLocationDomainEventType.LocationSaved, locationSavedEvent)
 
-    expect(received).to.deep.equal([[location], user, event])
+    expect(received).to.deep.equal(locationSavedEvent)
   })
 
   it('does not throw and does not subscribe when mageEvent hooks are absent', async function() {
@@ -62,7 +43,7 @@ describe('plugin mage events hooks', function() {
 
     await loadMageEventsHoooks(pluginId, hooks, domainEvents)
 
-    expect(domainEvents.listenerCount(LocationsAddedEvent)).to.equal(0)
+    expect(domainEvents.listenerCount(UserLocationDomainEventType.LocationSaved)).to.equal(0)
   })
 
   it('does not subscribe when onUserLocations is not a function', async function() {
@@ -73,25 +54,25 @@ describe('plugin mage events hooks', function() {
 
     await loadMageEventsHoooks(pluginId, hooks, domainEvents)
 
-    expect(domainEvents.listenerCount(LocationsAddedEvent)).to.equal(0)
+    expect(domainEvents.listenerCount(UserLocationDomainEventType.LocationSaved)).to.equal(0)
   })
 
   it('supports multiple plugins subscribing independently', async function() {
     const domainEvents = new EventEmitter()
-    let receivedA: any[] = []
-    let receivedB: any[] = []
+    let receivedA: UserLocationSavedDomainEvent | null = null
+    let receivedB: UserLocationSavedDomainEvent | null = null
     const hooksA: MageEventsPluginHooks = {
-      mageEvent: { onUserLocations: (...args: any[]) => { receivedA = args } }
+      mageEvent: { onUserLocations: (event) => { receivedA = event } }
     }
     const hooksB: MageEventsPluginHooks = {
-      mageEvent: { onUserLocations: (...args: any[]) => { receivedB = args } }
+      mageEvent: { onUserLocations: (event) => { receivedB = event } }
     }
 
     await loadMageEventsHoooks('@testing/plugin-a', hooksA, domainEvents)
     await loadMageEventsHoooks('@testing/plugin-b', hooksB, domainEvents)
-    domainEvents.emit(LocationsAddedEvent, [location], user, event)
+    domainEvents.emit(UserLocationDomainEventType.LocationSaved, locationSavedEvent)
 
-    expect(receivedA).to.deep.equal([[location], user, event])
-    expect(receivedB).to.deep.equal([[location], user, event])
+    expect(receivedA).to.deep.equal(locationSavedEvent)
+    expect(receivedB).to.deep.equal(locationSavedEvent)
   })
 })

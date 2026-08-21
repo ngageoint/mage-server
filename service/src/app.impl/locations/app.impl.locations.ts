@@ -1,93 +1,132 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'events'
+import { infrastructureError } from '../../app.api/app.api.errors'
+import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/locations/app.api.locations'
-import { KnownErrorsOf, withPermission } from '../../app.api/app.api.global'
-import { invalidInput } from '../../app.api/app.api.errors'
-import { LocationsAddedEvent, RecentUserLocationsRepository, UserLocation, UserLocationRepository } from '../../entities/locations/entities.locations'
+import { TeamRepository } from '../../entities/teams/entities.teams'
+import { FindRecentUserLocationsSpec, RecentUserLocationsRepository, UserLocationDomainEventType, UserLocationRepository } from '../../entities/locations/entities.locations'
+import { UserId } from '../../entities/users/entities.users'
 
-export function CreateLocations(
+export function ReadAllUserLocations(
+  permissionService: api.UserLocationPermissionService,
+  teamRepo: TeamRepository,
   repo: UserLocationRepository,
-  recentRepo: RecentUserLocationsRepository,
-  permissionService: api.LocationPermissionService,
-  domainEvents: EventEmitter
-): api.CreateLocations {
-  return async function createLocations(req: api.CreateLocationsRequest): ReturnType<api.CreateLocations> {
-    return await withPermission<UserLocation[], KnownErrorsOf<api.CreateLocations>>(
-      permissionService.ensureCreateLocationsPermission(req.context),
-      async () => {
-        for (const location of req.locations) {
-          if (!location.geometry) {
-            return invalidInput("Missing required parameter 'geometry'.")
-          }
-          if (!location.properties?.timestamp) {
-            return invalidInput("Missing required parameter 'properties.timestamp'")
-          }
-        }
+): api.ReadUserLocations {
+  return async function readUserLocations(req: api.ReadUserLocationsRequest) {
+    const denied = await permissionService.ensureReadLocationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
 
-        const user = req.context.requestingPrincipal()
-        const event = req.context.mageEvent
-        const locations: Omit<UserLocation, 'id'>[] = req.locations.map(location => ({
-          type: 'Feature',
+    const event = req.context.mageEvent
+    const params = req.params
+    try {
+      let userIsAnyOf: UserId[] | undefined = params.userIsAnyOf
+      if (params.teamIsAnyOf?.length) {
+        const teams = await teamRepo.findAllByIds(params.teamIsAnyOf)
+        const teamUserIds = Object.values(teams).flatMap(team => team?.userIds ?? [])
+        const dedupedUserIds = new Set([...(userIsAnyOf ?? []), ...teamUserIds])
+        userIsAnyOf = [...dedupedUserIds]
+      }
+
+      const findSpec = {
+        where: {
           eventId: event.id,
-          userId: user.id,
-          teamIds: [],
-          geometry: location.geometry,
-          properties: location.properties
-        }))
-
-        const created = await repo.createLocations(locations)
-        await recentRepo.addLocations(user.id, event.id, created)
-        domainEvents.emit(LocationsAddedEvent, created, user, event)
-        return created
+          timestampAfter: params.startDate,
+          timestampBefore: params.endDate,
+          userIsAnyOf
+        },
+        paging: params.paging
       }
-    )
-  }
-}
 
-export function ReadLocations(
-  repo: UserLocationRepository,
-  permissionService: api.LocationPermissionService
-): api.ReadLocations {
-  return async function readLocations(req: api.ReadLocationsRequest): ReturnType<api.ReadLocations> {
-    return await withPermission<UserLocation[], KnownErrorsOf<api.ReadLocations>>(
-      permissionService.ensureReadLocationsPermission(req.context),
-      async () => {
-        const cursor = repo.getLocations({
-          filter: {
-            eventId: req.context.mageEvent.id,
-            startDate: req.startDate,
-            endDate: req.endDate,
-            lastLocationId: req.lastLocationId
-          },
-          limit: req.limit
-        })
-        const locations: UserLocation[] = []
-        for await (const location of cursor) {
-          locations.push(location)
-        }
-        return locations
-      }
-    )
+      const result = await repo.getUserLocations(findSpec)
+      const page = { ...result, items: result.items.map(api.ExoUserLocationFor) }
+
+      return AppResponse.success(page)
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
   }
 }
 
 export function ReadLocationsGroupedByUser(
-  recentRepo: RecentUserLocationsRepository,
-  permissionService: api.LocationPermissionService
+  permissionService: api.UserLocationPermissionService,
+  teamRepo: TeamRepository,
+  recentLocationRepo: RecentUserLocationsRepository
 ): api.ReadLocationsGroupedByUser {
   return async function readLocationsGroupedByUser(req: api.ReadLocationsGroupedByUserRequest): ReturnType<api.ReadLocationsGroupedByUser> {
-    return await withPermission(
-      permissionService.ensureReadLocationsPermission(req.context),
-      async () => {
-        return await recentRepo.findLocations({
-          filter: {
-            eventId: req.context.mageEvent.id,
-            startDate: req.startDate,
-            endDate: req.endDate
-          },
-          limit: req.limit,
-          populate: req.populate
-        })
+    const denied = await permissionService.ensureReadLocationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+
+    const params = req.params
+
+    let userIsAnyOf: UserId[] | undefined = params.userIsAnyOf
+    if (params.teamIsAnyOf?.length) {
+      const teams = await teamRepo.findAllByIds(params.teamIsAnyOf)
+      const teamUserIds = Object.values(teams).flatMap(team => team?.userIds ?? [])
+      const dedupedUserIds = new Set([...(userIsAnyOf ?? []), ...teamUserIds])
+      userIsAnyOf = [...dedupedUserIds]
+    }
+
+    const spec: FindRecentUserLocationsSpec = {
+      where: {
+        eventId: req.context.mageEvent.id,
+        timestampAfter: params.startDate,
+        timestampBefore: params.endDate,
+        userIsAnyOf
+      },
+      limit: params.limit,
+      populate: params.populate
+    }
+
+    try {
+      const locations = await recentLocationRepo.findLocations(spec)
+      return AppResponse.success(locations.map(api.ExoRecentUserLocationsFor))
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
+  }
+}
+
+export function SaveUserLocations(
+  permissionService: api.UserLocationPermissionService,
+  userLocationRepo: UserLocationRepository,
+  recentUserLocationRepo: RecentUserLocationsRepository,
+  domainEvents: EventEmitter
+): api.SaveUserLocations {
+  return async function saveUserLocations(req: api.SaveUserLocationsRequest): ReturnType<api.SaveUserLocations> {
+    const denied = await permissionService.ensureCreateLocationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+
+    const eventId = req.context.mageEvent.id
+    const userId = req.context.requestingPrincipal().id
+    const userLocations = req.locations.map(location => {
+      return {
+        ...location,
+        eventId,
+        userId,
       }
-    )
+    })
+
+    try {
+      const saved = await userLocationRepo.save(userLocations)
+      await recentUserLocationRepo.addLocations({
+        eventId,
+        userId,
+        locations: userLocations
+      })
+
+      domainEvents.emit(UserLocationDomainEventType.LocationSaved, Object.freeze({
+        type: UserLocationDomainEventType.LocationSaved,
+        locations: saved
+      }))
+
+      return AppResponse.success(saved.map(api.ExoUserLocationFor))
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
   }
 }

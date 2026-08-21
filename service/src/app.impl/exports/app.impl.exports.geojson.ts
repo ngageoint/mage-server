@@ -169,13 +169,12 @@ export class GeoJsonExportTransform implements ExportTransform {
     let startTimestamp: number | undefined = undefined
     let endTimestamp: number | undefined = undefined
 
-    const iterable = this.locationRepository.getLocations({
-      filter: {
+    const iterable = this.locationRepository.iterate({
+      where: {
         eventId: event.id,
-        startDate: options?.filter?.startDate,
-        endDate: options?.filter?.endDate
-      },
-      sort: { userId: 1, 'properties.timestamp': 1, _id: 1 }
+        timestampAfter: options?.filter?.startDate,
+        timestampBefore: options?.filter?.endDate
+      }
     })
 
     try {

@@ -1,267 +1,284 @@
+import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import express from 'express'
 import supertest from 'supertest'
-import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
-import uniqid from 'uniqid'
-import { LocationAppLayer, LocationRoutes, LocationWebAppRequestFactory } from '../../../lib/adapters/locations/adapters.locations.controllers.web'
+import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
-import { LocationRequest, ReadLocationsGroupedByUserRequest, ReadLocationsRequest, CreateLocationsRequest } from '../../../lib/app.api/locations/app.api.locations'
-import { MageEvent } from '../../../lib/entities/events/entities.events'
-import { RecentUserLocations, UserLocation } from '../../../lib/entities/locations/entities.locations'
+import { permissionDenied, infrastructureError } from '../../../lib/app.api/app.api.errors'
+import {
+  UserLocationAppLayer,
+  UserLocationRoutes,
+  UserLocationWebAppRequestFactory,
+} from '../../../lib/adapters/locations/adapters.locations.controllers.web'
+import {
+  UserLocationRequest,
+  ExoUserLocation,
+  ExoRecentUserLocations,
+} from '../../../lib/app.api/locations/app.api.locations'
+import { pageOf } from '../../../lib/entities/entities.global'
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
-import { invalidInput, permissionDenied } from '../../../lib/app.api/app.api.errors'
+
+const root = '/test/events/1/locations'
+const jsonMimeType = /^application\/json/
+
+const principal = { id: 'user1', username: 'testuser' } as unknown as UserWithRole
+
+type AppRequestFactoryHandle = { createAppRequest: UserLocationWebAppRequestFactory }
+
+const stubAppRequestFactory: UserLocationWebAppRequestFactory = <P extends object>(_req: express.Request, params?: P): P & UserLocationRequest => {
+  return {
+    context: {
+      requestToken: Symbol(),
+      requestingPrincipal: () => principal,
+      mageEvent: { id: 1 } as any,
+    },
+    ...(params || {} as any),
+  }
+}
+
+function makeLocation(overrides?: Partial<ExoUserLocation>): ExoUserLocation {
+  return {
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [10, 20] },
+    properties: { timestamp: new Date() },
+    ...overrides,
+  }
+}
 
 describe('locations web controller', function() {
 
-  const mageEvent = new MageEvent({
-    id: 100,
-    name: 'Location Controller Tests',
-    forms: [],
-    layerIds: [],
-    feedIds: [],
-    acl: {},
-    style: {}
-  })
-
-  const principal: UserWithRole = {
-    id: uniqid(),
-    username: 'testuser',
-    roleId: { id: uniqid(), name: 'Role 1', permissions: [] } as any
-  } as UserWithRole
-
-  type AppRequestFactoryHandle = {
-    createRequest: LocationWebAppRequestFactory
-  }
-
-  let client: supertest.SuperTest<supertest.Test>
-  let appLayer: SubstituteOf<LocationAppLayer>
+  let appLayer: SubstituteOf<UserLocationAppLayer>
   let appReqFactory: SubstituteOf<AppRequestFactoryHandle>
+  let client: supertest.SuperTest<supertest.Test>
 
   beforeEach(function() {
-    appLayer = Sub.for<LocationAppLayer>()
+    appLayer = Sub.for<UserLocationAppLayer>()
     appReqFactory = Sub.for<AppRequestFactoryHandle>()
-    const endpoint = express()
-    endpoint.use(express.json())
-    endpoint.use('/locations', LocationRoutes(appLayer, appReqFactory.createRequest))
-    client = supertest(endpoint)
+    appReqFactory.createAppRequest(Arg.all()).mimicks(stubAppRequestFactory)
+
+    const app = express().use(express.json())
+    app.use(root, UserLocationRoutes(appLayer, appReqFactory.createAppRequest))
+    client = supertest(app)
   })
 
-  function createAppRequest<Params extends object | undefined>(params?: Params): Params & Omit<LocationRequest, 'params'> {
-    return {
-      ...(params || {} as Params),
-      context: {
-        mageEvent,
-        requestToken: Symbol(),
-        requestingPrincipal: () => principal,
-        locale: () => null
-      }
-    } as any
-  }
+  describe('GET / - readUserLocations', function() {
 
-  describe('GET /', function() {
+    it('returns 200 with page of locations', async function() {
+      const page = pageOf([makeLocation()], { pageIndex: 0, pageSize: 10 }, 1)
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(page))
 
-    it('reads locations and returns them as json', async function() {
-      const locations: UserLocation[] = [{
-        type: 'Feature',
-        eventId: mageEvent.id,
-        userId: principal.id,
-        teamIds: [],
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp: new Date() }
-      }]
-      const appReq: ReadLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocations(Arg.any()).resolves(AppResponse.success(locations))
-
-      const res = await client.get('/locations')
+      const res = await client.get(root)
 
       expect(res.status).to.equal(200)
-      expect(res.body).to.have.length(1)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body.items).to.be.an('array').with.length(1)
     })
 
-    it('parses startDate, endDate, lastLocationId and limit query params', async function() {
-      const appReq: ReadLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocations(Arg.any()).resolves(AppResponse.success([]))
+    it('parses startDate and endDate as Date objects', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(pageOf([], { pageIndex: 0, pageSize: 10 }, 0)))
 
-      await client.get('/locations').query({
-        startDate: '2024-01-01T00:00:00.000Z',
-        endDate: '2024-01-31T00:00:00.000Z',
-        lastLocationId: 'loc-1',
-        limit: '25'
-      })
+      await client.get(root).query({ startDate: '2024-01-01T00:00:00.000Z', endDate: '2024-02-01T00:00:00.000Z' })
 
-      appReqFactory.received(1).createRequest(Arg.any(), Arg.is((params: any) => {
-        expect(params.startDate?.toISOString()).to.equal('2024-01-01T00:00:00.000Z')
-        expect(params.endDate?.toISOString()).to.equal('2024-01-31T00:00:00.000Z')
-        expect(params.lastLocationId).to.equal('loc-1')
-        expect(params.limit).to.equal(25)
+      appLayer.received(1).readUserLocations(Arg.is(req => {
+        expect(req.params.startDate).to.be.instanceOf(Date)
+        expect(req.params.endDate).to.be.instanceOf(Date)
         return true
       }))
     })
 
-    it('defaults limit to 1 when not provided', async function() {
-      const appReq: ReadLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocations(Arg.any()).resolves(AppResponse.success([]))
+    it('parses comma-separated users into userIsAnyOf array', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(pageOf([], { pageIndex: 0, pageSize: 10 }, 0)))
 
-      await client.get('/locations')
+      await client.get(root).query({ users: 'user1,user2' })
 
-      appReqFactory.received(1).createRequest(Arg.any(), Arg.is((params: any) => params.limit === 1))
+      appLayer.received(1).readUserLocations(Arg.is(req => {
+        expect(req.params.userIsAnyOf).to.deep.equal(['user1', 'user2'])
+        return true
+      }))
     })
 
-    it('maps errors to the appropriate status code', async function() {
-      const appReq: ReadLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocations(Arg.any()).resolves(AppResponse.error(permissionDenied('READ_LOCATION_EVENT', principal.username)))
+    it('parses array users into userIsAnyOf', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(pageOf([], { pageIndex: 0, pageSize: 10 }, 0)))
 
-      const res = await client.get('/locations')
+      await client.get(root).query({ users: ['user1', 'user2'] })
+
+      appLayer.received(1).readUserLocations(Arg.is(req => {
+        expect(req.params.userIsAnyOf).to.deep.equal(['user1', 'user2'])
+        return true
+      }))
+    })
+
+    it('parses comma-separated teams into teamIsAnyOf array', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(pageOf([], { pageIndex: 0, pageSize: 10 }, 0)))
+
+      await client.get(root).query({ teams: 'team1,team2' })
+
+      appLayer.received(1).readUserLocations(Arg.is(req => {
+        expect(req.params.teamIsAnyOf).to.deep.equal(['team1', 'team2'])
+        return true
+      }))
+    })
+
+    it('parses array teams into teamIsAnyOf', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(pageOf([], { pageIndex: 0, pageSize: 10 }, 0)))
+
+      await client.get(root).query({ teams: ['team1', 'team2'] })
+
+      appLayer.received(1).readUserLocations(Arg.is(req => {
+        expect(req.params.teamIsAnyOf).to.deep.equal(['team1', 'team2'])
+        return true
+      }))
+    })
+
+    it('parses page and page_size into paging object', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.success(pageOf([], { pageIndex: 2, pageSize: 50 }, 0)))
+
+      await client.get(root).query({ page: '2', page_size: '50' })
+
+      appLayer.received(1).readUserLocations(Arg.is(req => {
+        expect(req.params.paging).to.deep.equal({ pageIndex: 2, pageSize: 50 })
+        return true
+      }))
+    })
+
+    it('returns 400 for invalid startDate', async function() {
+      const res = await client.get(root).query({ startDate: 'not-a-date' })
+
+      expect(res.status).to.equal(400)
+      expect(res.body.message).to.match(/startDate/)
+    })
+
+    it('returns 400 for invalid endDate', async function() {
+      const res = await client.get(root).query({ endDate: 'not-a-date' })
+
+      expect(res.status).to.equal(400)
+      expect(res.body.message).to.match(/endDate/)
+    })
+
+    it('returns 403 on permission denied', async function() {
+      appLayer.readUserLocations(Arg.all()).resolves(AppResponse.error(permissionDenied('read locations', principal.id)))
+
+      const res = await client.get(root)
 
       expect(res.status).to.equal(403)
     })
   })
 
-  describe('GET /users', function() {
+  describe('GET /users - readLocationsGroupedByUser', function() {
 
-    it('reads locations grouped by user and maps the response shape', async function() {
-      const recent: RecentUserLocations[] = [{
-        userId: principal.id,
-        eventId: mageEvent.id,
-        locations: []
-      }]
-      const appReq: ReadLocationsGroupedByUserRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocationsGroupedByUser(Arg.any()).resolves(AppResponse.success(recent))
+    it('returns 200 with array of recent user location groups', async function() {
+      const group: ExoRecentUserLocations = { id: 'user1', userId: 'user1', locations: [makeLocation()] }
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
 
-      const res = await client.get('/locations/users')
+      const res = await client.get(`${root}/users`)
 
       expect(res.status).to.equal(200)
-      expect(res.body).to.deep.equal([{ id: principal.id, locations: [] }])
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.be.an('array').with.length(1)
+      expect(res.body[0].userId).to.equal('user1')
     })
 
-    it('uses the populated user id when a user is present', async function() {
-      const recent: RecentUserLocations[] = [{
-        userId: principal.id,
-        eventId: mageEvent.id,
-        user: { id: 'populated-user-id', username: 'someone' },
-        locations: []
-      }]
-      const appReq: ReadLocationsGroupedByUserRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocationsGroupedByUser(Arg.any()).resolves(AppResponse.success(recent))
+    it('parses limit as integer and populate as boolean', async function() {
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([]))
 
-      const res = await client.get('/locations/users')
+      await client.get(`${root}/users`).query({ limit: '5', populate: 'true' })
 
-      expect(res.body[0].id).to.equal('populated-user-id')
-      expect(res.body[0].user).to.deep.equal({ id: 'populated-user-id', username: 'someone' })
+      appLayer.received(1).readLocationsGroupedByUser(Arg.is(req => {
+        expect(req.params.limit).to.equal(5)
+        expect(req.params.populate).to.equal(true)
+        return true
+      }))
     })
 
-    it('parses populate query param', async function() {
-      const appReq: ReadLocationsGroupedByUserRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.readLocationsGroupedByUser(Arg.any()).resolves(AppResponse.success([]))
+    it('parses comma-separated users into userIsAnyOf array', async function() {
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([]))
 
-      await client.get('/locations/users').query({ populate: 'true' })
+      await client.get(`${root}/users`).query({ users: 'user1,user2' })
 
-      appReqFactory.received(1).createRequest(Arg.any(), Arg.is((params: any) => params.populate === true))
+      appLayer.received(1).readLocationsGroupedByUser(Arg.is(req => {
+        expect(req.params.userIsAnyOf).to.deep.equal(['user1', 'user2'])
+        return true
+      }))
+    })
+
+    it('parses comma-separated teams into teamIsAnyOf array', async function() {
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([]))
+
+      await client.get(`${root}/users`).query({ teams: 'team1,team2' })
+
+      appLayer.received(1).readLocationsGroupedByUser(Arg.is(req => {
+        expect(req.params.teamIsAnyOf).to.deep.equal(['team1', 'team2'])
+        return true
+      }))
+    })
+
+    it('returns 400 for invalid startDate', async function() {
+      const res = await client.get(`${root}/users`).query({ startDate: 'bad' })
+
+      expect(res.status).to.equal(400)
+      expect(res.body.message).to.match(/startDate/)
+    })
+
+    it('returns 403 on permission denied', async function() {
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.error(permissionDenied('read locations', principal.id)))
+
+      const res = await client.get(`${root}/users`)
+
+      expect(res.status).to.equal(403)
     })
   })
 
-  describe('POST /', function() {
+  describe('POST / - saveUserLocations', function() {
 
-    it('wraps a single location body in an array and returns a single object', async function() {
-      const timestamp = new Date()
-      const created: UserLocation[] = [{
-        type: 'Feature',
-        eventId: mageEvent.id,
-        userId: principal.id,
-        teamIds: [],
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp }
-      }]
-      const appReq: CreateLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.createLocations(Arg.any()).resolves(AppResponse.success(created))
+    it('returns 200 with saved locations', async function() {
+      const loc = makeLocation()
+      appLayer.saveUserLocations(Arg.all()).resolves(AppResponse.success([loc]))
 
-      const res = await client.post('/locations').send({
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp: timestamp.toISOString() }
-      })
+      const res = await client.post(root).send([loc])
 
       expect(res.status).to.equal(200)
-      expect(res.body).to.not.be.an('array')
-      expect(res.body.eventId).to.equal(mageEvent.id)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.be.an('array').with.length(1)
     })
 
-    it('keeps an array body as an array in the response', async function() {
-      const timestamp = new Date()
-      const created: UserLocation[] = [{
-        type: 'Feature',
-        eventId: mageEvent.id,
-        userId: principal.id,
-        teamIds: [],
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp }
-      }]
-      const appReq: CreateLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.createLocations(Arg.any()).resolves(AppResponse.success(created))
+    it('wraps a single location object in an array', async function() {
+      const loc = makeLocation()
+      appLayer.saveUserLocations(Arg.all()).resolves(AppResponse.success([loc]))
 
-      const res = await client.post('/locations').send([{
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp: timestamp.toISOString() }
-      }])
+      const res = await client.post(root).send(loc)
 
       expect(res.status).to.equal(200)
       expect(res.body).to.be.an('array').with.length(1)
     })
 
-    it('parses the timestamp with moment and injects the provisioned device id', async function() {
-      const appReq: CreateLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.createLocations(Arg.any()).resolves(AppResponse.success([]))
-
-      await client.post('/locations').send({
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp: '2024-01-01T00:00:00.000Z', accuracy: 5 }
-      })
-
-      appReqFactory.received(1).createRequest(Arg.any(), Arg.is((params: any) => {
-        expect(params.locations).to.have.length(1)
-        expect(params.locations[0].properties.timestamp.toISOString()).to.equal('2024-01-01T00:00:00.000Z')
-        expect(params.locations[0].properties.accuracy).to.equal(5)
-        return true
-      }))
-    })
-
-    it('leaves timestamp undefined when not provided so app layer validation catches it', async function() {
-      const appReq: CreateLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.createLocations(Arg.any()).resolves(AppResponse.error(invalidInput("Missing required parameter 'properties.timestamp'")))
-
-      const res = await client.post('/locations').send({
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: {}
-      })
+    it('returns 400 when geometry is missing', async function() {
+      const res = await client.post(root).send([{ properties: { timestamp: new Date().toISOString() } }])
 
       expect(res.status).to.equal(400)
-      appReqFactory.received(1).createRequest(Arg.any(), Arg.is((params: any) => {
-        expect(params.locations[0].properties.timestamp).to.equal(undefined)
-        return true
-      }))
+      expect(res.body.message).to.match(/geometry/)
     })
 
-    it('maps errors to the appropriate status code', async function() {
-      const appReq: CreateLocationsRequest = createAppRequest()
-      appReqFactory.createRequest(Arg.any(), Arg.any()).returns(appReq)
-      appLayer.createLocations(Arg.any()).resolves(AppResponse.error(permissionDenied('CREATE_LOCATION', principal.username)))
+    it('returns 400 when timestamp is missing', async function() {
+      const res = await client.post(root).send([{ geometry: { type: 'Point', coordinates: [0, 0] }, properties: {} }])
 
-      const res = await client.post('/locations').send({
-        geometry: { type: 'Point', coordinates: [1, 2] },
-        properties: { timestamp: new Date().toISOString() }
-      })
+      expect(res.status).to.equal(400)
+      expect(res.body.message).to.match(/timestamp/)
+    })
+
+    it('returns 403 on permission denied', async function() {
+      appLayer.saveUserLocations(Arg.all()).resolves(AppResponse.error(permissionDenied('create location', principal.id)))
+
+      const res = await client.post(root).send([makeLocation()])
 
       expect(res.status).to.equal(403)
+    })
+
+    it('returns 500 on infrastructure error', async function() {
+      appLayer.saveUserLocations(Arg.all()).resolves(AppResponse.error(infrastructureError('db connection lost')))
+
+      const res = await client.post(root).send([makeLocation()])
+
+      expect(res.status).to.equal(500)
     })
   })
 })

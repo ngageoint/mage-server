@@ -142,13 +142,12 @@ export class KmlExportTransform implements ExportTransform {
     stream: NodeJS.WritableStream,
     archive: Archiver
   ): Promise<ExportItemSummary> {
-    const iterable = this.locationRepository.getLocations({
-      filter: {
+    const iterable = this.locationRepository.iterate({
+      where: {
         eventId: event.id,
-        startDate: options?.filter?.startDate,
-        endDate: options?.filter?.endDate
-      },
-      sort: { userId: 1, 'properties.timestamp': 1, _id: 1 }
+        timestampAfter: options?.filter?.startDate,
+        timestampBefore: options?.filter?.endDate
+      }
     })
 
     let count = 0
