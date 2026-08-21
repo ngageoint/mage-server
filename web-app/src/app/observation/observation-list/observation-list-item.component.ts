@@ -211,8 +211,4 @@ export class ObservationListItemComponent implements OnChanges {
   hasFailedAttachment(): boolean {
     return this.attachments.some(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error)
   }
-
-  failedAttachmentCount(): number {
-    return this.attachments.filter(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error).length
-  }
 }

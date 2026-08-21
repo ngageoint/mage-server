@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { Attachment, AttachmentProcessingStatus } from '../../filter/filter.types'
@@ -16,10 +15,20 @@ export class AttachmentComponent implements OnInit {
   @Input() edit: boolean
   @Input() label: string | boolean
 
+  // The list card's carousel sets this false - a click there should only ever navigate to the
+  // observation, same as clicking anywhere else on the card, not expand a failure message in
+  // place (that's reserved for the detail/edit views where there's room for it to grow into).
+  @Input() expandable = true
+
   @Output() delete = new EventEmitter<void>()
+
+  // Bubbled up to the carousel (and from there to the list item) so the fixed-height thumbnail
+  // area can switch to auto-height and let the card grow, rather than clipping the message.
+  @Output() expandedChange = new EventEmitter<boolean>()
 
   canEdit: boolean
   token: string
+  messageExpanded = false
 
   mimeTypes = {
     'png': 'image',
@@ -32,8 +41,7 @@ export class AttachmentComponent implements OnInit {
   actions: typeof AttachmentAction = AttachmentAction
 
   constructor(
-    private sessionService: SessionService,
-    private snackBar: MatSnackBar
+    private sessionService: SessionService
   ) {
     this.token = sessionService.getToken()
   }
@@ -61,7 +69,9 @@ export class AttachmentComponent implements OnInit {
     return this.attachment.processingStatus === AttachmentProcessingStatus.Rejected || this.attachment.processingStatus === AttachmentProcessingStatus.Error
   }
 
-  showFailureMessage(): void {
-    this.snackBar.open(this.attachment.processingMessage, 'Dismiss', { duration: 6000 })
+  toggleFailureMessage(): void {
+    if (!this.expandable) return
+    this.messageExpanded = !this.messageExpanded
+    this.expandedChange.emit(this.messageExpanded)
   }
 }

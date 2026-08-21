@@ -38,10 +38,44 @@
   cursor: pointer;
 }
 
+// A max-height transition, not the grid 0fr/1fr trick - that trick is for hiding/revealing
+// content from nothing, but "Tap for details" needs to stay visible by default and grow into
+// the message, not start hidden. Both states here get a real, non-zero cap: this is a plain
+// CSS transition (no JS measurement), which matters because the click that toggles this also
+// flips .media-unknown between position: absolute and static (see .media-unknown--expanded)
+// in the same instant - a JS-measured height: '*' animation was getting caught by that
+// concurrent layout change and snapping straight to the end state instead of animating.
+// (Only reachable when expandable is true - the list card's carousel disables it entirely,
+// see AttachmentComponent.expandable.)
+.media-unknown__hint-wrapper {
+  overflow: hidden;
+  max-height: 24px;
+  transition: max-height 250ms ease;
+
+  &.media-unknown__hint-wrapper--expanded {
+    max-height: 200px;
+  }
+}
+
 .media-unknown__hint {
   font-size: 11px;
   opacity: 0.75;
   margin-top: 4px;
+  text-align: center;
+  padding: 0 16px;
+  max-width: 280px;
+}
+
+// .media is normally absolutely stretched to fill its containing slide/tile (see .media above),
+// which keeps it out of normal flow and unable to influence its container's height. Switching
+// to static/normal flow here is what lets an expanded message grow its container instead of
+// being clipped.
+.media-unknown--expanded {
+  position: static;
+  // An explicit floor rather than a percentage, so the box never dips below its original
+  // height for even a frame while its container's own sizing is still catching up.
+  min-height: 200px;
+  padding: 16px 0;
 }
 
 .media-delete__mask {
