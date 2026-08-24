@@ -11,13 +11,18 @@ export const RecentUserLocationsModelName = 'CappedLocation'
 // TODO this should come from config somewhere
 const locationLimit = 100
 
-export type RecentUserLocationsDocument = mongoose.Document & {
+export type RecentUserLocationsDocument = {
   userId: mongoose.Types.ObjectId
   eventId: MageEventId
   locations: UserLocationDocument[]
 }
 
-export type RecentUserLocationsModel = mongoose.Model<RecentUserLocationsDocument>
+export type RecentUserLocationsModelInstance = mongoose.HydratedDocument<
+  RecentUserLocationsDocument,
+  { locations: mongoose.Types.DocumentArray<UserLocationDocument> }
+>
+
+export type RecentUserLocationsModel = mongoose.Model<RecentUserLocationsDocument, object, object, object, RecentUserLocationsModelInstance>
 
 export const RecentUserLocationsSchema = new Schema<RecentUserLocationsDocument, RecentUserLocationsModel>(
   {
@@ -91,7 +96,7 @@ export class MongooseRecentUserLocationsRepository implements RecentUserLocation
   }
 }
 
-function entityForDocument(doc: RecentUserLocationsDocument): RecentUserLocations {
+function entityForDocument(doc: RecentUserLocationsModelInstance): RecentUserLocations {
   const populatedUserId = doc.populated('userId') as mongoose.Types.ObjectId | undefined
   const rawUserId = doc.userId as mongoose.Types.ObjectId | null
   const userId: string = (populatedUserId ?? rawUserId)?.toHexString() ?? ''

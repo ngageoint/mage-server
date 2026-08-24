@@ -13,11 +13,13 @@ export type UserLocationDocumentProperties = Omit<UserLocationProperties, 'devic
   deviceId: mongoose.Types.ObjectId
 }
 
-export type UserLocationDocument = mongoose.Document & Omit<UserLocation, 'eventId' | 'userId' | 'properties'> & {
+export type UserLocationDocument = Omit<UserLocation, 'eventId' | 'userId' | 'properties'> & {
   eventId: MageEventId
   userId: mongoose.Types.ObjectId
   properties: UserLocationDocumentProperties
 }
+
+export type UserLocationModelInstance = mongoose.HydratedDocument<UserLocationDocument>
 
 export type UserLocationModel = mongoose.Model<UserLocationDocument>
 
@@ -60,7 +62,7 @@ export function UserLocationModel(conn: mongoose.Connection, collection?: string
   return conn.model<UserLocationDocument, UserLocationModel>(LocationModelName, UserLocationSchema)
 }
 
-function docToUserLocation(doc: UserLocationDocument): UserLocation {
+function docToUserLocation(doc: UserLocationModelInstance): UserLocation {
   const json = doc.toJSON<UserLocation>()
   return {
     ...json,
