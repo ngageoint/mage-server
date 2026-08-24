@@ -1,0 +1,39 @@
+<mat-form-field appearance="fill" class="member-filter-field">
+  <mat-label>Filter by Team or User</mat-label>
+
+  <mat-chip-grid #chipGridMember>
+    @for (item of selected(); track item.type + ':' + item.id) {
+      <mat-chip-row [removable]="true" (removed)="remove(item)">
+        <mat-icon matChipAvatar>{{ item.type === 'team' ? 'group' : 'person' }}</mat-icon>
+        {{ item.display }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip-row>
+    }
+
+    <input
+      #memberInput
+      matInput
+      [formControl]="inputControl"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipGridMember"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      placeholder="Search teams or members..."/>
+  </mat-chip-grid>
+
+  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onOptionSelected($event)">
+    @for (group of filteredGroups(); track group.label) {
+      <mat-optgroup [label]="group.label">
+        @for (option of group.options; track option.type + ':' + option.id) {
+          <mat-option [value]="option">
+            <span class="member-option">
+              <mat-icon>{{ option.type === 'team' ? 'group' : 'person' }}</mat-icon>
+              {{ option.display }}
+            </span>
+          </mat-option>
+        }
+      </mat-optgroup>
+    }
+  </mat-autocomplete>
+
+  <mat-hint>Filter observations by team or user</mat-hint>
+</mat-form-field>
