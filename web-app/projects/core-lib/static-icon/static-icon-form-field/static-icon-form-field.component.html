@@ -1,5 +1,5 @@
 <div [formGroup]="form" class="form">
-  <mage-xhr-img *ngIf="iconContentPath" class="icon-image" [src]="iconContentPath"></mage-xhr-img>
+  <img *ngIf="iconSrc" class="icon-image" [attr.src]="iconSrc" />
   <button mat-button color="primary" (click)="file.click()">Choose a File</button>
   <input [hidden]="true" type="file" #file accept="image/*" (change)="onSelectIcon($event)">
   <input type="hidden" formControlName="iconRefType"/>

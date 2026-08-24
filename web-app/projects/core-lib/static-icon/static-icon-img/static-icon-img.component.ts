@@ -1,30 +1,27 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { RegisteredStaticIconReference, contentPathOfIcon } from '../static-icon.model'
 
 @Component({
     selector: 'mage-static-icon-img',
-    template: `<mage-xhr-img [src]="iconPath"></mage-xhr-img>`,
+    template: `<img *ngIf="iconSrc" [attr.src]="iconSrc" />`,
     standalone: false
 })
-export class StaticIconImgComponent implements OnInit, OnChanges {
+export class StaticIconImgComponent implements OnChanges {
 
   @Input()
-  iconRef: RegisteredStaticIconReference | string | null
-  iconPath: string | null
+  iconRef: RegisteredStaticIconReference | string | null = null
 
-  constructor() { }
+  @Input()
+  accessToken: string | null = null
 
-  ngOnInit(): void {
-  }
+  iconSrc: string | null = null
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.iconRef) {
-      if (this.iconRef) {
-        this.iconPath = contentPathOfIcon(this.iconRef)
-      }
-      else {
-        this.iconPath = null
-      }
+    if (changes.iconRef || changes.accessToken) {
+      const path = contentPathOfIcon(this.iconRef) ?? null
+      this.iconSrc = path && this.accessToken
+        ? `${path}?access_token=${encodeURIComponent(this.accessToken)}`
+        : path
     }
   }
 }

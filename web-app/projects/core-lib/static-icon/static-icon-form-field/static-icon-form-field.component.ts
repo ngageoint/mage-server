@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
+import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
 import { AbstractControl, ControlValueAccessor, UntypedFormControl, UntypedFormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms'
 import { StaticIconReference } from '../static-icon.model'
 import { StaticIconService } from '../static-icon.service'
@@ -25,11 +25,21 @@ export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, Contr
 
   iconRef: StaticIconReference = null
 
+  @Input()
+  accessToken: string | null = null
+
   form: UntypedFormGroup = new UntypedFormGroup({
     iconRefToken: new UntypedFormControl(null),
     iconRefType: new UntypedFormControl(null, Validators.required)
   })
   iconContentPath: string | null
+  iconSrc: string | null = null
+
+  private updateIconSrc(): void {
+    this.iconSrc = !this.iconContentPath || this.iconContentPath.startsWith('data:') || !this.accessToken
+      ? this.iconContentPath
+      : `${this.iconContentPath}?access_token=${encodeURIComponent(this.accessToken)}`
+  }
 
   private onChange = (iconRef: StaticIconReference) => {}
   private onValidatorChange: () => void = () => {}
@@ -49,7 +59,11 @@ export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, Contr
     this.onValidatorChange = fn
   }
 
-  ngOnChanges(changes: SimpleChanges) { }
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.accessToken) {
+      this.updateIconSrc()
+    }
+  }
 
   ngOnDestroy() { }
 
@@ -96,18 +110,21 @@ export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, Contr
   private resolveIconRef() {
     if (!this.iconRef) {
       this.iconContentPath = null
+      this.updateIconSrc()
       return
     }
 
     if (this.iconRef.file) {
       const reader = new FileReader()
       reader.onload = (): void => {
-        this.iconContentPath =  reader.result as string
+        this.iconContentPath = reader.result as string
+        this.updateIconSrc()
       }
       reader.readAsDataURL(this.iconRef.file)
     } else {
       this.iconService.fetchIconByReference(this.iconRef).subscribe(x => {
         this.iconContentPath = x ? x.contentPath : null
+        this.updateIconSrc()
       })
     }
   }

@@ -5,6 +5,7 @@ import { FeedTopic, MapStyle } from '@ngageoint/mage.web-core-lib/feed'
 import { StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
 import { FeedMetaData, feedMetaDataLean, FeedMetaDataNullable } from './feed-edit.model'
 import { IconReference } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
     selector: 'app-feed-configuration',
@@ -42,6 +43,12 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   })
   itemSchemaPropertyTitles: { key: string, title: string }[] = [];
   readonly changeDebounceInterval = 500
+
+  constructor(private sessionService: SessionService) { }
+
+  get accessToken(): string | null {
+    return this.sessionService.getToken();
+  }
 
   ngOnInit(): void {
     this.feedMetaDataForm.valueChanges.pipe(

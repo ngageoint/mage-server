@@ -5,7 +5,6 @@ import { MatCardModule } from '@angular/material/card'
 import { MatRippleModule } from '@angular/material/core'
 import { FeedItemSummaryComponent } from './feed-item-summary.component'
 import { MomentModule } from '../../../moment/moment.module'
-import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 
 @NgModule({
@@ -17,7 +16,6 @@ import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
     MatCardModule,
     MatRippleModule,
     MomentModule,
-    MageCommonModule,
     StaticIconModule
   ]
 })

@@ -3,8 +3,8 @@ import { MatRipple } from '@angular/material/core';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 import { Feature } from 'geojson';
 import { SidebarService } from '../../../sidebar/sidebar.service';
-import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
 import { MapService } from '../../../map/map.service';
+import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
     selector: 'feed-item-summary',
@@ -23,7 +23,11 @@ export class FeedItemSummaryComponent implements OnChanges {
   primary: string;
   secondary: string;
 
-  constructor(private sidebarService: SidebarService, private mapService: MapService) { }
+  constructor(private sidebarService: SidebarService, private mapService: MapService, private sessionService: SessionService) { }
+
+  get accessToken(): string | null {
+    return this.sessionService.getToken();
+  }
 
   ngOnChanges(_changes: SimpleChanges): void {
     if (!this.feed || !this.item.properties) return;

@@ -22,6 +22,23 @@ const meters = (title: string): JSONSchema4 => ({
   type: [ 'string', 'number' ]
 })
 
+/**
+ * A conventional (non-standard) JSON Schema extension, supported by the
+ * admin UI's ajsf-material select widget, that maps each `enum` value to a
+ * human-readable label so the picker itself is self-explanatory without
+ * needing separate hint text spelling out what each code means.
+ */
+interface EnumSchema extends JSONSchema4 {
+  enumNames?: string[]
+}
+
+const minHarborSize = (): EnumSchema => ({
+  title: 'Minimum Harbor Size',
+  type: 'string',
+  enum: [ 'V', 'S', 'M', 'L' ],
+  enumNames: [ 'Very Small', 'Small', 'Medium', 'Large' ]
+})
+
 export const topicDescriptor: FeedTopic = {
   id: 'ports',
   title: 'World Ports',
@@ -33,14 +50,9 @@ export const topicDescriptor: FeedTopic = {
       countryName: {
         title: 'Country',
         type: 'string',
-        description: 'Only include ports in the given country'
+        description: 'Must exactly match a port\'s Country field, e.g. "United States"'
       },
-      harborSize: {
-        title: 'Minimum Harbor Size',
-        type: 'string',
-        enum: [ 'V', 'S', 'M', 'L' ],
-        description: 'Only include ports at least this size: Very Small (V), Small (S), Medium (M), or Large (L)'
-      }
+      harborSize: minHarborSize()
     }
   },
   itemsHaveIdentity: true,
