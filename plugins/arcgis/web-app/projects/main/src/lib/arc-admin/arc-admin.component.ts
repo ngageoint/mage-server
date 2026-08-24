@@ -1,6 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog'
-import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, AttributeValueConfig } from '../ArcGISConfig';
+import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, AttributeValueConfig, FeatureServiceConfig } from '../ArcGISConfig';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { ArcService, Form, MageEvent } from '../arc.service'
 import { Subject, first } from 'rxjs';
@@ -28,6 +28,19 @@ export class ArcAdminComponent implements OnInit {
   editValue: any;
   editOptions: any[];
   events: MageEvent[] = [];
+
+  /**
+   * Feature services whose credentials are invalid/expired and that have at least one
+   * event actively mapped to a layer
+   */
+  get unauthenticatedSyncingFeatureServices(): FeatureServiceConfig[] {
+    if (!this.config.enabled || !this.config.featureServices) {
+      return []
+    }
+    return this.config.featureServices.filter(service =>
+      !service.authenticated && service.layers?.some(layer => layer.events && layer.events.length > 0)
+    )
+  }
 
   @ViewChild('infoDialog', { static: true })
   private infoTemplate: TemplateRef<unknown>

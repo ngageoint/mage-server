@@ -1,5 +1,19 @@
 <div class="arc-admin">
-  <mat-tab-group>
+  <div class="credentials-error-banner" *ngIf="unauthenticatedSyncingFeatureServices.length > 0">
+    <mat-icon>error_outline</mat-icon>
+    <div class="credentials-error-banner-text">
+      <ng-container *ngFor="let service of unauthenticatedSyncingFeatureServices">
+        Credentials for feature service <strong>{{service.url}}</strong> are invalid or expired. Observations for its mapped events are not syncing.
+        <br />
+      </ng-container>
+      Open the Feature Layers tab and re-authenticate to resume syncing.
+    </div>
+    <button matButton="outlined" class="cancel-button" type="button" (click)="tabGroup.selectedIndex = 1">
+      <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+      Fix Now
+    </button>
+  </div>
+  <mat-tab-group #tabGroup>
     <mat-tab label="Processing">
       <div class="tab-content">
         <mat-card appearance="outlined">

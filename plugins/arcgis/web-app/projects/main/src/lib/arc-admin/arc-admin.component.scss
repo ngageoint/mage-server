@@ -11,6 +11,27 @@
   padding: 16px 0;
 }
 
+.credentials-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  background: rgba(244, 67, 54, 0.08);
+  border: 1px solid rgba(244, 67, 54, 0.24);
+  color: #F44336;
+
+  mat-icon {
+    flex-shrink: 0;
+  }
+
+  .credentials-error-banner-text {
+    flex: 1;
+    font-size: 75%;
+  }
+}
+
 .nav-actions {
   display: flex;
   gap: 8px;

@@ -47,9 +47,8 @@ export function createArcGISIdentityService(
           });
         identityManagerCache.set(featureService.url, promise);
         return promise;
-      } else {
-        return cached;
       }
+      return cached!;
     },
 
     async updateIndentityManagers() {
