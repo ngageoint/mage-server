@@ -1,4 +1,4 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension, ObservationDomainEventType } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentProcessingStatus, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension, ObservationDomainEventType } from '../../../lib/entities/observations/entities.observations'
 import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
@@ -1965,7 +1965,12 @@ describe('observation entities', function () {
             width: 200,
             name: 'test.png',
             size: 123456,
-            contentLocator: 'abc123:attachment0'
+            contentLocator: 'abc123:attachment0',
+            processingStatus: AttachmentProcessingStatus.Success,
+            processingMessage: '',
+            processingHook: '',
+            stagedContentId: '',
+            processingRetryCount: 0
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.lastModified = new Date(Date.now() - 1000 * 60 * 60)
@@ -1985,7 +1990,12 @@ describe('observation entities', function () {
             contentLocator: '0pl9ok',
             thumbnails: [
               { minDimension: 60, contentType: 'image/jpeg', width: 120, height: 60, name: 'test-thumb-1.jpeg', size: 1234, contentLocator: 'z1x2c3' }
-            ]
+            ],
+            processingStatus: AttachmentProcessingStatus.Success,
+            processingMessage: '',
+            processingHook: '',
+            stagedContentId: '',
+            processingRetryCount: 0
           }
           const mod = patchAttachment(observation, attachment.id, patch)
 
@@ -2016,7 +2026,12 @@ describe('observation entities', function () {
             width: 200,
             name: 'test.png',
             size: 123456,
-            contentLocator: '1q2w3e'
+            contentLocator: '1q2w3e',
+            processingStatus: AttachmentProcessingStatus.Success,
+            processingMessage: '',
+            processingHook: '',
+            stagedContentId: '',
+            processingRetryCount: 0
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.lastModified = new Date(Date.now() - 1000 * 60 * 60)
@@ -2036,7 +2051,12 @@ describe('observation entities', function () {
             contentLocator: 'r4t5y6',
             thumbnails: [
               { minDimension: 60, contentType: 'image/jpeg', width: 120, height: 60, name: 'test-thumb-1.jpeg', size: 1234, contentLocator: '8u7y6t' }
-            ]
+            ],
+            processingStatus: AttachmentProcessingStatus.Success,
+            processingMessage: '',
+            processingHook: '',
+            stagedContentId: '',
+            processingRetryCount: 0
           }
           const mod = patchAttachment(observation, attachment.id, patch)
 
@@ -2072,7 +2092,12 @@ describe('observation entities', function () {
             width: 200,
             name: 'test.png',
             size: 123456,
-            contentLocator: 'abc123:attachment0'
+            contentLocator: 'abc123:attachment0',
+            processingStatus: AttachmentProcessingStatus.Success,
+            processingMessage: '',
+            processingHook: '',
+            stagedContentId: '',
+            processingRetryCount: 0
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.properties.forms = [formEntry]
@@ -2123,7 +2148,12 @@ describe('observation entities', function () {
             width: 200,
             name: 'test.png',
             size: 123456,
-            contentLocator: 'abc123:attachment0'
+            contentLocator: 'abc123:attachment0',
+            processingStatus: AttachmentProcessingStatus.Success,
+            processingMessage: '',
+            processingHook: '',
+            stagedContentId: '',
+            processingRetryCount: 0
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.properties.forms = [formEntry]

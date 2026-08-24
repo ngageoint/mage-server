@@ -1,5 +1,6 @@
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import { filterChanges } from "../event/event.types";
+import { AttachmentAction } from "../observation/observation-edit/observation-edit-attachment/observation-edit-attachment-action";
 
 export type FormField = {
   name: string;
@@ -93,6 +94,15 @@ export type Interval = {
   options?: IntervalOptions;
 };
 
+export const AttachmentProcessingStatus = Object.freeze({
+  Pending: 'pending',
+  Success: 'success',
+  Rejected: 'rejected',
+  Error: 'error'
+} as const)
+
+export type AttachmentProcessingStatus = (typeof AttachmentProcessingStatus)[keyof typeof AttachmentProcessingStatus]
+
 export type Attachment = {
   contentType: string;
   fieldName: string;
@@ -103,7 +113,15 @@ export type Attachment = {
   oriented: boolean;
   relativePath: string;
   size: number;
-  url: string;
+  url?: string; // Should have '?'
+  processingStatus?: AttachmentProcessingStatus;
+  processingMessage?: string
+  processingHook?: string
+  action?: AttachmentAction
+  // TODO: never actually assigned anywhere in the codebase - appears to be
+  // vestigial/dead code from an incomplete cache-busting feature. Left
+  // loosely typed rather than guessing at an intended shape.
+  synced?: any
 };
 
 export type Observation = {

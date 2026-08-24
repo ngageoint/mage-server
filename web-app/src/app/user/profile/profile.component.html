@@ -4,7 +4,7 @@
       <mat-icon>arrow_back</mat-icon>
     </button>
 
-    <span class="navigation-title">{{info.controls.displayName.value}}</span>
+    <span class="navigation-title">{{profile.controls.displayName.value}}</span>
   </div>
 </mat-toolbar>
 
@@ -13,7 +13,7 @@
     <mat-card class="card">
       <div class="section-title">General Information</div>
 
-      <form [formGroup]="info">
+      <form [formGroup]="profile">
         <div class="avatar-container" >
           <div class="avatar">
             <user-avatar [user]="user" [file]="avatar" [avatarWidth]="120" [avatarHeight]="120" ></user-avatar>
@@ -29,34 +29,34 @@
         <div class="row">
           <mat-form-field appearance="fill">
             <mat-label>Username</mat-label>
-            <input matInput placeholder="Username" [formControl]="info.controls.username" disabled>
+            <input matInput placeholder="Username" [formControl]="profile.controls.username" disabled>
           </mat-form-field>
     
           <mat-form-field appearance="fill">
             <mat-label>Display Name</mat-label>
-            <input matInput placeholder="Display Name" [formControl]="info.controls.displayName">
+            <input matInput placeholder="Display Name" [formControl]="profile.controls.displayName">
           </mat-form-field>
         </div>
     
         <div class="row">
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input matInput placeholder="Email" [formControl]="info.controls.email">
-            <mat-error *ngIf="info.controls.email.hasError('email')">Must be a valid email address</mat-error>
+            <input matInput placeholder="Email" [formControl]="profile.controls.email">
+            <mat-error *ngIf="profile.controls.email.hasError('email')">Must be a valid email address</mat-error>
           </mat-form-field>
     
           <mat-form-field appearance="fill">
             <mat-label>Phone</mat-label>
-            <input matInput placeholder="Phone" [formControl]="info.controls.phone">
+            <input matInput placeholder="Phone" [formControl]="profile.controls.phone">
           </mat-form-field>
         </div>
       </form>
-    
-      <div *ngIf="infoError" class="error">
+
+      <div *ngIf="profileError" class="error">
         <mat-icon>error</mat-icon>
-        <p class="error__text">{{infoError}}</p>
+        {{profileError}}
       </div>
-    
+
       <div class="actions">
         <button matButton (click)="onCancel()">Cancel</button>
         <button matButton="filled" (click)="onSave()">Save</button>
@@ -105,7 +105,7 @@
     
       <div *ngIf="passwordError" class="error">
         <mat-icon>error</mat-icon>
-        <p class="error__text">{{passwordError}}</p>
+        {{passwordError}}
       </div>
     
       <div class="actions">

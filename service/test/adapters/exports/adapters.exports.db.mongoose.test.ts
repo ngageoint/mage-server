@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import _ from 'lodash'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import { ExportDocument, ExportModel, MongooseExportsRepository } from '../../../lib/adapters/exports/adapters.exports.db.mongoose'
@@ -14,7 +13,7 @@ describe('exports mongoose repository', function() {
   let conn: mongoose.Connection
   let userModel: mongoose.Model<UserDocument>
   let eventModel: mongoose.Model<MageEventDocument>
-  let exportModel: mongoose.Model<ExportDocument>
+  let exportModel: ExportModel
   let exportRepository: MongooseExportsRepository
 
   before(async function() {
@@ -26,7 +25,9 @@ describe('exports mongoose repository', function() {
     conn = await mongoose.createConnection(uri).asPromise()
 
     userModel = conn.model('User', new mongoose.Schema({
-      username: { type: String }
+      username: { type: String },
+      displayName: { type: String },
+      extra: { type: String, default: 'omit me'}
     })) as any
 
     eventModel = conn.model('Event', new mongoose.Schema({
@@ -91,6 +92,7 @@ describe('exports mongoose repository', function() {
         filename: exp.filename,
         'user.username': 'user1',
         'options.event.name': 'event1',
+        'options.event.id': 1
       })
       expect(created.options.filter).to.deep.equal(exp.filter)
       expect(created.options.projection).to.deep.equal(exp.projection)
@@ -100,7 +102,8 @@ describe('exports mongoose repository', function() {
   describe('finding exports', function() {
       const user1 = {
         _id: new mongoose.Types.ObjectId(),
-        username: 'user1'
+        username: 'user1',
+        displayName: 'User 1',
       }
 
       const user2 = {
@@ -114,7 +117,7 @@ describe('exports mongoose repository', function() {
         name: 'event1'
       }
 
-      const exports = [{
+      const exports: ExportDocument[] = [{
         _id: new mongoose.Types.ObjectId(),
         userId: user1._id,
         relativePath: 'test/path',
@@ -125,11 +128,10 @@ describe('exports mongoose repository', function() {
         options: {
           eventId: 1,
           filter: {
-			      eventId: 3,
 			      exportObservations: true,
 			      favorites: false,
 			      important: false,
-			      attachments: false,
+			      includeAttachments: false,
 			      exportLocations: true
 		      },
 		      projection: [ ]
@@ -146,7 +148,8 @@ describe('exports mongoose repository', function() {
             startTimestamp: new Date(),
             endTimestamp: new Date()
           }
-        }
+        },
+        lastUpdated: new Date()
       },{
         _id: new mongoose.Types.ObjectId(),
         userId: user2._id,
@@ -169,7 +172,8 @@ describe('exports mongoose repository', function() {
             startTimestamp: new Date(),
             endTimestamp: new Date()
           }
-        }
+        },
+        lastUpdated: new Date()
       }]
 
     beforeEach('create exports', async function () {
@@ -182,10 +186,23 @@ describe('exports mongoose repository', function() {
       const fetched = await exportRepository.getExportsForUser(exports[0].userId.toHexString())
       expect(fetched).to.be.an('array')
       expect(fetched).to.be.an('array').with.length(1)
-      expect(fetched[0]).to.nested.include({
+      expect(fetched[0]).to.deep.include({
         id: exports[0]._id.toHexString(),
-        'user.username': 'user1',
-        'options.event.name': 'event1'
+        userId: user1._id.toHexString(),
+        user: {
+          id: user1._id.toHexString(),
+          username: 'user1',
+          displayName: 'User 1',
+        },
+        options: {
+          eventId: 1,
+          event: {
+            id: 1,
+            name: 'event1'
+          },
+          filter: exports[0].options.filter,
+          projection: exports[0].options.projection,
+        }
       })
     })
 
@@ -205,8 +222,10 @@ describe('exports mongoose repository', function() {
       expect(fetched).to.be.an('array').with.length(1)
       expect(fetched[0]).to.nested.include({
         id: exports[1]._id.toHexString(),
-        'user': undefined,
-        'options.event': undefined
+        userId: user2._id.toHexString(),
+        user: null,
+        'options.eventId': 2,
+        'options.event': null,
       })
     })
   })

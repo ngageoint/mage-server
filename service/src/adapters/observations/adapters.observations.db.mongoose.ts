@@ -1,9 +1,9 @@
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationReadStreamOptions, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationReadStreamOptions, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
 import mongoose, { FilterQuery } from 'mongoose'
 import * as legacy from '../../models/observation'
-import { MageEventDocument } from '../../models/event'
+import { MageEventModelInstance } from '../../models/event'
 import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
@@ -18,7 +18,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   readonly eventScope: MageEventId
   readonly idModel: ObservationIdModel
 
-  constructor(eventDoc: Pick<MageEventDocument, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
+  constructor(eventDoc: Pick<MageEventModelInstance, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
     // TODO: do not bind to the default mongoose instance and connection
     super(legacy.observationModel(eventDoc), { docToEntity: createDocumentMapping(eventDoc.id) })
     this.eventScope = eventDoc.id
@@ -65,7 +65,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    const savedDoc = await beforeDoc!.save() as legacy.ObservationDocument
+    const savedDoc = await beforeDoc!.save()
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     for (const e of observation.pendingEvents) {
@@ -74,6 +74,9 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     return saved
   }
 
+  /**
+   * TODO: The `event` parameter is unused and should probably go away.  The repository has an implicit event context
+   */
   find(event: MageEvent, options: ObservationReadStreamOptions): AsyncIterable<ObservationAttrs> {
     const conditions: FilterQuery<legacy.ObservationDocument> = {};
 
@@ -121,9 +124,9 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       conditions['important'] = { $exists: true };
     }
 
-    const queryOptions = {}
+    const queryOptions = {} as mongoose.QueryOptions<legacy.ObservationDocument>
     if (options.sort) {
-      options.sort = options.sort
+      queryOptions.sort = options.sort
     }
 
     const fields = parseFields(options.fields)
@@ -131,11 +134,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       fields.attachments = { $slice: 0 }
     }
 
-    let query: any = this.model.find(conditions, fields, queryOptions)
-
-    if (options.lean) {
-      query = query.lean()
-    }
+    const query = this.model.find(conditions, fields, queryOptions)
 
     if (options.populate) {
       query
@@ -151,7 +150,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
 
     const cursor = query.cursor()
 
-    return asyncIterable(cursor, (doc: any) => this.entityForDocument(doc), () => { cursor.close() })
+    return asyncIterable(cursor, (doc) => this.entityForDocument(doc), () => { cursor.close() })
   }
 
   async findById(id: ObservationId): Promise<Observation | null> {
@@ -199,11 +198,11 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async nextFormEntryIds(count: number = 1): Promise<FormEntryId[]> {
-    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
+    return Array.from({ length: count }).map(() => (new mongoose.Types.ObjectId()).toHexString())
   }
 
   async nextAttachmentIds(count: number = 1): Promise<AttachmentId[]> {
-    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
+    return Array.from({ length: count }).map(() => (new mongoose.Types.ObjectId()).toHexString())
   }
 }
 
@@ -224,8 +223,10 @@ export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventR
   }
 }
 
-export function docToEntity(doc: legacy.ObservationDocument, eventId: MageEventId): ObservationAttrs {
-  return createDocumentMapping(eventId)(doc)
+export type PendingAttachmentReference = {
+  eventId: MageEventId
+  observationId: ObservationId
+  attachmentId: AttachmentId
 }
 
 function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.ObservationDocument, ObservationAttrs> {
@@ -275,7 +276,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
 
 function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
   return {
-    id: doc.id,
+    id: doc._id.toHexString(),
     observationFormId: doc.observationFormId.toHexString(),
     fieldName: doc.fieldName,
     lastModified: doc.lastModified ? new Date(doc.lastModified) : undefined,
@@ -287,12 +288,17 @@ function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
     oriented: doc.oriented,
     contentLocator: doc.relativePath,
     thumbnails: doc.thumbnails.map(thumbnailAttrsForDoc),
+    processingStatus: doc.processingStatus,
+    processingMessage: doc.processingMessage,
+    processingHook: doc.processingHook,
+    stagedContentId: doc.stagedContentId,
+    processingRetryCount: doc.processingRetryCount,
   }
 }
 
 function thumbnailAttrsForDoc(doc: legacy.ThumbnailDocument): Thumbnail {
   return {
-    // TODO: is id necessary for thumnails? needs cleanup
+    // TODO: is id necessary for thumbnails? needs cleanup
     contentLocator: doc.relativePath,
     minDimension: doc.minDimension,
     contentType: doc.contentType,
@@ -328,15 +334,15 @@ function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _
   return withoutId
 }
 
-function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocAttrs {
+function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocument {
   const seed = assignMongoIdToDocAttrs(attrs)
   seed.relativePath = attrs.contentLocator
   delete seed['contentLocator']
   seed.thumbnails = attrs.thumbnails.map(thumbnailDocSeedForEntity)
-  return seed as legacy.AttachmentDocAttrs
+  return seed as legacy.AttachmentDocument
 }
 
-function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
+function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocument {
   return {
     _id: new mongoose.Types.ObjectId(),
     relativePath: attrs.contentLocator,
@@ -349,7 +355,7 @@ function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
   }
 }
 
-function convertFieldForQuery(field: any, keys?: any, fields?: any) {
+function convertFieldForQuery(field: Record<string, any>, keys?: string[], fields?: Record<string, any>): object {
   keys = keys || [];
   fields = fields || {};
 
@@ -369,9 +375,9 @@ function convertFieldForQuery(field: any, keys?: any, fields?: any) {
   return fields;
 }
 
-function parseFields(fields: any) {
+function parseFields(fields: Record<string, any>): Record<string, any> {
   if (fields) {
-    const state = fields.state ? true : false;
+    const state = !!fields.state;
     delete fields.state;
 
     fields = convertFieldForQuery(fields);
@@ -386,4 +392,44 @@ function parseFields(fields: any) {
   } else {
     return { states: { $slice: 1 } };
   }
+}
+
+// Define the function to check for pending attachments
+export async function findPendingAttachments(limit: number): Promise<PendingAttachmentReference[]> {
+
+  // Set the array of documents
+  const eventDocs = await mongoose.connection.collection<{ _id: number, collectionName: string }>('events').find({}).toArray()
+
+  // Loop through each document
+  const references: PendingAttachmentReference[] = []
+  for (const eventDoc of eventDocs) {
+    if (references.length >= limit) {
+      break
+    }
+    const model = legacy.observationModel({ id: eventDoc._id, collectionName: eventDoc.collectionName })
+
+    // mongo aggregation pipeline
+    const remaining = limit - references.length
+    const pipeline = [
+      { $match: { 'attachments.processingStatus': AttachmentProcessingStatus.Pending } },
+      { $project: { _id: true, attachments: true } },
+      { $unwind: '$attachments' },
+      { $match: { 'attachments.processingStatus': AttachmentProcessingStatus.Pending } },
+      { $project: { _id: false, observationId: '$_id', attachmentId: '$attachments._id' } },
+      { $limit: remaining },
+    ]
+
+    // Run the pipeline against the model
+    const matches = await model.aggregate(pipeline)
+
+    // loop over the matches
+    for (const match of matches) {
+      references.push({
+        eventId: eventDoc._id,
+        observationId: match.observationId.toString(),
+        attachmentId: match.attachmentId.toString()
+      })
+    }
+  }
+  return references
 }

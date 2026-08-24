@@ -23,6 +23,7 @@ export class FixedWidthIcon extends DivIcon {
     const img = document.createElement('img')
     img.className = "mage-icon-image"
     img.style.width = this.options.iconWidth + 'px'
+    img.style.objectFit = 'contain'
     img.src = this.options.iconUrl;
 
     img.onload = (event: any) => {

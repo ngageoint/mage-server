@@ -1,3 +1,4 @@
+import { UserJson, UserModelInstance } from '../../models/user'
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
 import mongoose, { Model, PopulatedDoc, Schema } from 'mongoose'
 import { UserDocument } from '../users/adapters.users.db.mongoose'
@@ -34,7 +35,7 @@ export class MongooseDeviceRepository extends BaseMongooseRepository<DeviceDocum
       docToEntity: doc => {
         let user: User | string | undefined = doc.userId?._id.toHexString()
         if (doc.populated('userId') && doc.userId) {
-          const userJson = (doc.userId as UserDocument).toJSON()
+          const userJson = (doc.userId as UserModelInstance).toJSON<UserJson>()
           user = {
             ...userJson,
             id: userJson.id.toHexString(),

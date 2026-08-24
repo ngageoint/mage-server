@@ -36,9 +36,8 @@ export class ExportArchiveTask implements Task {
     setTimeout(() => this.schedule(), this.interval * 1000);
   }
 
-  private async doTask() {
+  private async doTask(): Promise<void> {
     this.log.info('Checking for expired exports')
-
     try {
       const exports = await this.repository.getExports()
       for (const e of exports) {

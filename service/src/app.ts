@@ -34,7 +34,6 @@ import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissi
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
 import { AppRequest, AppRequestContext, logPermissionDenials } from './app.api/app.api.global';
-import { UserDocument } from './models/user';
 import SimpleIdFactory from './adapters/adapters.simple_id_factory';
 import {
   JsonSchemaService,
@@ -154,15 +153,24 @@ import {
 } from './app.impl/settings/app.impl.settings';
 import { RoleBasedMapPermissionService } from './permissions/permissions.settings';
 import { SettingRepository } from './entities/settings/entities.settings';
+import { MongooseTeamRepository, TeamModel } from './adapters/teams/adapters.teams.db.mongoose'
+import { TeamsAppLayer, TeamsRoutes } from './adapters/teams/adapters.teams.controllers.web'
+import { TeamRepository } from './entities/teams/entities.teams'
+import { RoleBasedTeamsPermissionService } from './permissions/permissions.teams'
+import { SearchTeams } from './app.impl/teams/app.impl.teams'
 import * as exportsApi from './app.api/exports/app.api.exports';
 import * as exportsImpl from './app.impl/exports/app.impl.exports';
 import { ExportModel, MongooseExportsRepository } from './adapters/exports/adapters.exports.db.mongoose';
 import { ExportFormat, ExportsRepository, ExportStore } from './entities/exports/entities.exports';
 import { RoleBasedExportsPermissionService } from './permissions/permissions.exports';
 import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
-import { MongooseUserLocationRepository } from './adapters/locations/adapters.locations.db.mongoose';
-import { UserLocationModel } from './models/location';
-import { UserLocationRepository } from './entities/locations/entities.locations';
+import { MongooseUserLocationRepository, UserLocationModel } from './adapters/locations/adapters.locations.db.mongoose';
+import { MongooseRecentUserLocationsRepository, RecentUserLocationsModel } from './adapters/locations/adapters.locations.recent.db.mongoose';
+import { RecentUserLocationsRepository, UserLocationRepository } from './entities/locations/entities.locations';
+import * as locationsApi from './app.api/locations/app.api.locations';
+import * as locationsImpl from './app.impl/locations/app.impl.locations';
+import { RoleBasedLocationsPermissionService } from './permissions/permissions.locations';
+import { LocationAppLayer, LocationRoutes, LocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
 import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
 import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
 import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
@@ -176,6 +184,10 @@ import { FileSystemUserIconContentStore } from './adapters/users/adapters.users.
 import { UserIconContentStore } from './entities/users/entities.users';
 import { GeoJsonExportTransform } from './app.impl/exports/app.impl.exports.geojson';
 import { GeoPackageExportTransform } from './app.impl/exports/app.impl.exports.geopackage';
+
+// Attachment imports
+import { AttachmentHook } from './plugins.api/plugins.api.attachments';
+import { startAttachmentProcessing } from './main.impl/main.impl.attachment_processing';
 
 export interface MageService {
   webController: express.Application;
@@ -257,8 +269,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 
   const dbLayer = await initDatabase();
   const repos = await initRepositories(dbLayer, config);
-  const appLayer = await initAppLayer(repos);
   const tasks = await initTasks(repos, log.child({ component: 'export-archive' }));
+  const attachmentHooks: AttachmentHook[] = [];
+  const appLayer = await initAppLayer(repos, attachmentHooks);
   const { webController, addPluginRoutes } = await initWebLayer(
     repos,
     appLayer,
@@ -271,6 +284,15 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     initPluginRoutes: WebRoutesHooks
   ): void => {
     routesForPluginId[pluginId] = initPluginRoutes;
+  };
+
+  // Hooks by plugin
+  const attachmentHooksByPluginId: { [pluginId: string]: AttachmentHook[] } = {};
+  const collectAttachmentHooks = (
+    pluginId: string,
+    attachmentHooks: AttachmentHook[]
+  ): void => {
+    attachmentHooksByPluginId[pluginId] = attachmentHooks;
   };
 
   const globalScopeServices = new Map<InjectionToken<any>, any>([
@@ -320,12 +342,25 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
         pluginId,
         initPlugin,
         injectService,
-        collectPluginRoutesToSort
+        collectPluginRoutesToSort,
+        collectAttachmentHooks,
+        DomainEvents
       );
     } catch (err) {
       console.error(`error loading plugin ${pluginId}`, err);
     }
   }
+
+  // Flatten hooks in array. Mutates the array declared earlier (not a
+  // reassignment) so the reference already passed into storeAttachmentContent
+  // reflects these contents once real requests start coming in.
+  attachmentHooks.push(...Object.values(attachmentHooksByPluginId).flat())
+
+  // Start the background job that finds attachments staged by
+  // storeAttachmentContent and runs them through the now-final attachmentHooks
+  // list. Core-owned (not tied to any one plugin's init()), since it must run
+  // hooks contributed by any enabled plugin.
+  startAttachmentProcessing(repos.observations.obsRepoFactory, repos.observations.attachmentStore, attachmentHooks, console);
 
   const pluginRoutePathsDescending = Object.keys(routesForPluginId)
     .sort()
@@ -358,78 +393,84 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 };
 
 type DatabaseLayer = {
-  conn: mongoose.Connection;
-  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection;
+  conn: mongoose.Connection
+  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection
   devices: {
     device: DeviceModel;
-  };
+  }
   feeds: {
-    feedServiceTypeIdentity: FeedServiceTypeIdentityModel;
-    feedService: FeedServiceModel;
-    feed: FeedModel;
-  };
+    feedServiceTypeIdentity: FeedServiceTypeIdentityModel
+    feedService: FeedServiceModel
+    feed: FeedModel
+  }
+  teams: {
+    team: TeamModel
+  }
   events: {
-    event: MageEventModel;
-  };
+    event: MageEventModel
+  }
   exports: {
     export: ExportModel;
-  };
+  }
   icons: {
-    staticIcon: StaticIconModel;
-  };
+    staticIcon: StaticIconModel
+  }
   users: {
-    user: UserModel;
-    preference: UserPreferenceModel;
-  };
+    user: UserModel
+    preference: UserPreferenceModel
+  }
   observations: {
-    icons: ObservationIconModel;
-  };
+    icons: ObservationIconModel
+  }
   locations: {
-    location: UserLocationModel;
-  };
+    location: UserLocationModel
+    recentUserLocation: RecentUserLocationsModel
+  }
   settings: {
-    setting: SettingsModel;
-  };
-};
+    setting: SettingsModel
+  }
+}
 
 type AppLayer = {
+  teams: TeamsAppLayer
   events: {
-    addFeedToEvent: eventsApi.AddFeedToEvent;
-    listEventFeeds: eventsApi.ListEventFeeds;
-    removeFeedFromEvent: eventsApi.RemoveFeedFromEvent;
-    fetchFeedContent: feedsApi.FetchFeedContent;
-  };
+    addFeedToEvent: eventsApi.AddFeedToEvent
+    listEventFeeds: eventsApi.ListEventFeeds
+    removeFeedFromEvent: eventsApi.RemoveFeedFromEvent
+    fetchFeedContent: feedsApi.FetchFeedContent
+  }
   observations: {
-    allocateObservationId: observationsApi.AllocateObservationId;
-    saveObservation: observationsApi.SaveObservation;
-    storeAttachmentContent: observationsApi.StoreAttachmentContent;
-    readAttachmentContent: observationsApi.ReadAttachmentContent;
-  };
+    allocateObservationId: observationsApi.AllocateObservationId
+    saveObservation: observationsApi.SaveObservation
+    storeAttachmentContent: observationsApi.StoreAttachmentContent
+    readAttachmentContent: observationsApi.ReadAttachmentContent
+  }
   feeds: {
-    jsonSchemaService: JsonSchemaService;
-    permissionService: feedsApi.FeedsPermissionService;
-    listServiceTypes: feedsApi.ListFeedServiceTypes;
-    previewTopics: feedsApi.PreviewTopics;
-    createService: feedsApi.CreateFeedService;
-    listServices: feedsApi.ListFeedServices;
-    getService: feedsApi.GetFeedService;
-    listTopics: feedsApi.ListServiceTopics;
-    previewFeed: feedsApi.PreviewFeed;
-    createFeed: feedsApi.CreateFeed;
-    listAllFeeds: feedsApi.ListAllFeeds;
-    listServiceFeeds: feedsApi.ListServiceFeeds;
-    deleteService: feedsApi.DeleteFeedService;
-    getFeed: feedsApi.GetFeed;
-    updateFeed: feedsApi.UpdateFeed;
-    deleteFeed: feedsApi.DeleteFeed;
-  };
-  exports: ExportAppLayer;
-  icons: StaticIconsAppLayer;
-  users: UsersAppLayer;
-  userPreferences: UserPreferencesAppLayer;
-  systemInfo: SystemInfoAppLayer;
-  settings: SettingsAppLayer;
-};
+    jsonSchemaService: JsonSchemaService
+    permissionService: feedsApi.FeedsPermissionService
+    listServiceTypes: feedsApi.ListFeedServiceTypes
+    previewTopics: feedsApi.PreviewTopics
+    createService: feedsApi.CreateFeedService
+    listServices: feedsApi.ListFeedServices
+    getService: feedsApi.GetFeedService
+    listTopics: feedsApi.ListServiceTopics
+    previewFeed: feedsApi.PreviewFeed
+    createFeed: feedsApi.CreateFeed
+    listAllFeeds: feedsApi.ListAllFeeds
+    listServiceFeeds: feedsApi.ListServiceFeeds
+    deleteService: feedsApi.DeleteFeedService
+    getFeed: feedsApi.GetFeed
+    updateFeed: feedsApi.UpdateFeed
+    deleteFeed: feedsApi.DeleteFeed
+  }
+  exports: ExportAppLayer
+  locations: LocationAppLayer
+  icons: StaticIconsAppLayer
+  users: UsersAppLayer
+  userPreferences: UserPreferencesAppLayer
+  systemInfo: SystemInfoAppLayer
+  settings: SettingsAppLayer
+}
 
 async function initDatabase(): Promise<DatabaseLayer> {
   const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo;
@@ -486,8 +527,7 @@ async function initDatabase(): Promise<DatabaseLayer> {
   const userModel = require('./models/user').Model;
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const settingModel = require('./models/setting').Model;
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const locationModel = require('./models/location').Model;
+  const TeamDBModule = await import('./models/team.js')
 
   return {
     conn,
@@ -517,52 +557,60 @@ async function initDatabase(): Promise<DatabaseLayer> {
       icons: ObservationIconModel(conn)
     },
     locations: {
-      location: locationModel
+      location: UserLocationModel(conn),
+      recentUserLocation: RecentUserLocationsModel(conn)
     },
     settings: {
       setting: settingModel
-    }
+    },
+    teams: {
+      team: TeamDBModule.Model
+    },
   };
 }
 
 type Repositories = {
   devices: {
     deviceRepo: DevicesRepository;
-  };
+  }
   events: {
-    eventRepo: MageEventRepository;
-  };
+    eventRepo: MageEventRepository
+  }
   exports: {
-    exportRepo: ExportsRepository;
-    exportStore: ExportStore;
-  };
+    exportRepo: ExportsRepository
+    exportStore: ExportStore
+  }
   observations: {
-    obsRepoFactory: ObservationRepositoryForEvent;
-    attachmentStore: AttachmentStore;
-    iconRepo: ObservationIconRepository;
-    iconStore: ObservationIconContentStore;
+    obsRepoFactory: ObservationRepositoryForEvent
+    attachmentStore: AttachmentStore
+    iconRepo: ObservationIconRepository
+    iconStore: ObservationIconContentStore
   };
   feeds: {
-    serviceTypeRepo: FeedServiceTypeRepository;
-    serviceRepo: FeedServiceRepository;
-    feedRepo: FeedRepository;
-  };
+    serviceTypeRepo: FeedServiceTypeRepository
+    serviceRepo: FeedServiceRepository
+    feedRepo: FeedRepository
+  }
   icons: {
-    staticIconRepo: StaticIconRepository;
-  };
+    staticIconRepo: StaticIconRepository
+  }
   users: {
-    userRepo: UserRepository;
-    preferenceRepo: UserPreferenceRepository;
-    iconStore: UserIconContentStore;
-  };
+    userRepo: UserRepository
+    preferenceRepo: UserPreferenceRepository
+    iconStore: UserIconContentStore
+  }
   locations: {
-    locationRepo: UserLocationRepository;
+    locationRepo: UserLocationRepository
+    recentUserLocationRepo: RecentUserLocationsRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
-    settingRepo: SettingRepository;
-  };
-};
+    settingRepo: SettingRepository
+  }
+  teams: {
+    teamRepo: TeamRepository
+  }
+}
 
 // TODO: the real thing
 const jsonSchemaService: JsonSchemaService = {
@@ -611,6 +659,7 @@ async function initRepositories(
     [new PluginUrlScheme(config.plugins?.servicePlugins || [])]
   );
   const userRepo = new MongooseUserRepository(models.users.user);
+  const teamRepo = new MongooseTeamRepository(models.teams.team)
   const userIconStore = new FileSystemUserIconContentStore(
     environment.userBaseDirectory
   );
@@ -623,6 +672,11 @@ async function initRepositories(
   const locationRepo = new MongooseUserLocationRepository(
     models.locations.location
   );
+  const recentUserLocationRepo = new MongooseRecentUserLocationsRepository(
+    models.locations.recentUserLocation
+  );
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/user').setLocationRepositories(locationRepo, recentUserLocationRepo);
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -670,7 +724,11 @@ async function initRepositories(
       iconStore: userIconStore
     },
     locations: {
-      locationRepo
+      locationRepo,
+      recentUserLocationRepo
+    },
+    teams: {
+      teamRepo
     },
     enviromentInfo: systemInfoService,
     settings: {
@@ -679,30 +737,55 @@ async function initRepositories(
   };
 }
 
-async function initAppLayer(repos: Repositories): Promise<AppLayer> {
-  const events = await initEventsAppLayer(repos);
-  const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }));
-  const observations = await initObservationsAppLayer(repos);
-  const icons = await initIconsAppLayer(repos);
-  const feeds = await initFeedsAppLayer(repos);
-  const users = await initUsersAppLayer(repos);
-  const userPreferences = initUserPreferencesAppLayer(repos);
-  const systemInfo = initSystemInfoAppLayer(repos);
-  const settings = await initSettingsAppLayer(
-    repos,
-    log.child({ component: 'settings' })
-  );
+async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook[]): Promise<AppLayer> {
+  const events = await initEventsAppLayer(repos)
+  const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }))
+  const locations = await initLocationsAppLayer(repos)
+  const observations = await initObservationsAppLayer(repos, attachmentHooks)
+  const icons = await initIconsAppLayer(repos)
+  const feeds = await initFeedsAppLayer(repos)
+  const users = await initUsersAppLayer(repos)
+  const userPreferences = initUserPreferencesAppLayer(repos)
+  const teams = await initTeamsAppLayer(repos)
+  const systemInfo = initSystemInfoAppLayer(repos)
+  const settings = await initSettingsAppLayer(repos, log.child({ component: 'settings' }))
 
   return {
     events,
     exports,
+    locations,
     observations,
     feeds,
     icons,
     users,
     userPreferences,
     systemInfo,
-    settings
+    settings,
+    teams,
+  }
+}
+
+async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['locations']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const locationPermissions = new RoleBasedLocationsPermissionService(
+    eventPermissions.defaultEventPermissionsService
+  );
+
+  return {
+    createLocations: locationsImpl.CreateLocations(
+      repos.locations.locationRepo,
+      repos.locations.recentUserLocationRepo,
+      locationPermissions,
+      DomainEvents
+    ),
+    readLocations: locationsImpl.ReadLocations(
+      repos.locations.locationRepo,
+      locationPermissions
+    ),
+    readLocationsGroupedByUser: locationsImpl.ReadLocationsGroupedByUser(
+      repos.locations.recentUserLocationRepo,
+      locationPermissions
+    )
   };
 }
 
@@ -806,6 +889,14 @@ function initUserPreferencesAppLayer(repos: Repositories): UserPreferencesAppLay
   };
 }
 
+async function initTeamsAppLayer(repos: Repositories): Promise<AppLayer['teams']> {
+  const usersPermissions = new RoleBasedTeamsPermissionService()
+  const searchTeams = SearchTeams(repos.teams.teamRepo, usersPermissions)
+  return {
+    searchTeams
+  }
+}
+
 async function initEventsAppLayer(
   repos: Repositories
 ): Promise<AppLayer['events']> {
@@ -840,7 +931,8 @@ async function initEventsAppLayer(
 }
 
 async function initObservationsAppLayer(
-  repos: Repositories
+  repos: Repositories,
+  attachmentHooks: AttachmentHook[]
 ): Promise<AppLayer['observations']> {
   const eventPermissions = await import('./permissions/permissions.events');
   const obsPermissions = await import('./permissions/permissions.observations');
@@ -871,7 +963,8 @@ async function initObservationsAppLayer(
     ),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(
       obsPermissionsService,
-      repos.observations.attachmentStore
+      repos.observations.attachmentStore,
+      attachmentHooks
     ),
     readAttachmentContent: observationsImpl.ReadAttachmentContent(
       obsPermissionsService,
@@ -885,7 +978,7 @@ function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
   return {
     getIcon: GetStaticIcon(permissions, repos.icons.staticIconRepo),
     getIconContent: GetStaticIconContent(permissions, repos.icons.staticIconRepo),
-     listIcons: ListStaticIcons(permissions),
+    listIcons: ListStaticIcons(permissions),
     createIcon: CreateStaticIcon(permissions, repos.icons.staticIconRepo)
   };
 }
@@ -1021,12 +1114,13 @@ async function initSettingsAppLayer(
   };
 }
 
-interface MageEventRequestContext extends AppRequestContext<UserDocument> {
+interface MageEventRequestContext extends AppRequestContext<UserWithRole> {
   event: MageEventDocument | MageEvent | undefined;
 }
 
 const exportEventScopeKey = 'exportEventScope' as const;
 const observationEventScopeKey = 'observationEventScope' as const;
+const locationEventScopeKey = 'locationEventScope' as const;
 
 async function initWebLayer(
   repos: Repositories,
@@ -1044,7 +1138,7 @@ async function initWebLayer(
   const appRequestFactory: WebAppRequestFactory = <Params>(
     req: express.Request,
     params: Params
-  ): AppRequest<UserDocument, MageEventRequestContext> & Params => {
+  ): AppRequest<UserWithRole, MageEventRequestContext> & Params => {
     return {
       ...params,
       context: {
@@ -1074,7 +1168,23 @@ async function initWebLayer(
   const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory);
   webController.use('/api/settings', [bearerAuthentication, settingsRoutes]);
 
+  const teamsRoutes = TeamsRoutes(app.teams, appRequestFactory)
+  /*
+  TODO: cannot mount at /api/teams/search because the /api/teams/:teamId route
+  comes first and catches the request.  when old routes move to new sub-router,
+  ensure this and the web client changes appropriately
+  */
+  webController.use('/api/next-teams', [
+    bearerAuthentication,
+    teamsRoutes
+  ])
+
   const usersRoutes = UsersRoutes(app.users, appRequestFactory);
+  /*
+  TODO: cannot mount at /api/users/search because the /api/users/:userId route
+  comes first and catches the request.  when old routes move to new sub-router,
+  ensure this and the web client changes appropriately
+  */
   webController.use('/api/next-users', [bearerAuthentication, usersRoutes]);
 
   const feedsRoutes = FeedsRoutes(app.feeds, appRequestFactory);
@@ -1143,39 +1253,33 @@ async function initWebLayer(
   const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
   webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
 
+  const locationRequestFactory: LocationWebAppRequestFactory = <
+    Params extends object | undefined
+  >(
+    req: express.Request,
+    params: Params
+  ) => {
+    const context: locationsApi.LocationRequestContext = {
+      ...baseAppRequestContext(req),
+      mageEvent: req[locationEventScopeKey]!.mageEvent
+    };
+
+    return { ...params, context };
+  };
+  const locationRoutes = LocationRoutes(app.locations, locationRequestFactory);
+  webController.use(`/api/events/:${locationEventScopeKey}/locations`, [
+    bearerAuthentication,
+    ensureLocationEventScope(repos.events.eventRepo),
+    locationRoutes
+  ]);
+
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
   webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
 
-  const uiPluginsAccessTokenToAuthHeader: express.RequestHandler = (
-    req,
-    _res,
-    next
-  ): void => {
-    const token =
-      typeof req.query.access_token === 'string'
-        ? req.query.access_token
-        : null;
-
-    if (token && !req.headers.authorization) {
-      req.headers.authorization = `Bearer ${token}`;
-    }
-
-    next();
-  };
-
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 
-  const uiPluginsAuth: express.RequestHandler = (req, res, next): void => {
-    if (req.user) {
-      next();
-      return;
-    }
-    bearerAuthentication(req, res, next);
-  };
-
   webController.use('/ui_plugins', [
-    uiPluginsAccessTokenToAuthHeader,
-    uiPluginsAuth,
+    bearerAuthentication,
     webUiPluginRoutes
   ]);
 
@@ -1309,6 +1413,28 @@ function ensureObservationEventScope(
   };
 }
 
+function ensureLocationEventScope(
+  eventRepo: MageEventRepository
+): express.RequestHandler {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<void> => {
+    const eventIdFromPath = req.params[locationEventScopeKey];
+    const eventId: MageEventId = parseInt(eventIdFromPath);
+    const mageEvent = Number.isInteger(eventId)
+      ? await eventRepo.findById(eventId)
+      : null;
+    if (mageEvent) {
+      req[locationEventScopeKey] = { mageEvent };
+      next();
+      return;
+    }
+    res.status(404).json(`event not found: ${eventIdFromPath}`);
+  };
+}
+
 declare module 'express' {
   interface Request {
     [exportEventScopeKey]?: {
@@ -1317,6 +1443,9 @@ declare module 'express' {
     [observationEventScopeKey]?: {
       mageEvent: MageEvent;
       observationRepository: EventScopedObservationRepository;
+    };
+    [locationEventScopeKey]?: {
+      mageEvent: MageEvent;
     };
   }
 }

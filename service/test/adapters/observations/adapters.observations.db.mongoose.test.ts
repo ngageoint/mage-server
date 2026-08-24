@@ -6,11 +6,11 @@ import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapte
 import { MongooseObservationRepository } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
-import { MageEventDocument } from '../../../src/models/event'
+import { MageEventDocument, MageEventModelInstance } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentProcessingStatus, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
@@ -40,7 +40,21 @@ function observationStub(id: ObservationId, eventId: MageEventId): ObservationAt
 }
 
 function omitUndefinedValues<T extends object>(x: T): T {
-  return _.omitBy(x, (v, k) => v === undefined) as T
+  if (Array.isArray(x)) {
+    return x.map(v => isPlainRecursable(v) ? omitUndefinedValues(v) : v) as T
+  }
+  const omitted = _.omitBy(x, (v, k) => v === undefined) as T
+  for (const key of Object.keys(omitted) as (keyof T)[]) {
+    const value = omitted[key]
+    if (isPlainRecursable(value)) {
+      omitted[key] = omitUndefinedValues(value) as T[keyof T]
+    }
+  }
+  return omitted
+}
+
+function isPlainRecursable(v: unknown): v is object {
+  return !!v && typeof v === 'object' && (Array.isArray(v) || Object.getPrototypeOf(v) === Object.prototype)
 }
 
 function omitKeysAndUndefinedValues<T extends object, K extends keyof T>(x: T, ...keys: K[]): Omit<T, K> {
@@ -51,16 +65,16 @@ describe('mongoose observation repository', function () {
 
   let model: ObservationModel
   let repo: MongooseObservationRepository
-  let eventDoc: MageEventDocument
+  let eventDoc: MageEventModelInstance
   let event: MageEvent
-  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventDocument>
+  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventModelInstance>
   let domainEvents: SubstituteOf<EventEmitter>
 
   beforeEach('initialize model', async function () {
     //TODO remove cast to any, was mongoose.Model<MageEventDocument>
     const MageEventModel = legacyEvent.Model as any
     const eventRepo = new MongooseMageEventRepository(MageEventModel)
-    createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
+    createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventModelInstance> => {
       return new Promise<MageEventDocument>((resolve, reject) => {
         legacyEvent.create(
           attrs as MageEventCreateAttrs,
@@ -92,7 +106,7 @@ describe('mongoose observation repository', function () {
       description: 'For testing',
       maxObservationForms: 2,
     })
-    const addForm = util.promisify(legacyEvent.addForm) as (eventId: MageEventId, form: Form) => Promise<MageEventDocument>
+    const addForm = util.promisify(legacyEvent.addForm) as (eventId: MageEventId, form: Form) => Promise<MageEventModelInstance>
     eventDoc = await addForm(eventDoc._id, {
       id: 1,
       archived: false,
@@ -246,6 +260,7 @@ describe('mongoose observation repository', function () {
             width: undefined,
             contentLocator: 'a1s2d3',
             size: 12345,
+            processingRetryCount: 0,
           }
         ]
         attrs.states = [
@@ -275,8 +290,8 @@ describe('mongoose observation repository', function () {
 
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
-        expect(omitUndefinedValues(savedAttrs)).to.deep.equal(attrs)
-        expect(omitUndefinedValues(foundAttrs)).to.deep.equal(attrs)
+        expect(omitUndefinedValues(savedAttrs)).to.deep.equal(omitUndefinedValues(attrs))
+        expect(omitUndefinedValues(foundAttrs)).to.deep.equal(omitUndefinedValues(attrs))
         expect(count).to.equal(1)
       })
     })
@@ -542,6 +557,7 @@ describe('mongoose observation repository', function () {
       ]
       obs = Observation.evaluate(attrs, event)
       obs = await repo.save(obs) as Observation
+      obs = await repo.findById(obs.id) as Observation
 
       expect(obs).to.be.instanceOf(Observation)
       expect(obs.validation.hasErrors).to.be.false
@@ -574,7 +590,12 @@ describe('mongoose observation repository', function () {
         height: 800,
         name: 'patched.png',
         oriented: true,
-        thumbnails: [{ minDimension: 80, contentLocator: uniqid(), contentType: 'image/jpeg' }]
+        thumbnails: [{ minDimension: 80, contentLocator: uniqid(), contentType: 'image/jpeg' }],
+        processingStatus: AttachmentProcessingStatus.Success,
+        processingMessage: '',
+        processingHook: '',
+        stagedContentId: '',
+        processingRetryCount: 0
       }
       const updated = await repo.patchAttachment(obs, obs.attachments[0].id, patch) as Observation
       const fetched = await repo.findById(obs.id) as Observation

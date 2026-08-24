@@ -49,6 +49,7 @@ export interface Form {
    * are MAGE users' names.
    * TODO: this could be modeled better as a general choice field that
    * specifies a data source for its choices
+   * TODO: the utility of this is questionable.  there may be no clients that actually use this
    */
   userFields: string[]
   /**

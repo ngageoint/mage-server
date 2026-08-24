@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { of, throwError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,15 +12,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 
 import { DeleteTeamComponent } from './delete-team.component';
-import { AdminTeamsService } from '../../services/admin-teams-service';
-import { Team } from '../team';
 import { UserService } from '../../../user/user.service';
 
 describe('DeleteTeamComponent', () => {
   let component: DeleteTeamComponent;
   let fixture: ComponentFixture<DeleteTeamComponent>;
   let mockDialogRef: jasmine.SpyObj<MatDialogRef<DeleteTeamComponent>>;
-  let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
+  let mockTeamsService: jasmine.SpyObj<TeamService>;
   let mockUserService: jasmine.SpyObj<any>;
 
   const mockTeam: Team = {
@@ -27,11 +26,8 @@ describe('DeleteTeamComponent', () => {
     name: 'Test Team',
     description: 'Test Description',
     teamEventId: null,
-    users: [
-      { id: 'user1', displayName: 'User One' },
-      { id: 'user2', displayName: 'User Two' }
-    ] as any,
-    acl: {} as any
+    userIds: [ 'user1', 'user2' ],
+    acl: {}
   };
 
   beforeEach(async () => {
@@ -53,7 +49,7 @@ describe('DeleteTeamComponent', () => {
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { team: mockTeam } },
-        { provide: AdminTeamsService, useValue: mockTeamsService },
+        { provide: TeamService, useValue: mockTeamsService },
         { provide: UserService, useValue: mockUserService }
       ]
     }).compileComponents();
@@ -198,8 +194,8 @@ describe('DeleteTeamComponent', () => {
       (component as any).deleteUsers();
 
       expect(mockUserService.deleteUser).toHaveBeenCalledTimes(2);
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.users![0].id);
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.users![1].id);
+      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.userIds[0]);
+      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockTeam.userIds[1]);
     });
 
     it('should close dialog with team after all users are deleted successfully', () => {

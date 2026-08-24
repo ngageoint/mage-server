@@ -15,6 +15,7 @@ import { MageEventPermission } from '../../lib/entities/authorization/entities.p
 import { Model as MageEventModel } from '../../lib/models/event'
 import { MageEventDocument } from '../../src/models/event'
 import { Team } from '../../lib/entities/teams/entities.teams'
+import { UserWithRole } from '../../src/permissions/permissions.role-based.base'
 
 
 describe('event permissions service', function() {
@@ -22,7 +23,7 @@ describe('event permissions service', function() {
   let eventRepo: SubstituteOf<MongooseMageEventRepository>
   let mockEventPermissions: SubstituteOf<EventPermissionServiceImpl>
   let eventPermissions: EventPermissionServiceImpl
-  let user: SubstituteOf<UserDocument>
+  let user: SubstituteOf<UserWithRole>
   let event: SubstituteOf<MageEventAttrs>
   let context: EventRequestContext
 
@@ -30,7 +31,7 @@ describe('event permissions service', function() {
     eventRepo = Sub.for<MongooseMageEventRepository>()
     mockEventPermissions = Sub.for<EventPermissionServiceImpl>()
     eventPermissions = new EventPermissionServiceImpl(eventRepo)
-    user = Sub.for<UserDocument>()
+    user = Sub.for<UserWithRole>()
     event = Sub.for<MageEventAttrs>()
     context = {
       requestToken: Symbol(),
@@ -157,7 +158,7 @@ describe('event feeds permission service', function() {
   it('denies all except fetch', async function() {
 
     const feedIds: FeedId[] = [ uniqid(), uniqid() ]
-    const user = Sub.for<UserDocument>()
+    const user = Sub.for<UserWithRole>()
     user.username.returns!('participant')
     const event = Sub.for<MageEventAttrs>()
     event.id.returns!(3579)

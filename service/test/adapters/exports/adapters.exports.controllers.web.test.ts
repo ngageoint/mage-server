@@ -5,14 +5,11 @@ import { SubstituteOf, Substitute as Sub, Arg } from '@fluffy-spoon/substitute'
 import supertest from 'supertest'
 import uniqid from 'uniqid'
 import express from 'express'
-import _ from 'lodash'
 import mongoose from 'mongoose'
 import { ExportAppLayer, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
 import { GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
 import { Export, ExportStatus } from '../../../lib/entities/exports/entities.exports'
-import { UserIconType } from '../../../lib/entities/users/entities.users'
-import { MageEvent } from '../../../lib/entities/events/entities.events'
-import { UserJson } from '../../../src/models/user'
+import { ExportExpanded } from '../../../src/entities/exports/entities.exports'
 import { Readable } from 'stream'
 import { UserWithRole } from '../../../src/permissions/permissions.role-based.base'
 import { entityNotFound, infrastructureError, permissionDenied } from '../../../lib/app.api/app.api.errors'
@@ -27,6 +24,7 @@ describe('exports web controller', function() {
     _id: userId,
     id: userId.toHexString(),
     username: 'test.user',
+    displayName: 'You Sir Testington',
   } as unknown as UserWithRole
 
   const createAppRequest = <Params>(p?: Params): Params & AppRequest<{ user: string }> => {
@@ -71,34 +69,18 @@ describe('exports web controller', function() {
 
     const exportBytes = Buffer.from(Array.from({ length: 10000 }).map(x => uniqid()).join(' | '))
     const id = uniqid()
-    const user: UserJson = {
-      id: new mongoose.Types.ObjectId(),
-      roleId: 'role',
-      authenticationId: 'authentication',
-      username: 'user1',
-      displayName: 'User One',
-      phones: [],
-      icon: {
-        type: UserIconType.Create,
-        text: 'icon',
-        color: 'red'
-      },
-      active: true,
-      enabled: true,
-      recentEventIds: [],
-      createdAt: new Date(),
-      lastUpdated: new Date()
-    }
-
-    const exp: Export = {
+    const exp: ExportExpanded = {
       id,
-      user: user,
+      userId: userId.toHexString(),
+      user: { id: validPrincipal.id, username: validPrincipal.username, displayName: validPrincipal.displayName },
       relativePath: 'some/path',
       filename: 'export',
       size: exportBytes.length,
       exportType: 'kml',
       status: ExportStatus.Completed,
       options: {
+        eventId: 1,
+        event: { id: 1, name: 'Test 1' },
         filter: undefined,
         projection: undefined
       },
@@ -107,13 +89,13 @@ describe('exports web controller', function() {
       summary: {
         observations: {
           count: 2,
-          startTimestamp: new Date().getTime(),
-          endTimestamp: new Date().getTime()
+          startTimestamp: new Date(),
+          endTimestamp: new Date()
         },
         locations: {
           count: 2,
-          startTimestamp: new Date().getTime(),
-          endTimestamp: new Date().getTime()
+          startTimestamp: new Date(),
+          endTimestamp: new Date()
         }
       },
       lastUpdated: new Date()
@@ -128,9 +110,13 @@ describe('exports web controller', function() {
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMimeType)
       expect(res.body).to.be.an('array').with.length(1)
-      expect(res.body[0]).to.nested.include({
+      expect(res.body[0]).to.deep.include({
         id: exp.id,
-        'user.username': exp.user?.username
+        user: {
+          id: validPrincipal.id,
+          username: validPrincipal.username,
+          displayName: validPrincipal.displayName
+        }
       })
     })
 
@@ -193,43 +179,17 @@ describe('exports web controller', function() {
   describe('POST /myself', function() {
 
     const id = uniqid()
-    const user: UserJson = {
-      id: new mongoose.Types.ObjectId(),
-      roleId: 'role',
-      authenticationId: 'authentication',
-      username: 'user1',
-      displayName: 'User One',
-      phones: [],
-      icon: {
-        type: UserIconType.Create,
-        text: 'icon',
-        color: 'red'
-      },
-      active: true,
-      enabled: true,
-      recentEventIds: [],
-      createdAt: new Date(),
-      lastUpdated: new Date()
-    }
-
-    const event = new MageEvent({
-      id: 1,
-      name: 'event1',
-      layerIds: [],
-      feedIds: [],
-      forms: [],
-      style: {},
-      acl: {}
-    })
-
-    const exp: Export = {
+    const exp: ExportExpanded = {
       id,
-      user: user,
+      userId: validPrincipal.id,
+      user: { id: validPrincipal.id, username: validPrincipal.username },
       relativePath: 'some/path',
       filename: 'export',
       exportType: 'kml',
       status: ExportStatus.Completed,
       options: {
+        eventId: 1,
+        event: { id: 1, name: 'Event 1' },
         filter: undefined,
         projection: undefined
       },
@@ -238,13 +198,13 @@ describe('exports web controller', function() {
       summary: {
         observations: {
           count: 2,
-          startTimestamp: new Date().getTime(),
-          endTimestamp: new Date().getTime()
+          startTimestamp: new Date(),
+          endTimestamp: new Date()
         },
         locations: {
           count: 2,
-          startTimestamp: new Date().getTime(),
-          endTimestamp: new Date().getTime()
+          startTimestamp: new Date(),
+          endTimestamp: new Date()
         }
       },
       lastUpdated: new Date()
@@ -259,9 +219,12 @@ describe('exports web controller', function() {
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMimeType)
       expect(res.body).to.be.an('array').with.length(1)
-      expect(res.body[0]).to.nested.include({
+      expect(res.body[0]).to.deep.include({
         id: exp.id,
-        'user.username': exp.user?.username
+        user: {
+          id: validPrincipal.id,
+          username: validPrincipal.username
+        }
       })
     })
   })

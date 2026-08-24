@@ -107,7 +107,7 @@ export class GeoPackageExportTransform implements ExportTransform {
       sort: { userId: 1 },
       stream: true
     })
-    
+
     let count = 0;
     let startTimestamp: number | undefined = undefined
     let endTimestamp: number | undefined = undefined
@@ -235,7 +235,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     }
     this.log.info(`'wrote ${count} observations to geopackage`);
 
-    return { count, startTimestamp, endTimestamp }
+    return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
   }
 
   async createObservationFeatureTableStyles(
@@ -264,7 +264,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     } catch (err) {
       console.warn('error setting default icon', defaultIcon.contentLocator)
     }
-    
+
     return featureTableStyles
   }
 
@@ -445,7 +445,7 @@ export class GeoPackageExportTransform implements ExportTransform {
     rtreeIndex.create();
 
     this.log.info(`wrote ${count} locations to geopackage`)
-    return { count, startTimestamp, endTimestamp }
+    return { count, startTimestamp: new Date(startTimestamp ?? 0), endTimestamp: new Date(endTimestamp ?? Date.now()) }
   }
 }
 
@@ -508,7 +508,7 @@ async function createFormAttributeTables(
   const forms = projection ? event.forms?.filter(form => {
     return projection?.some(formProjection => formProjection.formId === form.id)
   }) : event.forms
-  
+
   for (const form of forms) {
     const columns: any[] = form.fields
       .filter(form => !form.archived)

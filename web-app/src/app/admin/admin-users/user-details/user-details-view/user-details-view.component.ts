@@ -5,10 +5,10 @@ import { PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { take } from 'rxjs';
 
 import { UserService } from '../../../../user/user.service';
-import { AdminTeamsService } from '../../../services/admin-teams-service';
 import { AdminEventsService } from '../../../services/admin-events.service';
 import { DeleteUserComponent } from '../../delete-user/delete-user.component';
 import { ChangePasswordComponent } from '../../change-password/change-password.component';
@@ -36,7 +36,7 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
 
   private currentUserId: string | null = null;
 
-  teamsDataSource = new MatTableDataSource<any>();
+  teamsDataSource = new MatTableDataSource<Team>();
   eventsDataSource = new MatTableDataSource<any>();
 
   loadingTeams = true;
@@ -61,7 +61,7 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private userService: UserService,
     private sessionService: SessionService,
-    private teamsService: AdminTeamsService,
+    private teamsService: TeamService,
     private eventsService: AdminEventsService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -86,7 +86,7 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['breadcrumbs']) {
+    if (changes.breadcrumbs) {
       this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     }
   }
@@ -112,16 +112,16 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadUserTeams(): void {
-    if (!this.user?.id) return;
-
+    if (!this.user?.id) {
+      return;
+    }
     this.teamsService
-      .getTeams({
-        with_members: [this.user.id],
+      .search({
+        members: [this.user.id],
         term: this.userTeamSearch || undefined,
-        limit: this.userTeamsPageSize,
-        start: String(this.userTeamsPageIndex),
-        populate: true,
-        omit_event_teams: true
+        pageSize: this.userTeamsPageSize,
+        pageIndex: this.userTeamsPageIndex,
+        omitEventTeams: true
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -154,8 +154,9 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadUserEvents(): void {
-    if (!this.user?.id) return;
-
+    if (!this.user?.id) {
+      return;
+    }
     this.eventsService
       .getEvents({
         userId: this.user.id,
@@ -207,8 +208,9 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   accessTeamNames(eventItem: any): string[] {
-    if (!this.user?.id) return [];
-
+    if (!this.user?.id) {
+      return [];
+    }
     return (eventItem.teams || [])
       .filter((team: any) => team.teamEventId !== eventItem.id && (team.userIds || []).includes(this.user.id))
       .map((team: any) => team.name);
@@ -245,46 +247,71 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get showAccountStatusAction(): boolean {
-    if (!this.user || !this.hasUserEditPermission) return false;
-    if (!this.user.active) return true;
+    if (!this.user || !this.hasUserEditPermission) {
+      return false;
+    }
+    if (!this.user.active) {
+      return true;
+    }
     return !this.isSelf;
   }
 
   get accountStatusLabel(): string {
-    if (!this.user) return '';
-    if (!this.user.active) return 'Activate User Account';
+    if (!this.user) {
+      return '';
+    }
+    if (!this.user.active) {
+      return 'Activate User Account';
+    }
     return this.user.enabled ? 'Disable Account' : 'Enable Account';
   }
 
   get accountStatusIcon(): string {
-    if (!this.user) return '';
-    if (!this.user.active) return 'check_circle';
+    if (!this.user) {
+      return '';
+    }
+    if (!this.user.active) {
+      return 'check_circle';
+    }
     return this.user.enabled ? 'block' : 'lock_open';
   }
 
   get accountStatusBadgeText(): string {
-    if (!this.user) return '';
-    if (!this.user.active) return 'Inactive';
+    if (!this.user) {
+      return '';
+    }
+    if (!this.user.active) {
+      return 'Inactive';
+    }
     return this.user.enabled ? 'Active' : 'Disabled';
   }
 
   get accountStatusBadgeClass(): string {
-    if (!this.user) return '';
-    if (!this.user.active) return 'status-badge-inactive';
+    if (!this.user) {
+      return '';
+    }
+    if (!this.user.active) {
+      return 'status-badge-inactive';
+    }
     return this.user.enabled ? 'status-badge-active' : 'status-badge-disabled';
   }
 
   get accountStatusHelpText(): string {
-    if (!this.user) return '';
-    if (!this.user.active) return 'Activating allows this user to access MAGE.';
+    if (!this.user) {
+      return '';
+    }
+    if (!this.user.active) {
+      return 'Activating allows this user to access MAGE.';
+    }
     return this.user.enabled
       ? 'Disabling prevents this user from accessing MAGE. Account information is retained and access can be restored at any time.'
       : 'Enabling restores MAGE access for this user.';
   }
 
   toggleAccountStatus(): void {
-    if (!this.user) return;
-
+    if (!this.user) {
+      return;
+    }
     if (!this.user.active) {
       this.setUserStatus({ active: true });
     } else if (this.user.enabled) {

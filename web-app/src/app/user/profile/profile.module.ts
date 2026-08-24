@@ -12,6 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatInputModule as MatInputModule } from '@angular/material/input';
 import { MatButtonModule as MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 const routes: Routes = [{
   path: '',
@@ -32,6 +33,7 @@ const routes: Routes = [{
     MatIconModule,
     MatInputModule,
     MatProgressBarModule,
+    MatSnackBarModule,
     MatToolbarModule,
     ReactiveFormsModule
   ]

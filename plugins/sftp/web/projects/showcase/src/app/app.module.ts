@@ -5,7 +5,9 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SFTPModule } from 'projects/main/src/public-api';
 import { ConfigurationService } from 'projects/main/src/lib/configuration/configuration.service';
+import { ObservationStatusService } from 'projects/main/src/lib/observation-status/observation-status.service';
 import { MockConfigurationService } from './service/mock-configuration.service';
+import { MockObservationStatusService } from './service/mock-observation-status.service';
 
 @NgModule({
   declarations: [
@@ -17,10 +19,16 @@ import { MockConfigurationService } from './service/mock-configuration.service';
     AppRoutingModule,
     SFTPModule
   ],
-  providers: [{
-    provide: ConfigurationService,
-    useClass: MockConfigurationService
-  }],
+  providers: [
+    {
+      provide: ConfigurationService,
+      useClass: MockConfigurationService
+    },
+    {
+      provide: ObservationStatusService,
+      useClass: MockObservationStatusService
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -7,6 +7,7 @@ import { SidebarService } from '../../sidebar/sidebar.service'
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { AttachmentProcessingStatus } from '../../filter/filter.types';
 
 @Component({
     selector: 'observation-list-item',
@@ -205,5 +206,13 @@ export class ObservationListItemComponent implements OnChanges {
 
   updateFavorites(): void {
     this.favorites = this.observation.favoriteUserIds.length
+  }
+
+  hasFailedAttachment(): boolean {
+    return this.attachments.some(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error)
+  }
+
+  failedAttachmentCount(): number {
+    return this.attachments.filter(attachment => attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error).length
   }
 }

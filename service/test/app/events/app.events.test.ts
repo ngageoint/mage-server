@@ -10,11 +10,11 @@ import { AppRequest } from '../../../lib/app.api/app.api.global'
 import { Feed, FeedRepository, FeedServiceRepository, FeedServiceTypeRepository } from '../../../lib/entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../../lib/permissions/permissions.events'
 import { ContentLanguageKey, LanguageTag, Locale, Localized } from '../../../lib/entities/entities.i18n'
-import { UserDocument } from '../../../src/models/user'
+import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
 
 
-function requestBy<P extends object>(user: string, params: P, locale?: Locale): AppRequest<SubstituteOf<UserDocument>> & P {
-  const userDoc = Sub.for<UserDocument>()
+function requestBy<P extends object>(user: string, params: P, locale?: Locale): AppRequest<SubstituteOf<UserWithRole>> & P {
+  const userDoc = Sub.for<UserWithRole>()
   userDoc.id.returns!(uniqid())
   return {
     context: {

@@ -9,6 +9,7 @@ import { LocalStaticIconStub, StaticIcon, StaticIconContentStore, StaticIconImpo
 import { MongooseStaticIconRepository, StaticIconDocument, StaticIconModel } from '../../../lib/adapters/icons/adapters.icons.db.mongoose'
 import { EntityIdFactory, UrlResolutionError, UrlScheme } from '../../../lib/entities/entities.global'
 import { Readable } from 'stream'
+import { StaticIconModelInstance } from '../../../src/adapters/icons/adapters.icons.db.mongoose'
 
 
 interface TestUrlScheme extends UrlScheme {
@@ -403,7 +404,7 @@ describe('static icon mongoose repository', function () {
           contentStore.received(1).putContent(Arg.deepEquals(icon), content)
           expect(fetchResolved).to.equal(true)
 
-          const updatedDoc = await new Promise<StaticIconDocument>((resolve) => {
+          const updatedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {
@@ -453,7 +454,7 @@ describe('static icon mongoose repository', function () {
 
           contentStore.received(1).putContent(Arg.deepEquals(lazy) as StaticIcon, content)
 
-          const updatedDoc = await new Promise<StaticIconDocument>((resolve) => {
+          const updatedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {
@@ -500,7 +501,7 @@ describe('static icon mongoose repository', function () {
           contentStore.putContent(Arg.all()).resolves()
           const icon = await repo.findOrImportBySourceUrl(sourceUrl, null, StaticIconImportFetch.Eager) as StaticIcon
           const iconDoc = await model.findById(iconId)
-          const resolvedDoc = await new Promise<StaticIconDocument>((resolve) => {
+          const resolvedDoc = await new Promise<StaticIconModelInstance>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {
@@ -678,26 +679,26 @@ describe('static icon mongoose repository', function () {
       scheme1Icon = {
         id: uniqid(),
         sourceUrl: scheme1.urlWithPath('test1.png'),
-        registeredTimestamp: Date.now(),
-        resolvedTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 1000,
+        resolvedTimestamp: Date.now() - 990,
         tags: []
       }
       scheme1IconUnresolved = {
         id: uniqid(),
         sourceUrl: scheme1.urlWithPath('test1-unresolved.png'),
-        registeredTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 900,
         tags: []
       }
       scheme2LocalIcon = {
         id: uniqid(),
         sourceUrl: scheme2Local.urlWithPath('test2.png'),
-        registeredTimestamp: Date.now(),
-        resolvedTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 800,
+        resolvedTimestamp: Date.now() - 790,
         tags: []
       }
       scheme3LocalIcon = {
         id: uniqid(),
-        registeredTimestamp: Date.now(),
+        registeredTimestamp: Date.now() - 700,
         tags: []
       }
       await model.insertMany([
@@ -786,8 +787,8 @@ describe('static icon mongoose repository', function () {
     it('loads content from the store when there is no source url', async function() {
       const content = Readable.from('')
       contentStore.loadContent(Arg.is(actualReq => {
-        expect(actualReq.id).to.deep.equal(scheme3LocalIcon.id)
-        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+        expect(actualReq.id).to.equal(scheme3LocalIcon.id)
+        expect(actualReq.registeredTimestamp).to.equal(scheme3LocalIcon.registeredTimestamp)
         return true
       })).resolves(content)
 

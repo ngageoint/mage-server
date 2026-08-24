@@ -3,7 +3,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
-import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, AttachmentPatchAttrs } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, AttachmentPatchAttrs, StagedAttachmentContentId } from '../../entities/observations/entities.observations'
 import mime from 'mime-types'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
@@ -19,6 +19,28 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     const tempPath = path.join(this.pendingDirPath, id)
     const tempLocation = fs.createWriteStream(tempPath)
     return new StagedAttachmentContent(id, tempLocation)
+  }
+
+  // Define the staged content path
+  async stagedContentPath(stagedContentId: StagedAttachmentContentId): Promise<string | AttachmentStoreError> {
+    return path.join(this.pendingDirPath, stagedContentId)
+  }
+
+  // Define delete staged content
+  async deleteStagedContent(stagedContentId: StagedAttachmentContentId): Promise<void | AttachmentStoreError> {
+    const tempPath = path.join(this.pendingDirPath, stagedContentId)
+    try{
+      // Cleanly removing path
+      await util.promisify(fs.rm)(tempPath)
+
+    } catch (err) {
+      // Message for crashes or any failures
+      const message = `error deleting staged content ${stagedContentId}`
+
+      // Add console output
+      console.error(message, err)
+      return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `${message}: ${err instanceof Error ? err.message : String(err)}`)
+    }
   }
 
   async saveContent(content: StagedAttachmentContentRef | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<null | AttachmentContentPatchAttrs | AttachmentStoreError> {
