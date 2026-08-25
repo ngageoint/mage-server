@@ -1,7 +1,7 @@
 <div class="popup">
   <div class="popup__content">
     <ng-container *ngIf="hasContent; else noContent">
-      <span class="item__timestamp">{{timestamp | moment}}</span>
+      <span *ngIf="timestamp" class="item__timestamp">{{timestamp | moment}}</span>
       <span class="item__primary">{{primary || "&nbsp;"}}</span>
       <span class="item__secondary">{{secondary || "&nbsp;"}}</span>
     </ng-container>
