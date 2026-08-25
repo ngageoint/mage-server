@@ -265,13 +265,12 @@ export class CsvExportTransform implements ExportTransform {
     options: ExportOptions,
     stream: stream.Transform
   ): Promise<ExportItemSummary> {
-    const locations = this.locationRepository.getLocations({
-      filter: {
+    const locations = this.locationRepository.iterate({
+      where: {
         eventId: event.id,
-        startDate: options?.filter?.startDate,
-        endDate: options?.filter?.endDate
-      },
-      sort: { userId: 1, 'properties.timestamp': 1, _id: 1 }
+        timestampAfter: options?.filter?.startDate,
+        timestampBefore: options?.filter?.endDate
+      }
     })
 
     const cache = {

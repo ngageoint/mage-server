@@ -98,8 +98,8 @@ UserSchema.pre('save', function (next) {
   }
 });
 
-let locationRepo = null;
-let recentUserLocationRepo = null;
+let userLocationModel = null;
+let recentUserLocationModel = null;
 
 /**
  * The Location and CappedLocation mongoose models are registered by the
@@ -108,9 +108,9 @@ let recentUserLocationRepo = null;
  * cannot resolve them by name and instead needs the repositories injected
  * from app.ts once they exist.
  */
-exports.setLocationRepositories = function (userLocationRepo, userRecentLocationRepo) {
-  locationRepo = userLocationRepo;
-  recentUserLocationRepo = userRecentLocationRepo;
+exports.initialize = function (locationRepos) {
+  userLocationModel = locationRepos.userLocationRepo;
+  recentUserLocationModel = locationRepos.recentUserLocationRepo;
 };
 
 UserSchema.pre('deleteOne', { document: true, query: false }, function (next) {
@@ -118,16 +118,16 @@ UserSchema.pre('deleteOne', { document: true, query: false }, function (next) {
 
   async.parallel({
     location: function (done) {
-      if (!locationRepo) {
+      if (!userLocationModel) {
         return done();
       }
-      locationRepo.removeLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
+      userLocationModel.deleteLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
     },
     cappedlocation: function (done) {
-      if (!recentUserLocationRepo) {
+      if (!recentUserLocationModel) {
         return done();
       }
-      recentUserLocationRepo.removeLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
+      recentUserLocationModel.deleteLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
     },
     token: function (done) {
       Token.removeTokensForUser(user, done);

@@ -165,12 +165,12 @@ import { ExportFormat, ExportsRepository, ExportStore } from './entities/exports
 import { RoleBasedExportsPermissionService } from './permissions/permissions.exports';
 import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
 import { MongooseUserLocationRepository, UserLocationModel } from './adapters/locations/adapters.locations.db.mongoose';
-import { MongooseRecentUserLocationsRepository, RecentUserLocationsModel } from './adapters/locations/adapters.locations.recent.db.mongoose';
+import { MongooseRecentUserLocationsRepository, RecentUserLocationModel, RecentUserLocationsModel } from './adapters/locations/adapters.locations.recent.db.mongoose';
 import { RecentUserLocationsRepository, UserLocationRepository } from './entities/locations/entities.locations';
 import * as locationsApi from './app.api/locations/app.api.locations';
 import * as locationsImpl from './app.impl/locations/app.impl.locations';
-import { RoleBasedLocationsPermissionService } from './permissions/permissions.locations';
-import { LocationAppLayer, LocationRoutes, LocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
+import { UserLocationPermissionServiceImpl } from './permissions/permissions.locations';
+import { UserLocationRoutes, UserLocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
 import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
 import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
 import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
@@ -424,7 +424,7 @@ type DatabaseLayer = {
   }
   locations: {
     location: UserLocationModel
-    recentUserLocation: RecentUserLocationsModel
+    recentLocation: RecentUserLocationsModel
   }
   settings: {
     setting: SettingsModel
@@ -464,7 +464,11 @@ type AppLayer = {
     deleteFeed: feedsApi.DeleteFeed
   }
   exports: ExportAppLayer
-  locations: LocationAppLayer
+  locations: {
+    readUserLocations: locationsApi.ReadUserLocations
+    readLocationsGroupedByUser: locationsApi.ReadLocationsGroupedByUser
+    saveUserLocations: locationsApi.SaveUserLocations
+  }
   icons: StaticIconsAppLayer
   users: UsersAppLayer
   userPreferences: UserPreferencesAppLayer
@@ -558,7 +562,7 @@ async function initDatabase(): Promise<DatabaseLayer> {
     },
     locations: {
       location: UserLocationModel(conn),
-      recentUserLocation: RecentUserLocationsModel(conn)
+      recentLocation: RecentUserLocationModel(conn)
     },
     settings: {
       setting: settingModel
@@ -601,7 +605,7 @@ type Repositories = {
   }
   locations: {
     locationRepo: UserLocationRepository
-    recentUserLocationRepo: RecentUserLocationsRepository
+    recentLocationRepo: RecentUserLocationsRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -669,14 +673,13 @@ async function initRepositories(
   const observationIconStore = new FileSystemObservationIconContentStore(
     environment.iconBaseDirectory
   );
-  const locationRepo = new MongooseUserLocationRepository(
-    models.locations.location
-  );
-  const recentUserLocationRepo = new MongooseRecentUserLocationsRepository(
-    models.locations.recentUserLocation
-  );
+  const locationRepo = new MongooseUserLocationRepository(models.locations.location);
+  const recentLocationRepo = new MongooseRecentUserLocationsRepository(models.locations.recentLocation);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require('./models/user').setLocationRepositories(locationRepo, recentUserLocationRepo);
+  require('./models/user').initialize({
+    userLocationRepo: locationRepo,
+    recentUserLocationRepo: recentLocationRepo
+  });
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -725,7 +728,7 @@ async function initRepositories(
     },
     locations: {
       locationRepo,
-      recentUserLocationRepo
+      recentLocationRepo
     },
     teams: {
       teamRepo
@@ -767,24 +770,26 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
 
 async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['locations']> {
   const eventPermissions = await import('./permissions/permissions.events');
-  const locationPermissions = new RoleBasedLocationsPermissionService(
+  const locationPermissionsService = new UserLocationPermissionServiceImpl(
     eventPermissions.defaultEventPermissionsService
   );
 
   return {
-    createLocations: locationsImpl.CreateLocations(
-      repos.locations.locationRepo,
-      repos.locations.recentUserLocationRepo,
-      locationPermissions,
-      DomainEvents
-    ),
-    readLocations: locationsImpl.ReadLocations(
-      repos.locations.locationRepo,
-      locationPermissions
+    readUserLocations: locationsImpl.ReadAllUserLocations(
+      locationPermissionsService,
+      repos.teams.teamRepo,
+      repos.locations.locationRepo
     ),
     readLocationsGroupedByUser: locationsImpl.ReadLocationsGroupedByUser(
-      repos.locations.recentUserLocationRepo,
-      locationPermissions
+      locationPermissionsService,
+      repos.teams.teamRepo,
+      repos.locations.recentLocationRepo
+    ),
+    saveUserLocations: locationsImpl.SaveUserLocations(
+      locationPermissionsService,
+      repos.locations.locationRepo,
+      repos.locations.recentLocationRepo,
+      DomainEvents
     )
   };
 }
@@ -1253,24 +1258,24 @@ async function initWebLayer(
   const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
   webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
 
-  const locationRequestFactory: LocationWebAppRequestFactory = <
+  const locationRequestFactory: UserLocationWebAppRequestFactory = <
     Params extends object | undefined
   >(
     req: express.Request,
     params: Params
   ) => {
-    const context: locationsApi.LocationRequestContext = {
+    const context: locationsApi.UserLocationRequestContext = {
       ...baseAppRequestContext(req),
       mageEvent: req[locationEventScopeKey]!.mageEvent
     };
 
     return { ...params, context };
   };
-  const locationRoutes = LocationRoutes(app.locations, locationRequestFactory);
+  const userLocationRoutes = UserLocationRoutes(app.locations, locationRequestFactory);
   webController.use(`/api/events/:${locationEventScopeKey}/locations`, [
     bearerAuthentication,
     ensureLocationEventScope(repos.events.eventRepo),
-    locationRoutes
+    userLocationRoutes
   ]);
 
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);

@@ -5,7 +5,7 @@ import {
   MongooseUserLocationRepository
 } from '../../lib/adapters/locations/adapters.locations.db.mongoose'
 import {
-  RecentUserLocationsModel,
+  RecentUserLocationModel,
   MongooseRecentUserLocationsRepository
 } from '../../lib/adapters/locations/adapters.locations.recent.db.mongoose'
 
@@ -13,18 +13,18 @@ describe('user model location cascade', function() {
 
   let UserModel: mongoose.Model<any>
   let locationModel: ReturnType<typeof UserLocationModel>
-  let recentModel: ReturnType<typeof RecentUserLocationsModel>
+  let recentModel: ReturnType<typeof RecentUserLocationModel>
 
   before(function() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const userModule = require('../../lib/models/user')
     UserModel = userModule.Model
     locationModel = UserLocationModel(mongoose.connection, 'test_user_cascade_locations')
-    recentModel = RecentUserLocationsModel(mongoose.connection, 'test_user_cascade_recent_locations')
-    userModule.setLocationRepositories(
-      new MongooseUserLocationRepository(locationModel),
-      new MongooseRecentUserLocationsRepository(recentModel)
-    )
+    recentModel = RecentUserLocationModel(mongoose.connection, 'test_user_cascade_recent_locations')
+    userModule.initialize({
+      userLocationRepo: new MongooseUserLocationRepository(locationModel),
+      recentUserLocationRepo: new MongooseRecentUserLocationsRepository(recentModel)
+    })
   })
 
   afterEach(async function() {
@@ -97,7 +97,7 @@ describe('user model location cascade', function() {
   it('does not throw when no Location/CappedLocation repositories have been injected', async function() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const userModule = require('../../lib/models/user')
-    userModule.setLocationRepositories(null, null)
+    userModule.initialize({ userLocationRepo: null, recentUserLocationRepo: null })
     try {
       const user = await UserModel.create({
         username: 'cascade-test-3',
@@ -109,10 +109,10 @@ describe('user model location cascade', function() {
 
       await user.deleteOne()
     } finally {
-      userModule.setLocationRepositories(
-        new MongooseUserLocationRepository(locationModel),
-        new MongooseRecentUserLocationsRepository(recentModel)
-      )
+      userModule.initialize({
+        userLocationRepo: new MongooseUserLocationRepository(locationModel),
+        recentUserLocationRepo: new MongooseRecentUserLocationsRepository(recentModel)
+      })
     }
   })
 })
