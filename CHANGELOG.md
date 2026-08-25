@@ -7,20 +7,61 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ### Service
+#### Features
+#### Bug Fixes
+#### Security
+
+### Web App
+#### Features
+#### Bug Fixes
+
+### Plugins
+
+## [6.7.1](https://github.com/ngageoint/mage-server/releases/tag/6.7.1)
+### Service
+#### Features
+* Team search now supports paging, and searching with or without team members
+* Recently-used dropdown/multiselect choices are now remembered per user, scoped by event/form/field
+* Exports let users choose which form fields are included (field projection)
+* New optional ClamAV plugin: staged attachment uploads are scanned for viruses/malware against a running `clamd` daemon before being made available; infected or unscannable attachments are rejected instead of exposed. Enabled by adding `@ngageoint/mage.clamav.service` to `servicePlugins`/`MAGE_PLUGINS`, with `clamd` host/port configurable via `MAGE_CLAMAV_HOST`/`MAGE_CLAMAV_PORT`
+* Admins can set whether a feed shows on the map by default
+* Dynamic feed and map icons
 #### Bug Fixes
 * OAuth/SAML/OIDC sign-in no longer hangs on a stuck popup or in-app browser when authentication fails; errors are now logged server-side and the popup/mobile flow always closes or redirects cleanly
 * Inactive, disabled, or misconfigured-strategy accounts signing in via OAuth/SAML/OIDC now consistently report account status instead of silently failing
+* Bearer-authenticated requests no longer silently depend on `express-session`, fixing intermittent 400s loading `/ui_plugins` assets
+* Attachment reads are now properly awaited during CSV export
+* Users can get, download, and delete their own exports
+* Added `better-sqlite3` as an explicit dependency, fixing a silent install failure that broke GeoPackage export/import
+* Fixed a server crash when deleting a failed attachment placeholder
 #### Security
 * The IdP sign-in popup now computes its `postMessage` target origin client-side instead of trusting the request's `Host` header, removing a potential host-header-injection vector
 * The unauthenticated `/api` endpoint no longer exposes the local authentication strategy's full password policy (rule thresholds); only an admin-authored help message is exposed, and only when explicitly enabled
 * Signup and admin user creation now enforce password policy server-side only, rather than duplicating the rules to the client
 
 ### Web App
+#### Features
+* New observation filter types and an event-member-filter component
+* Profile update status is now shown to the user
+* Thumbnail attachments can now be viewed in a carousel
+* Reduced vertical space used by select/optgroup UI
 #### Bug Fixes
 * OAuth/SAML/OIDC sign-in for inactive or disabled accounts now shows the account status screen (previously failed silently with no feedback); disabled accounts get their own distinct message instead of an incorrect "Account Created" message
 * The re-authentication dialog had a hardcoded height meant to accommodate any sign-in strategy, leaving empty space most of the time; it's now sized to its actual content instead, and the signup form's fields are grouped into two-column rows to help it fit
 * The signup form could get stuck scrolled past its top, and a long disclaimer's Accept button could become unreachable with no way to scroll to it
 * Removed a password-info icon on the signup form that looked clickable but wasn't, and fixed its tooltip rendering the password rules as an unreadable single line
+* Long plugin names no longer overflow the admin sidebar nav
+* Date query params are no longer sent as the literal strings `"undefined"`/`"null"`
+* DMS fields no longer emit a spurious change event on initial set
+* Fixed-width marker icons no longer stretch
+* Observation edit error banner height is now capped and scrollable
+
+### Plugins
+#### nga-msi
+* Added the World Port Index feed
+* Removed the deprecated ASAM topic, icon, and related tests/docs
+#### SFTP
+* Stopped SFTP client listeners from piling up; added a sync health dashboard
 
 ## [6.6.0](https://github.com/ngageoint/mage-server/releases/tag/6.6.0)
 ### Service
