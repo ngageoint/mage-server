@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ArcAdminComponent } from './arc-admin.component';
 import { ArcService, baseUrl } from '../arc.service';
@@ -9,27 +10,22 @@ describe('Arc Admin - Attributes tab', () => {
   let component: ArcAdminComponent;
   let fixture: ComponentFixture<ArcAdminComponent>;
   let httpMock: HttpTestingController;
-
-  // defaultArcGISPluginConfig is frozen - spread it so the component can mutate the fixture
-  // the same way it would mutate a real, freshly-fetched config
   const fakeConfig = (): ArcGISPluginConfig => ({ ...defaultArcGISPluginConfig, featureServices: [] });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MatDialogModule],
+      imports: [MatDialogModule],
       declarations: [ArcAdminComponent],
-      providers: [ArcService]
+      providers: [ArcService, provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ArcAdminComponent);
     component = fixture.componentInstance;
 
-    // the constructor immediately fetches the config, then (once it resolves) the populated events
     httpMock.expectOne(`${baseUrl}/config`).flush(fakeConfig());
     httpMock.expectOne(req => req.url.endsWith('/events')).flush([]);
 
-    // ngOnInit fetches the config again to seed the attributes form
     fixture.detectChanges();
     httpMock.expectOne(`${baseUrl}/config`).flush(fakeConfig());
   });
