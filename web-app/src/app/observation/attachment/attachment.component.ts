@@ -22,10 +22,6 @@ export class AttachmentComponent implements OnInit {
 
   @Output() delete = new EventEmitter<void>()
 
-  // Bubbled up to the carousel (and from there to the list item) so the fixed-height thumbnail
-  // area can switch to auto-height and let the card grow, rather than clipping the message.
-  @Output() expandedChange = new EventEmitter<boolean>()
-
   canEdit: boolean
   token: string
   messageExpanded = false
@@ -72,6 +68,5 @@ export class AttachmentComponent implements OnInit {
   toggleFailureMessage(): void {
     if (!this.expandable) return
     this.messageExpanded = !this.messageExpanded
-    this.expandedChange.emit(this.messageExpanded)
   }
 }
