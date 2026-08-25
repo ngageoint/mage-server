@@ -34,6 +34,15 @@
   margin-bottom: 8px;
 }
 
+.media-unknown__title {
+  font: var(--mat-sys-title-medium);
+}
+
+.media-unknown__subhead {
+  font: var(--mat-sys-body-small);
+  opacity: 0.75;
+}
+
 .media-unknown--clickable {
   cursor: pointer;
 }
@@ -61,9 +70,14 @@
   font-size: 11px;
   opacity: 0.75;
   margin-top: 4px;
-  text-align: center;
+  text-align: left;
   padding: 0 16px;
-  max-width: 280px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.media-unknown__hint-wrapper--expanded .media-unknown__hint {
+  text-align: center;
 }
 
 // .media is normally absolutely stretched to fill its containing slide/tile (see .media above),
@@ -76,6 +90,12 @@
   // height for even a frame while its container's own sizing is still catching up.
   min-height: 200px;
   padding: 16px 0;
+
+  // Free up vertical room for a long failure message - the icon already did its job getting
+  // the user to click.
+  .media__icon {
+    display: none;
+  }
 }
 
 .media-delete__mask {
