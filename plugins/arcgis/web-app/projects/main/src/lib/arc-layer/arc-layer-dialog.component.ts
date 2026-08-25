@@ -44,7 +44,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	hasBrowsed = false
 	discoveredServices: DiscoveredFeatureService[] = []
 	discoveredTotal = 0
-	readonly pageSize = 100
+	readonly pageSize = 20
 	filterControl = new FormControl('')
 	private filterSubscription: Subscription
 	private discoveredStart = 1

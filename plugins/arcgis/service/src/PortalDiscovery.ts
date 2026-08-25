@@ -101,7 +101,7 @@ export type DiscoveredFeatureServicesPage = {
  * @param titleFilter if provided, restricts results to services whose title starts with this text
  * @returns a page of feature services available to that identity, and the total count across all pages
  */
-export const discoverFeatureServices = async (identityManager: ArcGISIdentityManager, console: Console, start = 1, num = 100, titleFilter?: string): Promise<DiscoveredFeatureServicesPage> => {
+export const discoverFeatureServices = async (identityManager: ArcGISIdentityManager, console: Console, start = 1, num = 20, titleFilter?: string): Promise<DiscoveredFeatureServicesPage> => {
   const sanitizedFilter = titleFilter?.replace(/["*:]/g, '').trim();
   // a trailing-only wildcard (prefix match) is used because leading wildcards are not reliably
   // supported by the portal's search index and can cause the filter clause to be silently ignored
