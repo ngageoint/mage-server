@@ -226,6 +226,41 @@ describe('locations web controller', function() {
 
       expect(res.status).to.equal(403)
     })
+
+    it('builds an iconUrl when the user has an icon', async function() {
+      const group: ExoRecentUserLocations = {
+        id: 'user1',
+        userId: 'user1',
+        locations: [],
+        user: { id: 'user1', displayName: 'Test User', hasIcon: true },
+      }
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
+
+      const res = await client.get(`${root}/users`)
+
+      expect(res.body[0].user).to.deep.equal({
+        id: 'user1',
+        displayName: 'Test User',
+        iconUrl: '/api/users/user1/icon',
+      })
+    })
+
+    it('omits iconUrl when the user has no icon', async function() {
+      const group: ExoRecentUserLocations = {
+        id: 'user1',
+        userId: 'user1',
+        locations: [],
+        user: { id: 'user1', displayName: 'Test User', hasIcon: false },
+      }
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
+
+      const res = await client.get(`${root}/users`)
+
+      expect(res.body[0].user).to.deep.equal({
+        id: 'user1',
+        displayName: 'Test User',
+      })
+    })
   })
 
   describe('POST / - saveUserLocations', function() {

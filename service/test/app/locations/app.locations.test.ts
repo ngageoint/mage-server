@@ -67,21 +67,21 @@ describe('exoLocationUserFor', function() {
     expect(result!.displayName).to.equal('Test User')
   })
 
-  it('sets iconUrl when icon has a relativePath', function() {
+  it('sets hasIcon true when icon has a relativePath', function() {
     const user = { id: 'u1', displayName: 'Test User', icon: { type: 'upload' as any, text: '', color: '', relativePath: 'icons/u1.png' } }
     const result = api.exoLocationUserFor(user)
-    expect(result!.iconUrl).to.equal('/api/users/u1/icon')
+    expect(result!.hasIcon).to.equal(true)
   })
 
-  it('omits iconUrl when icon has no relativePath', function() {
+  it('sets hasIcon false when icon has no relativePath', function() {
     const user = { id: 'u1', displayName: 'Test User', icon: { type: 'none' as any, text: '', color: '' } }
     const result = api.exoLocationUserFor(user)
-    expect(result!.iconUrl).to.be.undefined
+    expect(result!.hasIcon).to.equal(false)
   })
 
-  it('omits iconUrl when icon is absent', function() {
+  it('sets hasIcon false when icon is absent', function() {
     const user = { id: 'u1', displayName: 'Test User' }
-    expect(api.exoLocationUserFor(user)!.iconUrl).to.be.undefined
+    expect(api.exoLocationUserFor(user)!.hasIcon).to.equal(false)
   })
 
   it('does not include extra fields from the source object', function() {
@@ -102,7 +102,7 @@ describe('ExoRecentUserLocationsFor', function() {
       user: { id: 'u1', displayName: 'Test User' },
     }
     const result = api.ExoRecentUserLocationsFor(from)
-    expect(result.user).to.deep.equal({ id: 'u1', displayName: 'Test User', iconUrl: undefined })
+    expect(result.user).to.deep.equal({ id: 'u1', displayName: 'Test User', hasIcon: false })
   })
 
   it('user is undefined when not present', function() {

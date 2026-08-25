@@ -3,7 +3,7 @@ import moment from 'moment'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import { UserLocationRepository } from '../../entities/locations/entities.locations'
-import { ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, UserLocationRequest, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, UserLocationRequest, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 
@@ -60,12 +60,38 @@ export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: 
       const appReq = createAppRequest(req, { params })
       const appRes = await app.readLocationsGroupedByUser(appReq)
       if (appRes.success) {
-        return res.json(appRes.success)
+        return res.json(appRes.success.map(jsonForRecentUserLocations))
       }
       next(appRes.error)
     })
 
   return routes.use(compatibilityMageAppErrorHandler)
+}
+
+export type WebLocationUserLite = Omit<ExoLocationUserLite, 'hasIcon'> & {
+  iconUrl?: string
+}
+
+export type WebRecentUserLocations = Omit<ExoRecentUserLocations, 'user'> & {
+  user?: WebLocationUserLite
+}
+
+function jsonForLocationUser(user: ExoLocationUserLite | undefined): WebLocationUserLite | undefined {
+  if (!user) {
+    return undefined
+  }
+  const { hasIcon, ...userJson } = user
+  return {
+    ...userJson,
+    iconUrl: hasIcon ? `/api/users/${user.id}/icon` : undefined
+  }
+}
+
+function jsonForRecentUserLocations(loc: ExoRecentUserLocations): WebRecentUserLocations {
+  return {
+    ...loc,
+    user: jsonForLocationUser(loc.user)
+  }
 }
 
 function parseCommonLocationQueryParams(params: any): CommonUserLocationQueryParams | InvalidInputError {
