@@ -1,6 +1,7 @@
 const log = require('../logger').child({ component: 'devices' });
 const Device = require('../models/device');
 const access = require('../access');
+const { userRoleHasPermission } = require('../permissions/permissions.role-based.base')
 
 function DeviceResource() {}
 
@@ -25,9 +26,8 @@ module.exports = function(app, security) {
         if (!user) {
           return next('route');
         }
-        req.login(user, function(err) {
-          next(err);
-        });
+        req.user = user;
+        next();
       })(req, res, next);
     },
     async function(req, res, next) {
@@ -64,7 +64,7 @@ module.exports = function(app, security) {
    */
   app.post(
     '/api/devices',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     resource.ensurePermission('CREATE_DEVICE'),
     resource.parseDeviceParams,
     resource.validateDeviceParams,
@@ -73,7 +73,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/devices/count',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_DEVICE'),
     resource.count
   );
@@ -81,7 +81,7 @@ module.exports = function(app, security) {
   // get all devices
   app.get(
     '/api/devices',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_DEVICE'),
     resource.getDevices
   );
@@ -90,7 +90,7 @@ module.exports = function(app, security) {
   // TODO: check for READ_USER also
   app.get(
     '/api/devices/:id',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_DEVICE'),
     resource.getDevice
   );
@@ -98,7 +98,7 @@ module.exports = function(app, security) {
   // Update a device
   app.put(
     '/api/devices/:id',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_DEVICE'),
     resource.parseDeviceParams,
     resource.updateDevice
@@ -107,7 +107,7 @@ module.exports = function(app, security) {
   // Delete a device
   app.delete(
     '/api/devices/:id',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('DELETE_DEVICE'),
     resource.deleteDevice
   );
@@ -115,7 +115,7 @@ module.exports = function(app, security) {
 
 DeviceResource.prototype.ensurePermission = function(permission) {
   return function(req, res, next) {
-    access.userHasPermission(req.user, permission)
+    userRoleHasPermission(req.user, permission)
       ? next()
       : res.sendStatus(403);
   };

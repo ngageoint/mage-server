@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -79,8 +79,11 @@ export class LayersService {
         return this.http.put<Layer>(`/api/layers/${id}`, layer);
     }
 
-    createLayer(layer: Partial<Layer> | FormData): Observable<Layer> {
-        return this.http.post<Layer>('/api/layers', layer);
+    createLayer(layer: Partial<Layer> | FormData): Observable<HttpEvent<Layer>> {
+        return this.http.post<Layer>('/api/layers', layer, {
+            reportProgress: true,
+            observe: 'events'
+        });
     }
 
     getLayerCount(): Observable<{ count: number }> {

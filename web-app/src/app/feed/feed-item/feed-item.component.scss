@@ -24,7 +24,6 @@ mat-toolbar {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--mat-sys-primary);
-  font: var(--mat-sys-title-large);
 }
 
 .feed-item {
@@ -71,7 +70,8 @@ mat-toolbar {
   color: var(--mat-sys-primary);
 
   mat-icon,
-  mage-static-icon-img {
+  mage-static-icon-img,
+  feed-icon {
     width: 40px;
     height: 40px;
   }
@@ -79,6 +79,17 @@ mat-toolbar {
   mat-icon {
     font-size: 40px;
     line-height: 40px;
+  }
+
+  feed-icon {
+    display: block;
+
+    ::ng-deep mat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 40px;
+      line-height: 40px;
+    }
   }
 }
 
@@ -88,8 +99,9 @@ mat-toolbar {
 }
 
 .card-title {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-body-large);
   color: var(--mat-sys-primary);
+  margin-top: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

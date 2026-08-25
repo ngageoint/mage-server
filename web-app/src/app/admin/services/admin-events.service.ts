@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
+import { Team } from '@ngageoint/mage.web-core-lib/team'
 import { Observable } from 'rxjs';
 import { Event, Layer } from 'mage-web-app/filter/filter.types';
-import { Team } from '../admin-teams/team';
 import { User } from '@ngageoint/mage.web-core-lib/user';
 
 export interface SearchOptions {
@@ -20,15 +21,6 @@ export interface SearchOptions {
     excludeLayerId?: string;
 }
 
-export interface PagedResponse<T> {
-    pageSize?: number;
-    pageIndex?: number;
-    items: T[];
-    totalCount?: number;
-}
-
-export interface EventsResponse extends PagedResponse<Event> { }
-
 const setParams = (options: any): HttpParams => {
     let params = new HttpParams();
     for (const key of Object.keys(options)) {
@@ -45,7 +37,7 @@ const setParams = (options: any): HttpParams => {
 export class AdminEventsService {
     constructor(private http: HttpClient) { }
 
-    getEvents(options: SearchOptions): Observable<EventsResponse> {
+    getEvents(options: SearchOptions): Observable<PageOf<Event>> {
         const page = options.page ?? 0;
         const pageSize = options.page_size ?? 10;
 
@@ -66,7 +58,7 @@ export class AdminEventsService {
 
         const params = setParams(query);
 
-        return this.http.get<EventsResponse>('/api/events', { params });
+        return this.http.get<PageOf<Event>>('/api/events', { params });
     }
 
 
@@ -102,9 +94,9 @@ export class AdminEventsService {
             term?: string;
             total?: boolean;
         }
-    ): Observable<PagedResponse<User>> {
+    ): Observable<PageOf<User>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<User>>(
+        return this.http.get<PageOf<User>>(
             `/api/events/${eventId}/members`,
             { params }
         );
@@ -118,9 +110,9 @@ export class AdminEventsService {
             term?: string;
             total?: boolean;
         }
-    ): Observable<PagedResponse<User>> {
+    ): Observable<PageOf<User>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<User>>(
+        return this.http.get<PageOf<User>>(
             `/api/events/${eventId}/nonMembers`,
             { params }
         );
@@ -135,9 +127,9 @@ export class AdminEventsService {
             total?: boolean;
             omit_event_teams?: boolean;
         }
-    ): Observable<PagedResponse<Team>> {
+    ): Observable<PageOf<Team>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<Team>>(`/api/events/${eventId}/teams`, {
+        return this.http.get<PageOf<Team>>(`/api/events/${eventId}/teams`, {
             params
         });
     }
@@ -151,9 +143,9 @@ export class AdminEventsService {
             total?: boolean;
             omit_event_teams?: boolean;
         }
-    ): Observable<PagedResponse<Team>> {
+    ): Observable<PageOf<Team>> {
         const params = setParams(options);
-        return this.http.get<PagedResponse<Team>>(
+        return this.http.get<PageOf<Team>>(
             `/api/events/${eventId}/nonTeams`,
             { params }
         );

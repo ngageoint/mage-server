@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { LayersService, Layer } from '../layers.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -53,14 +54,22 @@ interface PagedResult<T> {
     styleUrls: ['./layer-details.component.scss'],
     standalone: false
 })
-export class LayerDetailsComponent implements OnInit {
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Layers',
-      icon: 'map',
-      route: ['../']
-    }
-  ];
+export class LayerDetailsComponent implements OnInit, OnDestroy {
+  private _breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Layers',
+    icon: 'map',
+    route: ['/admin/layers']
+  }];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this._breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this._breadcrumbs;
+  }
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   layer?: Layer;
   layerEvents: Event[] = [];
@@ -103,10 +112,14 @@ export class LayerDetailsComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private http: HttpClient,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     const layerId = this.route.snapshot.paramMap.get('layerId');
     if (!layerId) {
       console.error('No layerId found in route params');
@@ -118,6 +131,10 @@ export class LayerDetailsComponent implements OnInit {
     this.loadLayer(layerId);
   }
 
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
+  }
+
   private loadLayer(layerId: string): void {
     this.loading = true;
     this.layersService.getLayerById(layerId).subscribe({
@@ -125,10 +142,7 @@ export class LayerDetailsComponent implements OnInit {
         this.layer = layer;
         this.loading = false;
 
-        this.breadcrumbs = [
-          this.breadcrumbs[0],
-          { title: layer.name || 'Layer Details' }
-        ];
+        this.breadcrumbs = [this.breadcrumbs[0], { title: layer.name || 'Layer Details' }];
 
         if (this.layer.state !== 'available') {
           setTimeout(() => this.checkLayerProcessingStatus(), 1000);
@@ -347,10 +361,7 @@ export class LayerDetailsComponent implements OnInit {
       if (!updatedLayer) return;
 
       this.layer = { ...this.layer!, ...updatedLayer };
-      this.breadcrumbs = [
-        this.breadcrumbs[0],
-        { title: this.layer.name || 'Layer Details' }
-      ];
+      this.breadcrumbs = [this.breadcrumbs[0], { title: this.layer.name || 'Layer Details' }];
       this.updateUrlLayers();
       this.snackBar.open('Layer updated successfully', undefined, { duration: 2000 });
     });

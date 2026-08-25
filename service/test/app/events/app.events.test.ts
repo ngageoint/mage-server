@@ -10,11 +10,11 @@ import { AppRequest } from '../../../lib/app.api/app.api.global'
 import { Feed, FeedRepository, FeedServiceRepository, FeedServiceTypeRepository } from '../../../lib/entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../../lib/permissions/permissions.events'
 import { ContentLanguageKey, LanguageTag, Locale, Localized } from '../../../lib/entities/entities.i18n'
-import { UserDocument } from '../../../src/models/user'
+import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
 
 
-function requestBy<P extends object>(user: string, params: P, locale?: Locale): AppRequest<SubstituteOf<UserDocument>> & P {
-  const userDoc = Sub.for<UserDocument>()
+function requestBy<P extends object>(user: string, params: P, locale?: Locale): AppRequest<SubstituteOf<UserWithRole>> & P {
+  const userDoc = Sub.for<UserWithRole>()
   userDoc.id.returns!(uniqid())
   return {
     context: {
@@ -138,6 +138,7 @@ describe('event feeds use case interactions', function() {
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         },
         [event.feedIds[1]]: {
           id: event.feedIds[1],
@@ -146,6 +147,7 @@ describe('event feeds use case interactions', function() {
           title: 'Feed 2',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
       }
       app.feedRepo.findAllByIds(event.feedIds).resolves(feeds)
@@ -168,6 +170,7 @@ describe('event feeds use case interactions', function() {
         summary: 'Feed 1 for testing',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPrimaryProperty: 'label',
         itemSecondaryProperty: 'level',
         itemTemporalProperty: 'timestamp',
@@ -208,6 +211,7 @@ describe('event feeds use case interactions', function() {
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPropertiesSchema: {
             properties: {
               prop11: {
@@ -236,6 +240,7 @@ describe('event feeds use case interactions', function() {
           summary: 'Feed 2 makes happy',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPropertiesSchema: {
             properties: {
               prop21: {
@@ -270,6 +275,7 @@ describe('event feeds use case interactions', function() {
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPropertiesSchema: {
             properties: {
               prop11: {
@@ -290,6 +296,7 @@ describe('event feeds use case interactions', function() {
           summary: 'ES Feed 2 makes happy',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
           itemPropertiesSchema: {
             properties: {
               prop21: {
@@ -331,6 +338,7 @@ describe('event feeds use case interactions', function() {
         title: 'Feed 1',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPropertiesSchema: {
           properties: {
             prop11: {
@@ -371,6 +379,7 @@ describe('event feeds use case interactions', function() {
         title: 'Feed 1',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPropertiesSchema: {
           properties: {
             prop11: {
@@ -411,6 +420,7 @@ describe('event feeds use case interactions', function() {
         title: 'Feed 1',
         itemsHaveIdentity: true,
         itemsHaveSpatialDimension: true,
+        showOnMapByDefault: true,
         itemPropertiesSchema: {
           properties: {
             prop11: {

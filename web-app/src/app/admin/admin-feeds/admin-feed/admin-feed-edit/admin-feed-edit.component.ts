@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Service } from '@ngageoint/mage.web-core-lib/feed';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { FeedEditState, FeedMetaData } from './feed-edit.model';
 import { FeedEditService } from './feed-edit.service';
 
@@ -13,13 +14,18 @@ import { FeedEditService } from './feed-edit.service';
     standalone: false
 })
 export class AdminFeedEditComponent implements OnInit {
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Feeds',
-      icon: 'rss_feed',
-      route: ['/admin/feeds']
-    }
-  ];
+  private _breadcrumbs: AdminBreadcrumb[] = [{
+    title: 'Feeds',
+    icon: 'rss_feed',
+    route: ['/admin/feeds']
+  }];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this._breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this._breadcrumbs;
+  }
 
   step = 0;
   hasFeedDeletePermission = false;
@@ -41,7 +47,8 @@ export class AdminFeedEditComponent implements OnInit {
   constructor(
     private feedEdit: FeedEditService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private breadcrumbService: AdminBreadcrumbService
   ) {
     this.feedId = this.route.snapshot.paramMap.get('feedId');
 
@@ -49,11 +56,13 @@ export class AdminFeedEditComponent implements OnInit {
       this.breadcrumbs = this.breadcrumbs.concat([{ title: '' }, { title: 'Edit' }]);
     } else {
       this.breadcrumbs.push({ title: 'New' });
-      console.log(this.breadcrumbs)
+      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     }
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+
     this.feedEdit.state$.subscribe((x) => {
       const nextOriginalFeed = x.originalFeed;
 
@@ -62,6 +71,7 @@ export class AdminFeedEditComponent implements OnInit {
           title: nextOriginalFeed.title,
           route: ['/admin/feeds', nextOriginalFeed.id]
         };
+        this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
         this.step = 1;
       }
 

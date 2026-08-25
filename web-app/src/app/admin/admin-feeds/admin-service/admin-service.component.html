@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="service">
     <button *ngIf="hasServiceDeletePermission" matButton="outlined" type="button" class="delete-button" (click)="deleteService()">
       <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="service-page" *ngIf="service && serviceType; else loading">
   <mat-card appearance="outlined" class="details-card">

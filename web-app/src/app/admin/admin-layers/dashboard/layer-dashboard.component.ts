@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { LayersService, Layer } from '../layers.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { layerIconName } from '../../../entities/layer/layer';
@@ -14,7 +15,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
     styleUrls: ['./layer-dashboard.component.scss'],
     standalone: false
 })
-export class LayerDashboardComponent implements OnInit {
+export class LayerDashboardComponent implements OnInit, OnDestroy {
   layers: Layer[] = [];
   filteredLayers: Layer[] = [];
 
@@ -30,19 +31,28 @@ export class LayerDashboardComponent implements OnInit {
     return this.sessionService.hasPermission('CREATE_LAYER');
   }
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Layers', icon: 'map' }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Layers', icon: 'map' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   constructor(
     private modal: MatDialog,
     private layersService: LayersService,
     private sessionService: SessionService,
-    private toastService: AdminToastService
+    private toastService: AdminToastService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.refreshLayers();
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
   }
 
   refreshLayers(): void {
@@ -128,7 +138,7 @@ export class LayerDashboardComponent implements OnInit {
 
       this.toastService.show(
         'Layer Created',
-        ['../layers', newLayer.id],
+        ['/admin/layers', newLayer.id],
         'Go to Layer'
       );
 

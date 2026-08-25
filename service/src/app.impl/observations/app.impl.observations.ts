@@ -1,11 +1,17 @@
 import EventEmitter from 'events'
+import stream from 'stream'
+import util from 'util'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
+import { Logger, NoopLogger } from '../../entities/entities.logging'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
-import { UserId, UserRepository } from '../../entities/users/entities.users'
+import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, ObservationSavedDomainEvent, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
+import { AddRecentFormFieldChoiceEntry, UserId, UserPreferenceRepository, UserRepository } from '../../entities/users/entities.users'
+import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
+
+const pipeline = util.promisify(stream.pipeline)
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
   return async function allocateObservationId(req: api.AllocateObservationIdRequest): ReturnType<api.AllocateObservationId> {
@@ -52,7 +58,7 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   }
 }
 
-export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore): api.StoreAttachmentContent {
+export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore, attachmentHooks: AttachmentHook[]): api.StoreAttachmentContent {
   return async function storeAttachmentContent(req: api.StoreAttachmentContentRequest): ReturnType<api.StoreAttachmentContent> {
     const obsRepo = req.context.observationRepository
     const obsBefore = await obsRepo.findById(req.observationId)
@@ -72,7 +78,43 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     if (denied) {
       return AppResponse.error(denied)
     }
-    const attachmentPatch = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    let attachmentPatch: AttachmentContentPatchAttrs | AttachmentPatchAttrs | AttachmentStoreError | null
+    if (attachmentHooks.length === 0) {
+      /*
+      No attachment-processing hooks are registered (e.g. no ClamAV or other
+      plugin enabled) - keep the original, direct-to-final-storage behavior
+      unchanged, so installations that never asked for attachment processing
+      see no staging latency at all.
+      */
+      attachmentPatch = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    }
+    else if (req.content.bytes instanceof StagedAttachmentContentRef) {
+      /*
+      The incoming content is already a reference to previously-staged
+      content (not a fresh stream) - nothing to write here, just record its
+      existing id so the background job can find it later.
+      */
+      attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: req.content.bytes.id }
+    }
+    else {
+      /*
+      Hooks are registered and this is a fresh stream - stage the upload
+      instead of finalizing it immediately. A later, separate attachment-
+      processing job runs the registered hooks against the staged content
+      and only then finalizes (saveContent with a StagedAttachmentContentRef)
+      or rejects it.
+      */
+      const staged = await attachmentStore.stagePendingContent()
+      try {
+        await pipeline(req.content.bytes, staged.tempLocation)
+        attachmentPatch = { processingStatus: AttachmentProcessingStatus.Pending, stagedContentId: staged.id }
+      }
+      catch (err) {
+        const message = `error staging attachment content for attachment ${attachmentBefore.id} on observation ${obsBefore.id}`
+        console.error(message, err)
+        attachmentPatch = new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `${message}: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
     if (attachmentPatch instanceof AttachmentStoreError) {
       if (attachmentPatch.errorCode === AttachmentStoreErrorCode.StorageError) {
         return AppResponse.error(infrastructureError(attachmentPatch))
@@ -143,15 +185,62 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
   }
 }
 
-export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitter, attachmentStore: AttachmentStore): void {
+export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitter, attachmentStore: AttachmentStore, log: Logger = NoopLogger): void {
   domainEvents.on(ObservationDomainEventType.AttachmentsRemoved, (e: ObservationEmitted<AttachmentsRemovedDomainEvent>) => {
     setTimeout(async () => {
       const attachments = e.removedAttachments
       for (const att of attachments) {
-        console.info(`deleting removed attachment content ${att.id} from observation ${e.observation.id}`)
+        log.info(`deleting removed attachment content ${att.id} from observation ${e.observation.id}`)
         attachmentStore.deleteContent(att, e.observation).catch(err => {
-          console.error(`error deleting content of attachment ${att.id} on observation ${e.observation.id}:`, err)
+          log.error(`error deleting content of attachment ${att.id} on observation ${e.observation.id}:`, err)
         })
+      }
+    })
+  })
+}
+
+/**
+ * This re-scans and re-records every current dropdown/multiselect value on
+ * the observation each time `ObservationSaved` fires, rather than only
+ * fields that actually changed in this save.  Diffing would mean threading
+ * the prior field values through the event; recomputing from the saved
+ * observation is simpler and, since writes are idempotent, harmless -- just
+ * some wasted work on saves that didn't touch a dropdown.
+ */
+export function registerRecordRecentFormFieldChoicesHandler(domainEvents: EventEmitter, userPreferenceRepository: UserPreferenceRepository, log: Logger = NoopLogger): void {
+  domainEvents.on(ObservationDomainEventType.ObservationSaved, (e: ObservationEmitted<ObservationSavedDomainEvent>) => {
+    const userId = e.userId
+    if (!userId) {
+      return
+    }
+    setTimeout(async () => {
+      const observation = e.observation
+      const entries: AddRecentFormFieldChoiceEntry[] = observation.formEntries.flatMap((formEntry) => {
+        const formFields = observation.mageEvent.activeFieldsForForm(formEntry.formId) || []
+        return formFields
+          .filter((field) => field.type === FormFieldType.Dropdown || field.type === FormFieldType.MultiSelectDropdown)
+          .filter((field) => field.maxRecent && field.maxRecent > 0)
+          .flatMap((field) => {
+            const value = formEntry[field.name]
+            const choices = Array.isArray(value) ? value : [value]
+            return choices
+              .filter((choice) => choice != null && choice !== '')
+              .map((choice) => ({
+                eventId: observation.eventId,
+                formId: formEntry.formId,
+                fieldName: field.name,
+                choice: String(choice),
+                recentChoicesLimit: field.maxRecent
+              }))
+          })
+      })
+
+      if (entries.length) {
+        try {
+          await userPreferenceRepository.addRecentFormFieldChoices(userId, entries)
+        } catch (err) {
+          log.error(`error recording recent form field choices on observation ${observation.id}:`, err)
+        }
       }
     })
   })
@@ -199,9 +288,8 @@ async function prepareObservationMod(mod: api.ExoObservationMod, observationToUp
   if (afterRemovedFormEntryAttachments) {
     modAttrs.attachments = afterRemovedFormEntryAttachments.attachments
   }
-  const afterFormEntriesRemoved = afterRemovedFormEntryAttachments ?
-    Observation.assignTo(afterRemovedFormEntryAttachments, modAttrs) as Observation :
-    Observation.evaluate(modAttrs, event)
+  const beforeFormEntriesRemoved = afterRemovedFormEntryAttachments || Observation.evaluate(modAttrs, event)
+  const afterFormEntriesRemoved = Observation.assignTo(beforeFormEntriesRemoved, modAttrs, context.userId) as Observation
   const afterAttachmentMods = attachmentMods.reduce<Observation | InvalidInputError>((obs, attachmentMod) => {
     if (obs instanceof MageError) {
       return obs

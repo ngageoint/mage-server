@@ -1,4 +1,4 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions">
     <button matButton="outlined" class="import-users-button" *ngIf="hasUserCreatePermission" (click)="openImportModal()">
       <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Import Users
@@ -7,7 +7,7 @@
       <mat-icon>add</mat-icon>New User
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="users-page">
 

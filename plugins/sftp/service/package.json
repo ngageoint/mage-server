@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.sftp.service",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0",
   "description": "The SFTP service package is a Mage server plugin that sends observations to and SFTP location on create and update.",
   "main": "lib/index.js",
   "scripts": {
@@ -43,6 +43,6 @@
   },
   "dependencies": {
     "archiver": "^7.0.1",
-    "ssh2-sftp-client": "^9.1.0"
+    "ssh2-sftp-client": "^12.1.1"
   }
 }

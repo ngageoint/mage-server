@@ -552,6 +552,18 @@ export class EventService {
       );
   }
 
+  searchMembers(event, term: string, pageSize = 20): Observable<User[]> {
+    const params = new HttpParams()
+      .set('term', term || '')
+      .set('page_size', String(pageSize));
+    return this.httpClient
+      .get<MemberPage>(`/api/events/${event.id}/members`, { params })
+      .pipe(
+        take(1),
+        map(res => res.items)
+      );
+  }
+
 
   isUserInEvent(user, event): boolean {
     if (!event) return false;

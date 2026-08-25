@@ -8,7 +8,6 @@ import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { AppRoutingModule } from './routing.module';
 import { LocalStorageService } from './http/local-storage.service';
 import { TokenInterceptorService } from './http/token.interceptor';
-import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common';
 import { BannerModule } from './banner/banner.module';
 import { IngressModule } from './ingress/ingress.module';
 
@@ -19,7 +18,6 @@ import { IngressModule } from './ingress/ingress.module';
         CommonModule,
         BrowserModule,
         MatDialogModule,
-        MageCommonModule,
         BannerModule,
         IngressModule], providers: [
         provideAnimations(),

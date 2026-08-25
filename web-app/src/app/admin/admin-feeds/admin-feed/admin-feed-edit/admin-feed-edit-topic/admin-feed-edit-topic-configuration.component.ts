@@ -6,6 +6,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewEncapsulation,
 } from '@angular/core'
 import { Subject } from 'rxjs'
 import { debounceTime } from 'rxjs/operators'
@@ -14,6 +15,7 @@ import { debounceTime } from 'rxjs/operators'
     selector: 'app-topic-configuration',
     templateUrl: './admin-feed-edit-topic-configuration.component.html',
     styleUrls: ['./admin-feed-edit-topic-configuration.component.scss'],
+    encapsulation: ViewEncapsulation.None,
     standalone: false
 })
 export class AdminFeedEditTopicConfigurationComponent implements OnChanges, OnInit {

@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { Attachment, AttachmentProcessingStatus } from '../../filter/filter.types'
 
 @Component({
     selector: 'observation-attachment',
@@ -9,7 +11,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
     standalone: false
 })
 export class AttachmentComponent implements OnInit {
-  @Input() attachment: any
+  @Input() attachment: Attachment
   @Input() clickable: boolean
   @Input() edit: boolean
   @Input() label: string | boolean
@@ -30,7 +32,8 @@ export class AttachmentComponent implements OnInit {
   actions: typeof AttachmentAction = AttachmentAction
 
   constructor(
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private snackBar: MatSnackBar
   ) {
     this.token = sessionService.getToken()
   }
@@ -52,5 +55,13 @@ export class AttachmentComponent implements OnInit {
       const mimeType = this.mimeTypes[extension]
       return mimeType ? mimeType : ''
     }
+  }
+
+  isFailed(): boolean {
+    return this.attachment.processingStatus === AttachmentProcessingStatus.Rejected || this.attachment.processingStatus === AttachmentProcessingStatus.Error
+  }
+
+  showFailureMessage(): void {
+    this.snackBar.open(this.attachment.processingMessage, 'Dismiss', { duration: 6000 })
   }
 }

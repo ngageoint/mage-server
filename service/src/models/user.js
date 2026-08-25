@@ -8,13 +8,9 @@ const mongoose = require('mongoose')
   , Event = require('./event')
   , Team = require('./team')
   , Observation = require('./observation')
-  , Location = require('./location')
-  , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
   , log = require('../logger').child({ component: 'users' })
-  , { pageQuery } = require('../adapters/base/adapters.base.db.mongoose')
-  , { pageOf } = require('../entities/entities.global')
   , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
@@ -102,15 +98,36 @@ UserSchema.pre('save', function (next) {
   }
 });
 
+let userLocationModel = null;
+let recentUserLocationModel = null;
+
+/**
+ * The Location and CappedLocation mongoose models are registered by the
+ * locations adapters at application boot time rather than self-registering
+ * on require like the other legacy models in this file, so this module
+ * cannot resolve them by name and instead needs the repositories injected
+ * from app.ts once they exist.
+ */
+exports.initialize = function (locationRepos) {
+  userLocationModel = locationRepos.userLocationRepo;
+  recentUserLocationModel = locationRepos.recentUserLocationRepo;
+};
+
 UserSchema.pre('deleteOne', { document: true, query: false }, function (next) {
   const user = this;
 
   async.parallel({
     location: function (done) {
-      Location.removeLocationsForUser(user, done);
+      if (!userLocationModel) {
+        return done();
+      }
+      userLocationModel.deleteLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
     },
     cappedlocation: function (done) {
-      CappedLocation.removeLocationsForUser(user, done);
+      if (!recentUserLocationModel) {
+        return done();
+      }
+      recentUserLocationModel.deleteLocationsForUser(user._id.toHexString()).then(() => done(), err => done(err));
     },
     token: function (done) {
       Token.removeTokensForUser(user, done);
@@ -179,13 +196,14 @@ function DbUserToObject(user, userOut, options) {
   }
 
   return userOut;
-};
+}
 
 exports.transform = DbUserToObject;
 
 // Creates the Model for the User Schema
 const User = mongoose.model('User', UserSchema);
 exports.Model = User;
+exports.Schema = UserSchema;
 
 exports.getUserById = function (id, callback) {
   let result = User.findById(id).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
@@ -223,14 +241,14 @@ function createQueryConditions(filter) {
   const conditions = FilterParser.parse(filter);
 
   if (filter.active) {
-    conditions.active = filter.active == 'true';
+    conditions.active = filter.active === 'true';
   }
   if (filter.enabled) {
-    conditions.enabled = filter.enabled == 'true';
+    conditions.enabled = filter.enabled === 'true';
   }
 
   return conditions;
-};
+}
 
 exports.count = function (options, callback) {
   if (typeof options === 'function') {
@@ -248,67 +266,6 @@ exports.count = function (options, callback) {
     err => callback(err)
   );
 };
-
-exports.getUsers = async function (options, callback) {
-  if (typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
-
-  options = options || {};
-  const filter = options.filter || {};
-
-  const conditions = createQueryConditions(filter);
-
-  let baseQuery = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
-
-  if (options.lean) {
-    baseQuery = baseQuery.lean();
-  }
-
-  if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
-    baseQuery = baseQuery.populate('roleId');
-  }
-
-  const isPaging = options.limit != null && options.limit > 0;
-  if (isPaging) {
-    const limit = Math.abs(options.limit) || 10;
-    const start = (Math.abs(options.start) || 0);
-    const page = Math.ceil(start / limit);
-
-    const which = {
-      pageSize: limit,
-      pageIndex: page,
-      includeTotalCount: true
-    };
-    try {
-      const counted = await pageQuery(baseQuery, which);
-      const users = [];
-      for await (const userDoc of counted.query.cursor()) {
-        users.push(entityForDocument(userDoc));
-      }
-      const pageof = pageOf(users, which, counted.totalCount);
-      callback(null, users, pageof);
-    } catch (err) {
-      callback(err);
-    }
-  } else {
-    baseQuery.exec().then(
-      users => callback(null, users, null),
-      err => callback(err)
-    );
-  }
-};
-
-function entityForDocument(doc) {
-  const json = doc.toJSON();
-  const entity = {
-    ...json,
-    id: doc._id.toHexString()
-  }
-
-  return entity;
-}
 
 exports.createUser = function (user, callback) {
   // Fail fast if the username is already taken so we don't create an

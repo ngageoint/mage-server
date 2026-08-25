@@ -1,14 +1,30 @@
 <mat-form-field appearance="fill" [formGroup]="formGroup">
   <mat-label>{{definition.title}}</mat-label>
-  <mat-select formControlName="{{definition.name}}" (selectionChange)="onSelectionChange($event)" [required]="definition.required">
+  <mat-select formControlName="{{definition.name}}" [required]="definition.required">
     <mat-option>
       <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{definition.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
     </mat-option>
 
-    <mat-option [value]="null"></mat-option>
-    <mat-option *ngFor="let choice of filteredChoices | async" [value]="choice.title">
-      {{choice.title}}
-    </mat-option>
+    <mat-option *ngIf="!definition.required" [value]="null"></mat-option>
+    <ng-container *ngIf="recentChoices$ | async as recentChoices">
+      <mat-optgroup [label]="'Recents'" *ngIf="recentChoices.length !== 0">
+        <mat-option *ngFor="let choice of recentChoices" [value]="choice.title">
+          {{choice.title}}
+        </mat-option>
+      </mat-optgroup>
+      <ng-container *ngIf="filteredChoices$ | async as filteredChoices">
+        <mat-optgroup [label]="'All'" *ngIf="recentChoices.length !== 0; else noRecents">
+          <mat-option *ngFor="let choice of filteredChoices" [value]="choice.title">
+            {{choice.title}}
+          </mat-option>
+        </mat-optgroup>
+        <ng-template #noRecents>
+          <mat-option *ngFor="let choice of filteredChoices" [value]="choice.title">
+            {{choice.title}}
+          </mat-option>
+        </ng-template>
+      </ng-container>
+    </ng-container>
   </mat-select>
   <mat-error *ngIf="formGroup.get(definition.name).hasError('required')">You must enter a value</mat-error>
 </mat-form-field>

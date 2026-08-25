@@ -51,12 +51,16 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
   init: async (services): Promise<WebRoutesHooks> => {
     console.info('intializing sftp plugin')
 
-    const { getDbConnection } = services
+    const { stateRepository, eventRepository, observationRepository, userRepository, attachmentStore, getDbConnection } = services
     const dbConnection: mongoose.Connection = await getDbConnection();
 
     const controller = new SftpController(
       console,
-      services,
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      userRepository,
+      attachmentStore,
       dbConnection
     );
 
@@ -75,6 +79,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               }
               next()
             })
+
           routes.route('/configuration')
             .get(async (_req, res, _next) => {
               const config = await controller.getConfiguration();
@@ -83,32 +88,13 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
             .post(async (req, res, _next) => {
               try {
                 await controller.stop()
-
                 const configuration = req.body as SFTPPluginConfig
                 await controller.updateConfiguration(configuration)
-
                 await controller.start()
-
-                const status = controller.getStatus()
-                if (status.lastError) {
-                  res.status(200).json({
-                    success: false,
-                    message: status.lastError,
-                    configuration
-                  })
-                } else {
-                  res.status(200).json({
-                    success: true,
-                    message: 'Configuration saved successfully',
-                    configuration
-                  })
-                }
+                res.status(200).json(configuration)
               } catch (error) {
                 console.error('Error updating configuration:', error)
-                res.status(500).json({
-                  success: false,
-                  message: error instanceof Error ? error.message : 'Failed to save configuration'
-                })
+                res.status(500).send(error instanceof Error ? error.message : 'Failed to save configuration')
               }
             })
 
@@ -117,32 +103,20 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               try {
                 const { privateKey } = req.body
                 if (!privateKey || typeof privateKey !== 'string') {
-                  return res.status(400).json({
-                    success: false,
-                    message: 'Private key text is required'
-                  })
+                  return res.status(400).send('Private key text is required')
                 }
 
                 const trimmedKey = privateKey.trim()
                 if (!trimmedKey.includes('PRIVATE KEY')) {
-                  return res.status(400).json({
-                    success: false,
-                    message: 'The provided text does not appear to be a valid private key.'
-                  })
+                  return res.status(400).send('The provided text does not appear to be a valid private key.')
                 }
 
                 controller.savePrivateKey(trimmedKey)
 
-                res.json({
-                  success: true,
-                  message: 'Private key saved successfully'
-                })
+                res.status(200).json({})
               } catch (error) {
                 console.error('Error saving private key:', error)
-                res.status(500).json({
-                  success: false,
-                  message: error instanceof Error ? error.message : 'Failed to save private key'
-                })
+                res.status(500).send(error instanceof Error ? error.message : 'Failed to save private key')
               }
             })
 
@@ -151,17 +125,10 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
               try {
                 await controller.resetToDefaults()
                 const config = await controller.getConfiguration()
-                res.json({
-                  success: true,
-                  message: 'Plugin has been reset to default settings',
-                  configuration: config
-                })
+                res.json(config)
               } catch (error) {
                 console.error('Error resetting plugin:', error)
-                res.status(500).json({
-                  success: false,
-                  message: error instanceof Error ? error.message : 'Failed to reset plugin'
-                })
+                res.status(500).send(error instanceof Error ? error.message : 'Failed to reset plugin')
               }
             })
 
@@ -172,24 +139,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 res.json(result)
               } catch (error) {
                 console.error('Error testing connection:', error)
-                res.status(500).json({
-                  success: false,
-                  message: error instanceof Error ? error.message : 'Connection test failed'
-                })
-              }
-            })
-
-          routes.route('/status')
-            .get(async (_req, res, _next) => {
-              try {
-                const status = controller.getStatus()
-                res.json(status)
-              } catch (error) {
-                console.error('Error getting status:', error)
-                res.status(500).json({
-                  connected: false,
-                  lastError: error instanceof Error ? error.message : 'Failed to get status'
-                })
+                res.status(500).send(error instanceof Error ? error.message : 'Connection test failed')
               }
             })
 
@@ -200,7 +150,18 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
                 res.json(events)
               } catch (error) {
                 console.error('Error getting events:', error)
-                res.status(500).json([])
+                res.sendStatus(500)
+              }
+            })
+
+          routes.route('/observations/summary')
+            .get(async (_req, res, _next) => {
+              try {
+                const summary = await controller.getObservationStatusSummary()
+                res.json(summary)
+              } catch (error) {
+                console.error('Error getting observation status summary:', error)
+                res.sendStatus(500)
               }
             })
 

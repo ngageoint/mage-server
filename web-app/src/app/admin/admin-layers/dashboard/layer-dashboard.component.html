@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="hasLayerCreatePermission">
     <button matButton="filled" (click)="newLayer()">
       <mat-icon>add</mat-icon>New Layer
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="layers-page">
   <mat-card appearance="elevated" class="layers-card">

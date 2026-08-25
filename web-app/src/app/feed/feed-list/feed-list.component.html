@@ -3,7 +3,7 @@
     <span class="feed__title">{{feed?.title}}</span>
   </mat-toolbar>
 
-  <mat-action-list class="items">
+  <div class="items">
     <feed-item-summary *ngFor="let item of items" [item]="item" [feed]="feed"></feed-item-summary>
-  </mat-action-list>
+  </div>
 </div>

@@ -1,5 +1,5 @@
 import { AppResponse, AppRequest, AppRequestContext } from '../app.api.global'
-import { PermissionDeniedError, InvalidInputError } from '../app.api.errors'
+import { PermissionDeniedError } from '../app.api.errors'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { User } from '../../entities/users/entities.users'
 
@@ -49,7 +49,7 @@ export function searchResultFor(from: User): UserSearchResult {
   };
 }
 
-export function avatarUrlForUser(user: User): string | undefined {
+function avatarUrlForUser(user: User): string | undefined {
   if (user.avatar?.relativePath) {
     return `/api/users/${user.id}/avatar`
   }

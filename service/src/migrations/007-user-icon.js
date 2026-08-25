@@ -1,22 +1,20 @@
-const async = require('async')
-  , User = require('../models/user');
-
 exports.id = '007-user-icon';
 
-exports.up = function (done) {
+exports.up = async function (done) {
   this.log('updating user icons');
-
-  User.getUsers(function (err, users) {
-    if (err) return done(err);
-
-    async.each(users, function (user, done) {
-      user.icon = user.icon || {};
-      user.icon.type = user.icon.relativePath ? 'upload' : 'none';
-      user.save().then(() => done(), err => done(err));
-    }, function (err) {
-      done(err);
-    });
-  });
+  const users = this.db.collection('users');
+  const userCursor = users.find()
+  try {
+    for await (const userDoc of userCursor) {
+      const icon = userDoc.icon || {}
+      icon.type = icon.relativePath ? 'upload' : 'none'
+      await users.updateOne({ _id: userDoc._id }, { $set: { icon }})
+    }
+    done()
+  }
+  catch (err) {
+    done(err)
+  }
 };
 
 exports.down = function (done) {

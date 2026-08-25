@@ -1,8 +1,8 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatSelectChange as MatSelectChange } from '@angular/material/select';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { RecentChoice } from 'core-lib-src/user';
 
 export interface Choice {
   title: string;
@@ -12,7 +12,8 @@ interface SelectField {
   title: string,
   name: string,
   required: boolean,
-  choices: Choice[]
+  choices: Choice[],
+  maxRecent?: number
 }
 
 @Component({
@@ -25,13 +26,28 @@ export class ObservationEditSelectComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup
   @Input() definition: SelectField
 
-  @Output() selectionChange = new EventEmitter<{value: any}>();
+  private _recentChoices: RecentChoice[] = []
+  @Input()
+  set recentChoices(value: RecentChoice[]) {
+    this._recentChoices = value ?? []
+  }
+  get recentChoices(): RecentChoice[] {
+    return this._recentChoices
+  }
 
+  recentChoicesFromDefinition: Choice[] = []
   searchControl: UntypedFormControl = new UntypedFormControl();
-  filteredChoices: Observable<any[]>;
+  filteredChoices$: Observable<any[]>;
+  recentChoices$: Observable<any[]>;
 
   ngOnInit(): void {
-    this.filteredChoices = this.searchControl.valueChanges.pipe(
+    this.recentChoicesFromDefinition = this.definition.maxRecent
+      ? this.recentChoices
+        .map(recent => this.definition.choices.find(choice => choice.title === recent))
+        .filter((choice): choice is Choice => choice !== undefined)
+      : []
+
+    this.filteredChoices$ = this.searchControl.valueChanges.pipe(
       startWith(''),
       map(value => {
         return !value || typeof value === 'string' ? value : value.title
@@ -40,12 +56,17 @@ export class ObservationEditSelectComponent implements OnInit {
         return title ? this.filter(title) : this.definition.choices.slice()
       })
     );
+
+    this.recentChoices$ = this.searchControl.valueChanges.pipe(
+      startWith(''),
+      map(value => !value || typeof value === 'string' ? value : value.title),
+      map(title => title ? this.recentFilter(title) : this.recentChoicesFromDefinition.slice())
+    );
   }
 
-  onSelectionChange(event: MatSelectChange): void {
-    this.selectionChange.emit({
-      value: event.value
-    })
+  private recentFilter(title: string): Choice[] {
+    const filterValue = title.toLowerCase();
+    return this.recentChoicesFromDefinition.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0);
   }
 
   private filter(title: string): Choice[] {

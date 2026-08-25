@@ -10,10 +10,10 @@ module.exports = function (app, security) {
     layerXform = require('../transformers/layer'),
     GeoPackageUtility = require('../utilities/geopackage').GeoPackageUtility,
     { defaultHandler: upload } = require('../upload'),
+    { userRoleHasPermission } = require('../permissions/permissions.role-based.base'),
     { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
-  const passport = security.authentication.passport;
-  app.all('/api/layers*', passport.authenticate('bearer'));
+  app.all('/api/layers*', security.authentication.bearerAuthentication);
 
   function validateLayerParams(req, res, next) {
     const layer = req.body;
@@ -160,10 +160,10 @@ module.exports = function (app, security) {
   }
 
   async function validateEventAccess(req, res, next) {
-    if (access.userHasPermission(req.user, 'READ_LAYER_ALL')) {
+    if (userRoleHasPermission(req.user, 'READ_LAYER_ALL')) {
       return next();
     }
-    if (access.userHasPermission(req.user, 'READ_LAYER_EVENT')) {
+    if (userRoleHasPermission(req.user, 'READ_LAYER_EVENT')) {
       // Make sure I am part of this event
       const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
       if (hasPermission) {
@@ -210,7 +210,7 @@ module.exports = function (app, security) {
   });
 
   app.post('/api/events/:eventId/features',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     async function (req, res, next) {
       const clientLayers = req.body.layerIds;
@@ -301,7 +301,7 @@ module.exports = function (app, security) {
   );
 
   app.get('/api/events/:eventId/layers',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     parseQueryParams,
     function (req, res, next) {
@@ -365,7 +365,7 @@ module.exports = function (app, security) {
 
   // get layer
   app.get('/api/events/:eventId/layers/:layerId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     function (req, res) {
       if (req.accepts('application/json')) {
@@ -387,14 +387,14 @@ module.exports = function (app, security) {
   );
 
   app.get('/api/events/:eventId/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     handleGeoPackageXYZTileRequest
   );
 
   // get features for layer (must be a feature layer)
   app.get('/api/events/:eventId/layers/:layerId/features',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     validateEventAccess,
     function (req, res, next) {
       if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');

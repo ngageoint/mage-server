@@ -1,13 +1,14 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { lastValueFrom, Subject, takeUntil } from 'rxjs';
 import { AuthenticationConfigurationService } from '../services/admin-authentication-configuration.service';
-import { AdminTeamsService } from '../services/admin-teams-service';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { AdminEventsService } from '../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -24,14 +25,12 @@ export interface CanComponentDeactivate {
 export class AdminAuthenticationComponent
   implements OnInit, OnDestroy, CanComponentDeactivate
 {
-  readonly breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Authentication',
-      icon: 'lock'
-    }
-  ];
+  readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Authentication', icon: 'lock' }];
 
-  teams: any[] = [];
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
+
+  teams: Team[] = [];
   events: any[] = [];
 
   isDirty = false;
@@ -45,13 +44,17 @@ export class AdminAuthenticationComponent
   constructor(
     private dialog: MatDialog,
     private readonly snackBar: MatSnackBar,
-    private teamsService: AdminTeamsService,
+    private teamsService: TeamService,
     private eventsService: AdminEventsService,
     private authenticationConfigurationService: AuthenticationConfigurationService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
+
     this.sessionService.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
@@ -64,6 +67,12 @@ export class AdminAuthenticationComponent
     });
   }
 
+  ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private async loadInitialData(): Promise<void> {
     const configsPromise = lastValueFrom(
       this.authenticationConfigurationService.getAllConfigurations({
@@ -72,10 +81,8 @@ export class AdminAuthenticationComponent
     );
 
     const teamsPromise = lastValueFrom(
-      this.teamsService.getTeams({
-        state: 'all',
-        populate: false
-      } as any)
+      // TODO: this used to get all teams - need a team search/select component instead
+      this.teamsService.search({ pageSize: 9999, pageIndex: 0 })
     );
 
     const eventsPromise = lastValueFrom(
@@ -233,7 +240,7 @@ export class AdminAuthenticationComponent
         }
       });
   }
-  
+
   onAuthenticationToggled(strategy: Strategy): void {
     (strategy as any).isDirty = true;
     this.isDirty = true;
@@ -259,10 +266,5 @@ export class AdminAuthenticationComponent
     }
 
     return true;
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

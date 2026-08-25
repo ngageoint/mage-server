@@ -1,9 +1,9 @@
 
 import mongoose, { Model } from 'mongoose'
-import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
+import assert from 'node:assert'
+import { BaseMongooseRepository, EntityMapping } from '../base/adapters.base.db.mongoose'
 import { FeedServiceType, FeedService, FeedServiceTypeId, RegisteredFeedServiceType, FeedRepository, Feed, FeedServiceId } from '../../entities/feeds/entities.feeds'
 import { FeedServiceTypeRepository, FeedServiceRepository } from '../../entities/feeds/entities.feeds'
-import { FeedServiceDescriptor } from '../../app.api/feeds/app.api.feeds'
 import { EntityIdFactory } from '../../entities/entities.global'
 
 
@@ -17,24 +17,24 @@ export type FeedServiceTypeIdentity = Pick<FeedServiceType, 'pluginServiceTypeId
   id: string
   moduleName: string
 }
-export type FeedServiceTypeIdentityDocument = FeedServiceTypeIdentity & mongoose.Document
+export type FeedServiceTypeIdentityDocument = FeedServiceTypeIdentity
 export type FeedServiceTypeIdentityModel = Model<FeedServiceTypeIdentityDocument>
-//TODO remove cast to any
-export const FeedServiceTypeIdentitySchema = new mongoose.Schema<any>({
+export const FeedServiceTypeIdentitySchema = new mongoose.Schema<FeedServiceTypeIdentity>({
   pluginServiceTypeId: { type: String, required: true },
   moduleName: { type: String, required: true }
 })
 export function FeedServiceTypeIdentityModel(conn: mongoose.Connection, collection?: string): FeedServiceTypeIdentityModel {
-  //TODO remove cast to any
-  return conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection || 'feed_service_types') as any
+  return conn.model<typeof FeedServiceTypeIdentitySchema>(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection || 'feed_service_types')
 }
 
-export type FeedServiceDocument = Omit<FeedServiceDescriptor, 'serviceType'> & mongoose.Document & {
+export type FeedServiceDocument = Omit<FeedService, 'id' | 'serviceType' | 'config'> & {
+  _id: mongoose.Types.ObjectId
   serviceType: mongoose.Types.ObjectId
+  config: object
 }
+
 export type FeedServiceModel = Model<FeedServiceDocument>
-//TODO remove cast to any
-export const FeedServiceSchema = new mongoose.Schema<any>(
+export const FeedServiceSchema = new mongoose.Schema<FeedServiceDocument>(
   {
     serviceType: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedServiceTypeIdentity },
     title: { type: String, required: true },
@@ -45,24 +45,24 @@ export const FeedServiceSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: any, json: any & FeedService): void => {
+      transform: (doc: FeedServiceDocument, json: any & FeedService): void => {
         delete json._id
         json.serviceType = doc.serviceType.toHexString()
       }
     }
   })
 export function FeedServiceModel(conn: mongoose.Connection, collection?: string): FeedServiceModel {
-  //TODO remove cast to any
-  return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services') as any
+  return conn.model<typeof FeedServiceSchema>(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services')
 }
 
-export type FeedDocument = Omit<Feed, 'service' | 'icon'> & mongoose.Document & {
-  service: mongoose.Types.ObjectId,
+export type FeedDocument = Omit<Feed, 'service' | 'icon' | 'constantParams'> & {
+  _id: string
+  service: mongoose.Types.ObjectId
   icon?: string
+  constantParams?: object
 }
 export type FeedModel = Model<FeedDocument>
-//TODO remove cast to any
-export const FeedSchema = new mongoose.Schema<any>(
+export const FeedSchema = new mongoose.Schema<FeedDocument>(
   {
     _id: { type: String, required: true },
     service: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedService },
@@ -75,6 +75,7 @@ export const FeedSchema = new mongoose.Schema<any>(
     updateFrequencySeconds: { type: Number, required: false },
     itemsHaveIdentity: { type: Boolean, required: true },
     itemsHaveSpatialDimension: { type: Boolean, required: true },
+    showOnMapByDefault: { type: Boolean, required: false },
     itemTemporalProperty: { type: String, required: false },
     itemPrimaryProperty: { type: String, required: false },
     itemSecondaryProperty: { type: String, required: false },
@@ -95,9 +96,9 @@ export const FeedSchema = new mongoose.Schema<any>(
       }
     }
   })
+
 export function FeedModel(conn: mongoose.Connection, collection?: string): FeedModel {
-  //TODO remove cast to any
-  return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds') as any
+  return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds')
 }
 
 export class MongooseFeedServiceTypeRepository implements FeedServiceTypeRepository {
@@ -148,14 +149,22 @@ export class MongooseFeedServiceRepository extends BaseMongooseRepository<FeedSe
 export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument, FeedModel, Feed> implements FeedRepository {
 
   constructor(model: FeedModel, private readonly idFactory: EntityIdFactory) {
-    super(model, { entityToDocStub: e => ({ ...e, icon: e.icon?.id }) })
+    const entityToDocStub: EntityMapping<FeedDocument, Feed> = e => {
+      assert(typeof e.id === 'string', 'feed id must be a string')
+      const { id, service, ...idExcluded } = e
+      return {
+        ...idExcluded,
+        ...(typeof service === 'string' ? { service: mongoose.Types.ObjectId.createFromHexString(service) } : {}),
+        icon: e.icon?.id,
+        _id: id
+      }
+    }
+    super(model, { entityToDocStub })
   }
 
   async create(attrs: Partial<Feed>): Promise<Feed> {
-    const _id = await this.idFactory.nextId()
-    const service = new mongoose.Types.ObjectId(attrs.service)
-    const seed = Object.assign(attrs, { _id, service })
-    return await super.create(seed)
+    const id = await this.idFactory.nextId()
+    return await super.create({ ...attrs, id })
   }
 
   async put(feed: Feed): Promise<Feed | null> {
@@ -168,6 +177,7 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
       variableParamsSchema: feed.variableParamsSchema,
       itemsHaveIdentity: feed.itemsHaveIdentity,
       itemsHaveSpatialDimension: feed.itemsHaveSpatialDimension,
+      showOnMapByDefault: feed.showOnMapByDefault,
       itemPropertiesSchema: feed.itemPropertiesSchema,
       itemPrimaryProperty: feed.itemPrimaryProperty,
       itemSecondaryProperty: feed.itemSecondaryProperty,
@@ -179,10 +189,9 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
     return await super.update({ ...explicit, id: feed.id })
   }
 
-  //TODO change any to Feed
-  async findFeedsForService(service: FeedServiceId): Promise<any[]> {
+  async findFeedsForService(service: FeedServiceId): Promise<Feed[]> {
     const docs = await this.model.find({ service })
-    return docs.map(x => x.toJSON())
+    return docs.map(x => x.toJSON<Feed>())
   }
 
   /**
@@ -192,7 +201,7 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
    * exist without its service, and removing a feed and its services should be
    * a transactionally consistent operation.  this would mean removing the
    * feed repository and accessing feeds through their parent service, while
-   * the service respository is responsible for persisting and loading services
+   * the service repository is responsible for persisting and loading services
    * along with all their feeds.
    * @param service
    */

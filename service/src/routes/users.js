@@ -1,5 +1,9 @@
+const { pageOf } = require('../entities/entities.global')
+const { userRoleHasPermission } = require('../permissions/permissions.role-based.base')
+
 module.exports = function(app, security) {
   const crypto = require('crypto'),
+    path = require('path'),
     BearerStrategy = require('passport-http-bearer').Strategy,
     hasher = require('../utilities/pbkdf2')(),
     log = require('../logger').child({ component: 'users' }),
@@ -10,7 +14,7 @@ module.exports = function(app, security) {
     access = require('../access'),
     verification = require('../authentication/verification'),
     userTransformer = require('../transformers/user'),
-    pageinfoTransformer = require('../transformers/pageinfo'),
+    pageTransformer = require('../transformers/pageinfo'),
     { defaultHandler: upload } = require('../upload'),
     {
       defaultEventPermissionsService: eventPermissions
@@ -26,6 +30,16 @@ module.exports = function(app, security) {
     'urn:mage'
   );
   const captchaCanvas = require('captcha-canvas');
+  const { FontLibrary } = require('skia-canvas');
+
+  // Register a bundled font so captcha text renders regardless of which
+  // fonts (if any) are installed on the host/container.
+  const captchaFontPath = path.resolve(__dirname, '..', 'assets', 'fonts', 'Roboto-Regular.ttf');
+  try {
+    FontLibrary.use('Sans', [captchaFontPath]);
+  } catch (err) {
+    log.warn(`failed to register bundled captcha font at ${captchaFontPath}, captcha text may not render: `, err);
+  }
 
   passport.use(
     'captcha',
@@ -309,6 +323,9 @@ module.exports = function(app, security) {
 
   /**
    * TODO:
+   * * 2026-07-15 - This route should be defunct on the next release of the iOS app.  The web app uses
+   *   /api/next-users/search, which will become /api/users/search pending some refactoring of user
+   *   functions to typescript.
    * * openapi supports array query parameters using the pipe `|` delimiter;
    *   use that instead of comma for the `populate` query param. on the other hand,
    *   this only actually supports a singular `populate` key, so why bother with
@@ -316,69 +333,27 @@ module.exports = function(app, security) {
    */
   app.get(
     '/api/users',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
-    function(req, res, next) {
-      var filter = {};
-
-      if (req.query) {
-        for (let [key, value] of Object.entries(req.query)) {
-          if (
-            key == 'populate' ||
-            key == 'limit' ||
-            key == 'start' ||
-            key == 'sort' ||
-            key == 'forceRefresh'
-          ) {
-            continue;
-          }
-          filter[key] = value;
-        }
+    async function(req, res) {
+      const limit = req.query.limit || null;
+      const start = req.query.start || null;
+      if (limit) {
+        const emptyPage = pageOf([], {
+          totalCount: 0,
+          pageSize: 0,
+          pageIndex: 0,
+        });
+        const pageWithLinks = pageTransformer.transform(emptyPage, req, start, limit);
+        return res.json(pageWithLinks);
       }
-
-      var populate = null;
-      if (req.query.populate) {
-        populate = req.query.populate.split(',');
-      }
-
-      var limit = null;
-      if (req.query.limit) {
-        limit = req.query.limit;
-      }
-
-      var start = null;
-      if (req.query.start) {
-        start = req.query.start;
-      }
-
-      var sort = null;
-      if (req.query.sort) {
-        sort = req.query.sort;
-      }
-
-      new api.User().getAll({ filter, populate, limit, start, sort }, function(
-        err,
-        users,
-        page
-      ) {
-        if (err) return next(err);
-
-        let data = null;
-
-        if (page) {
-          data = pageinfoTransformer.transform(page, req, start, limit);
-        } else {
-          data = userTransformer.transform(users, { path: req.getRoot() });
-        }
-
-        res.json(data);
-      });
+      res.json([]);
     }
   );
 
   app.get(
     '/api/users/count',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     function(req, res, next) {
       var filter = {};
@@ -407,7 +382,7 @@ module.exports = function(app, security) {
   );
 
   // get info for the user bearing a token, i.e get info for myself
-  app.get('/api/users/myself', passport.authenticate('bearer'), function(
+  app.get('/api/users/myself', security.authentication.bearerAuthentication, function(
     req,
     res
   ) {
@@ -419,7 +394,7 @@ module.exports = function(app, security) {
   // update myself
   app.put(
     '/api/users/myself',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     upload.single('avatar'),
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
@@ -453,7 +428,7 @@ module.exports = function(app, security) {
 
   app.put(
     '/api/users/myself/password',
-    passport.authenticate('local'),
+    passport.authenticate('local', { session: false }),
     function(req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.sendStatus(404);
@@ -484,7 +459,7 @@ module.exports = function(app, security) {
   );
 
   // update status for myself
-  app.put('/api/users/myself/status', passport.authenticate('bearer'), function(
+  app.put('/api/users/myself/status', security.authentication.bearerAuthentication, function(
     req,
     res
   ) {
@@ -504,7 +479,7 @@ module.exports = function(app, security) {
   // remove status for myself
   app.delete(
     '/api/users/myself/status',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     function(req, res) {
       req.user.status = undefined;
       new api.User().update(req.user, function(err, updatedUser) {
@@ -519,7 +494,7 @@ module.exports = function(app, security) {
   // get user by id
   app.get(
     '/api/users/:userId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     function(req, res) {
       var user = userTransformer.transform(req.userParam, {
@@ -532,7 +507,7 @@ module.exports = function(app, security) {
   // Update a specific user
   app.put(
     '/api/users/:userId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     parseIconUpload,
@@ -564,7 +539,7 @@ module.exports = function(app, security) {
       let roleChanged = false;
       if (
         req.param('roleId') &&
-        access.userHasPermission(req.user, 'UPDATE_USER_ROLE')
+        userRoleHasPermission(req.user, 'UPDATE_USER_ROLE')
       ) {
         const currentRoleId = user.roleId && user.roleId._id ? user.roleId._id.toString() : String(user.roleId);
         roleChanged = req.param('roleId') !== currentRoleId;
@@ -629,7 +604,7 @@ module.exports = function(app, security) {
   // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
   app.put(
     '/api/users/:userId/password',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER_ROLE'),
     function(req, res, next) {
       const user = req.userParam;
@@ -665,7 +640,7 @@ module.exports = function(app, security) {
   // Delete a specific user
   app.delete(
     '/api/users/:userId',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('DELETE_USER'),
     function(req, res, next) {
       const user = req.userParam;
@@ -687,7 +662,7 @@ module.exports = function(app, security) {
   // get user avatar/icon by id
   app.get(
     '/api/users/:userId/:content(avatar|icon)',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     access.authorize('READ_USER'),
     function(req, res, next) {
       new api.User()[req.params.content](req.userParam, function(err, content) {
@@ -710,9 +685,9 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/users/:userId/events/:eventId/recent',
-    passport.authenticate('bearer'),
+    security.authentication.bearerAuthentication,
     async function(req, res, next) {
-      if (access.userHasPermission(req.user, 'UPDATE_EVENT')) {
+      if (userRoleHasPermission(req.user, 'UPDATE_EVENT')) {
         return next();
       } else {
         const hasPermission = await eventPermissions.userHasEventPermission(

@@ -42,12 +42,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--mat-sys-on-surface-variant);
 
-  mat-icon {
+  feed-icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+  }
+
+  ::ng-deep mat-icon {
     font-size: 40px;
     width: 40px;
     height: 40px;
-    color: var(--mat-sys-on-surface-variant);
   }
 }
 

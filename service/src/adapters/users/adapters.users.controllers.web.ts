@@ -1,13 +1,13 @@
 import express from 'express'
 import { SearchUsers, UserSearchRequest } from '../../app.api/users/app.api.users'
 import { WebAppRequestFactory } from '../adapters.controllers.web'
-import { calculateLinks } from '../../entities/entities.global'
+import { calculatePagingLinks } from '../../entities/entities.global'
 
 export interface UsersAppLayer {
   searchUsers: SearchUsers
 }
 
-export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestFactory) {
+export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestFactory): express.Router {
 
   const routes = express.Router()
 
@@ -17,33 +17,22 @@ export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestF
         nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: req.query.total ? /^true$/i.test(String(req.query.total)) : true,
-        active:
-          'active' in req.query
-            ? /^true$/i.test(String(req.query.active))
-            : undefined,
-        enabled:
-          'enabled' in req.query
-            ? /^true$/i.test(String(req.query.enabled))
-            : undefined
-      };
-
+        includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined,
+        active: typeof req.query.active === 'string' ? 'true' === String(req.query.active).toLowerCase() : undefined,
+        enabled: typeof req.query.enabled === 'string' ? 'true' === String(req.query.enabled).toLowerCase() : undefined
+      }
       const appReq = createAppRequest(req, { userSearch })
       const appRes = await app.searchUsers(appReq)
-       if (appRes.success) {
-         const links = calculateLinks(
-           { pageSize: userSearch.pageSize, pageIndex: userSearch.pageIndex },
-           appRes.success.totalCount
-         );
-
-         const responseWithLinks = {
-           ...appRes.success,
-           links
-         };
-
-         return res.json(responseWithLinks);
-       }
+      if (appRes.success) {
+        const links = calculatePagingLinks(
+          { pageSize: userSearch.pageSize, pageIndex: userSearch.pageIndex },
+          appRes.success.totalCount
+        )
+        const responseWithLinks = { ...appRes.success, links }
+        return res.json(responseWithLinks);
+      }
       next(appRes.error)
     })
+
   return routes
 }

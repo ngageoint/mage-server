@@ -159,6 +159,12 @@ export interface FeedTopic {
    */
   readonly itemsHaveSpatialDimension?: boolean
   /**
+   * A topic's `showOnMapByDefault` indicates if the feed items should be added to the
+   * users map by default.
+   * {@linkcode Feed}.
+   */
+  readonly showOnMapByDefault?: boolean
+  /**
    * A topic's `itemPropertiesSchema` describes the shape of the [`properties`](https://www.rfc-editor.org/rfc/rfc7946.html#section-3.2)
    * object of the GeoJSON Features that a topic provides.  The schema should
    * be relatively flat, describing simple key-value pairs with titles and
@@ -269,6 +275,7 @@ export interface Feed {
    */
   itemsHaveIdentity: boolean
   itemsHaveSpatialDimension: boolean
+  showOnMapByDefault: boolean
   itemPropertiesSchema?: JSONSchema4
   itemTemporalProperty?: string
   /**
@@ -361,6 +368,7 @@ export function FeedCreateUnresolved(topic: FeedTopic, feedMinimal: Readonly<Fee
     title: feedMinimal.title || topic.title,
     itemsHaveIdentity: feedMinimal.itemsHaveIdentity === undefined ? topic.itemsHaveIdentity || false : feedMinimal.itemsHaveIdentity,
     itemsHaveSpatialDimension: feedMinimal.itemsHaveSpatialDimension === undefined ? topic.itemsHaveSpatialDimension || false : feedMinimal.itemsHaveSpatialDimension,
+    showOnMapByDefault: feedMinimal.showOnMapByDefault === undefined ? topic.showOnMapByDefault || false : feedMinimal.showOnMapByDefault
   }
   const nullable: { [key in FeedOverrideTopicNullableKeys]?: FeedCreateUnresolved[key] } = {
     summary: feedMinimal.summary === null ? undefined : feedMinimal.summary || topic.summary,

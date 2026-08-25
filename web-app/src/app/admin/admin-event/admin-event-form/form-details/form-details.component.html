@@ -1,5 +1,3 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
-
 <div class="form-page" *ngIf="event">
 
   <mat-stepper *ngIf="creatingNewForm" linear #formStepper class="create-form-stepper">
@@ -164,51 +162,45 @@
           <div class="section-body">
 
 
-            <div class="symbology-item" *ngIf="getDropdownFields().length === 0">
-              <mat-icon fontSet="material-symbols-outlined" class="symbology-marker-icon"
-                [style.color]="form.color">place</mat-icon>
-              <div class="symbology-info">
-                <span class="symbology-label">Default</span>
-                <span class="symbology-detail">No symbology configured</span>
+            <mat-card appearance="outlined" class="symbology-variant-item default-symbology-card">
+              <div class="variant-card-header">
+                <div class="variant-card-titles">
+                  <span class="variant-card-title">Default</span>
+                  <span class="variant-card-subtitle">No primary or secondary value</span>
+                </div>
+                <button matIconButton type="button" (click)="editSymbology('')"
+                  matTooltip="Edit default symbology">
+                  <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+                </button>
               </div>
-            </div>
+              <div class="symbology-display-content">
+                <div class="symbology-visual">
+                  <div class="icon-preview" *ngIf="getIconUrl('')">
+                    <img [src]="getIconUrl('')" alt="icon" />
+                  </div>
+                  <div class="icon-preview" *ngIf="!getIconUrl('')">
+                    <mat-icon fontSet="material-symbols-outlined" class="symbology-marker-icon"
+                      matTooltip="Map Icon" matTooltipPosition="above">place</mat-icon>
+                  </div>
+                  <div class="color-swatches">
+                    <div class="color-swatch line-color" [style.color]="getLineColor('')"
+                      matTooltip="Line Color" matTooltipPosition="above"></div>
+                    <div class="color-swatch fill-color" [style.background-color]="getFillColor('')"
+                      matTooltip="Fill Color" matTooltipPosition="above"></div>
+                  </div>
+                </div>
+              </div>
+            </mat-card>
 
             <div class="no-fields-hint" *ngIf="getDropdownFields().length === 0">
               <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
               <div>
                 <p class="hint-title">No Select fields available</p>
-                <p class="hint-body">Add a Select field to the form to configure map symbology options.</p>
+                <p class="hint-body">Add a Select field to the form to configure additional map symbology options.</p>
               </div>
             </div>
 
             <ng-container *ngIf="getDropdownFields().length > 0">
-              <mat-card appearance="outlined" class="symbology-variant-item default-symbology-card" *ngIf="form.primaryField">
-                <div class="variant-card-header">
-                  <div class="variant-card-titles">
-                    <span class="variant-card-title">Default</span>
-                    <span class="variant-card-subtitle">No primary or secondary value</span>
-                  </div>
-                  <button matIconButton type="button" (click)="editSymbology('')"
-                    matTooltip="Edit default symbology">
-                    <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
-                  </button>
-                </div>
-                <div class="symbology-display-content">
-                  <div class="symbology-visual">
-                    <div class="icon-preview">
-                      <mat-icon fontSet="material-symbols-outlined" class="symbology-marker-icon"
-                        matTooltip="Map Icon" matTooltipPosition="above">place</mat-icon>
-                    </div>
-                    <div class="color-swatches">
-                      <div class="color-swatch line-color" [style.color]="getLineColor('')"
-                        matTooltip="Line Color" matTooltipPosition="above"></div>
-                      <div class="color-swatch fill-color" [style.background-color]="getFillColor('')"
-                        matTooltip="Fill Color" matTooltipPosition="above"></div>
-                    </div>
-                  </div>
-                </div>
-              </mat-card>
-
               <mat-form-field appearance="fill" class="config-select-field">
                 <mat-label>Primary Field</mat-label>
                 <mat-select [(ngModel)]="form.primaryField" (ngModelChange)="onMapFieldChange()" name="primaryField">

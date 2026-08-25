@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="hasEventCreatePermission">
     <button matButton="filled" (click)="createEvent()">
       <mat-icon>add</mat-icon>New Event
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="events-page">
   <mat-card appearance="elevated" class="events-card">

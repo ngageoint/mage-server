@@ -1,16 +1,16 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="feed">
     <button *ngIf="hasFeedDeletePermission" matButton="outlined" type="button" class="delete-feed-button" (click)="deleteFeed()">
       <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="feed-page" *ngIf="feedLoaded | async; else loading">
   <mat-card appearance="outlined" class="details-card">
     <div class="feed-header">
       <div class="feed-icon-placeholder">
-        <mat-icon fontSet="material-symbols-outlined">rss_feed</mat-icon>
+        <feed-icon [icon]="feed.icon" [size]="40" [active]="true"></feed-icon>
       </div>
       <div class="feed-info">
         <span class="feed-name">{{ feed.title }}</span>

@@ -1,4 +1,4 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions" *ngIf="user && hasUserDeletePermission">
     <ng-container *ngIf="hasUserEditPermission">
       <button matButton="outlined" class="delete-user-button" (click)="confirmDeleteUser()">
@@ -6,7 +6,7 @@
       </button>
     </ng-container>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="user-page" *ngIf="user">
   <mat-card appearance="outlined" class="details-card">

@@ -1,15 +1,22 @@
+@use '../../scss/status-colors' as status;
+
+$warning-color: status.$status-warning-color;
+$warning-icon: status.$status-warning-accent;
+
+$success-color: status.$status-success-color;
+$success-bg: status.$status-success-bg;
+$success-icon: status.$status-success-accent;
+
 .plugin {
   padding: 16px;
-  background-color: #F5F5F5;
+  background-color: var(--mat-sys-surface);
 }
 
 .card {
+  --mat-card-elevated-container-color: white;
   padding: 16px;
   margin-bottom: 16px;
-  background-color: white;
-  border-radius: 4px;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, .2), 0px 1px 1px 0px rgba(0, 0, 0, .14), 0px 1px 3px 0px rgba(0, 0, 0, .12);
 }
 
 .card__header {
@@ -37,7 +44,7 @@
 .radio-label {
   font-size: 14px;
   font-weight: 400;
-  color: rgba(0, 0, 0, .6);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .radio-group {
@@ -57,7 +64,7 @@
 .radio-button-description {
   display: block;
   font-size: 12px;
-  color: rgba(0, 0, 0, .5);
+  color: var(--mat-sys-on-surface-variant);
   font-weight: 400;
   margin-top: 2px;
 }
@@ -75,9 +82,9 @@
 
 .event-picker {
   margin-top: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--mat-sys-outline-variant);
   border-radius: 4px;
-  background-color: #fafafa;
+  background-color: var(--mat-sys-surface-container-low);
   overflow: hidden;
 }
 
@@ -109,7 +116,7 @@
 .no-events-message {
   margin-top: 8px;
   font-size: 13px;
-  color: rgba(0, 0, 0, .5);
+  color: var(--mat-sys-on-surface-variant);
   font-style: italic;
   padding: 4px 0;
 }
@@ -131,13 +138,13 @@ mat-form-field {
   gap: 12px;
   padding: 12px 16px;
   margin-bottom: 16px;
-  background-color: #ffebee;
-  border: 1px solid #f44336;
+  background-color: var(--mat-sys-error-container);
+  border: 1px solid var(--mat-sys-error);
   border-radius: 4px;
-  color: #c62828;
+  color: var(--mat-sys-on-error-container);
 
   mat-icon {
-    color: #f44336;
+    color: var(--mat-sys-error);
   }
 
   span {
@@ -147,29 +154,28 @@ mat-form-field {
 
 .status-banner {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   padding: 12px 16px;
   margin-bottom: 16px;
   border-radius: 4px;
 
   &.connected {
-    background-color: #e8f5e9;
-    border: 1px solid #4caf50;
-    color: #2e7d32;
+    background-color: $success-bg;
+    color: $success-color;
 
     mat-icon {
-      color: #4caf50;
+      color: $success-icon;
     }
   }
 
   &.disconnected {
-    background-color: #fff3e0;
-    border: 1px solid #ff9800;
-    color: #e65100;
+    background-color: var(--mat-sys-error-container);
+    border: 1px solid var(--mat-sys-error);
+    color: var(--mat-sys-on-error-container);
 
     mat-icon {
-      color: #ff9800;
+      color: var(--mat-sys-error);
     }
   }
 
@@ -177,58 +183,6 @@ mat-form-field {
     display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-
-  .status-text {
-    font-weight: 500;
-  }
-
-  .status-error {
-    font-size: 13px;
-    color: #c62828;
-  }
-
-  .status-detail {
-    font-size: 12px;
-    opacity: 0.8;
-  }
-}
-
-.test-result {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 4px;
-  margin: 16px 0;
-
-  mat-icon {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  span {
-    word-break: break-word;
-  }
-
-  &.success {
-    background-color: #e8f5e9;
-    border: 1px solid #4caf50;
-    color: #2e7d32;
-
-    mat-icon {
-      color: #4caf50;
-    }
-  }
-
-  &.error {
-    background-color: #ffebee;
-    border: 1px solid #f44336;
-    color: #c62828;
-
-    mat-icon {
-      color: #f44336;
-    }
   }
 }
 
@@ -250,9 +204,9 @@ button {
 .key-section {
   margin: 24px 0;
   padding: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--mat-sys-outline-variant);
   border-radius: 4px;
-  background-color: #fafafa;
+  background-color: var(--mat-sys-surface-container-low);
 }
 
 .key-status {
@@ -267,18 +221,18 @@ button {
   }
 
   &.configured {
-    color: #2e7d32;
+    color: $success-color;
 
     mat-icon {
-      color: #4caf50;
+      color: $success-icon;
     }
   }
 
   &.not-configured {
-    color: #e65100;
+    color: $warning-color;
 
     mat-icon {
-      color: #ff9800;
+      color: $warning-icon;
     }
   }
 }

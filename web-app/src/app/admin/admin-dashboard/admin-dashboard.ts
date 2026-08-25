@@ -10,6 +10,7 @@ import type { PageEvent } from '@angular/material/paginator';
 import { Subject, takeUntil } from 'rxjs';
 
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 import {
   AdminDeviceService,
   DashboardDevicePageInfo
@@ -58,9 +59,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   private devicePageCache = new Map<number, DashboardDevicePageInfo>();
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Dashboard', icon: 'analytics' }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Dashboard', icon: 'analytics' }];
 
   private destroy$ = new Subject<void>();
 
@@ -70,10 +69,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private deviceService: AdminDeviceService,
     private userPagingService: UserPagingService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+
     this.stateAndData = this.userPagingService.constructDefault();
 
     this.refreshDevices();

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { FeedPanelService } from '../../feed-panel/feed-panel.service';
+import { SidebarService } from '../../sidebar/sidebar.service';
 import moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
@@ -21,7 +21,7 @@ export class ObservationPopupComponent implements OnInit, OnChanges {
   secondaryField: any;
 
   constructor(
-    private feedPanelService: FeedPanelService,
+    private sidebarService: SidebarService,
     private mapService: MapService,
     private eventService: EventService) { }
 
@@ -65,7 +65,7 @@ export class ObservationPopupComponent implements OnInit, OnChanges {
   }
 
   onInfo(): void {
-    this.feedPanelService.viewObservation(this.observation)
+    this.sidebarService.viewObservation(this.observation)
   }
 
   onZoom(): void {

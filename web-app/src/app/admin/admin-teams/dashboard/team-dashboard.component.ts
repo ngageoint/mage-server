@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { Team } from '../team';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -21,19 +21,17 @@ import { SessionService } from 'mage-web-app/http/session.service';
     standalone: false
 })
 export class TeamDashboardComponent implements OnInit, OnDestroy {
-  teamSearch = '';
+  searchTerm = '';
   teams: Team[] = [];
   totalTeams = 0;
   pageSize = 10;
   pageIndex = 0;
   pageSizeOptions = [5, 10, 25];
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Teams',
-      icon: 'groups'
-    }
-  ];
+  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Teams', icon: 'groups' }];
+
+  @ViewChild('breadcrumbActions', { static: true })
+  breadcrumbActions!: TemplateRef<unknown>;
 
   get hasTeamCreatePermission(): boolean {
     return this.sessionService.hasPermission('CREATE_TEAM');
@@ -43,15 +41,18 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private modal: MatDialog,
-    private teamService: AdminTeamsService,
+    private teamService: TeamService,
     private sessionService: SessionService,
-    private toastService: AdminToastService
+    private toastService: AdminToastService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   /**
    * Fetches the initial set of teams when the component loads
    */
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+    this.breadcrumbService.setActions(this.breadcrumbActions);
     this.fetchTeams();
   }
 
@@ -59,6 +60,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * Component destruction lifecycle hook
    */
   ngOnDestroy(): void {
+    this.breadcrumbService.setActions(null);
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -68,18 +70,16 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    */
   fetchTeams(): void {
     this.teamService
-      .getTeams({
-        term: this.teamSearch,
-        sort: { name: 1 },
-        limit: this.pageSize,
-        omit_event_teams: true,
-        start: String(this.pageIndex * this.pageSize)
+      .search({
+        term: this.searchTerm,
+        pageSize: this.pageSize,
+        pageIndex: this.pageIndex,
+        omitEventTeams: true,
       })
-      .subscribe((results) => {
-        if (results?.length > 0) {
-          const teams = results[0];
-          this.teams = teams.items;
-          this.totalTeams = teams.totalCount;
+      .subscribe((page) => {
+        this.teams = page.items;
+        if (typeof page.totalCount === 'number') {
+          this.totalTeams = page.totalCount
         }
       });
   }
@@ -101,7 +101,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * @param term - The new search term entered by the user
    */
   onSearchTermChanged(term: string): void {
-    this.teamSearch = term;
+    this.searchTerm = term;
+    this.totalTeams = 0;
     this.pageIndex = 0; // Reset to first page when searching
     this.fetchTeams();
   }
@@ -110,7 +111,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * Resets the search term, pagination to the first page, and refetches all teams
    */
   onSearchCleared(): void {
-    this.teamSearch = '';
+    this.searchTerm = '';
+    this.totalTeams = 0;
     this.pageIndex = 0;
     this.fetchTeams();
   }
@@ -120,8 +122,9 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * If a new team is created, refetches the teams list to include the new team.
    */
   createTeam(): void {
-    if (!this.hasTeamCreatePermission) return;
-
+    if (!this.hasTeamCreatePermission) {
+      return;
+    }
     this.modal.open(CreateTeamDialogComponent, {
       width: '40vw',
       maxWidth: '40vw',
@@ -131,8 +134,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
       if (newTeam) {
         this.toastService.show(
           'Team created successfully',
-          ['../teams', newTeam.id],
-          'View Team'
+          ['/admin/teams', newTeam.id],
+          'Go to Team'
         );
         this.fetchTeams();
       }

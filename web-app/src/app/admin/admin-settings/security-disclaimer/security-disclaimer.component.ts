@@ -6,6 +6,7 @@ import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { Disclaimer } from './security-disclaimer.model';
 import { SettingsService } from '../settings.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminSettingsUnsavedComponent } from '../admin-settings-unsaved/admin-settings-unsaved.component';
 
 @Component({
@@ -15,9 +16,7 @@ import { AdminSettingsUnsavedComponent } from '../admin-settings-unsaved/admin-s
   standalone: false
 })
 export class SecurityDisclaimerComponent implements OnInit {
-  readonly breadcrumbs: AdminBreadcrumb[] = [
-    { title: 'Disclaimer', icon: 'verified' }
-  ];
+  readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Disclaimer', icon: 'verified' }];
 
   disclaimer: Disclaimer = {
     show: false,
@@ -30,10 +29,13 @@ export class SecurityDisclaimerComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+
     this.settingsService
       .get('disclaimer')
       .pipe(take(1))

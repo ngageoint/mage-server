@@ -1,13 +1,13 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions">
     <button matButton="filled" *ngIf="hasTeamCreatePermission" (click)="createTeam()">
       <mat-icon>add</mat-icon>New Team
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="teams-page">
-  <mat-card appearance="elevated" class="teams-card">
+  <mat-card appearance="raised" class="teams-card">
     <mat-card-header>
       <mat-card-title>Teams</mat-card-title>
     </mat-card-header>
@@ -16,8 +16,8 @@
       <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
         <mat-icon matPrefix>search</mat-icon>
         <mat-label>Search teams</mat-label>
-        <input matInput [(ngModel)]="teamSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="teamSearch" (click)="onSearchCleared()" aria-label="Clear">
+        <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
+        <button matSuffix matIconButton *ngIf="searchTerm" (click)="onSearchCleared()" aria-label="Clear">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
@@ -34,7 +34,7 @@
     <ng-template #noTeams>
       <div class="empty-state">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
-        <div class="empty-state-text" *ngIf="teamSearch; else noTeamsFound">No teams match your search</div>
+        <div class="empty-state-text" *ngIf="searchTerm; else noTeamsFound">No teams match your search</div>
         <ng-template #noTeamsFound>
           <div class="empty-state-text">No teams found</div>
         </ng-template>

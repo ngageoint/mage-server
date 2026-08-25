@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { PluginService } from '../../plugin/plugin.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 
 @Component({
     selector: 'mage-plugins-host',
@@ -25,21 +26,26 @@ export class PluginHostComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
 
-  breadcrumbs: AdminBreadcrumb[] = [
-    {
-      title: 'Plugin',
-      icon: 'extension'
-    }
-  ];
+  private _breadcrumbs: AdminBreadcrumb[] = [{ title: 'Plugin', icon: 'extension' }];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this._breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this._breadcrumbs;
+  }
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
-    private pluginService: PluginService
+    private pluginService: PluginService,
+    private breadcrumbService: AdminBreadcrumbService
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+
     this.route.paramMap
       .pipe(takeUntil(this.destroy$))
       .subscribe(async (params) => {
@@ -63,12 +69,10 @@ export class PluginHostComponent implements OnInit, OnDestroy {
           const hooks: any = plugin.MAGE_WEB_HOOKS;
           const tab = hooks.adminTab;
 
-          this.breadcrumbs = [
-            {
-              title: tab?.title ?? pluginId,
-              icon: tab?.icon?.icon ?? 'extension'
-            }
-          ];
+          this.breadcrumbs = [{
+            title: tab?.title ?? pluginId,
+            icon: tab?.icon?.icon ?? 'extension'
+          }];
 
           let entry: Type<any> | undefined =
             hooks.rootComponent ?? hooks.entryComponent;

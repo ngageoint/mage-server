@@ -1,10 +1,10 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs">
+<ng-template #breadcrumbActions>
   <div class="nav-actions">
     <button matButton="filled" *ngIf="hasDeviceCreatePermission" (click)="createDevice()">
       <mat-icon>add</mat-icon>New Device
     </button>
   </div>
-</admin-breadcrumb>
+</ng-template>
 
 <div class="devices-page">
   <mat-card appearance="elevated" class="devices-card">

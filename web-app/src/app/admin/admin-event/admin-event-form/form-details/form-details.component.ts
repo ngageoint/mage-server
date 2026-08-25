@@ -10,6 +10,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
 
 import { Event as MageEvent } from 'mage-web-app/filter/filter.types';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
+import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import {
   ObservationFeedHelper,
   Observation,
@@ -63,7 +64,15 @@ export class FormDetailsComponent implements OnInit {
   token: string | null = null;
   saving = false;
   generalFormSubmitted = false;
-  breadcrumbs: AdminBreadcrumb[] = [];
+
+  private _breadcrumbs: AdminBreadcrumb[] = [];
+  set breadcrumbs(value: AdminBreadcrumb[]) {
+    this._breadcrumbs = value;
+    this.breadcrumbService.setBreadcrumbs(value);
+  }
+  get breadcrumbs(): AdminBreadcrumb[] {
+    return this._breadcrumbs;
+  }
 
   creatingNewForm = false;
 
@@ -117,7 +126,8 @@ export class FormDetailsComponent implements OnInit {
     private eventsService: AdminEventsService,
     private sessionService: SessionService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private breadcrumbService: AdminBreadcrumbService
   ) { }
 
   ngOnInit(): void {
@@ -127,6 +137,13 @@ export class FormDetailsComponent implements OnInit {
     this.formId = this.route.snapshot.paramMap.get('formId');
     this.creatingNewForm = !this.formId;
 
+    this.breadcrumbs = [{
+      title: 'Events',
+      icon: 'event',
+      route: ['/admin/events']
+    }, {
+      title: this.formId ? 'Edit Form' : 'New Form'
+    }];
 
     if (!this.eventId) return;
 
@@ -134,20 +151,16 @@ export class FormDetailsComponent implements OnInit {
       next: (event) => {
         this.event = event;
 
-        this.breadcrumbs = [
-          {
-            title: 'Events',
-            icon: 'event',
-            route: ['../../../']
-          },
-          {
-            title: event.name,
-            route: ['../../../', String(event?.id ?? '')]
-          },
-          {
-            title: this.formId ? 'Edit Form' : 'New Form'
-          }
-        ];
+        this.breadcrumbs = [{
+          title: 'Events',
+          icon: 'event',
+          route: ['/admin/events']
+        }, {
+          title: event.name,
+          route: ['/admin/events', String(event?.id ?? '')]
+        }, {
+          title: this.formId ? 'Edit Form' : 'New Form'
+        }];
 
         if (this.formId && event.forms) {
           const existingForm = event.forms.find(
@@ -158,6 +171,7 @@ export class FormDetailsComponent implements OnInit {
             if (!this.form.fields) this.form.fields = [];
             if (!this.form.userFields) this.form.userFields = [];
             this.breadcrumbs[2].title = existingForm.name || 'Edit Form';
+            this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
           }
         } else {
           this.form = {

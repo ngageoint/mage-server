@@ -1,26 +1,51 @@
 :host {
   display: block;
-  background: white;
-  border-radius: var(--mat-sys-corner-medium);
-  overflow: hidden;
   margin: 0 8px 8px;
 }
 
-mat-list-item {
-  min-height: 88px;
+mat-card {
+  overflow: hidden;
+  --mat-card-elevated-container-color: #ffffff;
+}
+
+.item {
+  cursor: pointer;
+  padding-bottom: 12px;
+}
+
+.item-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .item__content {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .item__icon {
-  width: 20px;
-  height: 20px;
-  font-size: 20px;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
   color: var(--mat-sys-primary);
+  overflow: hidden;
+
+  mat-icon {
+    font-size: 40px;
+    line-height: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  ::ng-deep img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
 }
 
 .item__timestamp {
@@ -30,11 +55,15 @@ mat-list-item {
 
 .item__primary {
   font: var(--mat-sys-body-large);
-  color: var(--mat-sys-on-surface);
+  color: var(--mat-sys-primary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item__secondary {
-  font: var(--mat-sys-body-small);
+  font: var(--mat-sys-body-medium);
   color: var(--mat-sys-on-surface-variant);
   white-space: nowrap;
   overflow: hidden;

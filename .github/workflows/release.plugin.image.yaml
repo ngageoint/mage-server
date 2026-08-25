@@ -1,0 +1,94 @@
+name: release image plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version you want to assign to the release
+        type: string
+        required: true
+      dist_tag:
+        description: >
+          Apply the given dist tag when publishing to NPM.  If omitted, the workflow will try to determine the dist
+          tag from the package version prerelease tag.
+        type: string
+        required: false
+
+  # TODO: possibly use release branches to perform the release process
+  # push:
+  #   branches:
+  #     - release/*
+  #     - prerelease/*
+  # TODO: possibly use release event to perform the release process
+  # release:
+
+jobs:
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  check_release_version:
+    needs: [config]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+      - name: install json util
+        run: npm i -g json
+      - name: check service
+        run: |
+          [[ $(json version < ./plugins/image/service/package.json) = ${{ inputs.version }} ]] || exit 1
+      # - name: check web-app
+      #   run: |
+      #     [[ $(json version < ./web-app/package.json) = ${{ inputs.version }} ]] || exit 1
+
+  build_and_test-service:
+    needs: [check_release_version]
+    uses: ./.github/workflows/build_test.image.service.yaml
+
+  # build_and_test-web-app:
+  #   needs: [ check_release_version ]
+  #   uses: ./.github/workflows/build_test.image.web-app.yaml
+
+  publish_packages:
+    name: publish packages
+    needs: [config, build_and_test-service]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+          registry-url: "https://registry.npmjs.org"
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: package info
+        id: package_info
+        uses: ./.github/actions/package_info
+        with:
+          package_path: ./plugins/image/service/package.json
+      - name: determine dist tag
+        id: dist-tag
+        run: |
+          dist_tag_switch=""
+          dist_tag="${{ inputs.dist_tag }}"
+          [ -z "${dist_tag}" ] && dist_tag="${{ steps.package_info.outputs.version-prerelease_tag }}"
+          [ -n "${dist_tag}" ] && dist_tag_switch="--tag ${dist_tag}"
+          echo "dist_tag_switch=${dist_tag_switch:-""}" >> $GITHUB_ENV
+      - name: download service packages
+        uses: actions/download-artifact@v8
+        with:
+          name: image.service-artifacts
+          path: ./scratch
+      - name: dry run publish
+        run: |
+          eval "npm publish --dry-run --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.image.service-*.tgz)"
+      - name: publish
+        run: |
+          eval "npm publish --access public ${dist_tag_switch} $(ls -1 ./scratch/ngageoint-mage.image.service-*.tgz)"

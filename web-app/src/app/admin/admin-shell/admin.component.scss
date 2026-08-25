@@ -21,10 +21,17 @@
   overscroll-behavior: contain;
 }
 
-.admin-main-content {
+.admin-sidenav-content {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.admin-main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
 }

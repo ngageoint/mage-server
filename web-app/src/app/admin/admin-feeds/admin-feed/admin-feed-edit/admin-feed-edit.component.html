@@ -1,8 +1,6 @@
-<admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
-
 <div class="feed-edit-page">
   <div class="header" *ngIf="editState.originalFeed">
-    <mage-static-icon-img class="icon" *ngIf="editState.originalFeed?.icon" [iconRef]="editState.originalFeed?.icon"></mage-static-icon-img>
+    <feed-icon class="icon" [icon]="editState.originalFeed?.icon" [size]="40" [active]="true"></feed-icon>
     <span class="header__title">{{ editState.originalFeed.title }}</span>
   </div>
 

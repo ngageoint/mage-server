@@ -1,6 +1,8 @@
 import { PagingParameters, PageOf } from '../entities.global'
 import { Role } from '../authorization/entities.authorization'
 import { Authentication } from '../authentication/entities.authentication'
+import { MageEventId } from '../events/entities.events'
+import { FormId } from '../events/entities.events.forms'
 
 export type UserId = string
 
@@ -14,6 +16,7 @@ export interface User {
   lastUpdated: Date
   email?: string
   phones: Phone[]
+  icon?: UserIcon
   roleId: string
   authenticationId: string
   avatar?: Avatar
@@ -73,3 +76,62 @@ export interface UserFindParameters extends PagingParameters {
   active?: boolean | undefined
   enabled?: boolean | undefined
 }
+
+export interface UserIconContentStore {
+  readContent(user: User): Promise<NodeJS.ReadableStream | null | UserIconStoreError>
+}
+
+export class UserIconStoreError extends Error {
+  constructor(readonly errorCode: UserIconStoreErrorCode, message?: string) {
+    super(message)
+    this.name = errorCode
+  }
+}
+
+export enum UserIconStoreErrorCode {
+  /**
+   * The underlying storage system, e.g. file system, raised an error during
+   * some I/O operation.
+   */
+  StorageError = 'UserIconStoreError.StorageError'
+}
+
+export interface UserPreference {
+  events: { [key: number]: EventPreference }
+}
+
+export interface EventPreference {
+  forms: { [key: number]: FormPreference }
+}
+
+export interface FormPreference {
+  fields: { [key: string]: FieldPreference }
+}
+
+export interface FieldPreference {
+  recentChoices: RecentChoice[]
+}
+
+export type RecentChoice = string
+
+export type AddRecentFormFieldChoiceParams = {
+  eventId: MageEventId
+  formId: FormId
+  fieldName: string
+  choice: string
+}
+
+export type AddRecentFormFieldChoiceEntry = AddRecentFormFieldChoiceParams & {
+  recentChoicesLimit?: number
+}
+
+export interface UserPreferenceRepository {
+  getPreferences(userId: UserId): Promise<UserPreference | null>
+  getEventPreferences(userId: UserId, eventId: MageEventId): Promise<EventPreference | null>
+  /**
+   * Record the given recent form field choices for the user in a single
+   * write, rather than a separate read-modify-write round trip per choice.
+   */
+  addRecentFormFieldChoices(userId: UserId, choices: AddRecentFormFieldChoiceEntry[]): Promise<UserPreference>
+}
+

@@ -1,5 +1,16 @@
 services:
 
+  # Add ClamAV to build local container for testing
+  mage-clamav:
+    image: clamav/clamav:stable
+    platform: linux/amd64
+    volumes:
+      - ./clamav-test/data:/var/lib/clamav
+    ports:
+      - "3310:3310"
+    networks:
+      - mage.net
+
   mage-db:
     image: mongodb/mongodb-community-server:8.0-ubi9-slim
     # Uncomment the following ports block to allow the mongo client on your
@@ -34,7 +45,11 @@ services:
     environment:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
       MAGE_TOKEN_EXPIRATION: "28800"
-      MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service", "@ngageoint/mage.arcgis.service"],"webUIPlugins":["@ngageoint/mage.sftp.web", "@ngageoint/mage.arcgis.web-app"]}'
+      MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service","@ngageoint/mage.arcgis.service","@ngageoint/mage.clamav.service"],"webUIPlugins":["@ngageoint/mage.sftp.web","@ngageoint/mage.arcgis.web-app"]}'
+      # Only used if @ngageoint/mage.clamav.service is enabled above - host/port
+      # for the mage-clamav container this compose file already defines.
+      MAGE_CLAMAV_HOST: mage-clamav
+      MAGE_CLAMAV_PORT: "3310"
       MAGE_SFTP_KEY_FILE: /var/lib/mage/sftp_key
 
     # Uncomment this section to use Docker volumes instead of bind mounts for data directories:
@@ -47,23 +62,9 @@ services:
   # mage-web-proxy:
   #   image: nginx
   #   volumes:
-  #     - ./web/nginx.conf:/etc/nginx/nginx.conf
-  #     - ./web/mage-web.crt:/etc/nginx/ssl/web.crt
-  #     - ./web/mage-web.key:/etc/nginx/ssl/web.key
-  #   ports:
-  #     - 4280:80
-  #     - 4243:4243
-  #   networks:
-  #     - mage.net
-
-  # Uncomment the following block to enable the TLS reverse proxy.  You will
-  # also need to generate the key and certificate as the README describes.
-  # mage-web-proxy:
-  #   image: nginx
-  #   volumes:
-  #     - ./web/nginx.conf:/etc/nginx/nginx.conf
-  #     - ./web/mage-web.crt:/etc/nginx/ssl/web.crt
-  #     - ./web/mage-web.key:/etc/nginx/ssl/web.key
+  #     - ./server/web/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./server/web/mage-web.crt:/etc/nginx/ssl/web.crt
+  #     - ./server/web/mage-web.key:/etc/nginx/ssl/web.key
   #   ports:
   #     - 4280:80
   #     - 4243:4243

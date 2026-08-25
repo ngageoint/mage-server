@@ -4,7 +4,7 @@
       Set The Topic Query Parameters
     </mat-panel-title>
   </mat-expansion-panel-header>
-  <div *ngIf="fetchParametersSchema">
+  <div class="topic-params" *ngIf="fetchParametersSchema">
     <mage-json-schema-form framework="material-design" [options]="formOptions"
       [schema]="fetchParametersSchema" [data]="initialFetchParameters"
       (onChanges)="onFetchParametersChanged($event)">
