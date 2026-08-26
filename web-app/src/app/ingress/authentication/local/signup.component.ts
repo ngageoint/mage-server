@@ -102,6 +102,8 @@ export class SignupComponent {
   onPasswordChanged(password: string) {
     const username = this.signup.controls.username.value ?? '';
     this.passwordStrength = evaluatePasswordStrength(password, username);
+    this.passwordErrorMessages = [];
+    this.signup.controls.password.updateValueAndValidity({ emitEvent: false });
   }
 
   getCaptcha(): void {
@@ -173,7 +175,6 @@ export class SignupComponent {
   }
 
   getPasswordErrorMessages(errors: any): string[] {
-    if (errors?.['required']) return ['Password is required'];
-    return this.passwordErrorMessages;
+    return errors?.['required'] ? ['Password is required'] : [];
   }
 }

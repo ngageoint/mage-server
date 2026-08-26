@@ -62,9 +62,9 @@
         </mat-form-field>
       </div>
 
-      <p class="password-hint full-width" *ngIf="passwordHelpText">
-        <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
-        {{ passwordHelpText }}
+      <p class="password-hint full-width" *ngIf="passwordHelpText || passwordErrorMessages.length" [class.password-hint--error]="signup.controls.password.hasError('policy')">
+        <mat-icon fontSet="material-symbols-outlined">{{ signup.controls.password.hasError('policy') ? 'error_outline' : 'info' }}</mat-icon>
+        {{ passwordHelpText || passwordErrorMessages[0] }}
       </p>
 
       <div class="password-strength full-width">

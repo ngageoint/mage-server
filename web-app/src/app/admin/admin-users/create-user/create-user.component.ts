@@ -62,6 +62,7 @@ export class CreateUserModalComponent implements OnInit {
     passwordControl?.valueChanges.subscribe((value) => {
       this.passwordStrength = evaluatePasswordStrength(value, username);
       this.passwordErrorMessages = [];
+      passwordControl.updateValueAndValidity({ emitEvent: false });
       confirmControl?.updateValueAndValidity();
     });
 
@@ -99,7 +100,9 @@ export class CreateUserModalComponent implements OnInit {
       },
       error: (response: any) => {
         this.saving.set(false);
-        if (response.status === 400) {
+        if (response.status === 409) {
+          this.signup.get('username')?.setErrors({ exists: true });
+        } else if (response.status === 400) {
           this.passwordErrorMessages = [response.error];
           this.signup.get('password')?.setErrors({ policy: true });
         } else {
@@ -114,7 +117,6 @@ export class CreateUserModalComponent implements OnInit {
   }
 
   getPasswordErrorMessages(errors: any): string[] {
-    if (errors?.['required']) return ['Password is required'];
-    return this.passwordErrorMessages;
+    return errors?.['required'] ? ['Password is required'] : [];
   }
 }
