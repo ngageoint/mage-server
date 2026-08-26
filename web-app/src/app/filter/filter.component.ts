@@ -8,8 +8,6 @@ import {
   firstValueFrom,
   map,
   startWith,
-  debounceTime,
-  switchMap,
   of
 } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
@@ -36,7 +34,7 @@ import {
 export class FilterComponent implements OnInit {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  events: Event[];
+  event: Event;
   selectedTeams: Team[] = [];
 
   eventUsers: User[] = [];
@@ -45,12 +43,10 @@ export class FilterComponent implements OnInit {
   eventForms: Form[] = [];
   selectedForms: Form[] = [];
 
-  eventControl = new FormControl();
   teamControl = new FormControl();
   userControl = new FormControl();
   formControl = new FormControl();
 
-  filteredEvents: Observable<Event[]> = of([]);
   filteredTeams: Observable<Team[]> = of([]);
   filteredUsers: Observable<User[]> = of([]);
   filteredForms: Observable<Form[]> = of([]);
@@ -76,11 +72,11 @@ export class FilterComponent implements OnInit {
 
   async ngOnInit() {
     this.isLoading = true;
-  
+
     try {
       const event: Event = this.filterService.getEvent();
-      this.eventControl.setValue(event);
-  
+      this.event = event;
+
       const teamIds = this.localStorageService.getTeams() || [];
       this.selectedTeams = teamIds
         .map((teamId: number) =>
@@ -131,19 +127,13 @@ export class FilterComponent implements OnInit {
         : moment().endOf('day').toDate();
   
       this.localOffset = moment().format('Z');
-  
-      const events = await firstValueFrom(this.eventService.query());
-      this.setFilteredValues(events, this.eventUsers, this.eventForms);
+
+      this.setFilteredValues(this.eventUsers);
     } finally {
       this.isLoading = false;
     }
   }
 
-  /**
-   * Fetches Users for Given Event
-   * @param  {Event} event Event to Get Users From
-   * @return {Promise<User[]>} Returns List of Users as an Async Promise
-   */
   async getUsers(event: Event): Promise<User[]> {
     try {
       const users = await firstValueFrom(this.eventService.getMembers(event));
@@ -154,54 +144,14 @@ export class FilterComponent implements OnInit {
     }
   }
 
-  /**
-   * Resets Filter When Event is Selected
-   * @param  {Event[]} events List of Events
-   * @param  {User[]} eUsers Users in the Event
-   * @param  {Form[]} eForms Forms in the Event
-   * @return {void} No Return
-   */
-
-  setFilteredValues(events: Event[], eUsers: User[], eForms: Form[]): void {
-    this.events = events;
-
-    this.filteredEvents = this.eventControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      switchMap((value) => {
-        const searchTerm =
-          typeof value === 'string' ? value : value?.name || '';
-        if (searchTerm && searchTerm.trim()) {
-          return this.eventService.query({
-            term: searchTerm.trim(),
-            limit: 100
-          });
-        } else {
-          return of(this.events);
-        }
-      })
-    );
-
+  setFilteredValues(users: User[]): void {
     this.filteredTeams = this.teamControl.valueChanges.pipe(
       startWith(''),
       map((value) => (typeof value === 'string' ? value : value.name)),
-      map((name) => {
-        if (this.eventControl.value) {
-          let teams = this.eventControl.value.teams.filter(
-            (team) => this.selectedTeams.indexOf(team) < 0
-          );
-          if (name) {
-            const filterValue = name.toLowerCase();
-            return teams.filter(
-              (team: Team) => team.name.toLowerCase().indexOf(filterValue) === 0
-            );
-          } else {
-            return teams.slice();
-          }
-        } else {
-          return [];
-        }
-      })
+      map((name) => this.event
+        ? this.filterAutocomplete(this.event.teams || [], this.selectedTeams, name, (team) => team.name || '')
+        : []
+      )
     );
 
     this.filteredUsers = this.userControl.valueChanges.pipe(
@@ -209,108 +159,37 @@ export class FilterComponent implements OnInit {
       map((value) =>
         typeof value === 'string' ? value : value.displayName || value.username
       ),
-      map((name) => {
-        if (eUsers.length) {
-          let usersList = eUsers.filter(
-            (user) => this.selectedUsers.map((x) => x.id).indexOf(user.id) < 0
-          );
-          if (name) {
-            const filterValue = name.toLowerCase();
-            return usersList.filter(
-              (user: User) =>
-                (user.displayName || user.username)
-                  .toLowerCase()
-                  .indexOf(filterValue) === 0
-            );
-          } else {
-            return usersList.slice();
-          }
-        } else {
-          return [];
-        }
-      })
+      map((name) => this.filterAutocomplete(
+        users, this.selectedUsers, name, (user) => user.displayName || user.username, (user) => user.id
+      ))
     );
 
     this.filteredForms = this.formControl.valueChanges.pipe(
       startWith(''),
       map((value) => (typeof value === 'string' ? value : value.name)),
-      map((name) => {
-        let formsList = this.eventForms.filter(
-          (form) => this.selectedForms.map((x) => x.id).indexOf(form.id) < 0
-        );
-        if (eForms.length) {
-          if (name) {
-            const filterValue = name.toLowerCase();
-            return formsList.filter(
-              (form: Form) => form.name.toLowerCase().indexOf(filterValue) === 0
-            );
-          } else {
-            return formsList.slice();
-          }
-        } else {
-          return [];
-        }
-      })
+      map((name) => this.filterAutocomplete(
+        this.eventForms, this.selectedForms, name, (form) => form.name, (form) => form.id
+      ))
     );
   }
 
   /**
-   * Resets Filter When Event is Selected
-   * @param  {MatAutocompleteSelectedEvent} event The Event from the Autocomplete SelectBox
-   * @return {Promise<void>} No Return
+   * Narrows a picker's remaining options to those not already selected, and
+   * to those matching the current search text by name prefix.
    */
-
-  async onSelectEvent(event: MatAutocompleteSelectedEvent): Promise<void> {
-    this.isLoading = true;
-  
-    try {
-      this.selectedTeams = [];
-      this.selectedUsers = [];
-      this.selectedForms = [];
-      this.teamControl.setValue('');
-      this.userControl.setValue('');
-      this.formControl.setValue('');
-  
-      const newEvent: Event = event.option.value;
-      const eUsers = await this.getUsers(newEvent);
-  
-      this.eventUsers = eUsers;
-      this.eventForms = newEvent.forms || [];
-  
-      if (this.eventUsers.length > 0) {
-        this.userControl.enable({ emitEvent: false });
-      } else {
-        this.userControl.disable({ emitEvent: false });
-      }
-  
-      if (this.eventForms.length > 0) {
-        this.formControl.enable({ emitEvent: false });
-      } else {
-        this.formControl.disable({ emitEvent: false });
-      }
-  
-      if (newEvent.teams?.length > 0) {
-        this.teamControl.enable({ emitEvent: false });
-      } else {
-        this.teamControl.disable({ emitEvent: false });
-      }
-  
-      const events = await firstValueFrom(this.eventService.query());
-      this.setFilteredValues(events, eUsers, this.eventForms);
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  onDisplayEvent(event: Event): string {
-    return event && event.name ? event.name : '';
-  }
-
-  private filterEvent(name: string): Event[] {
-    const filterValue = name.toLowerCase();
-    return this.events.filter((option) =>
-      option.name.toLowerCase().includes(filterValue)
-    );
+  private filterAutocomplete<T>(
+    items: T[],
+    selected: T[],
+    name: string,
+    getName: (item: T) => string,
+    getId: (item: T) => unknown = (item) => item
+  ): T[] {
+    const selectedIds = selected.map(getId);
+    const available = items.filter((item) => !selectedIds.includes(getId(item)));
+    const query = (name || '').toLowerCase();
+    return query
+      ? available.filter((item) => getName(item).toLowerCase().startsWith(query))
+      : available;
   }
 
   onSelectTeam(event: MatAutocompleteSelectedEvent): void {
@@ -393,7 +272,6 @@ export class FilterComponent implements OnInit {
     }
 
     this.filterService.setFilter({
-      event: this.eventControl.value,
       teams: this.selectedTeams,
       timeInterval: {
         choice: this.intervalChoice,

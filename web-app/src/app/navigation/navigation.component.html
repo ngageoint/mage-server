@@ -6,12 +6,13 @@
       </button>
     </div>
 
-    <div class="event-title">
-      <span class="filter-event">{{ filteredEvent.name }}</span>
+    <button class="event-title" [cdkMenuTriggerFor]="eventPanel" [cdkMenuPosition]="eventMenuPosition" (cdkMenuOpened)="onEventMenuOpened()">
+      <span class="filter-event">{{ filteredEvent?.name || (eventsLoaded ? 'Select Event' : '') }}</span>
+      <mat-icon>arrow_drop_down</mat-icon>
       <span *ngIf="filteredTeams" class="filter-teams"><span>> {{ filteredTeams }}</span></span>
       <span *ngIf="filteredInterval" class="filter-interval">
         {{ filteredInterval }}</span>
-    </div>
+    </button>
 
     <div class="collapsed-menu">
       <button matIconButton class="navigation-options" [matMenuTriggerFor]="menu">
@@ -56,3 +57,26 @@
     </div>
   </div>
 </mat-toolbar>
+
+<ng-template #eventPanel>
+  <div cdkMenu class="event-panel">
+    <mat-form-field appearance="fill" class="event-panel__search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput
+        #eventSearchInput
+        placeholder="Search events..."
+        [formControl]="eventSearchControl"
+        (keydown)="$event.stopPropagation()">
+    </mat-form-field>
+    <div class="event-panel__list">
+      <button cdkMenuItem
+        *ngFor="let event of filteredEvents | async"
+        class="event-panel__item"
+        [class.event-panel__item--active]="event.id === filteredEvent?.id"
+        (click)="onSelectEvent(event)">
+        <div class="event-panel__item-name">{{ event.name }}</div>
+        <div class="event-panel__item-description" *ngIf="event.description">{{ event.description }}</div>
+      </button>
+    </div>
+  </div>
+</ng-template>
