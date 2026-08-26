@@ -739,19 +739,14 @@ describe('static icon mongoose repository', function () {
       contentStore.didNotReceive().loadContent(Arg.all())
     })
 
-    it('throws error if the icon url is invalid', async function () {
+    it('returns a url resolution error if the icon url is invalid', async function () {
 
       const iconId = uniqid()
       await model.create({ _id: iconId, sourceUrl: 'shall not pass', registeredTimestamp: Date.now() })
-      try {
-        await repo.loadContent(iconId) as UrlResolutionError
-      }
-      catch (err: any) {
-        expect(err).to.be.instanceOf(Error)
-        expect(err.message).to.contain('Invalid URL')
-        return
-      }
-      expect.fail('expected error to be thrown')
+      const content = await repo.loadContent(iconId) as UrlResolutionError
+
+      expect(content).to.be.instanceOf(UrlResolutionError)
+      expect(content.message).to.contain(`registered icon ${iconId} has an invalid source url`)
     })
 
     it('loads content from url if the source url scheme is local', async function () {
