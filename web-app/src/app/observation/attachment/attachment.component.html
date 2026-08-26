@@ -64,11 +64,13 @@
 </ng-template>
 
 <ng-template #failed>
-  <div class="media media-unknown media-unknown--clickable" (click)="showFailureMessage()">
-    <mat-icon class="media__icon">error</mat-icon>
-    <div>{{attachment.name | filename:12}}</div>
-    <div>Upload Failed</div>
-    <div class="media-unknown__hint">Tap for details</div>
+  <div class="media media-unknown" [class.media-unknown--clickable]="expandable" [class.media-unknown--expanded]="messageExpanded" (click)="toggleFailureMessage()">
+    <mat-icon class="media__icon">error_outline</mat-icon>
+    <div class="media-unknown__title">Upload Failed</div>
+    <div class="media-unknown__subhead">{{attachment.name | filename:12}}</div>
+    <div *ngIf="expandable" class="media-unknown__hint-wrapper" [class.media-unknown__hint-wrapper--expanded]="messageExpanded">
+      <div class="media-unknown__hint">{{ messageExpanded ? attachment.processingMessage : 'Click for more details' }}</div>
+    </div>
   </div>
 
   <div *ngIf="canEdit || edit" class="attachment__delete">

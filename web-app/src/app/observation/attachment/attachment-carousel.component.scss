@@ -41,14 +41,25 @@
   }
 }
 
-.carousel__counter {
+// Page-indicator dots, matching the same look mage-android hand-rolls (GradientDrawable ovals,
+// solid white active / 40%-alpha white inactive) and mage-ios gets from UIPageControl.
+.carousel__dots {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 2;
+  display: flex;
+  gap: 6px;
+}
 
-  mat-chip {
-    --mat-chip-elevated-container-color: var(--mat-sys-surface-container-highest);
-    --mat-chip-label-text-color: var(--mat-sys-on-surface);
+.carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+
+  &.carousel__dot--active {
+    background-color: #fff;
   }
 }
