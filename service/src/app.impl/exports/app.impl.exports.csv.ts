@@ -115,17 +115,15 @@ export class CsvExportTransform implements ExportTransform {
     const { filter } = options
 
     const repository: EventScopedObservationRepository = await this.observationRepository(event.id)
-    const iterable = repository.find(event, {
-      filter: {
-        states: [ 'active' ],
-        observationStartDate: filter?.startDate,
-        observationEndDate: filter?.endDate,
-        favorites: filter?.favorites,
-        important: filter?.important,
-        includeAttachments: filter?.includeAttachments
+    const iterable = repository.iterate({
+      where: {
+        stateIsAnyOf: [ 'active' ],
+        timestampAfter: filter?.startDate,
+        timestampBefore: filter?.endDate,
+        isFavoriteOfUser: filter?.favorites ? filter.favorites.userId : undefined,
+        isFlaggedImportant: filter?.important ? true : undefined
       },
-      sort: { userId: 1 },
-      stream: true
+      includeAttachments: filter?.includeAttachments
     })
 
     try {

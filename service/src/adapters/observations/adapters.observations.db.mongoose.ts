@@ -1,5 +1,5 @@
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationReadStreamOptions, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FindObservationsResult, FindObservationsSort, FindObservationsSpec, FindObservationsStreamSpec, FindObservationsWhere, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail, AttachmentProcessingStatus, ObservationUserExpanded, UsersExpandedObservationAttrs } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
 import mongoose, { FilterQuery } from 'mongoose'
 import * as legacy from '../../models/observation'
@@ -8,7 +8,6 @@ import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
 import { asyncIterable } from '../adapters.db.mongoose'
-import moment from 'moment'
 
 export type ObservationIdDocument = mongoose.Document
 export type ObservationIdModel = mongoose.Model<ObservationIdDocument>
@@ -74,83 +73,40 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     return saved
   }
 
-  /**
-   * TODO: The `event` parameter is unused and should probably go away.  The repository has an implicit event context
-   */
-  find(event: MageEvent, options: ObservationReadStreamOptions): AsyncIterable<ObservationAttrs> {
-    const conditions: FilterQuery<legacy.ObservationDocument> = {};
-
-    const filter = options.filter || {};
-    // Filter by geometry
-    if (filter.geometry) {
-      conditions.geometry = {
-        $geoIntersects: {
-          $geometry: filter.geometry
-        }
-      };
-    }
-
-    if (filter.startDate || filter.endDate) {
-      conditions.lastModified = {};
-      if (filter.startDate) {
-        conditions.lastModified.$gte = filter.startDate;
-      }
-
-      if (filter.endDate) {
-        conditions.lastModified.$lt = filter.endDate;
-      }
-    }
-
-    if (filter.observationStartDate || filter.observationEndDate) {
-      conditions['properties.timestamp'] = {};
-      if (filter.observationStartDate) {
-        conditions['properties.timestamp'].$gte = moment(filter.observationStartDate).toDate()
-      }
-
-      if (filter.observationEndDate) {
-        conditions['properties.timestamp'].$lt = moment(filter.observationEndDate).toDate()
-      }
-    }
-
-    if (filter.states) {
-      conditions['states.0.name'] = { $in: filter.states };
-    }
-
-    if (filter.favorites && filter.favorites.userId) {
-      conditions['favoriteUserIds'] = { $in: [filter.favorites.userId] };
-    }
-
-    if (filter.important) {
-      conditions['important'] = { $exists: true };
-    }
-
-    const queryOptions = {} as mongoose.QueryOptions<legacy.ObservationDocument>
-    if (options.sort) {
-      queryOptions.sort = options.sort
-    }
-
-    const fields = parseFields(options.fields)
-    if (!filter.includeAttachments) {
+  iterate(spec: FindObservationsStreamSpec): AsyncIterable<ObservationAttrs> & { close?: () => void } {
+    const filter = buildObservationFilter(spec.where || {})
+    const sort = buildObservationSort(spec.orderBy)
+    const fields: Record<string, any> = {}
+    if (!spec.includeAttachments) {
       fields.attachments = { $slice: 0 }
     }
-
-    const query = this.model.find(conditions, fields, queryOptions)
-
-    if (options.populate) {
-      query
-        .populate({
-          path: 'userId',
-          select: 'displayName'
-        })
-        .populate({
-          path: 'important.userId',
-          select: 'displayName'
-        })
-    }
-
-    const cursor = query.cursor()
-
+    const cursor = this.model.find(filter, fields).sort(sort).cursor()
     return asyncIterable(cursor, (doc) => this.entityForDocument(doc), () => { cursor.close() })
+  }
+
+  async find<T = ObservationAttrs | UsersExpandedObservationAttrs>(
+    spec: FindObservationsSpec,
+    mapper?: (attrs: ObservationAttrs | UsersExpandedObservationAttrs) => T
+  ): Promise<FindObservationsResult<T>> {
+    const filter = buildObservationFilter(spec.where)
+    const sort = buildObservationSort(spec.orderBy)
+    const query = this.model.find(filter).sort(sort)
+    if (spec.populateUserNames) {
+      query
+        .populate({ path: 'userId', select: 'displayName' })
+        .populate({ path: 'important.userId', select: 'displayName' })
+    }
+    const mapDoc = (doc: mongoose.HydratedDocument<legacy.ObservationDocument>): T => {
+      const attrs = this.entityForDocument(doc) as UsersExpandedObservationAttrs
+      return mapper ? mapper(attrs) : attrs as T
+    }
+    if (spec.paging) {
+      const counted = await pageQuery(query, spec.paging)
+      const docs = await counted.query
+      return { type: 'paged', page: pageOf(docs.map(mapDoc), spec.paging, counted.totalCount) }
+    }
+    const docs = await query.exec()
+    return { type: 'all', observations: docs.map(mapDoc) }
   }
 
   async findById(id: ObservationId): Promise<Observation | null> {
@@ -229,9 +185,89 @@ export type PendingAttachmentReference = {
   attachmentId: AttachmentId
 }
 
+function buildObservationFilter(where: FindObservationsWhere): FilterQuery<legacy.ObservationDocument> {
+  const query: FilterQuery<legacy.ObservationDocument>[] = []
+
+  if (where.ids) {
+    query.push({ _id: { $in: where.ids } })
+  }
+
+  if (where.lastModifiedAfter) {
+    query.push({ lastModified: { $gte: where.lastModifiedAfter } })
+  }
+
+  if (where.lastModifiedBefore) {
+    query.push({ lastModified: { $lt: where.lastModifiedBefore } })
+  }
+
+  if (where.timestampAfter) {
+    query.push({ 'properties.timestamp': { $gte: where.timestampAfter } })
+  }
+
+  if (where.timestampBefore) {
+    query.push({ 'properties.timestamp': { $lt: where.timestampBefore } })
+  }
+
+  if (where.stateIsAnyOf) {
+    query.push({ 'states.0.name': { $in: where.stateIsAnyOf } })
+  }
+
+  if (Array.isArray(where.geometryIntersects)) {
+    const [ west, south, east, north ] = where.geometryIntersects
+    query.push({
+      geometry: {
+        $geoIntersects: {
+          $geometry: {
+            type: 'Polygon',
+            coordinates: [[
+              [ west, south ],
+              [ east, south ],
+              [ east, north ],
+              [ west, north ],
+              [ west, south ]
+            ]]
+          }
+        }
+      }
+    })
+  }
+
+  if (where.isFlaggedImportant) {
+    query.push({ important: { $exists: true } })
+  }
+
+  if (where.isFavoriteOfUser) {
+    query.push({ favoriteUserIds: where.isFavoriteOfUser })
+  }
+
+  if (where.hasAttachments) {
+    query.push({ 'attachments.0': { $exists: true } })
+  }
+
+  if (where.userIsAnyOf !== undefined) {
+    query.push({ 'userId': { $in: where.userIsAnyOf } })
+  }
+
+  return query.length ? { $and: query } : {}
+}
+
+function buildObservationSort(sort?: FindObservationsSort): any {
+  const order = typeof sort?.order === 'number' ? sort.order : 1
+  const dbSort = {} as any
+  if (sort?.field === 'lastModified') {
+    dbSort.lastModified = order
+  } else if (sort?.field === 'timestamp') {
+    dbSort['properties.timestamp'] = order
+  }
+  // add _id to sort for consistent ordering
+  dbSort._id = order || -1
+
+  return dbSort
+}
+
 function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.ObservationDocument, ObservationAttrs> {
   return doc => {
-    const attrs: ObservationAttrs = {
+    const attrs: UsersExpandedObservationAttrs = {
       id: doc.id,
       eventId,
       createdAt: doc.createdAt,
@@ -245,10 +281,19 @@ function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.Obs
         forms: doc.properties.forms.map(formEntryForDoc)
       },
       attachments: doc.attachments.map(attachmentAttrsForDoc),
-      userId: doc.userId?.toHexString(),
       deviceId: doc.deviceId?.toHexString(),
       important: importantFlagAttrsForDoc(doc),
       favoriteUserIds: doc.favoriteUserIds?.map(x => x.toHexString()),
+    }
+    const populatedUserId = doc.populated('userId') as mongoose.Types.ObjectId | undefined
+    if (populatedUserId) {
+      attrs.userId = populatedUserId.toHexString()
+      if (doc.userId && typeof doc.userId === 'object' && 'displayName' in doc.userId) {
+        attrs.user = { id: attrs.userId, displayName: (doc.userId as any).displayName } as ObservationUserExpanded
+      }
+    }
+    else if (doc.userId) {
+      attrs.userId = doc.userId.toHexString()
     }
     return attrs
   }
@@ -265,11 +310,21 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
   */
   const docImportant = doc.important
   if (docImportant?.userId || docImportant?.timestamp || docImportant?.description) {
-    return {
-      userId: docImportant.userId?.toHexString(),
+    const important: ObservationImportantFlag & { user?: ObservationUserExpanded } = {
       timestamp: docImportant.timestamp,
       description: docImportant.description
     }
+    const populatedImportantUserId = doc.populated('important.userId') as mongoose.Types.ObjectId | undefined
+    if (populatedImportantUserId) {
+      important.userId = populatedImportantUserId.toHexString()
+      if (docImportant.userId && typeof docImportant.userId === 'object' && 'displayName' in docImportant.userId) {
+        important.user = { id: important.userId, displayName: (docImportant.userId as any).displayName }
+      }
+    }
+    else if (docImportant.userId) {
+      important.userId = docImportant.userId.toHexString()
+    }
+    return important
   }
   return undefined
 }
@@ -352,45 +407,6 @@ function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocument {
     size: attrs.size,
     width: attrs.width,
     height: attrs.height,
-  }
-}
-
-function convertFieldForQuery(field: Record<string, any>, keys?: string[], fields?: Record<string, any>): object {
-  keys = keys || [];
-  fields = fields || {};
-
-  for (const childField in field) {
-    keys.push(childField);
-    if (Object(field[childField]) === field[childField]) {
-      convertFieldForQuery(field[childField], keys, fields);
-    } else {
-      const key = keys.join(".");
-      if (field[childField]) {
-        fields[key] = field[childField];
-      }
-      keys.pop();
-    }
-  }
-
-  return fields;
-}
-
-function parseFields(fields: Record<string, any>): Record<string, any> {
-  if (fields) {
-    const state = !!fields.state;
-    delete fields.state;
-
-    fields = convertFieldForQuery(fields);
-    if (fields.id === undefined) fields.id = true; // default is to return id if not specified
-    if (fields.type === undefined) fields.type = true; // default is to return type if not specified
-
-    if (state) {
-      fields.states = { $slice: 1 };
-    }
-
-    return fields;
-  } else {
-    return { states: { $slice: 1 } };
   }
 }
 
