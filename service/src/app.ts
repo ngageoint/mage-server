@@ -115,7 +115,8 @@ import { AnonymousUser, UserWithRole } from './permissions/permissions.role-base
 import {
   AttachmentStore,
   EventScopedObservationRepository,
-  ObservationRepositoryForEvent
+  ObservationRepositoryForEvent,
+  ObservationSearchRepository
 } from './entities/observations/entities.observations';
 import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose';
 import {
@@ -440,6 +441,7 @@ type AppLayer = {
     fetchFeedContent: feedsApi.FetchFeedContent
   }
   observations: {
+    readObservations: observationsApi.ReadObservations
     allocateObservationId: observationsApi.AllocateObservationId
     saveObservation: observationsApi.SaveObservation
     storeAttachmentContent: observationsApi.StoreAttachmentContent
@@ -935,6 +937,24 @@ async function initEventsAppLayer(
   };
 }
 
+/**
+ * TODO: replace with a real implementation once the observation full-text/
+ * condition search engine lands.  Until then, only requests that specify no
+ * field filter reach {@link ReadObservations}, so this should never actually
+ * be called.
+ */
+const observationSearchRepoStub: ObservationSearchRepository = {
+  save(): Promise<void> {
+    throw new Error('ObservationSearchRepository is not yet implemented')
+  },
+  populate(): Promise<number> {
+    throw new Error('ObservationSearchRepository is not yet implemented')
+  },
+  findIdsByFilter(): Promise<string[]> {
+    throw new Error('ObservationSearchRepository is not yet implemented')
+  }
+}
+
 async function initObservationsAppLayer(
   repos: Repositories,
   attachmentHooks: AttachmentHook[]
@@ -959,6 +979,11 @@ async function initObservationsAppLayer(
   );
 
   return {
+    readObservations: observationsImpl.ReadObservations(
+      obsPermissionsService,
+      repos.teams.teamRepo,
+      observationSearchRepoStub
+    ),
     allocateObservationId: observationsImpl.AllocateObservationId(
       obsPermissionsService
     ),

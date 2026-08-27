@@ -1,4 +1,4 @@
-import { UserId } from '../users/entities.users'
+import { User, UserId } from '../users/entities.users'
 import { BBox, Feature, Geometry } from 'geojson'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
 import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
@@ -854,30 +854,124 @@ export class AttachmentNotFoundError extends Error {
   }
 }
 
-export interface ObservationReadOptions {
-  filter?: {
-    geometry?: Geometry
-    startDate?: Date
-    endDate?: Date
-    observationStartDate?: Date
-    observationEndDate?: Date
-    states?: ObservationState['name'][]
-    favorites?: false | { userId?: string }
-    important?: boolean
-    includeAttachments?: boolean
-  },
-  projection?: {
+export type BinaryOperator =
+  | '='
+  | '!='
+  | '>'
+  | '>='
+  | '<'
+  | '<='
+  | 'LIKE'
 
-  }, // todo use fields
-  sort: any
-  fields?: any
-  attachments?: boolean
-  lean?: boolean
-  populate?: boolean
-  stream?: false
+export type ArrayOperator = 'IN' | 'NOT IN'
+
+export type RangeOperator = 'BETWEEN'
+
+export type NullOperator = 'IS NULL' | 'IS NOT NULL'
+
+export type BinaryCondition = {
+  formId: number
+  field: string
+  operator: BinaryOperator
+  value: string | number | boolean
 }
-export type ObservationReadStreamOptions = Omit<ObservationReadOptions, 'stream'> & {
-  stream: true
+
+export type ArrayCondition = {
+  formId: number
+  field: string
+  operator: ArrayOperator
+  value: (string | number | boolean)[]
+}
+
+export type RangeCondition = {
+  formId: number
+  field: string
+  operator: RangeOperator
+  value: [string | number, string | number]
+}
+
+export type NullCondition = {
+  formId: number
+  field: string
+  operator: NullOperator
+}
+
+export type SimpleCondition =
+  | BinaryCondition
+  | ArrayCondition
+  | RangeCondition
+  | NullCondition
+
+export type CompoundCondition =
+  | { and: Condition[] }
+  | { or: Condition[] }
+
+export type Condition = SimpleCondition | CompoundCondition
+
+export type ObservationFieldFilter = {
+  condition?: Condition
+  keyword?: string
+}
+
+export type ObservationUserExpanded = Pick<User, 'id' | 'displayName'>
+
+export type UsersExpandedObservationAttrs = ObservationAttrs & {
+  user?: ObservationUserExpanded
+  important?: Readonly<ObservationImportantFlag> & { user?: ObservationUserExpanded } | undefined | null
+}
+
+export type FindObservationsWhere = {
+  ids?: ObservationId[]
+  lastModifiedAfter?: Date
+  lastModifiedBefore?: Date
+  timestampAfter?: Date
+  timestampBefore?: Date
+  geometryIntersects?: [number, number, number, number]
+  stateIsAnyOf?: ObservationState['name'][]
+  isFlaggedImportant?: boolean
+  isFavoriteOfUser?: UserId
+  hasAttachments?: boolean
+  userIsAnyOf?: UserId[]
+  fieldFilter?: ObservationFieldFilter
+}
+
+export type FindObservationsSortField = 'lastModified' | 'timestamp'
+export type FindObservationsSort = { field: FindObservationsSortField, order?: 1 | -1 }
+
+export type FindObservationsSpecPopulated = {
+  where: FindObservationsWhere
+  populateUserNames: true
+  orderBy?: FindObservationsSort
+  paging?: PagingParameters
+}
+export type FindObservationsSpecUnpopulated = {
+  where: FindObservationsWhere
+  populateUserNames?: false
+  orderBy?: FindObservationsSort
+  paging?: PagingParameters
+}
+export type FindObservationsSpec = FindObservationsSpecPopulated | FindObservationsSpecUnpopulated
+
+export type FindObservationsStreamSpec = {
+  where?: FindObservationsWhere
+  orderBy?: FindObservationsSort
+  includeAttachments?: boolean
+}
+
+export type FindObservationsResult<T> =
+  | { type: 'all', observations: T[] }
+  | { type: 'paged', page: PageOf<T> }
+
+/**
+ * Provides observation full-text/condition search results for a
+ * {@link EventScopedObservationRepository.find | find} or
+ * {@link EventScopedObservationRepository.iterate | iterate} query's
+ * {@link FindObservationsWhere.fieldFilter}.
+ */
+export interface ObservationSearchRepository {
+  save(observation: ObservationAttrs): Promise<void>
+  populate(eventId: MageEventId, observations: AsyncIterable<ObservationAttrs>, force?: boolean): Promise<number>
+  findIdsByFilter(filter: ObservationFieldFilter, event: MageEvent): Promise<ObservationId[]>
 }
 
 /**
@@ -899,7 +993,12 @@ export interface EventScopedObservationRepository {
   save(observation: Observation): Promise<Observation | ObservationRepositoryError>
   findById(id: ObservationId): Promise<Observation | null>
 
-  find(event: MageEvent, options: ObservationReadStreamOptions): AsyncIterable<ObservationAttrs> & { close?: () => void }
+  iterate(spec: FindObservationsStreamSpec): AsyncIterable<ObservationAttrs> & { close?: () => void }
+
+  find<T = ObservationAttrs | UsersExpandedObservationAttrs>(
+    spec: FindObservationsSpec,
+    mapper?: (attrs: ObservationAttrs | UsersExpandedObservationAttrs) => T
+  ): Promise<FindObservationsResult<T>>
 
   /**
    * Return the most recent observation in the event as determined by
