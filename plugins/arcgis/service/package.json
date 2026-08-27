@@ -52,6 +52,7 @@
     "express": "4.22.2"
   },
   "devDependencies": {
+    "@ngageoint/mage.service": "file:../../../service",
     "@eslint/js": "9.24.0",
     "@types/express": "4.17.21",
     "@types/geojson": "7946.0.16",
