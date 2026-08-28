@@ -155,15 +155,19 @@ export interface FormField {
    */
   allowedAttachmentTypes?: AttachmentPresentationType[]
   /**
-   * The minimum constraint applies to the value of a numeric field or to the
-   * number of attachments required on an attachment field.
+   * The minimum constraint applies to the value of a numeric field, the length
+   * of a string, or to the number of attachments required on an attachment field.
    */
   min?: number,
   /**
-   * The maximum constraint applies to the value of a numeric field or to the
-   * number of attachments allowed on an attachment field.
+   * The maximum constraint applies to the value of a numeric field, the length
+   * of a string, or to the number of attachments allowed on an attachment field.
    */
   max?: number
+  /**
+   * Pattern is a regular expression that a string field's value must match
+   */
+  pattern?: string
 }
 
 /**

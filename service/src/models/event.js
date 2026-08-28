@@ -34,7 +34,8 @@ const FieldSchema = new Schema({
   maxRecent: { type: Number, required: false, default: 5 },
   allowedAttachmentTypes: [{ type: String, required: false, enum: ['image', 'video', 'audio'] }],
   min: { type: Number, required: false },
-  max: { type: Number, required: false }
+  max: { type: Number, required: false },
+  pattern: { type: String, required: false },
 }, {
   _id: false
 });

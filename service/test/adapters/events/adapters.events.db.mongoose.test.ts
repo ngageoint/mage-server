@@ -1,11 +1,11 @@
-import { describe, it, before } from 'mocha'
+import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import _ from 'lodash'
 import { MongooseMageEventRepository, MageEventModel } from '../../../lib/adapters/events/adapters.events.db.mongoose'
 import * as legacy from '../../../lib/models/event'
-import { MageEventDocument, MageEventModelInstance } from '../../../src/models/event'
+import { MageEventDocument, MageEventModelInstance } from '../../../lib/models/event'
 import TeamModelModule = require('../../../lib/models/team')
 import { Team } from '../../../lib/entities/teams/entities.teams'
 import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventCreateAttrs } from '../../../lib/entities/events/entities.events'

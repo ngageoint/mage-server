@@ -9,9 +9,9 @@ import mongoose from 'mongoose'
 import { ExportAppLayer, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
 import { GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
 import { Export, ExportStatus } from '../../../lib/entities/exports/entities.exports'
-import { ExportExpanded } from '../../../src/entities/exports/entities.exports'
+import { ExportExpanded } from '../../../lib/entities/exports/entities.exports'
 import { Readable } from 'stream'
-import { UserWithRole } from '../../../src/permissions/permissions.role-based.base'
+import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
 import { entityNotFound, infrastructureError, permissionDenied } from '../../../lib/app.api/app.api.errors'
 
 describe('exports web controller', function() {

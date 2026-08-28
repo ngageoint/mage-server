@@ -1,193 +1,21 @@
-import { UserId } from '../users/entities.users'
-import { BBox, Feature, Geometry } from 'geojson'
-import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
+import { BBox, Geometry } from 'geojson'
+import { validateFieldEntry } from './entities.observations.fields'
+import { validateAttachmentsForField } from './entities.observations.fields.attachment'
+import { validateGeometryFieldType } from './entities.observations.fields.geometry'
+import {
+  Attachment,
+  AttachmentId, FieldConstraintKey, FormEntry, FormEntryId,
+  ObservationAttrs, ObservationFeatureProperties, ObservationId,
+  ObservationImportantFlag,
+  ObservationState,
+  Thumbnail
+} from './entities.observations.types'
 import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
-import { Form, FormField, FormFieldType, FormId } from '../events/entities.events.forms'
-import * as fields from './entities.observations.fields'
-import { JsonPrimitive } from '../entities.json_types'
+import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
+import { Form, FormFieldType, FormId } from '../events/entities.events.forms'
+import { UserId } from '../users/entities.users'
 
-
-export type ObservationId = string
-
-export interface ObservationAttrs extends Feature<Geometry, ObservationFeatureProperties> {
-  id: ObservationId
-  eventId: MageEventId
-  userId?: UserId
-  // TODO: should be a strongly typed id-type
-  deviceId?: string
-  createdAt: Date
-  lastModified: Date
-  attachments: readonly Attachment[]
-  important?: Readonly<ObservationImportantFlag> | undefined | null
-  /**
-   * TODO: scalability - potential problem if thousands of users favorite;
-   * this should not be returned to the client
-   */
-  favoriteUserIds: readonly UserId[]
-  /**
-   * * TODO: scalability - likely not a problem in practice most of the time
-   * * TODO: we do not actually have a reason to maintain an array of states -
-   *   state should just be a single value object, and should not need
-   *   a unique id
-   */
-  states: readonly ObservationState[]
-
-  /**
-   * A boolean flag to indicate whether the observation has geometry.
-   */
-  noGeometry?: boolean
-}
-
-export interface ObservationFeatureProperties {
-  /**
-   * This timestamp is a user-supplied timestamp that indicates the actual time
-   * the observation occurred.
-   */
-  timestamp: Date
-  forms: FormEntry[]
-  /**
-   * The provider is the source of the location coordinate.  This is usually
-   * either 'gps', as in from a mobile device, or 'manual' for a manually
-   * positioned point or polygon.  This could also be something different like
-   * 'wifi' depending on the device.  Android devices in particular from
-   * different manufacturers might submit varying provider strings.
-   */
-  provider?: string
-  /**
-   * The accuracy radius in meters of the location from a device GPS
-   */
-  accuracy?: number
-  /**
-   * Time in milliseconds between the last GPS location update from the device
-   * and the time the device posted the observation
-   */
-  delta?: number
-}
-
-export interface ObservationImportantFlag {
-  userId?: UserId
-  timestamp?: Date
-  description?: string
-}
-
-export interface ObservationState {
-  id: string | PendingEntityId
-  name: 'active' | 'archived'
-  userId?: UserId | undefined
-}
-
-export type FormEntryId = string
-
-/**
- * TODO: create strong types and union for form field values, basically json
- * primitives along with attachment array and geojson geometry object
- */
-export interface FormEntry {
-  id: FormEntryId
-  formId: FormId
-  [formFieldName: string]: FormFieldEntry
-}
-
-export type FormFieldEntryItem = Exclude<JsonPrimitive, null> | Geometry | Date
-export type FormFieldEntry = FormFieldEntryItem | FormFieldEntryItem[] | null
-
-export const AttachmentProcessingStatus = Object.freeze({
-  Pending: 'pending',
-  Success: 'success',
-  Rejected: 'rejected',
-  Error: 'error'
-} as const)
-
-export type AttachmentProcessingStatus = (typeof AttachmentProcessingStatus)[keyof typeof AttachmentProcessingStatus]
-
-
-export type AttachmentId = string
-/**
- * TODO: Currently the web app uses the `name` and `contentType` keys in the
- * attachment object to correlate pending file uploads to newly saved
- * attachments.  While this works most of the time, especially for the web
- * when uplaods are nearly immediate, maybe something like a `pendingUploadId`
- * key would be more reliable for correlating a saved attachment record to
- * the file that the client intends to upload for that attachment.
- */
-export interface Attachment {
-  /**
-   * Attachment IDs are globally unique, not unique only in the context of an
-   * observation or form entry.
-   */
-  id: AttachmentId
-  observationFormId: FormEntryId
-  fieldName: string
-  /**
-   * TODO: Nothing seems to use this property.  Should we remove it, or
-   * actually use it to inform browser caching?
-   */
-  lastModified?: Date
-  /**
-   * The content type is an IANA standard media type string, e.g., `image/jpeg`.
-   */
-  contentType?: string
-  size?: number
-  name?: string
-  width?: number
-  height?: number
-  /**
-   * The attachment's content locator is an abstract term that mostly exists
-   * to reconcile with the legacy design of storing the relative file system
-   * path of an attachment's file on the attachment document itself.  However,
-   * as MAGE transitions to cloud-native infrastructure, one can more easily
-   * envision swapping some sort of cloud-based BLOB storage service for the
-   * legacy local file system storage.  Renaming the old `relativePath`
-   * property to `contentLocator` is an attempt to allow for saving a lookup key
-   * that does not necessarily imply an underlying file system as the storage
-   * layer.  Implementations of the abstract {@link AttachmentStore} interface
-   * would assign their own lookup key to this property, although the intention
-   * of that interface's design is to be completely opaque with respect to how
-   * an implementation stores and indexes attachment content.  An attachment
-   * store implementation may not use `contentLocator` at all.
-   */
-  contentLocator?: string
-  /**
-   * TODO: this needs to allow a more robust value, such as
-   * `undefined | boolean` or maybe even allow `{ error: string }` so the
-   * image plugin's unprocessed attachment query can easily find attachments
-   * that have not yet been touched vs. attachments whose content could not be
-   * oriented.  admins should also be able to easily query for the faulty
-   * attachments to take corrective action if possible.
-   *
-   * also, because this and the `thumbnails` field are specific to the image
-   * plugin, they should both be moved out of the core domain type.
-   */
-  oriented: boolean
-  thumbnails: Thumbnail[]
-  processingStatus?: AttachmentProcessingStatus
-  processingMessage?: string
-  processingHook?: string
-  /**
-   * The ID of this attachment's staged content, if any, returned from
-   * {@link AttachmentStore.stagePendingContent}.  Persisted so a later,
-   * separate process (e.g. a background attachment-processing job) can find
-   * and finalize or discard the staged file, since the original upload
-   * request's local reference to it does not survive past that request.
-   */
-  stagedContentId?: string
-
-  // 
-  processingRetryCount?: number
-}
-
-export interface Thumbnail {
-  minDimension: number
-  /**
-   * See {@link Attachment.contentLocator} for an explanation.
-   */
-  contentLocator?: string
-  contentType?: string
-  size?: number
-  name?: string
-  width?: number
-  height?: number
-}
+export * from './entities.observations.types'
 
 export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
   return {
@@ -415,10 +243,6 @@ export class Observation implements Readonly<ObservationAttrs> {
   attachmentFor(id: AttachmentId): Attachment | null {
     return this.#attachmentsById.get(id) || null
   }
-
-  attachmentsForField(fieldName: string, formEntryId: FormEntryId): Attachment[] {
-    return attachmentsForField(fieldName, formEntryId, this)
-  }
 }
 
 export enum ObservationDomainEventType {
@@ -475,6 +299,11 @@ export interface ObservationValidationResult {
   readonly hasErrors: boolean
   readonly coreAttrsErrors: { readonly [attr in ObservationValidationCoreAttrKey]?: string }
   readonly formCountErrors: readonly [FormId, FormCountError][]
+  /**
+   * This list contains form entry error map entries where the key is the
+   * position of the form entry in the observation properties forms array
+   * and the value is the `FormEntryValidationError`.
+   */
   readonly formEntryErrors: readonly [number, FormEntryValidationError][]
   /**
    * This list contains attachment error map entries where the key is the
@@ -520,6 +349,7 @@ export class TotalFormCountError {
     return `The event allows at most ${this.constraintCount} form ${this.constraintCount > 1 ? 'entries' : 'entry'}.`
   }
 }
+
 export class FormCountError {
 
   static tooFewEntriesForForm(form: Form): FormCountError {
@@ -589,13 +419,6 @@ export type FormFieldValidationErrorAttrs = {
   [Prop in keyof Omit<FormFieldValidationError, 'error'>]: FormFieldValidationError[Prop]
 }
 
-export enum FieldConstraintKey {
-  Value = 'value',
-  Min = 'min',
-  Max = 'max',
-  Required = 'required'
-}
-
 export class FormFieldValidationError {
 
   readonly fieldName: string
@@ -647,16 +470,16 @@ export function validationResultMessage(result: ObservationValidationResult): st
   if (totalFormCountError) {
     errList.push(`${bulletPoint} ${totalFormCountError.message()}`)
   }
-  for (const [formId, err] of formCountErrors) {
+  for (const [ , err ] of formCountErrors) {
     errList.push(`${bulletPoint} ${err.message()}`)
   }
-  for (const [formEntryId, formEntryErr] of formEntryErrors) {
+  for (const [ , formEntryErr ] of formEntryErrors) {
     errList.push(`${bulletPoint} Form entry ${formEntryErr.formEntryPosition + 1} (${formEntryErr.formName}) is invalid.`)
     for (const fieldErr of formEntryErr.fieldErrors.values()) {
       errList.push(`  ${bulletPoint} ${fieldErr.message}`)
     }
   }
-  for (const [pos, attachmentErr] of attachmentErrors) {
+  for (const [ pos, attachmentErr ] of attachmentErrors) {
     errList.push(`${bulletPoint} Attachment ${pos + 1} is invalid.  ${attachmentErr.message}`)
   }
   return errList.join('\n')
@@ -680,12 +503,6 @@ export class ObservationUpdateError extends Error {
 
 export function formEntryForId(formEntryId: FormEntryId, observation: ObservationAttrs): FormEntry | null {
   return observation.properties.forms.find(x => x.id === formEntryId) || null
-}
-
-export function attachmentsForField(field: FormField | string, formEntry: FormEntry | FormEntryId, observationAttrs: ObservationAttrs): Attachment[] {
-  const fieldName = typeof field === 'object' ? field.name : field
-  const formEntryId = typeof formEntry === 'object' && 'id' in formEntry && 'formId' in formEntry ? formEntry.id : formEntry
-  return observationAttrs.attachments.filter(x => x.fieldName === fieldName && x.observationFormId === formEntryId)
 }
 
 /**
@@ -826,7 +643,7 @@ export function putAttachmentThumbnailForMinDimension(observation: Observation, 
  */
 export function thumbnailIndexForTargetDimension(targetDimension: number, attachment: Attachment): number | undefined {
   if (attachment.thumbnails.length === 0) {
-    return void (0)
+    return void(0)
   }
   return attachment.thumbnails.reduce<number | undefined>((best, candidate, index) => {
     if (candidate.minDimension >= targetDimension &&
@@ -834,7 +651,7 @@ export function thumbnailIndexForTargetDimension(targetDimension: number, attach
       return index
     }
     return best
-  }, void (0))
+  }, void(0))
 }
 
 export class AttachmentAddError extends Error {
@@ -866,9 +683,7 @@ export interface ObservationReadOptions {
     important?: boolean
     includeAttachments?: boolean
   },
-  projection?: {
-
-  }, // todo use fields
+  projection?: object, // todo use fields
   sort: any
   fields?: any
   attachments?: boolean
@@ -876,6 +691,7 @@ export interface ObservationReadOptions {
   populate?: boolean
   stream?: false
 }
+
 export type ObservationReadStreamOptions = Omit<ObservationReadOptions, 'stream'> & {
   stream: true
 }
@@ -977,7 +793,7 @@ export class StagedAttachmentContent extends StagedAttachmentContentRef {
  * TODO: Maybe instead of the `null | Observation | AttachmentStoreError`
  * pattern many of these method signatures use, a single `AttachmentStoreResult`
  * class with a `success` flag and `observation` and `error` properties would
- * be eaiser for clients to consume.
+ * be easier for clients to consume.
  */
 export interface AttachmentStore {
   /**
@@ -1095,12 +911,9 @@ function validateObservationCoreAttrs(validation: ObservationValidationContext):
   if (observationAttrs.type !== 'Feature') {
     validation.addCoreAttrsError('type', `The observation GeoJSON type must be 'Feature'.`)
   }
-  const invalidGeometry = fields.geometry.GeometryFieldValidation(
-    { title: 'Geometry', id: 0, name: 'geometry', required: true, type: FormFieldType.Geometry },
-    observationAttrs.geometry as any,
-    { succeeded: () => null, failedBecauseTheEntry: reason => reason })
-  if (invalidGeometry) {
-    validation.addCoreAttrsError('geometry', `The observation geometry ${invalidGeometry}`)
+  const coreGeometryResult = validateGeometryFieldType(observationAttrs.geometry)
+  if (coreGeometryResult.invalid) {
+    validation.addCoreAttrsError('geometry', `The observation geometry ${coreGeometryResult.failedBecauseTheEntry}`)
   }
   if (!(observationAttrs.properties.timestamp instanceof Date)) {
     validation.addCoreAttrsError('timestamp', 'The observation requires a valid timestamp.')
@@ -1120,7 +933,7 @@ function validateObservationFormEntries(validation: ObservationValidationContext
     return activeFormCounts
   }, new Map<FormId, number>())
   const formEntryIds = new Set<FormEntryId>()
-  const formEntryCounts = observationAttrs.properties.forms.reduce((formEntryCounts, formEntry, formEntryPos) => {
+  const formEntryCounts: Map<FormId, number> = observationAttrs.properties.forms.reduce((formEntryCounts, formEntry, formEntryPos) => {
     const formEntryError = new FormEntryValidationError(formEntry.id, formEntryPos)
     if (formEntryIds.has(formEntry.id)) {
       formEntryError.addEntryLevelError(FormEntryValidationErrorReason.DuplicateId)
@@ -1202,81 +1015,39 @@ function validateAttachment(attachment: Attachment, observation: ObservationAttr
   return null
 }
 
-interface FormFieldValidationContext {
-  field: FormField,
-  fieldEntry: FormFieldEntry,
-  formEntry: FormEntry,
-  observationAttrs: ObservationAttrs,
-  mageEvent: MageEvent,
-}
-
-function FormFieldValidationResult(context: FormFieldValidationContext): fields.SimpleFieldValidationResult<FormFieldValidationError, FormFieldEntry | undefined> {
-  return {
-    failedBecauseTheEntry(reason: string, constraint: FieldConstraintKey = FieldConstraintKey.Value): FormFieldValidationError {
-      return new FormFieldValidationError({ fieldName: context.field.name, message: `${context.field.title} ${reason}`, constraint: constraint })
-    },
-    succeeded(parsed?: FormFieldEntry): typeof parsed { return parsed }
-  }
-}
-
-interface FormFieldValidationRule {
-  (context: FormFieldValidationContext): FormFieldValidationError | FormFieldEntry | undefined
-}
-
-function validateRequiredThen(rule: FormFieldValidationRule): FormFieldValidationRule {
-  return context => {
-    const requiredError = fields.required.RequiredFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))
-    if (requiredError) {
-      return requiredError
-    }
-    return rule(context)
-  }
-}
-
-// TODO: these could be improved to be more cleanly comosable in a functional way, e.g., monadic. i'll figure that out eventually
-const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRule } = {
-  // attachments use min/max constraints, not required constraint
-  [FormFieldType.Attachment]: context => fields.attachment.AttachmentFieldValidation(context.field, context.formEntry.id, context.observationAttrs, FormFieldValidationResult(context)),
-  [FormFieldType.CheckBox]: validateRequiredThen(context => fields.checkbox.CheckboxFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.DateTime]: validateRequiredThen(context => fields.date.DateFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Dropdown]: validateRequiredThen(context => fields.select.SelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Email]: validateRequiredThen(context => fields.email.EmailFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Geometry]: validateRequiredThen(context => fields.geometry.GeometryFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Hidden]: context => null,
-  [FormFieldType.MultiSelectDropdown]: validateRequiredThen(context => fields.multiselect.MultiSelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Numeric]: validateRequiredThen(context => fields.numeric.NumericFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Password]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Radio]: validateRequiredThen(context => fields.select.SelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.Text]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-  [FormFieldType.TextArea]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
-}
-
 /**
- * TODO: This retains legacy functionality of only keying of form fields in the
- * event form to validate the values in the form entry.  However, this leaves
- * keys in the form entry that do not have a corresponding form field.  A
- * client could thus submit an observation with thousands of keys in a fomr
- * entry.
+ * TODO: This retains legacy functionality of processing field entries based
+ * only on the form definition fields.  However, this leaves keys in the form
+ * entry that do not have a corresponding form field.  A client could thus
+ * submit an observation with thousands of keys in a form entry.
  */
 function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryError: FormEntryValidationError, validation: ObservationValidationContext): void {
-  const { mageEvent, observationAttrs } = validation
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
-  const userFields = new Set(form.userFields || [])
   activeFields.forEach(field => {
-    const fieldEntry = formEntry[field.name]
-    const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
-    const isUserField = userFields.has(field.name)
-    const isUserSelectField = isUserField && (field.type === FormFieldType.Dropdown || field.type === FormFieldType.Radio)
-    const rule = isUserSelectField
-      ? validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context)))
-      : FieldTypeValidationRules[field.type]
-    const resultEntry = rule(fieldValidation)
-    if (resultEntry instanceof FormFieldValidationError) {
-      formEntryError.addFieldError(resultEntry)
+    if (field.type === FormFieldType.Attachment) {
+      const attachmentFieldResult = validateAttachmentsForField(field, formEntry.id, validation.observationAttrs)
+      if (attachmentFieldResult.invalid) {
+        formEntryError.addFieldError(new FormFieldValidationError({
+          fieldName: field.name,
+          constraint: attachmentFieldResult.failedConstraint,
+          message: `${field.title} ${attachmentFieldResult.failedBecauseTheEntry}`
+        }))
+      }
+      return
     }
-    else if (resultEntry !== void (0)) {
-      formEntry[field.name] = resultEntry
+    const fieldEntry = formEntry[field.name]
+    const fieldEntryResult = validateFieldEntry(fieldEntry, field)
+    if (fieldEntryResult.invalid) {
+      const err = new FormFieldValidationError({
+        fieldName: field.name,
+        constraint: fieldEntryResult.failedConstraint,
+        message: `${field.title} ${fieldEntryResult.failedBecauseTheEntry}`,
+      })
+      formEntryError.addFieldError(err)
+    }
+    else if (fieldEntryResult.normalizedEntry !== undefined) {
+      formEntry[field.name] = fieldEntryResult.normalizedEntry
     }
   })
 }
@@ -1417,3 +1188,4 @@ function mergePendingDomainEvents(from: Observation, nextEvents: PendingObservat
   return merged
 }
 
+export { fieldValidation } from './entities.observations.fields.core'

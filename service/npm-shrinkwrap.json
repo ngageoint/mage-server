@@ -50,6 +50,7 @@
         "passport-oauth2": "1.8.0",
         "passport-openidconnect": "0.1.2",
         "pug": "3.0.3",
+        "re2js": "^2.3.1",
         "rfc5646": "3.0.0",
         "skia-canvas": "3.0.8",
         "superagent": "8.1.2",
@@ -9831,6 +9832,15 @@
       "license": "MIT",
       "engines": {
         "node": ">=0.10.0"
+      }
+    },
+    "node_modules/re2js": {
+      "version": "2.8.6",
+      "resolved": "https://registry.npmjs.org/re2js/-/re2js-2.8.6.tgz",
+      "integrity": "sha512-xLgQil4kIUCrAzVk9fRSkxkFNwmygLFjVxXrLc65aE1F0+Zsb8rxumFBy4XKyvgMCTL6kilDq3EZ0piE2dP/Dg==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=18.0.0"
       }
     },
     "node_modules/read-pkg": {

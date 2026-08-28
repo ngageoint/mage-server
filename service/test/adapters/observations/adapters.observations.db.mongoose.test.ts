@@ -6,10 +6,10 @@ import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapte
 import { MongooseObservationRepository } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
-import { MageEventDocument, MageEventModelInstance } from '../../../src/models/event'
+import { MageEventDocument, MageEventModelInstance } from '../../../lib/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
-import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
+import { ObservationDocument, ObservationModel } from '../../../lib/models/observation'
 import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentProcessingStatus, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
@@ -17,6 +17,7 @@ import { PendingEntityId } from '../../../lib/entities/entities.global'
 import uniqid from 'uniqid'
 import EventEmitter from 'events'
 import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute'
+import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
 
 function observationStub(id: ObservationId, eventId: MageEventId): ObservationAttrs {
   const now = Date.now()
@@ -217,7 +218,7 @@ describe('mongoose observation repository', function () {
         expect(_.omit(savedAttrs, 'states')).to.deep.equal(_.omit(beforeSaveAttrs, 'states'))
         expect(savedAttrs.states).to.have.length(1)
         expect(savedAttrs.states[0].id).to.be.a('string')
-        expect(savedAttrs.states[0].name).to.equal('active')
+        expect(savedAttrs.states[0].name).to.equal(ObservationStateName.Active)
         expect(foundAttrs).to.deep.equal(savedAttrs)
         expect(count).to.equal(1)
       })
@@ -266,12 +267,12 @@ describe('mongoose observation repository', function () {
         attrs.states = [
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'active',
+            name: ObservationStateName.Active,
             userId: (new mongoose.Types.ObjectId()).toHexString()
           },
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'archived',
+            name: ObservationStateName.Archived,
             userId: undefined
           }
         ]
@@ -317,7 +318,7 @@ describe('mongoose observation repository', function () {
           }
         ]
         origAttrs.states = [
-          { id: (new mongoose.Types.ObjectId()).toHexString(), name: 'active', userId: (new mongoose.Types.ObjectId()).toHexString() }
+          { id: (new mongoose.Types.ObjectId()).toHexString(), name: ObservationStateName.Active, userId: (new mongoose.Types.ObjectId()).toHexString() }
         ]
         origAttrs.properties.forms = [
           {
@@ -342,7 +343,7 @@ describe('mongoose observation repository', function () {
         origDoc = await model.findById(id) as ObservationDocument
       })
 
-      it('uses put/replace semantics to save the observation as the attributes specify', async function () {
+      it('uses put/replace semantics to save the observation as the attributes specify', async function() {
 
         const putAttrs = copyObservationAttrs(origAttrs)
         putAttrs.geometry = {
@@ -350,7 +351,7 @@ describe('mongoose observation repository', function () {
           coordinates: [12, 34]
         }
         putAttrs.states = [
-          { name: 'archived', id: PendingEntityId }
+          { name: ObservationStateName.Archived, id: PendingEntityId }
         ]
         putAttrs.properties.forms = [
           {
@@ -373,7 +374,7 @@ describe('mongoose observation repository', function () {
         expect(omitKeysAndUndefinedValues(savedAttrs, 'lastModified', 'states')).to.deep.equal(omitKeysAndUndefinedValues(putAttrs, 'lastModified', 'states'))
         expect(omitKeysAndUndefinedValues(foundAttrs, 'lastModified', 'states')).to.deep.equal(omitKeysAndUndefinedValues(putAttrs, 'lastModified', 'states'))
         expect(savedAttrs.states[0].id).to.be.a('string')
-        expect(savedAttrs.states[0].name).to.equal('archived')
+        expect(savedAttrs.states[0].name).to.equal(ObservationStateName.Archived)
         expect(savedAttrs.states[0].userId).to.be.undefined
         expect(() => new mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
         expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
@@ -389,7 +390,7 @@ describe('mongoose observation repository', function () {
           coordinates: [ 12, 34 ]
         }
         putAttrs.states = [
-          { name: 'archived', id: PendingEntityId }
+          { name: ObservationStateName.Archived, id: PendingEntityId }
         ]
         putAttrs.properties.forms = [
           {
@@ -470,7 +471,7 @@ describe('mongoose observation repository', function () {
       state1Stub.states = [
         {
           id: PendingEntityId,
-          name: 'archived',
+          name: ObservationStateName.Archived,
           userId: (new mongoose.Types.ObjectId()).toHexString()
         }
       ]
@@ -481,7 +482,7 @@ describe('mongoose observation repository', function () {
       state2Stub.states = [
         {
           id: PendingEntityId,
-          name: 'active',
+          name: ObservationStateName.Active,
           userId: (new mongoose.Types.ObjectId()).toHexString()
         },
         state1Saved.states[0],
@@ -492,14 +493,14 @@ describe('mongoose observation repository', function () {
 
       expect(state1Saved.states).to.have.length(1)
       expect(state1Saved.states[0]).to.deep.include({
-        name: 'archived',
+        name: ObservationStateName.Archived,
         userId: state1Stub.states[0].userId
       })
       expect(() => new mongoose.Types.ObjectId(state1Saved.states[0].id as string).toHexString()).not.to.throw()
       expect(copyObservationAttrs(state1Found)).to.deep.equal(copyObservationAttrs(state1Saved))
       expect(state2Saved.states).to.have.length(2)
       expect(state2Saved.states[0]).to.deep.include({
-        name: 'active',
+        name: ObservationStateName.Active,
         userId: state2Stub.states[0].userId
       })
       expect(() => new mongoose.Types.ObjectId(state2Saved.states[0].id as string).toHexString()).not.to.throw()
@@ -511,11 +512,11 @@ describe('mongoose observation repository', function () {
     it('retains ids for existing entities')
   })
 
-  describe('updating individual attachments', function () {
+  describe('updating individual attachments', function() {
 
     let obs: Observation
 
-    beforeEach(async function () {
+    beforeEach(async function() {
       const id = await repo.allocateObservationId()
       const formEntryId = (await repo.nextFormEntryIds())[0]
       const attrs = observationStub(id, event.id)
@@ -563,7 +564,7 @@ describe('mongoose observation repository', function () {
       expect(obs.validation.hasErrors).to.be.false
     })
 
-    it('saves the content meta-data for the given attachment id', async function () {
+    it('saves the content meta-data for the given attachment id', async function() {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 674523,
@@ -608,7 +609,7 @@ describe('mongoose observation repository', function () {
       expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
     })
 
-    it('unsets keys with undefined values', async function () {
+    it('unsets keys with undefined values', async function() {
 
       const patch: AttachmentPatchAttrs = {
         size: undefined,
@@ -627,7 +628,7 @@ describe('mongoose observation repository', function () {
       expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
     })
 
-    it('does not overwrite changes of concurrent update', async function () {
+    it('does not overwrite changes of concurrent update', async function() {
 
       const contentInfo1: AttachmentContentPatchAttrs = {
         size: 111111,
@@ -654,7 +655,7 @@ describe('mongoose observation repository', function () {
       expect(fetched.attachments[2]).to.deep.include(contentInfo3)
     })
 
-    it('returns null if the observation does not exist', async function () {
+    it('returns null if the observation does not exist', async function() {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 111111,
@@ -675,7 +676,7 @@ describe('mongoose observation repository', function () {
       expect(copyObservationAttrs(all[0])).to.deep.equal(copyObservationAttrs(obs))
     })
 
-    it('returns an error if the attachment id does not exist on the observation', async function () {
+    it('returns an error if the attachment id does not exist on the observation', async function() {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 111111,
@@ -689,11 +690,11 @@ describe('mongoose observation repository', function () {
     })
   })
 
-  describe('dispatching domain events', function () {
+  describe('dispatching domain events', function() {
 
     let obs: Observation
 
-    beforeEach(async function () {
+    beforeEach(async function() {
       const id = await repo.allocateObservationId()
       const formId = await repo.nextFormEntryIds().then(x => x[0])
       const attachmentIds = await repo.nextAttachmentIds(3)
@@ -738,7 +739,7 @@ describe('mongoose observation repository', function () {
       obs = await repo.save(obs) as Observation
     })
 
-    it('dispatches pending events on the observation after the observation saves', async function () {
+    it('dispatches pending events on the observation after the observation saves', async function() {
 
       /*
       TODO: should there a mechanism to ensure domain events cannot be
@@ -762,7 +763,7 @@ describe('mongoose observation repository', function () {
       }
     })
 
-    it('emits readonly events', async function () {
+    it('emits readonly events', async function() {
 
       const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
       const receivedEvents = [] as ObservationEmitted<PendingObservationDomainEvent>[]
@@ -790,7 +791,7 @@ describe('mongoose observation repository', function () {
       expect(receivedEvent.removedAttachments).to.equal(removedAttachments)
     })
 
-    it('does not dispatch events if the observation is invalid', async function () {
+    it('does not dispatch events if the observation is invalid', async function() {
 
       const mod = Observation.assignTo(obs, {
         ...copyObservationAttrs(obs),
@@ -809,7 +810,7 @@ describe('mongoose observation repository', function () {
       domainEvents.didNotReceive().emit(Arg.all())
     })
 
-    it('does not dispatch events if there was a database saving the observation', async function () {
+    it('does not dispatch events if there was a database saving the observation', async function() {
 
       let mod = Observation.evaluate({
         ...copyObservationAttrs(obs),
