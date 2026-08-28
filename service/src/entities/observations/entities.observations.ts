@@ -962,6 +962,15 @@ export type FindObservationsResult<T> =
   | { type: 'all', observations: T[] }
   | { type: 'paged', page: PageOf<T> }
 
+export type ObservationSearchAttrs = {
+  observationId: ObservationId
+  eventId: MageEventId
+  formId: FormId
+  formEntryId: FormEntryId
+  text: string
+  [fieldName: string]: any
+}
+
 /**
  * Provides observation full-text/condition search results for a
  * {@link EventScopedObservationRepository.find | find} or

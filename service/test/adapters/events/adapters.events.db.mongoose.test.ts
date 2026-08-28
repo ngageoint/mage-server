@@ -461,8 +461,57 @@ describe('event mongoose repository', function () {
     await expect(repo.create()).to.eventually.rejectWith(Error)
   })
 
-  it('does not allow updating events', async function () {
-    await expect(repo.update({ id: eventDoc._id, feedIds: ['not_allowed'] })).to.eventually.rejectWith(Error)
+  describe('updating events', function () {
+
+    it('updates allowed attributes', async function () {
+      const updated = await repo.update({ id: eventDoc._id, name: 'Renamed Event', description: 'new description' })
+      expect(updated?.name).to.equal('Renamed Event')
+      expect(updated?.description).to.equal('new description')
+    })
+
+    it('ignores attributes that are not allowed to be updated', async function () {
+      const before = await model.findById(eventDoc._id)
+      const updated = await repo.update({ id: eventDoc._id, feedIds: [ 'not_allowed' ] } as any)
+      expect(updated?.feedIds).to.deep.equal(before?.feedIds ?? [])
+    })
+
+    it('returns null if the event does not exist', async function () {
+      const updated = await repo.update({ id: 999999999, name: 'does not exist' })
+      expect(updated).to.be.null
+    })
+
+    it('updates observationSearchStatus', async function () {
+      const updated = await repo.update({ id: eventDoc._id, observationSearchStatus: 'indexed' })
+      expect(updated?.observationSearchStatus).to.equal('indexed')
+    })
+  })
+
+  describe('search indexing status', function () {
+
+    it('updateSearchStatusForEvents sets the status on all events', async function () {
+      await repo.updateSearchStatusForEvents('pending')
+      const found = await model.findById(eventDoc._id)
+      expect(found?.observationSearchStatus).to.equal('pending')
+    })
+
+    it('claimIndexing succeeds and sets status to running when not already running', async function () {
+      const claimed = await repo.claimIndexing(eventDoc._id)
+      expect(claimed).to.be.true
+      const found = await model.findById(eventDoc._id)
+      expect(found?.observationSearchStatus).to.equal('running')
+    })
+
+    it('claimIndexing fails when already running', async function () {
+      const firstClaim = await repo.claimIndexing(eventDoc._id)
+      const secondClaim = await repo.claimIndexing(eventDoc._id)
+      expect(firstClaim).to.be.true
+      expect(secondClaim).to.be.false
+    })
+
+    it('claimIndexing returns false for an event that does not exist', async function () {
+      const claimed = await repo.claimIndexing(999999999)
+      expect(claimed).to.be.false
+    })
   })
 })
 
