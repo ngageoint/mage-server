@@ -43,7 +43,7 @@ geoJsonValidator.define('Position', function (position: any[]) {
   return errors
 })
 
-export function validateGeometryFieldType(entry: FormFieldEntry): FieldValidationResult {
+export function validateGeometryFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isValidGeometryType(entry)) {
     return fieldValidation.failedBecauseTheEntry(`must be a GeoJSON geometry of type ${Object.keys(validGeometryTypes).join(', ')}.`, FieldConstraintKeys.Value)
   }

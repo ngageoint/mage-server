@@ -89,7 +89,7 @@ describe('observation entities', function() {
     }
   })
 
-  describe('observation validation', function() {
+  describe('validation', function() {
 
     it('fails when the event id does not match the event', function() {
 
@@ -748,6 +748,141 @@ describe('observation entities', function() {
         expect(invalid.hasErrors).to.be.false
       })
 
+      it('does not normalize absent optional field entries to null entry', function() {
+
+        const choices: FormFieldChoice[] = [
+          Object.freeze({ id: 0, title: 'Choice 0', value: 0 }),
+          Object.freeze({ id: 1, title: 'Choice 1', value: 1 }),
+          Object.freeze({ id: 2, title: 'Choice 2', value: 2 })
+        ]
+        const form: Form = {
+          id: 0,
+          fields: [
+            {
+              /*
+              attachments use min/max to constrain the number of required
+              attachments, so using the required flag does not make sense
+              */
+              id: 0,
+              name: FormFieldType.Attachment,
+              required: false,
+              title: 'Field 1',
+              type: FormFieldType.Attachment,
+              allowedAttachmentTypes: [ AttachmentPresentationType.Image ],
+              min: 0
+            },
+            {
+              id: 1,
+              name: FormFieldType.CheckBox,
+              required: false,
+              title: 'Field 2',
+              type: FormFieldType.CheckBox
+            },
+            {
+              id: 2,
+              name: FormFieldType.DateTime,
+              required: false,
+              title: 'Field 2',
+              type: FormFieldType.DateTime
+            },
+            {
+              id: 3,
+              name: FormFieldType.Dropdown,
+              required: false,
+              title: 'Field 3',
+              type: FormFieldType.Dropdown,
+              choices: [ ...choices ]
+            },
+            {
+              id: 4,
+              name: FormFieldType.Email,
+              required: false,
+              title: 'Field 4',
+              type: FormFieldType.Email
+            },
+            {
+              id: 5,
+              name: FormFieldType.Geometry,
+              required: false,
+              title: 'Field 5',
+              type: FormFieldType.Geometry
+            },
+            {
+              id: 6,
+              name: FormFieldType.Hidden,
+              required: false,
+              title: 'Field 6',
+              type: FormFieldType.Hidden,
+              value: 'secret'
+            },
+            {
+              id: 7,
+              name: FormFieldType.MultiSelectDropdown,
+              required: false,
+              title: 'Field 7',
+              type: FormFieldType.MultiSelectDropdown,
+              choices: [ ...choices ]
+            },
+            {
+              id: 8,
+              name: FormFieldType.Numeric,
+              required: false,
+              title: 'Field 8',
+              type: FormFieldType.Numeric,
+              min: Number.MAX_SAFE_INTEGER
+            },
+            {
+              id: 9,
+              name: FormFieldType.Password,
+              required: false,
+              title: 'Field 9',
+              type: FormFieldType.Password,
+            },
+            {
+              id: 10,
+              name: FormFieldType.Radio,
+              required: false,
+              title: 'Field 10',
+              type: FormFieldType.Radio,
+              choices: [ ...choices ]
+            },
+            {
+              id: 11,
+              name: FormFieldType.Text,
+              required: false,
+              title: 'Field 11',
+              type: FormFieldType.Text
+            },
+            {
+              id: 12,
+              name: FormFieldType.TextArea,
+              required: false,
+              title: 'Field 12',
+              type: FormFieldType.TextArea
+            },
+          ],
+          archived: false,
+          color: 'green',
+          name: 'form0',
+          userFields: [],
+        }
+        mageEventAttrs = {
+          ...mageEventAttrs,
+          forms: [ form ]
+        }
+        const emptyFormEntry = Object.freeze<FormEntry>({
+          id: 'entry0',
+          formId: form.id
+        })
+        const observationAttrs = makeObservationAttrs(mageEventAttrs.id)
+        const mageEvent = new MageEvent(mageEventAttrs)
+        observationAttrs.properties.forms = [ emptyFormEntry ]
+        observationAttrs.attachments = []
+        const evaluated = Observation.evaluate(observationAttrs, mageEvent)
+        expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+        expect(evaluated.formEntries[0]).to.deep.equal(emptyFormEntry)
+      })
+
       it('trims whitespace from string field entry', function() {
         type StringFieldType =
           | FormFieldType.Dropdown
@@ -1366,7 +1501,7 @@ describe('observation entities', function() {
           const evaluated = Observation.evaluate(observationAttrs, mageEvent)
 
           expect(evaluated.validation.hasErrors).to.be.false
-          expect(evaluated.formEntries[0]).have.property(field.name, null)
+          expect(evaluated.formEntries[0]).not.to.have.property(field.name)
         })
       })
 

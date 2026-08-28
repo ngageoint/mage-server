@@ -10,7 +10,7 @@ import {
   FormFieldEntry,
 } from './entities.observations.types'
 
-type FieldConstraintValidation = (entry: FormFieldEntry, field: FormField) => FieldValidationResult
+type FieldConstraintValidation = (entry: FormFieldEntry | undefined, field: FormField) => FieldValidationResult
 
 function validateEach(...constraints: FieldConstraintValidation[]): FieldConstraintValidation {
   return (entry, field): FieldValidationResult => {
@@ -44,7 +44,7 @@ function validateEach(...constraints: FieldConstraintValidation[]): FieldConstra
  *
  * Otherwise, validation passes without normalizing the entry.
  */
-function validateRequiredConstraint(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validateRequiredConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
   // TODO: trim `string` value?
   if (isString(entry)) {
     entry = entry.trim()
@@ -54,7 +54,7 @@ function validateRequiredConstraint(entry: FormFieldEntry, field: FormField): Fi
       return fieldValidation.failedBecauseTheEntry('is required', FieldConstraintKeys.Required)
     }
     // no further validation for an optional, absent entry
-    return fieldValidation.resolved(null)
+    return fieldValidation.resolved(entry === undefined ? undefined : null)
   }
   return fieldValidation.passed(entry)
 }
@@ -63,7 +63,7 @@ function validateRequiredConstraint(entry: FormFieldEntry, field: FormField): Fi
  * Validate the entry using {@link validateRequiredConstraint}, but return the original, untrimmed entry if the entry
  * contains any characters other than white space.
  */
-function validateRequiredUntrimmed(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validateRequiredUntrimmed(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
   const requiredResult = validateRequiredConstraint(entry, field)
   if (requiredResult.invalid || requiredResult.normalizedEntry === null) {
     return requiredResult
@@ -78,7 +78,7 @@ function noopValidation(): FieldValidationResult {
   return fieldValidation.resolved()
 }
 
-export const validateFieldTypeConstraint: Record<FormFieldType, (entry: FormFieldEntry, field: FormField) => FieldValidationResult> = {
+export const validateFieldTypeConstraint: Record<FormFieldType, (entry: FormFieldEntry | undefined, field: FormField) => FieldValidationResult> = {
   [FormFieldType.Attachment]: noopValidation,
   [FormFieldType.CheckBox]: validateEach(validateRequiredConstraint, validateCheckboxFieldType),
   [FormFieldType.DateTime]: validateEach(validateRequiredConstraint, validateDateTimeFieldType),
@@ -94,12 +94,12 @@ export const validateFieldTypeConstraint: Record<FormFieldType, (entry: FormFiel
   [FormFieldType.Radio]: validateEach(validateRequiredConstraint, validateChoicesConstraint),
 }
 
-function validateCheckboxFieldType(entry: FormFieldEntry): FieldValidationResult {
+function validateCheckboxFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   return isBoolean(entry) ? fieldValidation.passed() :
     fieldValidation.failedBecauseTheEntry('must be true or false', FieldConstraintKeys.Value)
 }
 
-function validateDateTimeFieldType(entry: FormFieldEntry): FieldValidationResult {
+function validateDateTimeFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (isString(entry) || entry instanceof Date) {
     const date = moment(entry, moment.ISO_8601, true)
     if (date.isValid()) {
@@ -110,14 +110,14 @@ function validateDateTimeFieldType(entry: FormFieldEntry): FieldValidationResult
     `must be an ISO-8601 date, e.g., ${new Date().toISOString()}`, FieldConstraintKeys.Value)
 }
 
-function validateTextFieldType(entry: FormFieldEntry): FieldValidationResult {
+function validateTextFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isString(entry)) {
     return fieldValidation.failedBecauseTheEntry('must be a string', FieldConstraintKeys.Value)
   }
   return fieldValidation.passed()
 }
 
-function validateNumericFieldType(entry: FormFieldEntry): FieldValidationResult {
+function validateNumericFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isNumber(entry)) {
     return fieldValidation.failedBecauseTheEntry('must be a number', FieldConstraintKeys.Value)
   }
@@ -126,21 +126,21 @@ function validateNumericFieldType(entry: FormFieldEntry): FieldValidationResult 
 
 const emailRegex = /^[^\s@]+@[^\s@]+\./
 
-function validateEmailFieldType(entry: FormFieldEntry): FieldValidationResult {
+function validateEmailFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (isString(entry) && emailRegex.test(entry)) {
     return fieldValidation.passed()
   }
   return fieldValidation.failedBecauseTheEntry('must be a valid email address', FieldConstraintKeys.Value)
 }
 
-function validateMultiSelectFieldType(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validateMultiSelectFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isArray(entry)) {
     return fieldValidation.failedBecauseTheEntry('must be an array', FieldConstraintKeys.Value)
   }
   return fieldValidation.passed()
 }
 
-function validateMinConstraint(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validateMinConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
   if (!isNumber(field.min)) {
     return fieldValidation.passed()
   }
@@ -159,7 +159,7 @@ function validateMinConstraint(entry: FormFieldEntry, field: FormField): FieldVa
   return fieldValidation.passed()
 }
 
-function validateMaxConstraint(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validateMaxConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
   if (!isNumber(field.max)) {
     return fieldValidation.passed()
   }
@@ -178,7 +178,7 @@ function validateMaxConstraint(entry: FormFieldEntry, field: FormField): FieldVa
   return fieldValidation.passed()
 }
 
-function validatePatternConstraint(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validatePatternConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
   if (!isString(field.pattern)) {
     return fieldValidation.passed()
   }
@@ -193,7 +193,7 @@ function validatePatternConstraint(entry: FormFieldEntry, field: FormField): Fie
   return fieldValidation.failedBecauseTheEntry('must conform to the field pattern.', FieldConstraintKeys.Pattern)
 }
 
-function validateChoicesConstraint(entry: FormFieldEntry, field: FormField): FieldValidationResult {
+function validateChoicesConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
   const entryItems = isArray(entry) ? entry : [entry]
   const choices = (field.choices || [])
   const isValidChoice = choices.reduce((choices, choice) => {
