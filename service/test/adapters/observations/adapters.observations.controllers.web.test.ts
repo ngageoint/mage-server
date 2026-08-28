@@ -134,6 +134,291 @@ describe('observations web controller', function () {
     })
   })
 
+  describe('GET / and POST /search', function () {
+
+    it('returns the array of observations for an unpaged search, mapped through the request mapping function', async function () {
+
+      const observations: ExoObservation[] = [
+        {
+          id: uniqid(),
+          eventId: mageEvent.id,
+          createdAt: new Date(),
+          lastModified: new Date(),
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+          properties: { timestamp: new Date(), forms: [] },
+          favoriteUserIds: [],
+          attachments: []
+        }
+      ]
+      app.readObservations(Arg.any()).mimicks(async req => {
+        return AppResponse.success(observations.map(req.mapping!))
+      })
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .set('accept', 'application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(
+        observations.map(o => jsonForObservation(o, `${baseUrl}/events/${mageEvent.id}/observations`))
+      )))
+    })
+
+    it('returns a page object when page_size is given', async function () {
+
+      const page = { totalCount: 1, pageSize: 10, pageIndex: 0, items: [] as ExoObservation[] }
+      app.readObservations(Arg.any()).resolves(AppResponse.success(page))
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations?page_size=10`)
+        .set('accept', 'application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.body).to.deep.equal(page)
+    })
+
+    it('supports POST /search with the same body-based parameters', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      const res = await client.post(`${basePath}/events/${mageEvent.id}/observations/search`)
+        .set('accept', 'application/json')
+        .send({ startDate: '2020-01-01T00:00:00Z' })
+
+      expect(res.status).to.equal(200)
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.lastModifiedAfter).to.deep.equal(new Date('2020-01-01T00:00:00Z'))
+        return true
+      }))
+    })
+
+    it('parses startDate and endDate to lastModifiedAfter/Before', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ startDate: '2020-01-01T00:00:00Z', endDate: '2020-02-01T00:00:00Z' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.lastModifiedAfter).to.deep.equal(new Date('2020-01-01T00:00:00Z'))
+        expect(req.search.lastModifiedBefore).to.deep.equal(new Date('2020-02-01T00:00:00Z'))
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid startDate', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ startDate: 'not a date' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses observationStartDate and observationEndDate to timestampAfter/Before', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ observationStartDate: '2020-01-01T00:00:00Z', observationEndDate: '2020-02-01T00:00:00Z' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.timestampAfter).to.deep.equal(new Date('2020-01-01T00:00:00Z'))
+        expect(req.search.timestampBefore).to.deep.equal(new Date('2020-02-01T00:00:00Z'))
+        return true
+      }))
+    })
+
+    it('parses a comma-separated bbox into geometryIntersects', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ bbox: '1,2,3,4' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.geometryIntersects).to.deep.equal([ 1, 2, 3, 4 ])
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid bbox', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ bbox: '1,2,3' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses states into stateIsAnyOf', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ states: 'active,archived' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.stateIsAnyOf).to.deep.equal([ 'active', 'archived' ])
+        return true
+      }))
+    })
+
+    it('returns 400 for states with no valid values', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ states: 'bogus' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses favoritedBy into isFavoriteOfUser', async function () {
+
+      const userId = uniqid()
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ favoritedBy: userId })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.isFavoriteOfUser).to.equal(userId)
+        return true
+      }))
+    })
+
+    it('parses important=true and important=false', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`).query({ important: 'true' })
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`).query({ important: 'false' })
+
+      app.received(1).readObservations(Arg.is(req => req.search.isFlaggedImportant === true))
+      app.received(1).readObservations(Arg.is(req => req.search.isFlaggedImportant === undefined))
+    })
+
+    it('returns 400 for an invalid important value', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ important: 'maybe' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses hasAttachments=true', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`).query({ hasAttachments: 'true' })
+
+      app.received(1).readObservations(Arg.is(req => req.search.hasAttachments === true))
+    })
+
+    it('parses a CSV users param into userIsAnyOf', async function () {
+
+      const userA = uniqid()
+      const userB = uniqid()
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ users: `${userA},${userB}` })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.userIsAnyOf).to.deep.equal([ userA, userB ])
+        return true
+      }))
+    })
+
+    it('parses a CSV teams param into teamIsAnyOf', async function () {
+
+      const teamA = uniqid()
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ teams: teamA })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.teamIsAnyOf).to.deep.equal([ teamA ])
+        return true
+      }))
+    })
+
+    it('parses a keyword param into a field filter', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ keyword: 'lighthouse' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.filter).to.deep.equal({ keyword: 'lighthouse' })
+        return true
+      }))
+    })
+
+    it('parses a condition filter from the request body', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.post(`${basePath}/events/${mageEvent.id}/observations/search`)
+        .send({ condition: { formId: 1, field: 'field1', operator: '=', value: 'x' } })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.filter).to.deep.equal({
+          condition: { formId: 1, field: 'field1', operator: '=', value: 'x' }
+        })
+        return true
+      }))
+    })
+
+    it('parses sort into orderBy', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ sort: 'lastModified+desc' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.orderBy).to.deep.equal({ field: 'lastModified', order: -1 })
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid sort field', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ sort: 'bogus' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses paging parameters when page_size is given', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success({ totalCount: 0, pageSize: 5, pageIndex: 1, items: [] }))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ page_size: '5', page: '1', include_total_count: 'true' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.paging).to.deep.equal({ pageIndex: 1, pageSize: 5, includeTotalCount: true })
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid page_size', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ page_size: '0' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses populate=true into populateUserNames', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ populate: 'true' })
+
+      app.received(1).readObservations(Arg.is(req => req.search.populateUserNames === true))
+    })
+
+    it('defaults populateUserNames to false', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+
+      app.received(1).readObservations(Arg.is(req => req.search.populateUserNames === false))
+    })
+  })
+
   describe('POST /id', function () {
 
     it('allocates an observation id', async function () {

@@ -1,9 +1,11 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, Condition, copyObservationAttrs, EventScopedObservationRepository, FindObservationsSort, FindObservationsStreamSpec, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
+import { TeamId } from '../../entities/teams/entities.teams'
+import { PageOf, PagingParameters } from '../../entities/entities.global'
 
 
 
@@ -20,6 +22,37 @@ export interface ObservationRequestContext<Principal = unknown> extends AppReque
   observationRepository: EventScopedObservationRepository
 }
 export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> { }
+
+export interface ObservationSearch {
+  lastModifiedAfter?: Date
+  lastModifiedBefore?: Date
+  timestampAfter?: Date
+  timestampBefore?: Date
+  geometryIntersects?: [number, number, number, number]
+  stateIsAnyOf?: ObservationState['name'][]
+  isFlaggedImportant?: boolean
+  isFavoriteOfUser?: UserId
+  hasAttachments?: boolean
+  userIsAnyOf?: UserId[]
+  teamIsAnyOf?: TeamId[]
+  filter?: ObservationFieldFilter
+  orderBy?: FindObservationsSort
+  paging?: PagingParameters
+  populateUserNames?: boolean
+}
+
+export interface ReadObservationsRequest<T = ExoObservation> extends ObservationRequest {
+  search: ObservationSearch
+  mapping?: (x: ExoObservation) => T
+}
+
+export interface ReadObservations {
+  <T>(req: ReadObservationsRequest<T>): Promise<AppResponse<T[] | PageOf<T>, PermissionDeniedError | InvalidInputError | InfrastructureError>>
+}
+
+export interface IterateObservations {
+  (event: MageEvent, spec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }>
+}
 
 export interface AllocateObservationId {
   (req: AllocateObservationIdRequest): Promise<AppResponse<ObservationId, PermissionDeniedError>>
@@ -118,18 +151,21 @@ export interface ExoAttachmentContent {
   bytesRange?: { start: number, end: number }
 }
 
-export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
+export function exoObservationFor(
+  from: ObservationAttrs,
+  user?: ObservationUserExpanded | undefined,
+  importantFlagger?: ObservationUserExpanded | undefined
+): ExoObservation {
   const { states, ...attrs } = copyObservationAttrs(from)
   const attachments = attrs.attachments.map(x => exoAttachmentFor(x))
-  users = users || {}
   return {
     ...attrs,
     attachments,
-    user: from.userId === users.creator?.id ? exoObservationUserLiteFor(users.creator) : void (0),
     state: states ? states[0] : void (0),
+    user: from.userId === user?.id ? exoObservationUserLiteFor(user) : void (0),
     important: from.important ? {
       ...from.important,
-      user: from.important.userId === users.importantFlagger?.id ? exoObservationUserLiteFor(users.importantFlagger) : void (0)
+      user: from.important.userId === importantFlagger?.id ? exoObservationUserLiteFor(importantFlagger) : void (0)
     } : void (0)
   }
 }
@@ -160,7 +196,7 @@ export function exoAttachmentForThumbnailDimension(targetDimension: number, atta
   return exoAttachmentFor(attachment)
 }
 
-export function exoObservationUserLiteFor(from: User | null | undefined): ExoObservationUserLite | undefined {
+export function exoObservationUserLiteFor(from: ObservationUserExpanded | null | undefined): ExoObservationUserLite | undefined {
   return from ? { id: from.id, displayName: from.displayName } : void (0)
 }
 
@@ -191,4 +227,55 @@ export interface ObservationPermissionService {
   ensureUpdateObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
   ensureStoreAttachmentContentPermission(context: ObservationRequestContext, observation: Observation, attachmentId: AttachmentId): Promise<null | PermissionDeniedError>
   ensureReadObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
+}
+
+export function parseConditionFilter(condition: any): Condition | undefined {
+  const binaryOperators = new Set(['=', '!=', '>', '>=', '<', '<=', 'LIKE'])
+  const arrayOperators = new Set(['IN', 'NOT IN'])
+  const nullOperators = new Set(['IS NULL', 'IS NOT NULL'])
+
+  if (typeof condition !== 'object' || condition === null) {
+    return undefined
+  }
+
+  if (Array.isArray(condition.and)) {
+    const conditions = condition.and.map(parseConditionFilter)
+    if (conditions.some((c: Condition | undefined) => c === undefined)) return undefined
+    return { and: conditions }
+  }
+
+  if (Array.isArray(condition.or)) {
+    const conditions = condition.or.map(parseConditionFilter)
+    if (conditions.some((c: Condition | undefined) => c === undefined)) return undefined
+    return { or: conditions }
+  }
+
+  if (typeof condition.formId !== 'number' || typeof condition.field !== 'string' || typeof condition.operator !== 'string') {
+    return undefined
+  }
+
+  const { formId, field } = condition
+
+  if (nullOperators.has(condition.operator)) {
+    return { formId, field, operator: condition.operator }
+  }
+
+  if (condition.operator === 'BETWEEN') {
+    if (!Array.isArray(condition.value) || condition.value.length !== 2) return undefined
+    const [a, b] = condition.value
+    if (!['string', 'number'].includes(typeof a) || !['string', 'number'].includes(typeof b)) return undefined
+    return { formId, field, operator: 'BETWEEN', value: [a, b] }
+  }
+
+  if (arrayOperators.has(condition.operator)) {
+    if (!Array.isArray(condition.value) || condition.value.some((v: any) => !['string', 'number', 'boolean'].includes(typeof v))) return undefined
+    return { formId, field, operator: condition.operator, value: condition.value }
+  }
+
+  if (binaryOperators.has(condition.operator)) {
+    if (!['string', 'number', 'boolean'].includes(typeof condition.value)) return undefined
+    return { formId, field, operator: condition.operator, value: condition.value }
+  }
+
+  return undefined
 }

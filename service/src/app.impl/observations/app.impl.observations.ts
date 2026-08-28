@@ -7,11 +7,93 @@ import * as api from '../../app.api/observations/app.api.observations'
 import { Logger, NoopLogger } from '../../entities/entities.logging'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, ObservationSavedDomainEvent, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FindObservationsSpec, FindObservationsStreamSpec, FindObservationsWhere, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationFieldFilter, ObservationId, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationSavedDomainEvent, ObservationSearchRepository, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, UsersExpandedObservationAttrs, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { AddRecentFormFieldChoiceEntry, UserId, UserPreferenceRepository, UserRepository } from '../../entities/users/entities.users'
+import { TeamRepository } from '../../entities/teams/entities.teams'
 import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
 
 const pipeline = util.promisify(stream.pipeline)
+
+export function ReadObservations(
+  permissionService: api.ObservationPermissionService,
+  teamRepo: TeamRepository,
+  observationSearchRepo: ObservationSearchRepository,
+): api.ReadObservations {
+  return async function readObservations<T>(req: api.ReadObservationsRequest<T>) {
+    const denied = await permissionService.ensureReadObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    try {
+      const mapper = req.mapping || ((x: api.ExoObservation) => x)
+      const search = req.search
+
+      let userIsAnyOf: UserId[] | undefined = search.userIsAnyOf
+      if (search.teamIsAnyOf?.length) {
+        const teams = await teamRepo.findAllByIds(search.teamIsAnyOf)
+        const teamUserIds = Object.values(teams).flatMap(team => team?.userIds ?? [])
+        const dedupedUserIds = new Set([...(userIsAnyOf ?? []), ...teamUserIds])
+        userIsAnyOf = [...dedupedUserIds]
+      }
+
+      const searchIds = await findSearchIds(req.context.mageEvent, search.filter, observationSearchRepo)
+
+      const where: FindObservationsWhere = {
+        ids: searchIds,
+        lastModifiedAfter: search.lastModifiedAfter,
+        lastModifiedBefore: search.lastModifiedBefore,
+        timestampAfter: search.timestampAfter,
+        timestampBefore: search.timestampBefore,
+        geometryIntersects: search.geometryIntersects,
+        stateIsAnyOf: search.stateIsAnyOf,
+        isFlaggedImportant: search.isFlaggedImportant,
+        isFavoriteOfUser: search.isFavoriteOfUser,
+        hasAttachments: search.hasAttachments,
+        userIsAnyOf
+      }
+      const findSpec: FindObservationsSpec = {
+        where,
+        orderBy: search.orderBy,
+        paging: search.paging,
+        populateUserNames: search.populateUserNames === true,
+      }
+
+      const result = await req.context.observationRepository.find(findSpec,
+        (obs: ObservationAttrs | UsersExpandedObservationAttrs) => {
+          const expanded = obs as UsersExpandedObservationAttrs
+          return mapper(api.exoObservationFor(obs, expanded.user, expanded.important?.user))
+        }
+      )
+      switch (result.type) {
+        case 'all': return AppResponse.success(result.observations)
+        case 'paged': return AppResponse.success(result.page)
+      }
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
+  }
+}
+
+export function IterateObservations(
+  obsRepoFactory: ObservationRepositoryForEvent,
+  searchRepo: ObservationSearchRepository
+): api.IterateObservations {
+  return async function findStream(event: MageEvent, findSpec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }> {
+    const repo = await obsRepoFactory(event.id)
+    const ids = await findSearchIds(event, findSpec.where?.fieldFilter, searchRepo)
+    return repo.iterate({ ...findSpec, where: { ...findSpec.where, ids } })
+  }
+}
+
+async function findSearchIds(
+  event: MageEvent,
+  filter: ObservationFieldFilter | undefined,
+  repo: ObservationSearchRepository
+): Promise<ObservationId[] | undefined> {
+  if (filter) {
+    return repo.findIdsByFilter(filter, event)
+  }
+}
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
   return async function allocateObservationId(req: api.AllocateObservationIdRequest): ReturnType<api.AllocateObservationId> {
@@ -45,8 +127,7 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
       const userIds = { creator: saved.userId, importantFlagger: saved.important?.userId }
       const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
       const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
-      const users = { creator: usersFound[userIds.creator || ''], importantFlagger: usersFound[userIds.importantFlagger || ''] }
-      const exoObs: api.ExoObservation = api.exoObservationFor(saved, users)
+      const exoObs: api.ExoObservation = api.exoObservationFor(saved, usersFound[userIds.creator || ''] ?? undefined, usersFound[userIds.importantFlagger || ''] ?? undefined)
       return AppResponse.success(exoObs)
     }
     switch (saved.code) {
