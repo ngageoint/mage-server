@@ -184,6 +184,30 @@ describe('MongooseRecentUserLocationsRepository', function() {
         expect(r.user).to.be.undefined
       })
     })
+
+    it('filters by userIsAnyOf', async function() {
+      const results = await repo.findLocations({
+        where: { eventId, userIsAnyOf: [ user1Id.toHexString() ] }
+      })
+      expect(results).to.have.length(1)
+      expect(results[0].userId).to.equal(user1Id.toHexString())
+    })
+
+    it('returns all matching users when userIsAnyOf has multiple ids', async function() {
+      const results = await repo.findLocations({
+        where: { eventId, userIsAnyOf: [ user1Id.toHexString(), user2Id.toHexString() ] }
+      })
+      expect(results.map(r => r.userId).sort()).to.deep.equal(
+        [ user1Id.toHexString(), user2Id.toHexString() ].sort()
+      )
+    })
+
+    it('returns no results when userIsAnyOf does not match any user', async function() {
+      const results = await repo.findLocations({
+        where: { eventId, userIsAnyOf: [ new mongoose.Types.ObjectId().toHexString() ] }
+      })
+      expect(results).to.have.length(0)
+    })
   })
 
   describe('findLocations with populate', function() {

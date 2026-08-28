@@ -30,6 +30,10 @@ import * as eventsApi from './app.api/events/app.api.events';
 import * as eventsImpl from './app.impl/events/app.impl.events';
 import * as observationsApi from './app.api/observations/app.api.observations';
 import * as observationsImpl from './app.impl/observations/app.impl.observations';
+import * as observationsSearchImpl from './app.impl/observations/app.impl.observations.search';
+import { SearchIndexAppLayer, SearchIndexRoutes } from './adapters/observations/adapters.observations.search.controllers.web';
+import { SearchIndexPermissionsServiceImpl } from './permissions/permissions.observations.search';
+import { MongooseObservationSearchRepository, ObservationSearchModel } from './adapters/observations/adapters.observations.search.db.mongoose';
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds';
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
@@ -198,6 +202,12 @@ export interface MageService {
 
 export interface Task {
   run(): Promise<void>;
+  /**
+   * If true, the task runs without the boot sequence waiting for it to
+   * complete.  Use this for tasks that could take a long time, such as a
+   * catch-up job over all existing data, so server startup is not blocked.
+   */
+  background?: boolean;
 }
 
 /**
@@ -372,7 +382,11 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   }
 
   for (const task of tasks) {
-    await task.run();
+    if (task.background) {
+      task.run();
+    } else {
+      await task.run();
+    }
   }
 
   const server = httpLib.createServer(webController);
@@ -422,6 +436,7 @@ type DatabaseLayer = {
   }
   observations: {
     icons: ObservationIconModel
+    search: ObservationSearchModel
   }
   locations: {
     location: UserLocationModel
@@ -476,6 +491,7 @@ type AppLayer = {
   userPreferences: UserPreferencesAppLayer
   systemInfo: SystemInfoAppLayer
   settings: SettingsAppLayer
+  searchIndex: SearchIndexAppLayer
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -560,7 +576,8 @@ async function initDatabase(): Promise<DatabaseLayer> {
       preference: UserPreferenceModel(conn)
     },
     observations: {
-      icons: ObservationIconModel(conn)
+      icons: ObservationIconModel(conn),
+      search: ObservationSearchModel(conn)
     },
     locations: {
       location: UserLocationModel(conn),
@@ -591,6 +608,7 @@ type Repositories = {
     attachmentStore: AttachmentStore
     iconRepo: ObservationIconRepository
     iconStore: ObservationIconContentStore
+    searchRepo: ObservationSearchRepository
   };
   feeds: {
     serviceTypeRepo: FeedServiceTypeRepository
@@ -718,7 +736,8 @@ async function initRepositories(
       ),
       iconRepo: observationIconRepo,
       iconStore: observationIconStore,
-      attachmentStore
+      attachmentStore,
+      searchRepo: new MongooseObservationSearchRepository(models.observations.search)
     },
     icons: {
       staticIconRepo
@@ -754,6 +773,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   const teams = await initTeamsAppLayer(repos)
   const systemInfo = initSystemInfoAppLayer(repos)
   const settings = await initSettingsAppLayer(repos, log.child({ component: 'settings' }))
+  const searchIndex = await initSearchIndexAppLayer(repos)
 
   return {
     events,
@@ -767,6 +787,33 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
     systemInfo,
     settings,
     teams,
+    searchIndex,
+  }
+}
+
+async function initSearchIndexAppLayer(repos: Repositories): Promise<AppLayer['searchIndex']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const permissionService = new SearchIndexPermissionsServiceImpl(
+    eventPermissions.defaultEventPermissionsService
+  );
+  const indexEvent = observationsSearchImpl.IndexEventObservations(
+    repos.events.eventRepo,
+    repos.observations.obsRepoFactory,
+    repos.observations.searchRepo,
+    log.child({ component: 'search-index' })
+  );
+
+  return {
+    searchIndexAll: observationsSearchImpl.SearchIndexAllEvents(
+      permissionService,
+      repos.events.eventRepo,
+      indexEvent
+    ),
+    searchIndexEvent: observationsSearchImpl.SearchIndexEvent(
+      permissionService,
+      repos.events.eventRepo,
+      indexEvent
+    )
   }
 }
 
@@ -937,24 +984,6 @@ async function initEventsAppLayer(
   };
 }
 
-/**
- * TODO: replace with a real implementation once the observation full-text/
- * condition search engine lands.  Until then, only requests that specify no
- * field filter reach {@link ReadObservations}, so this should never actually
- * be called.
- */
-const observationSearchRepoStub: ObservationSearchRepository = {
-  save(): Promise<void> {
-    throw new Error('ObservationSearchRepository is not yet implemented')
-  },
-  populate(): Promise<number> {
-    throw new Error('ObservationSearchRepository is not yet implemented')
-  },
-  findIdsByFilter(): Promise<string[]> {
-    throw new Error('ObservationSearchRepository is not yet implemented')
-  }
-}
-
 async function initObservationsAppLayer(
   repos: Repositories,
   attachmentHooks: AttachmentHook[]
@@ -978,11 +1007,16 @@ async function initObservationsAppLayer(
     log.child({ component: 'observations' })
   );
 
+  observationsSearchImpl.registerObservationSavedHandler(
+    DomainEvents,
+    repos.observations.searchRepo
+  );
+
   return {
     readObservations: observationsImpl.ReadObservations(
       obsPermissionsService,
       repos.teams.teamRepo,
-      observationSearchRepoStub
+      repos.observations.searchRepo
     ),
     allocateObservationId: observationsImpl.AllocateObservationId(
       obsPermissionsService
@@ -1226,6 +1260,9 @@ async function initWebLayer(
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory);
   webController.use('/api', [optionalBearerAuthentication, systemInfoRoutes]);
 
+  const searchIndexRoutes = SearchIndexRoutes(app.searchIndex, appRequestFactory);
+  webController.use('/api/search-index', [bearerAuthentication, searchIndexRoutes]);
+
   const observationRequestFactory: ObservationWebAppRequestFactory = <
     Params extends object | undefined
   >(
@@ -1372,7 +1409,20 @@ async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
     logger
   );
 
-  return [exportTask];
+  const indexEventObservations = observationsSearchImpl.IndexEventObservations(
+    repos.events.eventRepo,
+    repos.observations.obsRepoFactory,
+    repos.observations.searchRepo,
+    log.child({ component: 'search-index' })
+  );
+  const searchIndexTask: Task = {
+    background: true,
+    run(): Promise<void> {
+      return observationsSearchImpl.indexAllEvents(repos.events.eventRepo, indexEventObservations);
+    }
+  };
+
+  return [exportTask, searchIndexTask];
 }
 
 function baseAppRequestContext(

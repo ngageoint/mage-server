@@ -86,6 +86,7 @@ const EventSchema = new Schema({
   forms: [FormSchema],
   minObservationForms: { type: Number },
   maxObservationForms: { type: Number },
+  observationSearchStatus: { type: String, enum: ['pending', 'running', 'indexed'] },
   style: {
     type: Schema.Types.Mixed,
     required: true,
