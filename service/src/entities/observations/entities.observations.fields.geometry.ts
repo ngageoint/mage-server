@@ -45,10 +45,10 @@ geoJsonValidator.define('Position', function (position: any[]) {
 
 export function validateGeometryFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isValidGeometryType(entry)) {
-    return fieldValidation.failedBecauseTheEntry(`must be a GeoJSON geometry of type ${Object.keys(validGeometryTypes).join(', ')}.`, FieldConstraintKeys.Value)
+    return fieldValidation.failed(`The entry must be a GeoJSON geometry of type ${Object.keys(validGeometryTypes).join(', ')}.`, FieldConstraintKeys.Value)
   }
   if (!geoJsonValidator.isGeometryObject(entry)) {
-    return fieldValidation.failedBecauseTheEntry('must be a valid GeoJSON geometry object.', FieldConstraintKeys.Value)
+    return fieldValidation.failed('The entry must be a valid GeoJSON geometry object.', FieldConstraintKeys.Value)
   }
   /*
   TODO: multi-polygons? if not, validate type is actually a supported type
@@ -56,7 +56,7 @@ export function validateGeometryFieldType(entry: FormFieldEntry | undefined): Fi
   if (entry.type === 'Polygon') {
     const foundKinks = kinks(entry as geojson.Polygon)
     if (foundKinks.features.length > 0) {
-      return fieldValidation.failedBecauseTheEntry('must not be a polygon that intersects itself.', FieldConstraintKeys.Value)
+      return fieldValidation.failed('The entry is a polygon that intersects itself.', FieldConstraintKeys.Value)
     }
   }
   return fieldValidation.passed()

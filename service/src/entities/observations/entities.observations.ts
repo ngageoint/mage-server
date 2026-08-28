@@ -913,7 +913,7 @@ function validateObservationCoreAttrs(validation: ObservationValidationContext):
   }
   const coreGeometryResult = validateGeometryFieldType(observationAttrs.geometry)
   if (coreGeometryResult.invalid) {
-    validation.addCoreAttrsError('geometry', `The observation geometry ${coreGeometryResult.failedBecauseTheEntry}`)
+    validation.addCoreAttrsError('geometry', `Observation Geometry: ${coreGeometryResult.failedMessage}`)
   }
   if (!(observationAttrs.properties.timestamp instanceof Date)) {
     validation.addCoreAttrsError('timestamp', 'The observation requires a valid timestamp.')
@@ -1031,7 +1031,7 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
         formEntryError.addFieldError(new FormFieldValidationError({
           fieldName: field.name,
           constraint: attachmentFieldResult.failedConstraint,
-          message: `${field.title} ${attachmentFieldResult.failedBecauseTheEntry}`
+          message: `${field.title}: ${attachmentFieldResult.failedMessage}`
         }))
       }
       return
@@ -1042,7 +1042,7 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
       const err = new FormFieldValidationError({
         fieldName: field.name,
         constraint: fieldEntryResult.failedConstraint,
-        message: `${field.title} ${fieldEntryResult.failedBecauseTheEntry}`,
+        message: `${field.title}: ${fieldEntryResult.failedMessage}`,
       })
       formEntryError.addFieldError(err)
     }

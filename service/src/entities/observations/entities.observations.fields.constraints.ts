@@ -51,7 +51,7 @@ function validateRequiredConstraint(entry: FormFieldEntry | undefined, field: Fo
   }
   if (isNil(entry) || entry === '') {
     if (field.required) {
-      return fieldValidation.failedBecauseTheEntry('is required', FieldConstraintKeys.Required)
+      return fieldValidation.failed('An entry is required.', FieldConstraintKeys.Required)
     }
     // no further validation for an optional, absent entry
     return fieldValidation.resolved(entry === undefined ? undefined : null)
@@ -96,7 +96,7 @@ export const validateFieldTypeConstraint: Record<FormFieldType, (entry: FormFiel
 
 function validateCheckboxFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   return isBoolean(entry) ? fieldValidation.passed() :
-    fieldValidation.failedBecauseTheEntry('must be true or false', FieldConstraintKeys.Value)
+    fieldValidation.failed('The entry must be true or false.', FieldConstraintKeys.Value)
 }
 
 function validateDateTimeFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
@@ -106,20 +106,20 @@ function validateDateTimeFieldType(entry: FormFieldEntry | undefined): FieldVali
       return fieldValidation.passed(date.toDate())
     }
   }
-  return fieldValidation.failedBecauseTheEntry(
-    `must be an ISO-8601 date, e.g., ${new Date().toISOString()}`, FieldConstraintKeys.Value)
+  return fieldValidation.failed(
+    `The entry must be an ISO-8601 date, e.g., ${new Date().toISOString()}.`, FieldConstraintKeys.Value)
 }
 
 function validateTextFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isString(entry)) {
-    return fieldValidation.failedBecauseTheEntry('must be a string', FieldConstraintKeys.Value)
+    return fieldValidation.failed('The entry must be a string.', FieldConstraintKeys.Value)
   }
   return fieldValidation.passed()
 }
 
 function validateNumericFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isNumber(entry)) {
-    return fieldValidation.failedBecauseTheEntry('must be a number', FieldConstraintKeys.Value)
+    return fieldValidation.failed('The entry must be a number.', FieldConstraintKeys.Value)
   }
   return fieldValidation.passed()
 }
@@ -130,12 +130,15 @@ function validateEmailFieldType(entry: FormFieldEntry | undefined): FieldValidat
   if (isString(entry) && emailRegex.test(entry)) {
     return fieldValidation.passed()
   }
-  return fieldValidation.failedBecauseTheEntry('must be a valid email address', FieldConstraintKeys.Value)
+  return fieldValidation.failed('The entry is not a valid email address.', FieldConstraintKeys.Value)
 }
 
 function validateMultiSelectFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   if (!isArray(entry)) {
-    return fieldValidation.failedBecauseTheEntry('must be an array', FieldConstraintKeys.Value)
+    return fieldValidation.failed('The entry is not an array.', FieldConstraintKeys.Value)
+  }
+  if (entry.some(item => !isString(item))) {
+    return fieldValidation.failed('The entry contains non-string elements.', FieldConstraintKeys.Value)
   }
   return fieldValidation.passed()
 }
@@ -146,13 +149,13 @@ function validateMinConstraint(entry: FormFieldEntry | undefined, field: FormFie
   }
   if (isNumber(entry)) {
     if (entry < field.min) {
-      return fieldValidation.failedBecauseTheEntry(`must be greater than or equal to ${field.min}`, FieldConstraintKeys.Min)
+      return fieldValidation.failed(`The entry must be greater than or equal to ${field.min}.`, FieldConstraintKeys.Min)
     }
   }
   else if (isString(entry)) {
     if (entry.length < field.min) {
-      return fieldValidation.failedBecauseTheEntry(
-        `must be at least ${field.min} ` + (field.min === 1 ? 'character long.' : 'characters long.'),
+      return fieldValidation.failed(
+        `The entry must be at least ${field.min} ` + (field.min === 1 ? 'character long.' : 'characters long.'),
         FieldConstraintKeys.Min)
     }
   }
@@ -165,13 +168,13 @@ function validateMaxConstraint(entry: FormFieldEntry | undefined, field: FormFie
   }
   if (isNumber(entry)) {
     if (entry > field.max) {
-      return fieldValidation.failedBecauseTheEntry(`must be less than or equal to ${field.max}`, FieldConstraintKeys.Max)
+      return fieldValidation.failed(`The entry must be less than or equal to ${field.max}.`, FieldConstraintKeys.Max)
     }
   }
   else if (isString(entry)) {
     if (entry.length > field.max) {
-      return fieldValidation.failedBecauseTheEntry(
-        `can be at most ${field.max} ` + (field.max === 1 ? 'character long.' : 'characters long.'),
+      return fieldValidation.failed(
+        `The entry can be at most ${field.max} ` + (field.max === 1 ? 'character long.' : 'characters long.'),
         FieldConstraintKeys.Max)
     }
   }
@@ -179,18 +182,18 @@ function validateMaxConstraint(entry: FormFieldEntry | undefined, field: FormFie
 }
 
 function validatePatternConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
-  if (!isString(field.pattern)) {
+  if (!field.pattern || !isString(field.pattern?.spec)) {
     return fieldValidation.passed()
   }
   if (!isString(entry)) {
-    return fieldValidation.failedBecauseTheEntry('must be a string', FieldConstraintKeys.Value)
+    return fieldValidation.failed('The entry must be a string.', FieldConstraintKeys.Value)
   }
   // TODO: make case sensitivity optional on field definition?
-  const pattern = RE2JS.compile(field.pattern, RE2JS.CASE_INSENSITIVE)
+  const pattern = RE2JS.compile(field.pattern.spec, RE2JS.CASE_INSENSITIVE)
   if (pattern.test(entry)) {
     return fieldValidation.passed()
   }
-  return fieldValidation.failedBecauseTheEntry('must conform to the field pattern.', FieldConstraintKeys.Pattern)
+  return fieldValidation.failed(field.pattern.description || 'The entry does not match the field pattern.', FieldConstraintKeys.Pattern)
 }
 
 function validateChoicesConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
@@ -202,7 +205,7 @@ function validateChoicesConstraint(entry: FormFieldEntry | undefined, field: For
   }, {} as { [Choice: string]: true })
   const invalid = entryItems.some(item => !isString(item) || !isValidChoice[item])
   if (invalid) {
-    return fieldValidation.failedBecauseTheEntry('must be in the set of valid choices', FieldConstraintKeys.Choices)
+    return fieldValidation.failed('The entry is not in the set of valid choices.', FieldConstraintKeys.Choices)
   }
   return fieldValidation.passed()
 }

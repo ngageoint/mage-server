@@ -22,6 +22,15 @@ const OptionSchema = new Schema({
   _id: false
 });
 
+const PatternSchema = new Schema(
+  {
+    spec: { type: String, required: true },
+    description: { type: String },
+    examples: { type: [String] },
+  },
+  { _id: false }
+)
+
 const FieldSchema = new Schema({
   id: { type: Number, required: true },
   archived: { type: Boolean, required: false },
@@ -35,7 +44,7 @@ const FieldSchema = new Schema({
   allowedAttachmentTypes: [{ type: String, required: false, enum: ['image', 'video', 'audio'] }],
   min: { type: Number, required: false },
   max: { type: Number, required: false },
-  pattern: { type: String, required: false },
+  pattern: { type: PatternSchema, required: false },
 }, {
   _id: false
 });

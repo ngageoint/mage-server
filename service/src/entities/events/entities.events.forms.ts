@@ -163,11 +163,17 @@ export interface FormField {
    * The maximum constraint applies to the value of a numeric field, the length
    * of a string, or to the number of attachments allowed on an attachment field.
    */
-  max?: number
+  max?: number,
   /**
-   * Pattern is a regular expression that a string field's value must match
+   * Pattern is a regular expression that a string field's value must match.
+   * The nested `spec` field is the regex pattern specification used to test
+   * field entries.  The optional `description` is a user-facing message to
+   * explain in plain terms the requirements of the pattern. For example,
+   * `"Entries must be 4 digits, a colon, then 2 capital letters."`. The
+   * optional `examples` array can provide 1 or more examples of valid strings
+   * a client can present to users for extra guidance.
    */
-  pattern?: string
+  pattern?: { spec: string, description?: string | null | undefined, examples?: string[] | null | undefined },
 }
 
 /**

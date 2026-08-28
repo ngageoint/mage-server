@@ -142,7 +142,7 @@ describe('observation entities', function() {
       let invalid = validateObservation(o, mageEvent)
 
       expect(invalid.hasErrors).to.be.true
-      expect(invalid.coreAttrsErrors).to.deep.equal({ geometry: `The observation geometry must be a GeoJSON geometry of type Point, LineString, Polygon.` })
+      expect(invalid.coreAttrsErrors).to.deep.equal({ geometry: `Observation Geometry: The entry must be a GeoJSON geometry of type Point, LineString, Polygon.` })
 
       o.geometry = {
         type: 'Point',
@@ -151,7 +151,7 @@ describe('observation entities', function() {
       invalid = validateObservation(o, mageEvent)
 
       expect(invalid.hasErrors).to.be.true
-      expect(invalid.coreAttrsErrors).to.deep.equal({ geometry: `The observation geometry must be a valid GeoJSON geometry object.` })
+      expect(invalid.coreAttrsErrors).to.deep.equal({ geometry: `Observation Geometry: The entry must be a valid GeoJSON geometry object.` })
     })
 
     it('fails if there is no forms array', function() {
@@ -1242,7 +1242,7 @@ describe('observation entities', function() {
             const fieldError = formEntryError.fieldErrors.get(field.name)
             expect(fieldError?.fieldName).to.equal(field.name, `field entry: ${String(x)}`)
             expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Required, `field entry: ${String(x)}`)
-            expect(fieldError?.message).to.equal(`${field.title} is required`, `field entry: ${String(x)}`)
+            expect(fieldError?.message).to.equal(`${field.title}: An entry is required.`, `field entry: ${String(x)}`)
           }
 
           const invalidEntries = [
@@ -1275,7 +1275,7 @@ describe('observation entities', function() {
             const fieldError = formEntryError.fieldErrors.get(field.name)
             expect(fieldError?.fieldName).to.equal(field.name, `field entry: ${String(x)}`)
             expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Value, `field entry: ${String(x)}`)
-            expect(fieldError?.message).to.equal(`${field.title} must be a string`, `field entry: ${String(x)}`)
+            expect(fieldError?.message).to.equal(`${field.title}: The entry must be a string.`, `field entry: ${String(x)}`)
           }
 
           const invalidEntries = [
@@ -1312,7 +1312,7 @@ describe('observation entities', function() {
           const fieldError = formEntryError.fieldErrors.get(field.name)
           expect(fieldError?.fieldName).to.equal(field.name)
           expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Min)
-          expect(fieldError?.message).to.equal(`${field.title} must be at least 10 characters long.`)
+          expect(fieldError?.message).to.equal(`${field.title}: The entry must be at least 10 characters long.`)
         })
 
         it('fails min constraint when optional and the text is too short', function() {
@@ -1334,7 +1334,7 @@ describe('observation entities', function() {
           const fieldError = formEntryError.fieldErrors.get(field.name)
           expect(fieldError?.fieldName).to.equal(field.name)
           expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Min)
-          expect(fieldError?.message).to.equal(`${field.title} must be at least 10 characters long.`)
+          expect(fieldError?.message).to.equal(`${field.title}: The entry must be at least 10 characters long.`)
         })
 
         it('passes min constraint when optional and the text is an empty string', function() {
@@ -1373,7 +1373,7 @@ describe('observation entities', function() {
           const fieldError = formEntryError.fieldErrors.get(field.name)
           expect(fieldError?.fieldName).to.equal(field.name)
           expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Max)
-          expect(fieldError?.message).to.equal(`${field.title} can be at most 6 characters long.`)
+          expect(fieldError?.message).to.equal(`${field.title}: The entry can be at most 6 characters long.`)
         })
 
         it('fails max constraint when optional and the text is too long', function() {
@@ -1396,7 +1396,7 @@ describe('observation entities', function() {
           const fieldError = formEntryError.fieldErrors.get(field.name)
           expect(fieldError?.fieldName).to.equal(field.name)
           expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Max)
-          expect(fieldError?.message).to.equal(`${field.title} can be at most 6 characters long.`)
+          expect(fieldError?.message).to.equal(`${field.title}: The entry can be at most 6 characters long.`)
         })
 
         it('passes when optional and entry is absent', function() {
@@ -1451,7 +1451,7 @@ describe('observation entities', function() {
         })
 
         it('fails pattern constraint when the text does not match', function() {
-          field.pattern = '\\w{3}-\\d{3}'
+          field.pattern = { spec: '\\w{3}-\\d{3}' }
           const mageEvent = new MageEvent(mageEventAttrs)
           const observationAttrs = makeObservationAttrs(mageEvent.id)
           const formEntry: FormEntry = {
@@ -1469,11 +1469,33 @@ describe('observation entities', function() {
           const fieldError = formEntryError.fieldErrors.get(field.name)
           expect(fieldError?.fieldName).to.equal(field.name)
           expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Pattern)
-          expect(fieldError?.message).to.equal(`${field.title} must conform to the field pattern.`)
+          expect(fieldError?.message).to.equal(`${field.title}: The entry does not match the field pattern.`)
+        })
+
+        it('applies the custom invalid message', function() {
+          field.pattern = { spec: '\\w{3}-\\d{3}', description: 'Must have 3 consecutive word characters, and 3 consecutive digits, separated by a dash.' }
+          const mageEvent = new MageEvent(mageEventAttrs)
+          const observationAttrs = makeObservationAttrs(mageEvent.id)
+          const formEntry: FormEntry = {
+            id: uniqid(),
+            formId: form.id,
+            [field.name]: 'red fish'
+          }
+          observationAttrs.properties.forms = [formEntry]
+          const evaluated = Observation.evaluate(observationAttrs, mageEvent)
+
+          expect(evaluated.validation.formEntryErrors.length).to.equal(1)
+          expect(evaluated.validation.formEntryErrors[0][0]).to.equal(0)
+          const formEntryError = evaluated.validation.formEntryErrors[0][1]
+          expect(formEntryError.fieldErrors.size).to.equal(1)
+          const fieldError = formEntryError.fieldErrors.get(field.name)
+          expect(fieldError?.fieldName).to.equal(field.name)
+          expect(fieldError?.constraint).to.equal(FieldConstraintKeys.Pattern)
+          expect(fieldError?.message).to.equal(`${field.title}: ${field.pattern.description}`)
         })
 
         it('passes pattern constraint when the text matches', function() {
-          field.pattern = '\\w{3}-\\d{3}'
+          field.pattern = { spec: '\\w{3}-\\d{3}' }
           const mageEvent = new MageEvent(mageEventAttrs)
           const observationAttrs = makeObservationAttrs(mageEvent.id)
           const formEntry: FormEntry = {
@@ -1489,7 +1511,7 @@ describe('observation entities', function() {
         })
 
         it('passes pattern constraint when optional and absent', function() {
-          field.pattern = '\\w{3}-\\d{3}'
+          field.pattern = { spec: '\\w{3}-\\d{3}' }
           field.required = false
           const mageEvent = new MageEvent(mageEventAttrs)
           const observationAttrs = makeObservationAttrs(mageEvent.id)

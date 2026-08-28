@@ -253,7 +253,7 @@ export type FieldValidationResult =
   | {
     valid: false
     invalid: true
-    failedBecauseTheEntry: string
+    failedMessage: string
     failedConstraint: FieldConstraintKey
   }
 

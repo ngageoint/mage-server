@@ -6,14 +6,20 @@ import {
 } from './entities.observations.types'
 
 export const fieldValidation = {
+  /**
+   * Indicate a field entry is valid for the calling rule, and validation can proceed to the next rule.
+   */
   passed(normalizedEntry: FormFieldEntry | undefined = undefined): FieldValidationResult {
     return { valid: 'pass', invalid: false, normalizedEntry }
   },
+  /**
+   * Indicate a field entry is valid for the calling rule and no further validation is necessary.
+   */
   resolved(normalizedEntry: FormFieldEntry | undefined = undefined): FieldValidationResult {
     return { valid: 'resolved', invalid: false, normalizedEntry }
   },
-  failedBecauseTheEntry(reason: string, constraint: FieldConstraintKey): FieldValidationResult {
-    return { valid: false, invalid: true, failedBecauseTheEntry: reason, failedConstraint: constraint }
+  failed(reason: string, constraint: FieldConstraintKey): FieldValidationResult {
+    return { valid: false, invalid: true, failedMessage: reason, failedConstraint: constraint }
   }
 }
 
