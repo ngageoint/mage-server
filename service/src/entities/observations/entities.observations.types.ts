@@ -111,7 +111,6 @@ export const AttachmentProcessingStatus = Object.freeze({
 
 export type AttachmentProcessingStatus = (typeof AttachmentProcessingStatus)[keyof typeof AttachmentProcessingStatus]
 
-
 export type AttachmentId = string
 /**
  * TODO: Currently the web app uses the `name` and `contentType` keys in the

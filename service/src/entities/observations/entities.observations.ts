@@ -13,7 +13,7 @@ import {
 import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
 import { Form, FormFieldType, FormId } from '../events/entities.events.forms'
-import { UserId } from '../users/entities.users'
+import { User, UserId } from '../users/entities.users'
 
 export * from './entities.observations.types'
 

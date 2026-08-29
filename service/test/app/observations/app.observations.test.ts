@@ -57,10 +57,10 @@ import {
 } from '../../../lib/entities/observations/entities.observations'
 import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
-import { IterateObservations, ReadObservations } from '../../../src/app.impl/observations/app.impl.observations'
-import { MageEventId } from '../../../src/entities/events/entities.events'
-import { ObservationSearchRepository } from '../../../src/entities/observations/entities.observations'
-import { TeamRepository } from '../../../src/entities/teams/entities.teams'
+import { IterateObservations, ReadObservations } from '../../../lib/app.impl/observations/app.impl.observations'
+import { MageEventId } from '../../../lib/entities/events/entities.events'
+import { ObservationSearchRepository } from '../../../lib/entities/observations/entities.observations'
+import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
 import { BufferWriteable } from '../../utils'
 
 function minimalObservationAttrs(): ObservationAttrs {
