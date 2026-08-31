@@ -6,12 +6,12 @@ import { expect } from 'chai'
 
 const collectionName = 'authenticationconfigurations'
 
-describe('saml settings migration', function() {
+describe('saml settings migration', function () {
 
   before(mongoTest.mongoTestBeforeAllHook())
 
   let db: Db
-  before(function() {
+  before(function () {
     db = this.mongo?.conn.db! as unknown as Db
   })
 
@@ -20,7 +20,7 @@ describe('saml settings migration', function() {
   let migrateUp: () => Promise<void>
   let migrateDown: () => Promise<void>
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     migrateUp = () => {
       return new Promise((resolve, reject) => {
         const done = (err?: any) => {
@@ -45,18 +45,18 @@ describe('saml settings migration', function() {
     }
   })
 
-  afterEach(async function() {
+  afterEach(async function () {
     const col = db.collection(collectionName)
     await col.deleteMany({})
   })
 
-  it('has a migration id', function() {
+  it('has a migration id', function () {
     expect(migration.id).to.equal('saml-settings')
   })
 
-  describe('migrate up', async function() {
+  describe('migrate up', async function () {
 
-    it('moves entries from options to settings', async function() {
+    it('moves entries from options to settings', async function () {
 
       const col = db.collection(collectionName)
       const count = await col.countDocuments()
@@ -124,7 +124,7 @@ describe('saml settings migration', function() {
       }
     })
 
-    it('does not overwrite settings values with option values', async function() {
+    it('does not overwrite settings values with option values', async function () {
 
       const preDoc = {
         type: 'saml',
@@ -161,7 +161,7 @@ describe('saml settings migration', function() {
       })
     })
 
-    it('does not change non-saml configurations', async function() {
+    it('does not change non-saml configurations', async function () {
 
       const preDocs = [
         {
@@ -220,7 +220,7 @@ describe('saml settings migration', function() {
       })
     })
 
-    it('succeeds when there are no saml configurations', async function() {
+    it('succeeds when there are no saml configurations', async function () {
 
       await migrateUp()
 
@@ -253,9 +253,9 @@ describe('saml settings migration', function() {
     })
   })
 
-  describe('migrate down', function() {
+  describe('migrate down', function () {
 
-    it('moves entry point and issuer settings back to options', async function() {
+    it('moves entry point and issuer settings back to options', async function () {
 
       const preDocs = [
         {
@@ -313,7 +313,7 @@ describe('saml settings migration', function() {
       })
     })
 
-    it('succeeds when there are no saml configurations', async function() {
+    it('succeeds when there are no saml configurations', async function () {
 
       await migrateDown()
 

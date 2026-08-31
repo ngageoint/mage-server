@@ -24,7 +24,7 @@ function MockTestUrlScheme(protocolPrefix: string, isLocal = false): SubstituteO
   return scheme
 }
 
-describe('static icon mongoose repository', function() {
+describe('static icon mongoose repository', function () {
 
   let mongo: MongoMemoryServer
   let uri: string
@@ -38,12 +38,12 @@ describe('static icon mongoose repository', function() {
   let resolvers: SubstituteOf<TestUrlScheme>[]
   let contentStore: SubstituteOf<StaticIconContentStore>
 
-  before(async function() {
+  before(async function () {
     mongo = await MongoMemoryServer.create()
     uri = mongo.getUri()
   })
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     conn = await mongoose.createConnection(uri).asPromise()
     model = StaticIconModel(conn, 'test_static_icons')
     idFactory = Sub.for<EntityIdFactory>()
@@ -56,18 +56,18 @@ describe('static icon mongoose repository', function() {
     model.findOne({})
   })
 
-  afterEach(async function() {
+  afterEach(async function () {
     await model.deleteMany({})
     await conn.close()
   })
 
-  after(async function() {
+  after(async function () {
     await mongo.stop()
   })
 
-  describe('importing by source url', function() {
+  describe('importing by source url', function () {
 
-    it('registers a new static icon', async function() {
+    it('registers a new static icon', async function () {
 
       const sourceUrl = new URL('mage:///test/icons/new.png')
       const stub: Required<StaticIconStub> = {
@@ -95,7 +95,7 @@ describe('static icon mongoose repository', function() {
       expect(registered).to.deep.equal(found[0].toJSON())
     })
 
-    it('registers a new source url', async function() {
+    it('registers a new source url', async function () {
 
       const sourceUrl = new URL('mage:///test/icons/bare.png')
       const id = uniqid()
@@ -115,7 +115,7 @@ describe('static icon mongoose repository', function() {
       idFactory.received(1).nextId()
     })
 
-    it('sets the content timestamp when content hash is present', async function() {
+    it('sets the content timestamp when content hash is present', async function () {
 
       const sourceUrl = new URL('mage:///test/timestamp.png')
       const id = uniqid()
@@ -129,7 +129,7 @@ describe('static icon mongoose repository', function() {
       expect(reg.contentTimestamp).to.be.closeTo(Date.now(), 100)
     })
 
-    it('replaces icon properties for an existing source url when the content hash changes', async function() {
+    it('replaces icon properties for an existing source url when the content hash changes', async function () {
 
       const sourceUrl = new URL('mage:///test/replace.png')
       const origAttrs: Required<StaticIconStub> = {
@@ -176,7 +176,7 @@ describe('static icon mongoose repository', function() {
       idFactory.received(1).nextId()
     })
 
-    it('removes properties not defined in updated icon when the content hash changes', async function() {
+    it('removes properties not defined in updated icon when the content hash changes', async function () {
 
       const sourceUrl = new URL('mage:///test/replace.png')
       const origAttrs: Required<StaticIconStub> = Object.freeze({
@@ -220,7 +220,7 @@ describe('static icon mongoose repository', function() {
       idFactory.received(1).nextId()
     })
 
-    it('adds properties not defined in existing icon', async function() {
+    it('adds properties not defined in existing icon', async function () {
 
       const sourceUrl = new URL('mage:///test/replace.png')
       const origAttrs: StaticIconStub = {
@@ -261,7 +261,7 @@ describe('static icon mongoose repository', function() {
       idFactory.received(1).nextId()
     })
 
-    it('does not update the icon properties when the content hash did not change', async function() {
+    it('does not update the icon properties when the content hash did not change', async function () {
 
       const sourceUrl = new URL('test:///icons/nochange.png')
       const stub: StaticIconStub = {
@@ -297,7 +297,7 @@ describe('static icon mongoose repository', function() {
       expect(sameHashRegistered).to.deep.equal(registered)
     })
 
-    it('does not update the icon properties if the stub has no content hash', async function() {
+    it('does not update the icon properties if the stub has no content hash', async function () {
 
       const sourceUrl = new URL('mage:///test/replace.png')
       const origAttrs: Required<StaticIconStub> = Object.freeze({
@@ -342,11 +342,11 @@ describe('static icon mongoose repository', function() {
       idFactory.received(1).nextId()
     })
 
-    describe('import fetch strategies', function() {
+    describe('import fetch strategies', function () {
 
       describe(StaticIconImportFetch.Lazy, function () {
 
-        it('does not fetch and store the icon content', async function() {
+        it('does not fetch and store the icon content', async function () {
 
           const sourceUrl = scheme1.urlWithPath('lazy.png')
           const iconId = uniqid()
@@ -357,7 +357,7 @@ describe('static icon mongoose repository', function() {
           contentStore.didNotReceive().putContent(Arg.all())
         })
 
-        it('is the default strategy', async function() {
+        it('is the default strategy', async function () {
 
           const sourceUrl = scheme1.urlWithPath('lazy.png')
           const iconId = uniqid()
@@ -369,9 +369,9 @@ describe('static icon mongoose repository', function() {
         })
       })
 
-      describe(StaticIconImportFetch.Eager, function() {
+      describe(StaticIconImportFetch.Eager, function () {
 
-        it('fetches the icon immediately asynchronously', async function() {
+        it('fetches the icon immediately asynchronously', async function () {
 
           const sourceUrl = scheme3.urlWithPath('icons/eager')
           const iconId = uniqid()
@@ -379,7 +379,7 @@ describe('static icon mongoose repository', function() {
           let fetchResolved = false
           let resolveFetch = () => { }
           const content = Readable.from('')
-          const fetch = function(resolve: (x: NodeJS.ReadableStream) => any): any {
+          const fetch = function (resolve: (x: NodeJS.ReadableStream) => any): any {
             resolveFetch = () => {
               fetchResolved = true
               resolve(content)
@@ -420,7 +420,7 @@ describe('static icon mongoose repository', function() {
           scheme3.received(1).resolveContent(Arg.all())
         })
 
-        it('fetches if the icon was already registered and not fetched', async function() {
+        it('fetches if the icon was already registered and not fetched', async function () {
 
           const sourceUrl = scheme1.urlWithPath('eager/registered')
           const iconId = uniqid()
@@ -434,7 +434,7 @@ describe('static icon mongoose repository', function() {
 
           let resolveFetch = () => { }
           const content = Readable.from('')
-          const fetchPromise = new Promise(function(resolve: (x: NodeJS.ReadableStream) => any): any {
+          const fetchPromise = new Promise(function (resolve: (x: NodeJS.ReadableStream) => any): any {
             resolveFetch = () => {
               resolve(content)
             }
@@ -470,7 +470,7 @@ describe('static icon mongoose repository', function() {
           scheme1.received(1).resolveContent(Arg.all())
         })
 
-        it('does not fetch if the icon was already resolved', async function() {
+        it('does not fetch if the icon was already resolved', async function () {
 
           const sourceUrl = scheme1.urlWithPath('resolved/before.png')
           const iconId = uniqid()
@@ -492,7 +492,7 @@ describe('static icon mongoose repository', function() {
           contentStore.didNotReceive().putContent(Arg.all())
         })
 
-        it('fetches but does not store if the source url scheme is local', async function() {
+        it('fetches but does not store if the source url scheme is local', async function () {
 
           const sourceUrl = scheme2Local.urlWithPath('stored/already.png')
           const iconId = uniqid()
@@ -523,9 +523,9 @@ describe('static icon mongoose repository', function() {
         })
       })
 
-      describe(StaticIconImportFetch.EagerAwait, function() {
+      describe(StaticIconImportFetch.EagerAwait, function () {
 
-        it('fetches, stores, and updates the icon in one promise', async function() {
+        it('fetches, stores, and updates the icon in one promise', async function () {
 
           const sourceUrl = scheme3.urlWithPath('icons/eager-await')
           const iconId = uniqid()
@@ -545,7 +545,7 @@ describe('static icon mongoose repository', function() {
           contentStore.received(1).putContent(Arg.all())
         })
 
-        it('fetches if the icon was already registered and not fetched', async function() {
+        it('fetches if the icon was already registered and not fetched', async function () {
 
           const sourceUrl = scheme1.urlWithPath('eager-await/registered')
           const iconId = uniqid()
@@ -572,7 +572,7 @@ describe('static icon mongoose repository', function() {
           contentStore.received(1).putContent(Arg.all())
         })
 
-        it('does not fetch if the icon was already resolved', async function() {
+        it('does not fetch if the icon was already resolved', async function () {
 
           const sourceUrl = scheme1.urlWithPath('resolved/before.png')
           const iconId = uniqid()
@@ -594,7 +594,7 @@ describe('static icon mongoose repository', function() {
           contentStore.didNotReceive().putContent(Arg.all())
         })
 
-        it('fetches but does not store if the source url scheme is local', async function() {
+        it('fetches but does not store if the source url scheme is local', async function () {
 
           const sourceUrl = scheme2Local.urlWithPath('stored/already.png')
           const iconId = uniqid()
@@ -615,7 +615,7 @@ describe('static icon mongoose repository', function() {
     })
   })
 
-  it('enforces unique source url', async function() {
+  it('enforces unique source url', async function () {
 
     const sourceUrl = new URL('must:///be/unique')
     const attrs: Required<StaticIconStub> & { sourceUrl: URL } = Object.freeze({
@@ -643,9 +643,9 @@ describe('static icon mongoose repository', function() {
     expect(all).to.have.length(1)
   })
 
-  describe('finding icons', function() {
+  describe('finding icons', function () {
 
-    it('supports paging', async function() {
+    it('supports paging', async function () {
 
       const icons: StaticIconStub[] = []
       let remaining = 100
@@ -667,14 +667,14 @@ describe('static icon mongoose repository', function() {
     })
   })
 
-  describe('loading icon content', function() {
+  describe('loading icon content', function () {
 
     let scheme1Icon: StaticIcon
     let scheme1IconUnresolved: StaticIcon
     let scheme2LocalIcon: StaticIcon
     let scheme3LocalIcon: StaticIcon
 
-    beforeEach(async function() {
+    beforeEach(async function () {
 
       scheme1Icon = {
         id: uniqid(),
@@ -709,7 +709,7 @@ describe('static icon mongoose repository', function() {
       ])
     })
 
-    it('returns null if the icon does not exist', async function() {
+    it('returns null if the icon does not exist', async function () {
 
       const content = await repo.loadContent('shrug')
 
@@ -720,7 +720,7 @@ describe('static icon mongoose repository', function() {
       }
     })
 
-    it('returns error if there is no resolver for the icon url', async function() {
+    it('returns error if there is no resolver for the icon url', async function () {
 
       const icon: StaticIcon = {
         id: uniqid(),
@@ -739,7 +739,7 @@ describe('static icon mongoose repository', function() {
       contentStore.didNotReceive().loadContent(Arg.all())
     })
 
-    it('throws error if the icon url is invalid', async function() {
+    it('throws error if the icon url is invalid', async function () {
       // TODO: why does this need to throw instead of return?
       const iconId = uniqid()
       await model.create({ _id: iconId, sourceUrl: 'shall not pass', registeredTimestamp: Date.now() })
@@ -754,7 +754,7 @@ describe('static icon mongoose repository', function() {
       expect.fail('expected error to be thrown')
     })
 
-    it('loads content from url if the source url scheme is local', async function() {
+    it('loads content from url if the source url scheme is local', async function () {
 
       const content = Readable.from('an image')
       scheme2Local.resolveContent(Arg.sameStringValueAs(scheme2LocalIcon.sourceUrl)).resolves(content)
@@ -765,7 +765,7 @@ describe('static icon mongoose repository', function() {
       contentStore.didNotReceive().loadContent(Arg.all())
     })
 
-    it('loads content from the store if the source url is not local', async function() {
+    it('loads content from the store if the source url is not local', async function () {
 
       const content = Readable.from('')
       contentStore.loadContent(Arg.is(iconDoc => {
@@ -775,7 +775,7 @@ describe('static icon mongoose repository', function() {
       })).resolves(content)
       const loaded = await repo.loadContent(scheme1Icon.id)
 
-      expect(loaded).to.deep.equal([ scheme1Icon, content ])
+      expect(loaded).to.deep.equal([scheme1Icon, content])
       contentStore.received(1).loadContent(Arg.is(iconDoc => {
         expect(iconDoc.id).to.deep.equal(scheme1Icon.id)
         expect(iconDoc.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)

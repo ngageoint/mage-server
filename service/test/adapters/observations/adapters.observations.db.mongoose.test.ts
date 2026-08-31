@@ -512,11 +512,11 @@ describe('mongoose observation repository', function () {
     it('retains ids for existing entities')
   })
 
-  describe('updating individual attachments', function() {
+  describe('updating individual attachments', function () {
 
     let obs: Observation
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       const id = await repo.allocateObservationId()
       const formEntryId = (await repo.nextFormEntryIds())[0]
       const attrs = observationStub(id, event.id)
@@ -564,7 +564,7 @@ describe('mongoose observation repository', function () {
       expect(obs.validation.hasErrors).to.be.false
     })
 
-    it('saves the content meta-data for the given attachment id', async function() {
+    it('saves the content meta-data for the given attachment id', async function () {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 674523,
@@ -609,7 +609,7 @@ describe('mongoose observation repository', function () {
       expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
     })
 
-    it('unsets keys with undefined values', async function() {
+    it('unsets keys with undefined values', async function () {
 
       const patch: AttachmentPatchAttrs = {
         size: undefined,
@@ -628,7 +628,7 @@ describe('mongoose observation repository', function () {
       expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
     })
 
-    it('does not overwrite changes of concurrent update', async function() {
+    it('does not overwrite changes of concurrent update', async function () {
 
       const contentInfo1: AttachmentContentPatchAttrs = {
         size: 111111,
@@ -655,7 +655,7 @@ describe('mongoose observation repository', function () {
       expect(fetched.attachments[2]).to.deep.include(contentInfo3)
     })
 
-    it('returns null if the observation does not exist', async function() {
+    it('returns null if the observation does not exist', async function () {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 111111,
@@ -676,7 +676,7 @@ describe('mongoose observation repository', function () {
       expect(copyObservationAttrs(all[0])).to.deep.equal(copyObservationAttrs(obs))
     })
 
-    it('returns an error if the attachment id does not exist on the observation', async function() {
+    it('returns an error if the attachment id does not exist on the observation', async function () {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 111111,
@@ -690,11 +690,11 @@ describe('mongoose observation repository', function () {
     })
   })
 
-  describe('dispatching domain events', function() {
+  describe('dispatching domain events', function () {
 
     let obs: Observation
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       const id = await repo.allocateObservationId()
       const formId = await repo.nextFormEntryIds().then(x => x[0])
       const attachmentIds = await repo.nextAttachmentIds(3)
@@ -739,7 +739,7 @@ describe('mongoose observation repository', function () {
       obs = await repo.save(obs) as Observation
     })
 
-    it('dispatches pending events on the observation after the observation saves', async function() {
+    it('dispatches pending events on the observation after the observation saves', async function () {
 
       /*
       TODO: should there a mechanism to ensure domain events cannot be
@@ -763,7 +763,7 @@ describe('mongoose observation repository', function () {
       }
     })
 
-    it('emits readonly events', async function() {
+    it('emits readonly events', async function () {
 
       const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
       const receivedEvents = [] as ObservationEmitted<PendingObservationDomainEvent>[]
@@ -791,7 +791,7 @@ describe('mongoose observation repository', function () {
       expect(receivedEvent.removedAttachments).to.equal(removedAttachments)
     })
 
-    it('does not dispatch events if the observation is invalid', async function() {
+    it('does not dispatch events if the observation is invalid', async function () {
 
       const mod = Observation.assignTo(obs, {
         ...copyObservationAttrs(obs),
@@ -810,7 +810,7 @@ describe('mongoose observation repository', function () {
       domainEvents.didNotReceive().emit(Arg.all())
     })
 
-    it('does not dispatch events if there was a database saving the observation', async function() {
+    it('does not dispatch events if there was a database saving the observation', async function () {
 
       let mod = Observation.evaluate({
         ...copyObservationAttrs(obs),
