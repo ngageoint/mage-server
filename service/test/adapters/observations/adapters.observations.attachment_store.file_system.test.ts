@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import stream, { Readable } from 'stream'
 import util from 'util'
-import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adapters.observations.attachment_store.file_system'
+import { FileSystemAttachmentStore, initializeAttachmentStore } from '../../../lib/adapters/observations/adapters.observations.attachment_store.file_system'
 import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, removeAttachment, AttachmentPatchAttrs, AttachmentStoreErrorCode } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
@@ -43,7 +43,7 @@ describe('file system attachment store', function() {
   let att: Attachment
 
   beforeEach(async function() {
-    store = await intializeAttachmentStore(baseDirPath) as FileSystemAttachmentStore
+    store = await initializeAttachmentStore(baseDirPath) as FileSystemAttachmentStore
     const event = new MageEvent({
       id: 1,
       name: 'Attachment Store Test',
@@ -127,7 +127,7 @@ describe('file system attachment store', function() {
       const retainedFileContent = stream.Readable.from(Buffer.from('save me'))
       const retainedFileOut = fs.createWriteStream(retainedFilePath)
       await util.promisify(stream.pipeline)(retainedFileContent, retainedFileOut)
-      const anotherStore = await intializeAttachmentStore(baseDirPath)
+      const anotherStore = await initializeAttachmentStore(baseDirPath)
       const afterInitRetainedContent = await util.promisify(fs.readFile)(retainedFilePath)
 
       expect(afterInitRetainedContent.toString()).to.equal('save me')
@@ -347,7 +347,7 @@ describe('file system attachment store', function() {
       it('does not write outside the base directory if the content locator is an absolute path', async function() {
 
         const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
-        store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
+        store = await initializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
         const contentLocator = path.join('/tmp', 'absolute', 'should_not_write')
         const content = Buffer.from('sinister content')
         obs = patchAttachment(obs, att.id, { contentLocator, size: content.length }) as Observation
@@ -363,7 +363,7 @@ describe('file system attachment store', function() {
       it('does not write outside the base directory if the content locator references the parent directory', async function() {
 
         const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
-        store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
+        store = await initializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
         const contentLocator = path.join('..', '..', 'should_not_write')
         obs = patchAttachment(obs, att.id, { contentLocator }) as Observation
         const content = stream.Readable.from(Buffer.from('sinister content'))
@@ -753,7 +753,7 @@ describe('file system attachment store', function() {
       const preservePath = path.resolve(safeBaseDirPath, attRelPath)
       const preserve100Path = path.resolve(safeBaseDirPath, attRelPath + '-100')
       const preserve300Path = path.resolve(safeBaseDirPath, attRelPath + '-300')
-      store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
+      store = await initializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
       fs.writeFileSync(preservePath, 'very valuable')
       fs.writeFileSync(preserve100Path, 'very valuable 100')
       fs.writeFileSync(preserve300Path, 'very valuable 300')

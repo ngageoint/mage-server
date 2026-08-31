@@ -71,6 +71,7 @@
     "passport-oauth2": "1.8.0",
     "passport-openidconnect": "0.1.2",
     "pug": "3.0.3",
+    "re2js": "^2.3.1",
     "rfc5646": "3.0.0",
     "skia-canvas": "3.0.8",
     "superagent": "8.1.2",

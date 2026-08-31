@@ -1,7 +1,7 @@
 import { describe, it, before, after } from 'mocha'
 import * as mongoTest from '../mongo.test'
 import * as migration from '../../lib/migrations/031-saml-settings'
-import { Db } from 'mongodb'
+import { Db, Document } from 'mongodb'
 import { expect } from 'chai'
 
 const collectionName = 'authenticationconfigurations'
@@ -29,7 +29,7 @@ describe('saml settings migration', function () {
           }
           resolve()
         }
-        migration.up.call({ db, log: () => { } }, done)
+        migration.up.call({ db, log: () => {} }, done)
       })
     }
     migrateDown = () => {

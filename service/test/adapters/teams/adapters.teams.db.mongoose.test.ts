@@ -1,10 +1,9 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import mongoose from 'mongoose'
-import _ from 'lodash'
 import * as legacy from '../../../lib/models/team'
 import { TeamModel, MongooseTeamRepository } from '../../../lib/adapters/teams/adapters.teams.db.mongoose'
-import { TeamFindParameters } from '../../../src/entities/teams/entities.teams'
+import { TeamFindParameters } from '../../../lib/entities/teams/entities.teams'
 
 describe('event mongoose repository', function() {
 

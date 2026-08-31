@@ -973,27 +973,6 @@ invalid request
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed
       })
-      const preview: FeedPreview = {
-        feed: {
-          id: 'preview',
-          service,
-          topic,
-          title: 'Topic Title',
-          itemsHaveIdentity: true,
-          itemsHaveSpatialDimension: true,
-          showOnMapByDefault: true,
-          itemPrimaryProperty: 'topicPrimary',
-        },
-        content: {
-          topic,
-          feed: 'preview',
-          items: {
-            type: 'FeatureCollection',
-            features: []
-          }
-        }
-      }
-
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
       appLayer.previewFeed(appReq).resolves(AppResponse.error(permissionDenied('FEEDS_CREATE_FEED', adminPrincipal.user)))
 
@@ -1837,8 +1816,7 @@ invalid request
 
   describe('localization', function() {
 
-    it('passes language from accept-language header', function() {
-
+    it.skip('passes language from accept-language header', function() {
 
     })
   })

@@ -1,20 +1,67 @@
-import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
+import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
-import uniqid from 'uniqid'
-import * as api from '../../../lib/app.api/observations/app.api.observations'
-import { AllocateObservationId, IterateObservations, ReadObservations, registerDeleteRemovedAttachmentsHandler, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
-import { copyMageEventAttrs, MageEvent, MageEventId } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentProcessingStatus, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationSearchRepository, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
-import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
-import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
-import _ from 'lodash'
-import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
-import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
-import { pipeline, Readable } from 'stream'
-import util from 'util'
-import { BufferWriteable } from '../../utils'
 import EventEmitter from 'events'
+import _ from 'lodash'
 import sinon from 'sinon'
+import { pipeline, Readable } from 'stream'
+import uniqid from 'uniqid'
+import util from 'util'
+import {
+  EntityNotFoundError,
+  ErrEntityNotFound,
+  ErrInfrastructure,
+  ErrInvalidInput,
+  ErrPermissionDenied,
+  InfrastructureError,
+  InvalidInputError,
+  MageError,
+  permissionDenied,
+  PermissionDeniedError
+} from '../../../lib/app.api/app.api.errors'
+import * as api from '../../../lib/app.api/observations/app.api.observations'
+import {
+  AllocateObservationId,
+  ReadAttachmentContent,
+  registerDeleteRemovedAttachmentsHandler,
+  SaveObservation,
+  StoreAttachmentContent
+} from '../../../lib/app.impl/observations/app.impl.observations'
+import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
+import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
+import {
+  addAttachment,
+  Attachment,
+  AttachmentContentPatchAttrs,
+  AttachmentCreateAttrs,
+  AttachmentProcessingStatus,
+  AttachmentsRemovedDomainEvent,
+  AttachmentStore,
+  AttachmentStoreError,
+  AttachmentStoreErrorCode,
+  copyAttachmentAttrs,
+  copyObservationAttrs,
+  copyObservationStateAttrs,
+  EventScopedObservationRepository,
+  Observation,
+  ObservationAttrs,
+  ObservationDomainEventType,
+  ObservationEmitted,
+  ObservationRepositoryError,
+  ObservationRepositoryErrorCode,
+  ObservationState,
+  patchAttachment,
+  putAttachmentThumbnailForMinDimension,
+  removeAttachment,
+  removeFormEntry,
+  StagedAttachmentContentRef
+} from '../../../lib/entities/observations/entities.observations'
+import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
+import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
+import { IterateObservations, ReadObservations } from '../../../lib/app.impl/observations/app.impl.observations'
+import { MageEventId } from '../../../lib/entities/events/entities.events'
+import { ObservationSearchRepository } from '../../../lib/entities/observations/entities.observations'
+import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
+import { BufferWriteable } from '../../utils'
 
 function minimalObservationAttrs(): ObservationAttrs {
   return {
@@ -307,14 +354,14 @@ describe('observations use case interactions', function() {
       expect(exo.state).to.be.undefined
 
       const states: ObservationState[] = [
-        { id: uniqid(), name: 'archived', userId: uniqid() },
+        { id: uniqid(), name: ObservationStateName.Archived, userId: uniqid() },
         { id: uniqid(), name: 'active', userId: uniqid() }
       ]
       from.states = states.map(copyObservationStateAttrs)
       exo = api.exoObservationFor(from)
 
       expect(exo).not.to.have.property('states')
-      expect(exo.state).to.deep.equal({ id: states[0].id, name: 'archived', userId: states[0].userId })
+      expect(exo.state).to.deep.equal({ id: states[0].id, name: ObservationStateName.Archived, userId: states[0].userId })
     })
 
     it('sets content stored flag on attachments according to presence of content locator', async function() {
@@ -1623,8 +1670,8 @@ describe('observations use case interactions', function() {
           ...copyObservationAttrs(obsBefore),
           id: uniqid(),
           states: [
-            { id: uniqid(), name: 'active', userId: uniqid() },
-            { id: uniqid(), name: 'archived', userId: uniqid() }
+            { id: uniqid(), name: ObservationStateName.Active, userId: uniqid() },
+            { id: uniqid(), name: ObservationStateName.Archived, userId: uniqid() }
           ]
         }, mageEvent) as Observation
         const obsAfter = Observation.assignTo(obsBefore, {

@@ -1,7 +1,15 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
 import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
-import { AttachmentStore, EventScopedObservationRepository, FindObservationsSort, FindObservationsSortField, ObservationFieldFilter, ObservationState } from '../../entities/observations/entities.observations'
+import {
+  AttachmentStore,
+  EventScopedObservationRepository,
+  FindObservationsSort,
+  FindObservationsSortField,
+  ObservationFieldFilter,
+  ObservationState,
+  ObservationStateName
+} from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
@@ -40,7 +48,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
     if (search instanceof MageError) {
       return next(search)
     }
-    const mapping = ((observation: ExoObservation) => jsonForObservation(observation, qualifiedBaseUrl(req)))
+    const mapping = ((observation: ExoObservation): WebObservation => jsonForObservation(observation, qualifiedBaseUrl(req)))
     const appReq = createAppRequest(req, { search, mapping })
     const appRes = await app.readObservations(appReq)
     if (appRes.success) {
@@ -274,7 +282,7 @@ function parseBBox(param: any): number[] | InvalidInputError {
   return bbox
 }
 
-const observationStateNames: ObservationState['name'][] = [ 'active', 'archived' ]
+const observationStateNames: ObservationStateName[] = [ ObservationStateName.Active, ObservationStateName.Archived ]
 
 /**
  * Parse observation state name strings from the given input string.  This expects the input string to be

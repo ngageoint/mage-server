@@ -20,7 +20,7 @@ function MockTestUrlScheme(protocolPrefix: string, isLocal = false): SubstituteO
   const scheme = Sub.for<TestUrlScheme>()
   scheme.urlWithPath(Arg.any()).mimicks(path => new URL(`${protocolPrefix}///${path}`))
   scheme.canResolve(Arg.all()).mimicks(url => url.protocol === protocolPrefix)
-    ; (scheme.isLocalScheme as any).returns(isLocal)
+  ;(scheme.isLocalScheme as any).returns(isLocal)
   return scheme
 }
 
@@ -740,7 +740,7 @@ describe('static icon mongoose repository', function () {
     })
 
     it('throws error if the icon url is invalid', async function () {
-
+      // TODO: why does this need to throw instead of return?
       const iconId = uniqid()
       await model.create({ _id: iconId, sourceUrl: 'shall not pass', registeredTimestamp: Date.now() })
       try {
@@ -768,17 +768,17 @@ describe('static icon mongoose repository', function () {
     it('loads content from the store if the source url is not local', async function () {
 
       const content = Readable.from('')
-      contentStore.loadContent(Arg.is(actualReq => {
-        expect(actualReq.id).to.deep.equal(scheme1Icon.id)
-        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+      contentStore.loadContent(Arg.is(iconDoc => {
+        expect(iconDoc.id).to.deep.equal(scheme1Icon.id)
+        expect(iconDoc.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
         return true
       })).resolves(content)
       const loaded = await repo.loadContent(scheme1Icon.id)
 
       expect(loaded).to.deep.equal([scheme1Icon, content])
-      contentStore.received(1).loadContent(Arg.is(actualReq => {
-        expect(actualReq.id).to.deep.equal(scheme1Icon.id)
-        expect(actualReq.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
+      contentStore.received(1).loadContent(Arg.is(iconDoc => {
+        expect(iconDoc.id).to.deep.equal(scheme1Icon.id)
+        expect(iconDoc.registeredTimestamp).to.equal(scheme1Icon.registeredTimestamp)
         return true
       }))
       scheme1.didNotReceive().resolveContent(Arg.all())
@@ -805,9 +805,9 @@ describe('static icon mongoose repository', function () {
       const storedContent = Readable.from('')
       scheme1.resolveContent(Arg.sameStringValueAs(scheme1IconUnresolved.sourceUrl)).resolves(fetchedContent)
       contentStore.putContent(Arg.is(x => x === scheme1IconUnresolved), fetchedContent).resolves()
-      contentStore.loadContent(Arg.is(actualReq => {
-        expect(actualReq.id).to.deep.equal(scheme1IconUnresolved.id)
-        expect(actualReq.registeredTimestamp).to.equal(scheme1IconUnresolved.registeredTimestamp)
+      contentStore.loadContent(Arg.is(iconDoc => {
+        expect(iconDoc.id).to.deep.equal(scheme1IconUnresolved.id)
+        expect(iconDoc.registeredTimestamp).to.equal(scheme1IconUnresolved.registeredTimestamp)
         return true
       })).resolves(storedContent)
 

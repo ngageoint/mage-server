@@ -1,15 +1,19 @@
 import { attachmentTypeIsValidForField, FormField } from '../events/entities.events.forms'
-import { attachmentsForField, FieldConstraintKey, FormEntryId, ObservationAttrs } from './entities.observations'
-import { SimpleFieldValidationResult } from './entities.observations.fields'
+import { attachmentsForField, fieldValidation } from './entities.observations.fields.core'
+import {
+  FieldConstraintKeys, FieldValidationResult,
+  FormEntryId,
+  ObservationAttrs
+} from './entities.observations.types'
 
 
-export const AttachmentFieldValidation = function AttachmentFieldValidation<Failed, Succeeded>(field: FormField, formEntryId: FormEntryId, observationAttrs: ObservationAttrs, result: SimpleFieldValidationResult<Failed, Succeeded>): Failed | Succeeded {
+export function validateAttachmentsForField(field: FormField, formEntryId: FormEntryId, observationAttrs: ObservationAttrs): FieldValidationResult {
   const attachments = attachmentsForField(field, formEntryId, observationAttrs)
   if (typeof field.min === 'number' && attachments.length < field.min) {
-    return result.failedBecauseTheEntry(`requires at least ${field.min} ${field.min > 1 ? 'attachments' : 'attachment'}`, FieldConstraintKey.Min)
+    return fieldValidation.failed(`The entry must have at least ${field.min} ${field.min > 1 ? 'attachments' : 'attachment'}.`, FieldConstraintKeys.Min)
   }
   if (typeof field.max === 'number' && attachments.length > field.max) {
-    return result.failedBecauseTheEntry(`allows at most ${field.max} ${field.max > 1 ? 'attachments' : 'attachment'}`, FieldConstraintKey.Max)
+    return fieldValidation.failed(`The entry can have at most ${field.max} ${field.max > 1 ? 'attachments' : 'attachment'}.`, FieldConstraintKeys.Max)
   }
 
   // TODO: ensure new attachment content types
@@ -17,7 +21,7 @@ export const AttachmentFieldValidation = function AttachmentFieldValidation<Fail
   // TODO: invalidate if form entry has a value?
 
   if (attachments.some(x => !attachmentTypeIsValidForField(field, x.contentType))) {
-    return result.failedBecauseTheEntry(`allows only content of type ${field.allowedAttachmentTypes?.join(', ')}`)
+    return fieldValidation.failed(`The attachment must be content of type ${field.allowedAttachmentTypes?.join(', ')}.`, FieldConstraintKeys.Value)
   }
-  return result.succeeded()
+  return fieldValidation.resolved()
 }

@@ -12,6 +12,7 @@ import { jsonForAttachment, jsonForObservation, ObservationAppLayer, Observation
 import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationFeatureProperties, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { ExoAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
+import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
 import { BufferWriteable } from '../../utils'
 import { Readable } from 'stream'
 
@@ -35,7 +36,7 @@ describe('observations web controller', function () {
   beforeEach(function () {
     mageEvent = new MageEvent({
       id: Date.now(),
-      name: 'Test Obsevation Web Layer',
+      name: 'Test Observation Web Layer',
       forms: [],
       feedIds: [],
       layerIds: [],
@@ -249,10 +250,10 @@ describe('observations web controller', function () {
 
       app.readObservations(Arg.any()).resolves(AppResponse.success([]))
       await client.get(`${basePath}/events/${mageEvent.id}/observations`)
-        .query({ states: 'active,archived' })
+        .query({ states: 'active,archive' })
 
       app.received(1).readObservations(Arg.is(req => {
-        expect(req.search.stateIsAnyOf).to.deep.equal([ 'active', 'archived' ])
+        expect(req.search.stateIsAnyOf).to.deep.equal([ ObservationStateName.Active, ObservationStateName.Archived ])
         return true
       }))
     })

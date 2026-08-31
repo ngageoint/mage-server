@@ -110,7 +110,7 @@ import { MongoosePreferenceRepository, UserPreferenceModel } from './adapters/pr
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose';
 import path from 'path';
 import { MageEventDocument } from './models/event';
-import { parseAcceptLanguageHeader } from './entities/entities.i18n';
+import { Locale, parseAcceptLanguageHeader } from './entities/entities.i18n'
 import {
   ObservationRoutes,
   ObservationWebAppRequestFactory
@@ -125,7 +125,7 @@ import {
 import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose';
 import {
   FileSystemAttachmentStoreInitError,
-  intializeAttachmentStore
+  initializeAttachmentStore
 } from './adapters/observations/adapters.observations.attachment_store.file_system';
 import {
   AttachmentStoreToken,
@@ -211,27 +211,28 @@ export interface Task {
 }
 
 /**
- * The Express Application will emit this event when
+ * The Express Application will emit this event when the app is ready
+ * to receive requests.
  */
-export const MageReadyEvent = 'comingOfMage';
+export const MageReadyEvent = 'comingOfMage'
 export type BootConfig = {
   plugins: {
     /**
      * An array of service plugin package names
      */
-    servicePlugins?: string[];
+    servicePlugins?: string[]
     /**
      * An array of web app plugin package names
      */
-    webUIPlugins?: string[];
-  };
-};
+    webUIPlugins?: string[]
+  }
+}
 
-let service: MageService | null = null;
+let service: MageService | null = null
 
 export const boot = async function(config: BootConfig): Promise<MageService> {
   if (service) {
-    return service as MageService;
+    return service as MageService
   }
 
   const mongooseLogger = log.mongooseLogger;
@@ -538,17 +539,17 @@ async function initDatabase(): Promise<DatabaseLayer> {
   // TODO: explore performing migrations without mongoose models because current models may not be compatible with past migrations
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require('./models').initializeModels();
+  require('./models').initializeModels()
 
-  const migrate = await import('./migrate');
-  await migrate.runDatabaseMigrations(uri, options);
+  const migrate = await import('./migrate.js')
+  await migrate.runDatabaseMigrations(uri, options)
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const eventModel = require('./models/event').Model;
+  const eventModel = require('./models/event').Model
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const userModel = require('./models/user').Model;
+  const userModel = require('./models/user').Model
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const settingModel = require('./models/setting').Model;
+  const settingModel = require('./models/setting').Model
   const TeamDBModule = await import('./models/team.js')
 
   return {
@@ -704,7 +705,7 @@ async function initRepositories(
     models.users.preference
   );
   const settingRepo = new MongooseSettingsRepository(models.settings.setting);
-  const attachmentStore = await intializeAttachmentStore(
+  const attachmentStore = await initializeAttachmentStore(
     environment.attachmentBaseDirectory
   );
   const systemInfoService = new EnvironmentServiceImpl(models.conn);
@@ -818,7 +819,7 @@ async function initSearchIndexAppLayer(repos: Repositories): Promise<AppLayer['s
 }
 
 async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['locations']> {
-  const eventPermissions = await import('./permissions/permissions.events');
+  const eventPermissions = await import('./permissions/permissions.events.js')
   const locationPermissionsService = new UserLocationPermissionServiceImpl(
     eventPermissions.defaultEventPermissionsService
   );
@@ -847,7 +848,7 @@ async function initExportsAppLayer(
   repos: Repositories,
   logger: Logger
 ): Promise<AppLayer['exports']> {
-  const eventPermissions = await import('./permissions/permissions.events');
+  const eventPermissions = await import('./permissions/permissions.events.js')
   const exportPermissions = new RoleBasedExportsPermissionService(
     eventPermissions.defaultEventPermissionsService
   );
@@ -954,7 +955,7 @@ async function initTeamsAppLayer(repos: Repositories): Promise<AppLayer['teams']
 async function initEventsAppLayer(
   repos: Repositories
 ): Promise<AppLayer['events']> {
-  const eventPermissions = await import('./permissions/permissions.events');
+  const eventPermissions = await import('./permissions/permissions.events.js')
   const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(
     repos.events.eventRepo,
     eventPermissions.defaultEventPermissionsService
@@ -988,8 +989,8 @@ async function initObservationsAppLayer(
   repos: Repositories,
   attachmentHooks: AttachmentHook[]
 ): Promise<AppLayer['observations']> {
-  const eventPermissions = await import('./permissions/permissions.events');
-  const obsPermissions = await import('./permissions/permissions.observations');
+  const eventPermissions = await import('./permissions/permissions.events')
+  const obsPermissions = await import('./permissions/permissions.observations')
   const obsPermissionsService =
     new obsPermissions.ObservationPermissionsServiceImpl(
       eventPermissions.defaultEventPermissionsService
@@ -1195,7 +1196,7 @@ async function initWebLayer(
   addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void;
 }> {
   // load routes the old way
-  const webLayer = await import('./express');
+  const webLayer = await import('./express.js')
   const webController = webLayer.app;
   const webAuth = webLayer.auth;
 
@@ -1357,22 +1358,17 @@ async function initWebLayer(
       requestToken: Symbol(),
       requestingPrincipal(): UserExpanded {
         return {
-          ...(req.user as any).toJSON(),
-          id: (req.user as any)._id.toHexString()
-        } as UserExpanded;
+          ...req.user.toJSON(),
+          id: req.user._id.toHexString()
+        } as UserExpanded
       },
-      locale(): Readonly<{
-        languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
-      }> {
+      locale(): Locale | null {
         return Object.freeze({
-          languagePreferences: parseAcceptLanguageHeader(
-            req.headers['accept-language']
-          )
-        });
+          languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+        })
       }
-    };
-  };
-
+    }
+  }
   try {
     const webAppPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
     const webAppPath = path.dirname(webAppPackagePath);
@@ -1383,21 +1379,17 @@ async function initWebLayer(
 
   return {
     webController,
-    addPluginRoutes: (
-      pluginId: string,
-      initPluginRoutes: WebRoutesHooks
-    ): void => {
+    addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
       if (initPluginRoutes.webRoutes.public) {
-        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext);
-        webController.use(`/plugins/${pluginId}`, [routes]);
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [routes])
       }
-
       if (initPluginRoutes.webRoutes.protected) {
-        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext);
-        webController.use(`/plugins/${pluginId}`, [bearerAuthentication, routes]);
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [bearerAuthentication, routes])
       }
     }
-  };
+  }
 }
 
 async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
@@ -1425,24 +1417,18 @@ async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
   return [exportTask, searchIndexTask];
 }
 
-function baseAppRequestContext(
-  req: express.Request
-): AppRequestContext<UserWithRole> {
+function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),
     requestingPrincipal(): UserWithRole {
       return req.user as UserWithRole || {} as AnonymousUser
     },
-    locale(): Readonly<{
-      languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
-    }> {
+    locale(): Locale | null {
       return Object.freeze({
-        languagePreferences: parseAcceptLanguageHeader(
-          req.headers['accept-language']
-        )
-      });
+        languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+      })
     }
-  };
+  }
 }
 
 function ensureExportEventScope(
