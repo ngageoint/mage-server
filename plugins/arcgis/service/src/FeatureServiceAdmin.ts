@@ -1,6 +1,6 @@
 import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
 import { FeatureServiceConfig, FeatureLayerConfig } from "./types/ArcGISConfig";
-import { MageEvent, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
+import { MageEvent, MageEventAttrs, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { Layer, Field } from "./types/AddLayersRequest";
 import { Form, FormField, FormFieldType, FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
 import { ObservationsTransformer } from "./ObservationsTransformer";
@@ -8,6 +8,9 @@ import { LayerInfoResult, LayerField } from "./types/LayerInfoResult";
 import FormData from 'form-data';
 import { request } from '@esri/arcgis-rest-request';
 import { ArcGISIdentityService } from "./ArcGISService";
+import { ILayerDefinition } from "@esri/arcgis-rest-feature-service";
+import { DrawingInfoBuilder } from "./DrawingInfoBuilder";
+import { EventTransform } from "./EventTransform";
 
 /**
  * Administers hosted feature services such as layer creation and updates.
@@ -16,17 +19,23 @@ export class FeatureServiceAdmin {
 	private _config: ArcGISPluginConfig;
 	private _identityService: ArcGISIdentityService;
 	private _console: Console;
+	private _verbose: boolean;
+
+	/** string field length to hold WKT-encoded form fields with locations/geometries */
+	private static readonly GEOMETRY_STRING_FIELD_LENGTH: number = 2 ** 31 - 1;
 
 	/**
 	 * Constructor.
 	 * @param {ArcGISPluginConfig} config The plugins configuration.
 	 * @param {ArcGISIdentityService} identityService The identity service.
 	 * @param {Console} console Used to log to the console.
+	 * @param {boolean} verbose whether to perform verbose logging
 	 */
-	constructor(config: ArcGISPluginConfig, identityService: ArcGISIdentityService, console: Console) {
+	constructor(config: ArcGISPluginConfig, identityService: ArcGISIdentityService, console: Console, verbose: boolean) {
 		this._config = config;
 		this._identityService = identityService;
 		this._console = console;
+		this._verbose = verbose;
 	}
 
 	/**
@@ -83,7 +92,6 @@ export class FeatureServiceAdmin {
 	async updateLayer(service: FeatureServiceConfig, featureLayer: FeatureLayerConfig, layerInfo: LayerInfoResult, eventRepo: MageEventRepository): Promise<Field[]> {
 		this._console.info('FeatureServiceAdmin updateLayer()');
 		const events = await this.layerEvents(featureLayer, eventRepo);
-		const promises = [];
 
 		const eventFields = this.fields(events);
 
@@ -106,7 +114,7 @@ export class FeatureServiceAdmin {
 		}
 
 		if (addFields.length > 0) {
-			promises.push(this.addFields(service, layerInfo.id, addFields));
+			await this.addFields(service, layerInfo.id, addFields);
 		}
 
 		const eventFieldSet = new Set();
@@ -118,7 +126,13 @@ export class FeatureServiceAdmin {
 		const remainingFields = [];
 		for (const field of layerFields) {
 			if (field.editable && !eventFieldSet.has(field.name)) {
-				deleteFields.push(field);
+				if (layerInfo.displayField != null && field.name === layerInfo.displayField) {
+					this._console.warn(`FeatureServiceAdmin updateLayer() not deleting field '${field.name}' `
+						+ `because it is set as the layer's display field`);
+					remainingFields.push(field);
+				} else {
+					deleteFields.push(field);
+				}
 			} else {
 				remainingFields.push(field);
 			}
@@ -126,41 +140,30 @@ export class FeatureServiceAdmin {
 
 		if (deleteFields.length > 0) {
 			layerInfo.fields = remainingFields;
-			promises.push(this.deleteFields(service, layerInfo.id, deleteFields));
+			await this.deleteFields(service, layerInfo.id, deleteFields);
 		}
-		await Promise.all(promises);
+
+		await this.updateDrawingInfo(service, layerInfo.id, events);
+
 		return eventFields;
 	}
 
 	/**
-	 * Get the Mage layer events
+	 * Get the MAGE events for a feature layer
 	 * @param {FeatureLayerConfig} layer feature layer
 	 * @param {MageEventRepository} eventRepo event repository
 	 * @returns {Promise<MageEvent[]>} Mage layer events
 	 */
 	private async layerEvents(layer: FeatureLayerConfig, eventRepo: MageEventRepository): Promise<MageEvent[]> {
-		const layerEventIds: Set<MageEventId> = new Set();
-		if (layer.eventIds != null) {
-			for (const layerEventId of layer.eventIds) {
-				layerEventIds.add(layerEventId);
-			}
-		}
-
-		let mageEvents;
-		if (layerEventIds.size > 0) {
-			mageEvents = await eventRepo.findAll();
-		} else {
-			mageEvents = await eventRepo.findActiveEvents();
-		}
-
 		const events: MageEvent[] = [];
-		for (const mageEvent of mageEvents) {
-			if (layerEventIds.size === 0 || layerEventIds.has(mageEvent.id)) {
-				const event = await eventRepo.findById(mageEvent.id);
-				if (event != null) {
-					events.push(event);
-				}
-			}
+		if (layer.eventIds) {
+			const results = await eventRepo.findAllByIds(layer.eventIds);
+			events.push(
+				...layer.eventIds
+					.map(id => results[id])
+					.filter((eventAttrs): eventAttrs is MageEventAttrs => eventAttrs != null)
+					.map(eventAttrs => new MageEvent(eventAttrs))
+			)
 		}
 
 		return events;
@@ -218,13 +221,9 @@ export class FeatureServiceAdmin {
 		if (this._config.geometryType != null) {
 			fields.push(this.createTextField(this._config.geometryType));
 		}
+		fields.push(this.createTextField(this._config.iconSymbolField));
 
-		const fieldNames = new Set<string>();
-		for (const field of fields) {
-			fieldNames.add(field.name);
-		}
-
-		this.eventsFields(events, fields, fieldNames);
+		fields.push(...this.eventsFields(events));
 
 		return fields;
 	}
@@ -284,64 +283,70 @@ export class FeatureServiceAdmin {
 	}
 
 	/**
-	 * Build fields from the layer events
+	 * Build ArcGIS fields from the layer events
 	 * @param {MageEvent[]} events layer events
-	 * @param {Field[]} fields created fields
-	 * @param {Set<string>} fieldNames set of all field names
+	 * @returns {Field[]} ArcGIS fields
 	 */
-	private eventsFields(events: MageEvent[], fields: Field[], fieldNames: Set<string>) {
+	private eventsFields(events: MageEvent[]): Field[] {
 		const forms = new Set<FormId>();
 
+		const newFields: Field[] = [];
 		for (const event of events) {
-			this.eventFields(event, forms, fields, fieldNames);
+			newFields.push(...this.eventFields(event, forms));
 		}
+		return newFields;
 	}
 
 	/**
-	 * Build fields from the layer event
+	 * Build ArcGIS fields from the layer event
 	 * @param {MageEvent} event layer event
 	 * @param {Set<FormId>} forms set of processed forms
-	 * @param {Field[]} fields created fields
-	 * @param {Set<string>} fieldNames set of all field names
+	 * @returns {Field[]} ArcGIS fields
 	 */
-	private eventFields(event: MageEvent, forms: Set<FormId>, fields: Field[], fieldNames: Set<string>) {
+	private eventFields(event: MageEvent, forms: Set<FormId>): Field[] {
+		const transform = new EventTransform(this._config, event);
+		const newFields: Field[] = [];
 		for (const form of event.activeForms) {
 			if (!forms.has(form.id)) {
 				forms.add(form.id);
 
 				for (const formField of form.fields) {
 					if (!formField.archived) {
-						this.createFormField(form, formField, fields, fieldNames);
+						const newField = this.createFormField(form, formField, transform);
+						if (newField != null) {
+							newFields.push(newField);
+						}
 					}
 				}
 			}
 		}
+		return newFields;
 	}
 
 	/**
-	 * Build a field from the form field
+	 * Build an ArcGIS field from the form field
 	 * @param {Form} form form
 	 * @param {FormField} formField form field
-	 * @param {Field[]} fields created fields
-	 * @param {Set<string>} fieldNames set of all field names
+	 * @param {EventTransform} transform transformer object for event
+	 * @returns {Field | null} ArcGIS field
 	 */
-	private createFormField(form: Form, formField: FormField, fields: Field[], fieldNames: Set<string>) {
+	private createFormField(form: Form, formField: FormField, transform: EventTransform): Field | null {
 		const field = this.initField(formField.type);
 
 		if (field != null) {
-			const sanitizedName = ObservationsTransformer.replaceSpaces(formField.title);
-			const sanitizedFormName = ObservationsTransformer.replaceSpaces(form.name);
-			const name = `${sanitizedFormName}_${sanitizedName}`.toLowerCase();
-
-			fieldNames.add(name);
-
-			field.name = name;
-			field.alias = field.name;
+			field.name = formField.name;
+			const formTransform = transform.get(form.id);
+			if (formTransform != null) {
+				const fieldName = formTransform.getField(formField.name);
+				if (fieldName != null) {
+					field.name = fieldName;
+				}
+			}
+			field.alias = formField.title;
 			field.editable = true;
 			field.defaultValue = formField.value;
-
-			fields.push(field);
 		}
+		return field;
 	}
 
 	/**
@@ -374,8 +379,7 @@ export class FeatureServiceAdmin {
 				break;
 			case FormFieldType.DateTime:
 				field.type = 'esriFieldTypeDate';
-				field.sqlType = 'sqlTypeOther';
-				field.length = 10;
+				field.sqlType = 'sqlTypeTimestamp';
 				break;
 			case FormFieldType.Numeric:
 				if (integer) {
@@ -389,6 +393,10 @@ export class FeatureServiceAdmin {
 				}
 				break;
 			case FormFieldType.Geometry:
+				field.type = 'esriFieldTypeString';
+				field.sqlType = 'sqlTypeNVarchar';
+				field.length = FeatureServiceAdmin.GEOMETRY_STRING_FIELD_LENGTH;
+				break;
 			case FormFieldType.Attachment:
 			case FormFieldType.Hidden:
 			default:
@@ -496,5 +504,41 @@ export class FeatureServiceAdmin {
 		}
 
 		return url;
+	}
+
+	/**
+	 * Update the drawingInfo within the feature layer definition to properly render features for the given events
+	 * @param {FeatureServiceConfig} service feature service
+	 * @param {number} featureLayer feature layer number
+	 * @param {MageEvent[]} events MAGE events applicable to the layer
+	 */
+	private async updateDrawingInfo(service: FeatureServiceConfig, featureLayer: number, events: MageEvent[]): Promise<any> {
+		const builder = new DrawingInfoBuilder(this._console, this._config)
+			.events(events);
+		const drawingInfo = await builder.build();
+		if (!drawingInfo) {
+			return;
+		}
+		const definitionUpdate: ILayerDefinition = { drawingInfo: drawingInfo } as ILayerDefinition;
+
+		const url = this.adminUrl(service) + featureLayer.toString() + '/updateDefinition';
+
+		this._console.info('ArcGIS feature layer updateDefinition with drawingInfo, URL ' + url);
+		if (this._verbose) {
+			this._console.debug(' drawingInfo:\n' + JSON.stringify(drawingInfo, null, 2));
+		}
+
+		try {
+			const identityManager = await this._identityService.signin(service);
+			await request(url, {
+				authentication: identityManager,
+				params: {
+					updateDefinition: definitionUpdate,
+					f: "json"
+				}
+			}).catch((error) => this._console.error('Error in updateDrawingInfo: ' + error));
+		} catch (error) {
+			this._console.error('FeatureServiceAdmin updateDrawingInfo() error ' + error);
+		}
 	}
 }

@@ -5,6 +5,7 @@ import { LayerInfo } from "./LayerInfo";
 import { ObservationBins } from "./ObservationBins";
 import { ObservationsSender } from "./ObservationsSender";
 import { ArcGISIdentityManager } from "@esri/arcgis-rest-request";
+import { QueryObjectResult } from "./types/QueryObjectResult";
 /**
  * Processes new, updated, and deleted observations and sends the changes to a specific arc feature layer.
  */
@@ -47,11 +48,9 @@ export class FeatureLayerProcessor {
 
     private _console: Console;
 
-    private _addedObs: Set<string> = new Set<string>();
-
     /**
      * Creates a new instance of FeatureLayerProcessor.
-     * @param {LayerInfo} layerInfo - Information about the arc feature layer this class sends observations to.
+     * @param {LayerInfo} layerInfo - Information about the ArcGIS feature layer this object sends observations to.
      * @param {ArcGISPluginConfig} config - Contains certain parameters that can be configured.
      * @param {ArcGISIdentityManager} identityManager - ArcGIS identity manager for authentication.
      * @param {Console} console - Used to log messages to the console.
@@ -77,11 +76,12 @@ export class FeatureLayerProcessor {
      * Checks to see if there are any updates that need to be sent to the feature layer.
      */
     async processPendingUpdates() {
+        const existingObsIds = await this.existingObservationIds();
+
         const newAndUpdates = new ObservationBins();
         for (let i = 0; i < this._pendingNewAndUpdates.adds.count(); i++) {
-            if (!this._addedObs.has(this._pendingNewAndUpdates.adds.observations[i].id)) {
+            if (!existingObsIds.has(this._pendingNewAndUpdates.adds.observations[i].id)) {
                 newAndUpdates.adds.add(this._pendingNewAndUpdates.adds.observations[i]);
-                this._addedObs.add(this._pendingNewAndUpdates.adds.observations[i].id);
             }
         }
         for (let i = 0; i < this._pendingNewAndUpdates.updates.count(); i++) {
@@ -108,13 +108,13 @@ export class FeatureLayerProcessor {
 
         const bins = new ObservationBins();
 
+        const existingObsIds = await this.existingObservationIds();
+
         for (const arcObservation of arcObjectsForLayer.observations) {
-            // TODO: Would probably want a better way to determine which observations need to be updated in arcgis
-            if (arcObjectsForLayer.firstRun || arcObservation.lastModified !== arcObservation.createdAt) {
+            if (existingObsIds.has(arcObservation.id)) {
                 bins.updates.add(arcObservation);
-            } else if (!this._addedObs.has(arcObservation.id)) {
+            } else {
                 bins.adds.add(arcObservation);
-                this._addedObs.add(arcObservation.id);
             }
         }
 
@@ -123,14 +123,13 @@ export class FeatureLayerProcessor {
             this.featureQuerier.queryObservation(arcObservation.id, (result) => {
                 this._existenceQueryCounts--;
                 if (result.features != null && result.features.length > 0) {
-                    this._addedObs.add(arcObservation.id);
                     const arcAttributes = result.features[0].attributes;
 
-                    let lastEdited = null;
-                    if (this._config.lastEditedDateField != null) {
-                        lastEdited = Number(arcAttributes[this._config.lastEditedDateField]);
+                    let featureLastModified = null;
+                    if (this._config.lastModifiedField != null) {
+                        featureLastModified = Number(arcAttributes[this._config.lastModifiedField]);
                     }
-                    if (!lastEdited || lastEdited < arcObservation.lastModified) {
+                    if (!featureLastModified || featureLastModified < arcObservation.lastModified) {
 
                         const objectIdField = result.objectIdFieldName;
                         const updateAttributes = arcObservation.object.attributes;
@@ -162,9 +161,8 @@ export class FeatureLayerProcessor {
         await this.send(bins);
 
         for (const arcObservation of observations.deletions) {
-            if (this.layerInfo.geometryType === arcObservation.esriGeometryType && this._addedObs.has(arcObservation.id)) {
+            if (this.layerInfo.geometryType === arcObservation.esriGeometryType && existingObsIds.has(arcObservation.id)) {
                 await this.sender.sendDelete(arcObservation.id);
-                this._addedObs.delete(arcObservation.id);
             }
         }
     }
@@ -182,5 +180,18 @@ export class FeatureLayerProcessor {
             promises.push(this.sender.sendUpdates(bins.updates));
         }
         await Promise.all(promises);
+    }
+
+    /**
+     * Query for all existing observation IDs in the feature layer
+     */
+    private async existingObservationIds(): Promise<Set<string>> {
+        const ids = new Set<string>();
+        await this.featureQuerier.queryDistinct((result: QueryObjectResult) => {
+            result.features.forEach(feature => {
+                ids.add(feature.attributes[this._config.observationIdField] as string);
+            });
+        }, this._config.observationIdField);
+        return ids;
     }
 }

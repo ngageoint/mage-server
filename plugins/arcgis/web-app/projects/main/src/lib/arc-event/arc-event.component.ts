@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -16,9 +17,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ArcEventsModel } from './ArcEventsModel';
 import { ArcEvent } from './ArcEvent';
 import { ArcEventLayer } from './ArcEventLayer';
-import { Observable } from 'rxjs';
-import { MatSelect } from '@angular/material/select';
-import { MatOption, MatOptionSelectionChange } from '@angular/material/core';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   standalone: false,
@@ -26,7 +25,7 @@ import { MatOption, MatOptionSelectionChange } from '@angular/material/core';
   templateUrl: './arc-event.component.html',
   styleUrls: ['./arc-event.component.scss']
 })
-export class ArcEventComponent implements OnInit, OnChanges {
+export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input('config') config: ArcGISPluginConfig = defaultArcGISPluginConfig;
   private configSet = false;
@@ -55,8 +54,6 @@ export class ArcEventComponent implements OnInit, OnChanges {
     return this._model;
   }
 
-  selectedValues: number[] = [];
-
   isLoading: boolean;
   currentEditingEvent: ArcEvent;
   layers: ArcEventLayer[];
@@ -64,17 +61,99 @@ export class ArcEventComponent implements OnInit, OnChanges {
   @ViewChild('editEventDialog', { static: true })
   private editEventTemplate: TemplateRef<unknown>
 
-  @ViewChild('selectEvents', { static: true })
-  private selectEventTemplate: TemplateRef<unknown>
-
-  @ViewChild('matRef') matSelect: MatSelect;
+  private configChangedSubscription?: Subscription;
+  isSaving: boolean;
+  private savedSnapshot: string = '[]';
 
   constructor(private arcService: ArcService, private dialog: MatDialog) {
     this.config = defaultArcGISPluginConfig;
     this._model = new ArcEventsModel();
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    // detect changes in other tabs
+    this.configChangedSubscription = this.configChangedNotifier?.subscribe(() => this.refreshEventLayers());
+  }
+
+  ngOnDestroy(): void {
+    this.configChangedSubscription?.unsubscribe();
+  }
+
+  // re-derives each event's layer list from the current config, so layers belonging to a feature
+  // service that was since deleted no longer appear as selectable/selected for any event
+  private refreshEventLayers(): void {
+    for (const event of this.model.allEvents) {
+      event.layers = this.eventLayers(event.name);
+      if (event.layers.length === 0) {
+        event.selected = false;
+      }
+    }
+    this.captureSnapshot();
+  }
+
+  // true once this.config has actually been replaced with fetched data, rather than still being
+  // the shared default placeholder the parent starts with before its own config fetch resolves
+  private get configReady(): boolean {
+    return this.config !== defaultArcGISPluginConfig;
+  }
+
+  // applying the persisted event selection depends on both the events list (from this component's
+  // own fetchEvents() call) and the real config (fetched independently by the parent) being ready;
+  // whichever of those two async loads finishes last calls this to do the one-time initial application,
+  // so it works correctly regardless of which one happens to resolve first
+  private tryApplyInitialSelection(): void {
+    if (this.eventSet || this.model.allEvents.length === 0 || !this.configReady) {
+      return;
+    }
+    this.eventSet = true;
+    this.refreshEventLayers();
+    this.LoadSelectedEvents();
+    this.loadEventFilters();
+    this.captureSnapshot();
+  }
+
+  // seeds each event's sync-after filter from the persisted config
+  private loadEventFilters(): void {
+    for (const event of this.model.allEvents) {
+      event.syncAfter = this.config.syncAfterByEventId?.[event.id];
+    }
+  }
+
+  // serializes the event/layer selection state so it can be compared against or restored later
+  private serializeEventsState(): string {
+    return JSON.stringify(
+      this.model.allEvents.map(event => ({
+        name: event.name,
+        selected: event.selected,
+        syncAfter: event.syncAfter,
+        layers: event.layers.map(layer => ({ name: layer.name, isSelected: layer.isSelected }))
+      }))
+    );
+  }
+
+  // captures the current event/layer selection state as the baseline to compare pending changes against
+  private captureSnapshot(): void {
+    this.savedSnapshot = this.serializeEventsState();
+  }
+
+  get hasChanges(): boolean {
+    return this.serializeEventsState() !== this.savedSnapshot;
+  }
+
+  // reverts all pending event/layer selection changes back to the last saved state
+  cancelChanges(): void {
+    const snapshot: { name: string, selected: boolean, syncAfter?: string, layers: { name: string, isSelected: boolean }[] }[] = JSON.parse(this.savedSnapshot);
+    for (const saved of snapshot) {
+      const event = this.model.allEvents.find(e => e.name === saved.name);
+      if (!event) continue;
+      event.selected = saved.selected;
+      event.syncAfter = saved.syncAfter;
+      for (const savedLayer of saved.layers) {
+        const layer = event.layers.find(l => l.name === savedLayer.name);
+        if (layer) layer.isSelected = savedLayer.isSelected;
+      }
+    }
+  }
 
   /// Activates On Every View Change, Is Configured to Set Initial State
   /// As Soon As Data is Available, Then locks Changes to Not Activate Unless
@@ -82,38 +161,36 @@ export class ArcEventComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (
       !this.configSet &&
-      this.config.featureServices.length > 0 &&
       this.model.allEvents.length === 0
     ) {
       this.configSet = true;
       this.arcService.fetchEvents().subscribe(x => this.setAllEvents(x));
+      return;
     }
-    else if (!this.eventSet && this.configSet && this.model.allEvents.length > 0) {
-      this.eventSet = true;
-      this.LoadSelectedEvents();
-    }
-  }
 
-  /// Returns a list of values that differ between two lists of ArcEvents
-  getDifferences(left: ArcEvent[], right: ArcEvent[]): ArcEvent[] {
-    return left.filter(l =>
-      !right.some(r =>
-        l.id === r.id));
+    if (this.model.allEvents.length > 0 && changes['config'] && !changes['config'].firstChange) {
+      if (this.eventSet) {
+        // already applied the initial selection - just recompute layer availability from the
+        // updated config, preserving any pending (unsaved) selection the user has made
+        this.refreshEventLayers();
+      } else {
+        // the real config arrived after events were already loaded from the placeholder config
+        this.tryApplyInitialSelection();
+      }
+    }
   }
 
   /// This Returns if Something should be shown when the Filter Text Box is used
-  getVisibility(item: ArcEvent) {
-    let isNotFiltered = this.model.allEvents.find((x) =>
-      x.name === item.name)?.name.toLocaleLowerCase().includes(this.filterValue);
-    return isNotFiltered
+  getVisibility(item: ArcEvent): boolean {
+    return item.name.toLocaleLowerCase().includes(this.filterValue.toLocaleLowerCase());
+  }
+
+  get sortedEvents(): ArcEvent[] {
+    return [...this.model.allEvents].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   clearFilterValue() {
     this.filterValue = "";
-  }
-
-  getSelections() {
-    return this._model.events.map((x) => x.id);
   }
 
   /// On Initial Load this will store all available events into model.allEvents
@@ -121,34 +198,31 @@ export class ArcEventComponent implements OnInit, OnChanges {
     if (this.model.allEvents.map((aE) => aE.name).filter((eN) =>
       x.map((mE) => mE.name).includes(eN)).length) return;
     console.log("Loading All Available Events")
-    let temp = new ArcEventsModel();
+    const allEvents = new Array<ArcEvent>();
     for (const event of x) {
-      let eventsLayers = this.eventLayers(event.name)
-      const arcEvent = new ArcEvent(event.name, event.id, eventsLayers);
-      temp.allEvents.push(arcEvent);
+      const eventsLayers = this.eventLayers(event.name)
+      allEvents.push(new ArcEvent(event.name, event.id, eventsLayers));
     }
-    this.model = Object.assign({}, temp);
+    this.model.allEvents = allEvents;
     this.eventSet = false;
+    // config may already be real by the time this async call resolves (or may still be the
+    // placeholder, in which case ngOnChanges will pick this up once the real config arrives)
+    this.tryApplyInitialSelection();
   }
 
   /// On Initial Load, this checks the database loaded value for selected events
-  /// And Adds them to the list of select box selected values, which in turn adds them
-  /// to model.events
+  /// And marks the matching entries in model.allEvents as selected/on
   LoadSelectedEvents() {
     console.log("Loading Previously Selected Events")
     let events: (string | number)[] = [];
     for (const fs of this.config.featureServices) {
       for (const l of fs.layers) {
-        events.push(...<[]>l.events?.map(x => x))
+        l.events?.forEach(x => events.push(x))
       }
     }
-    if (!events) {
-      console.log("No Events Found!")
-      return;
-    }
-    else events = [...new Set(events)]; /// needs to be distinct.
-    let e = null;
+    events = [...new Set(events)]; /// needs to be distinct.
     for (const event of events) {
+      let e = null;
       if (typeof (event) == "string") {
         e = this.model.allEvents.find((x) => x.name === event);
       } else if (typeof (event) == "number") {
@@ -158,9 +232,7 @@ export class ArcEventComponent implements OnInit, OnChanges {
         console.log(`${event} not found!`)
         continue;
       }
-      let eventsLayers = this.eventLayers(e.name)
-      const arcEvent = new ArcEvent(e.name, e.id, eventsLayers);
-      this.selectedValues.push(arcEvent.id)
+      e.selected = true;
     }
   }
 
@@ -183,40 +255,78 @@ export class ArcEventComponent implements OnInit, OnChanges {
     return eventsLayers
   }
 
+  filterEnabled = false;
+  editingSyncAfterDate: Date | null = null;
+  editingSyncAfterTime = '';
+
   onEditEvent(event: ArcEvent) {
     console.log('Editing event synchronization for event ' + event.name);
     this.layers = event.layers;
     this.currentEditingEvent = event;
+    this.filterEnabled = !!event.syncAfter;
+    const syncAfterDate = event.syncAfter ? new Date(event.syncAfter) : null;
+    this.editingSyncAfterDate = syncAfterDate;
+    this.editingSyncAfterTime = syncAfterDate ? this.toTimeString(syncAfterDate) : '';
     this.dialog.open<unknown, unknown, string>(this.editEventTemplate)
   }
 
-  onSelectEvents() {
-    this.dialog.open<unknown, unknown, string>(this.selectEventTemplate);
+  onFilterToggle(checked: boolean): void {
+    this.filterEnabled = checked;
+    if (checked) {
+      if (!this.editingSyncAfterDate) {
+        this.editingSyncAfterDate = new Date();
+        this.editingSyncAfterTime = this.toTimeString(this.editingSyncAfterDate);
+      }
+      this.applySyncAfter();
+    } else if (this.currentEditingEvent) {
+      this.currentEditingEvent.syncAfter = undefined;
+    }
   }
 
-  onSelectionChange(arcEventModified: ArcEvent, e: MatOptionSelectionChange) {
-    let option: MatOption = e.source;
-    if (!option) return
-    if (option.selected) this.onAddEvent(arcEventModified);
-    else this.onRemoveEvent(arcEventModified)
+  onSyncAfterDateChange(value: Date | null): void {
+    this.editingSyncAfterDate = value;
+    this.applySyncAfter();
   }
 
-  onAddEvent(event: ArcEvent) {
-    console.log('Adding Event to List of Selected Events');
-    let temp: ArcEventsModel = { ...this.model }
-    temp.events.push(event);
-    this.model = Object.assign({}, temp);
+  onSyncAfterTimeChange(value: string): void {
+    this.editingSyncAfterTime = value;
+    this.applySyncAfter();
   }
 
-  onRemoveEvent(event: ArcEvent) {
-    console.log('Removing Event to List of Selected Events');
-    let temp: ArcEventsModel = { ...this.model }
-    temp.events = temp.events.filter((e) => e != event);
-    this.model = Object.assign({}, temp);
+  private applySyncAfter(): void {
+    if (!this.currentEditingEvent || !this.editingSyncAfterDate) return;
+    const combined = new Date(this.editingSyncAfterDate);
+    const [hours, minutes] = this.editingSyncAfterTime
+      ? this.editingSyncAfterTime.split(':').map(Number)
+      : [0, 0];
+    combined.setHours(hours || 0, minutes || 0, 0, 0);
+    this.currentEditingEvent.syncAfter = combined.toISOString();
+  }
+
+  private toTimeString(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  /// Turns an event's synchronization on or off
+  onToggleEvent(event: ArcEvent, on: boolean) {
+    console.log(`Turning event synchronization ${on ? 'on' : 'off'} for event ${event.name}`);
+    event.selected = on;
   }
 
   getSelectedLayers(event: ArcEvent) {
     return event.layers.filter((x) => x.isSelected)
+  }
+
+  layerSyncSummary(event: ArcEvent): string {
+    const layers = this.getSelectedLayers(event)
+    if (layers.length === 0) {
+      return 'This event is not synchronizing to any ArcGIS layers.'
+    }
+    if (layers.length === 1) {
+      return this.layerDisplay(layers[0])
+    }
+    return `Synchronizing ${layers.length} layers...`
   }
 
   layerDisplay(layer: ArcEventLayer): string {
@@ -234,15 +344,15 @@ export class ArcEventComponent implements OnInit, OnChanges {
   getEventsInFeatureFormat(featureService: FeatureServiceConfig): FeatureLayerConfig[] {
     let values: FeatureLayerConfig[] = [];
     for (let l of featureService.layers) {
+      // layer identifiers may be numbers (once ArcGIS sync normalizes them to the layer id) while
+      // ArcEventLayer.name is always a string, so compare as strings to avoid a silent type mismatch
+      const layerName = String(l.layer);
       values.push({
         layer: l.layer,
         geometryType: l.geometryType,
-        events: [...this.model.events.filter((x) => x.layers.map((y) => {
-          if (y.name === l.layer && y.isSelected) {
-            return y.name
-          } else return ""
-        }).indexOf(l.layer as string) >= 0)
-          .map((z) => z.name)]
+        events: this.model.events
+          .filter((x) => x.layers.some((y) => y.name === layerName && y.isSelected))
+          .map((z) => z.name)
       })
     }
     return values;
@@ -250,11 +360,23 @@ export class ArcEventComponent implements OnInit, OnChanges {
 
   saveChanges() {
     console.log('Saving changes to event sync');
+    this.isSaving = true;
     for (const featureService of this.config.featureServices) {
       featureService.layers = this.getEventsInFeatureFormat(featureService);
     }
+    this.config.syncAfterByEventId = {};
+    for (const event of this.model.allEvents) {
+      if (event.syncAfter) {
+        this.config.syncAfterByEventId[event.id] = event.syncAfter;
+      }
+    }
     this.configChanged.emit(this.config);
-    this.arcService.putArcConfig(this.config);
+    this.captureSnapshot();
+    this.isSaving = false;
+
+    this.arcService.putArcConfig(this.config).subscribe({
+      error: (error) => console.error('Failed to save event synchronization:', error)
+    });
   }
 
   private domain(featureService: FeatureServiceConfig): string {

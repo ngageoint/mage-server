@@ -163,9 +163,10 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
     let sourceUrl: URL
     try {
       sourceUrl = new URL(icon.sourceUrl)
-    } catch (err) {
+    }
+    catch (err) {
       console.error(`error parsing source url ${icon.sourceUrl} of registered icon ${icon.id}:`, err)
-      throw err
+      return new UrlResolutionError(new URL('about:invalid'), `registered icon ${icon.id} has an invalid source url: ${icon.sourceUrl}`)
     }
 
     const resolver = this.resolvers.find(x => x.canResolve(sourceUrl))

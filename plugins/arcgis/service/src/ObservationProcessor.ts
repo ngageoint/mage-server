@@ -1,7 +1,8 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEventId } from "@ngageoint/mage.service/lib/entities/events/entities.events";
+import { FormId } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms';
 import { MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { EventScopedObservationRepository, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { EventScopedObservationRepository, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { ObservationsTransformer } from './ObservationsTransformer'
@@ -18,6 +19,9 @@ import { FeatureServiceConfig } from "./types/ArcGISConfig"
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 import { ArcGISIdentityService } from './ArcGISService';
+import { ArcGISRequestError } from "@esri/arcgis-rest-request";
+
+const VERBOSE_DEBUG = false;
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -137,7 +141,7 @@ export class ObservationProcessor {
 	public async safeGetConfig(): Promise<ArcGISPluginConfig> {
 		const state = await this._stateRepo.get();
 		if (!state) return await this._stateRepo.put(defaultArcGISPluginConfig as never);
-		return await this._stateRepo.get().then((state) => state ? state : this._stateRepo.put(defaultArcGISPluginConfig as never));
+		return { ...defaultArcGISPluginConfig, ...(state as ArcGISPluginConfig) };
 	}
 
 	/**
@@ -193,6 +197,86 @@ export class ObservationProcessor {
 	}
 
 	/**
+	 * Finds MAGE observations belonging to the given event that also already exist as features on any
+	 * ArcGIS feature layer configured to sync that event, i.e. observations already pushed to ArcGIS.
+	 * @param {MageEventId} eventId The MAGE event id to find pushed observations for.
+	 * @param {PagingParameters} paging Which page of the (newest-modified-first) results to return.
+	 * @returns {Promise<PushedObservationsPage>} The requested page of observations found on both MAGE and the ArcGIS layer(s), and the total count across all pages.
+	 */
+	public async getPushedObservations(eventId: MageEventId, paging: PagingParameters): Promise<PushedObservationsPage> {
+		const layerProcessors = this._layerProcessors.filter(layerProcessor => layerProcessor.layerInfo.hasEvent(eventId));
+
+		const arcObservationIds = new Set<string>();
+		await Promise.all(layerProcessors.map(layerProcessor =>
+			layerProcessor.featureQuerier.queryObservationsForEvent(eventId, (observationIds) => {
+				observationIds.forEach(id => arcObservationIds.add(id));
+			})
+		));
+
+		if (arcObservationIds.size === 0) {
+			return { items: [], totalCount: 0, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+		}
+
+		const obsRepo = await this._obsRepos(eventId);
+		const mageEvent = await this._eventRepo.findById(eventId);
+		const fieldTitlesByFormId = new Map<FormId, Map<string, string>>();
+		for (const form of mageEvent?.forms || []) {
+			fieldTitlesByFormId.set(form.id, new Map(form.fields.map(field => [field.name, field.title])));
+		}
+
+		const pushedObservations: PushedObservation[] = [];
+		for (const observationId of arcObservationIds) {
+			const observation = await obsRepo.findById(observationId);
+			if (observation) {
+				const position = this.observationPosition(observation);
+				pushedObservations.push({
+					id: observation.id,
+					createdAt: observation.createdAt.toISOString(),
+					lastModified: observation.lastModified.toISOString(),
+					status: this.isArchived(observation) ? 'archived' : 'sent',
+					fields: this.extractFormFields(observation, fieldTitlesByFormId),
+					latitude: position?.[1],
+					longitude: position?.[0]
+				});
+			}
+		}
+
+		pushedObservations.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
+		const start = paging.pageIndex * paging.pageSize;
+		const items = pushedObservations.slice(start, start + paging.pageSize);
+		return { items, totalCount: pushedObservations.length, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+	}
+
+	private isArchived(observation: ObservationAttrs): boolean {
+		return observation.states.length > 0 && observation.states[0].name.startsWith('archive');
+	}
+
+	// returns the observation's [longitude, latitude] if its geometry is a Point, undefined otherwise
+	private observationPosition(observation: ObservationAttrs): [number, number] | undefined {
+		if (observation.geometry.type === 'Point') {
+			const [longitude, latitude] = observation.geometry.coordinates;
+			return [longitude, latitude];
+		}
+		return undefined;
+	}
+
+	/** 
+	 * strips the form/entry bookkeeping keys (id, formId) off each form entry, and translates each
+	 * field's internal name (e.g. 'field0') to its human-readable form field title, for display in
+	 * the push status hover
+	 */
+	private extractFormFields(observation: ObservationAttrs, fieldTitlesByFormId: Map<FormId, Map<string, string>>): Record<string, unknown>[] {
+		return observation.properties.forms.map(({ id, formId, ...fields }) => {
+			const fieldTitles = fieldTitlesByFormId.get(formId);
+			const titledFields: Record<string, unknown> = {};
+			for (const [name, value] of Object.entries(fields)) {
+				titledFields[fieldTitles?.get(name) || name] = value;
+			}
+			return titledFields;
+		});
+	}
+
+	/**
 	 * Starts the processor.
 	 */
 	async start() {
@@ -231,10 +315,16 @@ export class ObservationProcessor {
 							if (featureLayer.geometryType != null) {
 								// TODO The featureLayerConfig should contain the layer id
 								featureLayerConfig.layer = featureLayer.id;
-								const admin = new FeatureServiceAdmin(config, this._identityService, this._console)
 								const eventIds = featureLayerConfig.eventIds || []
-								const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
-								const info = new LayerInfo(url, eventIds, { ...layerInfo, fields: layerFields } as LayerInfoResult);
+								// don't touch the layer's schema (addFields/deleteFields/drawingInfo) until at least
+								// one event is actually configured to sync to it
+								let layerInfoResult = layerInfo as LayerInfoResult;
+								if (eventIds.length > 0) {
+									const admin = new FeatureServiceAdmin(config, this._identityService, this._console, VERBOSE_DEBUG)
+									const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
+									layerInfoResult = { ...layerInfo, fields: layerFields } as LayerInfoResult;
+								}
+								const info = new LayerInfo(url, eventIds, layerInfoResult);
 								const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
 								this._layerProcessors.push(layerProcessor);
 							}
@@ -242,6 +332,17 @@ export class ObservationProcessor {
 					}
 				} catch (err) {
 					this._console.error(`Error getting feature service layers for ${service.url}:`, err);
+					if (err instanceof Error) {
+						let requestError: ArcGISRequestError | null = null;
+						if ('cause' in err && err.cause instanceof ArcGISRequestError) {
+							requestError = err.cause;
+						} else if (err instanceof ArcGISRequestError) {
+							requestError = err;
+						}
+						if (requestError) {
+							this._console.error(`  message: ${requestError.response?.error?.message || "<unknown>"}, details: ${requestError.response?.error?.details || "<unknown>"}`);
+						}
+					}
 				}
 			})());
 		}
@@ -262,12 +363,13 @@ export class ObservationProcessor {
 				}
 				await Promise.all(pendingPromises);
 				this._console.info('ArcGIS plugin processing new observations...');
-				const enabledEvents = (await this._eventRepo.findActiveEvents()).filter(event =>
+				const activeEvents = await this._eventRepo.findActiveEvents();
+				const enabledEvents = activeEvents.filter(event =>
 					this._layerProcessors.some(layerProcessor =>
 						layerProcessor.layerInfo.hasEvent(event.id)
 					)
 				);
-				this._eventDeletionHandler.checkForEventDeletion(enabledEvents, this._layerProcessors, this._firstRun);
+				this._eventDeletionHandler.checkForEventDeletion(activeEvents, this._layerProcessors, this._firstRun);
 				const eventsToProcessors = this._organizer.organize(enabledEvents, this._layerProcessors);
 				const nextQueryTime = Date.now();
 				const promises = [];
@@ -351,17 +453,24 @@ export class ObservationProcessor {
 			const eventTransform = new EventTransform(config, mageEvent);
 			const arcObjects = new ArcObjects();
 			this._geometryChangeHandler.checkForGeometryChange(observations, arcObjects, layerProcessors, this._firstRun);
+
+			const syncAfter = mageEvent ? config.syncAfterByEventId?.[mageEvent.id] : undefined;
+			const syncAfterTime = syncAfter ? new Date(syncAfter).getTime() : undefined;
+
 			for (const observation of observations) {
 				// TODO: Should archived observations be removed after a certain time? Also this uses 'startsWith' because not all deleted observations use 'archived' which is a bug
 				if (observation.states.length > 0 && observation.states[0].name.startsWith('archive')) {
 					const arcObservation = this._transformer.createObservation(observation);
 					arcObjects.deletions.push(arcObservation);
 				} else {
+					if (syncAfterTime !== undefined && observation.properties.timestamp.getTime() < syncAfterTime) {
+						continue;
+					}
 					let user = null;
 					if (observation.userId != null) {
 						user = await this._userRepo.findById(observation.userId);
 					}
-					const arcObservation = this._transformer.transform(observation, eventTransform, user);
+					const arcObservation = await this._transformer.transform(observation, eventTransform, user);
 					arcObjects.add(arcObservation);
 				}
 			}
@@ -377,4 +486,35 @@ export class ObservationProcessor {
 
 		return newNumberLeft;
 	}
+}
+
+/**
+ * A MAGE observation's ArcGIS push status.
+ * - 'sent': found on the ArcGIS layer and still active in MAGE.
+ * - 'archived': found on the ArcGIS layer, but has since been archived (deleted) in MAGE.
+ */
+export type PushStatus = 'sent' | 'archived'
+
+/**
+ * A MAGE observation that has already been synced to an ArcGIS feature layer.
+ */
+export interface PushedObservation {
+	id: string
+	createdAt: string
+	lastModified: string
+	status: PushStatus
+	fields: Record<string, unknown>[]
+	// undefined if the observation's geometry isn't a Point (e.g. a line/polygon)
+	latitude?: number
+	longitude?: number
+}
+
+/**
+ * A page of pushed observations, newest-modified-first, plus the total count across all pages.
+ */
+export interface PushedObservationsPage {
+	items: PushedObservation[]
+	totalCount: number
+	pageIndex: number
+	pageSize: number
 }

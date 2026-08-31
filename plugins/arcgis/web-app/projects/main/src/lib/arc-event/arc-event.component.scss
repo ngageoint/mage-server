@@ -3,6 +3,11 @@
     max-width: 93%
 }
 
+mat-card-header mat-hint {
+    display: block;
+    padding-bottom: 16px;
+}
+
 .arcEvent__button {
     width: 7%;
 }
@@ -21,15 +26,10 @@
 }
 
 
-.select-event {
-    margin-right: 10px;
+.filter-events {
+    display: block;
     width: 34%;
-    margin-top: 5px;
-}
-
-.select-text-box {
-    height: 45px;
-    width: 100%;
+    margin-bottom: 8px;
 }
 
 .d-flow-root {
@@ -42,21 +42,52 @@
     overflow-x: hidden;
 }
 
-::ng-deep {
-    .mat-select-panel {
-        .mat-selected {
-            background-color: #1E88E5 !important;
-            color: #fff !important;
-        }
+.no-feature-services-hint {
+    font-size: 90%;
+    opacity: 0.7;
+    margin-bottom: 12px;
+}
 
-        .mat-option {
-            border-bottom: 1px solid black;
-            border-left: 1px solid black;
-            border-right: 1px solid black;
+.arcEvent__icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
 
-            .mat-pseudo-checkbox {
-                display: none !important;
-            }
-        }
+.arcEvent__row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.arcEvent__toggle {
+    display: flex;
+    align-items: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cancel-button {
+    color: var(--mat-sys-primary) !important;
+    border-color: var(--mat-sys-primary) !important;
+}
+
+.push-status-card {
+    margin-top: 24px;
+}
+
+.sync-after-datetime {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+
+    mat-form-field {
+        width: 100%;
     }
 }

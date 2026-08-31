@@ -1,5 +1,8 @@
 import { FeatureServiceConfig, AttributeConfig } from "./ArcGISConfig";
 
+export type FieldAttributesFormConfig = { [formName: string]: { [fieldTitle: string]: string } }
+export type FieldAttributes = { [eventName: string]: FieldAttributesFormConfig }
+
 /**
  * Contains various configuration values used by the plugin.
  */
@@ -76,11 +79,6 @@ export interface ArcGISPluginConfig {
   eventIdField?: string
 
   /**
-   * The last edited date field attribute name on the ArcGIS server.
-   */
-  lastEditedDateField?: string
-
-  /**
    * The event name field attribute name.
    */
   eventNameField?: string
@@ -111,7 +109,7 @@ export interface ArcGISPluginConfig {
   createdAtField?: string
 
   /**
-   * The last modified field attribute name from MAGE observations (may be the same as lastEditedDateField if editable).
+   * The last modified field attribute name from MAGE observations
    */
   lastModifiedField?: string
 
@@ -121,14 +119,27 @@ export interface ArcGISPluginConfig {
   geometryType?: string
 
   /**
+   * The field name containing the icon symbol
+   */
+  iconSymbolField: string
+
+  /**
    * Override mappings between event form fields and ArcGIS attributes as: { event: { form: { field: attribute } } }
    */
-  fieldAttributes?: unknown
+  fieldAttributes?: FieldAttributes
 
   /**
    * The attribute configurations.
    */
   attributes?: { [attribute: string]: AttributeConfig }
+
+  /**
+   * Per-event observation sync filter. Maps a MAGE event id to a datetime
+   * string; only observations whose properties.timestamp is at or after
+   * that value are synced to ArcGIS for that event. An event with no
+   * entry (or this field entirely absent) syncs all observations (default).
+   */
+  syncAfterByEventId?: { [eventId: number]: string }
 
 }
 
@@ -146,7 +157,6 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
   observationIdField: 'description',
   idSeparator: '-',
   eventIdField: 'event_id',
-  lastEditedDateField: 'last_edited_date',
   eventNameField: 'event_name',
   userIdField: 'user_id',
   usernameField: 'username',
@@ -155,7 +165,9 @@ export const defaultArcGISPluginConfig = Object.freeze<ArcGISPluginConfig>({
   createdAtField: 'created_at',
   lastModifiedField: 'last_modified',
   geometryType: 'geometry_type',
+  iconSymbolField: 'icon_symbol',
   fieldAttributes: {},
+  syncAfterByEventId: {},
   attributes: {
     'symbolid': {
       defaults: [
