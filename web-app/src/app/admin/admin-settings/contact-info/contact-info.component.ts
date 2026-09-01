@@ -42,10 +42,10 @@ import { EmailValidatorDirective } from '../../../email/email';
 export class ContactInfoComponent implements OnInit {
   readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Contact Info', icon: 'contact_support' }];
 
-  phone = signal('');
-  email = signal('');
-  showDevContact = signal(false);
-  isDirty = signal(false);
+  readonly phone = signal('');
+  readonly email = signal('');
+  readonly showDevContact = signal(false);
+  readonly isDirty = signal(false);
 
   constructor(
     private settingsService: SettingsService,
