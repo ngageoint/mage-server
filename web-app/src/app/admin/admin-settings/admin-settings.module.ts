@@ -17,17 +17,13 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
 import { ColorPickerModule } from '../../color-picker/color-picker.module';
 import { SecurityBannerComponent } from './security-banner/security-banner.component';
 import { SecurityDisclaimerComponent } from './security-disclaimer/security-disclaimer.component';
-import { ContactInfoComponent } from './contact-info/contact-info.component';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
-import { EmailValidatorDirective } from '../../email/email';
 
 @NgModule({
   declarations: [
     SecurityBannerComponent,
     SecurityDisclaimerComponent,
-    ContactInfoComponent,
     AdminSettingsUnsavedComponent,
-    EmailValidatorDirective
   ],
   imports: [
     CommonModule,
@@ -49,7 +45,6 @@ import { EmailValidatorDirective } from '../../email/email';
   exports: [
     SecurityBannerComponent,
     SecurityDisclaimerComponent,
-    ContactInfoComponent,
     AdminSettingsUnsavedComponent
   ]
 })

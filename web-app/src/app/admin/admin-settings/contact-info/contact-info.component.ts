@@ -8,11 +8,36 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminSettingsUnsavedComponent } from '../admin-settings-unsaved/admin-settings-unsaved.component';
 
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { EmailValidatorDirective } from '../../../email/email';
+
 @Component({
   selector: 'contact-info',
   templateUrl: 'contact-info.component.html',
   styleUrls: ['./contact-info.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [
+    // MatDialog/MatSnackBar are injected services, not template directives —
+    // no MatDialogModule/MatSnackBarModule needed here.
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
+    EmailValidatorDirective
+  ]
 })
 export class ContactInfoComponent implements OnInit {
   readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Contact Info', icon: 'contact_support' }];
