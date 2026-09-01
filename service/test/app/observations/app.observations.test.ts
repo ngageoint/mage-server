@@ -2096,7 +2096,7 @@ describe('observations use case interactions', function() {
       obsRepo.didNotReceive().save(Arg.all())
     })
 
-    it('fails if the request content name does not match', async function() {
+    it('disregards non-matching request content name', async function() {
 
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
@@ -2112,15 +2112,17 @@ describe('observations use case interactions', function() {
         attachmentId: attachment.id,
         content,
       }
+      const attachmentPatch: AttachmentContentPatchAttrs = Object.freeze({ contentLocator: uniqid(), size: 887766 })
+      const afterStore = patchAttachment(obs, attachment.id, attachmentPatch) as Observation
       obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(attachmentPatch)
+      obsRepo.patchAttachment(Arg.all()).resolves(afterStore)
       const res = await storeAttachmentContent(req)
-      const err = res.error as EntityNotFoundError
 
-      expect(res.success).to.be.null
-      expect(err).to.be.instanceOf(MageError)
-      expect(err.code).to.equal(ErrInvalidInput)
-      store.didNotReceive().saveContent(Arg.all())
-      obsRepo.didNotReceive().save(Arg.all())
+      expect(res.error).to.be.null
+      expect(res.success).to.exist
+      store.received(1).saveContent(Arg.all())
+      obsRepo.received(1).patchAttachment(Arg.all())
     })
 
     it('fails if the request media type does not match', async function() {

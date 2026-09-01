@@ -151,8 +151,8 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
       return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
     }
     const content = req.content
-    if (content.mediaType !== attachmentBefore.contentType || content.name !== attachmentBefore.name) {
-      const errorMessage = `attachment upload error - uploaded content name and media type ${content.name}|${content.mediaType} must match attachment ${attachmentBefore.name}|${attachmentBefore.contentType}`
+    if (content.mediaType !== attachmentBefore.contentType) {
+      const errorMessage = `attachment upload error - uploaded media type ${content.mediaType} must match attachment ${attachmentBefore.contentType}`
       return AppResponse.error(invalidInput(errorMessage))
     }
     const denied = await permissionService.ensureStoreAttachmentContentPermission(req.context, obsBefore, attachmentBefore.id)
