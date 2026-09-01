@@ -10,6 +10,7 @@ import { FormFieldType } from '../../entities/events/entities.events.forms'
 import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FindObservationsSpec, FindObservationsStreamSpec, FindObservationsWhere, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationFieldFilter, ObservationId, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationSavedDomainEvent, ObservationSearchRepository, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, UsersExpandedObservationAttrs, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { AddRecentFormFieldChoiceEntry, UserId, UserPreferenceRepository, UserRepository } from '../../entities/users/entities.users'
 import { TeamRepository } from '../../entities/teams/entities.teams'
+import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
 import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
 
 const pipeline = util.promisify(stream.pipeline)
@@ -28,13 +29,7 @@ export function ReadObservations(
       const mapper = req.mapping || ((x: api.ExoObservation) => x)
       const search = req.search
 
-      let userIsAnyOf: UserId[] | undefined = search.userIsAnyOf
-      if (search.teamIsAnyOf?.length) {
-        const teams = await teamRepo.findAllByIds(search.teamIsAnyOf)
-        const teamUserIds = Object.values(teams).flatMap(team => team?.userIds ?? [])
-        const dedupedUserIds = new Set([...(userIsAnyOf ?? []), ...teamUserIds])
-        userIsAnyOf = [...dedupedUserIds]
-      }
+      const userIsAnyOf = await resolveUserIsAnyOf(teamRepo, search.userIsAnyOf, search.teamIsAnyOf)
 
       const searchIds = await findSearchIds(req.context.mageEvent, search.filter, observationSearchRepo)
 

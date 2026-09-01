@@ -1,5 +1,7 @@
 import { MageEventId } from "../events/entities.events"
 import { User, UserId } from '../users/entities.users'
+import { TeamId } from '../teams/entities.teams'
+import { ObservationFieldFilter } from '../observations/entities.observations'
 import { Stats } from "fs"
 
 export type ExportId = string
@@ -22,7 +24,6 @@ export type ExportItemSummary = {
 export interface ExportOptions {
   eventId: MageEventId
   filter?: ExportFilter
-  projection?: ExportProjection
 }
 
 export type ExportProjection  = ExportFormProjection[]
@@ -34,14 +35,29 @@ export interface ExportFormProjection {
 
 export type ExportFieldProjection = string
 
-export interface ExportFilter {
-  exportObservations?: boolean
-  exportLocations?: boolean
+export interface ExportObservationFilter {
   startDate?: Date
   endDate?: Date
   favorites?: false | { userId: string }
   important?: boolean
   includeAttachments?: boolean
+  userIsAnyOf?: UserId[]
+  teamIsAnyOf?: TeamId[]
+  hasAttachments?: boolean
+  fieldFilter?: ObservationFieldFilter
+  projection?: ExportProjection
+}
+
+export interface ExportLocationFilter {
+  startDate?: Date
+  endDate?: Date
+  userIsAnyOf?: UserId[]
+  teamIsAnyOf?: TeamId[]
+}
+
+export interface ExportFilter {
+  observations?: ExportObservationFilter
+  locations?: ExportLocationFilter
 }
 
 export type ExportError = {
@@ -91,10 +107,10 @@ export type ExportCreateAttrs = {
   userId: string,
   eventId: MageEventId,
   format: ExportFormat,
-  filter: Omit<ExportFilter, 'favorites'> & {
-    favorites?: boolean
+  filter: {
+    observations?: Omit<ExportObservationFilter, 'favorites'> & { favorites?: boolean }
+    locations?: ExportLocationFilter
   },
-  projection?: ExportProjection
   status?: ExportStatus,
   relativePath?: string,
   filename?: string

@@ -1,6 +1,7 @@
-import { ExportTransform, ObservationFormFieldProjection } from '../../app.api/exports/app.api.exports'
-import { ExportItemSummary, ExportOptions, ExportSummary } from '../../entities/exports/entities.exports'
-import { Attachment, AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '../../entities/observations/entities.observations'
+import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams } from '../../app.api/exports/app.api.exports'
+import { IterateObservations } from '../../app.api/observations/app.api.observations'
+import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
+import { Attachment, AttachmentStore, FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserLocation, UserLocationRepository } from '../../entities/locations/entities.locations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { User, UserIconContentStore, UserRepository } from '../../entities/users/entities.users'
@@ -22,7 +23,7 @@ export class KmlExportTransform implements ExportTransform {
 
   constructor(
     private readonly locationRepository: UserLocationRepository,
-    private readonly observationRepository: ObservationRepositoryForEvent,
+    private readonly streamObservations: IterateObservations,
     private readonly iconRepository: ObservationIconRepository,
     private readonly observationIconStore: ObservationIconContentStore,
     private readonly attachmentStore: AttachmentStore,
@@ -32,9 +33,8 @@ export class KmlExportTransform implements ExportTransform {
 
   async export(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
-    archive: Archiver
+    archive: Archiver,
+    params: ExportParams
   ): Promise<ExportSummary> {
     const response: ExportSummary = {}
     const stream = new PassThrough()
@@ -50,12 +50,12 @@ export class KmlExportTransform implements ExportTransform {
       "<open>1</open>"
     )
 
-    if (options?.filter?.exportObservations) {
-      response.observations = await this.exportObservations(event, options, projectObservationFormFields, stream, archive)
+    if (params?.observationParams) {
+      response.observations = await this.exportObservations(event, params.observationParams, stream, archive)
     }
 
-    if (options?.filter?.exportLocations) {
-      response.locations = await this.exportLocations(event, options, stream, archive)
+    if (params?.locationParams) {
+      response.locations = await this.exportLocations(event, params.locationParams, stream, archive)
     }
 
     stream.write('</Document></kml>')
@@ -66,30 +66,17 @@ export class KmlExportTransform implements ExportTransform {
 
   async exportObservations(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
+    params: ObservationExportParams,
     stream: NodeJS.WritableStream,
     archive: Archiver
   ): Promise<ExportItemSummary> {
-    const { filter } = options
-
     const icons = await this.iconRepository.getIcons(event.id)
     stream.write(observationStyles(event, icons))
 
     stream.write(`<Folder>`)
     stream.write(`<name>${event.name}</name>`)
 
-    const repository: EventScopedObservationRepository = await this.observationRepository(event.id)
-    const iterable = repository.iterate({
-      where: {
-        stateIsAnyOf: [ 'active' ],
-        timestampAfter: filter?.startDate,
-        timestampBefore: filter?.endDate,
-        isFavoriteOfUser: filter?.favorites ? filter.favorites.userId : undefined,
-        isFlaggedImportant: filter?.important ? true : undefined
-      },
-      includeAttachments: filter?.includeAttachments
-    })
+    const iterable = await this.streamObservations(event, params.findSpec)
 
     try {
       let count = 0
@@ -104,7 +91,7 @@ export class KmlExportTransform implements ExportTransform {
           endTimestamp = observation.properties.timestamp.getTime()
         }
 
-        const forms = projectObservationFormFields(observation, options.projection)
+        const forms = params.fieldProjection.formEntries(observation)
         stream.write(observationPlacemark(observation, forms, event))
 
         observation.attachments.forEach(async attachment => {
@@ -136,17 +123,11 @@ export class KmlExportTransform implements ExportTransform {
 
   async exportLocations(
     event: MageEvent,
-    options: ExportOptions,
+    params: LocationExportParams,
     stream: NodeJS.WritableStream,
     archive: Archiver
   ): Promise<ExportItemSummary> {
-    const iterable = this.locationRepository.iterate({
-      where: {
-        eventId: event.id,
-        timestampAfter: options?.filter?.startDate,
-        timestampBefore: options?.filter?.endDate
-      }
-    })
+    const iterable = this.locationRepository.iterate(params.findSpec)
 
     let count = 0
     let startTimestamp: number | undefined = undefined

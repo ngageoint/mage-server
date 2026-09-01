@@ -1,10 +1,10 @@
 import archiver, { Archiver } from 'archiver'
-import { AllGeoJSON } from '@turf/helpers'
 import turfCentroid from '@turf/centroid'
 import stream, { Readable } from 'stream'
-import { ExportTransform, ObservationFormFieldProjection } from '../../app.api/exports/app.api.exports'
-import { ExportItemSummary, ExportOptions, ExportSummary } from '../../entities/exports/entities.exports'
-import { Attachment, AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '../../entities/observations/entities.observations'
+import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams } from '../../app.api/exports/app.api.exports'
+import { IterateObservations } from '../../app.api/observations/app.api.observations'
+import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
+import { Attachment, AttachmentStore, FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserLocationRepository } from '../../entities/locations/entities.locations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { User, UserRepository } from '../../entities/users/entities.users'
@@ -18,7 +18,7 @@ export class GeoJsonExportTransform implements ExportTransform {
 
   constructor(
     private readonly locationRepository: UserLocationRepository,
-    private readonly observationRepository: ObservationRepositoryForEvent,
+    private readonly streamObservations: IterateObservations,
     private readonly attachmentStore: AttachmentStore,
     private readonly deviceRepository: DevicesRepository,
     private readonly userRepository: UserRepository
@@ -26,18 +26,17 @@ export class GeoJsonExportTransform implements ExportTransform {
 
   async export(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
-    archive: Archiver
+    archive: Archiver,
+    params: ExportParams
   ): Promise<ExportSummary> {
     const response: ExportSummary = {}
 
-    if (options?.filter?.exportObservations) {
-      response.observations = await this.exportObservations(event, options, projectObservationFormFields, archive)
+    if (params?.observationParams) {
+      response.observations = await this.exportObservations(event, params.observationParams, archive)
     }
 
-    if (options?.filter?.exportLocations) {
-      response.locations = await this.exportLocations(event, options, archive)
+    if (params?.locationParams) {
+      response.locations = await this.exportLocations(event, params.locationParams, archive)
     }
 
     return response
@@ -45,39 +44,25 @@ export class GeoJsonExportTransform implements ExportTransform {
 
   async exportObservations(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
+    params: ObservationExportParams,
     archive: Archiver
   ): Promise<ExportItemSummary> {
     const observationStream = new stream.PassThrough()
     try {
       archive.append(observationStream, { name: 'observations.geojson' })
-      return await this.streamObservations(event, options, projectObservationFormFields, observationStream, archive)
+      return await this.pipeObservations(event, params, observationStream, archive)
     } finally {
       observationStream.end()
     }
   }
 
-  async streamObservations(
+  async pipeObservations(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
+    params: ObservationExportParams,
     stream: stream.Transform,
     archive: archiver.Archiver
   ): Promise<ExportItemSummary> {
-    const { filter } = options
-
-    const repository: EventScopedObservationRepository = await this.observationRepository(event.id)
-    const iterable = repository.iterate({
-      where: {
-        stateIsAnyOf: [ 'active' ],
-        timestampAfter: filter?.startDate,
-        timestampBefore: filter?.endDate,
-        isFavoriteOfUser: filter?.favorites ? filter.favorites.userId : undefined,
-        isFlaggedImportant: filter?.important ? true : undefined
-      },
-      includeAttachments: filter?.includeAttachments
-    })
+    const iterable = await this.streamObservations(event, params.findSpec)
 
     try {
       let count = 0
@@ -98,7 +83,7 @@ export class GeoJsonExportTransform implements ExportTransform {
           stream.write(',')
         }
 
-        const forms = projectObservationFormFields(observation, options.projection)
+        const forms = params.fieldProjection.formEntries(observation)
         this.mapObservationProperties(event, observation, forms, archive)
 
         if (observation.userId) {
@@ -144,13 +129,13 @@ export class GeoJsonExportTransform implements ExportTransform {
 
   async exportLocations(
     event: MageEvent,
-    options: ExportOptions,
+    params: LocationExportParams,
     archive: Archiver
   ): Promise<ExportItemSummary> {
     const locationStream = new stream.PassThrough()
     try {
       archive.append(locationStream, { name: 'locations.geojson' })
-      return await this.streamLocations(event, options, locationStream)
+      return await this.streamLocations(event, params, locationStream)
     } finally {
       locationStream.end()
     }
@@ -158,7 +143,7 @@ export class GeoJsonExportTransform implements ExportTransform {
 
   async streamLocations(
     event: MageEvent,
-    options: ExportOptions,
+    params: LocationExportParams,
     stream: stream.Transform
   ): Promise<ExportItemSummary> {
     stream.write('{"type": "FeatureCollection", "features": [')
@@ -167,13 +152,7 @@ export class GeoJsonExportTransform implements ExportTransform {
     let startTimestamp: number | undefined = undefined
     let endTimestamp: number | undefined = undefined
 
-    const iterable = this.locationRepository.iterate({
-      where: {
-        eventId: event.id,
-        timestampAfter: options?.filter?.startDate,
-        timestampBefore: options?.filter?.endDate
-      }
-    })
+    const iterable = this.locationRepository.iterate(params.findSpec)
 
     try {
       for await (const location of iterable) {

@@ -4,7 +4,7 @@ import { Form, FormFieldType } from '../../entities/events/entities.events.forms
 import { Condition, FormEntryId, ObservationAttrs, ObservationFieldFilter, ObservationId, ObservationSearchAttrs, ObservationSearchRepository, SimpleCondition } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
 import _ from 'lodash'
-import moment from 'moment'
+import { parseISO8601 } from '../../utilities/dates'
 
 export const ObservationSearchModelVersion = 2
 
@@ -228,7 +228,7 @@ function asAggregateExpression(condition: Condition, event: MageEvent): object {
 
 function toQueryValue(value: any, form: Form | undefined, fieldName: string): any {
   const formField = form?.fields.find(f => f.name === fieldName)
-  if (formField?.type === FormFieldType.DateTime && typeof value === 'string') {
+  if (formField?.type === FormFieldType.DateTime) {
     return parseISO8601(value) ?? value
   }
   return value
@@ -287,12 +287,5 @@ function asFieldAggregateExpression(
     case 'BETWEEN': return { $and: [{ $gte: [field, value(condition.value[0])] }, { $lte: [field, value(condition.value[1])] }] }
     case 'IS NULL': return { $eq: [{ $ifNull: [field, null] }, null] }
     case 'IS NOT NULL': return { $ne: [{ $ifNull: [field, null] }, null] }
-  }
-}
-
-function parseISO8601(iso8601: string): Date | undefined {
-  const date = moment(iso8601, moment.ISO_8601, true)
-  if (typeof iso8601 === 'string' && date.isValid()) {
-    return date.toDate()
   }
 }

@@ -16,13 +16,12 @@ import { LocalStorageService } from '../http/local-storage.service';
 import moment from 'moment';
 import { User } from '@ngageoint/mage.web-core-lib/user';
 import {
-  Form,
-  Team,
-  Event,
   FilterChoice,
   Interval,
   IntervalOptions
 } from './filter.types';
+import { Event, Form } from '../entities/event/entities.event';
+import { Team } from '../entities/team/entities.team';
 
 @Component({
     selector: 'filter',
@@ -79,7 +78,7 @@ export class FilterComponent implements OnInit {
 
       const teamIds = this.localStorageService.getTeams() || [];
       this.selectedTeams = teamIds
-        .map((teamId: number) =>
+        .map((teamId: string) =>
           event.teams?.find((team: Team) => team.id === teamId)
         )
         .filter(Boolean);

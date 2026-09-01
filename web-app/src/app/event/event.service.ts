@@ -27,15 +27,11 @@ import moment from 'moment';
 import { FeedService } from "@ngageoint/mage.web-core-lib/feed";
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import { MemberPage, filterChanges } from "./event.types";
-import {
-  Attachment,
-  Event,
-  Form,
-  FormField,
-  Layer,
-  Observation,
-  Team,
-} from "../filter/filter.types";
+import { Filter } from "../filter/filter.types";
+import { Event, Form, FormField } from "../entities/event/entities.event";
+import { Layer } from "../entities/layer/layer";
+import { Team } from "../entities/team/entities.team";
+import { Attachment, Observation } from "../entities/observation/entities.observation";
 
 @Injectable({
   providedIn: "root",

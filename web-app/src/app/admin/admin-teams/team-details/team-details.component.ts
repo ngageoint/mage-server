@@ -19,7 +19,7 @@ import {
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
-import { Event as Event } from 'mage-web-app/filter/filter.types'
+import { Event } from 'mage-web-app/entities/event/entities.event'
 
 @Component({
     selector: 'mage-team-details',

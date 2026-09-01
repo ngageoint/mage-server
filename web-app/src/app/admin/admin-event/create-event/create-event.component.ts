@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminEventsService } from '../../services/admin-events.service';
-import { Event } from 'mage-web-app/filter/filter.types';
+import { Event } from 'mage-web-app/entities/event/entities.event';
 
 /**
  * Dialog component for creating or editing events.

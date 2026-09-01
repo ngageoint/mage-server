@@ -1,0 +1,105 @@
+<div class="filter-mode-row">
+  <span class="mat-body-2">Observation Fields</span>
+  <ng-container *ngIf="!filterMode">
+    <span class="filter-mode-option--active" *ngIf="filterType === 'keyword'">Keyword</span>
+    <a class="filter-mode-option" *ngIf="filterType === 'condition'" (click)="onModeChanged('keyword')">Keyword</a>
+    <span class="filter-mode-divider">|</span>
+    <a class="filter-mode-option" *ngIf="filterType === 'keyword'" (click)="onModeChanged('condition')">Condition</a>
+    <span class="filter-mode-option--active" *ngIf="filterType === 'condition'">Condition</span>
+  </ng-container>
+</div>
+
+<ng-container *ngIf="filterType === 'keyword'">
+  <mat-form-field appearance="fill" class="observation-filter-field">
+    <mat-label>Filter by text</mat-label>
+    <input matInput [formControl]="keywordControl" placeholder="Enter keyword...">
+    <mat-icon matSuffix class="keyword-hint-icon" matTooltip="All terms must match. Use quotes for exact phrases: &quot;bridge collapse&quot;">info_outline</mat-icon>
+  </mat-form-field>
+</ng-container>
+
+<ng-container *ngIf="filterType === 'condition'">
+  <div class="filter-condition-groups" *ngIf="hasConditions">
+    <div *ngFor="let group of conditionGroups; let groupIndex = index">
+      <div *ngIf="groupIndex > 0" class="group-separator">and</div>
+      <mat-chip-set class="filter-condition-group">
+        <ng-container *ngFor="let condition of group.conditions; let conditionIndex = index">
+          <span *ngIf="conditionIndex > 0" class="condition-separator">or</span>
+          <mat-chip class="filter-condition__chip" [removable]="true" (removed)="removeCondition(groupIndex, conditionIndex)" [matTooltip]="condition.formName" [style.--mat-chip-outline-color]="condition.formColor" [style.--mat-chip-outline-width]="'2px'">
+            {{ condition.displayValue }}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+        </ng-container>
+      </mat-chip-set>
+    </div>
+  </div>
+
+  <div class="condition-input-row">
+    <mat-form-field appearance="fill" class="observation-filter-field">
+      <mat-label *ngIf="!selectedField">Add Condition</mat-label>
+
+      <mat-chip-grid #chipGridCondition>
+        <mat-chip-row *ngIf="selectedField" class="condition-chip condition-chip--field" [removable]="true" (removed)="removeFieldChip()">
+          {{ selectedField.title }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip-row>
+        <mat-chip-row *ngIf="selectedOperator" class="condition-chip condition-chip--operator" [removable]="true" (removed)="removeOperatorChip()">
+          {{ selectedOperatorDisplay }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip-row>
+        <mat-chip-row *ngIf="pendingValueDisplay" class="condition-chip condition-chip--value" [removable]="true" (removed)="removeValueChip()">
+          {{ pendingValueDisplay }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip-row>
+
+        <input
+          *ngIf="!isDateValueState && !isNullOperatorState && !pendingValueDisplay"
+          matInput
+          #filterInput
+          [formControl]="inputControl"
+          [matChipInputFor]="chipGridCondition"
+          [matAutocomplete]="auto"
+          [placeholder]="inputPlaceholder"
+          (keydown)="onInputKeydown($event)">
+
+        <input
+          *ngIf="isDateValueState"
+          matInput
+          [matChipInputFor]="chipGridCondition"
+          [matDatepicker]="filterDatePicker"
+          [placeholder]="selectedField?.title + ' ' + selectedOperator"
+          (dateChange)="onDateSelected($event)">
+      </mat-chip-grid>
+
+      <mat-datepicker-toggle *ngIf="isDateValueState" matSuffix [for]="filterDatePicker"></mat-datepicker-toggle>
+      <mat-datepicker #filterDatePicker></mat-datepicker>
+
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="onOptionSelected($event)">
+        <ng-container *ngIf="conditionState === 'field'">
+          <mat-optgroup *ngFor="let group of filteredFormGroups | async" [label]="group.formName">
+            <mat-option *ngFor="let option of group.fields" [value]="option">
+              {{ option.display }}
+            </mat-option>
+          </mat-optgroup>
+        </ng-container>
+        <ng-container *ngIf="conditionState !== 'field'">
+          <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+            {{ option.display }}
+          </mat-option>
+        </ng-container>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <div class="observation-filter-actions">
+      <mat-chip-set *ngIf="!hasConditions">
+        <mat-chip [disabled]="!hasValue" (click)="addOr()" matTooltip="Add filter condition">Add</mat-chip>
+      </mat-chip-set>
+      <mat-chip-set *ngIf="hasConditions">
+        <mat-chip [disabled]="!hasValue" (click)="addOr()" matTooltip="Add to current group (matches if any apply)">Or</mat-chip>
+        <mat-chip [disabled]="!hasValue" (click)="addAnd()" matTooltip="Add as new required group (must also match)">And</mat-chip>
+      </mat-chip-set>
+    </div>
+  </div>
+
+</ng-container>

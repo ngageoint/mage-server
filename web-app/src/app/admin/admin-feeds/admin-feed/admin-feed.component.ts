@@ -22,7 +22,7 @@ import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.
 import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { EventService } from '../../../event/event.service';
-import { Event } from 'mage-web-app/filter/filter.types';
+import { Event } from 'mage-web-app/entities/event/entities.event';
 import {
   SearchModalComponent,
   SearchModalData,

@@ -10,7 +10,8 @@ import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { Event as MageEvent, Layer } from 'mage-web-app/filter/filter.types';
+import { Layer } from 'mage-web-app/entities/layer/layer';
+import { Event as MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminEventsService } from '../../services/admin-events.service';

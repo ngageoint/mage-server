@@ -11,6 +11,9 @@ import {
 } from '../../entities/exports/entities.exports'
 import { FormEntry, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
+import { TeamRepository } from '../../entities/teams/entities.teams'
+import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
+import { FormId } from '../../entities/events/entities.events.forms'
 import { Stats } from 'fs'
 import archiver from 'archiver'
 import { once } from 'stream'
@@ -66,6 +69,7 @@ export function CreateExport(
   exportsRepository: ExportsRepository,
   contentStore: ExportStore,
   permissionService: api.ExportAppLayerPermissionService,
+  teamRepository: TeamRepository,
   log: Logger = NoopLogger
 ): api.CreateExport {
   return async function createExport(req: api.CreateExportRequest): ReturnType<api.CreateExport> {
@@ -73,16 +77,17 @@ export function CreateExport(
       permissionService.ensureCreateExportPermission(req.context),
       async (): Promise<Export | InvalidInputError> => {
         const user = req.context.requestingPrincipal()
+        const { context, format, filter } = req
         const newExport = await exportsRepository.createExport({
           userId: user.id,
-          eventId: req.context.mageEvent.id,
+          eventId: context.mageEvent.id,
           ...req
         })
 
-        const exporter = exportFactory(req.format)
+        const exporter = exportFactory(format)
 
         if (!exporter) {
-          return invalidInput('invalid export type', [ `invalid export type: ${req.format}`, 'type' ])
+          return invalidInput('invalid export type', [ `invalid export type: ${format}`, 'type' ])
         }
 
         const { content, relativePath } = contentStore.writeContent(newExport)
@@ -93,20 +98,50 @@ export function CreateExport(
         }
         await exportsRepository.updateExportForUser(newExport.id, user.id, patch)
 
+        const exportParams: api.ExportParams = {}
+        if (filter?.observations) {
+          const observations = filter.observations
+          const observationUserIsAnyOf = await resolveUserIsAnyOf(teamRepository, observations.userIsAnyOf, observations.teamIsAnyOf)
+          exportParams.observationParams = {
+            findSpec: {
+              where: {
+                stateIsAnyOf: [ 'active' ],
+                timestampAfter: observations.startDate,
+                timestampBefore: observations.endDate,
+                isFavoriteOfUser: observations.favorites ? user.id : undefined,
+                isFlaggedImportant: observations.important,
+                userIsAnyOf: observationUserIsAnyOf,
+                hasAttachments: observations.hasAttachments,
+                fieldFilter: observations.fieldFilter
+              },
+              includeAttachments: observations.includeAttachments
+            },
+            fieldProjection: {
+              includesForm: (formId: FormId) => projectionIncludesForm(formId, observations.projection),
+              includesField: (formId: FormId, fieldName: string) => projectionIncludesField(formId, fieldName, observations.projection),
+              formEntries: (observation) => projectedObservationFormFields(observation, observations.projection)
+            }
+          }
+        }
+
+        if (filter?.locations) {
+          const locations = filter.locations
+          const locationUserIsAnyOf = await resolveUserIsAnyOf(teamRepository, locations.userIsAnyOf, locations.teamIsAnyOf)
+          exportParams.locationParams = {
+            findSpec: {
+              where: {
+                eventId: context.mageEvent.id,
+                timestampAfter: locations.startDate,
+                timestampBefore: locations.endDate,
+                userIsAnyOf: locationUserIsAnyOf
+              }
+            }
+          }
+        }
+
         const archive = archiver('zip')
         archive.pipe(content)
-        exporter.export(
-          req.context.mageEvent,
-          {
-            filter: {
-              ...req.filter,
-              favorites: req.filter.favorites ? { userId: user.id } : false
-            },
-            projection: req.projection
-          },
-          projectedObservationFormFields,
-          archive
-        ).then(async result => {
+        exporter.export(context.mageEvent, archive, exportParams).then(async result => {
           const streamClosed = once(content, 'close')
           await archive.finalize()
           await streamClosed
@@ -154,6 +189,21 @@ export function DeleteExport(
       }
     )
   }
+}
+
+function projectionForForm(formId: FormId, projection: ExportProjection) {
+  return projection.find(formProjection => formProjection.formId === formId)
+}
+
+function projectionIncludesForm(formId: FormId, projection?: ExportProjection): boolean {
+  if (!projection) return true
+  return projectionForForm(formId, projection) !== undefined
+}
+
+function projectionIncludesField(formId: FormId, fieldName: string, projection?: ExportProjection): boolean {
+  if (!projection) return true
+  const formProjection = projectionForForm(formId, projection)
+  return formProjection?.fields.some(fieldProjection => fieldProjection === fieldName) ?? false
 }
 
 function projectedObservationFormFields(observation: ObservationAttrs, projection?: ExportProjection): FormEntry[] {

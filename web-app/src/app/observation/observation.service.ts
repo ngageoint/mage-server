@@ -4,7 +4,29 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable, map, mergeMap } from "rxjs";
 import * as _ from "underscore";
 import { MageEvent } from "core-lib-src/event";
-import { Form, Observation } from "../filter/filter.types";
+import { Observation } from "../entities/observation/entities.observation";
+import { Form } from "../entities/event/entities.event";
+import { ObservationFieldFilter } from "../entities/observation/filter/entities.observation.filter";
+
+export type ObservationsRequestOptions = {
+  states?: 'active' | 'archive'
+  populate?: boolean
+  sort?: string
+  observationStartDate?: string
+  observationEndDate?: string
+  favoritedBy?: string
+  important?: boolean
+  hasAttachments?: boolean
+  teams?: string[]
+  users?: string[]
+  filter?: ObservationFieldFilter
+}
+
+export type ObservationsPageRequestOptions = ObservationsRequestOptions & {
+  page: number
+  page_size: number
+  include_total_count: boolean
+}
 
 @Injectable({
   providedIn: "root",
@@ -47,6 +69,25 @@ export class ObservationService {
           return this.transformObservations(observations, event);
         })
       );
+  }
+
+  getObservationsPage(event: MageEvent, options: ObservationsPageRequestOptions): Observable<any> {
+    return this.fetchObservations(event, options, response => ({
+      ...response,
+      items: this.transformObservations(response.items, event)
+    }))
+  }
+
+  private fetchObservations<T>(event: MageEvent, options: ObservationsRequestOptions, transform: (response: any) => T): Observable<T> {
+    const { filter, ...baseOptions } = options
+    const params = new HttpParams()
+      .set("eventId", event.id.toString())
+      .appendAll(baseOptions as any)
+
+    if (filter?.condition || filter?.keyword) {
+      return this.client.post<any>(`/api/events/${event.id}/observations/search`, { condition: filter.condition, keyword: filter.keyword }, { params }).pipe(map(transform))
+    }
+    return this.client.get(`/api/events/${event.id}/observations`, { params }).pipe(map(transform))
   }
 
   saveObservationForEvent(event: MageEvent, observation: any): Observable<any> {

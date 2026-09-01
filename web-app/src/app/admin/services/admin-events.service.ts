@@ -3,7 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 import { Team } from '@ngageoint/mage.web-core-lib/team'
 import { Observable } from 'rxjs';
-import { Event, Layer } from 'mage-web-app/filter/filter.types';
+import { Layer } from 'mage-web-app/entities/layer/layer';
+import { Event } from 'mage-web-app/entities/event/entities.event';
 import { User } from '@ngageoint/mage.web-core-lib/user';
 
 export interface SearchOptions {

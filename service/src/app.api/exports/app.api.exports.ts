@@ -2,14 +2,14 @@ import { Archiver } from 'archiver'
 import { MageEvent } from '../../entities/events/entities.events'
 import {
   Export, ExportExpanded,
-  ExportFilter,
+  ExportLocationFilter,
+  ExportObservationFilter,
   ExportFormat,
-  ExportOptions,
-  ExportProjection,
   ExportSummary,
-  IconStyle
 } from '../../entities/exports/entities.exports'
-import { FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
+import { FindObservationsStreamSpec, FormEntry, ObservationAttrs } from '../../entities/observations/entities.observations'
+import { FindUserLocationsStreamSpec } from '../../entities/locations/entities.locations'
+import { FormId } from '../../entities/events/entities.events.forms'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
@@ -41,10 +41,10 @@ export interface ExportRequest<Principal = UserWithRole> extends AppRequest<Prin
 
 export type ExportCreateParams = {
   format: ExportFormat
-  filter: Omit<ExportFilter, 'favorites'> & {
-    favorites?: boolean
-  },
-  projection?: ExportProjection
+  filter: {
+    observations?: Omit<ExportObservationFilter, 'favorites'> & { favorites?: boolean }
+    locations?: ExportLocationFilter
+  }
 }
 
 export type CreateExportRequest<Principal = UserWithRole> = AppRequest<Principal, CreateExportRequestContext<Principal>> & ExportCreateParams;
@@ -68,18 +68,30 @@ export interface ExportAppLayerPermissionService {
   ensureDeleteMyExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 
-export type GetIconStyle = (event: MageEvent, observation: Observation) => IconStyle
-export type ObservationFormFieldProjection = (observation: ObservationAttrs, projection?: ExportProjection) => FormEntry[]
+export interface ObservationFieldProjection {
+  includesForm(formId: FormId): boolean
+  includesField(formId: FormId, fieldName: string): boolean
+  formEntries(observation: ObservationAttrs): FormEntry[]
+}
 
 export interface ExportFactory {
   (format: ExportFormat): ExportTransform | null
 }
 
+export interface ObservationExportParams {
+  findSpec: FindObservationsStreamSpec
+  fieldProjection: ObservationFieldProjection
+}
+
+export interface LocationExportParams {
+  findSpec: FindUserLocationsStreamSpec
+}
+
+export interface ExportParams {
+  observationParams?: ObservationExportParams
+  locationParams?: LocationExportParams
+}
+
 export interface ExportTransform {
-  export(
-    event: MageEvent,
-    options: Omit<ExportOptions, 'eventId'>,
-    fieldProjection: ObservationFormFieldProjection,
-    archive: Archiver
-  ): Promise<ExportSummary>
+  export(event: MageEvent, archive: Archiver, params: ExportParams): Promise<ExportSummary>
 }

@@ -10,7 +10,7 @@ import {
 
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
-import { Event } from 'mage-web-app/filter/filter.types';
+import { Event } from 'mage-web-app/entities/event/entities.event';
 import { CreateEventDialogComponent } from '../create-event/create-event.component';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';

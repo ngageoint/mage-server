@@ -18,7 +18,7 @@ import {
 } from '../../search-modal/search-modal.component';
 import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
-import { Event } from 'mage-web-app/filter/filter.types';
+import { Event } from 'mage-web-app/entities/event/entities.event';
 import { Observable } from 'rxjs';
 import { layerIconName } from '../../../entities/layer/layer';
 import { SessionService } from 'mage-web-app/http/session.service';

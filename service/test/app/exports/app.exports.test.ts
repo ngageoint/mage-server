@@ -20,6 +20,7 @@ import { BufferWriteable } from '../../utils'
 import { Stats } from 'fs'
 import { MongooseExportsRepository } from '../../../lib/adapters/exports/adapters.exports.db.mongoose'
 import { FileSystemExportContentStore } from '../../../lib/adapters/exports/adapters.export_store.file_system'
+import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
 
 const mockUserId = new mongoose.Types.ObjectId()
 const mockUser = Object.freeze({
@@ -97,7 +98,6 @@ describe('export use case interactions', function() {
           eventId: 1,
           event: { id: 1, name: 'Test 1'},
           filter: undefined,
-          projection: undefined
         },
         processingErrors: [],
         expirationDate: new Date(),
@@ -141,7 +141,6 @@ describe('export use case interactions', function() {
           eventId: 1,
           event: { id: 1, name: 'Event 1' },
           filter: undefined,
-          projection: undefined
         },
         processingErrors: [],
         expirationDate: new Date(),
@@ -173,17 +172,19 @@ describe('export use case interactions', function() {
     let store: sinon.SinonStubbedInstance<ExportStore>
     let repository: sinon.SinonStubbedInstance<MongooseExportsRepository>
     let exportFactory: sinon.SinonStub<[ExportFormat], api.ExportTransform>
+    let teamRepository: SubstituteOf<TeamRepository>
 
     beforeEach(function() {
       // Sinon stubs
       store = sinon.createStubInstance(FileSystemExportContentStore)
       repository = sinon.createStubInstance(MongooseExportsRepository)
+      teamRepository = Sub.for<TeamRepository>()
 
       const csvExport: api.ExportTransform = { export: sinon.stub() }
       exportFactory = sinon.stub()
       exportFactory.withArgs('csv').returns(csvExport)
 
-      createExport = impl.CreateExport(exportFactory, repository, store, permissions)
+      createExport = impl.CreateExport(exportFactory, repository, store, permissions, teamRepository)
     })
 
     it('creates export', async function() {
@@ -202,7 +203,7 @@ describe('export use case interactions', function() {
         options: {
           eventId: 1,
           event: { id: 1, name: 'Test Event 1' },
-          filter: undefined, projection: undefined },
+          filter: undefined },
         processingErrors: [],
         expirationDate: new Date(),
         summary: {},
@@ -218,15 +219,18 @@ describe('export use case interactions', function() {
         },
         format: 'csv',
         filter: {
-          exportObservations: true,
-          exportLocations: true,
-          startDate: new Date(),
-          endDate: new Date(),
-          favorites: false,
-          important: false,
-          includeAttachments: false
+          observations: {
+            startDate: new Date(),
+            endDate: new Date(),
+            favorites: false,
+            important: false,
+            includeAttachments: false
+          },
+          locations: {
+            startDate: new Date(),
+            endDate: new Date()
+          }
         },
-        projection: undefined
       }
 
       const stats = new Stats()
@@ -273,6 +277,205 @@ describe('export use case interactions', function() {
       expect(patch2.size).to.equal(contentSize)
     })
 
+    it('builds observation and location find specs from the filter', async function() {
+      const event: MageEvent = { id: 0, name: 'Test Event' } as MageEvent
+      const content = new BufferWriteable()
+
+      const exp: ExportExpanded = {
+        id: '1',
+        userId: mockUser.id,
+        user: expandedUser,
+        relativePath: 'some/path',
+        filename: 'export',
+        exportType: 'csv',
+        status: ExportStatus.Completed,
+        options: { eventId: 1, event: { id: 1, name: 'Test Event 1' }, filter: undefined },
+        processingErrors: [],
+        expirationDate: new Date(),
+        summary: {},
+        lastUpdated: new Date()
+      }
+
+      const observationStartDate = new Date('2020-01-01')
+      const observationEndDate = new Date('2020-01-02')
+      const locationStartDate = new Date('2020-02-01')
+      const locationEndDate = new Date('2020-02-02')
+      const req: api.CreateExportRequest = {
+        context: {
+          requestToken: Symbol(),
+          requestingPrincipal: () => mockUser,
+          locale: () => null,
+          mageEvent: event
+        },
+        format: 'csv',
+        filter: {
+          observations: {
+            startDate: observationStartDate,
+            endDate: observationEndDate,
+            favorites: true,
+            important: true,
+            includeAttachments: true,
+            hasAttachments: true,
+            userIsAnyOf: [ 'user1' ],
+            fieldFilter: { keyword: 'wildfire' }
+          },
+          locations: {
+            startDate: locationStartDate,
+            endDate: locationEndDate,
+            userIsAnyOf: [ 'user1' ]
+          }
+        },
+      }
+
+      permissions.ensureCreateExportPermission(req.context).resolves(null)
+      repository.createExport.resolves(exp)
+      store.writeContent.returns({ relativePath: 'test/path', content })
+      store.contentStats.resolves(new Stats())
+      repository.updateExportForUser.resolves(exp)
+
+      const exportStub = sinon.stub().resolves({ observations: {}, locations: {} })
+      exportFactory.withArgs('csv').returns({ export: exportStub })
+
+      await createExport(req)
+      await exportStub.returnValues[0]
+
+      expect(exportStub.calledOnce).to.be.true
+      const [ exportedEvent, , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, api.ExportParams ]
+      expect(exportedEvent).to.equal(event)
+      expect(params.observationParams?.findSpec.where).to.deep.include({
+        stateIsAnyOf: [ 'active' ],
+        timestampAfter: observationStartDate,
+        timestampBefore: observationEndDate,
+        isFavoriteOfUser: mockUser.id,
+        isFlaggedImportant: true,
+        userIsAnyOf: [ 'user1' ],
+        hasAttachments: true,
+        fieldFilter: { keyword: 'wildfire' }
+      })
+      expect(params.observationParams?.findSpec.includeAttachments).to.equal(true)
+      expect(params.locationParams?.findSpec.where).to.deep.include({
+        eventId: event.id,
+        timestampAfter: locationStartDate,
+        timestampBefore: locationEndDate,
+        userIsAnyOf: [ 'user1' ]
+      })
+    })
+
+    it('resolves team members and merges them with userIsAnyOf', async function() {
+      const event: MageEvent = { id: 0, name: 'Test Event' } as MageEvent
+      const content = new BufferWriteable()
+
+      const exp: ExportExpanded = {
+        id: '1',
+        userId: mockUser.id,
+        user: expandedUser,
+        relativePath: 'some/path',
+        filename: 'export',
+        exportType: 'csv',
+        status: ExportStatus.Completed,
+        options: { eventId: 1, event: { id: 1, name: 'Test Event 1' }, filter: undefined },
+        processingErrors: [],
+        expirationDate: new Date(),
+        summary: {},
+        lastUpdated: new Date()
+      }
+
+      const req: api.CreateExportRequest = {
+        context: {
+          requestToken: Symbol(),
+          requestingPrincipal: () => mockUser,
+          locale: () => null,
+          mageEvent: event
+        },
+        format: 'csv',
+        filter: {
+          observations: {
+            userIsAnyOf: [ 'user1' ],
+            teamIsAnyOf: [ 'team1' ]
+          },
+          locations: {
+            userIsAnyOf: [ 'user4' ],
+            teamIsAnyOf: [ 'team2' ]
+          }
+        },
+      }
+
+      permissions.ensureCreateExportPermission(req.context).resolves(null)
+      repository.createExport.resolves(exp)
+      store.writeContent.returns({ relativePath: 'test/path', content })
+      store.contentStats.resolves(new Stats())
+      repository.updateExportForUser.resolves(exp)
+      teamRepository.findAllByIds([ 'team1' ]).resolves({
+        team1: { id: 'team1', name: 'Team 1', userIds: [ 'user2', 'user3' ], acl: {} } as any
+      })
+      teamRepository.findAllByIds([ 'team2' ]).resolves({
+        team2: { id: 'team2', name: 'Team 2', userIds: [ 'user5' ], acl: {} } as any
+      })
+
+      const exportStub = sinon.stub().resolves({ observations: {}, locations: {} })
+      exportFactory.withArgs('csv').returns({ export: exportStub })
+
+      await createExport(req)
+      await exportStub.returnValues[0]
+
+      const [ , , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, api.ExportParams ]
+      expect(params.observationParams?.findSpec.where?.userIsAnyOf).to.have.members([ 'user1', 'user2', 'user3' ])
+      expect(params.locationParams?.findSpec.where.userIsAnyOf).to.have.members([ 'user4', 'user5' ])
+    })
+
+    it('does not filter out all users when a filtered team has no members', async function() {
+      const event: MageEvent = { id: 0, name: 'Test Event' } as MageEvent
+      const content = new BufferWriteable()
+
+      const exp: ExportExpanded = {
+        id: '1',
+        userId: mockUser.id,
+        user: expandedUser,
+        relativePath: 'some/path',
+        filename: 'export',
+        exportType: 'csv',
+        status: ExportStatus.Completed,
+        options: { eventId: 1, event: { id: 1, name: 'Test Event 1' }, filter: undefined },
+        processingErrors: [],
+        expirationDate: new Date(),
+        summary: {},
+        lastUpdated: new Date()
+      }
+
+      const req: api.CreateExportRequest = {
+        context: {
+          requestToken: Symbol(),
+          requestingPrincipal: () => mockUser,
+          locale: () => null,
+          mageEvent: event
+        },
+        format: 'csv',
+        filter: {
+          observations: {
+            teamIsAnyOf: [ 'emptyTeam' ]
+          }
+        },
+      }
+
+      permissions.ensureCreateExportPermission(req.context).resolves(null)
+      repository.createExport.resolves(exp)
+      store.writeContent.returns({ relativePath: 'test/path', content })
+      store.contentStats.resolves(new Stats())
+      repository.updateExportForUser.resolves(exp)
+      teamRepository.findAllByIds([ 'emptyTeam' ]).resolves({
+        emptyTeam: { id: 'emptyTeam', name: 'Empty Team', userIds: [], acl: {} } as any
+      })
+
+      const exportStub = sinon.stub().resolves({ observations: {}, locations: {} })
+      exportFactory.withArgs('csv').returns({ export: exportStub })
+
+      await createExport(req)
+      await exportStub.returnValues[0]
+
+      const [ , , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, api.ExportParams ]
+      expect(params.observationParams?.findSpec.where?.userIsAnyOf).to.be.undefined
+    })
+
     it('removes content from store and updates export on exception', async function() {
       const event: MageEvent = { id: 0, name: 'Test Event' } as MageEvent
       const content = new BufferWriteable()
@@ -290,7 +493,6 @@ describe('export use case interactions', function() {
           eventId: 1,
           event: { id: 1, name: 'Test Event 1' },
           filter: undefined,
-          projection: undefined
         },
         processingErrors: [],
         expirationDate: new Date(),
@@ -307,15 +509,18 @@ describe('export use case interactions', function() {
         },
         format: 'csv',
         filter: {
-          exportObservations: true,
-          exportLocations: true,
-          startDate: new Date(),
-          endDate: new Date(),
-          favorites: false,
-          important: false,
-          includeAttachments: false
+          observations: {
+            startDate: new Date(),
+            endDate: new Date(),
+            favorites: false,
+            important: false,
+            includeAttachments: false
+          },
+          locations: {
+            startDate: new Date(),
+            endDate: new Date()
+          }
         },
-        projection: undefined
       }
 
       const stats = new Stats()
@@ -395,7 +600,6 @@ describe('export use case interactions', function() {
         options: {
           eventId: 1,
           filter: undefined,
-          projection: undefined
         },
         processingErrors: [],
         expirationDate: new Date(),
@@ -459,7 +663,6 @@ describe('export use case interactions', function() {
         options: {
           eventId: 1,
           filter: undefined,
-          projection: undefined
         },
         processingErrors: [],
         expirationDate: new Date(),
