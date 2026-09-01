@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkMenuModule } from '@angular/cdk/menu';
 
 import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
 
@@ -145,6 +146,7 @@ const routes: Routes = [{
   imports: [MatTimepickerModule],
   exports: [
     AlphaModule,
+    CdkMenuModule,
     CheckboardModule,
     CommonModule,
     FormsModule,

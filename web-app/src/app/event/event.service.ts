@@ -1,12 +1,18 @@
 import { Injectable } from "@angular/core";
 import {
   Observable,
+  Subject,
   catchError,
   combineLatest,
   finalize,
   map,
+  merge,
   of,
+  pairwise,
+  skip,
+  startWith,
   take,
+  takeUntil,
   tap,
 } from "rxjs";
 import { FilterService } from "../filter/filter.service";
@@ -24,7 +30,6 @@ import { MemberPage, filterChanges } from "./event.types";
 import {
   Attachment,
   Event,
-  Filter,
   Form,
   FormField,
   Layer,
@@ -45,6 +50,7 @@ export class EventService {
   private pollingTimeout: any = null;
   private feedPollTimeout: any = null;
   private feedSyncStates: any = {};
+  private destroy$ = new Subject<void>();
 
   constructor(
     private pollingService: PollingService,
@@ -58,13 +64,50 @@ export class EventService {
   ) { }
 
   init() {
-    this.filterService.addListener(this);
+    this.destroy$ = new Subject<void>();
     this.pollingService.addListener(this);
+
+    this.filterService.event$
+      .pipe(startWith(null), pairwise(), takeUntil(this.destroy$))
+      .subscribe(([prev, curr]) => {
+        if (prev?.id !== curr?.id) {
+          this.onEventChanged({
+            added: curr ? [curr] : [],
+            removed: prev ? [prev] : [],
+          });
+          if (curr) {
+            this.fetch().subscribe();
+          }
+        }
+      });
+
+    this.filterService.interval$
+      .pipe(skip(1), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.fetch().subscribe();
+      });
+
+    merge(
+      this.filterService.teams$.pipe(skip(1)),
+      this.filterService.users$.pipe(skip(1)),
+      this.filterService.forms$.pipe(skip(1))
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.onFiltersChanged();
+      });
+
+    this.filterService.actionFilter$
+      .pipe(skip(1), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.onActionFilterChanged();
+      });
   }
 
   destroy() {
     this.eventsById = {};
-    this.filterService.removeListener(this);
+    this.destroy$.next();
+    this.destroy$.complete();
     this.pollingService.removeListener(this);
 
     if (this.pollingTimeout) {
@@ -103,22 +146,6 @@ export class EventService {
     return this.httpClient.delete<any>(
       `/api/events/${eventId}/feeds/${feedId}`
     );
-  }
-
-  async onFilterChanged(filter: any) {
-    if (filter.event) {
-      this.onEventChanged(filter.event);
-    }
-    if (filter.event?.added?.length || filter.timeInterval) {
-      // requery server
-      await this.fetch().subscribe();
-    }
-
-    this.onFiltersChanged(filter);
-
-    if (filter.actionFilter) {
-      this.onActionFilterChanged();
-    }
   }
 
   onEventChanged(event: filterChanges) {
@@ -167,12 +194,11 @@ export class EventService {
   }
 
   /**
-   * Updates List of Observations and Users when Filter Changes
-   * @param  {Filter} filter Filter Parametes
+   * Updates List of Observations and Users when the team/user/form filter changes
    * @return {void} No Return
    */
 
-  onFiltersChanged(filter: Filter): void {
+  onFiltersChanged(): void {
     const event = this.filterService.getEvent();
     if (!event) return;
 
@@ -184,12 +210,9 @@ export class EventService {
     Object.values(teamsEvent.filteredObservationsById).forEach(
       (observation: Observation) => {
         if (
-          (filter.users &&
-            !this.filterService.isUserInList(observation.userId)) ||
-          (filter.teams &&
-            !this.filterService.isUserInTeamFilter(observation.userId)) ||
-          (filter.forms &&
-            !this.filterService.hasFormInList(observation.properties.forms))
+          !this.filterService.isUserInList(observation.userId) ||
+          !this.filterService.isUserInTeamFilter(observation.userId) ||
+          !this.filterService.hasFormInList(observation.properties.forms)
         ) {
           delete teamsEvent.filteredObservationsById[observation.id];
           observationsRemoved.push(observation);
@@ -201,8 +224,8 @@ export class EventService {
     const usersRemoved = [];
     Object.values(teamsEvent.filteredUsersById).forEach((user: User) => {
       if (
-        (filter.users && !this.filterService.isUserInList(user.id)) ||
-        (filter.teams && !this.filterService.isUserInTeamFilter(user.id))
+        !this.filterService.isUserInList(user.id) ||
+        !this.filterService.isUserInTeamFilter(user.id)
       ) {
         delete teamsEvent.filteredUsersById[user.id];
         usersRemoved.push(user);
@@ -214,11 +237,8 @@ export class EventService {
     Object.values(teamsEvent.observationsById).forEach(
       (observation: Observation) => {
         if (
-          filter.users &&
           this.filterService.isUserInList(observation.userId) &&
-          filter.teams &&
           this.filterService.isUserInTeamFilter(observation.userId) &&
-          filter.forms &&
           this.filterService.hasFormInList(observation.properties.forms) &&
           !teamsEvent.filteredObservationsById[observation.id]
         ) {
@@ -232,10 +252,8 @@ export class EventService {
     const usersAdded = [];
     Object.values(teamsEvent.usersById).forEach((user: User) => {
       if (
-        filter.users &&
-        !this.filterService.isUserInList(user.id) &&
-        filter.teams &&
-        !this.filterService.isUserInTeamFilter(user.id) &&
+        this.filterService.isUserInList(user.id) &&
+        this.filterService.isUserInTeamFilter(user.id) &&
         !teamsEvent.filteredUsersById[user.id]
       ) {
         usersAdded.push(user);

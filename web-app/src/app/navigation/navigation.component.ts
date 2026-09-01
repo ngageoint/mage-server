@@ -1,10 +1,17 @@
 import {
   Component,
+  DestroyRef,
+  ElementRef,
   EventEmitter,
   OnDestroy,
   OnInit,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ConnectedPosition } from '@angular/cdk/overlay';
+import { FormControl } from '@angular/forms';
+import { Observable, map, startWith } from 'rxjs';
 import { FilterService } from '../filter/filter.service';
 import { MapService } from '../map/map.service';
 import { UserService } from '../user/user.service';
@@ -23,9 +30,19 @@ import { SessionService } from 'mage-web-app/http/session.service';
 export class NavigationComponent implements OnInit, OnDestroy {
   @Output() onFeedToggle = new EventEmitter<void>();
   @Output() onPreferencesToggle = new EventEmitter<void>();
+  @ViewChild('eventSearchInput') eventSearchInput: ElementRef<HTMLInputElement>;
+
+  events: any[] = [];
+  eventSearchControl = new FormControl('');
+  filteredEvents: Observable<any[]>;
+
+  eventMenuPosition: ConnectedPosition[] = [
+    { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top' }
+  ];
 
   state = 'map';
   filteredEvent: any = {};
+  eventsLoaded = false;
   filteredTeams: any;
   filteredInterval: any;
   feedChangedUsers = {};
@@ -38,31 +55,60 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private eventService: EventService,
     private filterService: FilterService,
-    private pollingService: PollingService
+    private pollingService: PollingService,
+    private destroyRef: DestroyRef
   ) {}
 
   ngOnInit(): void {
-    this.filterService.addListener(this);
+    this.filterService.event$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => this.onEventSelected(event));
+
+    this.filterService.teams$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((teams) => {
+        this.filteredTeams = _.map(teams, (t) => t.name).join(', ');
+      });
+
+    this.filterService.interval$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const intervalChoice = this.filterService.getIntervalChoice();
+        if (intervalChoice.filter !== 'all') {
+          if (intervalChoice.filter === 'custom') {
+            // TODO format custom time interval
+            this.filteredInterval = 'Custom time interval';
+          } else {
+            this.filteredInterval = intervalChoice.label;
+          }
+        } else {
+          this.filteredInterval = null;
+        }
+      });
+
+    this.filteredEvents = this.eventSearchControl.valueChanges.pipe(
+      startWith(''),
+      map((value) => this.filterEvents(value ?? ''))
+    );
 
     this.eventService.query().subscribe((events) => {
+      this.events = [...events].sort((a, b) => a.name.localeCompare(b.name));
+      this.eventSearchControl.setValue('', { emitEvent: true });
+
       const recentEventId = this.userService.getRecentEventId();
       const recentEvent = _.find(events, (event) => {
         return event.id === recentEventId;
       });
-      if (recentEvent) {
-        this.filterService.setFilter({ event: recentEvent });
-        this.pollingService.setPollingInterval(
-          this.pollingService.getPollingInterval()
-        );
-      } else if (events.length > 0) {
-        // TODO 'welcome to Mage dialog'
-        this.filterService.setFilter({ event: events[0] });
+      const event = recentEvent || (events.length > 0 ? events[0] : null);
+      if (event) {
+        this.filterService.setFilter({ event });
         this.pollingService.setPollingInterval(
           this.pollingService.getPollingInterval()
         );
       } else {
         // TODO welcome to mage, sorry you have no events
       }
+      this.eventsLoaded = true;
     });
 
     this.mapService.init();
@@ -71,7 +117,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.filterService.removeListener(this);
     this.filterService.removeFilters();
 
     this.mapService.destroy();
@@ -93,32 +138,29 @@ export class NavigationComponent implements OnInit, OnDestroy {
     });
   }
 
-  onFilterChanged(filter) {
+  onEventMenuOpened(): void {
+    this.eventSearchControl.setValue('');
+    setTimeout(() => this.eventSearchInput?.nativeElement.focus(), 0);
+  }
+
+  onSelectEvent(event: any): void {
+    this.filterService.setFilter({ event });
+  }
+
+  private filterEvents(name: string): any[] {
+    if (!name) return this.events.slice();
+    const lower = name.toLowerCase();
+    return this.events.filter((e) => e.name.toLowerCase().includes(lower));
+  }
+
+  private onEventSelected(event: any) {
     this.feedChangedUsers = {};
 
-    if (filter.event) {
-      this.filteredEvent = this.filterService.getEvent();
+    if (event) {
+      this.filteredEvent = event;
 
       // Stop broadcasting location if the event switches
       this.mapService.onLocationStop();
-    }
-
-    if (filter.teams)
-      this.filteredTeams = _.map(this.filterService.getTeams(), (t) => {
-        return t.name;
-      }).join(', ');
-    if (filter.timeInterval) {
-      const intervalChoice = this.filterService.getIntervalChoice();
-      if (intervalChoice.filter !== 'all') {
-        if (intervalChoice.filter === 'custom') {
-          // TODO format custom time interval
-          this.filteredInterval = 'Custom time interval';
-        } else {
-          this.filteredInterval = intervalChoice.label;
-        }
-      } else {
-        this.filteredInterval = null;
-      }
     }
   }
 }

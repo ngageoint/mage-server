@@ -1,4 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { merge } from 'rxjs';
 import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
@@ -22,16 +24,25 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   constructor(
     private eventService: EventService,
-    private filterService: FilterService) {
+    private filterService: FilterService,
+    private destroyRef: DestroyRef) {
   }
 
   ngOnInit(): void {
-    this.filterService.addListener(this)
+    merge(
+      this.filterService.event$,
+      this.filterService.teams$,
+      this.filterService.users$,
+      this.filterService.forms$,
+      this.filterService.interval$,
+      this.filterService.actionFilter$
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.onFilterChanged())
     this.eventService.addUsersChangedListener(this)
   }
 
   ngOnDestroy(): void {
-    this.filterService.removeListener(this)
     this.eventService.removeUsersChangedListener(this)
   }
 
