@@ -9,7 +9,7 @@ import { SettingsService } from '../settings.service';
 @Component({
     selector: 'color-picker',
     template: '',
-    standalone: false
+    standalone: true
 })
 class MockColorPickerComponent {
   @Input() hexColor: string = '';
@@ -45,17 +45,19 @@ describe('SecurityBannerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
-      declarations: [SecurityBannerComponent, MockColorPickerComponent],
+      imports: [SecurityBannerComponent, NoopAnimationsModule],
       providers: [{ provide: SettingsService, useClass: MockSettingsService }]
     })
+      .overrideComponent(SecurityBannerComponent, {
+        set: { imports: [MockColorPickerComponent] }
+      })
       .overrideTemplate(
         SecurityBannerComponent,
         `
-          <color-picker #headerTextColor></color-picker>
-          <color-picker #headerBackgroundColor></color-picker>
-          <color-picker #footerTextColor></color-picker>
-          <color-picker #footerBackgroundColor></color-picker>
+          <color-picker #headerTextColorPicker></color-picker>
+          <color-picker #headerBackgroundColorPicker></color-picker>
+          <color-picker #footerTextColorPicker></color-picker>
+          <color-picker #footerBackgroundColorPicker></color-picker>
         `
       )
       .compileComponents();
@@ -76,24 +78,22 @@ describe('SecurityBannerComponent', () => {
 
   it('should load banner settings on init', () => {
     expect(settingsService.get).toHaveBeenCalledWith('banner');
-    expect(component.banner).toEqual({
-      headerTextColor: '#000000',
-      headerText: '',
-      headerBackgroundColor: '#FFFFFF',
-      footerTextColor: '#000000',
-      footerText: '',
-      footerBackgroundColor: '#FFFFFF',
-      showHeader: false,
-      showFooter: false
-    });
+    expect(component.headerTextColor()).toBe('#000000');
+    expect(component.headerText()).toBe('');
+    expect(component.headerBackgroundColor()).toBe('#FFFFFF');
+    expect(component.footerTextColor()).toBe('#000000');
+    expect(component.footerText()).toBe('');
+    expect(component.footerBackgroundColor()).toBe('#FFFFFF');
+    expect(component.showHeader()).toBe(false);
+    expect(component.showFooter()).toBe(false);
   });
 
   it('should initialize pickers with loaded values and update banner on color change', () => {
-    expect(component.isDirty).toBe(false);
+    expect(component.isDirty()).toBe(false);
 
     component.headerTextColorPicker?.onColorChanged.emit({ color: '#111111' });
 
-    expect(component.banner.headerTextColor).toBe('#111111');
-    expect(component.isDirty).toBe(true);
+    expect(component.headerTextColor()).toBe('#111111');
+    expect(component.isDirty()).toBe(true);
   });
 });

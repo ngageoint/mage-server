@@ -11,24 +11,26 @@
           <h3 class="banner-title">Header</h3>
 
           <div class="show-section">
-            <mat-slide-toggle [(ngModel)]="banner.showHeader" (change)="setDirty(true)">Show Header</mat-slide-toggle>
+            <mat-slide-toggle [ngModel]="showHeader()" (ngModelChange)="showHeader.set($event)" (change)="setDirty(true)">Show Header</mat-slide-toggle>
           </div>
 
           <mat-form-field appearance="fill">
             <mat-label>Header Text</mat-label>
-            <input matInput [(ngModel)]="banner.headerText" #headerTextModel="ngModel"
-              [required]="banner.showHeader" [disabled]="!banner.showHeader" (input)="setDirty(true)" />
-            <mat-error *ngIf="headerTextModel.invalid">Header text is required</mat-error>
+            <input matInput [ngModel]="headerText()" (ngModelChange)="headerText.set($event)" #headerTextModel="ngModel"
+              [required]="showHeader()" [disabled]="!showHeader()" (input)="setDirty(true)" />
+            @if (headerTextModel.invalid) {
+              <mat-error>Header text is required</mat-error>
+            }
           </mat-form-field>
 
           <div class="color-field">
             <label class="color-field-label" for="headerTextColor">Header Text Color</label>
-            <color-picker [hexColor]="banner.headerTextColor" id="headerTextColor" #headerTextColor></color-picker>
+            <color-picker [hexColor]="headerTextColor()" id="headerTextColor" #headerTextColorPicker></color-picker>
           </div>
 
           <div class="color-field">
             <label class="color-field-label" for="headerBackgroundColor">Header Background Color</label>
-            <color-picker [hexColor]="banner.headerBackgroundColor" id="headerBackgroundColor" #headerBackgroundColor></color-picker>
+            <color-picker [hexColor]="headerBackgroundColor()" id="headerBackgroundColor" #headerBackgroundColorPicker></color-picker>
           </div>
         </div>
 
@@ -36,24 +38,26 @@
           <h3 class="banner-title">Footer</h3>
 
           <div class="show-section">
-            <mat-slide-toggle [(ngModel)]="banner.showFooter" (change)="setDirty(true)">Show Footer</mat-slide-toggle>
+            <mat-slide-toggle [ngModel]="showFooter()" (ngModelChange)="showFooter.set($event)" (change)="setDirty(true)">Show Footer</mat-slide-toggle>
           </div>
 
           <mat-form-field appearance="fill">
             <mat-label>Footer Text</mat-label>
-            <input matInput [(ngModel)]="banner.footerText" #footerTextModel="ngModel"
-              [required]="banner.showFooter" [disabled]="!banner.showFooter" (input)="setDirty(true)" />
-            <mat-error *ngIf="footerTextModel.invalid">Footer text is required</mat-error>
+            <input matInput [ngModel]="footerText()" (ngModelChange)="footerText.set($event)" #footerTextModel="ngModel"
+              [required]="showFooter()" [disabled]="!showFooter()" (input)="setDirty(true)" />
+            @if (footerTextModel.invalid) {
+              <mat-error>Footer text is required</mat-error>
+            }
           </mat-form-field>
 
           <div class="color-field">
             <label class="color-field-label" for="footerTextColor">Footer Text Color</label>
-            <color-picker [hexColor]="banner.footerTextColor" id="footerTextColor" #footerTextColor></color-picker>
+            <color-picker [hexColor]="footerTextColor()" id="footerTextColor" #footerTextColorPicker></color-picker>
           </div>
 
           <div class="color-field">
             <label class="color-field-label" for="footerBackgroundColor">Footer Background Color</label>
-            <color-picker [hexColor]="banner.footerBackgroundColor" id="footerBackgroundColor" #footerBackgroundColor></color-picker>
+            <color-picker [hexColor]="footerBackgroundColor()" id="footerBackgroundColor" #footerBackgroundColorPicker></color-picker>
           </div>
         </div>
       </div>
