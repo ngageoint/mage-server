@@ -25,8 +25,6 @@ import { EmailValidatorDirective } from '../../../email/email';
   styleUrls: ['./contact-info.component.scss'],
   standalone: true,
   imports: [
-    // MatDialog/MatSnackBar are injected services, not template directives —
-    // no MatDialogModule/MatSnackBarModule needed here.
     FormsModule,
     MatButtonModule,
     MatCardModule,
