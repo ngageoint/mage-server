@@ -27,6 +27,9 @@ export class ArcAdminComponent implements OnInit {
   editName: string;
   editValue: any;
   editOptions: any[];
+  editSelectValue: any;
+  editValueOptions: any[] = [];
+  editIsAttributeName = false;
   events: MageEvent[] = [];
 
   /**
@@ -512,7 +515,7 @@ export class ArcAdminComponent implements OnInit {
     const exclude = new Set<string>()
     if (this.config.attributes != undefined) {
       for (const attribute of Object.keys(this.config.attributes)) {
-        exclude.add(attribute)
+        exclude.add(attribute.toLowerCase())
       }
     }
 
@@ -522,10 +525,10 @@ export class ArcAdminComponent implements OnInit {
   selectableConditionAttributes(attribute: string, conditions: AttributeValueConfig[]): string[] {
 
     const exclude = new Set<string>()
-    exclude.add(attribute)
+    exclude.add(attribute.toLowerCase())
     if (conditions != undefined) {
       for (const condition of conditions) {
-        exclude.add(condition.attribute)
+        exclude.add(condition.attribute.toLowerCase())
       }
     }
 
@@ -563,7 +566,7 @@ export class ArcAdminComponent implements OnInit {
             if (form.fields != undefined) {
               for (const field of form.fields) {
                 if (this.fieldMapping(event.name, form.name, field.title) == undefined) {
-                  this.addAttribute(field.title, attributes, exclude)
+                  this.addAttribute(this.normalizeAttributeName(field.title), attributes, exclude)
                 }
               }
             }
@@ -579,9 +582,10 @@ export class ArcAdminComponent implements OnInit {
   private addAttribute(attribute: string | undefined, attributes: string[], unique: Set<string>) {
     if (attribute != undefined) {
       const attributeAdd = this.replaceSpaces(attribute)
-      if (!unique.has(attributeAdd)) {
+      const key = attributeAdd.toLowerCase()
+      if (!unique.has(key)) {
         attributes.push(attributeAdd)
-        unique.add(attributeAdd)
+        unique.add(key)
       }
     }
   }
@@ -622,6 +626,11 @@ export class ArcAdminComponent implements OnInit {
     return name.replace(/ /g, '_')
   }
 
+  // Normalize a string into an ArcGIS attribute name: spaces replaced with underscores and lowercased
+  private normalizeAttributeName(name: string): string {
+    return this.replaceSpaces(name).trim().toLowerCase()
+  }
+
   showInfo(title: string, message: string) {
     this.infoTitle = title
     this.infoMessage = message
@@ -650,10 +659,14 @@ export class ArcAdminComponent implements OnInit {
   showAddField(type: string, object: any) {
     this.editType = type;
     this.editObject = object;
+    this.editIsAttributeName = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldTemplate)
   }
 
   addField(name: string) {
+    if (this.editIsAttributeName) {
+      name = this.normalizeAttributeName(name);
+    }
     if (this.editObject == undefined) {
       if (this.editType == 'Event') {
         this.config.fieldAttributes = {}
@@ -683,6 +696,7 @@ export class ArcAdminComponent implements OnInit {
   showAddFieldValue(type: string, object: any) {
     this.editType = type;
     this.editObject = object;
+    this.editIsAttributeName = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldValueTemplate)
   }
 
@@ -696,6 +710,9 @@ export class ArcAdminComponent implements OnInit {
       attributeValue.values = [value]
       this.editObject.condition.push(attributeValue)
     } else {
+      if (this.editType == 'Field') {
+        value = this.normalizeAttributeName(value);
+      }
       this.editObject[name] = value
     }
     this.saveConfig()
@@ -705,6 +722,8 @@ export class ArcAdminComponent implements OnInit {
     this.editType = type;
     this.editObject = object;
     this.editOptions = options;
+    this.editSelectValue = undefined;
+    this.editIsAttributeName = type === 'Attribute';
     this.dialog.open<unknown, unknown, string>(this.addFieldAutoTemplate)
   }
 
@@ -712,18 +731,24 @@ export class ArcAdminComponent implements OnInit {
     this.editType = type;
     this.editObject = object;
     this.editOptions = options;
+    this.editValueOptions = type === 'Field' ? this.selectableAttributes() : [];
+    this.editIsAttributeName = type === 'Field';
     this.dialog.open<unknown, unknown, string>(this.addFieldAutoValueTemplate)
   }
 
-  showEditField(name: string, field: string, object: any, value: any) {
+  showEditField(name: string, field: string, object: any, value: any, isAttributeName = false) {
     this.editName = name;
     this.editType = field;
     this.editObject = object;
     this.editValue = value;
+    this.editIsAttributeName = isAttributeName;
     this.dialog.open<unknown, unknown, string>(this.editFieldTemplate)
   }
 
   editField(value: any) {
+    if (this.editIsAttributeName) {
+      value = this.normalizeAttributeName(value);
+    }
     if (value != this.editValue) {
       const editObjectValue = this.editObject[this.editType]
       const existingValue = editObjectValue[this.editValue]
@@ -758,6 +783,8 @@ export class ArcAdminComponent implements OnInit {
       options.unshift(value);
     }
     this.editOptions = options;
+    this.editSelectValue = value;
+    this.editIsAttributeName = name === 'Attribute';
     this.dialog.open<unknown, unknown, string>(this.editFieldAutoTemplate)
   }
 
@@ -766,6 +793,7 @@ export class ArcAdminComponent implements OnInit {
     this.editType = field;
     this.editObject = object;
     this.editValue = value;
+    this.editIsAttributeName = false;
     this.dialog.open<unknown, unknown, string>(this.editBooleanFieldTemplate)
   }
 

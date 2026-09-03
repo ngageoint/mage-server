@@ -244,7 +244,7 @@
       <div class="section-header">
         <span>Field Mappings</span>
         <button class="info-button" mat-icon-button
-          (click)="showInfo('Field Mappings', 'Override mappings between Mage event form fields and ArcGIS attributes')">
+          (click)="showInfo('Field Mappings', 'For each form used in Mage, you can choose a form field and customize the ArcGIS layer attribute name.')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
         <button mat-stroked-button class="edit-toggle-button"
@@ -317,7 +317,7 @@
                   <td>{{config.fieldAttributes[event][form][field]}}</td>
                   <td *ngIf="editFieldMappings" class="actions-col">
                     <button mat-icon-button
-                      (click)="showEditField(field, field, config.fieldAttributes[event][form], config.fieldAttributes[event][form][field])">
+                      (click)="showEditField(field, field, config.fieldAttributes[event][form], config.fieldAttributes[event][form][field], true)">
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button mat-icon-button
@@ -358,7 +358,7 @@
       <div class="section-header">
         <span>Attribute Settings</span>
         <button class="info-button" mat-icon-button
-          (click)="showInfo('Attribute Settings', 'Attribute settings including concatenation, value mappings, defaults, and omissions')">
+          (click)="showInfo('Attribute Settings', 'Modify the behavior of the attribute value before it is sent to ArcGIS. For example: you can concatenate multiple values, set default values, or omit the attribute from being sent to ArcGIS.')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
         <button mat-stroked-button class="edit-toggle-button"
@@ -845,20 +845,31 @@
 <ng-template #addFieldAutoDialog let-data>
   <mat-dialog-content cdkFocusInitial>
     <div class="add-field-auto-form">
-      <mat-form-field [style.width.%]="100">
+      <mat-form-field *ngIf="editType === 'Attribute'; else addFieldAutoFreeText" [style.width.%]="100">
         <mat-label>{{editType}}</mat-label>
-        <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
-        <mat-autocomplete #auto="matAutocomplete">
+        <mat-select [(ngModel)]="editSelectValue">
           <mat-option *ngFor="let option of editOptions" [value]="option">
             {{option}}
           </mat-option>
-        </mat-autocomplete>
+        </mat-select>
+        <mat-hint *ngIf="!editOptions.length">No mapped ArcGIS attribute names available yet. Add a field mapping in the Mappings tab first.</mat-hint>
       </mat-form-field>
+      <ng-template #addFieldAutoFreeText>
+        <mat-form-field [style.width.%]="100">
+          <mat-label>{{editType}}</mat-label>
+          <input type="text" matInput [(ngModel)]="editSelectValue" [matAutocomplete]="auto" />
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let option of editOptions" [value]="option">
+              {{option}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </ng-template>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
+    <button mat-flat-button color="primary" matDialogClose [disabled]="!editSelectValue" (click)="addField(editSelectValue)">ADD</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #addFieldAutoValueDialog let-data>
@@ -878,7 +889,13 @@
       <div class="add-field-auto-value">
         <mat-form-field [style.width.%]="100">
           <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
-          <input type="text" matInput #addValueField />
+          <input type="text" matInput [matAutocomplete]="autoValue" #addValueField />
+          <mat-autocomplete #autoValue="matAutocomplete">
+            <mat-option *ngFor="let option of editValueOptions" [value]="option">
+              {{option}}
+            </mat-option>
+          </mat-autocomplete>
+          <mat-hint *ngIf="editType == 'Field'">Pick an existing ArcGIS attribute name to combine this field into it, or type a new one.</mat-hint>
         </mat-form-field>
       </div>
     </div>
@@ -905,20 +922,30 @@
 <ng-template #editFieldAutoDialog let-data>
   <mat-dialog-content cdkFocusInitial>
     <div class="edit-field-auto-form">
-      <mat-form-field [style.width.%]="100">
+      <mat-form-field *ngIf="editName === 'Attribute'; else editFieldAutoFreeText" [style.width.%]="100">
         <mat-label>{{editName}}</mat-label>
-        <input type="text" matInput value="{{editValue}}" [matAutocomplete]="auto" #editFieldField />
-        <mat-autocomplete #auto="matAutocomplete">
+        <mat-select [(ngModel)]="editSelectValue">
           <mat-option *ngFor="let option of editOptions" [value]="option">
             {{option}}
           </mat-option>
-        </mat-autocomplete>
+        </mat-select>
       </mat-form-field>
+      <ng-template #editFieldAutoFreeText>
+        <mat-form-field [style.width.%]="100">
+          <mat-label>{{editName}}</mat-label>
+          <input type="text" matInput [(ngModel)]="editSelectValue" [matAutocomplete]="auto" />
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let option of editOptions" [value]="option">
+              {{option}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </ng-template>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
+    <button mat-flat-button color="primary" matDialogClose [disabled]="editName === 'Attribute' && !editSelectValue" (click)="editField(editSelectValue)">UPDATE</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #editBooleanFieldDialog let-data>
