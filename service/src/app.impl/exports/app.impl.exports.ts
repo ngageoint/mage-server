@@ -3,22 +3,47 @@ import { AppResponse, KnownErrorsOf, withPermission } from '../../app.api/app.ap
 import {
   Export,
   ExportExpanded,
+  ExportFormat,
   ExportProjection,
   ExportsRepository,
   ExportStatus,
   ExportStore,
-  ExportStoreError
+  ExportStoreError,
+  ExportSummary
 } from '../../entities/exports/entities.exports'
 import { FindObservationsStreamSpec, FormEntry, ObservationAttrs, ObservationId, ObservationRepositoryForEvent, ObservationSearchRepository } from '../../entities/observations/entities.observations'
+import { FindUserLocationsStreamSpec } from '../../entities/locations/entities.locations'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import { TeamRepository } from '../../entities/teams/entities.teams'
 import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
 import { FormId } from '../../entities/events/entities.events.forms'
 import { Stats } from 'fs'
-import archiver from 'archiver'
+import archiver, { Archiver } from 'archiver'
 import { once } from 'stream'
 import { Logger, NoopLogger } from '../../entities/entities.logging'
 import { MageEvent } from '../../entities/events/entities.events'
+
+export interface ExportFactory {
+  (format: ExportFormat): ExportTransform | null
+}
+
+export interface ObservationExportParams {
+  findSpec: FindObservationsStreamSpec
+  projection?: ExportProjection
+}
+
+export interface LocationExportParams {
+  findSpec: FindUserLocationsStreamSpec
+}
+
+export interface ExportParams {
+  observationParams?: ObservationExportParams
+  locationParams?: LocationExportParams
+}
+
+export interface ExportTransform {
+  export(event: MageEvent, archive: Archiver, params: ExportParams): Promise<ExportSummary>
+}
 
 export function FetchExports(repository: ExportsRepository, permissionService: api.ExportAppLayerPermissionService): api.GetExports {
   return async function getExports(req: api.GetExportsRequest): ReturnType<api.GetExports> {
@@ -66,7 +91,7 @@ export function GetExportContent(
 }
 
 export function CreateExport(
-  exportFactory: api.ExportFactory,
+  exportFactory: ExportFactory,
   exportsRepository: ExportsRepository,
   contentStore: ExportStore,
   permissionService: api.ExportAppLayerPermissionService,
@@ -99,7 +124,7 @@ export function CreateExport(
         }
         await exportsRepository.updateExportForUser(newExport.id, user.id, patch)
 
-        const exportParams: api.ExportParams = {}
+        const exportParams: ExportParams = {}
         if (filter?.observations) {
           const observations = filter.observations
           const observationUserIsAnyOf = await resolveUserIsAnyOf(teamRepository, observations.userIsAnyOf, observations.teamIsAnyOf)

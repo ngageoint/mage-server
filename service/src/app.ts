@@ -858,7 +858,7 @@ async function initExportsAppLayer(
     repos.observations.searchRepo
   );
 
-  const exportFactory = (format: ExportFormat): exportsApi.ExportTransform => {
+  const exportFactory = (format: ExportFormat): exportsImpl.ExportTransform => {
     switch (format) {
       case 'csv': {
         return new CsvExportTransform(

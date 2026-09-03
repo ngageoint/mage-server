@@ -264,7 +264,7 @@ describe('export use case interactions', function() {
     let createExport: api.CreateExport
     let store: sinon.SinonStubbedInstance<ExportStore>
     let repository: sinon.SinonStubbedInstance<MongooseExportsRepository>
-    let exportFactory: sinon.SinonStub<[ExportFormat], api.ExportTransform>
+    let exportFactory: sinon.SinonStub<[ExportFormat], impl.ExportTransform>
     let teamRepository: SubstituteOf<TeamRepository>
 
     beforeEach(function() {
@@ -273,7 +273,7 @@ describe('export use case interactions', function() {
       repository = sinon.createStubInstance(MongooseExportsRepository)
       teamRepository = Sub.for<TeamRepository>()
 
-      const csvExport: api.ExportTransform = { export: sinon.stub() }
+      const csvExport: impl.ExportTransform = { export: sinon.stub() }
       exportFactory = sinon.stub()
       exportFactory.withArgs('csv').returns(csvExport)
 
@@ -433,7 +433,7 @@ describe('export use case interactions', function() {
       await exportStub.returnValues[0]
 
       expect(exportStub.calledOnce).to.be.true
-      const [ exportedEvent, , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, api.ExportParams ]
+      const [ exportedEvent, , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, impl.ExportParams ]
       expect(exportedEvent).to.equal(event)
       expect(params.observationParams?.findSpec.where).to.deep.include({
         stateIsAnyOf: [ 'active' ],
@@ -511,7 +511,7 @@ describe('export use case interactions', function() {
       await createExport(req)
       await exportStub.returnValues[0]
 
-      const [ , , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, api.ExportParams ]
+      const [ , , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, impl.ExportParams ]
       expect(params.observationParams?.findSpec.where?.userIsAnyOf).to.have.members([ 'user1', 'user2', 'user3' ])
       expect(params.locationParams?.findSpec.where.userIsAnyOf).to.have.members([ 'user4', 'user5' ])
     })
@@ -565,7 +565,7 @@ describe('export use case interactions', function() {
       await createExport(req)
       await exportStub.returnValues[0]
 
-      const [ , , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, api.ExportParams ]
+      const [ , , params ] = exportStub.getCall(0).args as [ MageEvent, unknown, impl.ExportParams ]
       expect(params.observationParams?.findSpec.where?.userIsAnyOf).to.be.undefined
     })
 

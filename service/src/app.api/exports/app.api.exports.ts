@@ -1,15 +1,10 @@
-import { Archiver } from 'archiver'
 import { MageEvent } from '../../entities/events/entities.events'
 import {
   Export, ExportExpanded,
   ExportLocationFilter,
   ExportObservationFilter,
   ExportFormat,
-  ExportProjection,
-  ExportSummary,
 } from '../../entities/exports/entities.exports'
-import { FindObservationsStreamSpec } from '../../entities/observations/entities.observations'
-import { FindUserLocationsStreamSpec } from '../../entities/locations/entities.locations'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
@@ -68,24 +63,3 @@ export interface ExportAppLayerPermissionService {
   ensureDeleteMyExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 
-export interface ExportFactory {
-  (format: ExportFormat): ExportTransform | null
-}
-
-export interface ObservationExportParams {
-  findSpec: FindObservationsStreamSpec
-  projection?: ExportProjection
-}
-
-export interface LocationExportParams {
-  findSpec: FindUserLocationsStreamSpec
-}
-
-export interface ExportParams {
-  observationParams?: ObservationExportParams
-  locationParams?: LocationExportParams
-}
-
-export interface ExportTransform {
-  export(event: MageEvent, archive: Archiver, params: ExportParams): Promise<ExportSummary>
-}
