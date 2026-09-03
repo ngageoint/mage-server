@@ -1,6 +1,15 @@
-import { Component, EventEmitter, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { of } from 'rxjs';
 
 import { SecurityBannerComponent } from './security-banner.component';
@@ -9,13 +18,11 @@ import { SettingsService } from '../settings.service';
 @Component({
     selector: 'color-picker',
     template: '',
-    standalone: false
+    standalone: true
 })
 class MockColorPickerComponent {
   @Input() hexColor: string = '';
-  onColorChanged = new EventEmitter<{ color: string }>();
-
-  updateColor(): void {}
+  @Output() onColorChanged = new EventEmitter<{ color: string }>();
 }
 
 class MockSettingsService {
@@ -45,19 +52,24 @@ describe('SecurityBannerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
-      declarations: [SecurityBannerComponent, MockColorPickerComponent],
+      imports: [SecurityBannerComponent, NoopAnimationsModule],
       providers: [{ provide: SettingsService, useClass: MockSettingsService }]
     })
-      .overrideTemplate(
-        SecurityBannerComponent,
-        `
-          <color-picker #headerTextColor></color-picker>
-          <color-picker #headerBackgroundColor></color-picker>
-          <color-picker #footerTextColor></color-picker>
-          <color-picker #footerBackgroundColor></color-picker>
-        `
-      )
+      .overrideComponent(SecurityBannerComponent, {
+        set: {
+          imports: [
+            FormsModule,
+            MatButtonModule,
+            MatCardModule,
+            MatDividerModule,
+            MatFormFieldModule,
+            MatInputModule,
+            MatIconModule,
+            MatSlideToggleModule,
+            MockColorPickerComponent
+          ]
+        }
+      })
       .compileComponents();
   }));
 
@@ -76,24 +88,25 @@ describe('SecurityBannerComponent', () => {
 
   it('should load banner settings on init', () => {
     expect(settingsService.get).toHaveBeenCalledWith('banner');
-    expect(component.banner).toEqual({
-      headerTextColor: '#000000',
-      headerText: '',
-      headerBackgroundColor: '#FFFFFF',
-      footerTextColor: '#000000',
-      footerText: '',
-      footerBackgroundColor: '#FFFFFF',
-      showHeader: false,
-      showFooter: false
-    });
+    expect(component.headerTextColor()).toBe('#000000');
+    expect(component.headerText()).toBe('');
+    expect(component.headerBackgroundColor()).toBe('#FFFFFF');
+    expect(component.footerTextColor()).toBe('#000000');
+    expect(component.footerText()).toBe('');
+    expect(component.footerBackgroundColor()).toBe('#FFFFFF');
+    expect(component.showHeader()).toBe(false);
+    expect(component.showFooter()).toBe(false);
   });
 
-  it('should initialize pickers with loaded values and update banner on color change', () => {
-    expect(component.isDirty).toBe(false);
+  it('should update banner on color change', () => {
+    expect(component.isDirty()).toBe(false);
 
-    component.headerTextColorPicker?.onColorChanged.emit({ color: '#111111' });
+    const headerTextColorPicker = fixture.debugElement.query(
+      By.css('color-picker#headerTextColor')
+    ).componentInstance as MockColorPickerComponent;
+    headerTextColorPicker.onColorChanged.emit({ color: '#111111' });
 
-    expect(component.banner.headerTextColor).toBe('#111111');
-    expect(component.isDirty).toBe(true);
+    expect(component.headerTextColor()).toBe('#111111');
+    expect(component.isDirty()).toBe(true);
   });
 });

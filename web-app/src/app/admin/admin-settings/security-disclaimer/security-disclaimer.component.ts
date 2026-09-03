@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { take, lastValueFrom } from 'rxjs';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
@@ -8,23 +8,38 @@ import { SettingsService } from '../settings.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminSettingsUnsavedComponent } from '../admin-settings-unsaved/admin-settings-unsaved.component';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'security-disclaimer',
   templateUrl: 'security-disclaimer.component.html',
   styleUrls: ['./security-disclaimer.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatSlideToggleModule
+  ]
 })
 export class SecurityDisclaimerComponent implements OnInit {
   readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Disclaimer', icon: 'verified' }];
 
-  disclaimer: Disclaimer = {
-    show: false,
-    title: '',
-    text: ''
-  };
-
-  isDirty = false;
+  readonly show = signal(false);
+  readonly title = signal('');
+  readonly text = signal('');
+  readonly isDirty = signal(false);
 
   constructor(
     private settingsService: SettingsService,
@@ -43,7 +58,9 @@ export class SecurityDisclaimerComponent implements OnInit {
         next: (res: any) => {
           const loaded = res?.settings ?? res ?? null;
           if (loaded) {
-            this.disclaimer = { ...this.disclaimer, ...loaded };
+            if (loaded.show !== undefined) this.show.set(loaded.show);
+            if (loaded.title !== undefined) this.title.set(loaded.title);
+            if (loaded.text !== undefined) this.text.set(loaded.text);
           }
         },
         error: (err) => console.log(err)
@@ -51,16 +68,20 @@ export class SecurityDisclaimerComponent implements OnInit {
   }
 
   setDirty(status: boolean): void {
-    this.isDirty = status;
+    this.isDirty.set(status);
   }
 
   save(): void {
     this.settingsService
-      .update('disclaimer', this.disclaimer)
+      .update('disclaimer', {
+        show: this.show(),
+        title: this.title(),
+        text: this.text()
+      })
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.isDirty = false;
+          this.isDirty.set(false);
           this.snackBar.open('Disclaimer saved', undefined, { duration: 2000 });
         },
         error: () => this.snackBar.open('Failed to save disclaimer', undefined, { duration: 2000 })
@@ -68,11 +89,11 @@ export class SecurityDisclaimerComponent implements OnInit {
   }
 
   async onUnsavedChanges(): Promise<boolean> {
-    if (!this.isDirty) return true;
+    if (!this.isDirty()) return true;
     const ref = this.dialog.open(AdminSettingsUnsavedComponent);
     const result = await lastValueFrom(ref.afterClosed());
     const discard = result ? !!result.discard : true;
-    if (discard) this.isDirty = false;
+    if (discard) this.isDirty.set(false);
     return discard;
   }
 }
