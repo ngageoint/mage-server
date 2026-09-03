@@ -37,7 +37,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	state: State = State.Validate
 
 	EntryMode = EntryMode
-	entryMode: EntryMode = EntryMode.Url
+	entryMode: EntryMode = EntryMode.Portal
 
 	loading = false
 	validationError: string | undefined

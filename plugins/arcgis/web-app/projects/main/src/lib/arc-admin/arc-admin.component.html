@@ -317,7 +317,7 @@
                   <td>{{config.fieldAttributes[event][form][field]}}</td>
                   <td *ngIf="editFieldMappings" class="actions-col">
                     <button mat-icon-button
-                      (click)="showEditField(field, field, config.fieldAttributes[event][form], config.fieldAttributes[event][form][field], true)">
+                      (click)="showEditField(field, field, config.fieldAttributes[event][form], config.fieldAttributes[event][form][field], true, true)">
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button mat-icon-button
@@ -889,20 +889,21 @@
       <div class="add-field-auto-value">
         <mat-form-field [style.width.%]="100">
           <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
-          <input type="text" matInput [matAutocomplete]="autoValue" #addValueField />
+          <input type="text" matInput [matAutocomplete]="autoValue" [(ngModel)]="editValueInput" />
           <mat-autocomplete #autoValue="matAutocomplete">
             <mat-option *ngFor="let option of editValueOptions" [value]="option">
               {{option}}
             </mat-option>
           </mat-autocomplete>
-          <mat-hint *ngIf="editType == 'Field'">Pick an existing ArcGIS attribute name to combine this field into it, or type a new one.</mat-hint>
+          <mat-hint *ngIf="editType == 'Field' && !isReservedAttributeName(editValueInput)">Pick an existing ArcGIS attribute name to combine this field into it, or type a new one.</mat-hint>
+          <mat-hint *ngIf="editType == 'Field' && isReservedAttributeName(editValueInput)" class="reserved-attribute-warning">This name is already used by the Observation Field Attributes settings and can't be reused here.</mat-hint>
         </mat-form-field>
       </div>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
+    <button mat-flat-button color="primary" matDialogClose [disabled]="editType == 'Field' && (!editValueInput || isReservedAttributeName(editValueInput))" (click)="addFieldValue(addFieldField.value, editValueInput)">ADD</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #editFieldDialog let-data>
@@ -910,13 +911,14 @@
     <div class="edit-field-form">
       <mat-form-field [style.width.%]="100">
         <mat-label>{{editName}}</mat-label>
-        <input type="text" matInput value="{{editValue}}" #editFieldField />
+        <input type="text" matInput [(ngModel)]="editValueInput" />
+        <mat-hint *ngIf="editIsFieldMappingAttribute && isReservedAttributeName(editValueInput)" class="reserved-attribute-warning">This name is already used by the Observation Field Attributes settings and can't be reused here.</mat-hint>
       </mat-form-field>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
+    <button mat-flat-button color="primary" matDialogClose [disabled]="editIsFieldMappingAttribute && (!editValueInput || isReservedAttributeName(editValueInput))" (click)="editField(editValueInput)">UPDATE</button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #editFieldAutoDialog let-data>

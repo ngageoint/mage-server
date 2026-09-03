@@ -30,6 +30,8 @@ export class ArcAdminComponent implements OnInit {
   editSelectValue: any;
   editValueOptions: any[] = [];
   editIsAttributeName = false;
+  editIsFieldMappingAttribute = false;
+  editValueInput = '';
   events: MageEvent[] = [];
 
   /**
@@ -631,6 +633,40 @@ export class ArcAdminComponent implements OnInit {
     return this.replaceSpaces(name).trim().toLowerCase()
   }
 
+  /**
+   * The set of attribute names already claimed by the special fields configured on the
+   * Attributes tab (Observation Id Field, Event Id Field, Event Name Field, etc)
+   */
+  private reservedAttributeNames(): Set<string> {
+    const reserved = new Set<string>()
+    const specialFields = [
+      this.config.observationIdField,
+      this.config.eventIdField,
+      this.config.eventNameField,
+      this.config.userIdField,
+      this.config.usernameField,
+      this.config.userDisplayNameField,
+      this.config.deviceIdField,
+      this.config.createdAtField,
+      this.config.lastModifiedField,
+      this.config.geometryType,
+      this.config.iconSymbolField,
+    ]
+    for (const field of specialFields) {
+      if (field != undefined && field !== '') {
+        reserved.add(this.normalizeAttributeName(field))
+      }
+    }
+    return reserved
+  }
+
+  isReservedAttributeName(name: string): boolean {
+    if (!name) {
+      return false
+    }
+    return this.reservedAttributeNames().has(this.normalizeAttributeName(name))
+  }
+
   showInfo(title: string, message: string) {
     this.infoTitle = title
     this.infoMessage = message
@@ -660,6 +696,7 @@ export class ArcAdminComponent implements OnInit {
     this.editType = type;
     this.editObject = object;
     this.editIsAttributeName = false;
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldTemplate)
   }
 
@@ -697,6 +734,7 @@ export class ArcAdminComponent implements OnInit {
     this.editType = type;
     this.editObject = object;
     this.editIsAttributeName = false;
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldValueTemplate)
   }
 
@@ -712,6 +750,9 @@ export class ArcAdminComponent implements OnInit {
     } else {
       if (this.editType == 'Field') {
         value = this.normalizeAttributeName(value);
+        if (this.isReservedAttributeName(value)) {
+          return
+        }
       }
       this.editObject[name] = value
     }
@@ -724,6 +765,7 @@ export class ArcAdminComponent implements OnInit {
     this.editOptions = options;
     this.editSelectValue = undefined;
     this.editIsAttributeName = type === 'Attribute';
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldAutoTemplate)
   }
 
@@ -733,21 +775,28 @@ export class ArcAdminComponent implements OnInit {
     this.editOptions = options;
     this.editValueOptions = type === 'Field' ? this.selectableAttributes() : [];
     this.editIsAttributeName = type === 'Field';
+    this.editIsFieldMappingAttribute = type === 'Field';
+    this.editValueInput = '';
     this.dialog.open<unknown, unknown, string>(this.addFieldAutoValueTemplate)
   }
 
-  showEditField(name: string, field: string, object: any, value: any, isAttributeName = false) {
+  showEditField(name: string, field: string, object: any, value: any, isAttributeName = false, isFieldMappingAttribute = false) {
     this.editName = name;
     this.editType = field;
     this.editObject = object;
     this.editValue = value;
     this.editIsAttributeName = isAttributeName;
+    this.editIsFieldMappingAttribute = isFieldMappingAttribute;
+    this.editValueInput = value;
     this.dialog.open<unknown, unknown, string>(this.editFieldTemplate)
   }
 
   editField(value: any) {
     if (this.editIsAttributeName) {
       value = this.normalizeAttributeName(value);
+      if (this.editIsFieldMappingAttribute && this.isReservedAttributeName(value)) {
+        return
+      }
     }
     if (value != this.editValue) {
       const editObjectValue = this.editObject[this.editType]
@@ -785,6 +834,7 @@ export class ArcAdminComponent implements OnInit {
     this.editOptions = options;
     this.editSelectValue = value;
     this.editIsAttributeName = name === 'Attribute';
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.editFieldAutoTemplate)
   }
 
@@ -793,6 +843,7 @@ export class ArcAdminComponent implements OnInit {
     this.editType = field;
     this.editObject = object;
     this.editValue = value;
+    this.editIsFieldMappingAttribute = false;
     this.editIsAttributeName = false;
     this.dialog.open<unknown, unknown, string>(this.editBooleanFieldTemplate)
   }
