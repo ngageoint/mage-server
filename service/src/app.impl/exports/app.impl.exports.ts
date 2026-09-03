@@ -9,7 +9,7 @@ import {
   ExportStore,
   ExportStoreError
 } from '../../entities/exports/entities.exports'
-import { FormEntry, ObservationAttrs } from '../../entities/observations/entities.observations'
+import { FindObservationsStreamSpec, FormEntry, ObservationAttrs, ObservationId, ObservationRepositoryForEvent, ObservationSearchRepository } from '../../entities/observations/entities.observations'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import { TeamRepository } from '../../entities/teams/entities.teams'
 import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
@@ -18,6 +18,7 @@ import { Stats } from 'fs'
 import archiver from 'archiver'
 import { once } from 'stream'
 import { Logger, NoopLogger } from '../../entities/entities.logging'
+import { MageEvent } from '../../entities/events/entities.events'
 
 export function FetchExports(repository: ExportsRepository, permissionService: api.ExportAppLayerPermissionService): api.GetExports {
   return async function getExports(req: api.GetExportsRequest): ReturnType<api.GetExports> {
@@ -188,6 +189,25 @@ export function DeleteExport(
         return exp
       }
     )
+  }
+}
+
+export interface IterateObservations {
+  (event: MageEvent, spec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }>
+}
+
+export function IterateObservations(
+  obsRepoFactory: ObservationRepositoryForEvent,
+  searchRepo: ObservationSearchRepository
+): IterateObservations {
+  return async function findStream(event: MageEvent, findSpec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }> {
+    let ids: ObservationId[] | undefined = undefined
+    if (findSpec.where?.fieldFilter) {
+      ids = await searchRepo.findIdsByFilter(findSpec.where?.fieldFilter, event)
+    }
+
+    const observationRepository = await obsRepoFactory(event.id)
+    return observationRepository.iterate({ ...findSpec, where: { ...findSpec.where, ids } })
   }
 }
 

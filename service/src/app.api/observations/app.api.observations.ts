@@ -50,10 +50,6 @@ export interface ReadObservations {
   <T>(req: ReadObservationsRequest<T>): Promise<AppResponse<T[] | PageOf<T>, PermissionDeniedError | InvalidInputError | InfrastructureError>>
 }
 
-export interface IterateObservations {
-  (event: MageEvent, spec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }>
-}
-
 export interface AllocateObservationId {
   (req: AllocateObservationIdRequest): Promise<AppResponse<ObservationId, PermissionDeniedError>>
 }

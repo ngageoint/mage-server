@@ -21,6 +21,24 @@ import { Stats } from 'fs'
 import { MongooseExportsRepository } from '../../../lib/adapters/exports/adapters.exports.db.mongoose'
 import { FileSystemExportContentStore } from '../../../lib/adapters/exports/adapters.export_store.file_system'
 import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
+import { EventScopedObservationRepository, ObservationAttrs, ObservationSearchRepository } from '../../../lib/entities/observations/entities.observations'
+import { MageEventId } from '../../../lib/entities/events/entities.events'
+import uniqid from 'uniqid'
+
+function minimalObservationAttrs(): ObservationAttrs {
+  return {
+    id: uniqid(),
+    eventId: 987,
+    createdAt: new Date(),
+    lastModified: new Date(),
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [ 0, 0 ] },
+    properties: { timestamp: new Date(), forms: [] },
+    states: [],
+    favoriteUserIds: [],
+    attachments: []
+  }
+}
 
 const mockUserId = new mongoose.Types.ObjectId()
 const mockUser = Object.freeze({
@@ -60,6 +78,81 @@ describe('export use case interactions', function() {
     permissions = Sub.for<api.ExportAppLayerPermissionService>()
     repository = Sub.for<ExportsRepository>()
     store = Sub.for<ExportStore>()
+  })
+
+  describe('iterating observations', function() {
+
+    let mageEvent: MageEvent
+    let obsRepo: SubstituteOf<EventScopedObservationRepository>
+    let obsRepoFactory: sinon.SinonStub<[MageEventId], Promise<EventScopedObservationRepository>>
+    let searchRepo: SubstituteOf<ObservationSearchRepository>
+    let iterateObservations: impl.IterateObservations
+
+    beforeEach(function() {
+      mageEvent = new MageEvent({
+        id: Date.now(),
+        acl: {},
+        feedIds: [],
+        forms: [],
+        layerIds: [],
+        name: 'Export App Layer Tests',
+        style: {}
+      })
+      obsRepo = Sub.for<EventScopedObservationRepository>()
+      obsRepoFactory = sinon.stub()
+      obsRepoFactory.resolves(obsRepo)
+      searchRepo = Sub.for<ObservationSearchRepository>()
+      iterateObservations = impl.IterateObservations(obsRepoFactory, searchRepo)
+    })
+
+    it('gets the repository for the given event from the factory', async function() {
+
+      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
+      await iterateObservations(mageEvent, {})
+
+      expect(obsRepoFactory.calledOnceWith(mageEvent.id)).to.be.true
+    })
+
+    it('does not query the search repository when no field filter is given', async function() {
+
+      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
+      await iterateObservations(mageEvent, { where: { stateIsAnyOf: [ 'active' ] } })
+
+      searchRepo.didNotReceive().findIdsByFilter(Arg.any(), Arg.any())
+      obsRepo.received(1).iterate(Arg.is((spec: any) => {
+        return spec.where.stateIsAnyOf?.length === 1 && spec.where.ids === undefined
+      }))
+    })
+
+    it('resolves a field filter to observation ids from the search repository and passes them through', async function() {
+
+      const filter = { keyword: 'test' }
+      const ids = [ uniqid(), uniqid() ]
+      searchRepo.findIdsByFilter(filter, mageEvent).resolves(ids)
+      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
+      await iterateObservations(mageEvent, { where: { fieldFilter: filter } })
+
+      obsRepo.received(1).iterate(Arg.is((spec: any) => spec.where.ids === ids))
+    })
+
+    it('preserves the other stream spec fields', async function() {
+
+      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
+      await iterateObservations(mageEvent, { orderBy: { field: 'lastModified', order: -1 }, includeAttachments: true })
+
+      obsRepo.received(1).iterate(Arg.is((spec: any) => {
+        return spec.orderBy.field === 'lastModified' && spec.orderBy.order === -1 && spec.includeAttachments === true
+      }))
+    })
+
+    it('returns the iterable from the repository', async function() {
+
+      const iterable = { async *[Symbol.asyncIterator]() { yield minimalObservationAttrs() } }
+      obsRepo.iterate(Arg.any()).returns(iterable)
+      const result = await iterateObservations(mageEvent, {})
+
+      expect(result).to.equal(iterable)
+    })
   })
 
   describe('getting exports', function() {

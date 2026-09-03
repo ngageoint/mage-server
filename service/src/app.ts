@@ -853,7 +853,7 @@ async function initExportsAppLayer(
     eventPermissions.defaultEventPermissionsService
   );
 
-  const streamObservations = observationsImpl.IterateObservations(
+  const streamObservations = exportsImpl.IterateObservations(
     repos.observations.obsRepoFactory,
     repos.observations.searchRepo
   );

@@ -69,17 +69,6 @@ export function ReadObservations(
   }
 }
 
-export function IterateObservations(
-  obsRepoFactory: ObservationRepositoryForEvent,
-  searchRepo: ObservationSearchRepository
-): api.IterateObservations {
-  return async function findStream(event: MageEvent, findSpec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }> {
-    const repo = await obsRepoFactory(event.id)
-    const ids = await findSearchIds(event, findSpec.where?.fieldFilter, searchRepo)
-    return repo.iterate({ ...findSpec, where: { ...findSpec.where, ids } })
-  }
-}
-
 async function findSearchIds(
   event: MageEvent,
   filter: ObservationFieldFilter | undefined,
