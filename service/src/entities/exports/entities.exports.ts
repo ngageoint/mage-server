@@ -26,14 +26,20 @@ export interface ExportOptions {
   filter?: ExportFilter
 }
 
-export type ExportProjection  = ExportFormProjection[]
+/**
+ * Which forms and fields to include for observations in an export. An
+ * observation form not listed here is omitted entirely. When projection is
+ * undefined, every form and field on the observation is included.
+ */
+export type ExportProjection = ExportFormProjection[]
 
 export interface ExportFormProjection {
   formId: number,
-  fields: ExportFieldProjection[]
+  /** 
+   * Names (FormField.name) of the fields on this form to include; other fields are omitted.
+   */
+  fields: string[]
 }
-
-export type ExportFieldProjection = string
 
 export interface ExportObservationFilter {
   startDate?: Date
