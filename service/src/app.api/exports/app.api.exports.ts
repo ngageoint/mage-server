@@ -5,11 +5,11 @@ import {
   ExportLocationFilter,
   ExportObservationFilter,
   ExportFormat,
+  ExportProjection,
   ExportSummary,
 } from '../../entities/exports/entities.exports'
-import { FindObservationsStreamSpec, FormEntry, ObservationAttrs } from '../../entities/observations/entities.observations'
+import { FindObservationsStreamSpec } from '../../entities/observations/entities.observations'
 import { FindUserLocationsStreamSpec } from '../../entities/locations/entities.locations'
-import { FormId } from '../../entities/events/entities.events.forms'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
@@ -68,19 +68,13 @@ export interface ExportAppLayerPermissionService {
   ensureDeleteMyExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 
-export interface ObservationFieldProjection {
-  includesForm(formId: FormId): boolean
-  includesField(formId: FormId, fieldName: string): boolean
-  formEntries(observation: ObservationAttrs): FormEntry[]
-}
-
 export interface ExportFactory {
   (format: ExportFormat): ExportTransform | null
 }
 
 export interface ObservationExportParams {
   findSpec: FindObservationsStreamSpec
-  fieldProjection: ObservationFieldProjection
+  projection?: ExportProjection
 }
 
 export interface LocationExportParams {

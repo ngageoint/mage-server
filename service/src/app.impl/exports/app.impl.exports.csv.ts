@@ -3,7 +3,7 @@ import turfCentroid from '@turf/centroid'
 import * as json2csv from 'json2csv'
 import stream, { Readable } from 'stream'
 import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams } from '../../app.api/exports/app.api.exports'
-import { IterateObservations } from './app.impl.exports'
+import { IterateObservations, projectedObservationFormFields, projectionIncludesField } from './app.impl.exports'
 import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
 import { AttachmentStore, FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserLocation, UserLocationProperties, UserLocationRepository } from '../../entities/locations/entities.locations'
@@ -67,7 +67,7 @@ export class CsvExportTransform implements ExportTransform {
         const fields = form.fields
           .filter(field => !field.archived)
           .filter(field => field.type !== 'attachment')
-          .filter(field => params.fieldProjection.includesField(form.id, field.name))
+          .filter(field => projectionIncludesField(form.id, field.name, params.projection))
           .sort((a, b) => a.id - b.id)
           .map(field => {
             return {
@@ -120,7 +120,7 @@ export class CsvExportTransform implements ExportTransform {
           endTimestamp = observation.properties.timestamp.getTime()
         }
 
-        const forms = params.fieldProjection.formEntries(observation)
+        const forms = projectedObservationFormFields(observation, params.projection)
         const properties = await this.observationColumns(event, observation, forms, cache, archive)
         stream.push(properties)
         count++

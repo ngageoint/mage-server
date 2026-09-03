@@ -117,11 +117,7 @@ export function CreateExport(
               },
               includeAttachments: observations.includeAttachments
             },
-            fieldProjection: {
-              includesForm: (formId: FormId) => projectionIncludesForm(formId, observations.projection),
-              includesField: (formId: FormId, fieldName: string) => projectionIncludesField(formId, fieldName, observations.projection),
-              formEntries: (observation) => projectedObservationFormFields(observation, observations.projection)
-            }
+            projection: observations.projection
           }
         }
 
@@ -215,26 +211,26 @@ function projectionForForm(formId: FormId, projection: ExportProjection) {
   return projection.find(formProjection => formProjection.formId === formId)
 }
 
-function projectionIncludesForm(formId: FormId, projection?: ExportProjection): boolean {
+export function projectionIncludesForm(formId: FormId, projection?: ExportProjection): boolean {
   if (!projection) return true
   return projectionForForm(formId, projection) !== undefined
 }
 
-function projectionIncludesField(formId: FormId, fieldName: string, projection?: ExportProjection): boolean {
+export function projectionIncludesField(formId: FormId, fieldName: string, projection?: ExportProjection): boolean {
   if (!projection) return true
   const formProjection = projectionForForm(formId, projection)
   return formProjection?.fields.some(fieldProjection => fieldProjection === fieldName) ?? false
 }
 
-function projectedObservationFormFields(observation: ObservationAttrs, projection?: ExportProjection): FormEntry[] {
+export function projectedObservationFormFields(observation: ObservationAttrs, projection?: ExportProjection): FormEntry[] {
   if (!projection) {
     return Array.from(observation.properties.forms)
   }
 
   return observation.properties.forms.filter(formEntry => {
-    return projection.some(formProjection => formEntry.formId === formProjection.formId)
+    return projectionForForm(formEntry.formId, projection) !== undefined
   }).map(formEntry => {
-    const formProjection = projection.find(formProjection => formEntry.formId === formProjection.formId)
+    const formProjection = projectionForForm(formEntry.formId, projection)
     const projectedProperties: any = Object.fromEntries(
       Object.entries(formEntry).filter(([key]) => formProjection?.fields.includes(key))
     )

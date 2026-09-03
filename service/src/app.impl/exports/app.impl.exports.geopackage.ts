@@ -4,9 +4,9 @@ import stream, { Readable } from 'stream'
 import os from 'os'
 import moment from 'moment'
 import { Archiver } from 'archiver'
-import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams, ObservationFieldProjection } from '../../app.api/exports/app.api.exports'
-import { IterateObservations } from './app.impl.exports'
-import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
+import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams } from '../../app.api/exports/app.api.exports'
+import { IterateObservations, projectedObservationFormFields, projectionIncludesField, projectionIncludesForm } from './app.impl.exports'
+import { ExportItemSummary, ExportProjection, ExportSummary } from '../../entities/exports/entities.exports'
 import { Attachment, AttachmentStore, Observation } from '../../entities/observations/entities.observations'
 import { UserLocationRepository } from '../../entities/locations/entities.locations'
 import { MageEvent } from '../../entities/events/entities.events'
@@ -76,8 +76,8 @@ export class GeoPackageExportTransform implements ExportTransform {
     params: ObservationExportParams,
     geopackage: GeoPackage,
   ): Promise<ExportItemSummary> {
-      await addFormDataToGeoPackage(geopackage, event, params.fieldProjection)
-      await createFormAttributeTables(geopackage, event, params.fieldProjection)
+      await addFormDataToGeoPackage(geopackage, event, params.projection)
+      await createFormAttributeTables(geopackage, event, params.projection)
       await createObservationTable(geopackage)
       const styles = await this.createObservationFeatureTableStyles(geopackage, event)
       return this.addObservationsToGeoPackage(geopackage, event, styles, params)
@@ -108,7 +108,7 @@ export class GeoPackageExportTransform implements ExportTransform {
           endTimestamp = observation.properties.timestamp.getTime()
         }
 
-        const forms = params.fieldProjection.formEntries(observation)
+        const forms = projectedObservationFormFields(observation, params.projection)
 
         if (!forms.length) {
           break
@@ -439,7 +439,7 @@ async function createGeoPackageFile(): Promise<string> {
 async function addFormDataToGeoPackage(
   geopackage: GeoPackage,
   event: MageEvent,
-  projection: ObservationFieldProjection
+  projection: ExportProjection | undefined
 ): Promise<void> {
   const columns = [{
     name: 'formName',
@@ -458,7 +458,7 @@ async function addFormDataToGeoPackage(
     dataType: 'TEXT'
   }]
 
-  const forms = event.forms?.filter(form => projection.includesForm(form.id))
+  const forms = event.forms?.filter(form => projectionIncludesForm(form.id, projection))
 
   if (forms.length) {
     await geopackage.createAttributesTableFromProperties('Forms', columns)
@@ -478,14 +478,14 @@ async function addFormDataToGeoPackage(
 async function createFormAttributeTables(
   geopackage: GeoPackage,
   event: MageEvent,
-  projection: ObservationFieldProjection
+  projection: ExportProjection | undefined
 ): Promise<void> {
-  const forms = event.forms?.filter(form => projection.includesForm(form.id))
+  const forms = event.forms?.filter(form => projectionIncludesForm(form.id, projection))
 
   for (const form of forms) {
     const columns: any[] = form.fields
       .filter(form => !form.archived)
-      .filter(field => projection.includesField(form.id, field.name))
+      .filter(field => projectionIncludesField(form.id, field.name, projection))
       .map(field => {
         return {
           dataColumn: {

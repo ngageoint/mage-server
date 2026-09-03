@@ -1,5 +1,5 @@
 import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams } from '../../app.api/exports/app.api.exports'
-import { IterateObservations } from './app.impl.exports'
+import { IterateObservations, projectedObservationFormFields } from './app.impl.exports'
 import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
 import { Attachment, AttachmentStore, FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserLocation, UserLocationRepository } from '../../entities/locations/entities.locations'
@@ -91,7 +91,7 @@ export class KmlExportTransform implements ExportTransform {
           endTimestamp = observation.properties.timestamp.getTime()
         }
 
-        const forms = params.fieldProjection.formEntries(observation)
+        const forms = projectedObservationFormFields(observation, params.projection)
         stream.write(observationPlacemark(observation, forms, event))
 
         observation.attachments.forEach(async attachment => {

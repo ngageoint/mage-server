@@ -2,7 +2,7 @@ import archiver, { Archiver } from 'archiver'
 import turfCentroid from '@turf/centroid'
 import stream, { Readable } from 'stream'
 import { ExportParams, ExportTransform, LocationExportParams, ObservationExportParams } from '../../app.api/exports/app.api.exports'
-import { IterateObservations } from './app.impl.exports'
+import { IterateObservations, projectedObservationFormFields } from './app.impl.exports'
 import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
 import { Attachment, AttachmentStore, FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserLocationRepository } from '../../entities/locations/entities.locations'
@@ -83,7 +83,7 @@ export class GeoJsonExportTransform implements ExportTransform {
           stream.write(',')
         }
 
-        const forms = params.fieldProjection.formEntries(observation)
+        const forms = projectedObservationFormFields(observation, params.projection)
         this.mapObservationProperties(event, observation, forms, archive)
 
         if (observation.userId) {
