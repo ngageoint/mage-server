@@ -20,7 +20,7 @@ import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import { Event } from 'mage-web-app/entities/event/entities.event';
 import { Observable } from 'rxjs';
-import { layerIconName } from '../../../entities/layer/layer';
+import { layerIconName } from '../../../entities/layer/entities.layer';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 interface UrlLayer {

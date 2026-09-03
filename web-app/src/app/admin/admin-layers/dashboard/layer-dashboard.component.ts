@@ -6,7 +6,7 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import { AdminToastService } from '../../services/admin-toast.service';
-import { layerIconName } from '../../../entities/layer/layer';
+import { layerIconName } from '../../../entities/layer/entities.layer';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({

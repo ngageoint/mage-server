@@ -1,5 +1,5 @@
 import { Style } from "../map/entities.map"
-import { Layer } from "../layer/layer"
+import { Layer } from "../layer/entities.layer"
 import { Team } from "../team/entities.team"
 
 export type EventId = number

@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 import { Team } from '@ngageoint/mage.web-core-lib/team'
 import { Observable } from 'rxjs';
-import { Layer } from 'mage-web-app/entities/layer/layer';
+import { Layer } from 'mage-web-app/entities/layer/entities.layer';
 import { Event } from 'mage-web-app/entities/event/entities.event';
 import { User } from '@ngageoint/mage.web-core-lib/user';
 

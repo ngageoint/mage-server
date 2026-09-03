@@ -29,7 +29,7 @@ import { User } from "@ngageoint/mage.web-core-lib/user";
 import { MemberPage, filterChanges } from "./event.types";
 import { Filter } from "../filter/filter.types";
 import { Event, Form, FormField } from "../entities/event/entities.event";
-import { Layer } from "../entities/layer/layer";
+import { Layer } from "../entities/layer/entities.layer";
 import { Team } from "../entities/team/entities.team";
 import { Attachment, Observation } from "../entities/observation/entities.observation";
 
