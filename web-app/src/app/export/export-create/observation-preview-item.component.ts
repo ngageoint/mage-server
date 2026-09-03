@@ -1,5 +1,4 @@
 import { Component, computed, input } from '@angular/core'
-import { MatListModule } from '@angular/material/list'
 import { EventService } from '../../event/event.service'
 import { Observation } from '../../entities/observation/entities.observation'
 import { Event, Form, FormField } from '../../entities/event/entities.event'
@@ -18,7 +17,7 @@ interface FeedField {
   templateUrl: './observation-preview-item.component.html',
   styleUrls: ['./observation-preview-item.component.scss'],
   standalone: true,
-  imports: [MatListModule, GeometryModule, MomentModule]
+  imports: [GeometryModule, MomentModule]
 })
 export class ObservationPreviewItemComponent {
   event = input<Event>()

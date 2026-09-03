@@ -1,6 +1,8 @@
-mat-list-item.preview-list-item {
-  height: auto;
+.preview-list-item {
+  display: flex;
   align-items: flex-start;
+  gap: 16px;
+  padding: 10px 16px;
 }
 
 .preview-item-content {
@@ -8,7 +10,6 @@ mat-list-item.preview-list-item {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-  padding: 8px 0;
 }
 
 .preview-item-overline {
@@ -32,5 +33,9 @@ mat-list-item.preview-list-item {
 }
 
 img {
-  max-height: 24px;
+  flex: 0 0 auto;
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }

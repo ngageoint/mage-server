@@ -1,5 +1,5 @@
-<mat-list-item class="preview-list-item">
-  <img matListItemIcon [src]="observation()?.style?.iconUrl" />
+<div class="preview-list-item">
+  <img [src]="observation()?.style?.iconUrl" />
   <div class="preview-item-content">
     <div class="preview-item-overline">
       <span>{{observation()?.user?.displayName}}</span>
@@ -31,4 +31,4 @@
       </div>
     }
   </div>
-</mat-list-item>
+</div>
