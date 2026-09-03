@@ -1,9 +1,7 @@
 import {
   Component,
   OnInit,
-  ViewChild,
   OnDestroy,
-  AfterViewInit,
   signal
 } from '@angular/core';
 import { Subject, lastValueFrom } from 'rxjs';
@@ -11,7 +9,6 @@ import { takeUntil } from 'rxjs/operators';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 
-import { ColorPickerComponent } from '../../../../app/color-picker/color-picker.component';
 import { SettingsService } from '../settings.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
@@ -43,7 +40,7 @@ import { ColorPickerModule } from '../../../color-picker/color-picker.module';
     ColorPickerModule
   ]
 })
-export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SecurityBannerComponent implements OnInit, OnDestroy {
   readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Banner', icon: 'page_header' }];
 
   readonly showHeader = signal(false);
@@ -56,14 +53,7 @@ export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy
   readonly footerBackgroundColor = signal('#FFFFFF');
   readonly isDirty = signal(false);
 
-  @ViewChild('headerTextColorPicker') headerTextColorPicker?: ColorPickerComponent;
-  @ViewChild('headerBackgroundColorPicker') headerBackgroundColorPicker?: ColorPickerComponent;
-  @ViewChild('footerTextColorPicker') footerTextColorPicker?: ColorPickerComponent;
-  @ViewChild('footerBackgroundColorPicker') footerBackgroundColorPicker?: ColorPickerComponent;
-
   private destroy$ = new Subject<void>();
-  private viewReady = false;
-  private settingsLoaded = false;
 
   constructor(
     private settingsService: SettingsService,
@@ -80,7 +70,7 @@ export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result: any) => {
-          const nextBanner = result?.settings ?? result?.banner?.settings;
+          const nextBanner = result?.settings;
           if (nextBanner) {
             this.showHeader.set(nextBanner.showHeader ?? false);
             this.headerText.set(nextBanner.headerText ?? '');
@@ -91,18 +81,11 @@ export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy
             this.footerTextColor.set(nextBanner.footerTextColor ?? '#000000');
             this.footerBackgroundColor.set(nextBanner.footerBackgroundColor ?? '#FFFFFF');
           }
-          this.settingsLoaded = true;
-          this.tryInitPickers();
         },
         error: (err) => {
           console.log(err);
         }
       });
-  }
-
-  ngAfterViewInit(): void {
-    this.viewReady = true;
-    this.tryInitPickers();
   }
 
   setDirty(status: boolean): void {
@@ -143,48 +126,5 @@ export class SecurityBannerComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private tryInitPickers(): void {
-    if (!this.viewReady || !this.settingsLoaded) return;
-
-    this.destroy$.next();
-
-    this.initPicker(this.headerTextColorPicker, this.headerTextColor(), (c) => {
-      this.headerTextColor.set(c);
-      this.setDirty(true);
-    });
-
-    this.initPicker(this.headerBackgroundColorPicker, this.headerBackgroundColor(), (c) => {
-      this.headerBackgroundColor.set(c);
-      this.setDirty(true);
-    });
-
-    this.initPicker(this.footerTextColorPicker, this.footerTextColor(), (c) => {
-      this.footerTextColor.set(c);
-      this.setDirty(true);
-    });
-
-    this.initPicker(this.footerBackgroundColorPicker, this.footerBackgroundColor(), (c) => {
-      this.footerBackgroundColor.set(c);
-      this.setDirty(true);
-    });
-  }
-
-  private initPicker(
-    picker: ColorPickerComponent | undefined,
-    initialHex: string,
-    onChange: (hex: string) => void
-  ): void {
-    if (!picker) return;
-
-    picker.hexColor = initialHex;
-    picker.updateColor();
-
-    picker.onColorChanged
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((event: any) => {
-        onChange(event.color);
-      });
   }
 }

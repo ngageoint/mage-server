@@ -9,7 +9,7 @@
       <mat-form-field appearance="fill">
         <mat-label>MAGE Administrator E-Mail</mat-label>
         <mat-icon matPrefix>mail</mat-icon>
-        <input matInput type="email" appEmail [ngModel]="email()" (ngModelChange)="email.set($event)" #emailModel="ngModel" (input)="setDirty(true)" />
+        <input matInput type="email" appEmail [ngModel]="email()" (ngModelChange)="email.set($event); setDirty(true)" #emailModel="ngModel" />
         @if (email()) {
         <button matSuffix matIconButton type="button"
           (click)="email.set(''); setDirty(true)">
@@ -24,8 +24,8 @@
       <mat-form-field appearance="fill">
         <mat-label>MAGE Administrator Phone</mat-label>
         <mat-icon matPrefix>phone</mat-icon>
-        <input matInput type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event)" #phoneModel="ngModel"
-          pattern="^(?=(?:.*\d){7,})[+]?[0-9()\-.\s]+$" (input)="setDirty(true)" />
+        <input matInput type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event); setDirty(true)" #phoneModel="ngModel"
+          pattern="^(?=(?:.*\d){7,})[+]?[0-9()\-.\s]+$" />
         @if (phone()) {
           <button matSuffix matIconButton type="button"
           (click)="phone.set(''); setDirty(true)">
@@ -38,7 +38,7 @@
     </mat-form-field>
 
       <div class="contact-toggle">
-        <mat-checkbox [ngModel]="showDevContact()" (ngModelChange)="showDevContact.set($event)" (change)="setDirty(true)">
+        <mat-checkbox [ngModel]="showDevContact()" (ngModelChange)="showDevContact.set($event); setDirty(true)">
           Show NGA Contact Information on About page
         </mat-checkbox>
 

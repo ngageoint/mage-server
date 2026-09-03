@@ -7,13 +7,13 @@
       </div>
 
       <div class="show-section">
-        <mat-slide-toggle [ngModel]="show()" (ngModelChange)="show.set($event)" (change)="setDirty(true)">Show Disclaimer</mat-slide-toggle>
+        <mat-slide-toggle [ngModel]="show()" (ngModelChange)="show.set($event); setDirty(true)">Show Disclaimer</mat-slide-toggle>
       </div>
 
       <mat-form-field appearance="fill">
         <mat-label>Disclaimer Title</mat-label>
-        <input matInput [ngModel]="title()" (ngModelChange)="title.set($event)" #titleModel="ngModel"
-          [required]="show()" [disabled]="!show()" (input)="setDirty(true)" />
+        <input matInput [ngModel]="title()" (ngModelChange)="title.set($event); setDirty(true)" #titleModel="ngModel"
+          [required]="show()" [disabled]="!show()" />
         @if (titleModel.invalid) {
           <mat-error>Disclaimer title is required</mat-error>
         }
@@ -21,8 +21,8 @@
 
       <mat-form-field appearance="fill" subscriptSizing="dynamic">
         <mat-label>Disclaimer Text</mat-label>
-        <textarea matInput [ngModel]="text()" (ngModelChange)="text.set($event)" #textModel="ngModel"
-          [required]="show()" [disabled]="!show()" rows="6" (input)="setDirty(true)"></textarea>
+        <textarea matInput [ngModel]="text()" (ngModelChange)="text.set($event); setDirty(true)" #textModel="ngModel"
+          [required]="show()" [disabled]="!show()" rows="6"></textarea>
         @if (textModel.invalid) {
           <mat-error>Disclaimer text is required</mat-error>
         }
