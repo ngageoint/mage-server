@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { Layer } from 'mage-web-app/entities/layer/entities.layer';
-import { Event as MageEvent } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminEventsService } from '../../services/admin-events.service';

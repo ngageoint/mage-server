@@ -9,7 +9,7 @@ import { FormDetailsComponent } from './form-details.component';
 import { AdminEventsService } from '../../../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
-import { Event as MageEvent } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 
 describe('FormDetailsComponent', () => {
   let component: FormDetailsComponent;

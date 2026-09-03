@@ -83,7 +83,7 @@ export type Form = {
   style?: FormStyle
 }
 
-export type Event = {
+export type MageEvent = {
   id: EventId
   name: string
   description?: string

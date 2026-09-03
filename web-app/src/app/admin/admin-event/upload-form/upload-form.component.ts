@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminEventsService } from '../../services/admin-events.service';
-import { Event as MageEvent } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 
 /**
  * Dialog component for importing a form from a previously exported MAGE form archive (.zip).

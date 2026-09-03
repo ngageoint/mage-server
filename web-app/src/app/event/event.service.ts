@@ -28,7 +28,7 @@ import { FeedService } from "@ngageoint/mage.web-core-lib/feed";
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import { MemberPage, filterChanges } from "./event.types";
 import { Filter } from "../filter/filter.types";
-import { Event, Form, FormField } from "../entities/event/entities.event";
+import { MageEvent, Form, FormField } from "../entities/event/entities.event";
 import { Layer } from "../entities/layer/entities.layer";
 import { Team } from "../entities/team/entities.team";
 import { Attachment, Observation } from "../entities/observation/entities.observation";
@@ -514,7 +514,7 @@ export class EventService {
     return this.getFormsForEvent(event, options);
   }
 
-  getFormsForEvent(event: Event, options?: any) {
+  getFormsForEvent(event: MageEvent, options?: any) {
     options = options || {};
     let forms = event.forms;
     if (options.archived === false) {
@@ -706,7 +706,7 @@ export class EventService {
     });
   }
 
-  parseObservations(event: Event, observations: Observation[]): void {
+  parseObservations(event: MageEvent, observations: Observation[]): void {
     const added = [];
     const updated = [];
     const removed = [];
@@ -763,7 +763,7 @@ export class EventService {
     });
   }
 
-  parseLocations(event: Event, userLocations: any): void {
+  parseLocations(event: MageEvent, userLocations: any): void {
     const added = [];
     const updated = [];
 
@@ -839,7 +839,7 @@ export class EventService {
     });
   }
 
-  getNextFeed(event: Event) {
+  getNextFeed(event: MageEvent) {
     const now = Date.now();
     const feedsInSyncPriorityOrder = _.sortBy(this.feedSyncStates, (feed) => {
       return feed.lastSync;
@@ -857,7 +857,7 @@ export class EventService {
     return this.eventsById[event.id].feedsById[nextFeed.id];
   }
 
-  getFeedFetchDelay(event: Event) {
+  getFeedFetchDelay(event: MageEvent) {
     const now = Date.now();
     const delays = this.feedSyncStates.map((syncState) => {
       const feed = this.eventsById[event.id].feedsById[syncState.id];

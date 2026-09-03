@@ -22,7 +22,7 @@ import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.
 import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { EventService } from '../../../event/event.service';
-import { Event } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -242,13 +242,13 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
           {
             key: 'name',
             label: 'Event Name',
-            displayFunction: (event: Event) => event.name || 'Unnamed Event',
+            displayFunction: (event: MageEvent) => event.name || 'Unnamed Event',
             width: '50%'
           },
           {
             key: 'description',
             label: 'Description',
-            displayFunction: (event: Event) => event.description || '',
+            displayFunction: (event: MageEvent) => event.description || '',
             width: '50%'
           }
         ] as SearchModalColumn[]

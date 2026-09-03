@@ -20,7 +20,7 @@ import {
   Interval,
   IntervalOptions
 } from './filter.types';
-import { Event, Form } from '../entities/event/entities.event';
+import { MageEvent, Form } from '../entities/event/entities.event';
 import { Team } from '../entities/team/entities.team';
 
 @Component({
@@ -33,7 +33,7 @@ import { Team } from '../entities/team/entities.team';
 export class FilterComponent implements OnInit {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  event: Event;
+  event: MageEvent;
   selectedTeams: Team[] = [];
 
   eventUsers: User[] = [];
@@ -73,7 +73,7 @@ export class FilterComponent implements OnInit {
     this.isLoading = true;
 
     try {
-      const event: Event = this.filterService.getEvent();
+      const event: MageEvent = this.filterService.getEvent();
       this.event = event;
 
       const teamIds = this.localStorageService.getTeams() || [];
@@ -133,7 +133,7 @@ export class FilterComponent implements OnInit {
     }
   }
 
-  async getUsers(event: Event): Promise<User[]> {
+  async getUsers(event: MageEvent): Promise<User[]> {
     try {
       const users = await firstValueFrom(this.eventService.getMembers(event));
       return users;

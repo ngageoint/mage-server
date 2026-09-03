@@ -28,7 +28,7 @@ import { ObservationService } from 'src/app/observation/observation.service';
 import { SessionService } from 'src/app/http/session.service';
 import { LocationService } from 'src/app/user/location/location.service';
 import { ExportFormat, FormProjection } from '../entities.export';
-import { Event } from 'src/app/entities/event/entities.event';
+import { MageEvent } from 'src/app/entities/event/entities.event';
 
 describe('ExportCreateComponent', () => {
   let component: ExportCreateComponent;
@@ -46,7 +46,7 @@ describe('ExportCreateComponent', () => {
         { id: 2, name: 'field2', title: 'Field 2', type: 'text', archived: false }
       ]
     }]
-  } as unknown as Event;
+  } as unknown as MageEvent;
 
   const exportService = jasmine.createSpyObj('ExportService', ['export']);
   const eventService = jasmine.createSpyObj('EventService', ['query']);

@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminEventsService } from '../../services/admin-events.service';
-import { Event } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 
 /**
  * Dialog component for creating or editing events.
@@ -21,7 +21,7 @@ export class CreateEventDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<CreateEventDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { event: Partial<Event> },
+    @Inject(MAT_DIALOG_DATA) public data: { event: Partial<MageEvent> },
     private fb: FormBuilder,
     private eventsService: AdminEventsService
   ) {

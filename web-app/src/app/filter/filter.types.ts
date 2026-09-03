@@ -1,6 +1,6 @@
 import { User } from "@ngageoint/mage.web-core-lib/user"
 import { filterChanges } from "../event/event.types"
-import { Event, Form } from "../entities/event/entities.event"
+import { MageEvent, Form } from "../entities/event/entities.event"
 import { Team } from "../entities/team/entities.team"
 
 export type FilterChoice = {
@@ -43,7 +43,7 @@ export type Interval = {
 }
 
 export type Filter = {
-  event?: Event
+  event?: MageEvent
   teams?: Team[]
   users?: User[]
   forms?: Form[]

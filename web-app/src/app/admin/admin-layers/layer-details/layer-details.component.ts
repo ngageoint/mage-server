@@ -18,7 +18,7 @@ import {
 } from '../../search-modal/search-modal.component';
 import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
-import { Event } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { Observable } from 'rxjs';
 import { layerIconName } from '../../../entities/layer/entities.layer';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -72,8 +72,8 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   breadcrumbActions!: TemplateRef<unknown>;
 
   layer?: Layer;
-  layerEvents: Event[] = [];
-  nonLayerEvents: Event[] = [];
+  layerEvents: MageEvent[] = [];
+  nonLayerEvents: MageEvent[] = [];
   urlLayers: UrlLayer[] = [];
   loading = true;
   error: string | null = null;
@@ -81,9 +81,9 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   loadingEvents = true;
   eventsPageIndex = 0;
   eventsPageSize = 5;
-  eventsPage: PagedResult<Event> = { items: [], totalCount: 0 };
+  eventsPage: PagedResult<MageEvent> = { items: [], totalCount: 0 };
   eventSearchTerm = '';
-  eventsDataSource = new MatTableDataSource<Event>();
+  eventsDataSource = new MatTableDataSource<MageEvent>();
   pageSizeOptions = [5, 10, 25];
 
   upload: UploadItem = {};
@@ -290,13 +290,13 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
           {
             key: 'name',
             label: 'Event Name',
-            displayFunction: (event: Event) => event.name || 'Unnamed Event',
+            displayFunction: (event: MageEvent) => event.name || 'Unnamed Event',
             width: '50%'
           },
           {
             key: 'description',
             label: 'Description',
-            displayFunction: (event: Event) => event.description || '',
+            displayFunction: (event: MageEvent) => event.description || '',
             width: '50%'
           }
         ] as SearchModalColumn[]
@@ -321,7 +321,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  removeEventFromLayer(event: Event, mouseEvent?: MouseEvent): void {
+  removeEventFromLayer(event: MageEvent, mouseEvent?: MouseEvent): void {
     if (!this.layer?.id) return;
     mouseEvent?.stopPropagation();
 

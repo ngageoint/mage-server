@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
 import { AdminEventsService } from '../../../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
-import { Event as MageEvent } from 'mage-web-app/entities/event/entities.event';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import {

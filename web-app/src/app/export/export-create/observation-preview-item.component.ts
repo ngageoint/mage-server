@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core'
 import { EventService } from '../../event/event.service'
 import { Observation } from '../../entities/observation/entities.observation'
-import { Event, Form, FormField } from '../../entities/event/entities.event'
+import { MageEvent, Form, FormField } from '../../entities/event/entities.event'
 import { GeometryModule } from '../../geometry/geometry.module'
 import { MomentModule } from '../../moment/moment.module'
 
@@ -20,7 +20,7 @@ interface FeedField {
   imports: [GeometryModule, MomentModule]
 })
 export class ObservationPreviewItemComponent {
-  event = input<Event>()
+  event = input<MageEvent>()
   observation = input<Observation>()
 
   private observationForms = computed<ObservationForm[]>(() => this.buildObservationForms())

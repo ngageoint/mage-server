@@ -4,7 +4,7 @@ import { ExportService } from '../export.service';
 import moment from 'moment';
 import { FilterService } from 'src/app/filter/filter.service';
 import { FilterChoice, INTERVAL_CHOICES } from 'src/app/filter/filter.types';
-import { Event as FilterEvent } from 'src/app/entities/event/entities.event';
+import { MageEvent as FilterEvent } from 'src/app/entities/event/entities.event';
 import { Export, ExportFormat, ExportFormProjection, ExportRequest, FormProjection } from '../entities.export';
 import { ObservationFieldFilter } from '../../entities/observation/filter/entities.observation.filter'
 import { MemberFilterSelection } from '../../event/event-member-filter.component';

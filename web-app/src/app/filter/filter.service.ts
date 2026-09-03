@@ -12,7 +12,7 @@ import {
   Filter,
   SearchInterval,
 } from "./filter.types";
-import { Event, Form } from "../entities/event/entities.event";
+import { MageEvent, Form } from "../entities/event/entities.event";
 import { Team, TeamById } from "../entities/team/entities.team";
 import { Observation, FormProperties } from "../entities/observation/entities.observation";
 import { filterChanges } from "../event/event.types";
@@ -23,7 +23,7 @@ import { SessionService } from "mage-web-app/http/session.service";
 })
 
 export class FilterService {
-  event: Event = null;
+  event: MageEvent = null;
   teamsById: TeamById = {};
   users: User[] = [];
   forms: Form[] = [];
@@ -31,14 +31,14 @@ export class FilterService {
   interval: Interval = {};
   actionFilter: string = "";
 
-  private eventSubject = new BehaviorSubject<Event | null>(null);
+  private eventSubject = new BehaviorSubject<MageEvent | null>(null);
   private teamsSubject = new BehaviorSubject<Team[]>([]);
   private usersSubject = new BehaviorSubject<User[]>([]);
   private formsSubject = new BehaviorSubject<Form[]>([]);
   private intervalSubject = new BehaviorSubject<Interval>(this.interval);
   private actionFilterSubject = new BehaviorSubject<string>("");
 
-  readonly event$: Observable<Event | null> = this.eventSubject.asObservable();
+  readonly event$: Observable<MageEvent | null> = this.eventSubject.asObservable();
   readonly teams$: Observable<Team[]> = this.teamsSubject.asObservable();
   readonly users$: Observable<User[]> = this.usersSubject.asObservable();
   readonly forms$: Observable<Form[]> = this.formsSubject.asObservable();
@@ -114,7 +114,7 @@ export class FilterService {
    * @return {filterChanges} a List of events added/removed from the list
    */
 
-  setEvent(newEvent: Event): filterChanges {
+  setEvent(newEvent: MageEvent): filterChanges {
     if (!newEvent && this.event) {
       const removed = [this.event];
       this.event = null;
@@ -144,7 +144,7 @@ export class FilterService {
     }
   }
 
-  getEvent(): Event {
+  getEvent(): MageEvent {
     return this.event;
   }
 
