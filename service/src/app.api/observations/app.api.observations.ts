@@ -94,7 +94,7 @@ export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important' 
   noGeometry?: boolean
 }
 
-export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'> & {
+export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator' | 'processingHook' | 'stagedContentId' | 'processingRetryCount'> & {
   contentStored: boolean
 }
 
@@ -167,7 +167,7 @@ export function exoObservationFor(
 }
 
 export function exoAttachmentFor(from: Attachment): ExoAttachment {
-  const { thumbnails, contentLocator, ...exo } = from
+  const { thumbnails, contentLocator, processingHook, stagedContentId, processingRetryCount, ...exo } = from
   return { ...exo, contentStored: !!contentLocator }
 }
 

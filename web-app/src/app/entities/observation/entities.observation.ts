@@ -72,8 +72,5 @@ export type Attachment = {
   url?: string
   processingStatus?: AttachmentProcessingStatus
   processingMessage?: string
-  processingHook?: string
-  stagedContentId?: string
-  processingRetryCount?: number
   action?: AttachmentAction
 }
