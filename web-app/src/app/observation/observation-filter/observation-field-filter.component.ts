@@ -4,109 +4,20 @@ import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/m
 import { MatDatepicker, MatDatepickerInputEvent } from '@angular/material/datepicker'
 import { Observable, Subject, map, startWith, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs'
 import { ObservationFieldFilter, SimpleCondition } from '../../entities/observation/filter/entities.observation.filter'
-
-type FilterType = 'keyword' | 'condition'
-type ConditionState = 'field' | 'comparator' | 'value'
-
-interface FieldOption {
-  type: 'field'
-  display: string
-  field: any
-  formId: number
-  formName: string
-  formColor: string
-}
-
-interface ComparatorOption {
-  type: 'comparator'
-  display: string
-  operator: string
-}
-
-interface ValueOption {
-  type: 'value'
-  display: string
-  value: any
-}
-
-type AutocompleteOption = FieldOption | ComparatorOption | ValueOption
-
-interface FormGroup {
-  formName: string
-  formColor: string
-  fields: FieldOption[]
-}
-
-export interface FilterCondition {
-  field: any
-  formId: number
-  formName: string
-  formColor: string
-  operator: string
-  value?: any
-  displayValue?: string
-  condition: SimpleCondition
-}
-
-export interface FilterConditionGroup {
-  conditions: FilterCondition[]
-}
-
-const EXCLUDED_FIELD_TYPES = ['attachment', 'geometry', 'hidden', 'password']
-
-interface Comparator {
-  operator: string
-  display: string
-}
-
-const TEXT_COMPARATORS: Comparator[] = [
-  { operator: '=', display: 'is' },
-  { operator: '!=', display: 'is not' },
-  { operator: 'LIKE', display: 'contains' },
-  { operator: 'IS NULL', display: 'is empty' },
-  { operator: 'IS NOT NULL', display: 'is not empty' },
-]
-
-const NUMBER_COMPARATORS: Comparator[] = [
-  { operator: '=', display: 'is' },
-  { operator: '!=', display: 'is not' },
-  { operator: '>', display: '>' },
-  { operator: '>=', display: '>=' },
-  { operator: '<', display: '<' },
-  { operator: '<=', display: '<=' },
-  { operator: 'IS NULL', display: 'is empty' },
-  { operator: 'IS NOT NULL', display: 'is not empty' },
-]
-
-const DATE_COMPARATORS: Comparator[] = NUMBER_COMPARATORS
-
-const CHOICE_COMPARATORS: Comparator[] = [
-  { operator: '=', display: 'is' },
-  { operator: '!=', display: 'is not' },
-  { operator: 'IS NULL', display: 'is empty' },
-  { operator: 'IS NOT NULL', display: 'is not empty' },
-]
-
-const CHECKBOX_COMPARATORS: Comparator[] = [
-  { operator: '=', display: 'is' },
-  { operator: 'IS NULL', display: 'is empty' },
-  { operator: 'IS NOT NULL', display: 'is not empty' },
-]
-
-const COMPARATORS_BY_TYPE: Record<string, Comparator[]> = {
-  textfield: TEXT_COMPARATORS,
-  textarea: TEXT_COMPARATORS,
-  email: TEXT_COMPARATORS,
-  numberfield: NUMBER_COMPARATORS,
-  date: DATE_COMPARATORS,
-  dropdown: CHOICE_COMPARATORS,
-  radio: CHOICE_COMPARATORS,
-  multiselectdropdown: CHOICE_COMPARATORS,
-  checkbox: CHECKBOX_COMPARATORS,
-}
-
-const NULL_OPERATORS = ['IS NULL', 'IS NOT NULL']
-const CHOICE_FIELD_TYPES = ['dropdown', 'multiselectdropdown', 'radio']
+import {
+  AutocompleteOption,
+  buildFieldGroups,
+  CHOICE_COMPARATORS,
+  CHOICE_FIELD_TYPES,
+  COMPARATORS_BY_TYPE,
+  ConditionState,
+  FilterCondition,
+  FilterConditionGroup,
+  FormGroup,
+  NULL_OPERATORS,
+  TEXT_COMPARATORS,
+  ValueOption,
+} from './observation-field-filter.types'
 
 @Component({
   selector: 'observation-field-filter',
@@ -117,14 +28,12 @@ const CHOICE_FIELD_TYPES = ['dropdown', 'multiselectdropdown', 'radio']
 export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
   @Input() forms: any[] = []
   @Input() filter: ObservationFieldFilter | null = null
-  @Input() filterMode?: 'keyword' | 'condition'
   @Output() filterChanged = new EventEmitter<ObservationFieldFilter>()
 
   @ViewChild('filterInput') filterInput: ElementRef<HTMLInputElement>
   @ViewChild(MatAutocompleteTrigger) autoTrigger: MatAutocompleteTrigger
   @ViewChild('filterDatePicker') datePicker: MatDatepicker<any>
 
-  filterType: FilterType = 'keyword'
   keywordControl = new FormControl('')
   inputControl = new FormControl('')
   conditionGroups: FilterConditionGroup[] = []
@@ -164,13 +73,9 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     return (this.inputControl.value || '').toString().trim().length > 0
   }
 
-  get hasPendingInput(): boolean {
-    return this.filterType === 'condition' && this.conditionState !== 'field'
-  }
-
   get inputPlaceholder(): string {
     switch (this.conditionState) {
-      case 'field': return 'Search fields...'
+      case 'field': return 'Add Condition...'
       case 'comparator': return 'Select operator...'
       case 'value': return 'Enter value...'
     }
@@ -178,15 +83,11 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.forms) {
-      this.buildFieldOptions()
+      this.allFieldGroups = buildFieldGroups(this.forms)
       this.conditionGroups = []
       this.keywordControl.setValue('')
       this.resetState()
       this.setupKeywordSubscription()
-    }
-
-    if (changes.filterMode) {
-      this.filterType = this.filterMode ?? 'keyword'
     }
 
     if (changes.filter) {
@@ -197,22 +98,6 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next()
     this.destroy$.complete()
-  }
-
-  toggleMode(): void {
-    this.onModeChanged(this.filterType === 'keyword' ? 'condition' : 'keyword')
-  }
-
-  onModeChanged(mode: FilterType): void {
-    this.filterType = mode
-    if (mode === 'keyword') {
-      this.conditionGroups = []
-      this.resetState()
-      this.filterChanged.emit({ keyword: this.keywordControl.value?.trim() || '' })
-    } else {
-      this.keywordControl.setValue('')
-      this.emitConditions()
-    }
   }
 
   onOptionSelected(event: MatAutocompleteSelectedEvent): void {
@@ -355,32 +240,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     if (group.conditions.length === 0) {
       this.conditionGroups.splice(groupIndex, 1)
     }
-    this.emitConditions()
-  }
-
-  private buildFieldOptions(): void {
-    this.allFieldGroups = (this.forms || [])
-      .filter(form => form.archived !== true)
-      .map(form => {
-        const fields = (form.fields || [])
-          .filter((field: any) => field.archived !== true)
-          .filter((field: any) => !EXCLUDED_FIELD_TYPES.includes(field.type))
-          .map((field: any) => {
-            return {
-              type: 'field',
-              display: field.title,
-              field,
-              formId: form.id,
-              formName: form.name,
-              formColor: form.color,
-            }
-          }
-        )
-
-        return { formName: form.name, formColor: form.color, fields }
-      }
-    )
-    .filter(form => form.fields.length > 0)
+    this.emitFilter()
   }
 
   private clearInput(): void {
@@ -456,12 +316,12 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
         if (this.selectedField?.type === 'checkbox') {
           return ['true', 'false']
             .filter(value => value.includes(q))
-            .map(value => ({ type: 'value', display: value, value: value === 'true'}))
+            .map(value => ({ type: 'value' as const, display: value, value: value === 'true' }))
         }
         if (CHOICE_FIELD_TYPES.includes(this.selectedField?.type) && this.selectedField?.choices) {
           return this.selectedField.choices
             .filter((choice: any) => !choice.blank && choice.title.toLowerCase().includes(q))
-            .map((choice: any) => ({ type: 'value', display: choice.title, value: choice.title}))
+            .map((choice: any) => ({ type: 'value' as const, display: choice.title, value: choice.title }))
         }
         return []
       }
@@ -507,7 +367,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
       condition,
     })
 
-    this.emitConditions()
+    this.emitFilter()
     this.resetState()
   }
 
@@ -517,10 +377,8 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
       debounceTime(300),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
-    ).subscribe(value => {
-      if (this.filterType === 'keyword') {
-        this.filterChanged.emit({ keyword: (value || '').trim() })
-      }
+    ).subscribe(() => {
+      this.emitFilter()
     })
   }
 
@@ -528,18 +386,11 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     if (!filter) return
 
     if (filter.keyword != null) {
-      if (!this.filterMode || this.filterMode === 'keyword') {
-        this.filterType = 'keyword'
-        this.keywordControl.setValue(filter.keyword, { emitEvent: false })
-      }
-      return
+      this.keywordControl.setValue(filter.keyword, { emitEvent: false })
     }
 
     if (filter.condition) {
-      if (!this.filterMode || this.filterMode === 'condition') {
-        this.filterType = 'condition'
-        this.conditionGroups = this.conditionGroupsFromFilter(filter.condition)
-      }
+      this.conditionGroups = this.conditionGroupsFromFilter(filter.condition)
     }
   }
 
@@ -587,7 +438,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     }
   }
 
-  private emitConditions(): void {
+  private emitFilter(): void {
     const groups = this.conditionGroups
       .filter(g => g.conditions.length > 0)
       .map(group => {
@@ -597,12 +448,17 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
         return { or: group.conditions.map(c => c.condition) }
       })
 
-    if (groups.length === 0) {
-      this.filterChanged.emit({})
-    } else if (groups.length === 1) {
-      this.filterChanged.emit({ condition: groups[0] })
-    } else {
-      this.filterChanged.emit({ condition: { and: groups } })
+    const filter: ObservationFieldFilter = {}
+
+    const keyword = (this.keywordControl.value || '').toString().trim()
+    if (keyword) filter.keyword = keyword
+
+    if (groups.length === 1) {
+      filter.condition = groups[0]
+    } else if (groups.length > 1) {
+      filter.condition = { and: groups }
     }
+
+    this.filterChanged.emit(filter)
   }
 }

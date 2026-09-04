@@ -3,28 +3,14 @@
   flex-direction: column;
 }
 
-.filter-mode-row {
+.filter-section {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  flex-direction: column;
   gap: 4px;
-  margin-bottom: 4px;
-}
+  margin-bottom: 12px;
 
-.filter-mode-divider {
-  font-size: 12px;
-  color: color-mix(in srgb, var(--mat-sys-on-surface) 30%, transparent);
-}
-
-.filter-mode-option {
-  font-size: 75%;
-  color: color-mix(in srgb, var(--mat-sys-on-surface) 35%, transparent);
-  cursor: pointer;
-
-  &--active {
-    font-size: 75%;
-    color: var(--mat-sys-primary);
-    cursor: default;
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 
@@ -41,19 +27,46 @@
   cursor: help;
 }
 
-.observation-filter-actions {
+.condition-separator {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 4px;
+  padding: 0 0 0 8px;
 }
 
-.filter-condition-groups {
-  margin-bottom: 8px;
+// the chip-grid's inner container is display:flex;flex-flow:wrap, so a
+// full-width flex item forces everything after it onto a new line -
+// this is how "and" gets its own line without splitting the group
+// display out of the chip-grid/textfield.
+.group-separator {
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  padding: 4px 0 4px 8px;
 }
 
-.filter-condition__chip {
-  background: var(--mat-sys-surface-container);
+.separator-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.condition-filter-input {
+  padding: 4px 4px 0;
+  min-width: 140px;
+}
+
+// forces the "start a new condition" input onto its own line even when
+// the last chip leaves enough room beside it on the current row.
+.condition-filter-input--new-row {
+  flex-basis: 100%;
+  width: 100%;
 }
 
 .condition-chip {
@@ -73,31 +86,12 @@
   }
 }
 
-.condition-input-row {
+.observation-filter-actions {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   gap: 4px;
-  min-width: 0;
-}
-
-
-.filter-condition-group {
-  align-items: center;
-}
-
-.condition-separator {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  color: color-mix(in srgb, var(--mat-sys-on-surface) 50%, transparent);
-  padding: 0 0 0 8px;
-}
-
-.group-separator {
-  font-size: 12px;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--mat-sys-on-surface) 50%, transparent);
-  padding: 4px 0;
+  margin-top: 8px;
 }
 
 .form-color-rail {
@@ -119,4 +113,3 @@ mat-optgroup mat-option:last-of-type .form-color-rail {
   border-bottom-left-radius: 1px;
   border-bottom-right-radius: 1px;
 }
-
