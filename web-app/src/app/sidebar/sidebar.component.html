@@ -5,7 +5,7 @@
 
   <mat-divider></mat-divider>
 
-  <div (click)="onTabSwitched(exportTab)">
+  <div class="export-tab" (click)="onTabSwitched(exportTab)">
     <sidebar-tab [tab]="exportTab" [active]="exportTab.id === currentTab?.id"></sidebar-tab>
   </div>
 </div>
