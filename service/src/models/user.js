@@ -13,7 +13,6 @@ const mongoose = require('mongoose')
   , log = require('../logger').child({ component: 'users' })
   , FilterParser = require('../utilities/filterParser');
 
-// Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const PhoneSchema = new Schema({
@@ -24,7 +23,6 @@ const PhoneSchema = new Schema({
   _id: false
 });
 
-// Collection to hold users
 const UserSchema = new Schema(
   {
     username: { type: String, required: true, unique: true },
@@ -34,7 +32,12 @@ const UserSchema = new Schema(
     avatar: {
       contentType: { type: String, required: false },
       size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
+      relativePath: { type: String, required: false },
+      processingStatus: { type: String, enum: ['pending', 'success', 'rejected', 'error'], required: false },
+      processingMessage: { type: String, required: false },
+      processingHook: { type: String, required: false },
+      stagedContentId: { type: String, required: false },
+      processingRetryCount: { type: Number, required: false, default: 0 }
     },
     icon: {
       type: { type: String, enum: ['none', 'upload', 'create'], default: 'none' },
@@ -42,7 +45,12 @@ const UserSchema = new Schema(
       color: { type: String },
       contentType: { type: String, required: false },
       size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
+      relativePath: { type: String, required: false },
+      processingStatus: { type: String, enum: ['pending', 'success', 'rejected', 'error'], required: false },
+      processingMessage: { type: String, required: false },
+      processingHook: { type: String, required: false },
+      stagedContentId: { type: String, required: false },
+      processingRetryCount: { type: Number, required: false, default: 0 }
     },
     active: { type: Boolean, required: true },
     enabled: { type: Boolean, default: true, required: true },
@@ -64,6 +72,9 @@ const UserSchema = new Schema(
     }
   }
 );
+
+UserSchema.index({ 'avatar.processingStatus': 1 });
+UserSchema.index({ 'icon.processingStatus': 1 });
 
 UserSchema.virtual('authentication').get(function () {
   return this.populated('authenticationId') ? this.authenticationId : null;
@@ -265,6 +276,55 @@ exports.count = function (options, callback) {
     count => callback(null, count),
     err => callback(err)
   );
+};
+
+// Finds up to `limit` staged avatar/icon uploads still awaiting a
+// content-scan outcome, so the user-content processing poller can pick
+// them up. A single user can have both an avatar and an icon pending at
+// once, so each reference names the field, not just the user.
+exports.findPendingContent = async function (limit) {
+  const docs = await User.find({
+    $or: [
+      { 'avatar.processingStatus': 'pending' },
+      { 'icon.processingStatus': 'pending' }
+    ]
+  }).limit(limit).lean();
+
+  const references = [];
+  for (const doc of docs) {
+    if (references.length >= limit) break;
+    if (doc.avatar && doc.avatar.processingStatus === 'pending') {
+      references.push({ userId: doc._id.toString(), field: 'avatar' });
+    }
+    if (references.length < limit && doc.icon && doc.icon.processingStatus === 'pending') {
+      references.push({ userId: doc._id.toString(), field: 'icon' });
+    }
+  }
+  return references;
+};
+
+// Applies a partial update to just the avatar/icon subfields of one user
+// (processingStatus, stagedContentId, relativePath on finalize, etc.),
+// without touching the rest of the document. A value of `undefined` in
+// the patch clears that subfield via $unset, matching how stagedContentId
+// gets cleared once processing finishes.
+exports.patchContent = function (userId, field, patch, callback) {
+  const set = {};
+  const unset = {};
+  for (const key of Object.keys(patch)) {
+    const value = patch[key];
+    if (value === undefined) {
+      unset[`${field}.${key}`] = 1;
+    } else {
+      set[`${field}.${key}`] = value;
+    }
+  }
+
+  const update = {};
+  if (Object.keys(set).length) update.$set = set;
+  if (Object.keys(unset).length) update.$unset = unset;
+
+  User.findByIdAndUpdate(userId, update, { new: true }, callback);
 };
 
 exports.createUser = function (user, callback) {
