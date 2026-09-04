@@ -99,3 +99,24 @@
   color: color-mix(in srgb, var(--mat-sys-on-surface) 50%, transparent);
   padding: 4px 0;
 }
+
+.form-color-rail {
+  width: 2px;
+  align-self: stretch;
+  margin-right: 8px;
+}
+
+mat-optgroup mat-option:first-of-type {
+  margin-top: 4px;
+}
+
+mat-optgroup mat-option:first-of-type .form-color-rail {
+  border-top-left-radius: 1px;
+  border-top-right-radius: 1px;
+}
+
+mat-optgroup mat-option:last-of-type .form-color-rail {
+  border-bottom-left-radius: 1px;
+  border-bottom-right-radius: 1px;
+}
+

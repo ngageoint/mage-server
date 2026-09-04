@@ -33,6 +33,7 @@ type AutocompleteOption = FieldOption | ComparatorOption | ValueOption
 
 interface FormGroup {
   formName: string
+  formColor: string
   fields: FieldOption[]
 }
 
@@ -376,7 +377,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
           }
         )
 
-        return { formName: form.name, fields }
+        return { formName: form.name, formColor: form.color, fields }
       }
     )
     .filter(form => form.fields.length > 0)
@@ -434,6 +435,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     return this.allFieldGroups
       .map(group => ({
         formName: group.formName,
+        formColor: group.formColor,
         fields: group.fields.filter(f => f.display.toLowerCase().includes(q)),
       }))
       .filter(group => group.fields.length > 0)

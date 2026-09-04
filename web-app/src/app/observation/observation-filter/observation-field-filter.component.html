@@ -79,6 +79,7 @@
         <ng-container *ngIf="conditionState === 'field'">
           <mat-optgroup *ngFor="let group of filteredFormGroups | async" [label]="group.formName">
             <mat-option *ngFor="let option of group.fields" [value]="option">
+              <span ngProjectAs="mat-icon" class="form-color-rail" [style.background]="option.formColor"></span>
               {{ option.display }}
             </mat-option>
           </mat-optgroup>
