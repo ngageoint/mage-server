@@ -6,8 +6,8 @@ import supertest from 'supertest'
 import uniqid from 'uniqid'
 import express from 'express'
 import mongoose from 'mongoose'
-import { ExportAppLayer, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
-import { GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
+import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
+import { CreateExportRequest, GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
 import { Export, ExportStatus } from '../../../lib/entities/exports/entities.exports'
 import { ExportExpanded } from '../../../lib/entities/exports/entities.exports'
 import { Readable } from 'stream'
@@ -82,7 +82,6 @@ describe('exports web controller', function() {
         eventId: 1,
         event: { id: 1, name: 'Test 1' },
         filter: undefined,
-        projection: undefined
       },
       processingErrors: [],
       expirationDate: new Date(),
@@ -191,7 +190,6 @@ describe('exports web controller', function() {
         eventId: 1,
         event: { id: 1, name: 'Event 1' },
         filter: undefined,
-        projection: undefined
       },
       processingErrors: [],
       expirationDate: new Date(),
@@ -226,6 +224,109 @@ describe('exports web controller', function() {
           username: validPrincipal.username
         }
       })
+    })
+  })
+
+  describe('POST /', function() {
+
+    const id = uniqid()
+    const exp: ExportExpanded = {
+      id,
+      userId: validPrincipal.id,
+      user: { id: validPrincipal.id, username: validPrincipal.username },
+      relativePath: 'some/path',
+      filename: 'export',
+      exportType: 'kml',
+      status: ExportStatus.Completed,
+      options: {
+        eventId: 1,
+        event: { id: 1, name: 'Event 1' },
+        filter: undefined,
+      },
+      processingErrors: [],
+      expirationDate: new Date(),
+      summary: {},
+      lastUpdated: new Date()
+    }
+
+    let createRequestFactory: SubstituteOf<{ createRequest: ExportWebAppRequestFactory }>
+    let postClient: supertest.SuperTest<supertest.Test>
+
+    beforeEach(function() {
+      createRequestFactory = Sub.for<{ createRequest: ExportWebAppRequestFactory }>()
+      const endpoint = express()
+      endpoint.use(express.json())
+      endpoint.use((req, res, next) => {
+        req.getRoot = () => hostUrl
+        next()
+      })
+      const controller = ExportRoutes(appLayer, createRequestFactory.createRequest)
+      endpoint.use(root, controller)
+      postClient = supertest(endpoint)
+    })
+
+    it('parses per-type users, teams, hasAttachments, and a keyword filter into the export filter', async function() {
+      let capturedParams: any
+      createRequestFactory.createRequest(Arg.all()).mimicks((req: express.Request, params: any) => {
+        capturedParams = params
+        return { ...params, context: {} }
+      })
+      appLayer.createExport(Arg.all()).resolves(AppResponse.success(exp as unknown as Export))
+
+      await postClient.post(`${root}`).send({
+        format: 'kml',
+        observations: {
+          users: ['user1', 'user2'],
+          teams: ['team1'],
+          hasAttachments: true,
+          keyword: 'wildfire'
+        },
+        locations: {
+          users: ['user3'],
+          teams: ['team2']
+        }
+      })
+
+      const params = (capturedParams as CreateExportRequest).filter as any
+      expect(params.observations.userIsAnyOf).to.deep.equal(['user1', 'user2'])
+      expect(params.observations.teamIsAnyOf).to.deep.equal(['team1'])
+      expect(params.locations.userIsAnyOf).to.deep.equal(['user3'])
+      expect(params.locations.teamIsAnyOf).to.deep.equal(['team2'])
+      expect(params.observations.hasAttachments).to.equal(true)
+      expect(params.observations.fieldFilter).to.deep.equal({ keyword: 'wildfire' })
+    })
+
+    it('parses a condition filter', async function() {
+      let capturedParams: any
+      createRequestFactory.createRequest(Arg.all()).mimicks((req: express.Request, params: any) => {
+        capturedParams = params
+        return { ...params, context: {} }
+      })
+      appLayer.createExport(Arg.all()).resolves(AppResponse.success(exp as unknown as Export))
+
+      await postClient.post(`${root}`).send({
+        format: 'kml',
+        observations: {
+          condition: { formId: 1, field: 'field1', operator: '=', value: 'value1' }
+        }
+      })
+
+      const params = (capturedParams as CreateExportRequest).filter as any
+      expect(params.observations.fieldFilter).to.deep.equal({
+        condition: { formId: 1, field: 'field1', operator: '=', value: 'value1' }
+      })
+    })
+
+    it('rejects an invalid observationStartDate', async function() {
+      const res = await postClient.post(`${root}`).send({
+        format: 'kml',
+        observations: {
+          startDate: 'not-a-date'
+        }
+      })
+
+      expect(res.status).to.equal(400)
+      appLayer.didNotReceive().createExport(Arg.all())
     })
   })
 })

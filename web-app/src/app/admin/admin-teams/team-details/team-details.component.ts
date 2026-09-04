@@ -19,7 +19,7 @@ import {
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
-import { Event as Event } from 'mage-web-app/filter/filter.types'
+import { MageEvent } from 'mage-web-app/entities/event/entities.event'
 
 @Component({
     selector: 'mage-team-details',
@@ -48,14 +48,14 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   pageSizeOptions = [5, 10, 25];
 
   loadingEvents = true;
-  teamEvents: Event[] = [];
+  teamEvents: MageEvent[] = [];
   teamEventsPage = 0;
   eventsPerPage = 5;
   eventSearch = '';
   teamEventSearch = '';
-  filteredEvents: Event[] = [];
+  filteredEvents: MageEvent[] = [];
 
-  eventsDataSource = new MatTableDataSource<Event>();
+  eventsDataSource = new MatTableDataSource<MageEvent>();
   eventsDisplayedColumns = ['content'];
   totalEvents = 0;
   eventsPageSize = 5;
@@ -373,7 +373,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  removeEventFromTeam($event: MouseEvent, event: Event): void {
+  removeEventFromTeam($event: MouseEvent, event: MageEvent): void {
     $event.stopPropagation();
     if (!this.team?.id) {
       return;

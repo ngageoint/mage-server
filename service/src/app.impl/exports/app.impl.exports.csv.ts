@@ -1,11 +1,10 @@
 import archiver, { Archiver } from 'archiver'
-import { AllGeoJSON } from '@turf/helpers'
 import turfCentroid from '@turf/centroid'
 import * as json2csv from 'json2csv'
 import stream, { Readable } from 'stream'
-import { ExportTransform, ObservationFormFieldProjection } from '../../app.api/exports/app.api.exports'
-import { ExportItemSummary, ExportOptions, ExportSummary } from '../../entities/exports/entities.exports'
-import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '../../entities/observations/entities.observations'
+import { ExportParams, ExportTransform, IterateObservations, LocationExportParams, ObservationExportParams, projectedObservationFormFields, projectionIncludesField } from './app.impl.exports'
+import { ExportItemSummary, ExportSummary } from '../../entities/exports/entities.exports'
+import { AttachmentStore, FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserLocation, UserLocationProperties, UserLocationRepository } from '../../entities/locations/entities.locations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { User, UserRepository } from '../../entities/users/entities.users'
@@ -18,7 +17,7 @@ export class CsvExportTransform implements ExportTransform {
 
   constructor(
     private readonly locationRepository: UserLocationRepository,
-    private readonly observationRepository: ObservationRepositoryForEvent,
+    private readonly streamObservations: IterateObservations,
     private readonly attachmentStore: AttachmentStore,
     private readonly deviceRepository: DevicesRepository,
     private readonly userRepository: UserRepository
@@ -26,18 +25,17 @@ export class CsvExportTransform implements ExportTransform {
 
   async export(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
-    archive: Archiver
+    archive: Archiver,
+    params: ExportParams
   ): Promise<ExportSummary> {
     const response: ExportSummary = {}
 
-    if (options?.filter?.exportObservations) {
-      response.observations = await this.exportObservations(event, options, projectObservationFormFields, archive)
+    if (params?.observationParams) {
+      response.observations = await this.exportObservations(event, params.observationParams, archive)
     }
 
-    if (options?.filter?.exportLocations) {
-      response.locations = await this.exportLocations(event, options, archive)
+    if (params?.locationParams) {
+      response.locations = await this.exportLocations(event, params.locationParams, archive)
     }
 
     return response
@@ -45,12 +43,9 @@ export class CsvExportTransform implements ExportTransform {
 
   async exportObservations(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
+    params: ObservationExportParams,
     archive: Archiver
   ): Promise<ExportItemSummary> {
-    const { filter, projection } = options
-
     const forms = event?.forms || []
     const observationFields = [
       { label: 'id', value: 'id' },
@@ -71,13 +66,7 @@ export class CsvExportTransform implements ExportTransform {
         const fields = form.fields
           .filter(field => !field.archived)
           .filter(field => field.type !== 'attachment')
-          .filter(field => {
-            if (!projection) {
-              return true
-            }
-            const formProjection = projection.find(formProjection => formProjection.formId === form.id)
-            return formProjection?.fields.some(fieldProjection => fieldProjection === field.name)
-          })
+          .filter(field => projectionIncludesField(form.id, field.name, params.projection))
           .sort((a, b) => a.id - b.id)
           .map(field => {
             return {
@@ -88,7 +77,7 @@ export class CsvExportTransform implements ExportTransform {
         return fields
       }))
 
-    if (filter?.includeAttachments) {
+    if (params.findSpec?.includeAttachments) {
       observationFields.push({
         label: 'Attachment',
         value: 'attachment'
@@ -102,29 +91,16 @@ export class CsvExportTransform implements ExportTransform {
 
     const asyncParser = new json2csv.AsyncParser({ fields: observationFields }, { readableObjectMode: true, writableObjectMode: true })
     archive.append(asyncParser.processor as stream.Transform, { name: 'observations.csv' })
-    return this.streamObservations(event, options, projectObservationFormFields, asyncParser.input, archive)
+    return this.pipeObservations(event, params, asyncParser.input, archive)
   }
 
-  async streamObservations(
+  async pipeObservations(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
+    params: ObservationExportParams,
     stream: stream.Transform,
     archive: archiver.Archiver
   ): Promise<ExportItemSummary> {
-    const { filter } = options
-
-    const repository: EventScopedObservationRepository = await this.observationRepository(event.id)
-    const iterable = repository.iterate({
-      where: {
-        stateIsAnyOf: [ 'active' ],
-        timestampAfter: filter?.startDate,
-        timestampBefore: filter?.endDate,
-        isFavoriteOfUser: filter?.favorites ? filter.favorites.userId : undefined,
-        isFlaggedImportant: filter?.important ? true : undefined
-      },
-      includeAttachments: filter?.includeAttachments
-    })
+    const iterable = await this.streamObservations(event, params.findSpec)
 
     try {
       let count = 0
@@ -143,7 +119,7 @@ export class CsvExportTransform implements ExportTransform {
           endTimestamp = observation.properties.timestamp.getTime()
         }
 
-        const forms = projectObservationFormFields(observation, options.projection)
+        const forms = projectedObservationFormFields(observation, params.projection)
         const properties = await this.observationColumns(event, observation, forms, cache, archive)
         stream.push(properties)
         count++
@@ -235,7 +211,7 @@ export class CsvExportTransform implements ExportTransform {
 
   async exportLocations(
     event: MageEvent,
-    options: ExportOptions,
+    params: LocationExportParams,
     archive: Archiver
   ): Promise<ExportItemSummary> {
     const locationFields = [
@@ -255,21 +231,15 @@ export class CsvExportTransform implements ExportTransform {
 
     const asyncParser = new json2csv.AsyncParser({ fields: locationFields }, { readableObjectMode: true, writableObjectMode: true })
     archive.append(asyncParser.processor as stream.Transform, { name: 'locations.csv' })
-    return this.streamLocations(event, options, asyncParser.input)
+    return this.streamLocations(event, params, asyncParser.input)
   }
 
   async streamLocations(
     event: MageEvent,
-    options: ExportOptions,
+    params: LocationExportParams,
     stream: stream.Transform
   ): Promise<ExportItemSummary> {
-    const locations = this.locationRepository.iterate({
-      where: {
-        eventId: event.id,
-        timestampAfter: options?.filter?.startDate,
-        timestampBefore: options?.filter?.endDate
-      }
-    })
+    const locations = this.locationRepository.iterate(params.findSpec)
 
     const cache = {
       user: null,

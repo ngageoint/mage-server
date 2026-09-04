@@ -10,7 +10,8 @@ import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { Event as MageEvent, Layer } from 'mage-web-app/filter/filter.types';
+import { Layer } from 'mage-web-app/entities/layer/entities.layer';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminEventsService } from '../../services/admin-events.service';
@@ -24,7 +25,7 @@ import {
 import { DeleteEventComponent } from '../delete-event/delete-event.component';
 import { CreateEventDialogComponent } from '../create-event/create-event.component';
 import { UploadFormDialogComponent } from '../upload-form/upload-form.component';
-import { layerIconName } from '../../../entities/layer/layer';
+import { layerIconName } from '../../../entities/layer/entities.layer';
 
 interface ExtendedEvent extends MageEvent {
   complete?: boolean;

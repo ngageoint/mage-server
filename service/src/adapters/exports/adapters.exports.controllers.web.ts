@@ -4,11 +4,13 @@ import {
   CreateExport, CreateExportRequest, DeleteExport, DeleteExportRequest,
   ExportCreateParams, ExportRequest, GetExportContent, GetExportContentRequest, GetExports, GetExportsRequest
 } from '../../app.api/exports/app.api.exports'
-import moment from 'moment'
-import { invalidInput } from '../../app.api/app.api.errors'
+import { parseConditionFilter } from '../../app.api/observations/app.api.observations'
+import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { Export, EXPORT_FORMATS, ExportFormat } from '../../entities/exports/entities.exports'
+import { ObservationFieldFilter } from '../../entities/observations/entities.observations'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { compatibilityMageAppErrorHandler, mageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
+import { parseISO8601 } from '../../utilities/dates'
 import { AppRequest } from '../../app.api/app.api.global'
 
 export interface ExportAppLayer {
@@ -83,54 +85,9 @@ export function ExportRoutes(appLayer: ExportAppLayer, createAppRequest: ExportW
 
   routes.route('/')
     .post(async (req, res, next) => {
-      const {
-        format,
-        observations: exportObservations,
-        locations: exportLocations,
-        startDate: iso8601StartDate,
-        endDate: iso8601EndDate,
-        includeAttachments = true,
-        favorites,
-        important,
-        projection
-      } = req.body
-
-      if (!format) {
-        return next(invalidInput('invalid request', [ 'missing', 'format' ]))
-      }
-
-      if (!EXPORT_FORMATS.includes(format as ExportFormat)) {
-        return next(invalidInput('invalid format', [ `format must be of type ${EXPORT_FORMATS.join(' or ')}`, 'format' ]))
-      }
-
-      let startDate: Date | undefined
-      if (iso8601StartDate) {
-        startDate = parseISO8601(iso8601StartDate)
-        if (!startDate) {
-          return next(invalidInput('Export startDate must be a valid ISO-8601 date.', [ 'startDate' ]))
-        }
-      }
-
-      let endDate: Date | undefined
-      if (iso8601EndDate) {
-        endDate = parseISO8601(iso8601EndDate)
-        if (!endDate) {
-          return next(invalidInput('Export endDate must be a valid ISO-8601 date.', [ 'endDate' ]))
-        }
-      }
-
-      const params: ExportCreateParams = {
-        format: format as ExportFormat,
-        filter: {
-          exportObservations,
-          exportLocations,
-          includeAttachments,
-          favorites,
-          important,
-          startDate,
-          endDate
-        },
-        projection
+      const params = parseExportCreateParams(req.body)
+      if (params instanceof MageError) {
+        return next(params)
       }
 
       const appReq: CreateExportRequest<UserWithRole> = createAppRequest<Omit<CreateExportRequest, 'context'>>(req, params)
@@ -155,9 +112,109 @@ export function jsonForExport(e: Export, baseUrl: string): Export & { url: strin
   return { ...e, url: `${baseUrl}/api/exports/mine/${e.id}`}
 }
 
-function parseISO8601(iso8601: string): Date | undefined {
-  const endMoment = moment(iso8601, moment.ISO_8601, true)
-  if (typeof iso8601 === 'string' || endMoment.isValid()) {
-    return endMoment.toDate()
+function parseExportCreateParams(body: any): ExportCreateParams | InvalidInputError {
+  const { format, observations, locations } = body
+
+  if (!format) {
+    return invalidInput('invalid request', [ 'missing', 'format' ])
   }
+
+  if (!EXPORT_FORMATS.includes(format as ExportFormat)) {
+    return invalidInput('invalid format', [ `format must be of type ${EXPORT_FORMATS.join(' or ')}`, 'format' ])
+  }
+
+  const filter: ExportCreateParams['filter'] = {}
+
+  if (observations) {
+    const parsedObservations = parseExportObservationFilter(observations)
+    if (parsedObservations instanceof MageError) return parsedObservations
+    filter.observations = parsedObservations
+  }
+
+  if (locations) {
+    const parsedLocations = parseExportLocationFilter(locations)
+    if (parsedLocations instanceof MageError) return parsedLocations
+    filter.locations = parsedLocations
+  }
+
+  return {
+    format: format as ExportFormat,
+    filter
+  }
+}
+
+function parseExportObservationFilter(body: any): ExportCreateParams['filter']['observations'] | InvalidInputError {
+  const {
+    startDate: iso8601StartDate,
+    endDate: iso8601EndDate,
+    includeAttachments = true,
+    favorites,
+    important,
+    users,
+    teams,
+    hasAttachments,
+    keyword,
+    condition,
+    projection
+  } = body
+
+  const startDate = parseExportDate(iso8601StartDate, 'observations.startDate')
+  if (startDate instanceof MageError) return startDate
+
+  const endDate = parseExportDate(iso8601EndDate, 'observations.endDate')
+  if (endDate instanceof MageError) return endDate
+
+  let fieldFilter: ObservationFieldFilter | undefined
+  if (typeof keyword === 'string' && keyword.length) {
+    fieldFilter = { keyword }
+  } else if (condition) {
+    const parsedCondition = parseConditionFilter(condition)
+    if (parsedCondition) {
+      fieldFilter = { condition: parsedCondition }
+    }
+  }
+
+  return {
+    startDate,
+    endDate,
+    includeAttachments,
+    favorites,
+    important,
+    userIsAnyOf: Array.isArray(users) ? users : undefined,
+    teamIsAnyOf: Array.isArray(teams) ? teams : undefined,
+    hasAttachments: hasAttachments || undefined,
+    fieldFilter,
+    projection: Array.isArray(projection) ? projection : undefined
+  }
+}
+
+function parseExportLocationFilter(body: any): ExportCreateParams['filter']['locations'] | InvalidInputError {
+  const {
+    startDate: iso8601StartDate,
+    endDate: iso8601EndDate,
+    users,
+    teams
+  } = body
+
+  const startDate = parseExportDate(iso8601StartDate, 'locations.startDate')
+  if (startDate instanceof MageError) return startDate
+
+  const endDate = parseExportDate(iso8601EndDate, 'locations.endDate')
+  if (endDate instanceof MageError) return endDate
+
+  return {
+    startDate,
+    endDate,
+    userIsAnyOf: Array.isArray(users) ? users : undefined,
+    teamIsAnyOf: Array.isArray(teams) ? teams : undefined
+  }
+}
+
+function parseExportDate(iso8601: unknown, fieldName: string): Date | undefined | InvalidInputError {
+  if (!iso8601) return undefined
+  const date = parseISO8601(iso8601)
+  if (!date) {
+    return invalidInput(`Export ${fieldName} must be a valid ISO-8601 date.`, [ fieldName ])
+  }
+  return date
 }

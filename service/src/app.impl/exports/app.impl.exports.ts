@@ -3,18 +3,47 @@ import { AppResponse, KnownErrorsOf, withPermission } from '../../app.api/app.ap
 import {
   Export,
   ExportExpanded,
+  ExportFormat,
   ExportProjection,
   ExportsRepository,
   ExportStatus,
   ExportStore,
-  ExportStoreError
+  ExportStoreError,
+  ExportSummary
 } from '../../entities/exports/entities.exports'
-import { FormEntry, ObservationAttrs } from '../../entities/observations/entities.observations'
+import { FindObservationsStreamSpec, FormEntry, ObservationAttrs, ObservationId, ObservationRepositoryForEvent, ObservationSearchRepository } from '../../entities/observations/entities.observations'
+import { FindUserLocationsStreamSpec } from '../../entities/locations/entities.locations'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
+import { TeamRepository } from '../../entities/teams/entities.teams'
+import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
+import { FormId } from '../../entities/events/entities.events.forms'
 import { Stats } from 'fs'
-import archiver from 'archiver'
+import archiver, { Archiver } from 'archiver'
 import { once } from 'stream'
 import { Logger, NoopLogger } from '../../entities/entities.logging'
+import { MageEvent } from '../../entities/events/entities.events'
+
+export interface ExportFactory {
+  (format: ExportFormat): ExportTransform | null
+}
+
+export interface ObservationExportParams {
+  findSpec: FindObservationsStreamSpec
+  projection?: ExportProjection
+}
+
+export interface LocationExportParams {
+  findSpec: FindUserLocationsStreamSpec
+}
+
+export interface ExportParams {
+  observationParams?: ObservationExportParams
+  locationParams?: LocationExportParams
+}
+
+export interface ExportTransform {
+  export(event: MageEvent, archive: Archiver, params: ExportParams): Promise<ExportSummary>
+}
 
 export function FetchExports(repository: ExportsRepository, permissionService: api.ExportAppLayerPermissionService): api.GetExports {
   return async function getExports(req: api.GetExportsRequest): ReturnType<api.GetExports> {
@@ -62,10 +91,11 @@ export function GetExportContent(
 }
 
 export function CreateExport(
-  exportFactory: api.ExportFactory,
+  exportFactory: ExportFactory,
   exportsRepository: ExportsRepository,
   contentStore: ExportStore,
   permissionService: api.ExportAppLayerPermissionService,
+  teamRepository: TeamRepository,
   log: Logger = NoopLogger
 ): api.CreateExport {
   return async function createExport(req: api.CreateExportRequest): ReturnType<api.CreateExport> {
@@ -73,16 +103,17 @@ export function CreateExport(
       permissionService.ensureCreateExportPermission(req.context),
       async (): Promise<Export | InvalidInputError> => {
         const user = req.context.requestingPrincipal()
+        const { context, format, filter } = req
         const newExport = await exportsRepository.createExport({
           userId: user.id,
-          eventId: req.context.mageEvent.id,
+          eventId: context.mageEvent.id,
           ...req
         })
 
-        const exporter = exportFactory(req.format)
+        const exporter = exportFactory(format)
 
         if (!exporter) {
-          return invalidInput('invalid export type', [ `invalid export type: ${req.format}`, 'type' ])
+          return invalidInput('invalid export type', [ `invalid export type: ${format}`, 'type' ])
         }
 
         const { content, relativePath } = contentStore.writeContent(newExport)
@@ -93,20 +124,46 @@ export function CreateExport(
         }
         await exportsRepository.updateExportForUser(newExport.id, user.id, patch)
 
+        const exportParams: ExportParams = {}
+        if (filter?.observations) {
+          const observations = filter.observations
+          const observationUserIsAnyOf = await resolveUserIsAnyOf(teamRepository, observations.userIsAnyOf, observations.teamIsAnyOf)
+          exportParams.observationParams = {
+            findSpec: {
+              where: {
+                stateIsAnyOf: [ 'active' ],
+                timestampAfter: observations.startDate,
+                timestampBefore: observations.endDate,
+                isFavoriteOfUser: observations.favorites ? user.id : undefined,
+                isFlaggedImportant: observations.important,
+                userIsAnyOf: observationUserIsAnyOf,
+                hasAttachments: observations.hasAttachments,
+                fieldFilter: observations.fieldFilter
+              },
+              includeAttachments: observations.includeAttachments
+            },
+            projection: observations.projection
+          }
+        }
+
+        if (filter?.locations) {
+          const locations = filter.locations
+          const locationUserIsAnyOf = await resolveUserIsAnyOf(teamRepository, locations.userIsAnyOf, locations.teamIsAnyOf)
+          exportParams.locationParams = {
+            findSpec: {
+              where: {
+                eventId: context.mageEvent.id,
+                timestampAfter: locations.startDate,
+                timestampBefore: locations.endDate,
+                userIsAnyOf: locationUserIsAnyOf
+              }
+            }
+          }
+        }
+
         const archive = archiver('zip')
         archive.pipe(content)
-        exporter.export(
-          req.context.mageEvent,
-          {
-            filter: {
-              ...req.filter,
-              favorites: req.filter.favorites ? { userId: user.id } : false
-            },
-            projection: req.projection
-          },
-          projectedObservationFormFields,
-          archive
-        ).then(async result => {
+        exporter.export(context.mageEvent, archive, exportParams).then(async result => {
           const streamClosed = once(content, 'close')
           await archive.finalize()
           await streamClosed
@@ -156,15 +213,49 @@ export function DeleteExport(
   }
 }
 
-function projectedObservationFormFields(observation: ObservationAttrs, projection?: ExportProjection): FormEntry[] {
+export interface IterateObservations {
+  (event: MageEvent, spec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }>
+}
+
+export function IterateObservations(
+  obsRepoFactory: ObservationRepositoryForEvent,
+  searchRepo: ObservationSearchRepository
+): IterateObservations {
+  return async function findStream(event: MageEvent, findSpec: FindObservationsStreamSpec): Promise<AsyncIterable<ObservationAttrs> & { close?: () => void }> {
+    let ids: ObservationId[] | undefined = undefined
+    if (findSpec.where?.fieldFilter) {
+      ids = await searchRepo.findIdsByFilter(findSpec.where?.fieldFilter, event)
+    }
+
+    const observationRepository = await obsRepoFactory(event.id)
+    return observationRepository.iterate({ ...findSpec, where: { ...findSpec.where, ids } })
+  }
+}
+
+function projectionForForm(formId: FormId, projection: ExportProjection) {
+  return projection.find(formProjection => formProjection.formId === formId)
+}
+
+export function projectionIncludesForm(formId: FormId, projection?: ExportProjection): boolean {
+  if (!projection) return true
+  return projectionForForm(formId, projection) !== undefined
+}
+
+export function projectionIncludesField(formId: FormId, fieldName: string, projection?: ExportProjection): boolean {
+  if (!projection) return true
+  const formProjection = projectionForForm(formId, projection)
+  return formProjection?.fields.some(fieldProjection => fieldProjection === fieldName) ?? false
+}
+
+export function projectedObservationFormFields(observation: ObservationAttrs, projection?: ExportProjection): FormEntry[] {
   if (!projection) {
     return Array.from(observation.properties.forms)
   }
 
   return observation.properties.forms.filter(formEntry => {
-    return projection.some(formProjection => formEntry.formId === formProjection.formId)
+    return projectionForForm(formEntry.formId, projection) !== undefined
   }).map(formEntry => {
-    const formProjection = projection.find(formProjection => formEntry.formId === formProjection.formId)
+    const formProjection = projectionForForm(formEntry.formId, projection)
     const projectedProperties: any = Object.fromEntries(
       Object.entries(formEntry).filter(([key]) => formProjection?.fields.includes(key))
     )

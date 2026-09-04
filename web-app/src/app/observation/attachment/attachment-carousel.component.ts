@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { Attachment, AttachmentProcessingStatus } from '../../filter/filter.types';
+import { Attachment, AttachmentProcessingStatus } from '../../entities/observation/entities.observation';
 
 @Component({
   selector: 'attachment-carousel',

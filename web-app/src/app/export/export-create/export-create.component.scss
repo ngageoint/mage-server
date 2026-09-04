@@ -6,12 +6,75 @@
   font-weight: unset;
 }
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
 mat-panel-title {
   flex-grow: 2;
 }
 
 mat-panel-description {
   flex-grow: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.export-count-value {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-projections-accordion mat-expansion-panel-header {
+  padding: 0 8px 0 12px;
+}
+
+.form-projection-title-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 4px;
+}
+
+.form-projection-name {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-projection-status {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.filter-icons-separator {
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.filter-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.filter-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
 }
 
 mat-expansion-panel {
@@ -20,10 +83,15 @@ mat-expansion-panel {
 
 mat-toolbar {
   background: white;
+  gap: 8px;
 }
 
 mat-checkbox {
   margin: 0 10px;
+}
+
+mat-checkbox.include-attachments-checkbox {
+  margin-left: 0;
 }
 
 mat-form-field {
@@ -40,6 +108,144 @@ mat-form-field {
 .export-content {
   flex: 1;
   overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.export-sections {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 8px;
+}
+
+.export-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background-color: var(--mat-sys-surface-container-low);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface);
+  min-height: 40px;
+
+  button {
+    margin-left: auto;
+  }
+
+  &--warning {
+    background-color: #fff8e1;
+    border-left: 4px solid #ef6c00;
+  }
+}
+
+.export-count__icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  color: #ef6c00;
+  flex-shrink: 0;
+}
+
+.title-warning-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: #ef6c00;
+}
+
+.export-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  z-index: 1;
+}
+
+.export-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px;
+  position: relative;
+}
+
+.export-preview__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.export-preview__empty-headline {
+  color: var(--mat-sys-on-surface-variant);
+  font: 400 24px / 32px Roboto, "Helvetica Neue", sans-serif;
+  line-height: 32px;
+  margin-bottom: 8px;
+}
+
+.export-preview__empty-subheader {
+  color: var(--mat-sys-on-surface-variant);
+  font: 400 16px / 24px Roboto, "Helvetica Neue", sans-serif;
+  text-align: center;
+}
+
+.icon {
+  font-size: 128px;
+  font-variation-settings: 'fill' 0, 'wght' 200, 'grad' 0, 'opsz' 96;
+  color: var(--mat-sys-outline);
+  margin-bottom: 16px;
+}
+
+.observations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.observations-list {
+  flex: 1;
+  overflow-y: scroll;
+  background: white;
+
+  observation-preview-item {
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+mat-paginator {
+  background: transparent;
+}
+
+.export-filter-label {
+  margin-top: 12px;
+}
+
+.export-filter-toggles {
+  display: flex;
+  gap: 4px;
+}
+
+.export-filter-toggle--active {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  border-radius: 50%;
 }
 
 .export-info {
@@ -49,31 +255,21 @@ mat-form-field {
   gap: 8px;
 }
 
-.export-title {
-  margin-bottom: 4px;
-}
-
 .export-choices {
-  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
-.export-options {
-  margin-left: 16px;
-  margin-bottom: 16px;
-}
-
-.headline {
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-  color: var(--mat-sys-on-surface);
-  margin-bottom: 4px
+.export-type-required-error {
+  font-size: 12px;
 }
 
 .export-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 8px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
 }
 
 .export-format {

@@ -28,9 +28,9 @@
         <mat-card-title>{{item.options?.event?.name}}</mat-card-title>
         <mat-card-subtitle *ngIf="item.status === exportStatus.Completed">
           <div *ngIf="summaryStart && summaryEnd">
-            <div class="text">{{summaryStart | moment}} - {{summaryEnd | moment}}</div>
+            <div class="text">{{formatSummaryDate(summaryStart)}} - {{formatSummaryDate(summaryEnd)}}</div>
           </div>
-          <div class="text" *ngIf="item.options?.filter?.exportObservations || item.options?.filter?.exportLocations">
+          <div class="text" *ngIf="item.options?.filter?.observations || item.options?.filter?.locations">
             <span *ngIf="item.summary?.observations?.count !== undefined" [ngPlural]="item.summary?.observations?.count || 0">
               <ng-template ngPluralCase="=1">
                 <span>{{item.summary?.observations?.count}} Observation</span>
@@ -51,15 +51,48 @@
           </div>
         </mat-card-subtitle>
       </mat-card-title-group>
-      <div class="title mat-body-2">Whats Included</div>
-      <div class="export-options">
-        <div class="export-options__category">
-          <mat-checkbox [checked]="item.options?.filter?.exportObservations" disabled>Observations</mat-checkbox>
-          <mat-checkbox [checked]="item.options?.filter?.includeAttachments" class="export-options__subcategory" disabled>Attachments</mat-checkbox>
+      <div *ngIf="item.options?.filter?.observations" class="export-options">
+        <div *ngIf="item.options?.filter?.observations?.includeAttachments; else noAttachments" class="attachment-status">
+          <mat-icon class="attachment-status__icon attachment-status__icon--included">attach_file</mat-icon>
+          <span>Attachments included</span>
         </div>
+        <ng-template #noAttachments>
+          <div class="attachment-status attachment-status--excluded">
+            <mat-icon class="attachment-status__icon">attach_file</mat-icon>
+            <span>No attachments</span>
+          </div>
+        </ng-template>
+      </div>
 
-        <div class="export-options__category">
-          <mat-checkbox [checked]="item.options?.filter?.exportLocations" disabled>Locations</mat-checkbox>
+      <div *ngIf="memberFilterLabels.length || hasObservationFilter" class="filter-section">
+        <div *ngIf="memberFilterLabels.length" class="filter-group">
+          <div class="filter-group__label">Members / Teams</div>
+          <mat-chip-set>
+            <mat-chip *ngFor="let label of memberFilterLabels">
+              <mat-icon matChipAvatar>{{label.type === 'team' ? 'group' : 'person'}}</mat-icon>
+              {{label.name}}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+        <div *ngIf="keywordFilter" class="filter-group">
+          <div class="filter-group__label">Keyword</div>
+          <span class="condition-field">{{keywordFilter}}</span>
+        </div>
+        <div *ngIf="conditionGroups.length" class="filter-group">
+          <div class="filter-group__label">Condition</div>
+          <div class="condition-groups">
+            <ng-container *ngFor="let group of conditionGroups; let lastGroup = last">
+              <div class="condition-group">
+                <ng-container *ngFor="let term of group; let lastTerm = last">
+                  <span class="condition-field">{{term.field}}</span>
+                  <span class="condition-operator">{{term.operator}}</span>
+                  <span *ngIf="term.value" class="condition-value">{{term.value}}</span>
+                  <span *ngIf="!lastTerm" class="condition-or">OR</span>
+                </ng-container>
+              </div>
+              <span *ngIf="!lastGroup" class="condition-and">and</span>
+            </ng-container>
+          </div>
         </div>
       </div>
 

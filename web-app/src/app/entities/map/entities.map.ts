@@ -1,3 +1,12 @@
+export type Style = {
+  fill: string
+  fillOpacity: number
+  stroke: string
+  strokeOpacity: number
+  strokeWidth: number
+  iconUrl?: string
+}
+
 export enum WebSearchType {
   NONE = "NONE",
   NOMINATIM = "NOMINATIM"

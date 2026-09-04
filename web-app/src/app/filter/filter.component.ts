@@ -16,13 +16,12 @@ import { LocalStorageService } from '../http/local-storage.service';
 import moment from 'moment';
 import { User } from '@ngageoint/mage.web-core-lib/user';
 import {
-  Form,
-  Team,
-  Event,
   FilterChoice,
   Interval,
   IntervalOptions
 } from './filter.types';
+import { MageEvent, Form } from '../entities/event/entities.event';
+import { Team } from '../entities/team/entities.team';
 
 @Component({
     selector: 'filter',
@@ -34,7 +33,7 @@ import {
 export class FilterComponent implements OnInit {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  event: Event;
+  event: MageEvent;
   selectedTeams: Team[] = [];
 
   eventUsers: User[] = [];
@@ -74,12 +73,12 @@ export class FilterComponent implements OnInit {
     this.isLoading = true;
 
     try {
-      const event: Event = this.filterService.getEvent();
+      const event: MageEvent = this.filterService.getEvent();
       this.event = event;
 
       const teamIds = this.localStorageService.getTeams() || [];
       this.selectedTeams = teamIds
-        .map((teamId: number) =>
+        .map((teamId: string) =>
           event.teams?.find((team: Team) => team.id === teamId)
         )
         .filter(Boolean);
@@ -134,7 +133,7 @@ export class FilterComponent implements OnInit {
     }
   }
 
-  async getUsers(event: Event): Promise<User[]> {
+  async getUsers(event: MageEvent): Promise<User[]> {
     try {
       const users = await firstValueFrom(this.eventService.getMembers(event));
       return users;

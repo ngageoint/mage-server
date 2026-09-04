@@ -853,12 +853,17 @@ async function initExportsAppLayer(
     eventPermissions.defaultEventPermissionsService
   );
 
-  const exportFactory = (format: ExportFormat): exportsApi.ExportTransform => {
+  const streamObservations = exportsImpl.IterateObservations(
+    repos.observations.obsRepoFactory,
+    repos.observations.searchRepo
+  );
+
+  const exportFactory = (format: ExportFormat): exportsImpl.ExportTransform => {
     switch (format) {
       case 'csv': {
         return new CsvExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.attachmentStore,
           repos.devices.deviceRepo,
           repos.users.userRepo
@@ -867,7 +872,7 @@ async function initExportsAppLayer(
       case 'kml': {
         return new KmlExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.iconRepo,
           repos.observations.iconStore,
           repos.observations.attachmentStore,
@@ -878,7 +883,7 @@ async function initExportsAppLayer(
       case 'geojson': {
         return new GeoJsonExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.attachmentStore,
           repos.devices.deviceRepo,
           repos.users.userRepo
@@ -887,7 +892,7 @@ async function initExportsAppLayer(
       case 'geopackage': {
         return new GeoPackageExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.iconStore,
           repos.observations.attachmentStore,
           repos.observations.iconRepo,
@@ -905,6 +910,7 @@ async function initExportsAppLayer(
       repos.exports.exportRepo,
       repos.exports.exportStore,
       exportPermissions,
+      repos.teams.teamRepo,
       logger
     ),
     getExports: exportsImpl.FetchExports(

@@ -3,7 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 import { Team } from '@ngageoint/mage.web-core-lib/team'
 import { Observable } from 'rxjs';
-import { Event, Layer } from 'mage-web-app/filter/filter.types';
+import { Layer } from 'mage-web-app/entities/layer/entities.layer';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { User } from '@ngageoint/mage.web-core-lib/user';
 
 export interface SearchOptions {
@@ -37,7 +38,7 @@ const setParams = (options: any): HttpParams => {
 export class AdminEventsService {
     constructor(private http: HttpClient) { }
 
-    getEvents(options: SearchOptions): Observable<PageOf<Event>> {
+    getEvents(options: SearchOptions): Observable<PageOf<MageEvent>> {
         const page = options.page ?? 0;
         const pageSize = options.page_size ?? 10;
 
@@ -58,28 +59,28 @@ export class AdminEventsService {
 
         const params = setParams(query);
 
-        return this.http.get<PageOf<Event>>('/api/events', { params });
+        return this.http.get<PageOf<MageEvent>>('/api/events', { params });
     }
 
 
-    getEventById(eventId: string): Observable<Event> {
-        return this.http.get<Event>(`/api/events/${eventId}`);
+    getEventById(eventId: string): Observable<MageEvent> {
+        return this.http.get<MageEvent>(`/api/events/${eventId}`);
     }
 
-    updateEvent(eventId: string, event: Partial<Event>): Observable<Event> {
-        return this.http.put<Event>(`/api/events/${eventId}`, event);
+    updateEvent(eventId: string, event: Partial<MageEvent>): Observable<MageEvent> {
+        return this.http.put<MageEvent>(`/api/events/${eventId}`, event);
     }
 
     deleteEvent(eventId: string): Observable<void> {
         return this.http.delete<void>(`/api/events/${eventId}`);
     }
 
-    createEvent(eventData: Partial<Event>): Observable<Event> {
-        return this.http.post<Event>('/api/events', eventData);
+    createEvent(eventData: Partial<MageEvent>): Observable<MageEvent> {
+        return this.http.post<MageEvent>('/api/events', eventData);
     }
 
-    addTeamToEvent(eventId: string, team: Team): Observable<Event> {
-        return this.http.post<Event>(`/api/events/${eventId}/teams`, team);
+    addTeamToEvent(eventId: string, team: Team): Observable<MageEvent> {
+        return this.http.post<MageEvent>(`/api/events/${eventId}/teams`, team);
     }
 
     removeEventFromTeam(eventId: string, teamId: string): Observable<void> {
@@ -159,12 +160,12 @@ export class AdminEventsService {
         return this.http.get<Layer[]>(`/api/events/${eventId}/layers`);
     }
 
-    addLayerToEvent(eventId: string, layer: { id: number }): Observable<Event> {
-        return this.http.post<Event>(`/api/events/${eventId}/layers`, layer);
+    addLayerToEvent(eventId: string, layer: { id: number }): Observable<MageEvent> {
+        return this.http.post<MageEvent>(`/api/events/${eventId}/layers`, layer);
     }
 
-    removeLayerFromEvent(eventId: string, layerId: number): Observable<Event> {
-        return this.http.delete<Event>(`/api/events/${eventId}/layers/${layerId}`);
+    removeLayerFromEvent(eventId: string, layerId: number): Observable<MageEvent> {
+        return this.http.delete<MageEvent>(`/api/events/${eventId}/layers/${layerId}`);
     }
 
     createForm(eventId: string, formData: any): Observable<any> {

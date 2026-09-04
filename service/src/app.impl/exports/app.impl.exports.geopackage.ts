@@ -4,9 +4,9 @@ import stream, { Readable } from 'stream'
 import os from 'os'
 import moment from 'moment'
 import { Archiver } from 'archiver'
-import { ExportTransform, ObservationFormFieldProjection } from '../../app.api/exports/app.api.exports'
-import { ExportItemSummary, ExportOptions, ExportProjection, ExportSummary } from '../../entities/exports/entities.exports'
-import { Attachment, AttachmentStore, EventScopedObservationRepository, Observation, ObservationRepositoryForEvent } from '../../entities/observations/entities.observations'
+import { ExportParams, ExportTransform, IterateObservations, LocationExportParams, ObservationExportParams, projectedObservationFormFields, projectionIncludesField, projectionIncludesForm } from './app.impl.exports'
+import { ExportItemSummary, ExportProjection, ExportSummary } from '../../entities/exports/entities.exports'
+import { Attachment, AttachmentStore, Observation } from '../../entities/observations/entities.observations'
 import { UserLocationRepository } from '../../entities/locations/entities.locations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { User, UserIconContentStore, UserRepository } from '../../entities/users/entities.users'
@@ -32,7 +32,7 @@ export class GeoPackageExportTransform implements ExportTransform {
 
   constructor(
     private readonly locationRepository: UserLocationRepository,
-    private readonly observationRepository: ObservationRepositoryForEvent,
+    private readonly streamObservations: IterateObservations,
     private readonly iconStore: ObservationIconContentStore,
     private readonly attachmentStore: AttachmentStore,
     private readonly iconRepository: ObservationIconRepository,
@@ -43,21 +43,20 @@ export class GeoPackageExportTransform implements ExportTransform {
 
   async export(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
-    archive: Archiver
+    archive: Archiver,
+    params: ExportParams
   ): Promise<ExportSummary> {
     const response: ExportSummary = {}
 
     const filePath = await createGeoPackageFile()
     const geopackage = await GeoPackageAPI.create(filePath)
 
-    if (options?.filter?.exportObservations) {
-      response.observations = await this.exportObservations(event, options, projectObservationFormFields, geopackage)
+    if (params?.observationParams) {
+      response.observations = await this.exportObservations(event, params.observationParams, geopackage)
     }
 
-    if (options?.filter?.exportLocations) {
-      response.locations = await this.addLocationsToGeoPackage(geopackage, event, options)
+    if (params?.locationParams) {
+      response.locations = await this.addLocationsToGeoPackage(geopackage, event, params.locationParams)
     }
 
     const fileHandle = await open(filePath, 'r')
@@ -73,38 +72,25 @@ export class GeoPackageExportTransform implements ExportTransform {
 
   async exportObservations(
     event: MageEvent,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection,
+    params: ObservationExportParams,
     geopackage: GeoPackage,
   ): Promise<ExportItemSummary> {
-      await addFormDataToGeoPackage(geopackage, event, options.projection)
-      await createFormAttributeTables(geopackage, event, options.projection)
+      await addFormDataToGeoPackage(geopackage, event, params.projection)
+      await createFormAttributeTables(geopackage, event, params.projection)
       await createObservationTable(geopackage)
       const styles = await this.createObservationFeatureTableStyles(geopackage, event)
-      return this.addObservationsToGeoPackage(geopackage, event, styles, options, projectObservationFormFields)
+      return this.addObservationsToGeoPackage(geopackage, event, styles, params)
   }
 
   async addObservationsToGeoPackage(
     geopackage: GeoPackage,
     event: MageEvent,
     styles: FeatureTableStyles,
-    options: ExportOptions,
-    projectObservationFormFields: ObservationFormFieldProjection
+    params: ObservationExportParams
   ): Promise<ExportItemSummary> {
-    const { filter, projection } = options
     createAttachmentTable(geopackage)
 
-    const repository: EventScopedObservationRepository = await this.observationRepository(event.id)
-    const iterable = repository.iterate({
-      where: {
-        stateIsAnyOf: [ 'active' ],
-        timestampAfter: filter?.startDate,
-        timestampBefore: filter?.endDate,
-        isFavoriteOfUser: filter?.favorites ? filter.favorites.userId : undefined,
-        isFlaggedImportant: filter?.important ? true : undefined
-      },
-      includeAttachments: filter?.includeAttachments
-    })
+    const iterable = await this.streamObservations(event, params.findSpec)
 
     let count = 0;
     let startTimestamp: number | undefined = undefined
@@ -121,7 +107,7 @@ export class GeoPackageExportTransform implements ExportTransform {
           endTimestamp = observation.properties.timestamp.getTime()
         }
 
-        const forms = projectObservationFormFields(observation, options.projection)
+        const forms = projectedObservationFormFields(observation, params.projection)
 
         if (!forms.length) {
           break
@@ -308,7 +294,7 @@ export class GeoPackageExportTransform implements ExportTransform {
   async ensureIconInGeopackage(
     event: MageEvent,
     iconSpec: IconCachePath,
-    iconCache: any,
+    iconCache: IconTreeCache,
     styles: FeatureTableStyles
   ): Promise<IconRow['id'] | null> {
     const cachedIconId = iconCache.get(iconSpec)
@@ -344,19 +330,13 @@ export class GeoPackageExportTransform implements ExportTransform {
   async addLocationsToGeoPackage(
     geopackage: GeoPackage,
     event: MageEvent,
-    options: ExportOptions
+    params: LocationExportParams
   ): Promise<ExportItemSummary> {
     const table = 'Locations'
     await createLocationTable(geopackage, table)
     const featureTableStyles = await createLocationTableStyles(geopackage, table)
 
-    const iterable = this.locationRepository.iterate({
-      where: {
-        eventId: event.id,
-        timestampAfter: options?.filter?.startDate,
-        timestampBefore: options?.filter?.endDate
-      }
-    })
+    const iterable = this.locationRepository.iterate(params.findSpec)
 
     let count = 0
     let startTimestamp: number | undefined = undefined
@@ -434,7 +414,6 @@ export class GeoPackageExportTransform implements ExportTransform {
     const featureDao = geopackage.getFeatureDao(table);
     if (zoomToEnvelope && user) {
       // Process the last user, since it was missed in the loop above
-      const featureDao = geopackage.getFeatureDao('Locations')
       setContentBounds(geopackage, featureDao, zoomToEnvelope)
     }
 
@@ -459,7 +438,7 @@ async function createGeoPackageFile(): Promise<string> {
 async function addFormDataToGeoPackage(
   geopackage: GeoPackage,
   event: MageEvent,
-  projection?: ExportProjection
+  projection: ExportProjection | undefined
 ): Promise<void> {
   const columns = [{
     name: 'formName',
@@ -478,9 +457,7 @@ async function addFormDataToGeoPackage(
     dataType: 'TEXT'
   }]
 
-  const forms = projection ? event.forms?.filter(form => {
-    return projection?.some(formProjection => formProjection.formId === form.id)
-  }) : event.forms
+  const forms = event.forms?.filter(form => projectionIncludesForm(form.id, projection))
 
   if (forms.length) {
     await geopackage.createAttributesTableFromProperties('Forms', columns)
@@ -500,22 +477,14 @@ async function addFormDataToGeoPackage(
 async function createFormAttributeTables(
   geopackage: GeoPackage,
   event: MageEvent,
-  projection?: ExportProjection
+  projection: ExportProjection | undefined
 ): Promise<void> {
-  const forms = projection ? event.forms?.filter(form => {
-    return projection?.some(formProjection => formProjection.formId === form.id)
-  }) : event.forms
+  const forms = event.forms?.filter(form => projectionIncludesForm(form.id, projection))
 
   for (const form of forms) {
     const columns: any[] = form.fields
       .filter(form => !form.archived)
-      .filter(field => {
-        if (!projection) {
-          return true
-        }
-        const formProjection = projection.find(formProjection => formProjection.formId === form.id)
-        return formProjection?.fields.some(fieldProjection => fieldProjection === field.name)
-      })
+      .filter(field => projectionIncludesField(form.id, field.name, projection))
       .map(field => {
         return {
           dataColumn: {

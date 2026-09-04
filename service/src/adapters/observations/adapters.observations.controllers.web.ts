@@ -1,5 +1,6 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
+import { parseISO8601 } from '../../utilities/dates'
 import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
 import {
   AttachmentStore,
@@ -14,7 +15,6 @@ import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
-import moment from 'moment'
 import { PagingParameters } from '../../entities/entities.global'
 
 declare module 'express-serve-static-core' {
@@ -363,13 +363,6 @@ function parseFilterParam(keyword: any, body: any): ObservationFieldFilter | und
   }
 
   return Object.keys(fieldFilter).length ? fieldFilter : undefined
-}
-
-function parseISO8601(iso8601: string): Date | undefined {
-  const date = moment(iso8601, moment.ISO_8601, true)
-  if (typeof iso8601 === 'string' && date.isValid()) {
-    return date.toDate()
-  }
 }
 
 function parseObservationParams(query: any, body: any): ObservationSearch | InvalidInputError {
