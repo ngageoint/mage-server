@@ -37,9 +37,30 @@ mat-card-header mat-hint {
 }
 
 .event-card {
-    max-height: 300px;
-    overflow-y: auto;
+    max-height: 320px;
+    // "scroll" (not "auto") so the scrollbar track always renders instead of
+    // the OS's auto-hide overlay behavior (e.g. macOS trackpad scrollbars,
+    // which only appear while actively scrolling) - makes it obvious up
+    // front that the list continues, rather than only while scrolling. The
+    // taller max-height also lets part of the next event's text peek in.
+    overflow-y: scroll;
     overflow-x: hidden;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--mat-sys-outline, rgba(0, 0, 0, 0.35)) transparent;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--mat-sys-outline, rgba(0, 0, 0, 0.35));
+        border-radius: 4px;
+    }
 }
 
 .no-feature-services-hint {

@@ -23,8 +23,8 @@
         </div>
 
         <mat-list>
-          <ng-container *ngFor="let event of sortedEvents; let last = last">
-            <mat-list-item *ngIf="getVisibility(event)" class="arcEvent">
+          <ng-container *ngFor="let event of visibleEvents; let last = last">
+            <mat-list-item class="arcEvent">
               <div class="arcEvent__row">
                 <span class="arcEvent__toggle">
                   <mat-slide-toggle color="primary" [checked]="event.selected"

@@ -189,6 +189,10 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     return [...this.model.allEvents].sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  get visibleEvents(): ArcEvent[] {
+    return this.sortedEvents.filter((event) => this.getVisibility(event));
+  }
+
   clearFilterValue() {
     this.filterValue = "";
   }
