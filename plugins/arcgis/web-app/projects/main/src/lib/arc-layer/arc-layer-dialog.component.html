@@ -100,7 +100,13 @@
             </mat-form-field>
 
             <div class="discovered-services-header">
-              <span>{{discoveredTotal}} feature service{{discoveredTotal === 1 ? '' : 's'}} found</span>
+              <ng-container *ngIf="searching; else discoveredCount">
+                <mat-spinner diameter="16"></mat-spinner>
+                <span>Searching...</span>
+              </ng-container>
+              <ng-template #discoveredCount>
+                <span>{{discoveredTotal}} feature service{{discoveredTotal === 1 ? '' : 's'}} found</span>
+              </ng-template>
             </div>
             <mat-selection-list [multiple]="false" *ngIf="discoveredServices.length > 0">
               <mat-list-option *ngFor="let service of discoveredServices" (click)="onSelectDiscoveredService(service)" [lines]="3"

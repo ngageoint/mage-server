@@ -40,6 +40,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	entryMode: EntryMode = EntryMode.Portal
 
 	loading = false
+	searching = false
 	validationError: string | undefined
 	hasBrowsed = false
 	discoveredServices: DiscoveredFeatureService[] = []
@@ -349,6 +350,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 
 	private discover(request: DiscoveryRequest): void {
 		this.loading = true
+		this.searching = true
 		this.arcService.discoverFeatureServices(request).subscribe({
 			next: (result) => this.onDiscovered(result),
 			error: (error) => this.onDiscoverError(error)
@@ -370,11 +372,13 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		this.discoveredTotal = result.total
 		this.discoveredStart = result.start
 		this.loading = false
+		this.searching = false
 	}
 
 	private onDiscoverError(error: unknown): void {
 		console.log('arc-layer discover feature services error: ' + error);
 		this.loading = false
+		this.searching = false
 		this.validationError = this.extractErrorMessage(error)
 	}
 

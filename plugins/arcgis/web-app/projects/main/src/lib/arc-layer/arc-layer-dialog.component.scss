@@ -122,6 +122,9 @@ mat-dialog-content {
   font-size: 90%;
   opacity: 0.7;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .discovered-services-paging {
