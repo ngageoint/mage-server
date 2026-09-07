@@ -6,14 +6,11 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
-  TemplateRef,
-  ViewChild
+  SimpleChanges
 } from '@angular/core';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { FeatureLayerConfig, FeatureServiceConfig } from "../ArcGISConfig"
 import { ArcService, MageEvent } from '../arc.service'
-import { MatDialog } from '@angular/material/dialog'
 import { ArcEventsModel } from './ArcEventsModel';
 import { ArcEvent } from './ArcEvent';
 import { ArcEventLayer } from './ArcEventLayer';
@@ -55,17 +52,12 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   isLoading: boolean;
-  currentEditingEvent: ArcEvent;
-  layers: ArcEventLayer[];
-
-  @ViewChild('editEventDialog', { static: true })
-  private editEventTemplate: TemplateRef<unknown>
 
   private configChangedSubscription?: Subscription;
   isSaving: boolean;
   private savedSnapshot: string = '[]';
 
-  constructor(private arcService: ArcService, private dialog: MatDialog) {
+  constructor(private arcService: ArcService) {
     this.config = defaultArcGISPluginConfig;
     this._model = new ArcEventsModel();
   }
@@ -259,52 +251,43 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     return eventsLayers
   }
 
-  filterEnabled = false;
-  editingSyncAfterDate: Date | null = null;
-  editingSyncAfterTime = '';
-
-  onEditEvent(event: ArcEvent) {
-    console.log('Editing event synchronization for event ' + event.name);
-    this.layers = event.layers;
-    this.currentEditingEvent = event;
-    this.filterEnabled = !!event.syncAfter;
-    const syncAfterDate = event.syncAfter ? new Date(event.syncAfter) : null;
-    this.editingSyncAfterDate = syncAfterDate;
-    this.editingSyncAfterTime = syncAfterDate ? this.toTimeString(syncAfterDate) : '';
-    this.dialog.open<unknown, unknown, string>(this.editEventTemplate)
+  isFilterEnabled(event: ArcEvent): boolean {
+    return !!event.syncAfter;
   }
 
-  onFilterToggle(checked: boolean): void {
-    this.filterEnabled = checked;
+  getSyncAfterTime(event: ArcEvent): string {
+    const date = event.syncAfterDate;
+    return date ? this.toTimeString(date) : '';
+  }
+
+  onFilterToggle(event: ArcEvent, checked: boolean): void {
     if (checked) {
-      if (!this.editingSyncAfterDate) {
-        this.editingSyncAfterDate = new Date();
-        this.editingSyncAfterTime = this.toTimeString(this.editingSyncAfterDate);
-      }
-      this.applySyncAfter();
-    } else if (this.currentEditingEvent) {
-      this.currentEditingEvent.syncAfter = undefined;
+      const date = event.syncAfterDate || new Date();
+      const time = this.getSyncAfterTime(event) || this.toTimeString(date);
+      this.applySyncAfter(event, date, time);
+    } else {
+      event.syncAfter = undefined;
     }
   }
 
-  onSyncAfterDateChange(value: Date | null): void {
-    this.editingSyncAfterDate = value;
-    this.applySyncAfter();
+  onSyncAfterDateChange(event: ArcEvent, value: Date | null): void {
+    if (!value) return;
+    this.applySyncAfter(event, value, this.getSyncAfterTime(event));
   }
 
-  onSyncAfterTimeChange(value: string): void {
-    this.editingSyncAfterTime = value;
-    this.applySyncAfter();
+  onSyncAfterTimeChange(event: ArcEvent, value: string): void {
+    const date = event.syncAfterDate;
+    if (!date) return;
+    this.applySyncAfter(event, date, value);
   }
 
-  private applySyncAfter(): void {
-    if (!this.currentEditingEvent || !this.editingSyncAfterDate) return;
-    const combined = new Date(this.editingSyncAfterDate);
-    const [hours, minutes] = this.editingSyncAfterTime
-      ? this.editingSyncAfterTime.split(':').map(Number)
+  private applySyncAfter(event: ArcEvent, date: Date, time: string): void {
+    const combined = new Date(date);
+    const [hours, minutes] = time
+      ? time.split(':').map(Number)
       : [0, 0];
     combined.setHours(hours || 0, minutes || 0, 0, 0);
-    this.currentEditingEvent.syncAfter = combined.toISOString();
+    event.syncAfter = combined.toISOString();
   }
 
   private toTimeString(date: Date): string {
@@ -312,10 +295,45 @@ export class ArcEventComponent implements OnInit, OnChanges, OnDestroy {
     return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
-  /// Turns an event's synchronization on or off
+  // Turns an event's synchronization on or off
   onToggleEvent(event: ArcEvent, on: boolean) {
     console.log(`Turning event synchronization ${on ? 'on' : 'off'} for event ${event.name}`);
     event.selected = on;
+    if (on) {
+      this.expandedEventId = event.id;
+    } else if (this.expandedEventId === event.id) {
+      this.expandedEventId = null;
+    }
+    this.blurActiveElement();
+  }
+
+  // Material's default state after enable/disable of a toggle is to leave it in focus.
+  // Disable that focus after a click
+  private blurActiveElement(): void {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement) {
+        active.blur();
+      }
+    });
+  }
+
+  // Tracks which event's panel is currently expanded, so disabling an event
+  // (turning its sync toggle off) can force its expanded panel closed
+  expandedEventId: number | null = null;
+
+  isExpanded(event: ArcEvent): boolean {
+    return this.expandedEventId === event.id;
+  }
+
+  onPanelOpened(event: ArcEvent): void {
+    this.expandedEventId = event.id;
+  }
+
+  onPanelClosed(event: ArcEvent): void {
+    if (this.expandedEventId === event.id) {
+      this.expandedEventId = null;
+    }
   }
 
   getSelectedLayers(event: ArcEvent) {

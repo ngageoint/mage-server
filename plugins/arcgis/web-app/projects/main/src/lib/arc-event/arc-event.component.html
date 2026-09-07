@@ -1,7 +1,7 @@
 <div>
   <mat-card appearance="outlined" class="d-flow-root">
     <mat-card-header class="w-100">
-      <div class="arcEvent__info">
+      <div class="arcEvent-info">
         <mat-card-title>Events</mat-card-title>
         <mat-hint>Choose which ArcGIS layers each Mage event sends observations to.</mat-hint>
       </div>
@@ -22,35 +22,64 @@
           <mat-divider></mat-divider>
         </div>
 
-        <mat-list>
-          <ng-container *ngFor="let event of visibleEvents; let last = last">
-            <mat-list-item class="arcEvent">
-              <div class="arcEvent__row">
-                <span class="arcEvent__toggle">
+        <mat-accordion class="arc-events-accordion" displayMode="flat">
+          <mat-expansion-panel *ngFor="let event of visibleEvents" [disabled]="!event.selected" class="arcEvent"
+            [expanded]="isExpanded(event)" (opened)="onPanelOpened(event)" (closed)="onPanelClosed(event)">
+            <mat-expansion-panel-header class="arcEvent-header">
+              <div class="arcEvent-row">
+                <span class="arcEvent-toggle" (click)="$event.stopPropagation()">
                   <mat-slide-toggle color="primary" [checked]="event.selected"
                     [disabled]="!event.layers.length"
+                    (click)="$event.stopPropagation()"
                     (change)="onToggleEvent(event, $event.checked)"></mat-slide-toggle>
                 </span>
-                <div class="arcEvent__info">
+                <div class="arcEvent-info">
                   <div>
                     {{ event.name }}
                   </div>
-                  <div>{{ event.selected ? layerSyncSummary(event) : 'This event is not synchronizing to any ArcGIS layers.' }}</div>
+                  <div class="arcEvent-summary">{{ event.selected ? layerSyncSummary(event) : 'This event is not synchronizing to any ArcGIS layers.' }}</div>
+                </div>
+                <span class="arcEvent-icons" (click)="$event.stopPropagation()">
+                  <a mat-icon-button color="primary" [disabled]="!event.selected"
+                    href="/#/admin/events/{{event.id}}" target="_blank" (click)="$event.stopPropagation()">
+                    <mat-icon>open_in_new</mat-icon>
+                  </a>
+                </span>
+              </div>
+            </mat-expansion-panel-header>
+
+            <div class="arcEvent-panel-body">
+              <h3 class="arcEvent-section-title">Layers</h3>
+              <div class="arc-layers" *ngFor="let arcLayer of event.layers">
+                <div class="featureLayer-value">
+                  <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
+                  {{layerDisplay(arcLayer)}}
                 </div>
               </div>
-              <span matListItemMeta class="arcEvent__icons">
-                <a mat-icon-button color="primary" [disabled]="!event.selected"
-                  href="/#/admin/events/{{event.id}}" target="_blank">
-                  <mat-icon>open_in_new</mat-icon>
-                </a>
-                <button mat-icon-button color="primary" [disabled]="!event.selected" (click)="onEditEvent(event)">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              </span>
-            </mat-list-item>
-            <mat-divider *ngIf="!last"></mat-divider>
-          </ng-container>
-        </mat-list>
+
+              <mat-divider></mat-divider>
+              <h3 class="arcEvent-section-title">Filter</h3>
+              <mat-slide-toggle color="primary" [checked]="isFilterEnabled(event)" (change)="onFilterToggle(event, $event.checked)">
+                Only sync observations after a specific date/time
+              </mat-slide-toggle>
+              <div class="sync-after-datetime">
+                <mat-form-field appearance="fill">
+                  <mat-label>Sync After Date</mat-label>
+                  <input matInput [matDatepicker]="syncAfterDatePicker" [disabled]="!isFilterEnabled(event)"
+                    [ngModel]="event.syncAfterDate" (ngModelChange)="onSyncAfterDateChange(event, $event)" autocomplete="off" />
+                  <mat-datepicker-toggle matSuffix [for]="syncAfterDatePicker" [disabled]="!isFilterEnabled(event)"></mat-datepicker-toggle>
+                  <mat-datepicker #syncAfterDatePicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Sync After Time</mat-label>
+                  <input matInput type="time" [disabled]="!isFilterEnabled(event)"
+                    [ngModel]="getSyncAfterTime(event)" (ngModelChange)="onSyncAfterTimeChange(event, $event)" autocomplete="off" />
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
       </section>
     </mat-card-content>
     <mat-card-actions class="nav-actions">
@@ -67,7 +96,7 @@
 
   <mat-card appearance="outlined" class="d-flow-root push-status-card">
     <mat-card-header class="w-100">
-      <div class="arcEvent__info">
+      <div class="arcEvent-info">
         <mat-card-title>Push Status</mat-card-title>
         <mat-hint>Observations that have been sent to the configured ArcGIS layer(s).</mat-hint>
       </div>
@@ -77,37 +106,4 @@
     </mat-card-content>
   </mat-card>
 
-  <ng-template #editEventDialog let-data>
-    <h2 matDialogTitle>ArcGIS layers that Mage event named {{currentEditingEvent.name}} is synchronizing</h2>
-    <mat-dialog-content>
-      <div class="arc-layers" *ngFor="let arcLayer of layers">
-        <div class="featureLayer__value">
-          <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
-          {{layerDisplay(arcLayer)}}
-        </div>
-      </div>
-
-      <mat-divider></mat-divider>
-      <h3>Filter</h3>
-      <mat-slide-toggle color="primary" [checked]="filterEnabled" (change)="onFilterToggle($event.checked)">
-        Only sync observations after a specific date/time
-      </mat-slide-toggle>
-      <div class="sync-after-datetime" *ngIf="filterEnabled">
-        <mat-form-field appearance="fill">
-          <mat-label>Sync After Date</mat-label>
-          <input matInput [matDatepicker]="syncAfterDatePicker" [ngModel]="editingSyncAfterDate" (ngModelChange)="onSyncAfterDateChange($event)" autocomplete="off" />
-          <mat-datepicker-toggle matSuffix [for]="syncAfterDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #syncAfterDatePicker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Sync After Time</mat-label>
-          <input matInput type="time" [ngModel]="editingSyncAfterTime" (ngModelChange)="onSyncAfterTimeChange($event)" autocomplete="off" />
-        </mat-form-field>
-      </div>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button matDialogClose>CLOSE</button>
-    </mat-dialog-actions>
-  </ng-template>
 </div>

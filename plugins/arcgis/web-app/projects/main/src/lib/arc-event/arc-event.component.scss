@@ -1,4 +1,4 @@
-.arcEvent__info {
+.arcEvent-info {
     flex-grow: 1;
     max-width: 93%
 }
@@ -8,7 +8,7 @@ mat-card-header mat-hint {
     padding-bottom: 16px;
 }
 
-.arcEvent__button {
+.arcEvent-button {
     width: 7%;
 }
 
@@ -37,12 +37,7 @@ mat-card-header mat-hint {
 }
 
 .event-card {
-    max-height: 320px;
-    // "scroll" (not "auto") so the scrollbar track always renders instead of
-    // the OS's auto-hide overlay behavior (e.g. macOS trackpad scrollbars,
-    // which only appear while actively scrolling) - makes it obvious up
-    // front that the list continues, rather than only while scrolling. The
-    // taller max-height also lets part of the next event's text peek in.
+    max-height: 350px;
     overflow-y: scroll;
     overflow-x: hidden;
 
@@ -69,23 +64,61 @@ mat-card-header mat-hint {
     margin-bottom: 12px;
 }
 
-.arcEvent__icons {
+.arcEvent-summary {
+    font-size: 0.85rem;
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.arcEvent-icons {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-.arcEvent__row {
+.arcEvent-row {
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-.arcEvent__toggle {
+.arcEvent-toggle {
     display: flex;
     align-items: center;
     margin-right: 12px;
     flex-shrink: 0;
+}
+
+.arc-events-accordion {
+    .mat-expansion-panel {
+        box-shadow: none;
+    }
+}
+
+.arcEvent-panel-body {
+    padding: 4px 16px 16px 48px;
+    border-radius: 4px;
+}
+
+.arcEvent-section-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.8;
+    margin: 8px 0;
+}
+
+.arc-layers,
+.featureLayer-value {
+    font-size: 0.85rem;
+}
+
+.arcEvent-header {
+    height: auto !important;
+    padding: 8px 24px;
+}
+
+.arc-layers {
+    margin-bottom: 4px;
 }
 
 .nav-actions {
