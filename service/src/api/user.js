@@ -9,7 +9,9 @@ const UserModel = require('../models/user')
   , fs = require('fs-extra')
   , util = require('util')
   , async = require('async')
-  , environment = require('../environment/env');
+  , environment = require('../environment/env')
+  , { stagePendingContent } = require('./user_content_store')
+  , { hasAttachmentHooks } = require('../plugins.api/plugins.api.attachments');
 
 const userBase = environment.userBaseDirectory;
 
@@ -115,14 +117,26 @@ User.prototype.create = async function (user, options = {}) {
 
   if (options.avatar) {
     try {
-      const avatar = avatarPath(newUser._id, newUser, options.avatar);
-      await fs.move(options.avatar.path, avatar.absolutePath);
+      if (hasAttachmentHooks()) {
+        const stagedContentId = await stagePendingContent(options.avatar.path);
 
-      newUser.avatar = {
-        relativePath: avatar.relativePath,
-        contentType: options.avatar.mimetype,
-        size: options.avatar.size
-      };
+        newUser.avatar = {
+          contentType: options.avatar.mimetype,
+          size: options.avatar.size,
+          processingStatus: 'pending',
+          stagedContentId: stagedContentId
+        };
+      } else {
+        const avatar = avatarPath(newUser._id, newUser, options.avatar);
+        await fs.move(options.avatar.path, avatar.absolutePath);
+
+        newUser.avatar = {
+          relativePath: avatar.relativePath,
+          contentType: options.avatar.mimetype,
+          size: options.avatar.size,
+          processingStatus: 'success'
+        };
+      }
 
       await newUser.save();
     } catch { }
@@ -130,15 +144,28 @@ User.prototype.create = async function (user, options = {}) {
 
   if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
     try {
-      const icon = iconPath(newUser._id, newUser, options.icon);
-      await fs.move(options.icon.path, icon.absolutePath);
+      if (hasAttachmentHooks()) {
+        const stagedContentId = await stagePendingContent(options.icon.path);
 
-      newUser.icon.type = options.icon.type;
-      newUser.icon.relativePath = icon.relativePath;
-      newUser.icon.contentType = options.icon.mimetype;
-      newUser.icon.size = options.icon.size;
-      newUser.icon.text = options.icon.text;
-      newUser.icon.color = options.icon.color;
+        newUser.icon.type = options.icon.type;
+        newUser.icon.contentType = options.icon.mimetype;
+        newUser.icon.size = options.icon.size;
+        newUser.icon.text = options.icon.text;
+        newUser.icon.color = options.icon.color;
+        newUser.icon.processingStatus = 'pending';
+        newUser.icon.stagedContentId = stagedContentId;
+      } else {
+        const icon = iconPath(newUser._id, newUser, options.icon);
+        await fs.move(options.icon.path, icon.absolutePath);
+
+        newUser.icon.type = options.icon.type;
+        newUser.icon.relativePath = icon.relativePath;
+        newUser.icon.contentType = options.icon.mimetype;
+        newUser.icon.size = options.icon.size;
+        newUser.icon.text = options.icon.text;
+        newUser.icon.color = options.icon.color;
+        newUser.icon.processingStatus = 'success';
+      }
 
       await newUser.save();
     } catch { }
@@ -182,6 +209,19 @@ User.prototype.update = function (user, options, callback) {
 
   if (options.avatar) {
     operations.push(function (updatedUser, done) {
+      if (hasAttachmentHooks()) {
+        stagePendingContent(options.avatar.path).then(stagedContentId => {
+          updatedUser.avatar = {
+            contentType: options.avatar.mimetype,
+            size: options.avatar.size,
+            processingStatus: 'pending',
+            stagedContentId: stagedContentId
+          };
+          done(null, updatedUser);
+        }, done);
+        return;
+      }
+
       const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, { clobber: true }, function (err) {
         if (err) {
@@ -191,7 +231,8 @@ User.prototype.update = function (user, options, callback) {
         updatedUser.avatar = {
           relativePath: avatar.relativePath,
           contentType: options.avatar.mimetype,
-          size: options.avatar.size
+          size: options.avatar.size,
+          processingStatus: 'success'
         };
 
         done(null, updatedUser);
@@ -223,6 +264,21 @@ User.prototype.update = function (user, options, callback) {
       }
     } else {
       operations.push(function (updatedUser, done) {
+        if (hasAttachmentHooks()) {
+          stagePendingContent(options.icon.path).then(stagedContentId => {
+            updatedUser.icon.type = options.icon.type;
+            updatedUser.icon.contentType = options.icon.mimetype;
+            updatedUser.icon.size = options.icon.size;
+            updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
+            updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
+            updatedUser.icon.processingStatus = 'pending';
+            updatedUser.icon.stagedContentId = stagedContentId;
+
+            done(null, updatedUser);
+          }, done);
+          return;
+        }
+
         const icon = iconPath(updatedUser._id, updatedUser, options.icon);
         fs.move(options.icon.path, icon.absolutePath, { clobber: true }, function (err) {
           if (err) return done(err);
@@ -233,6 +289,7 @@ User.prototype.update = function (user, options, callback) {
           updatedUser.icon.size = options.icon.size;
           updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
           updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
+          updatedUser.icon.processingStatus = 'success';
 
           done(null, updatedUser);
         });

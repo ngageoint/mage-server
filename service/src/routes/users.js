@@ -15,11 +15,21 @@ module.exports = function(app, security) {
     verification = require('../authentication/verification'),
     userTransformer = require('../transformers/user'),
     pageTransformer = require('../transformers/pageinfo'),
-    { defaultHandler: upload } = require('../upload'),
+    { Upload } = require('../upload'),
+    environment = require('../environment/env'),
     {
       defaultEventPermissionsService: eventPermissions
     } = require('../permissions/permissions.events'),
     passport = security.authentication.passport;
+
+  const userContentUpload = Upload({ fileSize: environment.userContentMaxSize });
+
+  function handleUserContentUploadError(err, req, res, next) {
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).send(`avatar/icon upload exceeds maximum size of ${environment.userContentMaxSize} bytes`);
+    }
+    next(err);
+  }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
   const JWTService = verification.JWTService;
@@ -172,7 +182,8 @@ module.exports = function(app, security) {
     '/api/users',
     isAuthenticated('bearer'),
     access.authorize('CREATE_USER'),
-    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    handleUserContentUploadError,
     validateUsername,
     validateAccount,
     parseIconUpload,
@@ -395,7 +406,8 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     security.authentication.bearerAuthentication,
-    upload.single('avatar'),
+    userContentUpload.single('avatar'),
+    handleUserContentUploadError,
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName'))
@@ -509,7 +521,8 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER'),
-    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    handleUserContentUploadError,
     parseIconUpload,
     function(req, res, next) {
       const user = req.userParam;

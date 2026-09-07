@@ -303,6 +303,11 @@ exports.findPendingContent = async function (limit) {
   return references;
 };
 
+exports.getContentById = async function (userId, field) {
+  const doc = await User.findById(userId, { [field]: 1 }).lean();
+  return doc ? doc[field] : null;
+};
+
 // Applies a partial update to just the avatar/icon subfields of one user
 // (processingStatus, stagedContentId, relativePath on finalize, etc.),
 // without touching the rest of the document. A value of `undefined` in
@@ -324,7 +329,10 @@ exports.patchContent = function (userId, field, patch, callback) {
   if (Object.keys(set).length) update.$set = set;
   if (Object.keys(unset).length) update.$unset = unset;
 
-  User.findByIdAndUpdate(userId, update, { new: true }, callback);
+  User.findByIdAndUpdate(userId, update, { new: true }).then(
+    user => callback(null, user),
+    err => callback(err)
+  );
 };
 
 exports.createUser = function (user, callback) {
