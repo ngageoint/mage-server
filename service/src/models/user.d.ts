@@ -40,27 +40,6 @@ export declare const Schema: mongoose.Schema<UserDocument>
 export function getUserById(id: mongoose.Types.ObjectId): Promise<UserModelInstance | null>
 export function getUserById(id: mongoose.Types.ObjectId, callback: (err: null | any, result: UserModelInstance | null) => any): void
 
-export function findPendingContent(limit: number): Promise<{ userId: string, field: 'avatar' | 'icon' }[]>
-
-export function getContentById(userId: string, field: 'avatar' | 'icon'): Promise<{
-  stagedContentId?: string
-  processingRetryCount?: number
-} | null>
-
-export function patchContent(
-  userId: string,
-  field: 'avatar' | 'icon',
-  patch: {
-    relativePath?: string
-    processingStatus?: string
-    processingMessage?: string
-    processingHook?: string
-    processingRetryCount?: number
-    stagedContentId?: string
-  },
-  callback: (err: any, result?: UserModelInstance | null) => any
-): void
-
 type RoleReferenced = {
   roleId: string,
   role?: never

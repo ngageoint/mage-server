@@ -87,9 +87,9 @@ export class ProfileComponent implements OnInit {
           })
         }
       },
-      error: () => {
+      error: (err) => {
         this.saving = false
-        this.profileError = 'Error updating profile, please try again later.'
+        this.profileError = (typeof err.error === 'string' && err.error) || 'Error updating profile, please try again later.'
       }
     })
   }

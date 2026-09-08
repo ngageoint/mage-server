@@ -16,15 +16,17 @@ export interface AttachmentProcessingPluginHooks {
 let registeredHooks: AttachmentHook[] = []
 
 // Set once at boot, after plugin loading finalizes the real hooks list, so
-// callers outside the boot closure (e.g. api/user.js) can tell whether any
-// content-scanning hook is registered at all, without needing to know about
-// any specific plugin like clamav by name.
+// callers outside the boot closure (e.g. api/user.js) can run the pipeline
+// against whatever hooks are registered, without needing to know about any
+// specific plugin like clamav by name. runPipeline() already no-ops to
+// 'pass' on an empty array, so callers don't need to branch on this being
+// empty - just call it.
 export function setAttachmentHooks(hooks: AttachmentHook[]): void {
   registeredHooks = hooks
 }
 
-export function hasAttachmentHooks(): boolean {
-  return registeredHooks.length > 0
+export function getAttachmentHooks(): AttachmentHook[] {
+  return registeredHooks
 }
 
 export async function runPipeline(hooks: AttachmentHook[], content: ScannableContent, stagedFilePath: string): Promise<AttachmentPipelineResult> {
