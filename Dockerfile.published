@@ -1,3 +1,5 @@
+# Assemble a Mage server instance image from packages published in the NPM registry.
+
 ARG BUILD_IMAGE="node:24-slim"
 ARG DIST_IMAGE="ghcr.io/ngageoint/mage-server/ironbank/google/distroless13/nodejs-24:nonroot"
 ARG MAGE_INSTANCE="/mage/instance"
