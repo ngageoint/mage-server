@@ -3,7 +3,6 @@ import { take, lastValueFrom } from 'rxjs';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 
-import { Disclaimer } from './security-disclaimer.model';
 import { SettingsService } from '../settings.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
