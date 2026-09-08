@@ -100,7 +100,7 @@
             <observation-field-filter [forms]="exportEvent?.forms" [showIncompleteError]="showIncompleteConditionError" (filterChanged)="onFilterChanged($event)"></observation-field-filter>
 
             <div>
-              <div class="mat-body-2">Form Fields To Include</div>
+              <div class="mat-body-2 form-fields-title">Form Fields To Include</div>
               <div class="export-format">
                 <mat-accordion multi class="form-projections-accordion">
                   <mat-expansion-panel *ngFor="let formProjection of formProjections" [hideToggle]="true">
