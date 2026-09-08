@@ -251,7 +251,7 @@
           (click)="showInfo('Field Mappings', 'For each form used in Mage, you can choose a form field and customize the ArcGIS layer attribute name.')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
-        <button mat-stroked-button class="edit-toggle-button"
+        <button [matButton]="editFieldMappings ? 'filled' : 'outlined'" class="edit-toggle-button"
           (click)="updateFieldMappings(editFieldMappings); editFieldMappings = !editFieldMappings">
           <mat-icon>{{editFieldMappings ? 'check' : 'edit'}}</mat-icon>
           {{editFieldMappings ? 'Done' : 'Edit'}}
@@ -281,9 +281,9 @@
               (click)="showEditFieldAuto('Event', 'fieldAttributes', config, event, selectableEvents())">
               <mat-icon>edit</mat-icon> Rename
             </button>
-            <button mat-stroked-button color="warn"
-              (click)="showDeleteField('event', config.fieldAttributes, event, event)">
-              <mat-icon>delete_outline</mat-icon> Remove
+            <button matButton="outlined" class="remove-mapping-button" type="button"
+            (click)="showDeleteField('event', config.fieldAttributes, event, event)">
+              <mat-icon>delete_outline</mat-icon> Delete
             </button>
           </div>
 
@@ -365,7 +365,7 @@
           (click)="showInfo('Attribute Settings', 'Modify the behavior of the attribute value before it is sent to ArcGIS. For example: you can concatenate multiple values, set default values, or omit the attribute from being sent to ArcGIS.')">
           <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
         </button>
-        <button mat-stroked-button class="edit-toggle-button"
+        <button [matButton]="editAttributes ? 'filled' : 'outlined'" class="edit-toggle-button"
           (click)="updateAttributeSettings(editAttributes); editAttributes = !editAttributes">
           <mat-icon>{{editAttributes ? 'check' : 'edit'}}</mat-icon>
           {{editAttributes ? 'Done' : 'Edit'}}
@@ -394,9 +394,9 @@
               (click)="showEditAttributeConfig(attribute)">
               <mat-icon>edit_attributes</mat-icon> Config
             </button>
-            <button mat-stroked-button color="warn"
+            <button matButton="outlined" class="remove-mapping-button" type="button"
               (click)="showDeleteField('attribute', config.attributes, attribute, attribute)">
-              <mat-icon>delete_outline</mat-icon> Remove
+              <mat-icon>delete_outline</mat-icon> Delete
             </button>
           </div>
 

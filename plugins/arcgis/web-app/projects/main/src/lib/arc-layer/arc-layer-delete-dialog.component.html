@@ -4,6 +4,8 @@
 
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-flat-button color="primary" [mat-dialog-close]="true"
-  >Delete</button>
+  <button matButton class="delete-feature-service-button" [mat-dialog-close]="true">
+    <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+    Delete
+  </button>
 </mat-dialog-actions>
