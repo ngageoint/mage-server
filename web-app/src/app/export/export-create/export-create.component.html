@@ -95,9 +95,9 @@
               </div>
             </div>
 
-            <event-member-filter [event]="exportEvent" [teams]="exportEvent?.teams" (memberFilterChanged)="onMemberFilterChanged($event)"></event-member-filter>
+            <event-member-filter [event]="exportEvent" [teams]="exportEvent?.teams" [filter]="memberFilter" (memberFilterChanged)="onMemberFilterChanged($event)"></event-member-filter>
 
-            <observation-field-filter [forms]="exportEvent?.forms" (filterChanged)="onFilterChanged($event)"></observation-field-filter>
+            <observation-field-filter [forms]="exportEvent?.forms" [showIncompleteError]="showIncompleteConditionError" (filterChanged)="onFilterChanged($event)"></observation-field-filter>
 
             <div>
               <div class="mat-body-2">Form Fields To Include</div>
@@ -151,6 +151,10 @@
             </mat-panel-title>
             <mat-panel-description *ngIf="!loadingLocationPreview">
               <span class="export-count-value" [matTooltip]="(locationPreview?.totalCount ?? 0 | number) + ' Location' + (locationPreview?.totalCount === 1 ? '' : 's') + (locationPreview?.totalCount > exportSizeWarningLimit ? ' · large export, may take time' : '')">{{(locationPreview?.totalCount ?? 0) | number}}</span>
+              <span *ngIf="activeLocationFilters.length" class="filter-icons-separator">·</span>
+              <span *ngIf="activeLocationFilters.length" class="filter-icons">
+                <mat-icon *ngFor="let filter of activeLocationFilters; trackBy: trackByFilterIcon" class="filter-icon" [matTooltip]="filter.tooltip">{{filter.icon}}</mat-icon>
+              </span>
             </mat-panel-description>
           </mat-expansion-panel-header>
 
@@ -173,7 +177,7 @@
 
             <div>
               <div class="mat-body-2">Filter by Team or Member</div>
-              <event-member-filter [event]="exportEvent" [teams]="exportEvent?.teams" (memberFilterChanged)="onLocationMemberFilterChanged($event)"></event-member-filter>
+              <event-member-filter [event]="exportEvent" [teams]="exportEvent?.teams" [filter]="locationMemberFilter" (memberFilterChanged)="onLocationMemberFilterChanged($event)"></event-member-filter>
             </div>
 
             <div *ngIf="!loadingLocationPreview" class="export-count" [class.export-count--warning]="locationPreview?.totalCount > exportSizeWarningLimit">

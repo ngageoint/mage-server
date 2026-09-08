@@ -1,6 +1,8 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core'
 import { FormControl } from '@angular/forms'
+import { ErrorStateMatcher } from '@angular/material/core'
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete'
+import { MatChipGrid } from '@angular/material/chips'
 import { MatDatepicker, MatDatepickerInputEvent } from '@angular/material/datepicker'
 import { Observable, Subject, map, startWith, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs'
 import { ObservationFieldFilter, SimpleCondition } from '../../entities/observation/filter/entities.observation.filter'
@@ -28,11 +30,17 @@ import {
 export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
   @Input() forms: any[] = []
   @Input() filter: ObservationFieldFilter | null = null
+  @Input() showIncompleteError = false
   @Output() filterChanged = new EventEmitter<ObservationFieldFilter>()
 
   @ViewChild('filterInput') filterInput: ElementRef<HTMLInputElement>
   @ViewChild(MatAutocompleteTrigger) autoTrigger: MatAutocompleteTrigger
   @ViewChild('filterDatePicker') datePicker: MatDatepicker<any>
+  @ViewChild('chipGridCondition') chipGridCondition?: MatChipGrid
+
+  incompleteErrorStateMatcher: ErrorStateMatcher = {
+    isErrorState: () => this.showIncompleteError && this.hasIncompleteCondition
+  }
 
   keywordControl = new FormControl('')
   inputControl = new FormControl('')
@@ -73,6 +81,12 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     return (this.inputControl.value || '').toString().trim().length > 0
   }
 
+  // true whenever the user has started picking a field/operator/value
+  // but hasn't clicked Add or New Group to actually commit it yet.
+  get hasIncompleteCondition(): boolean {
+    return this.conditionState !== 'field'
+  }
+
   get inputPlaceholder(): string {
     switch (this.conditionState) {
       case 'field': return 'Add Condition...'
@@ -92,6 +106,12 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
 
     if (changes.filter) {
       this.populateFilter(this.filter)
+    }
+
+    // showIncompleteError is the other half of incompleteErrorStateMatcher;
+    // mat-chip-grid won't re-evaluate it on its own (see updateChipGridErrorState).
+    if (changes.showIncompleteError) {
+      this.updateChipGridErrorState()
     }
   }
 
@@ -137,6 +157,8 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
       }
     }
 
+    this.updateChipGridErrorState()
+
     setTimeout(() => {
       this.filterInput?.nativeElement?.focus()
       this.autoTrigger?.openPanel()
@@ -174,6 +196,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     this.pendingValueDisplay = null
     this.clearInput()
     this.setupFilteredOptions()
+    this.updateChipGridErrorState()
     setTimeout(() => this.autoTrigger?.openPanel())
   }
 
@@ -185,6 +208,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     this.pendingValueDisplay = null
     this.clearInput()
     this.setupFilteredOptions()
+    this.updateChipGridErrorState()
     setTimeout(() => this.autoTrigger?.openPanel())
   }
 
@@ -273,6 +297,11 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     this.pendingValueDisplay = null
     this.clearInput()
     this.setupFilteredOptions()
+    this.updateChipGridErrorState()
+  }
+
+  private updateChipGridErrorState(): void {
+    this.chipGridCondition?.updateErrorState()
   }
 
   private setupFilteredOptions(): void {

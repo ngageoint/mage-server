@@ -10,7 +10,7 @@
   <mat-form-field appearance="fill" class="observation-filter-field" subscriptSizing="dynamic">
     <mat-label>Condition Filter</mat-label>
 
-    <mat-chip-grid #chipGridCondition>
+    <mat-chip-grid #chipGridCondition [errorStateMatcher]="incompleteErrorStateMatcher">
       <ng-container *ngFor="let group of conditionGroups; let groupIndex = index">
         <span *ngIf="groupIndex > 0" class="group-separator"><span class="separator-badge separator-badge--and">and</span></span>
         <ng-container *ngFor="let condition of group.conditions; let conditionIndex = index">
@@ -60,6 +60,8 @@
     <mat-datepicker-toggle *ngIf="isDateValueState" matSuffix [for]="filterDatePicker"></mat-datepicker-toggle>
     <mat-datepicker #filterDatePicker></mat-datepicker>
 
+    <mat-icon matSuffix class="keyword-hint-icon" matTooltip="Pick a field, operator, and value, then Add. Add combines with the current group (matches if any apply); New Group starts a separate group that must also match.">info_outline</mat-icon>
+
     <mat-autocomplete
       #auto="matAutocomplete"
       (optionSelected)="onOptionSelected($event)">
@@ -77,15 +79,18 @@
         </mat-option>
       </ng-container>
     </mat-autocomplete>
+
+    <mat-error *ngIf="showIncompleteError && hasIncompleteCondition">Finish or remove the condition you're building before exporting.</mat-error>
   </mat-form-field>
 
   <div class="observation-filter-actions">
-    <ng-container *ngIf="!hasConditions">
-      <button mat-stroked-button type="button" [disabled]="!hasValue" (click)="addOr()" matTooltip="Add filter condition">Add</button>
-    </ng-container>
-    <ng-container *ngIf="hasConditions">
-      <button mat-stroked-button type="button" [disabled]="!hasValue" (click)="addOr()" matTooltip="Add to current group (matches if any apply)">Or</button>
-      <button mat-stroked-button type="button" [disabled]="!hasValue" (click)="addAnd()" matTooltip="Add as new required group (must also match)">And</button>
-    </ng-container>
+    <button mat-flat-button color="primary" type="button" class="add-condition-button" [disabled]="!hasValue" (click)="addOr()" matTooltip="Add condition (or press Enter)">
+      <mat-icon>add</mat-icon>
+      Add
+    </button>
+    <button mat-stroked-button type="button" *ngIf="hasConditions" [disabled]="!hasValue" (click)="addAnd()" matTooltip="Start a new required group - every group must match">
+      <span class="new-group-glyph">&amp;</span>
+      New Group
+    </button>
   </div>
 </div>

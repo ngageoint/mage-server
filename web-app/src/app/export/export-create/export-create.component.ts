@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, OnInit, Inject, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Inject, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ExportService } from '../export.service';
 import moment from 'moment';
 import { FilterService } from 'src/app/filter/filter.service';
@@ -17,6 +17,7 @@ import { ObservationService, ObservationsPageRequestOptions } from 'src/app/obse
 import { SessionService } from 'src/app/http/session.service';
 import { LocationService } from 'src/app/user/location/location.service';
 import { Form } from '../../entities/event/entities.event';
+import { ObservationFieldFilterComponent } from '../../observation/observation-filter/observation-field-filter.component';
 
 type ExportFormatOption = {
   text: string
@@ -50,6 +51,7 @@ const filterDefinitions = {
 })
 export class ExportCreateComponent implements OnInit {
   @Output() close = new EventEmitter<Export | null>()
+  @ViewChild(ObservationFieldFilterComponent) conditionFilter?: ObservationFieldFilterComponent
 
   events: FilterEvent[] = []
   exportEvent: FilterEvent | null = null
@@ -62,6 +64,7 @@ export class ExportCreateComponent implements OnInit {
   exportObservations = true
   exportLocations = true
   showTypeRequiredError = false
+  showIncompleteConditionError = false
 
   isFavorite = false;
   isImportant = false;
@@ -110,6 +113,14 @@ export class ExportCreateComponent implements OnInit {
     if (this.isFavorite) filters.push(filterDefinitions.favorites)
     if (this.isImportant) filters.push(filterDefinitions.important)
     if (this.filter && (this.filter.condition != null || this.filter.keyword)) filters.push(filterDefinitions.fieldFilters)
+    return filters
+  }
+
+  get activeLocationFilters(): { icon: string, tooltip: string }[] {
+    const filters: { icon: string, tooltip: string }[] = []
+    if (this.locationMemberFilter && (this.locationMemberFilter.teamIds.length > 0 || this.locationMemberFilter.userIds.length > 0)) {
+      filters.push({ icon: filterDefinitions.members.icon, tooltip: this.memberFilterTooltip(this.locationMemberFilter) })
+    }
     return filters
   }
 
@@ -172,6 +183,14 @@ export class ExportCreateComponent implements OnInit {
     const event = this.filterService.getEvent()
     this.eventControl.setValue(event)
     this.setEvent(event)
+
+    const currentMemberFilter = this.mapCurrentMemberFilter()
+    if (currentMemberFilter) {
+      this.memberFilter = currentMemberFilter
+      this.locationMemberFilter = currentMemberFilter
+      this.refreshPreview()
+      this.refreshLocationPreview()
+    }
 
     this.eventService.query().subscribe((events: FilterEvent[]) => {
       this.events = events
@@ -269,6 +288,12 @@ export class ExportCreateComponent implements OnInit {
       this.showTypeRequiredError = true
       return
     }
+
+    if (this.exportObservations && this.conditionFilter?.hasIncompleteCondition) {
+      this.showIncompleteConditionError = true
+      return
+    }
+    this.showIncompleteConditionError = false
 
     const exportRequest: ExportRequest = {
       format: this.exportFormat
@@ -472,6 +497,12 @@ export class ExportCreateComponent implements OnInit {
     if (memberFilter.teamIds.length) parts.push(`${memberFilter.teamIds.length} team${memberFilter.teamIds.length === 1 ? '' : 's'}`)
     if (memberFilter.userIds.length) parts.push(`${memberFilter.userIds.length} user${memberFilter.userIds.length === 1 ? '' : 's'}`)
     return `Members: ${parts.join(', ')}`
+  }
+
+  private mapCurrentMemberFilter(): MemberFilterSelection | null {
+    const teamIds = this.filterService.getTeams().map(team => team.id)
+    const userIds = this.filterService.getUsers().map(user => user.id)
+    return (teamIds.length || userIds.length) ? { teamIds, userIds } : null
   }
 
   private mapCurrentFilterTimeValue(): string | number {

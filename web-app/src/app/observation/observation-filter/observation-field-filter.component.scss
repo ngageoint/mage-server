@@ -90,8 +90,24 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.add-condition-button {
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+  }
+}
+
+.new-group-glyph {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 700;
+  margin-right: 4px;
 }
 
 .form-color-rail {
