@@ -50,7 +50,7 @@ describe('ExportCreateComponent', () => {
 
   const exportService = jasmine.createSpyObj('ExportService', ['export']);
   const eventService = jasmine.createSpyObj('EventService', ['query']);
-  const filterService = jasmine.createSpyObj('FilterService', ['getEvent']);
+  const filterService = jasmine.createSpyObj('FilterService', ['getEvent', 'getTeams', 'getUsers']);
   const observationService = jasmine.createSpyObj('ObservationService', ['getObservationsPage']);
   const locationService = jasmine.createSpyObj('LocationService', ['getUserLocationsCount']);
   const sessionService = { user: { id: 'user1' } };
@@ -59,6 +59,8 @@ describe('ExportCreateComponent', () => {
     exportService.export.and.returnValue(of({}));
     eventService.query.and.returnValue(of([event]));
     filterService.getEvent.and.returnValue(event);
+    filterService.getTeams.and.returnValue([]);
+    filterService.getUsers.and.returnValue([]);
     observationService.getObservationsPage.and.returnValue(of({ items: [], totalCount: 0, links: { next: null, prev: null } }));
     locationService.getUserLocationsCount.and.returnValue(of({ totalCount: 0 }));
     exportService.export.calls.reset();
