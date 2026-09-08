@@ -24,7 +24,7 @@
   border-radius: 4px;
   background: rgba(244, 67, 54, 0.08);
   border: 1px solid rgba(244, 67, 54, 0.24);
-  color: #F44336;
+  color: blue;
 
   mat-icon {
     flex-shrink: 0;
@@ -44,6 +44,25 @@
 .cancel-button {
   color: var(--mat-sys-primary) !important;
   border-color: var(--mat-sys-primary) !important;
+}
+
+.reset-config-button {
+  color: var(--mat-sys-error) !important;
+  border-color: var(--mat-sys-error) !important;
+  margin-left: auto;
+}
+
+.reset-config-message {
+  padding-left: 24px;
+  padding-right: 16px;
+}
+
+.reset-config-confirm-button {
+  color: var(--mat-sys-error) !important;
+}
+
+.delete-field-message {
+  padding-left: 24px;
 }
 
 .edit-processing-form .mat-mdc-form-field {

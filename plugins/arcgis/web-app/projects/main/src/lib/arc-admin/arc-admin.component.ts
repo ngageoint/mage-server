@@ -53,6 +53,8 @@ export class ArcAdminComponent implements OnInit {
   private editProcessingTemplate: TemplateRef<unknown>
   @ViewChild('editAttributesDialog', { static: true })
   private editAttributesTemplate: TemplateRef<unknown>
+  @ViewChild('resetConfigDialog', { static: true })
+  private resetConfigTemplate: TemplateRef<unknown>
   @ViewChild('deleteFieldDialog', { static: true })
   private deleteFieldTemplate: TemplateRef<unknown>
   @ViewChild('addFieldDialog', { static: true })
@@ -319,6 +321,21 @@ export class ArcAdminComponent implements OnInit {
   cancelEdit() {
     console.log('Canceled configuration edit')
     this.editConfig = this.copyConfig();
+  }
+
+  showResetConfig() {
+    this.dialog.open<unknown, unknown, string>(this.resetConfigTemplate)
+  }
+
+  // Reset the entire ArcGIS configuration to the default values and reload the page
+  resetConfig() {
+    const defaults: ArcGISPluginConfig = JSON.parse(JSON.stringify(defaultArcGISPluginConfig));
+    this.arcService.putArcConfig(defaults).subscribe({
+      next: () => {
+        window.location.reload()
+      },
+      error: error => console.error('Failed to reset config:', error)
+    })
   }
 
   keys(value: any): string[] {

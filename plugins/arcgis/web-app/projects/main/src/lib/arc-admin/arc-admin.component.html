@@ -105,6 +105,10 @@
               <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
               Save
             </button>
+            <button matButton="outlined" class="reset-config-button" type="button" (click)="showResetConfig()">
+              <mat-icon fontSet="material-symbols-outlined">restore</mat-icon>
+              Reset Config
+            </button>
           </mat-card-actions>
         </mat-card>
       </div>
@@ -795,15 +799,33 @@
     <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
   </mat-dialog-actions>
 </ng-template>
+<ng-template #resetConfigDialog let-data>
+  <h3 matDialogTitle>Reset Config</h3>
+  <div class="reset-config-message">
+    This will delete the entire ArcGIS plugin configuration - feature layers, event synchronization, field mappings, and attributes - and reset it to defaults. This cannot be undone.
+  </div>
+  <br>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" matDialogClose cdkFocusInitial>Cancel</button>
+    <button matButton type="button" class="reset-config-confirm-button" matDialogClose (click)="resetConfig()">
+      <mat-icon fontSet="material-symbols-outlined">restore</mat-icon>
+      Reset Config
+    </button>
+  </mat-dialog-actions>
+</ng-template>
+
 <ng-template #deleteFieldDialog let-data>
   <h3 matDialogTitle>Delete {{editType}}?</h3>
-  <div>
+  <div class="delete-field-message">
     {{editName}}
   </div>
   <br>
   <mat-dialog-actions align="end">
-    <button mat-button matDialogClose>CANCEL</button>
-    <button mat-flat-button color="primary" matDialogClose (click)="deleteField()">DELETE</button>
+    <button mat-button matDialogClose>Cancel</button>
+    <button matButton class="reset-config-confirm-button" matDialogClose (click)="deleteField()">
+      <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+      Delete
+    </button>
   </mat-dialog-actions>
 </ng-template>
 <ng-template #addFieldDialog let-data>
