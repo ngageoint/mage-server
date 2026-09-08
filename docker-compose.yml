@@ -18,7 +18,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./database/data:/data/db
+      - ./docker/mage-db:/data/db
     networks:
       - mage.net
 
@@ -26,12 +26,11 @@ services:
     depends_on: [ mage-db ]
     build:
       context: ./
-      # dockerfile: Dockerfile-debug
     image: mage:local
     # entrypoint: ["./node_modules/.bin/mage.service", "--plugin", "@ngageoint/mage.image.service"]  Uncomment to specify new entrypoint commands
     platform: linux/amd64
     volumes:
-      - ./server/resources:/var/lib/mage
+      - ./docker/mage-resources:/var/lib/mage
       # - ./sftp-test/id_rsa:/run/secrets/sftp_key:ro
     # Comment the ports block to disallow connections directly to the node
     # server when running the mage-web-proxy below.
@@ -62,9 +61,9 @@ services:
   # mage-web-proxy:
   #   image: nginx
   #   volumes:
-  #     - ./server/web/nginx.conf:/etc/nginx/nginx.conf
-  #     - ./server/web/mage-web.crt:/etc/nginx/ssl/web.crt
-  #     - ./server/web/mage-web.key:/etc/nginx/ssl/web.key
+  #     - ./docker/web-proxy/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./docker/web-proxy/mage-web.crt:/etc/nginx/ssl/web.crt
+  #     - ./docker/web-proxy/mage-web.key:/etc/nginx/ssl/web.key
   #   ports:
   #     - 4280:80
   #     - 4243:4243
@@ -72,14 +71,14 @@ services:
   #     - mage.net
 
   # Local SFTP server for development testing.
-  # Uploaded zips land in ./sftp-test/upload/ on your Mac.
-  # Connect the plugin to: host=mage-sftp, port=22, user=magetest, path=/upload
+  # Uploaded zips land in ./docker/sftp/upload/ on your Mac.
+  # Connect the plugin to: host=mage-sftp, port=22, user=mage, path=/upload
   mage-sftp:
     image: atmoz/sftp
-    command: magetest::1001
+    command: mage::1001
     volumes:
-      - ./sftp-test/id_rsa.pub:/home/magetest/.ssh/keys/id_rsa.pub:ro
-      - ./sftp-test/upload:/home/magetest/upload
+      - ./docker/sftp/id_rsa.pub:/home/mage/.ssh/keys/id_rsa.pub:ro
+      - ./docker/sftp/upload:/home/mage/upload
     ports:
       - "2222:22"
     networks:
