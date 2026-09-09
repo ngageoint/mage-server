@@ -118,6 +118,7 @@ User.prototype.create = async function (user, options = {}) {
     const outcome = await runPipeline(getAttachmentHooks(), { name: 'avatar' }, options.avatar.path);
     if (outcome.outcome !== 'pass') {
       log.warn(`avatar not attached for new user ${newUser.username}: ${outcome.outcome === 'reject' ? outcome.reason : outcome.error.message}`);
+      await fs.remove(options.avatar.path).catch(() => { });
     } else {
       try {
         const avatar = avatarPath(newUser._id, newUser, options.avatar);
@@ -138,6 +139,7 @@ User.prototype.create = async function (user, options = {}) {
     const outcome = await runPipeline(getAttachmentHooks(), { name: 'icon' }, options.icon.path);
     if (outcome.outcome !== 'pass') {
       log.warn(`icon not attached for new user ${newUser.username}: ${outcome.outcome === 'reject' ? outcome.reason : outcome.error.message}`);
+      await fs.remove(options.icon.path).catch(() => { });
     } else {
       try {
         const icon = iconPath(newUser._id, newUser, options.icon);
@@ -195,9 +197,11 @@ User.prototype.update = function (user, options, callback) {
     operations.push(function (updatedUser, done) {
       runPipeline(getAttachmentHooks(), { name: 'avatar' }, options.avatar.path).then(outcome => {
         if (outcome.outcome === 'reject') {
+          fs.remove(options.avatar.path).catch(() => { });
           return done(Object.assign(new Error(`avatar upload rejected: ${outcome.reason}`), { status: 400 }));
         }
         if (outcome.outcome === 'error') {
+          fs.remove(options.avatar.path).catch(() => { });
           return done(Object.assign(new Error(`avatar scan failed: ${outcome.error.message}`), { status: 400 }));
         }
 
@@ -245,9 +249,11 @@ User.prototype.update = function (user, options, callback) {
       operations.push(function (updatedUser, done) {
         runPipeline(getAttachmentHooks(), { name: 'icon' }, options.icon.path).then(outcome => {
           if (outcome.outcome === 'reject') {
+            fs.remove(options.icon.path).catch(() => { });
             return done(Object.assign(new Error(`icon upload rejected: ${outcome.reason}`), { status: 400 }));
           }
           if (outcome.outcome === 'error') {
+            fs.remove(options.icon.path).catch(() => { });
             return done(Object.assign(new Error(`icon scan failed: ${outcome.error.message}`), { status: 400 }));
           }
 
