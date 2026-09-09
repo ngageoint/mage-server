@@ -6,17 +6,15 @@ import moment from 'moment';
 import * as _ from "lodash";
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import {
-  Event,
   Interval,
   FilterChoice,
-  Team,
-  TeamById,
-  Observation,
+  INTERVAL_CHOICES,
   Filter,
-  Form,
-  FormProperties,
   SearchInterval,
 } from "./filter.types";
+import { MageEvent, Form } from "../entities/event/entities.event";
+import { Team, TeamById } from "../entities/team/entities.team";
+import { Observation, FormProperties } from "../entities/observation/entities.observation";
 import { filterChanges } from "../event/event.types";
 import { SessionService } from "mage-web-app/http/session.service";
 
@@ -25,59 +23,29 @@ import { SessionService } from "mage-web-app/http/session.service";
 })
 
 export class FilterService {
-  event: Event = null;
+  event: MageEvent = null;
   teamsById: TeamById = {};
   users: User[] = [];
   forms: Form[] = [];
 
   interval: Interval = {};
-  filterLocalOffset = moment().format("Z");
   actionFilter: string = "";
 
-  private eventSubject = new BehaviorSubject<Event | null>(null);
+  private eventSubject = new BehaviorSubject<MageEvent | null>(null);
   private teamsSubject = new BehaviorSubject<Team[]>([]);
   private usersSubject = new BehaviorSubject<User[]>([]);
   private formsSubject = new BehaviorSubject<Form[]>([]);
   private intervalSubject = new BehaviorSubject<Interval>(this.interval);
   private actionFilterSubject = new BehaviorSubject<string>("");
 
-  readonly event$: Observable<Event | null> = this.eventSubject.asObservable();
+  readonly event$: Observable<MageEvent | null> = this.eventSubject.asObservable();
   readonly teams$: Observable<Team[]> = this.teamsSubject.asObservable();
   readonly users$: Observable<User[]> = this.usersSubject.asObservable();
   readonly forms$: Observable<Form[]> = this.formsSubject.asObservable();
   readonly interval$: Observable<Interval> = this.intervalSubject.asObservable();
   readonly actionFilter$: Observable<string> = this.actionFilterSubject.asObservable();
 
-  intervalChoices: FilterChoice[] = [
-    {
-      filter: "all",
-      label: "All",
-    },
-    {
-      filter: "today",
-      label: "Today (Local GMT " + this.filterLocalOffset + ")",
-    },
-    {
-      filter: 86400,
-      label: "Last 24 Hours",
-    },
-    {
-      filter: 43200,
-      label: "Last 12 Hours",
-    },
-    {
-      filter: 21600,
-      label: "Last 6 Hours",
-    },
-    {
-      filter: 3600,
-      label: "Last Hour",
-    },
-    {
-      filter: "custom",
-      label: "Custom",
-    },
-  ];
+  intervalChoices: FilterChoice[] = INTERVAL_CHOICES;
 
   constructor(
     private userService: UserService,
@@ -146,7 +114,7 @@ export class FilterService {
    * @return {filterChanges} a List of events added/removed from the list
    */
 
-  setEvent(newEvent: Event): filterChanges {
+  setEvent(newEvent: MageEvent): filterChanges {
     if (!newEvent && this.event) {
       const removed = [this.event];
       this.event = null;
@@ -176,7 +144,7 @@ export class FilterService {
     }
   }
 
-  getEvent(): Event {
+  getEvent(): MageEvent {
     return this.event;
   }
 
@@ -355,7 +323,7 @@ export class FilterService {
    * @return {boolean} Returns True if Observation is Allowed, or False if Not
    */
 
-  isUserInList(observationUserId: string): boolean {
+  isUserInList(observationUserId?: string): boolean {
     if (this.users.length <= 0) return true;
     return this.users.findIndex((u) => u.id === observationUserId) >= 0;
   }
@@ -401,7 +369,7 @@ export class FilterService {
    * @return {boolean} Returns True if Observation is Allowed, or False if Not
    */
 
-  isUserInTeamFilter(userId: string): boolean {
+  isUserInTeamFilter(userId?: string): boolean {
     if (Object.keys(this.teamsById).length === 0) return true;
     return Object.values(this.teamsById).some((team: Team) =>
       team.userIds.includes(userId)

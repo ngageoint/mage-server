@@ -35,7 +35,7 @@
 
 <ng-template #image>
   <div class="media">
-    <img class="media__crop" src="{{attachment.url}}?access_token={{token}}&synced={{attachment.synced}}&oriented={{attachment.oriented}}&size=394" />
+    <img class="media__crop" src="{{attachment.url}}?access_token={{token}}&oriented={{attachment.oriented}}&size=394" />
     <a *ngIf="clickable" class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
   </div>
 </ng-template>
@@ -43,7 +43,7 @@
 <ng-template #media>
   <div class="media">
     <video width="100%" height="100%" [controls]="!canEdit" class="attachment__video">
-      <source src="{{attachment.url}}?access_token={{token}}&synced={{attachment.synced}}" type="video/mp4">
+      <source src="{{attachment.url}}?access_token={{token}}" type="video/mp4">
       <div><ng-container *ngTemplateOutlet="fallback"></ng-container></div>
     </video>
   </div>

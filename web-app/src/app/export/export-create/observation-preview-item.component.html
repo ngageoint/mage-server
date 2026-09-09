@@ -1,0 +1,34 @@
+<div class="preview-list-item">
+  <img [src]="observation()?.style?.iconUrl" />
+  <div class="preview-item-content">
+    <div class="preview-item-overline">
+      <span>{{observation()?.user?.displayName}}</span>
+      <span>·</span>
+      <span>{{observation()?.properties?.timestamp | moment}}</span>
+    </div>
+    @if (primaryFeedField().value) {
+      <div class="preview-item-primary">
+        @switch (primaryFeedField().field?.type) {
+          @case ('geometry') {
+            <span>{{primaryFeedField().value | geometry:5}}</span>
+          }
+          @default {
+            <span>{{primaryFeedField().value}}</span>
+          }
+        }
+      </div>
+    }
+    @if (secondaryFeedField().value) {
+      <div class="preview-item-secondary">
+        @switch (secondaryFeedField().field?.type) {
+          @case ('geometry') {
+            <span>{{secondaryFeedField().value | geometry:5}}</span>
+          }
+          @default {
+            <span>{{secondaryFeedField().value}}</span>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>

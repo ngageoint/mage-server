@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { SessionService } from 'mage-web-app/http/session.service';
-import { Attachment, AttachmentProcessingStatus } from '../../filter/filter.types'
+import { Attachment, AttachmentProcessingStatus } from '../../entities/observation/entities.observation'
 
 @Component({
     selector: 'observation-attachment',

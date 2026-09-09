@@ -139,7 +139,7 @@ describe('Event Service Tests', () => {
       service.addObservationsChangedListener(listener);
       listener.onObservationsChanged.calls.reset();
 
-      filterService.setTeams([{ id: 5, name: 'Team 5', userIds: [] }]);
+      filterService.setTeams([{ id: '5', name: 'Team 5', userIds: [], acl: {} }]);
 
       expect(listener.onObservationsChanged).toHaveBeenCalled();
     });

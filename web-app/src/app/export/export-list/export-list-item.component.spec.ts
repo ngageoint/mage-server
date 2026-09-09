@@ -36,7 +36,6 @@ describe('ExportListItemComponent', () => {
   it('should compute summary start/end from the item', () => {
     const item: Export = {
       id: '1',
-      physicalPath: '/tmp/test.kml',
       exportType: 'kml',
       url: '/api/exports/mine/1',
       status: ExportStatus.Completed,

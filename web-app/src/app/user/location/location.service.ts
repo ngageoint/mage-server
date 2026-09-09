@@ -31,6 +31,19 @@ export class LocationService {
     return this.httpClient.post<any>(`/api/events/${eventId}/locations/`, location)
   }
 
+  getUserLocationsCount(event: any, options?: { startDate?: string, endDate?: string, users?: string[], teams?: string[] }): Observable<{ totalCount: number }> {
+    const parameters: any = {
+      page: 0,
+      page_size: 1,
+      ...(options?.startDate) && { startDate: options.startDate },
+      ...(options?.endDate) && { endDate: options.endDate },
+      ...(options?.users?.length) && { users: options.users.join(',') },
+      ...(options?.teams?.length) && { teams: options.teams.join(',') }
+    }
+
+    return this.httpClient.get<{ totalCount: number }>(`/api/events/${event.id}/locations`, { params: parameters })
+  }
+
   getUserLocationsForEvent(event: any, options?: any): Observable<any> {
     const parameters = {
       groupBy: 'users',

@@ -10,7 +10,7 @@ import {
 
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
-import { Event } from 'mage-web-app/filter/filter.types';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { CreateEventDialogComponent } from '../create-event/create-event.component';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -22,8 +22,8 @@ import { SessionService } from 'mage-web-app/http/session.service';
     standalone: false
 })
 export class EventDashboardComponent implements OnInit, OnDestroy {
-  events: PageOf<Event> | null = null;
-  filteredEvents: Event[] = [];
+  events: PageOf<MageEvent> | null = null;
+  filteredEvents: MageEvent[] = [];
 
   numChars = 180;
   toolTipWidth = '1000px';
@@ -133,7 +133,7 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
       data: { team: {} }
     });
 
-    dialogRef.afterClosed().subscribe((newEvent: Event | undefined) => {
+    dialogRef.afterClosed().subscribe((newEvent: MageEvent | undefined) => {
       if (newEvent?.id) {
         this.toastService.show(
           'Event Created',
@@ -155,7 +155,7 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
     this.toolTipWidth = `${window.innerWidth * 0.75}px`;
   }
 
-  trackByEventId(_: number, event: Event): any {
+  trackByEventId(_: number, event: MageEvent): any {
     return (event as any)?.id ?? event;
   }
 }

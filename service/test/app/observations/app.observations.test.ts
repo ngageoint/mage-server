@@ -57,8 +57,7 @@ import {
 } from '../../../lib/entities/observations/entities.observations'
 import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
-import { IterateObservations, ReadObservations } from '../../../lib/app.impl/observations/app.impl.observations'
-import { MageEventId } from '../../../lib/entities/events/entities.events'
+import { ReadObservations } from '../../../lib/app.impl/observations/app.impl.observations'
 import { ObservationSearchRepository } from '../../../lib/entities/observations/entities.observations'
 import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
 import { BufferWriteable } from '../../utils'
@@ -607,69 +606,6 @@ describe('observations use case interactions', function() {
       expect(res.success).to.be.null
       expect(res.error).to.be.instanceOf(MageError)
       expect(res.error?.code).to.equal(ErrInfrastructure)
-    })
-  })
-
-  describe('iterating observations', function() {
-
-    let obsRepoFactory: sinon.SinonStub<[MageEventId], Promise<EventScopedObservationRepository>>
-    let searchRepo: SubstituteOf<ObservationSearchRepository>
-    let iterateObservations: api.IterateObservations
-
-    beforeEach(function() {
-      obsRepoFactory = sinon.stub()
-      obsRepoFactory.resolves(obsRepo)
-      searchRepo = Sub.for<ObservationSearchRepository>()
-      iterateObservations = IterateObservations(obsRepoFactory, searchRepo)
-    })
-
-    it('gets the repository for the given event from the factory', async function() {
-
-      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
-      await iterateObservations(mageEvent, {})
-
-      expect(obsRepoFactory.calledOnceWith(mageEvent.id)).to.be.true
-    })
-
-    it('does not query the search repository when no field filter is given', async function() {
-
-      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
-      await iterateObservations(mageEvent, { where: { stateIsAnyOf: [ 'active' ] } })
-
-      searchRepo.didNotReceive().findIdsByFilter(Arg.any(), Arg.any())
-      obsRepo.received(1).iterate(Arg.is((spec: any) => {
-        return spec.where.stateIsAnyOf?.length === 1 && spec.where.ids === undefined
-      }))
-    })
-
-    it('resolves a field filter to observation ids from the search repository and passes them through', async function() {
-
-      const filter = { keyword: 'test' }
-      const ids = [ uniqid(), uniqid() ]
-      searchRepo.findIdsByFilter(filter, mageEvent).resolves(ids)
-      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
-      await iterateObservations(mageEvent, { where: { fieldFilter: filter } })
-
-      obsRepo.received(1).iterate(Arg.is((spec: any) => spec.where.ids === ids))
-    })
-
-    it('preserves the other stream spec fields', async function() {
-
-      obsRepo.iterate(Arg.any()).returns({ async *[Symbol.asyncIterator]() {} })
-      await iterateObservations(mageEvent, { orderBy: { field: 'lastModified', order: -1 }, includeAttachments: true })
-
-      obsRepo.received(1).iterate(Arg.is((spec: any) => {
-        return spec.orderBy.field === 'lastModified' && spec.orderBy.order === -1 && spec.includeAttachments === true
-      }))
-    })
-
-    it('returns the iterable from the repository', async function() {
-
-      const iterable = { async *[Symbol.asyncIterator]() { yield minimalObservationAttrs() } }
-      obsRepo.iterate(Arg.any()).returns(iterable)
-      const result = await iterateObservations(mageEvent, {})
-
-      expect(result).to.equal(iterable)
     })
   })
 

@@ -31,13 +31,12 @@ describe('ExportViewComponent', () => {
 
   const item: Export = {
     id: '1',
-    physicalPath: '/tmp/test.kml',
     exportType: 'kml',
     url: '/api/exports/mine/1',
     status: ExportStatus.Completed,
     options: {
       event: event as any,
-      projection: [{ formId: 10, fields: ['field1'] }]
+      filter: { observations: { projection: [{ formId: 10, fields: ['field1'] }] } }
     }
   } as Export;
 

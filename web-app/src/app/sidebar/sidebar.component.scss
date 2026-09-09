@@ -52,3 +52,9 @@ user-feed {
   margin-left: 3rem;
   width: 100%;
 }
+
+.export-tab {
+  --mat-badge-background-color: var(--mat-sys-tertiary);
+  --mat-badge-text-color: var(--mat-sys-on-tertiary);
+  --mat-badge-small-size-container-overlap-offset: -4px;
+}

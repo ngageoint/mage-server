@@ -66,13 +66,13 @@ describe('exports mongoose repository', function() {
       eventId: 1,
       format: "kml",
       filter: {
-        exportObservations: true,
-        favorites: false,
-        important: false,
-        includeAttachments: false,
-        exportLocations: true
+        observations: {
+          favorites: false,
+          important: false,
+          includeAttachments: false,
+          projection: [ ]
+        }
       },
-      projection: [ ],
       relativePath: '/some/path',
       filename: 'export.zip'
      }
@@ -95,7 +95,6 @@ describe('exports mongoose repository', function() {
         'options.event.id': 1
       })
       expect(created.options.filter).to.deep.equal(exp.filter)
-      expect(created.options.projection).to.deep.equal(exp.projection)
     })
   })
 
@@ -128,13 +127,13 @@ describe('exports mongoose repository', function() {
         options: {
           eventId: 1,
           filter: {
-			      exportObservations: true,
-			      favorites: false,
-			      important: false,
-			      includeAttachments: false,
-			      exportLocations: true
-		      },
-		      projection: [ ]
+			      observations: {
+			        favorites: false,
+			        important: false,
+			        includeAttachments: false,
+			        projection: [ ]
+			      }
+		      }
         },
         expirationDate: new Date(),
         summary: {
@@ -200,8 +199,7 @@ describe('exports mongoose repository', function() {
             id: 1,
             name: 'event1'
           },
-          filter: exports[0].options.filter,
-          projection: exports[0].options.projection,
+          filter: exports[0].options.filter
         }
       })
     })

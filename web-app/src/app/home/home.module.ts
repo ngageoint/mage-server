@@ -59,10 +59,13 @@ import { LayerContentComponent } from '../map/layers/layer-content.component';
 import { ColorPickerModule } from '../color-picker/color-picker.module';
 import { ExportComponent } from '../export/export.component';
 import { ExportCreateComponent } from '../export/export-create/export-create.component';
+import { ObservationPreviewItemComponent } from '../export/export-create/observation-preview-item.component';
 import { ExportListComponent } from '../export/export-list/export-list.component';
 import { ExportListItemComponent } from '../export/export-list/export-list-item.component';
 import { ExportViewComponent } from '../export/export-view/export-view.component';
 import { ExportEmptyComponent } from '../export/export-empty/export-empty.component';
+import { ObservationFieldFilterComponent } from '../observation/observation-filter/observation-field-filter.component';
+import { EventMemberFilterComponent } from '../event/event-member-filter.component';
 
 import { MapClipModule } from '../map/clip/map-clip.module';
 import { GeometryModule } from '../geometry/geometry.module';
@@ -205,6 +208,7 @@ class AngularModule { }
     DMSValidatorDirective,
     ExportComponent,
     ExportCreateComponent,
+    ObservationFieldFilterComponent,
     ExportEmptyComponent,
     ExportListComponent,
     ExportListItemComponent,
@@ -262,6 +266,7 @@ class AngularModule { }
   imports: [
     AngularModule,
     ColorPickerModule,
+    EventMemberFilterComponent,
     FeedIconModule,
     FeedItemSummaryModule,
     GeometryModule,
@@ -269,6 +274,7 @@ class AngularModule { }
     IngressModule,
     MomentModule,
     ObservationAttachmentModule,
+    ObservationPreviewItemComponent,
     ObservationEditModule,
     StaticIconModule,
     UserAvatarModule,
