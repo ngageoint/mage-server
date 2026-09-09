@@ -24,6 +24,9 @@ module.exports = function(app, security) {
 
   const userContentUpload = Upload({ fileSize: environment.userContentMaxSize });
 
+  // wherever this is registered in a route, it must be the handler placed
+  // immediately after userContentUpload's call - otherwise a size-limit
+  // rejection falls through to express.ts's generic 500 instead of here
   function handleUserContentUploadError(err, req, res, next) {
     if (err && err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).send(`avatar/icon upload exceeds maximum size of ${environment.userContentMaxSize} bytes`);

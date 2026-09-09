@@ -113,11 +113,13 @@ User.prototype.create = async function (user, options = {}) {
   }
 
   const newUser = await util.promisify(UserModel.createUser)(user);
-
+  
+  // silently log warning because user already exists and error could be misleading
   if (options.avatar) {
     const outcome = await runPipeline(getAttachmentHooks(), { name: 'avatar' }, options.avatar.path);
     if (outcome.outcome !== 'pass') {
       log.warn(`avatar not attached for new user ${newUser.username}: ${outcome.outcome === 'reject' ? outcome.reason : outcome.error.message}`);
+      // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
       await fs.remove(options.avatar.path).catch(() => { });
     } else {
       try {
@@ -139,6 +141,7 @@ User.prototype.create = async function (user, options = {}) {
     const outcome = await runPipeline(getAttachmentHooks(), { name: 'icon' }, options.icon.path);
     if (outcome.outcome !== 'pass') {
       log.warn(`icon not attached for new user ${newUser.username}: ${outcome.outcome === 'reject' ? outcome.reason : outcome.error.message}`);
+      // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
       await fs.remove(options.icon.path).catch(() => { });
     } else {
       try {
@@ -196,6 +199,7 @@ User.prototype.update = function (user, options, callback) {
   if (options.avatar) {
     operations.push(function (updatedUser, done) {
       runPipeline(getAttachmentHooks(), { name: 'avatar' }, options.avatar.path).then(outcome => {
+        // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
         if (outcome.outcome === 'reject') {
           fs.remove(options.avatar.path).catch(() => { });
           return done(Object.assign(new Error(`avatar upload rejected: ${outcome.reason}`), { status: 400 }));
@@ -226,7 +230,6 @@ User.prototype.update = function (user, options, callback) {
   if (options.icon && options.icon.type) {
     if (options.icon.type === 'none') {
       if (user.icon.relativePath) {
-        // delete it
         operations.push(function (updatedUser, done) {
           const icon = updatedUser.icon;
           icon.path = path.join(userBase, updatedUser.icon.relativePath);
@@ -248,6 +251,7 @@ User.prototype.update = function (user, options, callback) {
     } else {
       operations.push(function (updatedUser, done) {
         runPipeline(getAttachmentHooks(), { name: 'icon' }, options.icon.path).then(outcome => {
+          // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
           if (outcome.outcome === 'reject') {
             fs.remove(options.icon.path).catch(() => { });
             return done(Object.assign(new Error(`icon upload rejected: ${outcome.reason}`), { status: 400 }));
