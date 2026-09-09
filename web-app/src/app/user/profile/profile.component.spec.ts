@@ -87,8 +87,18 @@ describe('Profile Component', () => {
     req.flush('failure', { status: 500, statusText: 'Server Error' });
 
     expect(component.saving).toBeFalse();
-    expect(component.profileError).toBe('Error updating profile, please try again later.');
+    expect(component.profileError).toBe('failure');
     expect(snackBar.open).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to a generic message when the error response has no string body', () => {
+    component.onSave();
+
+    const req = httpMock.expectOne('/api/users/myself');
+    req.flush(null, { status: 0, statusText: 'Unknown Error' });
+
+    expect(component.saving).toBeFalse();
+    expect(component.profileError).toBe('Error updating profile, please try again later.');
   });
 
   it('should clear a previous error when a new save is attempted', () => {
