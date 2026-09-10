@@ -7,8 +7,6 @@ import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/
 function stubExport(id: string): Export {
   return {
     id,
-    physicalPath: '/tmp/test.kml',
-    filename: 'test.kml',
     exportType: 'kml',
     url: `/api/exports/mine/${id}`,
     status: ExportStatus.Running,
@@ -54,8 +52,7 @@ describe('ExportService', () => {
   it('should create an export scoped to an event', () => {
     const request: ExportRequest = {
       format: ExportFormat.KML,
-      observations: true,
-      locations: false
+      observations: {}
     };
     const created = stubExport('2');
 

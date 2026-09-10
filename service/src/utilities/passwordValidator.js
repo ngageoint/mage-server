@@ -3,6 +3,7 @@ const util = require('util')
   , hasher = require('./pbkdf2')();
 
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
+const DEFAULT_ERROR_MSG = 'Password does not meet the password policy requirements.';
 const validPassword = util.promisify(hasher.validPassword);
 
 async function validate(passwordPolicy, { password, previousPasswords: previousHashedPasswords }) {
@@ -25,7 +26,7 @@ async function validate(passwordPolicy, { password, previousPasswords: previousH
 
   return {
     valid: !invalid,
-    errorMsg: invalid ? passwordPolicy.helpText : null
+    errorMsg: invalid ? (passwordPolicy.customizeHelpText ? passwordPolicy.helpText : DEFAULT_ERROR_MSG) : null
   };
 }
 

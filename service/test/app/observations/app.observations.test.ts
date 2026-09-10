@@ -1,18 +1,81 @@
-import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
+import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
-import uniqid from 'uniqid'
-import * as api from '../../../lib/app.api/observations/app.api.observations'
-import { AllocateObservationId, registerDeleteRemovedAttachmentsHandler, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
-import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentProcessingStatus, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
-import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
-import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
-import _ from 'lodash'
-import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
-import { pipeline, Readable } from 'stream'
-import util from 'util'
-import { BufferWriteable } from '../../utils'
 import EventEmitter from 'events'
+import _ from 'lodash'
+import sinon from 'sinon'
+import { pipeline, Readable } from 'stream'
+import uniqid from 'uniqid'
+import util from 'util'
+import {
+  EntityNotFoundError,
+  ErrEntityNotFound,
+  ErrInfrastructure,
+  ErrInvalidInput,
+  ErrPermissionDenied,
+  InfrastructureError,
+  InvalidInputError,
+  MageError,
+  permissionDenied,
+  PermissionDeniedError
+} from '../../../lib/app.api/app.api.errors'
+import * as api from '../../../lib/app.api/observations/app.api.observations'
+import {
+  AllocateObservationId,
+  ReadAttachmentContent,
+  registerDeleteRemovedAttachmentsHandler,
+  SaveObservation,
+  StoreAttachmentContent
+} from '../../../lib/app.impl/observations/app.impl.observations'
+import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
+import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
+import {
+  addAttachment,
+  Attachment,
+  AttachmentContentPatchAttrs,
+  AttachmentCreateAttrs,
+  AttachmentProcessingStatus,
+  AttachmentsRemovedDomainEvent,
+  AttachmentStore,
+  AttachmentStoreError,
+  AttachmentStoreErrorCode,
+  copyAttachmentAttrs,
+  copyObservationAttrs,
+  copyObservationStateAttrs,
+  EventScopedObservationRepository,
+  Observation,
+  ObservationAttrs,
+  ObservationDomainEventType,
+  ObservationEmitted,
+  ObservationRepositoryError,
+  ObservationRepositoryErrorCode,
+  ObservationState,
+  patchAttachment,
+  putAttachmentThumbnailForMinDimension,
+  removeAttachment,
+  removeFormEntry,
+  StagedAttachmentContentRef
+} from '../../../lib/entities/observations/entities.observations'
+import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
+import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
+import { ReadObservations } from '../../../lib/app.impl/observations/app.impl.observations'
+import { ObservationSearchRepository } from '../../../lib/entities/observations/entities.observations'
+import { TeamRepository } from '../../../lib/entities/teams/entities.teams'
+import { BufferWriteable } from '../../utils'
+
+function minimalObservationAttrs(): ObservationAttrs {
+  return {
+    id: uniqid(),
+    eventId: 987,
+    createdAt: new Date(),
+    lastModified: new Date(),
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [ 0, 0 ] },
+    properties: { timestamp: new Date(), forms: [] },
+    states: [],
+    favoriteUserIds: [],
+    attachments: []
+  }
+}
 
 describe('observations use case interactions', function() {
 
@@ -129,7 +192,7 @@ describe('observations use case interactions', function() {
       }
       const creator = { id: from.userId!, displayName: 'Creator Test' } as User
       const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
-      const exo = api.exoObservationFor(from, { creator, importantFlagger })
+      const exo = api.exoObservationFor(from, creator, importantFlagger)
 
       expect(exo.userId).to.equal(from.userId)
       expect(exo.user).to.deep.equal(creator)
@@ -153,7 +216,7 @@ describe('observations use case interactions', function() {
         attachments: []
       }
       const creator = { id: uniqid(), displayName: 'Creator Mismatch' } as User
-      const exo = api.exoObservationFor(from, { creator })
+      const exo = api.exoObservationFor(from, creator)
 
       expect(exo.userId).to.equal(from.userId)
       expect(exo.user).to.be.undefined
@@ -174,7 +237,7 @@ describe('observations use case interactions', function() {
         attachments: []
       }
       const creator = { id: uniqid(), displayName: 'Creator Mismatch' } as User
-      const exo = api.exoObservationFor(from, { creator })
+      const exo = api.exoObservationFor(from, creator)
 
       expect(exo.userId).to.be.undefined
       expect(exo.user).to.be.undefined
@@ -200,7 +263,7 @@ describe('observations use case interactions', function() {
         attachments: []
       }
       const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
-      const exo = api.exoObservationFor(from, { importantFlagger })
+      const exo = api.exoObservationFor(from, undefined, importantFlagger)
 
       expect(exo.important?.userId).to.equal(from.important?.userId)
       expect(exo.important?.user).to.deep.equal(importantFlagger)
@@ -225,7 +288,7 @@ describe('observations use case interactions', function() {
         attachments: []
       }
       const importantFlagger = { id: uniqid(), displayName: 'Important Flagger Test' } as User
-      const exo = api.exoObservationFor(from, { importantFlagger })
+      const exo = api.exoObservationFor(from, undefined, importantFlagger)
 
       expect(exo.important?.userId).to.be.undefined
       expect(exo.important?.user).to.be.undefined
@@ -246,7 +309,7 @@ describe('observations use case interactions', function() {
         attachments: []
       }
       const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
-      const exo = api.exoObservationFor(from, { importantFlagger })
+      const exo = api.exoObservationFor(from, undefined, importantFlagger)
 
       expect(exo.important).to.be.undefined
     })
@@ -290,14 +353,14 @@ describe('observations use case interactions', function() {
       expect(exo.state).to.be.undefined
 
       const states: ObservationState[] = [
-        { id: uniqid(), name: 'archived', userId: uniqid() },
+        { id: uniqid(), name: ObservationStateName.Archived, userId: uniqid() },
         { id: uniqid(), name: 'active', userId: uniqid() }
       ]
       from.states = states.map(copyObservationStateAttrs)
       exo = api.exoObservationFor(from)
 
       expect(exo).not.to.have.property('states')
-      expect(exo.state).to.deep.equal({ id: states[0].id, name: 'archived', userId: states[0].userId })
+      expect(exo.state).to.deep.equal({ id: states[0].id, name: ObservationStateName.Archived, userId: states[0].userId })
     })
 
     it('sets content stored flag on attachments according to presence of content locator', async function() {
@@ -409,6 +472,140 @@ describe('observations use case interactions', function() {
         accuracy: 50,
         delta: 54321,
       })
+    })
+  })
+
+  describe('reading observations', function() {
+
+    let teamRepo: SubstituteOf<TeamRepository>
+    let searchRepo: SubstituteOf<ObservationSearchRepository>
+    let readObservations: api.ReadObservations
+
+    beforeEach(function() {
+      teamRepo = Sub.for<TeamRepository>()
+      searchRepo = Sub.for<ObservationSearchRepository>()
+      readObservations = ReadObservations(permissions, teamRepo, searchRepo)
+    })
+
+    it('fails without permission', async function() {
+
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(permissionDenied('read observation', 'test1'))
+      const res = await readObservations({ context, search: {} })
+
+      expect(res.success).to.be.null
+      expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrPermissionDenied)
+      obsRepo.didNotReceive().find(Arg.any())
+    })
+
+    it('returns all results when the repository returns an "all" result', async function() {
+
+      const observations: ObservationAttrs[] = [
+        { ...minimalObservationAttrs(), id: uniqid() },
+        { ...minimalObservationAttrs(), id: uniqid() },
+      ]
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).mimicks(async (spec: any, mapper: any) => {
+        return { type: 'all', observations: observations.map(mapper) }
+      })
+      const res = await readObservations({ context, search: {} })
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(observations.map(o => api.exoObservationFor(o)))
+    })
+
+    it('returns a page when the repository returns a "paged" result', async function() {
+
+      const observations: ObservationAttrs[] = [
+        { ...minimalObservationAttrs(), id: uniqid() },
+      ]
+      const page = { totalCount: 1, pageSize: 10, pageIndex: 0, items: observations }
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).mimicks(async (spec: any, mapper: any) => {
+        return { type: 'paged', page: { ...page, items: page.items.map(mapper) } }
+      })
+      const res = await readObservations({ context, search: { paging: { pageIndex: 0, pageSize: 10 } } })
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal({ ...page, items: observations.map(o => api.exoObservationFor(o)) })
+    })
+
+    it('applies the given mapping function to each result', async function() {
+
+      const observations: ObservationAttrs[] = [
+        { ...minimalObservationAttrs(), id: uniqid() },
+      ]
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).mimicks(async (spec: any, mapper: any) => {
+        return { type: 'all', observations: observations.map(mapper) }
+      })
+      const res = await readObservations({ context, search: {}, mapping: x => x.id })
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(observations.map(o => o.id))
+    })
+
+    it('does not look up teams when no teamIsAnyOf is given', async function() {
+
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).resolves({ type: 'all', observations: [] })
+      await readObservations({ context, search: {} })
+
+      teamRepo.didNotReceive().findAllByIds(Arg.all())
+    })
+
+    it('resolves teamIsAnyOf to user ids and merges them with userIsAnyOf', async function() {
+
+      const teamId = uniqid()
+      const teamUserId = uniqid()
+      const directUserId = uniqid()
+      teamRepo.findAllByIds([ teamId ]).resolves({
+        [teamId]: { id: teamId, name: 'Team', userIds: [ teamUserId, directUserId ], acl: {} }
+      })
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).resolves({ type: 'all', observations: [] })
+      await readObservations({ context, search: { teamIsAnyOf: [ teamId ], userIsAnyOf: [ directUserId ] } })
+
+      obsRepo.received(1).find(
+        Arg.is((spec: any) => {
+          const userIsAnyOf: string[] = spec.where.userIsAnyOf
+          return userIsAnyOf.length === 2 && userIsAnyOf.includes(teamUserId) && userIsAnyOf.includes(directUserId)
+        }),
+        Arg.any()
+      )
+    })
+
+    it('does not query the search repository when no field filter is given', async function() {
+
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).resolves({ type: 'all', observations: [] })
+      await readObservations({ context, search: {} })
+
+      searchRepo.didNotReceive().findIdsByFilter(Arg.any(), Arg.any())
+      obsRepo.received(1).find(Arg.is((spec: any) => spec.where.ids === undefined), Arg.any())
+    })
+
+    it('resolves a field filter to observation ids from the search repository', async function() {
+
+      const filter = { keyword: 'test' }
+      const ids = [ uniqid(), uniqid() ]
+      searchRepo.findIdsByFilter(filter, mageEvent).resolves(ids)
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).resolves({ type: 'all', observations: [] })
+      await readObservations({ context, search: { filter } })
+
+      obsRepo.received(1).find(Arg.is((spec: any) => spec.where.ids === ids), Arg.any())
+    })
+
+    it('returns an infrastructure error if the repository throws', async function() {
+
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.find(Arg.any(), Arg.any()).rejects(new Error('database error'))
+      const res = await readObservations({ context, search: {} })
+
+      expect(res.success).to.be.null
+      expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrInfrastructure)
     })
   })
 
@@ -608,7 +805,7 @@ describe('observations use case interactions', function() {
       expect(obsAfter.validation.hasErrors).to.be.false
       expect(saved.user).to.deep.equal({ id: creator.id, displayName: creator.displayName }, 'creator')
       expect(saved.important?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName }, 'important flagger')
-      expect(saved).to.deep.equal(api.exoObservationFor(obsAfter, { creator, importantFlagger }), 'saved result')
+      expect(saved).to.deep.equal(api.exoObservationFor(obsAfter, creator, importantFlagger), 'saved result')
       userRepo.received(1).findAllByIds(Arg.all())
       userRepo.received(1).findAllByIds(Arg.is((x: UserId[]) => x.length === 2 && x.every(id => [ creator.id, importantFlagger.id ].includes(id))))
       userRepo.didNotReceive().findById(Arg.all())
@@ -680,7 +877,7 @@ describe('observations use case interactions', function() {
         expect(created.validation.hasErrors).to.be.false
         expect(created.userId).to.equal(context.userId)
         expect(created.deviceId).to.equal(context.deviceId)
-        expect(saved).to.deep.equal(api.exoObservationFor(created, { creator }))
+        expect(saved).to.deep.equal(api.exoObservationFor(created, creator))
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
       })
@@ -724,7 +921,7 @@ describe('observations use case interactions', function() {
           delta: 5000,
           provider: 'fake',
         })
-        expect(saved).to.deep.equal(api.exoObservationFor(created, { creator }))
+        expect(saved).to.deep.equal(api.exoObservationFor(created, creator))
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
       })
@@ -1409,8 +1606,8 @@ describe('observations use case interactions', function() {
           ...copyObservationAttrs(obsBefore),
           id: uniqid(),
           states: [
-            { id: uniqid(), name: 'active', userId: uniqid() },
-            { id: uniqid(), name: 'archived', userId: uniqid() }
+            { id: uniqid(), name: ObservationStateName.Active, userId: uniqid() },
+            { id: uniqid(), name: ObservationStateName.Archived, userId: uniqid() }
           ]
         }, mageEvent) as Observation
         const obsAfter = Observation.assignTo(obsBefore, {
@@ -1835,7 +2032,7 @@ describe('observations use case interactions', function() {
       obsRepo.didNotReceive().save(Arg.all())
     })
 
-    it('fails if the request content name does not match', async function() {
+    it('disregards non-matching request content name', async function() {
 
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
@@ -1851,15 +2048,17 @@ describe('observations use case interactions', function() {
         attachmentId: attachment.id,
         content,
       }
+      const attachmentPatch: AttachmentContentPatchAttrs = Object.freeze({ contentLocator: uniqid(), size: 887766 })
+      const afterStore = patchAttachment(obs, attachment.id, attachmentPatch) as Observation
       obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(attachmentPatch)
+      obsRepo.patchAttachment(Arg.all()).resolves(afterStore)
       const res = await storeAttachmentContent(req)
-      const err = res.error as EntityNotFoundError
 
-      expect(res.success).to.be.null
-      expect(err).to.be.instanceOf(MageError)
-      expect(err.code).to.equal(ErrInvalidInput)
-      store.didNotReceive().saveContent(Arg.all())
-      obsRepo.didNotReceive().save(Arg.all())
+      expect(res.error).to.be.null
+      expect(res.success).to.exist
+      store.received(1).saveContent(Arg.all())
+      obsRepo.received(1).patchAttachment(Arg.all())
     })
 
     it('fails if the request media type does not match', async function() {

@@ -1,6 +1,7 @@
 import express from 'express'
 import moment from 'moment'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
+import { parseISO8601 } from '../../utilities/dates'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import { UserLocationRepository } from '../../entities/locations/entities.locations'
 import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, UserLocationRequest, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
@@ -181,11 +182,4 @@ function parseLocationBody(req: express.Request): ExoUserLocation[] | InvalidInp
     location.properties.deviceId = req.provisionedDeviceId
   }
   return locations as ExoUserLocation[]
-}
-
-function parseISO8601(iso8601: string): Date | undefined {
-  const date = moment(iso8601, moment.ISO_8601, true)
-  if (typeof iso8601 === 'string' && date.isValid()) {
-    return date.toDate()
-  }
 }

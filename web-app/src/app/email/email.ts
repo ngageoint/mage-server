@@ -13,7 +13,7 @@ export const emailValidator: ValidatorFn = (
 @Directive({
     selector: '[appEmail][formControlName],[appEmail][formControl],[appEmail][ngModel]',
     providers: [{ provide: NG_VALIDATORS, useExisting: EmailValidatorDirective, multi: true }],
-    standalone: false
+    standalone: true
 })
 export class EmailValidatorDirective implements Validator {
   validate(control: AbstractControl): ValidationErrors | null {

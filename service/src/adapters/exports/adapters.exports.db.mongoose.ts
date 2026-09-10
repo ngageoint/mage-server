@@ -64,8 +64,7 @@ export const ExportSchema = new mongoose.Schema<ExportDocument>({
   },
   options: {
     eventId: { type: Number, ref: 'Event', required: true },
-    filter: { type: Schema.Types.Mixed },
-    projection: { type: Schema.Types.Mixed }
+    filter: { type: Schema.Types.Mixed }
   },
   processingErrors: [ErrorSchema],
   expirationDate: { type: Date, required: true },
@@ -185,8 +184,7 @@ export class MongooseExportsRepository implements ExportsRepository {
       filename: create.filename,
       options: {
         eventId: create.eventId,
-        filter: create.filter,
-        projection: create.projection
+        filter: create.filter
       },
       expirationDate: new Date(Date.now() + (this.#exportTtlMillis))
     }

@@ -1,6 +1,32 @@
 mat-card {
+  position: relative;
   overflow: hidden;
   --mat-card-elevated-container-color: white;
+}
+
+// Diagonal corner flag indicating a failed attachment - mirrors the same triangle-badge
+// treatment on mage-android (observation_badge.xml) and mage-ios (ObservationSummaryView's
+// errorShapeLayer). clip-path handles what those needed hand-drawn paths for.
+.item-error-flag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  z-index: 1;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background-color: var(--mat-sys-error);
+}
+
+.item-error-flag__icon {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  color: var(--mat-sys-on-error);
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
 }
 
 mat-card-content {
@@ -93,20 +119,6 @@ mat-card-actions {
   display: block;
 }
 
-.item-media-chip {
-  margin-top: 8px;
-}
-
-.item-media-chip-label {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  background: #ffebee;
-  color: #c62828;
-}
 
 .item-important {
   padding: 8px 0;

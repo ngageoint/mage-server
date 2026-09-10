@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { confirmPasswordValidator, evaluatePasswordStrength } from '../../../password/password';
-import { PasswordStrength, passwordStrengthScores } from 'src/app/entities/password/password';
+import { PasswordStrength } from 'src/app/entities/password/password';
 import { UserService } from '../../../user/user.service';
 import { User } from '../user';
 
@@ -19,7 +19,7 @@ export class ChangePasswordComponent {
   saving = false;
   error: string | null = null;
 
-  passwordStrength: PasswordStrength = passwordStrengthScores[0];
+  passwordStrength?: PasswordStrength;
 
   form = new FormGroup({
     password: new FormControl('', [Validators.required]),

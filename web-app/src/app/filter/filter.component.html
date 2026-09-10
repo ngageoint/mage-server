@@ -3,30 +3,6 @@
     <h2 mat-dialog-title>Filter</h2>
 
     <div mat-dialog-content *ngIf="!isLoading; else loadingTemplate">
-      <mat-form-field appearance="fill">
-        <mat-label>Events</mat-label>
-        <input
-          type="text"
-          matInput
-          [formControl]="eventControl"
-          [matAutocomplete]="autoEvent"
-        />
-
-        <mat-autocomplete
-          #autoEvent="matAutocomplete"
-          [displayWith]="onDisplayEvent"
-          (optionSelected)="onSelectEvent($event)"
-        >
-          <mat-option
-            *ngFor="let event of filteredEvents | async"
-            [value]="event"
-          >
-            <div class="option-text">{{ event.name }}</div>
-            <div class="option-description">{{ event.description }}</div>
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-
       <ng-container *ngIf="filteredTeams | async as teams">
         <div *ngIf="teams.length > 0 || selectedTeams.length > 0">
           <mat-form-field appearance="fill">

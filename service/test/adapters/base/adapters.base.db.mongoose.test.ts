@@ -5,7 +5,7 @@ import '../../mongo.test'
 import { mongoTestAfterAllHook, mongoTestBeforeAllHook, MongoTestContext } from '../../mongo.test'
 import { BaseMongooseRepository, pageQuery } from '../../../lib/adapters/base/adapters.base.db.mongoose'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import { PagingParameters } from '../../../src/entities/entities.global'
+import { PagingParameters } from '../../../lib/entities/entities.global'
 import _ from 'lodash'
 
 describe('mongoose adapter layer base', function () {

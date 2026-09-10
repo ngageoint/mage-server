@@ -41,39 +41,40 @@
         <mat-error *ngIf="signup.controls.selectedRole.hasError('required')">Role is required</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
-        <mat-label>Password</mat-label>
-        <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" />
-        <button matIconButton matSuffix type="button" (click)="showPassword = !showPassword">
-          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-        </button>
-        <button matIconButton matSuffix type="button" [matTooltip]="passwordTooltipText" matTooltipClass="tooltip-wide">
-          <mat-icon>info</mat-icon>
-        </button>
-        <mat-error *ngFor="let msg of getPasswordErrorMessages(signup.controls.password.errors)">{{ msg }}</mat-error>
-      </mat-form-field>
+      <div class="password-row full-width">
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" />
+          <button matIconButton matSuffix type="button" (click)="showPassword = !showPassword">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngFor="let msg of getPasswordErrorMessages(signup.controls.password.errors)">{{ msg }}</mat-error>
+        </mat-form-field>
 
-      <mat-form-field appearance="fill">
-        <mat-label>Confirm Password</mat-label>
-        <input matInput [type]="showConfirmPassword ? 'text' : 'password'" formControlName="passwordconfirm" />
-        <button matIconButton matSuffix type="button" (click)="showConfirmPassword = !showConfirmPassword">
-          <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-        </button>
-        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
-        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('match')">Passwords must match</mat-error>
-      </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput [type]="showConfirmPassword ? 'text' : 'password'" formControlName="passwordconfirm" />
+          <button matIconButton matSuffix type="button" (click)="showConfirmPassword = !showConfirmPassword">
+            <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="signup.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
+          <mat-error *ngIf="signup.controls.passwordconfirm.hasError('match')">Passwords must match</mat-error>
+        </mat-form-field>
+      </div>
+
+      <p class="password-hint full-width" *ngIf="passwordHelpText || passwordErrorMessages.length" [class.password-hint--error]="signup.controls.password.hasError('policy')">
+        <mat-icon fontSet="material-symbols-outlined">{{ signup.controls.password.hasError('policy') ? 'error_outline' : 'info' }}</mat-icon>
+        {{ passwordHelpText || passwordErrorMessages[0] }}
+      </p>
 
       <div class="password-strength full-width">
-        <div class="strength-header">
-          <span class="strength-label">Password Strength</span>
-          <span class="strength-text">{{ passwordStrength?.text }}</span>
-        </div>
         <mat-progress-bar
           mode="determinate"
           [value]="passwordStrength?.value"
           [ngStyle]="{ '--password-bar-color': passwordStrength?.color }"
           class="strength-bar">
         </mat-progress-bar>
+        <span class="strength-text" [style.color]="passwordStrength?.color">{{ passwordStrength?.text }}</span>
       </div>
 
     </div>

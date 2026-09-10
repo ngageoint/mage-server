@@ -1,4 +1,8 @@
 <mat-card matRipple [matRippleTrigger]="ripple">
+  <div *ngIf="hasFailedAttachment()" class="item-error-flag" aria-hidden="true">
+    <mat-icon class="item-error-flag__icon">priority_high</mat-icon>
+  </div>
+
   <div *ngIf="observation?.important" class="item-important" (click)="viewObservation()">
     <mat-icon class="item-important--icon">flag</mat-icon>
     <div>
@@ -53,10 +57,6 @@
 
     <div *ngIf="attachments?.length" class="item-media">
       <attachment-carousel [attachments]="attachments"></attachment-carousel>
-    </div>
-
-    <div *ngIf="hasFailedAttachment()" class="item-media-chip">
-      <span class="item-media-chip-label">{{ failedAttachmentCount() > 1 ? 'Attachments Failed - ' + failedAttachmentCount() : 'Attachment Failed' }}</span>
     </div>
   </mat-card-content>
 

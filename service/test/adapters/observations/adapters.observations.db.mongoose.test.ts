@@ -6,17 +6,18 @@ import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapte
 import { MongooseObservationRepository } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
-import { MageEventDocument, MageEventModelInstance } from '../../../src/models/event'
+import { MageEventDocument, MageEventModelInstance } from '../../../lib/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
-import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentProcessingStatus, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
+import { ObservationDocument, ObservationModel } from '../../../lib/models/observation'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentProcessingStatus, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent, UsersExpandedObservationAttrs } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
 import uniqid from 'uniqid'
 import EventEmitter from 'events'
 import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute'
+import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
 
 function observationStub(id: ObservationId, eventId: MageEventId): ObservationAttrs {
   const now = Date.now()
@@ -217,7 +218,7 @@ describe('mongoose observation repository', function () {
         expect(_.omit(savedAttrs, 'states')).to.deep.equal(_.omit(beforeSaveAttrs, 'states'))
         expect(savedAttrs.states).to.have.length(1)
         expect(savedAttrs.states[0].id).to.be.a('string')
-        expect(savedAttrs.states[0].name).to.equal('active')
+        expect(savedAttrs.states[0].name).to.equal(ObservationStateName.Active)
         expect(foundAttrs).to.deep.equal(savedAttrs)
         expect(count).to.equal(1)
       })
@@ -266,12 +267,12 @@ describe('mongoose observation repository', function () {
         attrs.states = [
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'active',
+            name: ObservationStateName.Active,
             userId: (new mongoose.Types.ObjectId()).toHexString()
           },
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'archived',
+            name: ObservationStateName.Archived,
             userId: undefined
           }
         ]
@@ -317,7 +318,7 @@ describe('mongoose observation repository', function () {
           }
         ]
         origAttrs.states = [
-          { id: (new mongoose.Types.ObjectId()).toHexString(), name: 'active', userId: (new mongoose.Types.ObjectId()).toHexString() }
+          { id: (new mongoose.Types.ObjectId()).toHexString(), name: ObservationStateName.Active, userId: (new mongoose.Types.ObjectId()).toHexString() }
         ]
         origAttrs.properties.forms = [
           {
@@ -342,7 +343,7 @@ describe('mongoose observation repository', function () {
         origDoc = await model.findById(id) as ObservationDocument
       })
 
-      it('uses put/replace semantics to save the observation as the attributes specify', async function () {
+      it('uses put/replace semantics to save the observation as the attributes specify', async function() {
 
         const putAttrs = copyObservationAttrs(origAttrs)
         putAttrs.geometry = {
@@ -350,7 +351,7 @@ describe('mongoose observation repository', function () {
           coordinates: [12, 34]
         }
         putAttrs.states = [
-          { name: 'archived', id: PendingEntityId }
+          { name: ObservationStateName.Archived, id: PendingEntityId }
         ]
         putAttrs.properties.forms = [
           {
@@ -373,7 +374,7 @@ describe('mongoose observation repository', function () {
         expect(omitKeysAndUndefinedValues(savedAttrs, 'lastModified', 'states')).to.deep.equal(omitKeysAndUndefinedValues(putAttrs, 'lastModified', 'states'))
         expect(omitKeysAndUndefinedValues(foundAttrs, 'lastModified', 'states')).to.deep.equal(omitKeysAndUndefinedValues(putAttrs, 'lastModified', 'states'))
         expect(savedAttrs.states[0].id).to.be.a('string')
-        expect(savedAttrs.states[0].name).to.equal('archived')
+        expect(savedAttrs.states[0].name).to.equal(ObservationStateName.Archived)
         expect(savedAttrs.states[0].userId).to.be.undefined
         expect(() => new mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
         expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
@@ -389,7 +390,7 @@ describe('mongoose observation repository', function () {
           coordinates: [ 12, 34 ]
         }
         putAttrs.states = [
-          { name: 'archived', id: PendingEntityId }
+          { name: ObservationStateName.Archived, id: PendingEntityId }
         ]
         putAttrs.properties.forms = [
           {
@@ -470,7 +471,7 @@ describe('mongoose observation repository', function () {
       state1Stub.states = [
         {
           id: PendingEntityId,
-          name: 'archived',
+          name: ObservationStateName.Archived,
           userId: (new mongoose.Types.ObjectId()).toHexString()
         }
       ]
@@ -481,7 +482,7 @@ describe('mongoose observation repository', function () {
       state2Stub.states = [
         {
           id: PendingEntityId,
-          name: 'active',
+          name: ObservationStateName.Active,
           userId: (new mongoose.Types.ObjectId()).toHexString()
         },
         state1Saved.states[0],
@@ -492,14 +493,14 @@ describe('mongoose observation repository', function () {
 
       expect(state1Saved.states).to.have.length(1)
       expect(state1Saved.states[0]).to.deep.include({
-        name: 'archived',
+        name: ObservationStateName.Archived,
         userId: state1Stub.states[0].userId
       })
       expect(() => new mongoose.Types.ObjectId(state1Saved.states[0].id as string).toHexString()).not.to.throw()
       expect(copyObservationAttrs(state1Found)).to.deep.equal(copyObservationAttrs(state1Saved))
       expect(state2Saved.states).to.have.length(2)
       expect(state2Saved.states[0]).to.deep.include({
-        name: 'active',
+        name: ObservationStateName.Active,
         userId: state2Stub.states[0].userId
       })
       expect(() => new mongoose.Types.ObjectId(state2Saved.states[0].id as string).toHexString()).not.to.throw()
@@ -822,6 +823,271 @@ describe('mongoose observation repository', function () {
       expect(mod.pendingEvents.length).to.be.greaterThan(0)
       expect(saved).to.be.instanceOf(ObservationRepositoryError)
       domainEvents.didNotReceive().emit(Arg.all())
+    })
+  })
+
+  describe('finding observations', function () {
+
+    let UserModel: mongoose.Model<any>
+    let userA: { _id: mongoose.Types.ObjectId, displayName: string }
+    let userB: { _id: mongoose.Types.ObjectId, displayName: string }
+    let obsA: Observation
+    let obsB: Observation
+    let obsC: Observation
+    let beforeObsCSaved: Date
+
+    before(function () {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      UserModel = require('../../../lib/models/user').Model
+    })
+
+    beforeEach(async function () {
+      userA = await UserModel.create({
+        username: `finding-observations-a-${uniqid()}`,
+        displayName: 'User A',
+        active: true,
+        roleId: new mongoose.Types.ObjectId(),
+        authenticationId: new mongoose.Types.ObjectId()
+      })
+      userB = await UserModel.create({
+        username: `finding-observations-b-${uniqid()}`,
+        displayName: 'User B',
+        active: true,
+        roleId: new mongoose.Types.ObjectId(),
+        authenticationId: new mongoose.Types.ObjectId()
+      })
+
+      const idA = await repo.allocateObservationId()
+      const attrsA = observationStub(idA, event.id)
+      attrsA.userId = userA._id.toHexString()
+      attrsA.geometry = { type: 'Point', coordinates: [ 10, 10 ] }
+      attrsA.properties.timestamp = new Date(2020, 0, 1)
+      attrsA.favoriteUserIds = [ userA._id.toHexString() ]
+      attrsA.attachments = []
+      obsA = await repo.save(Observation.evaluate(attrsA, event)) as Observation
+
+      const idB = await repo.allocateObservationId()
+      const attrsB = observationStub(idB, event.id)
+      attrsB.userId = userB._id.toHexString()
+      attrsB.geometry = { type: 'Point', coordinates: [ 20, 20 ] }
+      attrsB.properties.timestamp = new Date(2020, 5, 1)
+      attrsB.important = { userId: userB._id.toHexString(), timestamp: new Date(2020, 5, 1), description: 'important' }
+      obsB = await repo.save(Observation.evaluate(attrsB, event)) as Observation
+      const attachmentId = (await repo.nextAttachmentIds())[0]
+      const formEntryId = (await repo.nextFormEntryIds())[0]
+      const obsBWithAttachment = Observation.evaluate({
+        ...copyObservationAttrs(obsB),
+        properties: {
+          ...obsB.properties,
+          forms: [ { id: formEntryId, formId: event.forms[0].id, field1: 'x' } ]
+        },
+        attachments: [
+          {
+            id: attachmentId,
+            observationFormId: formEntryId,
+            fieldName: 'field3',
+            oriented: false,
+            name: 'photo.jpg',
+            contentType: 'image/jpeg',
+            thumbnails: []
+          }
+        ]
+      }, event)
+      obsB = await repo.save(obsBWithAttachment) as Observation
+
+      await new Promise(resolve => setTimeout(resolve, 5))
+      beforeObsCSaved = new Date()
+
+      const idC = await repo.allocateObservationId()
+      const attrsC = observationStub(idC, event.id)
+      attrsC.geometry = { type: 'Point', coordinates: [ 30, 30 ] }
+      attrsC.properties.timestamp = new Date(2020, 11, 1)
+      attrsC.states = [ { id: (new mongoose.Types.ObjectId()).toHexString(), name: ObservationStateName.Archived } ]
+      obsC = await repo.save(Observation.evaluate(attrsC, event)) as Observation
+    })
+
+    afterEach(async function () {
+      await UserModel.deleteMany({ _id: { $in: [ userA._id, userB._id ] } })
+    })
+
+    describe('iterate', function () {
+
+      async function collect(spec: Parameters<typeof repo.iterate>[0]): Promise<ObservationAttrs[]> {
+        const results: ObservationAttrs[] = []
+        for await (const obs of repo.iterate(spec)) {
+          results.push(obs)
+        }
+        return results
+      }
+
+      it('returns all observations when no filter is given', async function () {
+
+        const results = await collect({})
+
+        expect(results.map(x => x.id).sort()).to.deep.equal([ obsA.id, obsB.id, obsC.id ].sort())
+      })
+
+      it('filters by timestampAfter and timestampBefore', async function () {
+
+        const results = await collect({
+          where: { timestampAfter: new Date(2020, 2, 1), timestampBefore: new Date(2020, 8, 1) }
+        })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsB.id ])
+      })
+
+      it('filters by lastModifiedAfter and lastModifiedBefore', async function () {
+
+        const results = await collect({
+          where: { lastModifiedAfter: beforeObsCSaved }
+        })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsC.id ])
+      })
+
+      it('filters by stateIsAnyOf', async function () {
+
+        const results = await collect({ where: { stateIsAnyOf: [ ObservationStateName.Archived ] } })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsC.id ])
+      })
+
+      it('filters by userIsAnyOf', async function () {
+
+        const results = await collect({ where: { userIsAnyOf: [ userA._id.toHexString() ] } })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsA.id ])
+      })
+
+      it('filters by ids', async function () {
+
+        const results = await collect({ where: { ids: [ obsA.id, obsC.id ] } })
+
+        expect(results.map(x => x.id).sort()).to.deep.equal([ obsA.id, obsC.id ].sort())
+      })
+
+      it('filters by isFavoriteOfUser', async function () {
+
+        const results = await collect({ where: { isFavoriteOfUser: userA._id.toHexString() } })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsA.id ])
+      })
+
+      it('filters by isFlaggedImportant true', async function () {
+
+        const results = await collect({ where: { isFlaggedImportant: true } })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsB.id ])
+      })
+
+      it('filters by hasAttachments true', async function () {
+
+        const results = await collect({ where: { hasAttachments: true } })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsB.id ])
+      })
+
+      it('filters by geometryIntersects, converting the bbox to a GeoJSON polygon', async function () {
+
+        const results = await collect({ where: { geometryIntersects: [ 5, 5, 15, 15 ] } })
+
+        expect(results.map(x => x.id)).to.deep.equal([ obsA.id ])
+      })
+
+      it('excludes attachment content by default', async function () {
+
+        const results = await collect({ where: { ids: [ obsB.id ] } })
+
+        expect(results[0].attachments).to.have.length(0)
+      })
+
+      it('includes attachments when includeAttachments is true', async function () {
+
+        const results = await collect({ where: { ids: [ obsB.id ] }, includeAttachments: true })
+
+        expect(results[0].attachments).to.have.length(1)
+      })
+    })
+
+    describe('find', function () {
+
+      it('returns an "all" result with all observations when no paging is given', async function () {
+
+        const result = await repo.find({ where: {} })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          expect(result.observations.map(x => x.id).sort()).to.deep.equal([ obsA.id, obsB.id, obsC.id ].sort())
+        }
+      })
+
+      it('sorts by lastModified', async function () {
+
+        const result = await repo.find({ where: {}, orderBy: { field: 'lastModified', order: 1 } })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          expect(result.observations.map(x => x.id)).to.deep.equal([ obsA.id, obsB.id, obsC.id ])
+        }
+      })
+
+      it('sorts by lastModified descending', async function () {
+
+        const result = await repo.find({ where: {}, orderBy: { field: 'lastModified', order: -1 } })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          expect(result.observations.map(x => x.id)).to.deep.equal([ obsC.id, obsB.id, obsA.id ])
+        }
+      })
+
+      it('returns a "paged" result with a page of observations when paging is given', async function () {
+
+        const result = await repo.find({
+          where: {},
+          orderBy: { field: 'lastModified', order: 1 },
+          paging: { pageIndex: 0, pageSize: 2, includeTotalCount: true }
+        })
+
+        expect(result.type).to.equal('paged')
+        if (result.type === 'paged') {
+          expect(result.page.totalCount).to.equal(3)
+          expect(result.page.items.map(x => x.id)).to.deep.equal([ obsA.id, obsB.id ])
+        }
+      })
+
+      it('applies the given mapper to each result', async function () {
+
+        const result = await repo.find({ where: { ids: [ obsA.id ] } }, obs => obs.id)
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          expect(result.observations).to.deep.equal([ obsA.id ])
+        }
+      })
+
+      it('populates the user and important.user when populateUserNames is true', async function () {
+
+        const result = await repo.find({ where: { ids: [ obsA.id, obsB.id ] }, populateUserNames: true })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          const a = result.observations.find(x => x.id === obsA.id) as UsersExpandedObservationAttrs
+          const b = result.observations.find(x => x.id === obsB.id) as UsersExpandedObservationAttrs
+          expect(a.user).to.deep.equal({ id: userA._id.toHexString(), displayName: userA.displayName })
+          expect(b.important?.user).to.deep.equal({ id: userB._id.toHexString(), displayName: userB.displayName })
+        }
+      })
+
+      it('does not populate user when populateUserNames is not given', async function () {
+
+        const result = await repo.find({ where: { ids: [ obsA.id ] } })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          expect((result.observations[0] as UsersExpandedObservationAttrs).user).to.be.undefined
+        }
+      })
     })
   })
 })

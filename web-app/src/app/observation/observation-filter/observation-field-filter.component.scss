@@ -1,0 +1,116 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.observation-filter-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.keyword-hint-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: help;
+}
+
+.condition-separator {
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 8px;
+}
+
+// the chip-grid's inner container is display:flex;flex-flow:wrap, so a
+// full-width flex item forces everything after it onto a new line -
+// this is how "and" gets its own line without splitting the group
+// display out of the chip-grid/textfield.
+.group-separator {
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  padding: 4px 0 4px 8px;
+}
+
+.separator-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.condition-filter-input {
+  padding: 4px 4px 0;
+  min-width: 140px;
+}
+
+// forces the "start a new condition" input onto its own line even when
+// the last chip leaves enough room beside it on the current row.
+.condition-filter-input--new-row {
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.condition-chip {
+  font-size: 13px;
+
+  &--field {
+    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  }
+
+  &--operator {
+    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 5%, transparent);
+    font-style: italic;
+  }
+
+  &--value {
+    background-color: var(--mat-sys-primary-container);
+  }
+}
+
+.observation-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+
+.form-color-rail {
+  width: 2px;
+  align-self: stretch;
+  margin-right: 8px;
+}
+
+mat-optgroup mat-option:first-of-type {
+  margin-top: 4px;
+}
+
+mat-optgroup mat-option:first-of-type .form-color-rail {
+  border-top-left-radius: 1px;
+  border-top-right-radius: 1px;
+}
+
+mat-optgroup mat-option:last-of-type .form-color-rail {
+  border-bottom-left-radius: 1px;
+  border-bottom-right-radius: 1px;
+}

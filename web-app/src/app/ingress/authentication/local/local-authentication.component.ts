@@ -35,6 +35,8 @@ export class LocalAuthenticationComponent implements OnInit {
 
   @ViewChild('errorElement') private errorElement: ElementRef;
 
+  showPassword = false;
+
   authenticationForm = new FormGroup({
     username: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required])

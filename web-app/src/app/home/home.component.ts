@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MapService } from '../map/map.service';
 import { FilterService } from '../filter/filter.service';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -31,7 +32,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private filterService: FilterService,
     private locationService: LocationService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private destroyRef: DestroyRef
   ) {
     this.sessionService.user$.subscribe((myself: User) => {
       this.myself = myself
@@ -39,7 +41,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.filterService.addListener(this)
+    this.filterService.event$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        this.event = event
+      })
     this.mapService.addListener(this)
 
     this.activatedRoute.data.subscribe(({ user }) => {
@@ -49,20 +55,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.filterService.removeListener(this)
     this.mapService.removeListener(this)
   }
 
   onMap($event) {
     this.map = $event.map
-  }
-
-  onFilterChanged(filter: any) {
-    if (filter.event?.added?.length) {
-      this.event = filter.event.added[0]
-    } else if (filter.event?.removed?.length) {
-      this.event = null
-    }
   }
 
   onAddObservation($event) {

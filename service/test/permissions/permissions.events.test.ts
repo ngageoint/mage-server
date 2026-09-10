@@ -9,11 +9,9 @@ import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import { MageEventRepository, MageEventAttrs, EventAccessType } from '../../lib/entities/events/entities.events'
 // for some reason vs code marks an error if using @lib/models/user, even though tsc builds fine
 // nobody seems to care though - https://github.com/microsoft/TypeScript/issues/39709
-import { UserDocument } from '../../src/models/user'
 import { MongooseMageEventRepository } from '../../lib/adapters/events/adapters.events.db.mongoose'
 import { MageEventPermission } from '../../lib/entities/authorization/entities.permissions'
 import { Model as MageEventModel } from '../../lib/models/event'
-import { MageEventDocument } from '../../src/models/event'
 import { Team } from '../../lib/entities/teams/entities.teams'
 import { UserWithRole } from '../../src/permissions/permissions.role-based.base'
 

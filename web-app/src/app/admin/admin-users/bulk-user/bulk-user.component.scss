@@ -189,8 +189,8 @@
 }
 
 .import-progress-bar {
-  --mdc-linear-progress-active-indicator-color: var(--mat-sys-tertiary);
-  --mdc-linear-progress-track-color: var(--mat-sys-surface-container-high);
+  --mat-progress-bar-active-indicator-color: var(--mat-sys-tertiary);
+  --mat-progress-bar-track-color: var(--mat-sys-surface-container-high);
 }
 
 .import-finalizing {

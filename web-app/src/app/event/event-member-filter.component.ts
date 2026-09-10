@@ -10,7 +10,7 @@ import { User } from '@ngageoint/mage.web-core-lib/user'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { Subject, debounceTime, of, switchMap } from 'rxjs'
 import { EventService } from './event.service'
-import { Team } from '../filter/filter.types'
+import { Team } from '../entities/team/entities.team'
 
 const SEARCH_DEBOUNCE_MS = 250
 
@@ -25,7 +25,6 @@ interface MemberOption {
   type: MemberOptionType
   id: string
   display: string
-  raw: any
 }
 
 interface MemberOptionGroup {
@@ -97,7 +96,7 @@ export class EventMemberFilterComponent {
       this.search$.next({ event, teams, term: typeof term === 'string' ? term : '' })
     })
 
-    effect(() => {
+    effect((onCleanup) => {
       const event = this.event()
       const teams = this.teams()
       const filter = this.filter()
@@ -110,12 +109,13 @@ export class EventMemberFilterComponent {
       const teamSelections = this.teamOptions().filter(o => filter.teamIds.includes(o.id))
 
       if (filter.userIds.length) {
-        this.eventService.getMembers(event).subscribe((users: User[]) => {
+        const subscription = this.eventService.getMembers(event).subscribe((users: User[]) => {
           const userSelections = users
             .filter(u => filter.userIds.includes(u.id))
             .map(u => this.userToOption(u))
           this.selected.set([...teamSelections, ...userSelections])
         })
+        onCleanup(() => subscription.unsubscribe())
       } else {
         this.selected.set(teamSelections)
       }
@@ -160,15 +160,14 @@ export class EventMemberFilterComponent {
   }
 
   private teamToOption(team: Team): MemberOption {
-    return { type: 'team', id: String(team.id), display: team.name || '', raw: team }
+    return { type: 'team', id: String(team.id), display: team.name || '' }
   }
 
   private userToOption(user: User): MemberOption {
     return {
       type: 'user',
       id: user.id,
-      display: user.displayName || user.username,
-      raw: user
+      display: user.displayName || user.username
     }
   }
 

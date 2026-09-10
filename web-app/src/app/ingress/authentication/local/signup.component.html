@@ -5,104 +5,108 @@
   </div>
 
   <form class="signup" [formGroup]="signup">
-    <mat-form-field appearance="fill">
-      <mat-label>Username</mat-label>
-      <input matInput placeholder="Username" formControlName="username" (blur)="getCaptcha()" required />
-      <mat-error *ngIf="
-          signup.controls.username.touched &&
-          signup.controls.username.hasError('required')
-        ">
-        Username is required
-      </mat-error>
-      <mat-error *ngIf="
-          signup.controls.username.touched &&
-          signup.controls.username.hasError('exists')
-        ">
-        Username already exists
-      </mat-error>
-    </mat-form-field>
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput placeholder="Username" formControlName="username" (blur)="getCaptcha()" required />
+        <mat-error *ngIf="
+            signup.controls.username.touched &&
+            signup.controls.username.hasError('required')
+          ">
+          Username is required
+        </mat-error>
+        <mat-error *ngIf="
+            signup.controls.username.touched &&
+            signup.controls.username.hasError('exists')
+          ">
+          Username already exists
+        </mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Display Name</mat-label>
-      <input matInput placeholder="Display Name" formControlName="displayName" required />
-      <mat-error *ngIf="
-          signup.controls.displayName.touched &&
-          signup.controls.displayName.hasError('required')
-        ">
-        Display name is required
-      </mat-error>
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Display Name</mat-label>
+        <input matInput placeholder="Display Name" formControlName="displayName" required />
+        <mat-error *ngIf="
+            signup.controls.displayName.touched &&
+            signup.controls.displayName.hasError('required')
+          ">
+          Display name is required
+        </mat-error>
+      </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Email</mat-label>
-      <input matInput placeholder="Email" formControlName="email" />
-      <mat-error *ngIf="
-          signup.controls.email.touched &&
-          signup.controls.email.hasError('email')
-        ">
-        Must be a valid email address
-      </mat-error>
-    </mat-form-field>
+    <div class="form-row">
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput placeholder="Email" formControlName="email" />
+        <mat-error *ngIf="
+            signup.controls.email.touched &&
+            signup.controls.email.hasError('email')
+          ">
+          Must be a valid email address
+        </mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Phone</mat-label>
-      <input matInput placeholder="Phone" formControlName="phone" />
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Phone</mat-label>
+        <input matInput placeholder="Phone" formControlName="phone" />
+      </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill" class="password-form-field">
-      <mat-label>Password</mat-label>
-      <input matInput [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password"
-        required />
-      <button matIconButton type="button" matSuffix (click)="showPassword = !showPassword">
-        <mat-icon>{{
-          showPassword ? 'visibility_off' : 'visibility'
-          }}</mat-icon>
-      </button>
-      <button matIconButton [matTooltip]="passwordTooltipText" matSuffix>
-        <mat-icon>info</mat-icon>
-      </button>
+    <div class="form-row">
+      <mat-form-field appearance="fill" class="password-form-field">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password"
+          required />
+        <button matIconButton type="button" matSuffix (click)="showPassword = !showPassword">
+          <mat-icon>{{
+            showPassword ? 'visibility_off' : 'visibility'
+            }}</mat-icon>
+        </button>
+        <mat-error *ngIf="
+            signup.controls.password.touched &&
+            signup.controls.password.errors as errors
+          ">
+          <div *ngFor="let msg of getPasswordErrorMessages(errors)">
+            {{ msg }}
+          </div>
+        </mat-error>
+      </mat-form-field>
 
-      <mat-error *ngIf="
-          signup.controls.password.touched &&
-          signup.controls.password.errors as errors
-        ">
-        <div *ngFor="let msg of getPasswordErrorMessages(errors)">
-          {{ msg }}
-        </div>
-      </mat-error>
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm Password"
+          formControlName="passwordconfirm" required />
+        <button matIconButton type="button" matSuffix (click)="showConfirmPassword = !showConfirmPassword">
+          <mat-icon>{{
+            showConfirmPassword ? 'visibility_off' : 'visibility'
+            }}</mat-icon>
+        </button>
+        <mat-error *ngIf="
+            signup.controls.passwordconfirm.touched &&
+            signup.controls.passwordconfirm.hasError('required')
+          ">
+          Password confirmation is required
+        </mat-error>
+        <mat-error *ngIf="
+            signup.controls.passwordconfirm.touched &&
+            signup.controls.passwordconfirm.hasError('match')
+          ">
+          Passwords must match
+        </mat-error>
+      </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Confirm Password</mat-label>
-      <input matInput [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm Password"
-        formControlName="passwordconfirm" required />
-      <button matIconButton type="button" matSuffix (click)="showConfirmPassword = !showConfirmPassword">
-        <mat-icon>{{
-          showConfirmPassword ? 'visibility_off' : 'visibility'
-          }}</mat-icon>
-      </button>
-      <mat-error *ngIf="
-          signup.controls.passwordconfirm.touched &&
-          signup.controls.passwordconfirm.hasError('required')
-        ">
-        Password confirmation is required
-      </mat-error>
-      <mat-error *ngIf="
-          signup.controls.passwordconfirm.touched &&
-          signup.controls.passwordconfirm.hasError('match')
-        ">
-        Passwords must match
-      </mat-error>
-    </mat-form-field>
+    <p class="password-hint" *ngIf="passwordHelpText || passwordErrorMessages.length" [class.password-hint--error]="signup.controls.password.hasError('policy')">
+      <mat-icon fontSet="material-symbols-outlined">{{ signup.controls.password.hasError('policy') ? 'error_outline' : 'info' }}</mat-icon>
+      {{ passwordHelpText || passwordErrorMessages[0] }}
+    </p>
 
     <div class="password-strength">
-      <div class="password-strength__header">
-        <div class="password-strength__label">Password Strength</div>
-        <div class="password-strength__value">{{ passwordStrength?.text }}</div>
-      </div>
       <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"
         [ngStyle]="{ '--password-bar-color': passwordStrength?.color }" class="custom-password-bar">
       </mat-progress-bar>
+      <span class="password-strength__value" [style.color]="passwordStrength?.color">{{ passwordStrength?.text }}</span>
     </div>
 
     <div class="auth-captcha-container">

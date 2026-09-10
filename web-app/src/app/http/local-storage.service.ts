@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { User } from "@ngageoint/mage.web-core-lib/user";
-import { Form, Interval } from "../filter/filter.types";
+import { Interval } from "../filter/filter.types";
+import { Form } from "../entities/event/entities.event";
 
 @Injectable({
   providedIn: "root",

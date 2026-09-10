@@ -48,8 +48,8 @@ describe('ContactInfoComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [ContactInfoComponent],
-    imports: [NoopAnimationsModule,
+    imports: [ContactInfoComponent,
+        NoopAnimationsModule,
         MatMenuModule,
         FormsModule,
         MatFormFieldModule,
@@ -77,7 +77,9 @@ describe('ContactInfoComponent', () => {
     tick();
 
     expect(settingsService.get).toHaveBeenCalledWith('contactinfo');
-    expect(component.contactinfo).toEqual(MOCK_CONTACT_INFO);
+    expect(component.phone()).toEqual(MOCK_CONTACT_INFO.phone);
+    expect(component.email()).toEqual(MOCK_CONTACT_INFO.email);
+    expect(component.showDevContact()).toEqual(MOCK_CONTACT_INFO.showDevContact);
   }));
 
   it('should handle empty settings in ngOnInit', fakeAsync(() => {
@@ -86,11 +88,9 @@ describe('ContactInfoComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.contactinfo).toEqual({
-      phone: '',
-      email: '',
-      showDevContact: false
-    });
+    expect(component.phone()).toEqual('');
+    expect(component.email()).toEqual('');
+    expect(component.showDevContact()).toEqual(false);
   }));
 
   it('should handle error in ngOnInit', fakeAsync(() => {
@@ -106,7 +106,7 @@ describe('ContactInfoComponent', () => {
   it('should set isDirty from setDirty()', () => {
     component.setDirty(true);
 
-    expect(component.isDirty).toBeTrue();
+    expect(component.isDirty()).toBeTrue();
   });
 
   it('should clear isDirty on successful save', fakeAsync(() => {
@@ -114,16 +114,18 @@ describe('ContactInfoComponent', () => {
       of(null)
     );
 
-    component.contactinfo = { ...MOCK_CONTACT_INFO };
-    component.isDirty = true;
+    component.phone.set(MOCK_CONTACT_INFO.phone);
+    component.email.set(MOCK_CONTACT_INFO.email);
+    component.showDevContact.set(MOCK_CONTACT_INFO.showDevContact);
+    component.isDirty.set(true);
     component.save();
     tick();
 
     expect(updateSpy).toHaveBeenCalledWith(
       'contactinfo',
-      component.contactinfo
+      MOCK_CONTACT_INFO
     );
-    expect(component.isDirty).toBeFalse();
+    expect(component.isDirty()).toBeFalse();
   }));
 
   it('should keep isDirty on failed save', fakeAsync(() => {
@@ -131,15 +133,17 @@ describe('ContactInfoComponent', () => {
       throwError(() => new Error('nope'))
     );
 
-    component.contactinfo = { ...MOCK_CONTACT_INFO };
-    component.isDirty = true;
+    component.phone.set(MOCK_CONTACT_INFO.phone);
+    component.email.set(MOCK_CONTACT_INFO.email);
+    component.showDevContact.set(MOCK_CONTACT_INFO.showDevContact);
+    component.isDirty.set(true);
     component.save();
     tick();
 
     expect(updateSpy).toHaveBeenCalledWith(
       'contactinfo',
-      component.contactinfo
+      MOCK_CONTACT_INFO
     );
-    expect(component.isDirty).toBeTrue();
+    expect(component.isDirty()).toBeTrue();
   }));
 });

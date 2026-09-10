@@ -210,6 +210,7 @@ describe("user update tests", function () {
           name: 'local',
           settings: {
             passwordPolicy: {
+              customizeHelpText: true,
               helpText: 'Password must be at least 14 characters',
               passwordMinLengthEnabled: true,
               passwordMinLength: 14
@@ -765,6 +766,7 @@ describe("user update tests", function () {
           name: 'local',
           settings: {
             passwordPolicy: {
+              customizeHelpText: true,
               helpText: 'Password must be at least 14 characters',
               passwordMinLengthEnabled: true,
               passwordMinLength: 14

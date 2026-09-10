@@ -14,15 +14,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  height: 30vh;
 }
 
 .authorization.compact {
   gap: 16px;
 
   .header {
-    height: auto;
     align-items: flex-start;
   }
 }
@@ -36,6 +33,11 @@
 .header__message {
   font: var(--mat-sys-body-large);
   color: var(--mat-sys-on-surface-variant);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
 }
 
 .authorize {

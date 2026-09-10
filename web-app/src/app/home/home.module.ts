@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkMenuModule } from '@angular/cdk/menu';
 
 import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
 
@@ -58,10 +59,13 @@ import { LayerContentComponent } from '../map/layers/layer-content.component';
 import { ColorPickerModule } from '../color-picker/color-picker.module';
 import { ExportComponent } from '../export/export.component';
 import { ExportCreateComponent } from '../export/export-create/export-create.component';
+import { ObservationPreviewItemComponent } from '../export/export-create/observation-preview-item.component';
 import { ExportListComponent } from '../export/export-list/export-list.component';
 import { ExportListItemComponent } from '../export/export-list/export-list-item.component';
 import { ExportViewComponent } from '../export/export-view/export-view.component';
 import { ExportEmptyComponent } from '../export/export-empty/export-empty.component';
+import { ObservationFieldFilterComponent } from '../observation/observation-filter/observation-field-filter.component';
+import { EventMemberFilterComponent } from '../event/event-member-filter.component';
 
 import { MapClipModule } from '../map/clip/map-clip.module';
 import { GeometryModule } from '../geometry/geometry.module';
@@ -145,6 +149,7 @@ const routes: Routes = [{
   imports: [MatTimepickerModule],
   exports: [
     AlphaModule,
+    CdkMenuModule,
     CheckboardModule,
     CommonModule,
     FormsModule,
@@ -203,6 +208,7 @@ class AngularModule { }
     DMSValidatorDirective,
     ExportComponent,
     ExportCreateComponent,
+    ObservationFieldFilterComponent,
     ExportEmptyComponent,
     ExportListComponent,
     ExportListItemComponent,
@@ -260,6 +266,7 @@ class AngularModule { }
   imports: [
     AngularModule,
     ColorPickerModule,
+    EventMemberFilterComponent,
     FeedIconModule,
     FeedItemSummaryModule,
     GeometryModule,
@@ -267,6 +274,7 @@ class AngularModule { }
     IngressModule,
     MomentModule,
     ObservationAttachmentModule,
+    ObservationPreviewItemComponent,
     ObservationEditModule,
     StaticIconModule,
     UserAvatarModule,

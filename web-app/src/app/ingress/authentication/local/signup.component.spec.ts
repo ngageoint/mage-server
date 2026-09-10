@@ -7,7 +7,6 @@ import { of, throwError } from 'rxjs';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { User } from 'core-lib-src/user';
 import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { PasswordPolicy } from '../@types/signup';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
@@ -23,35 +22,6 @@ describe('SignupComponent', () => {
 
   let mockApiService: any;
   let mockUserService: any;
-
-  const mockPasswordPolicy: PasswordPolicy = {
-    passwordMinLengthEnabled: true,
-    passwordMinLength: 8,
-    lowLettersEnabled: true,
-    lowLetters: 1,
-    highLettersEnabled: true,
-    highLetters: 1,
-    numbersEnabled: true,
-    numbers: 1,
-    specialCharsEnabled: true,
-    specialChars: 1,
-    maxConCharsEnabled: true,
-    maxConChars: 2,
-    restrictSpecialCharsEnabled: true,
-    restrictSpecialChars: '!@#',
-    minCharsEnabled: true,
-    minChars: 2,
-    helpTextTemplate: {
-      passwordMinLength: 'Test #',
-      lowLetters: 'Test #',
-      highLetters: 'Test #',
-      numbers: 'Test #',
-      specialChars: 'Test #',
-      maxConChars: 'Test #',
-      restrictSpecialChars: 'Test #',
-      minChars: 'Test #'
-    }
-  };
 
   const mockUser: User = {
     id: '1',
@@ -74,9 +44,7 @@ describe('SignupComponent', () => {
         of({
           authenticationStrategies: {
             local: {
-              settings: {
-                passwordPolicy: mockPasswordPolicy
-              }
+              passwordHelpText: 'Password must be at least 8 characters.'
             }
           }
         })
@@ -123,10 +91,23 @@ describe('SignupComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize passwordPolicy and update password control', () => {
-    const passwordControl = component.signup.get('password');
-    expect(passwordControl?.validator).toBeTruthy();
-    expect(component.passwordPolicy).toEqual(mockPasswordPolicy);
+  it('should load passwordHelpText from the local strategy', () => {
+    expect(mockApiService.getApi).toHaveBeenCalled();
+    expect(component.passwordHelpText).toBe(
+      'Password must be at least 8 characters.'
+    );
+  });
+
+  it('should leave passwordHelpText unset when the api does not provide one', () => {
+    mockApiService.getApi.and.returnValue(
+      of({ authenticationStrategies: { local: {} } })
+    );
+
+    const freshFixture = TestBed.createComponent(SignupComponent);
+    const freshComponent = freshFixture.componentInstance;
+    freshFixture.detectChanges();
+
+    expect(freshComponent.passwordHelpText).toBeUndefined();
   });
 
   it('should emit cancel event on onCancel()', () => {
@@ -263,32 +244,43 @@ describe('SignupComponent', () => {
     expect(component.signup.controls.username.errors?.exists).toBeTrue();
   });
 
+  it('should surface server password policy message on 400', () => {
+    mockUserService.signupVerify = jasmine
+      .createSpy()
+      .and.returnValue(
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 400,
+              statusText: 'Bad Request',
+              error: 'Password must be at least 8 characters'
+            })
+        )
+      );
+
+    component.signup.patchValue({
+      username: mockUser.username,
+      displayName: mockUser.displayName,
+      email: mockUser.email,
+      phone: '',
+      password: 'weak',
+      passwordconfirm: 'weak',
+      captchaText: 'text'
+    });
+
+    component.captcha.token = 'token';
+    component.onSignup();
+
+    expect(component.signup.controls.password.errors?.policy).toBeTrue();
+    expect(component.passwordErrorMessages).toEqual([
+      'Password must be at least 8 characters'
+    ]);
+  });
+
   it('should evaluate password strength', () => {
     component.signup.controls.username.setValue('testuser');
     component.onPasswordChanged('TestPassword123!');
     expect(component.passwordStrength).toBeTruthy();
-  });
-
-  it('should return correct tooltip text from password policy', () => {
-    const tooltip = component.passwordTooltipText;
-    expect(tooltip).toContain('At least 8 characters');
-    expect(tooltip).toContain('Minimum 1 lowercase');
-    expect(tooltip).toContain('Allowed: !@#');
-  });
-
-  it('should validate password with policy (too short)', () => {
-    const ctrl = component.signup.controls.password;
-    ctrl.setValue('aa');
-    fixture.detectChanges();
-    const errors = ctrl.errors || {};
-    expect(errors['passwordMinLength']).toBeTrue();
-  });
-
-  it('should allow valid password by policy', () => {
-    const ctrl = component.signup.controls.password;
-    ctrl.setValue('Aa1!Aa1!');
-    fixture.detectChanges();
-    expect(ctrl.errors).toBeNull();
   });
 
   it('should toggle showPassword flag', () => {
@@ -301,17 +293,5 @@ describe('SignupComponent', () => {
     expect(component.showConfirmPassword).toBeFalse();
     component.showConfirmPassword = true;
     expect(component.showConfirmPassword).toBeTrue();
-  });
-
-  it('should validate minChars rule for mixed-case letters', () => {
-    const ctrl = component.signup.controls.password;
-
-    ctrl.setValue('1!');
-    fixture.detectChanges();
-    expect((ctrl.errors || {})['minChars']).toBeTrue();
-
-    ctrl.setValue('AA1a!');
-    fixture.detectChanges();
-    expect((ctrl.errors || {})['minChars']).toBeFalsy();
   });
 });

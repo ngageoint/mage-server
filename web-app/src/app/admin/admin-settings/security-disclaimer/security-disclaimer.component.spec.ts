@@ -28,6 +28,7 @@ describe('SecurityDisclaimerComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
+        SecurityDisclaimerComponent,
         FormsModule,
         NoopAnimationsModule,
         MatFormFieldModule,
@@ -35,7 +36,6 @@ describe('SecurityDisclaimerComponent', () => {
         MatCheckboxModule,
         MatSlideToggleModule
       ],
-      declarations: [SecurityDisclaimerComponent],
       providers: [{ provide: SettingsService, useValue: settingsService }]
     }).compileComponents();
   }));
@@ -57,9 +57,9 @@ describe('SecurityDisclaimerComponent', () => {
 
   it('should load disclaimer settings on init', () => {
     expect(settingsService.get).toHaveBeenCalledWith('disclaimer');
-    expect(component.disclaimer).toEqual(
-      jasmine.objectContaining({ show: true, title: 'T', text: 'X' })
-    );
+    expect(component.show()).toBeTrue();
+    expect(component.title()).toEqual('T');
+    expect(component.text()).toEqual('X');
   });
 
   it('should save when dirty', fakeAsync(() => {
@@ -71,9 +71,9 @@ describe('SecurityDisclaimerComponent', () => {
 
     expect(settingsService.update).toHaveBeenCalledWith(
       'disclaimer',
-      component.disclaimer
+      { show: true, title: 'T', text: 'X' }
     );
-    expect(component.isDirty).toBeFalse();
+    expect(component.isDirty()).toBeFalse();
   }));
 
   it('should keep isDirty on save error', fakeAsync(() => {
@@ -85,6 +85,6 @@ describe('SecurityDisclaimerComponent', () => {
     component.save();
     tick();
 
-    expect(component.isDirty).toBeTrue();
+    expect(component.isDirty()).toBeTrue();
   }));
 });

@@ -1,15 +1,10 @@
-import { Archiver } from 'archiver'
 import { MageEvent } from '../../entities/events/entities.events'
 import {
   Export, ExportExpanded,
-  ExportFilter,
+  ExportLocationFilter,
+  ExportObservationFilter,
   ExportFormat,
-  ExportOptions,
-  ExportProjection,
-  ExportSummary,
-  IconStyle
 } from '../../entities/exports/entities.exports'
-import { FormEntry, Observation, ObservationAttrs } from '../../entities/observations/entities.observations'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
@@ -41,10 +36,10 @@ export interface ExportRequest<Principal = UserWithRole> extends AppRequest<Prin
 
 export type ExportCreateParams = {
   format: ExportFormat
-  filter: Omit<ExportFilter, 'favorites'> & {
-    favorites?: boolean
-  },
-  projection?: ExportProjection
+  filter: {
+    observations?: Omit<ExportObservationFilter, 'favorites'> & { favorites?: boolean }
+    locations?: ExportLocationFilter
+  }
 }
 
 export type CreateExportRequest<Principal = UserWithRole> = AppRequest<Principal, CreateExportRequestContext<Principal>> & ExportCreateParams;
@@ -68,18 +63,3 @@ export interface ExportAppLayerPermissionService {
   ensureDeleteMyExportPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 
-export type GetIconStyle = (event: MageEvent, observation: Observation) => IconStyle
-export type ObservationFormFieldProjection = (observation: ObservationAttrs, projection?: ExportProjection) => FormEntry[]
-
-export interface ExportFactory {
-  (format: ExportFormat): ExportTransform | null
-}
-
-export interface ExportTransform {
-  export(
-    event: MageEvent,
-    options: Omit<ExportOptions, 'eventId'>,
-    fieldProjection: ObservationFormFieldProjection,
-    archive: Archiver
-  ): Promise<ExportSummary>
-}

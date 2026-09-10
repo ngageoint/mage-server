@@ -328,31 +328,6 @@ module.exports = function (app, security) {
     }
   );
 
-  app.get(
-    "/api/events/:eventId/observations",
-    security.authentication.bearerAuthentication,
-    validateObservationReadAccess,
-    parseQueryParams,
-    function (req, res, next) {
-      const options = {
-        filter: req.parameters.filter,
-        fields: req.parameters.fields,
-        sort: req.parameters.sort,
-        populate: req.parameters.populate,
-      };
-
-      new api.Observation(req.event).getAll(
-        options,
-        function (err, observations) {
-          if (err) return next(err);
-          res.json(
-            observationXform.transform(observations, transformOptions(req))
-          );
-        }
-      );
-    }
-  );
-
   app.put(
     "/api/events/:eventId/observations/:observationIdInPath/favorite",
     security.authentication.bearerAuthentication,

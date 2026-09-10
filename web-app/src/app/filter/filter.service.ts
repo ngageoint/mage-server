@@ -1,22 +1,20 @@
 import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable } from "rxjs";
 import { UserService } from "../user/user.service";
 import { LocalStorageService } from "../http/local-storage.service";
 import moment from 'moment';
 import * as _ from "lodash";
 import { User } from "@ngageoint/mage.web-core-lib/user";
 import {
-  Event,
   Interval,
   FilterChoice,
-  Team,
-  TeamById,
-  Observation,
+  INTERVAL_CHOICES,
   Filter,
-  Changes,
-  Form,
-  FormProperties,
   SearchInterval,
 } from "./filter.types";
+import { MageEvent, Form } from "../entities/event/entities.event";
+import { Team, TeamById } from "../entities/team/entities.team";
+import { Observation, FormProperties } from "../entities/observation/entities.observation";
 import { filterChanges } from "../event/event.types";
 import { SessionService } from "mage-web-app/http/session.service";
 
@@ -25,46 +23,29 @@ import { SessionService } from "mage-web-app/http/session.service";
 })
 
 export class FilterService {
-  event: Event = null;
+  event: MageEvent = null;
   teamsById: TeamById = {};
-  listeners: any = [];
   users: User[] = [];
   forms: Form[] = [];
 
   interval: Interval = {};
-  filterLocalOffset = moment().format("Z");
   actionFilter: string = "";
 
-  intervalChoices: FilterChoice[] = [
-    {
-      filter: "all",
-      label: "All",
-    },
-    {
-      filter: "today",
-      label: "Today (Local GMT " + this.filterLocalOffset + ")",
-    },
-    {
-      filter: 86400,
-      label: "Last 24 Hours",
-    },
-    {
-      filter: 43200,
-      label: "Last 12 Hours",
-    },
-    {
-      filter: 21600,
-      label: "Last 6 Hours",
-    },
-    {
-      filter: 3600,
-      label: "Last Hour",
-    },
-    {
-      filter: "custom",
-      label: "Custom",
-    },
-  ];
+  private eventSubject = new BehaviorSubject<MageEvent | null>(null);
+  private teamsSubject = new BehaviorSubject<Team[]>([]);
+  private usersSubject = new BehaviorSubject<User[]>([]);
+  private formsSubject = new BehaviorSubject<Form[]>([]);
+  private intervalSubject = new BehaviorSubject<Interval>(this.interval);
+  private actionFilterSubject = new BehaviorSubject<string>("");
+
+  readonly event$: Observable<MageEvent | null> = this.eventSubject.asObservable();
+  readonly teams$: Observable<Team[]> = this.teamsSubject.asObservable();
+  readonly users$: Observable<User[]> = this.usersSubject.asObservable();
+  readonly forms$: Observable<Form[]> = this.formsSubject.asObservable();
+  readonly interval$: Observable<Interval> = this.intervalSubject.asObservable();
+  readonly actionFilter$: Observable<string> = this.actionFilterSubject.asObservable();
+
+  intervalChoices: FilterChoice[] = INTERVAL_CHOICES;
 
   constructor(
     private userService: UserService,
@@ -76,26 +57,6 @@ export class FilterService {
         choice: this.intervalChoices[1],
       }
     );
-    this.filterChanged({ intervalChoice: this.interval.choice });
-  }
-
-  addListener(listener: any) {
-    this.listeners.push(listener);
-
-    if (typeof listener.onFilterChanged === "function") {
-      listener.onFilterChanged({
-        event: this.event,
-        teams: Object.values(this.teamsById),
-        user: this.users,
-        timeInterval: {
-          choice: this.interval.choice,
-        },
-      });
-    }
-  }
-
-  removeListener(listener: any) {
-    this.listeners = this.listeners.filter((l: any) => l !== listener);
   }
 
   /**
@@ -105,23 +66,16 @@ export class FilterService {
    */
 
   setFilter(filter: Filter): void {
-    let eventChanged = null;
-    let teamsChanged = null;
-    let usersChanged = null;
-    let formsChanged = null;
-    let timeIntervalChanged = null;
-    let actionFilterChanged = null;
+    if (filter.users) this.setUsers(filter.users);
 
-    if (filter.users) usersChanged = this.setUsers(filter.users);
-
-    if (filter.forms) formsChanged = this.setForms(filter.forms);
+    if (filter.forms) this.setForms(filter.forms);
 
     if (filter.teams) {
-      teamsChanged = this.setTeams(filter.teams);
+      this.setTeams(filter.teams);
     }
 
     if (filter.event) {
-      eventChanged = this.setEvent(filter.event);
+      this.setEvent(filter.event);
 
       // if they changed the event, and didn't set teams filter
       // then reset teams filter to empty array
@@ -133,38 +87,25 @@ export class FilterService {
             teams.push(this.event.teams[i]);
           }
         }
-        teamsChanged = this.setTeams(teams);
+        this.setTeams(teams);
       }
     }
 
     if (filter.actionFilter) {
-      actionFilterChanged = filter.actionFilter;
       this.actionFilter = filter.actionFilter;
+      this.actionFilterSubject.next(this.actionFilter);
     }
 
-    if (filter.timeInterval && this.setTimeInterval(filter.timeInterval)) {
-      timeIntervalChanged = filter.timeInterval;
+    if (filter.timeInterval) {
+      this.setTimeInterval(filter.timeInterval);
     }
-
-    const changed: Changes = {};
-    if (eventChanged) changed.event = eventChanged;
-    if (teamsChanged) changed.teams = teamsChanged;
-    if (usersChanged) changed.users = usersChanged;
-    if (formsChanged) changed.forms = formsChanged;
-    if (actionFilterChanged) changed.actionFilter = actionFilterChanged;
-    if (timeIntervalChanged) changed.timeInterval = timeIntervalChanged;
-
-    this.filterChanged(changed);
   }
 
   removeFilters() {
-    const changed: Changes = {};
     if (this.event) {
-      changed.event = { removed: [this.event] };
       this.event = null;
+      this.eventSubject.next(this.event);
     }
-
-    this.filterChanged(changed);
   }
 
   /**
@@ -173,13 +114,15 @@ export class FilterService {
    * @return {filterChanges} a List of events added/removed from the list
    */
 
-  setEvent(newEvent: Event): filterChanges {
+  setEvent(newEvent: MageEvent): filterChanges {
     if (!newEvent && this.event) {
+      const removed = [this.event];
       this.event = null;
+      this.eventSubject.next(this.event);
 
       return {
         added: [],
-        removed: [this.event],
+        removed: removed,
       };
     } else if ((newEvent && !this.event) || this.event.id !== newEvent.id) {
       const added = [newEvent];
@@ -190,6 +133,7 @@ export class FilterService {
       });
 
       this.event = newEvent;
+      this.eventSubject.next(this.event);
 
       return {
         added: added,
@@ -200,7 +144,7 @@ export class FilterService {
     }
   }
 
-  getEvent(): Event {
+  getEvent(): MageEvent {
     return this.event;
   }
 
@@ -224,6 +168,7 @@ export class FilterService {
 
     this.users = newUsers;
     this.localStorageService.setUsers(this.users);
+    this.usersSubject.next(this.users);
 
     return {
       added: added,
@@ -251,6 +196,7 @@ export class FilterService {
 
     this.forms = newForms;
     this.localStorageService.setForms(this.forms);
+    this.formsSubject.next(this.forms);
 
     return {
       added: added,
@@ -283,6 +229,7 @@ export class FilterService {
 
     this.teamsById = newTeamsById;
     this.localStorageService.setTeams(Object.keys(this.teamsById));
+    this.teamsSubject.next(this.getTeams());
 
     return {
       added: added,
@@ -335,6 +282,7 @@ export class FilterService {
     }
     this.localStorageService.setTimeInterval(newInterval);
     this.interval = newInterval;
+    this.intervalSubject.next(this.interval);
     return true;
   }
 
@@ -375,7 +323,7 @@ export class FilterService {
    * @return {boolean} Returns True if Observation is Allowed, or False if Not
    */
 
-  isUserInList(observationUserId: string): boolean {
+  isUserInList(observationUserId?: string): boolean {
     if (this.users.length <= 0) return true;
     return this.users.findIndex((u) => u.id === observationUserId) >= 0;
   }
@@ -421,7 +369,7 @@ export class FilterService {
    * @return {boolean} Returns True if Observation is Allowed, or False if Not
    */
 
-  isUserInTeamFilter(userId: string): boolean {
+  isUserInTeamFilter(userId?: string): boolean {
     if (Object.keys(this.teamsById).length === 0) return true;
     return Object.values(this.teamsById).some((team: Team) =>
       team.userIds.includes(userId)
@@ -471,13 +419,5 @@ export class FilterService {
     }
 
     return { start: start, end: end };
-  }
-
-  filterChanged(filter: Changes) {
-    this.listeners.forEach((listener: any) => {
-      if (typeof listener.onFilterChanged === "function") {
-        listener.onFilterChanged(filter);
-      }
-    });
   }
 }

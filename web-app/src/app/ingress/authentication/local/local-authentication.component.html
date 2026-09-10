@@ -9,7 +9,10 @@
 
   <mat-form-field appearance="fill" class="auth-form__field">
     <mat-label>Password</mat-label>
-    <input matInput type="password" formControlName="password" required placeholder="Enter your password">
+    <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" required placeholder="Enter your password">
+    <button matIconButton type="button" matSuffix (click)="showPassword = !showPassword">
+      <mat-icon fontSet="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+    </button>
     <mat-error *ngIf="authenticationForm.get('password')?.hasError('required')">
       Password is required
     </mat-error>
@@ -31,7 +34,7 @@
     </div>
     <div>
       <span class="auth-form__footer-text">Need More Info?</span>
-      <a class="auth-form__footer-link" (click)="onAboutClick()">About Mage</a>
+      <a class="auth-form__footer-link" (click)="onAboutClick()">Learn More</a>
     </div>
   </div>
 </form>
