@@ -1,17 +1,26 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, Inject, signal } from '@angular/core';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { LayersService, Layer } from '../layers.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { A11yModule } from '@angular/cdk/a11y';
 
 @Component({
     selector: 'mage-delete-layer',
     templateUrl: './delete-layer.component.html',
     styleUrls: ['./delete-layer.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        MatDialogModule,
+        MatIconModule,
+        MatButtonModule,
+        A11yModule,
+    ]
 })
 export class DeleteLayerComponent {
     layer: Layer;
-    deleting = false;
-    error: string | null = null;
+    readonly deleting = signal(false);
+    readonly error = signal<string | null>(null);
 
     constructor(
         public dialogRef: MatDialogRef<DeleteLayerComponent>,
@@ -22,8 +31,8 @@ export class DeleteLayerComponent {
     }
 
     deleteLayer(): void {
-        this.deleting = true;
-        this.error = null;
+        this.deleting.set(true);
+        this.error.set(null);
 
         this.layersService.deleteLayer(this.layer).subscribe({
             next: () => {
@@ -31,16 +40,16 @@ export class DeleteLayerComponent {
             },
             error: (error) => {
                 console.error('Error deleting layer:', error);
-                this.deleting = false;
+                this.deleting.set(false);
 
                 if (error.error?.message) {
-                    this.error = error.error.message;
+                    this.error.set(error.error.message);
                 } else if (error.statusText && error.status) {
-                    this.error = `Error ${error.status}: ${error.statusText}`;
+                    this.error.set(`Error ${error.status}: ${error.statusText}`);
                 } else if (error.message) {
-                    this.error = error.message;
+                    this.error.set(error.message);
                 } else {
-                    this.error = 'Failed to delete layer. Please try again.';
+                    this.error.set('Failed to delete layer. Please try again.');
                 }
             }
         });

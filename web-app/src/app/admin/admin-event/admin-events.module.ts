@@ -26,7 +26,6 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
 import { AdminEventFormModule } from './admin-event-form/admin-event-form.module';
 
 import { EventDetailsComponent } from './event-details/event-details.component';
-import { DeleteEventComponent } from './delete-event/delete-event.component';
 import { UploadFormDialogComponent } from './upload-form/upload-form.component';
 import { EventDashboardComponent } from './dashboard/event-dashboard.component';
 import { MatOptionModule as MatOptionModule } from '@angular/material/core';
@@ -38,7 +37,6 @@ import { CreateEventDialogComponent } from './create-event/create-event.componen
         EventDashboardComponent,
         CreateEventDialogComponent,
         EventDetailsComponent,
-        DeleteEventComponent,
         UploadFormDialogComponent
     ],
     imports: [
