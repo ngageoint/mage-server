@@ -52,11 +52,6 @@
         </div>
       </form>
 
-      <div *ngIf="profileError" class="error">
-        <mat-icon>error</mat-icon>
-        {{profileError}}
-      </div>
-
       <div class="actions">
         <button matButton (click)="onCancel()">Cancel</button>
         <button matButton="filled" (click)="onSave()">Save</button>

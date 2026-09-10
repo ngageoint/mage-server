@@ -30,7 +30,6 @@ export class ProfileComponent implements OnInit {
     email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>('', []),
   })
-  profileError?: string
 
   password = new FormGroup({
     currentPassword: new FormControl<string>('', [Validators.required]),
@@ -70,7 +69,6 @@ export class ProfileComponent implements OnInit {
     }
 
     this.saving = true
-    this.profileError = undefined
 
     this.userService.saveProfile({
       avatar: this.avatar,
@@ -89,7 +87,10 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         this.saving = false
-        this.profileError = (typeof err.error === 'string' && err.error) || 'Error updating profile, please try again later.'
+        const message = (typeof err.error === 'string' && err.error) || 'Error updating profile, please try again later.'
+        this.snackbar.open(message, undefined, {
+          duration: 6000
+        })
       }
     })
   }
