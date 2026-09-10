@@ -50,6 +50,8 @@ plugins/arcgis/
 
 ## Authentication methods
 
+Users can add a feature service URL directly, or select the option to browse a portal URL to discover avialable services
+
 The plugin supports three authentication methods for connecting to an ArcGIS Feature Service:
 
 | Method | When to use |
