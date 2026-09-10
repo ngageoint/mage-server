@@ -14,7 +14,7 @@ export class ArcPushStatusComponent implements OnInit {
   selectedEventId: number | undefined;
 
   pushedObservations: PushedObservation[] = [];
-  readonly displayedColumns = ['status', 'id', 'location', 'lastModified', 'createdAt'];
+  readonly displayedColumns = ['status', 'id', 'attachments', 'location', 'lastModified', 'createdAt'];
 
   totalCount = 0;
   pageIndex = 0;
@@ -72,6 +72,23 @@ export class ArcPushStatusComponent implements OnInit {
   onRowMouseMove(event: MouseEvent): void {
     this.tooltipX = event.clientX;
     this.tooltipY = event.clientY;
+  }
+
+  attachmentsSentCount(row: PushedObservation): number {
+    return row.attachments?.filter(attachment => attachment.sent).length ?? 0;
+  }
+
+  hasFailedAttachments(row: PushedObservation): boolean {
+    return !!row.attachments?.some(attachment => !attachment.sent);
+  }
+
+  attachmentsTooltip(row: PushedObservation): string {
+    if (!row.attachments?.length) {
+      return '';
+    }
+    return row.attachments
+      .map(attachment => `${attachment.sent ? '✓' : '✗'} ${attachment.name}`)
+      .join('\n');
   }
 
   locationDisplay(row: PushedObservation): string {

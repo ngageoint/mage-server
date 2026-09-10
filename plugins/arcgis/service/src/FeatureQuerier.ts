@@ -101,11 +101,12 @@ export class FeatureQuerier {
     }
 
     /**
-     * Queries for the MAGE observation ids of all features on this layer belonging to the given event.
+     * Queries for the MAGE observation ids (and their arc object ids) of all features on this layer
+     * belonging to the given event.
      * @param {MageEventId} eventId - The MAGE event id to find synced observations for.
-     * @param {function(string[]): void} handleResponse - Callback function called with the resolved MAGE observation ids.
+     * @param {function(PushedFeatureId[]): void} handleResponse - Callback function called with the resolved MAGE observation ids and their arc object ids.
      */
-    async queryObservationsForEvent(eventId: MageEventId, handleResponse: (observationIds: string[]) => void) {
+    async queryObservationsForEvent(eventId: MageEventId, handleResponse: (results: PushedFeatureId[]) => void) {
         const where = this._config.eventIdField
             ? `${this._config.eventIdField} = '${eventId}'`
             : `${this._config.observationIdField} LIKE '%${this._config.idSeparator}${eventId}'`;
@@ -116,12 +117,15 @@ export class FeatureQuerier {
                 authentication: this._identityManager,
                 where,
                 returnGeometry: false,
-                outFields: [this._config.observationIdField]
+                outFields: '*'
             }) as QueryObjectResult;
-            const observationIds = response.features
-                .map(feature => this.extractObservationId(feature.attributes[this._config.observationIdField] as string))
-                .filter((id): id is string => !!id);
-            handleResponse(observationIds);
+            const results = response.features
+                .map(feature => ({
+                    observationId: this.extractObservationId(feature.attributes[this._config.observationIdField] as string),
+                    objectId: feature.attributes[response.objectIdFieldName] as number
+                }))
+                .filter((result): result is PushedFeatureId => !!result.observationId);
+            handleResponse(results);
         } catch (error) {
             this._console.error(`Error in FeatureQuerier.queryObservationsForEvent :: ` + error);
             if (error instanceof ArcGISRequestError) {
@@ -167,4 +171,12 @@ export class FeatureQuerier {
             }
         }
     }
+}
+
+/**
+ * A MAGE observation id and its corresponding arc object id, as found on a feature layer.
+ */
+export interface PushedFeatureId {
+    observationId: string;
+    objectId: number;
 }

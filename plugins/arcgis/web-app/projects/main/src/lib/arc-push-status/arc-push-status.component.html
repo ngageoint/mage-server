@@ -41,6 +41,19 @@
           <td mat-cell *matCellDef="let row">{{ row.id }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="attachments">
+          <th mat-header-cell *matHeaderCellDef>Attachments</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="attachments-value" *ngIf="row.attachments?.length; else noAttachments"
+              [class.attachments-failed]="hasFailedAttachments(row)"
+              [matTooltip]="attachmentsTooltip(row)" matTooltipClass="attachments-tooltip">
+              <mat-icon class="attachments-icon">{{ hasFailedAttachments(row) ? 'error_outline' : 'attach_file' }}</mat-icon>
+              <span>{{ attachmentsSentCount(row) }}/{{ row.attachments.length }} sent</span>
+            </span>
+            <ng-template #noAttachments>--</ng-template>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="location">
           <th mat-header-cell *matHeaderCellDef>Lat/Lon</th>
           <td mat-cell *matCellDef="let row">

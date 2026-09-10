@@ -20,6 +20,7 @@ import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { FeatureServiceAdmin } from './FeatureServiceAdmin';
 import { ArcGISIdentityService } from './ArcGISService';
 import { ArcGISRequestError } from "@esri/arcgis-rest-request";
+import { attachmentFileName } from './ObservationsSender';
 
 const VERBOSE_DEBUG = false;
 
@@ -206,14 +207,14 @@ export class ObservationProcessor {
 	public async getPushedObservations(eventId: MageEventId, paging: PagingParameters): Promise<PushedObservationsPage> {
 		const layerProcessors = this._layerProcessors.filter(layerProcessor => layerProcessor.layerInfo.hasEvent(eventId));
 
-		const arcObservationIds = new Set<string>();
+		const arcFeaturesByObservationId = new Map<string, { objectId: number, layerProcessor: FeatureLayerProcessor }>();
 		await Promise.all(layerProcessors.map(layerProcessor =>
-			layerProcessor.featureQuerier.queryObservationsForEvent(eventId, (observationIds) => {
-				observationIds.forEach(id => arcObservationIds.add(id));
+			layerProcessor.featureQuerier.queryObservationsForEvent(eventId, (results) => {
+				results.forEach(({ observationId, objectId }) => arcFeaturesByObservationId.set(observationId, { objectId, layerProcessor }));
 			})
 		));
 
-		if (arcObservationIds.size === 0) {
+		if (arcFeaturesByObservationId.size === 0) {
 			return { items: [], totalCount: 0, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
 		}
 
@@ -224,27 +225,65 @@ export class ObservationProcessor {
 			fieldTitlesByFormId.set(form.id, new Map(form.fields.map(field => [field.name, field.title])));
 		}
 
-		const pushedObservations: PushedObservation[] = [];
-		for (const observationId of arcObservationIds) {
+		const pushedObservations: { observation: ObservationAttrs, objectId: number, layerProcessor: FeatureLayerProcessor, pushed: PushedObservation }[] = [];
+		for (const [observationId, { objectId, layerProcessor }] of arcFeaturesByObservationId) {
 			const observation = await obsRepo.findById(observationId);
 			if (observation) {
 				const position = this.observationPosition(observation);
 				pushedObservations.push({
-					id: observation.id,
-					createdAt: observation.createdAt.toISOString(),
-					lastModified: observation.lastModified.toISOString(),
-					status: this.isArchived(observation) ? 'archived' : 'sent',
-					fields: this.extractFormFields(observation, fieldTitlesByFormId),
-					latitude: position?.[1],
-					longitude: position?.[0]
+					observation,
+					objectId,
+					layerProcessor,
+					pushed: {
+						id: observation.id,
+						createdAt: observation.createdAt.toISOString(),
+						lastModified: observation.lastModified.toISOString(),
+						status: this.isArchived(observation) ? 'archived' : 'sent',
+						fields: this.extractFormFields(observation, fieldTitlesByFormId),
+						latitude: position?.[1],
+						longitude: position?.[0]
+					}
 				});
 			}
 		}
 
-		pushedObservations.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
+		pushedObservations.sort((a, b) => b.pushed.lastModified.localeCompare(a.pushed.lastModified));
 		const start = paging.pageIndex * paging.pageSize;
-		const items = pushedObservations.slice(start, start + paging.pageSize);
+		const pageItems = pushedObservations.slice(start, start + paging.pageSize);
+
+		if (mageEvent) {
+			const config = await this.safeGetConfig();
+			const eventTransform = new EventTransform(config, mageEvent);
+			await Promise.all(pageItems.map(item => this.attachAttachmentStatus(item, eventTransform)));
+		}
+
+		const items = pageItems.map(item => item.pushed);
 		return { items, totalCount: pushedObservations.length, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+	}
+
+	/**
+	 * For a single pushed observation, determines whether each of its attachments actually made it
+	 * to the arc feature - an observation can succeed while one or more of its attachments silently
+	 * fail to write
+	 * @param item The pushed observation to check for attachment status
+	 * @param eventTransform The event transform for the observation's event
+	 * @returns {Promise<void>} Resolves when the attachment status has been attached to the pushed observation
+	 */
+	private async attachAttachmentStatus(
+		item: { observation: ObservationAttrs, objectId: number, layerProcessor: FeatureLayerProcessor, pushed: PushedObservation },
+		eventTransform: EventTransform
+	): Promise<void> {
+		if (!item.observation.attachments?.length) {
+			return;
+		}
+		const arcObservation = await this._transformer.transform(item.observation, eventTransform, null);
+		if (!arcObservation.attachments?.length) {
+			return;
+		}
+		const expectedNames = arcObservation.attachments.map(attachment => attachmentFileName(attachment));
+		const actualInfos = await item.layerProcessor.sender.getAttachmentInfos(item.objectId);
+		const actualNames = new Set((actualInfos || []).map(info => info.name));
+		item.pushed.attachments = expectedNames.map(name => ({ name, sent: actualNames.has(name) }));
 	}
 
 	private isArchived(observation: ObservationAttrs): boolean {
@@ -507,6 +546,15 @@ export interface PushedObservation {
 	// undefined if the observation's geometry isn't a Point (e.g. a line/polygon)
 	latitude?: number
 	longitude?: number
+	attachments?: PushedAttachment[]
+}
+
+/**
+ * Whether a single MAGE attachment made it to the arc feature layer along with its observation.
+ */
+export interface PushedAttachment {
+	name: string
+	sent: boolean
 }
 
 /**

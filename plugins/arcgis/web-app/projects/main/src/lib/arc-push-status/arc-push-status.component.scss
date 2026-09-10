@@ -58,6 +58,25 @@
   }
 }
 
+.attachments-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 90%;
+  opacity: 0.8;
+
+  &.attachments-failed {
+    color: var(--mat-sys-error);
+    opacity: 1;
+  }
+}
+
+.attachments-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+}
+
 .location-value {
   display: inline-flex;
   align-items: center;

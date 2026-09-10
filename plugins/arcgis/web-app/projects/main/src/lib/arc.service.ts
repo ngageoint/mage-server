@@ -22,6 +22,12 @@ export interface ArcServiceInterface {
 // 'archived': found on the ArcGIS layer, but has since been archived (deleted) in MAGE.
 export type PushStatus = 'sent' | 'archived'
 
+// whether a single attachment on a pushed observation made it to the arc feature layer
+export interface PushedAttachment {
+  name: string
+  sent: boolean
+}
+
 // a MAGE observation that has already been synced to an ArcGIS feature layer
 export interface PushedObservation {
   id: string
@@ -32,6 +38,7 @@ export interface PushedObservation {
   // undefined if the observation's geometry isn't a Point (e.g. a line/polygon)
   latitude?: number
   longitude?: number
+  attachments?: PushedAttachment[]
 }
 
 export interface PushedObservationsPage {

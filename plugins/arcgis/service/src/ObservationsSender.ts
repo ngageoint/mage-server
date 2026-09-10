@@ -225,19 +225,29 @@ export class ObservationsSender {
      * @param {number} objectId The arc object id of the observation.
      */
     private async queryAndUpdateAttachments(observation: ArcObservation, objectId: number) {
-        // Query for existing attachments
+        const attachmentInfos = await this.getAttachmentInfos(objectId);
+        await this.updateAttachments(observation, objectId, attachmentInfos);
+    }
+
+    /**
+     * Queries the arc feature layer for the attachments currently present on a feature.
+     * @param {number} objectId The arc object id of the observation.
+     * @returns {Promise<AttachmentInfo[]>} The arc attachment infos, or an empty array if the query fails.
+     */
+    async getAttachmentInfos(objectId: number): Promise<AttachmentInfo[]> {
         try {
             const response = await getAttachments({
                 url: this._url,
                 authentication: this._identityManager,
                 featureId: objectId
             });
-            await this.updateAttachments(observation, objectId, response.attachmentInfos);
+            return response.attachmentInfos ?? [];
         } catch (error) {
-            this._console.error("Error querying and updating attachments! " + error)
+            this._console.error("Error querying ArcGIS attachments: " + error)
             if (error instanceof ArcGISRequestError) {
                 this._console.error(`  message: ${error.response?.error?.message || "<unknown>"}, details: ${error?.response?.error?.details || "<unknown>"}`);
             }
+            return [];
         }
     }
 
@@ -260,7 +270,7 @@ export class ObservationsSender {
         if (observation.attachments != null) {
             for (const attachment of observation.attachments) {
 
-                const fileName = this.attachmentFileName(attachment);
+                const fileName = attachmentFileName(attachment);
 
                 const existingAttachment = nameAttachments.get(fileName);
                 if (existingAttachment != null) {
@@ -294,7 +304,7 @@ export class ObservationsSender {
         if (attachment.contentLocator) {
             const file = path.join(this._attachmentDirectory, attachment.contentLocator!);
 
-            const fileName = this.attachmentFileName(attachment);
+            const fileName = attachmentFileName(attachment);
 
             const readStream = await fs.openAsBlob(file);
             const attachmentFile = new File([readStream], fileName, { type: attachment.mediaType });
@@ -333,7 +343,7 @@ export class ObservationsSender {
         if (attachment.contentLocator) {
             const file = path.join(this._attachmentDirectory, attachment.contentLocator!);
 
-            const fileName = this.attachmentFileName(attachment);
+            const fileName = attachmentFileName(attachment);
 
             const readStream = await fs.openAsBlob(file);
             const attachmentFile = new File([readStream], fileName, { type: attachment.mediaType });
@@ -405,22 +415,22 @@ export class ObservationsSender {
         }
     }
 
-    /**
-     * Determine the attachment file name.
-     * @param {ArcAttachment} attachment The observation attachment.
-     * @returns {string} attachment file name.
-     */
-    private attachmentFileName(attachment: ArcAttachment): string {
-        let fileName = attachment.field + "_" + attachment.name;
+}
 
-        const extensionIndex = attachment.contentLocator.lastIndexOf('.');
-        if (extensionIndex != -1) {
-            fileName += attachment.contentLocator.substring(extensionIndex);
-        }
+/**
+ * Determine the attachment file name arcgis will store/expect for a MAGE attachment.
+ * @param {ArcAttachment} attachment The observation attachment.
+ * @returns {string} attachment file name.
+ */
+export function attachmentFileName(attachment: ArcAttachment): string {
+    let fileName = attachment.field + "_" + attachment.name;
 
-        return fileName;
+    const extensionIndex = attachment.contentLocator.lastIndexOf('.');
+    if (extensionIndex != -1) {
+        fileName += attachment.contentLocator.substring(extensionIndex);
     }
 
+    return fileName;
 }
 
 const editFailureHint = (message: string, details: string): string => {
