@@ -191,7 +191,7 @@ import { GeoJsonExportTransform } from './app.impl/exports/app.impl.exports.geoj
 import { GeoPackageExportTransform } from './app.impl/exports/app.impl.exports.geopackage';
 
 // Attachment imports
-import { AttachmentHook } from './plugins.api/plugins.api.attachments';
+import { AttachmentHook, setAttachmentHooks } from './plugins.api/plugins.api.attachments';
 import { startAttachmentProcessing } from './main.impl/main.impl.attachment_processing';
 
 export interface MageService {
@@ -367,6 +367,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   // reassignment) so the reference already passed into storeAttachmentContent
   // reflects these contents once real requests start coming in.
   attachmentHooks.push(...Object.values(attachmentHooksByPluginId).flat())
+  setAttachmentHooks(attachmentHooks)
 
   // Start the background job that finds attachments staged by
   // storeAttachmentContent and runs them through the now-final attachmentHooks

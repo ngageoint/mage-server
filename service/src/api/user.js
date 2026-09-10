@@ -9,7 +9,8 @@ const UserModel = require('../models/user')
   , fs = require('fs-extra')
   , util = require('util')
   , async = require('async')
-  , environment = require('../environment/env');
+  , environment = require('../environment/env')
+  , { runPipeline, getAttachmentHooks } = require('../plugins.api/plugins.api.attachments');
 
 const userBase = environment.userBaseDirectory;
 
@@ -112,36 +113,51 @@ User.prototype.create = async function (user, options = {}) {
   }
 
   const newUser = await util.promisify(UserModel.createUser)(user);
-
+  
+  // silently log warning because user already exists and error could be misleading
   if (options.avatar) {
-    try {
-      const avatar = avatarPath(newUser._id, newUser, options.avatar);
-      await fs.move(options.avatar.path, avatar.absolutePath);
+    const outcome = await runPipeline(getAttachmentHooks(), { name: options.avatar.originalname }, options.avatar.path);
+    if (outcome.outcome !== 'pass') {
+      log.warn(`avatar not attached for new user ${newUser.username}: ${outcome.outcome === 'reject' ? outcome.reason : outcome.error.message}`);
+      // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
+      await fs.remove(options.avatar.path).catch(() => { });
+    } else {
+      try {
+        const avatar = avatarPath(newUser._id, newUser, options.avatar);
+        await fs.move(options.avatar.path, avatar.absolutePath);
 
-      newUser.avatar = {
-        relativePath: avatar.relativePath,
-        contentType: options.avatar.mimetype,
-        size: options.avatar.size
-      };
+        newUser.avatar = {
+          relativePath: avatar.relativePath,
+          contentType: options.avatar.mimetype,
+          size: options.avatar.size
+        };
 
-      await newUser.save();
-    } catch { }
+        await newUser.save();
+      } catch { }
+    }
   }
 
   if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
-    try {
-      const icon = iconPath(newUser._id, newUser, options.icon);
-      await fs.move(options.icon.path, icon.absolutePath);
+    const outcome = await runPipeline(getAttachmentHooks(), { name: options.icon.originalname }, options.icon.path);
+    if (outcome.outcome !== 'pass') {
+      log.warn(`icon not attached for new user ${newUser.username}: ${outcome.outcome === 'reject' ? outcome.reason : outcome.error.message}`);
+      // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
+      await fs.remove(options.icon.path).catch(() => { });
+    } else {
+      try {
+        const icon = iconPath(newUser._id, newUser, options.icon);
+        await fs.move(options.icon.path, icon.absolutePath);
 
-      newUser.icon.type = options.icon.type;
-      newUser.icon.relativePath = icon.relativePath;
-      newUser.icon.contentType = options.icon.mimetype;
-      newUser.icon.size = options.icon.size;
-      newUser.icon.text = options.icon.text;
-      newUser.icon.color = options.icon.color;
+        newUser.icon.type = options.icon.type;
+        newUser.icon.relativePath = icon.relativePath;
+        newUser.icon.contentType = options.icon.mimetype;
+        newUser.icon.size = options.icon.size;
+        newUser.icon.text = options.icon.text;
+        newUser.icon.color = options.icon.color;
 
-      await newUser.save();
-    } catch { }
+        await newUser.save();
+      } catch { }
+    }
   }
 
   if (defaultTeams && Array.isArray(defaultTeams)) {
@@ -182,27 +198,38 @@ User.prototype.update = function (user, options, callback) {
 
   if (options.avatar) {
     operations.push(function (updatedUser, done) {
-      const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
-      fs.move(options.avatar.path, avatar.absolutePath, { clobber: true }, function (err) {
-        if (err) {
-          return done(err);
+      runPipeline(getAttachmentHooks(), { name: options.avatar.originalname }, options.avatar.path).then(outcome => {
+        // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
+        if (outcome.outcome === 'reject') {
+          fs.remove(options.avatar.path).catch(() => { });
+          return done(Object.assign(new Error(`avatar upload rejected: ${outcome.reason}`), { status: 400 }));
+        }
+        if (outcome.outcome === 'error') {
+          fs.remove(options.avatar.path).catch(() => { });
+          return done(Object.assign(new Error(`avatar scan failed: ${outcome.error.message}`), { status: 400 }));
         }
 
-        updatedUser.avatar = {
-          relativePath: avatar.relativePath,
-          contentType: options.avatar.mimetype,
-          size: options.avatar.size
-        };
+        const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
+        fs.move(options.avatar.path, avatar.absolutePath, { clobber: true }, function (err) {
+          if (err) {
+            return done(err);
+          }
 
-        done(null, updatedUser);
-      });
+          updatedUser.avatar = {
+            relativePath: avatar.relativePath,
+            contentType: options.avatar.mimetype,
+            size: options.avatar.size
+          };
+
+          done(null, updatedUser);
+        });
+      }, done);
     });
   }
 
   if (options.icon && options.icon.type) {
     if (options.icon.type === 'none') {
       if (user.icon.relativePath) {
-        // delete it
         operations.push(function (updatedUser, done) {
           const icon = updatedUser.icon;
           icon.path = path.join(userBase, updatedUser.icon.relativePath);
@@ -223,19 +250,31 @@ User.prototype.update = function (user, options, callback) {
       }
     } else {
       operations.push(function (updatedUser, done) {
-        const icon = iconPath(updatedUser._id, updatedUser, options.icon);
-        fs.move(options.icon.path, icon.absolutePath, { clobber: true }, function (err) {
-          if (err) return done(err);
+        runPipeline(getAttachmentHooks(), { name: options.icon.originalname }, options.icon.path).then(outcome => {
+          // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
+          if (outcome.outcome === 'reject') {
+            fs.remove(options.icon.path).catch(() => { });
+            return done(Object.assign(new Error(`icon upload rejected: ${outcome.reason}`), { status: 400 }));
+          }
+          if (outcome.outcome === 'error') {
+            fs.remove(options.icon.path).catch(() => { });
+            return done(Object.assign(new Error(`icon scan failed: ${outcome.error.message}`), { status: 400 }));
+          }
 
-          updatedUser.icon.type = options.icon.type;
-          updatedUser.icon.relativePath = icon.relativePath;
-          updatedUser.icon.contentType = options.icon.mimetype;
-          updatedUser.icon.size = options.icon.size;
-          updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
-          updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
+          const icon = iconPath(updatedUser._id, updatedUser, options.icon);
+          fs.move(options.icon.path, icon.absolutePath, { clobber: true }, function (err) {
+            if (err) return done(err);
 
-          done(null, updatedUser);
-        });
+            updatedUser.icon.type = options.icon.type;
+            updatedUser.icon.relativePath = icon.relativePath;
+            updatedUser.icon.contentType = options.icon.mimetype;
+            updatedUser.icon.size = options.icon.size;
+            updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
+            updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
+
+            done(null, updatedUser);
+          });
+        }, done);
       });
     }
   }

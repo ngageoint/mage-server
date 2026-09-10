@@ -15,11 +15,26 @@ module.exports = function(app, security) {
     verification = require('../authentication/verification'),
     userTransformer = require('../transformers/user'),
     pageTransformer = require('../transformers/pageinfo'),
-    { defaultHandler: upload } = require('../upload'),
+    { Upload } = require('../upload'),
+    environment = require('../environment/env'),
     {
       defaultEventPermissionsService: eventPermissions
     } = require('../permissions/permissions.events'),
     passport = security.authentication.passport;
+
+  // separate multer instance since defaultHandler's limits can't be set after construction
+  const userContentUpload = Upload({ fileSize: environment.userContentMaxSize });
+
+  // wherever this is registered in a route, it must be the handler placed
+  // immediately after userContentUpload's call - otherwise a size-limit
+  // rejection falls through to express.ts's generic 500 instead of here
+  function handleUserContentUploadError(err, req, res, next) {
+    // Captures file-size errors as 400, all other errors are defaulted to 500
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).send(`avatar/icon upload exceeds maximum size of ${environment.userContentMaxSize} bytes`);
+    }
+    next(err);
+  }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
   const JWTService = verification.JWTService;
@@ -172,7 +187,8 @@ module.exports = function(app, security) {
     '/api/users',
     isAuthenticated('bearer'),
     access.authorize('CREATE_USER'),
-    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    handleUserContentUploadError,
     validateUsername,
     validateAccount,
     parseIconUpload,
@@ -395,7 +411,8 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     security.authentication.bearerAuthentication,
-    upload.single('avatar'),
+    userContentUpload.single('avatar'),
+    handleUserContentUploadError,
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName'))
@@ -509,7 +526,8 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER'),
-    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    handleUserContentUploadError,
     parseIconUpload,
     function(req, res, next) {
       const user = req.userParam;

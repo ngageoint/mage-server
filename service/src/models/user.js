@@ -13,7 +13,6 @@ const mongoose = require('mongoose')
   , log = require('../logger').child({ component: 'users' })
   , FilterParser = require('../utilities/filterParser');
 
-// Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const PhoneSchema = new Schema({
@@ -24,7 +23,6 @@ const PhoneSchema = new Schema({
   _id: false
 });
 
-// Collection to hold users
 const UserSchema = new Schema(
   {
     username: { type: String, required: true, unique: true },
