@@ -28,14 +28,12 @@ import { AdminDeviceService } from '../services/admin-device.service';
 import { CreateDeviceDialogComponent } from './create-device/create-device.component';
 import { AdminUsersModule } from '../admin-users/admin-users.module';
 import { DeviceDetailsComponent } from './device-details/device-details.component';
-import { DeleteDeviceComponent } from './delete-device/delete-device.component';
 import { LoginsModule } from '../admin-logins/admin-logins.module';
 
 @NgModule({
     declarations: [
         DeviceDashboardComponent,
         DeviceDetailsComponent,
-        DeleteDeviceComponent,
         CreateDeviceDialogComponent,
     ],
     imports: [
