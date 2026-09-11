@@ -87,7 +87,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 			this.featureService = data.featureService
 		}
 
-		this.state = this.featureService === undefined || !this.featureService.authenticated ? State.Validate : State.Layers
+		this.state = State.Validate
 		this.layerForm = new FormGroup({
 			url: new FormControl({ value: this.featureService?.url, disabled: this.featureService !== undefined }, [Validators.required]),
 			portalUrl: new FormControl(this.featureService?.portalUrl || ''),
@@ -185,12 +185,15 @@ export class ArcLayerDialogComponent implements OnDestroy {
 			next: (layers) => {
 				this.layers = layers
 				this.loading = false
+				this.state = State.Layers
 				this.hasSelectedLayers = !!this.featureService?.layers?.length
 				layers.forEach(layer => console.log(`[${layer.name}] capabilities:`, layer.capabilities))
 			},
 			error: (error) => {
 				console.log('arc-layer fetchFeatureServiceLayers error: ' + error);
 				this.loading = false
+				this.state = State.Validate
+				this.validationError = 'Cannot connect to this feature service layer.  Check your ArcGIS server to verify it\'s still available'
 			}
 		})
 	}
@@ -234,7 +237,6 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	}
 
 	validated(service: FeatureServiceConfig): void {
-		this.state = State.Layers
 		this.featureService = service
 		// the server may have resolved the portal url to something other than what was typed
 		this.layerForm.controls.portalUrl.setValue(service.portalUrl || '')
