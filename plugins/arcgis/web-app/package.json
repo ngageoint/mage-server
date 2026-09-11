@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.arcgis.web-app.workspace",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

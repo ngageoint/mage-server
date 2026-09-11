@@ -19,6 +19,14 @@ export interface FeatureServiceConfig {
     authenticated: boolean
 
     /**
+     * True if the authenticated user's ArcGIS privileges appear to be missing
+     * features:user:edit, meaning they likely cannot write observations to
+     * feature layers. Undefined if this couldn't be determined (e.g. no known
+     * portal URL, or the privilege check failed).
+     */
+    mayLackEditPrivilege?: boolean
+
+    /**
      * The feature layers.
      */
     layers: FeatureLayerConfig[]

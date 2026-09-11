@@ -50,6 +50,8 @@ plugins/arcgis/
 
 ## Authentication methods
 
+Users can add a feature service URL directly, or select the option to browse a portal URL to discover avialable services
+
 The plugin supports three authentication methods for connecting to an ArcGIS Feature Service:
 
 | Method | When to use |
@@ -79,7 +81,6 @@ The plugin config is stored in the MAGE plugin state repository (MongoDB). All f
 | `idSeparator` | `'-'` | Separator between observation ID and event ID |
 | `eventIdField` | `'event_id'` | ArcGIS attribute for the MAGE event ID |
 | `eventNameField` | `'event_name'` | ArcGIS attribute for the MAGE event name |
-| `lastEditedDateField` | `'last_edited_date'` | ArcGIS attribute for last edit timestamp |
 | `lastModifiedField` | `'last_modified'` | ArcGIS attribute for the MAGE observation's last modified time |
 | `userIdField` | `'user_id'` | ArcGIS attribute for the MAGE user ID |
 | `usernameField` | `'username'` | ArcGIS attribute for the MAGE username |

@@ -2,6 +2,7 @@ import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
 import { FeatureServiceConfig } from './types/ArcGISConfig'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import { ArcGISPluginConfig } from './types/ArcGISPluginConfig'
+import { decryptAndDeserialize, serializeAndEncrypt } from './CredentialEncryption'
 
 /**
  * Interface for managing ArcGIS identity and authentication.
@@ -24,10 +25,12 @@ export interface ArcGISIdentityService {
 /**
  * Creates a new ArcGIS identity service.
  * @param {PluginStateRepository<ArcGISPluginConfig>} stateRepo The plugin state repository.
+ * @param {Console} console used to log messages.
  * @returns {ArcGISIdentityService} The ArcGIS identity service.
  */
 export function createArcGISIdentityService(
-  stateRepo: PluginStateRepository<ArcGISPluginConfig>
+  stateRepo: PluginStateRepository<ArcGISPluginConfig>,
+  console: Console
 ): ArcGISIdentityService {
   const identityManagerCache: Map<string, Promise<ArcGISIdentityManager>> = new Map();
 
@@ -35,13 +38,17 @@ export function createArcGISIdentityService(
     async signin(featureService: FeatureServiceConfig): Promise<ArcGISIdentityManager> {
       const cached = await identityManagerCache.get(featureService.url);
       if (!cached) {
-        const identityManager = ArcGISIdentityManager.deserialize(featureService.identityManager);
-        const promise = identityManager.getUser().then(() => identityManager);
+        const identityManager = decryptAndDeserialize(featureService.identityManager, console);
+        const promise = identityManager.getToken(featureService.url)
+          .then(() => identityManager)
+          .catch(err => {
+            identityManagerCache.delete(featureService.url);
+            throw err;
+          });
         identityManagerCache.set(featureService.url, promise);
         return promise;
-      } else {
-        return cached;
       }
+      return cached!;
     },
 
     async updateIndentityManagers() {
@@ -50,9 +57,9 @@ export function createArcGISIdentityService(
         const persistedIdentityManager = await persistedIdentityManagerPromise;
         const featureService: FeatureServiceConfig | undefined = config?.featureServices.find((service: FeatureServiceConfig) => service.url === url);
         if (featureService && config) {
-          const identityManager = ArcGISIdentityManager.deserialize(featureService.identityManager);
+          const identityManager = decryptAndDeserialize(featureService.identityManager, console);
           if (identityManager.token !== persistedIdentityManager.token || identityManager.refreshToken !== persistedIdentityManager.refreshToken) {
-            featureService.identityManager = persistedIdentityManager.serialize();
+            featureService.identityManager = serializeAndEncrypt(persistedIdentityManager, console);
             await stateRepo.patch(config as never);
           }
         }

@@ -4,6 +4,7 @@ const userTransformer = require('../transformers/user')
 import async from 'async'
 import util from 'util'
 import fileType from 'file-type'
+import mimetypes from 'mime-types'
 import EventModel, { FormDocument, FormSubdocumentModelInstance, MageEventDocument } from '../models/event'
 import express from 'express'
 import access from '../access'
@@ -525,6 +526,10 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         }
         res.format({
           'image/*': function () {
+            const iconContentType = mimetypes.lookup(icon.path);
+            if (iconContentType) {
+              res.type(iconContentType);
+            }
             res.sendFile(icon.path);
           },
           'application/json': function () {

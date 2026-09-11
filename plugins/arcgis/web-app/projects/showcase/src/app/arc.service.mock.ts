@@ -91,7 +91,6 @@ export class MockArcService implements ArcServiceInterface {
       observationIdField: 'mock_description',
       idSeparator: 'mock-',
       eventIdField: 'mock_event_id',
-      lastEditedDateField: 'mock_last_edited_date',
       eventNameField: 'mock_event_name',
       userIdField: 'mock_user_id',
       usernameField: 'mock_username',
@@ -100,6 +99,7 @@ export class MockArcService implements ArcServiceInterface {
       createdAtField: 'mock_created_at',
       lastModifiedField: 'mock_last_modified',
       geometryType: 'mock_geometry_type',
+      iconSymbolField: 'mock_icon_symbol',
       fieldAttributes: {},
       attributes: {
         'symbolid': {
@@ -143,7 +143,13 @@ export class MockArcService implements ArcServiceInterface {
     return of([mockArcGISEventResult1, mockArcGISEventResult2, mockArcGISEventResult3]);
   }
 
-  putArcConfig(config: ArcGISPluginConfig) {}
+  putArcConfig(config: ArcGISPluginConfig) {
+    return of(config);
+  }
+
+  fetchPushStatus(eventId: number, pageIndex: number, pageSize: number) {
+    return of({ items: [], totalCount: 0, pageIndex, pageSize });
+  }
 
   removeUserTrack(userTrackId: string): Observable<ArcGISPluginConfig> {
     return of(defaultArcGISPluginConfig);
