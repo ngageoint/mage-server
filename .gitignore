@@ -8,17 +8,15 @@ node_modules
 .test_run
 .vscode/
 coverage/
-database/
-docker/database/
-docker/server/resources/
+# these two entries should not be necessary anymore, but remain for now to
+# ensure these obsolete directories aren't commited if a clone still has them
+/database/
 /server
 npm-debug.log
 pnpm-debug.log
 scratch/
 *.scratch/
 *.scratch.*
-/docker/auth-idp/ldap/config/*
-/docker/auth-idp/ldap/db/*
 .angular
 .DS_STORE
 # this line must be last

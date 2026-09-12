@@ -5,20 +5,20 @@ services:
     image: clamav/clamav:stable
     platform: linux/amd64
     volumes:
-      - ./clamav-test/data:/var/lib/clamav
+      - ./docker/clamav:/var/lib/clamav
     ports:
       - "3310:3310"
     networks:
       - mage.net
 
   mage-db:
-    image: mongodb/mongodb-community-server:8.0-ubi9-slim
+    image: mongodb/mongodb-community-server:8.3-ubi9-slim
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     ports:
       - 27017:27017
     volumes:
-      - ./docker/mage-db:/data/db
+      - ./docker/mage/db:/data/db
     networks:
       - mage.net
 
@@ -26,12 +26,26 @@ services:
     depends_on: [ mage-db ]
     build:
       context: ./
+      tags:
+        - mage:local
     image: mage:local
-    # entrypoint: ["./node_modules/.bin/mage.service", "--plugin", "@ngageoint/mage.image.service"]  Uncomment to specify new entrypoint commands
-    platform: linux/amd64
+    command:
+      - ./mage.service
+      - --plugin
+      - '@ngageoint/mage.image.service'
+      - --plugin
+      - '@ngageoint/mage.sftp.service'
+      - --web-plugin
+      - '@ngageoint/mage.sftp.web'
+      - --plugin
+      - '@ngageoint/mage.arcgis.service'
+      - --web-plugin
+      - '@ngageoint/mage.arcgis.web-app'
+      - --plugin
+      - '@ngageoint/mage.clamav.service'
     volumes:
-      - ./docker/mage-resources:/var/lib/mage
-      # - ./sftp-test/id_rsa:/run/secrets/sftp_key:ro
+      - ./docker/mage/resources:/var/lib/mage
+      - ./docker/sftp/key/id_rsa:/run/secrets/mage/sftp_key:ro
     # Comment the ports block to disallow connections directly to the node
     # server when running the mage-web-proxy below.
     ports:
@@ -44,17 +58,11 @@ services:
     environment:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
       MAGE_TOKEN_EXPIRATION: "28800"
-      MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service","@ngageoint/mage.arcgis.service","@ngageoint/mage.clamav.service"],"webUIPlugins":["@ngageoint/mage.sftp.web","@ngageoint/mage.arcgis.web-app"]}'
       # Only used if @ngageoint/mage.clamav.service is enabled above - host/port
       # for the mage-clamav container this compose file already defines.
       MAGE_CLAMAV_HOST: mage-clamav
       MAGE_CLAMAV_PORT: "3310"
-      MAGE_SFTP_KEY_FILE: /var/lib/mage/sftp_key
-
-    # Uncomment this section to use Docker volumes instead of bind mounts for data directories:
-    # volumes:
-    #   "mongodb-data":
-    #   "mage-server-resources":
+      MAGE_SFTP_KEY_FILE: /run/secrets/mage/sftp_key
 
   # Uncomment the following block to enable the TLS reverse proxy.  You will
   # also need to generate the key and certificate as the README describes.
@@ -77,7 +85,7 @@ services:
     image: atmoz/sftp
     command: mage::1001
     volumes:
-      - ./docker/sftp/id_rsa.pub:/home/mage/.ssh/keys/id_rsa.pub:ro
+      - ./docker/sftp/key/id_rsa.pub:/home/mage/.ssh/keys/id_rsa.pub:ro
       - ./docker/sftp/upload:/home/mage/upload
     ports:
       - "2222:22"
