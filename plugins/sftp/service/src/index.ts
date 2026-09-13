@@ -49,7 +49,7 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
     getDbConnection: MongooseDbConnectionToken
   },
   init: async (services): Promise<WebRoutesHooks> => {
-    console.info('intializing sftp plugin')
+    console.info('initializing sftp plugin')
 
     const { stateRepository, eventRepository, observationRepository, userRepository, attachmentStore, getDbConnection } = services
     const dbConnection: mongoose.Connection = await getDbConnection();
