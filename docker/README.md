@@ -2,41 +2,58 @@
 
 ## Mage server image
 
-The Mage Server image contains the the core Mage server Node app that consists
+The Mage Server image contains the core Mage server Node app that consists
 of the ReST web service and the Mage web app.  By default, the image also
-includes plugins maintained in the [Mage server repository](../plugins/).  By
-default, the server [Dockerfile](./server/Dockerfile) pulls the latest tagged
-versions from the NPM registry.  You can override the version using Docker's
-`--build-arg` CLI switch to set the package versions you want in the image.
-If you are building on Apple Silicon hardware, use `--platform linux/amd64` so
-the built image platform matches the base image platform.  Here's an example of
-building the image with an explicit service version.
+includes plugins maintained in the [Mage server repository](../plugins/).  There 
+are two Mage server Dockerfiles.  The default [Dockerfile](../Dockerfile) builds
+and installs all packages from the local source tree.  [`Dockerfile.published`](../Dockerfile.published)
+installs published Mage packages from the NPM registry to build a production 
+release image.
+
+Build the local development image with the following command from the project 
+root.
 ```bash
-$ cd ./docker/server
-$ docker build --platform linux/amd64 --build-arg service_version=6.2.10 -t mage-server:<version> .
+docker build -t mage:local .
+```
+Build the production release image with the following command.
+```bash
+docker build -t mage-server:<version> -f Dockerfile.published .
+```
+You can override the package versions in the production image using Docker's
+`--build-arg` CLI switch to set the package versions you want in the image.  
+Here's an example of building the image with an explicit core service and 
+web-app version.
+```bash
+docker build --build-arg CORE_VERSION=6.7.0 -t mage-server:<version> -f Dockerfile.published .
 ```
 
-The Iron Bank [Dockerfile](./server/Dockerfile.ironbank) uses a different,
-hardened [base image](https://ironbank.dso.mil/repomap/details;registry1Path=opensource%252Fnodejs%252Fdebian%252Fnodejs)
-from  US DoD's [Iron Bank](https://ironbank.dso.mil/about) repository.  The
-Dockerfile builds exactly the same as the standard Dockerfile.
+### Private base image
+
+Both Dockerfiles default to a hardened base image hosted in this project's GitHub 
+repository.  You will need to create a [personal access token](https://github.com/settings/tokens) the Docker 
+CLI can use to [access](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) the GitHub container registry in order to build with that 
+base image.  Alternatively, you can override the base image with an open Node.js
+image using a Docker CLI build argument like the following.
+```bash
+docker build --build-arg DIST_IMAGE=node:26-slim .
+```
+
+The hardened [base image](https://registry1.dso.mil/harbor/projects/3/repositories/google%2Fdistroless13%2Fnodejs-24/artifacts-tab) 
+is a copy from [Platform One's](https://p1.dso.mil/)  [Iron Bank repository](https://ironbank.dso.mil/about), which is 
+based on Google's [distroless Node](https://console.cloud.google.com/artifacts/docker/distroless/us/gcr.io/nodejs24-debian13) image.  
+The [source](https://repo1.dso.mil/dsop/google/distroless13/nodejs-24) for the Iron Bank image is available in Platform 
+One's [Repo One](https://repo1.dso.mil/) Git hosting service.
 
 ## Docker Compose
 
-You can start a Mage server by using [docker compose](https://docs.docker.com/compose/) to start services
-defined in Mage's [Compose file](docker-compose.yml).
+You can start a Mage server instance by using [docker compose](https://docs.docker.com/compose/) to start services
+defined in Mage's [Compose file](../docker-compose.yml).
 
 The first time you run Mage with Docker, execute the following steps from the directory where you cloned the
 Mage Git repository.
 ```bash
-$ cd ./docker
-$ docker compose up -d # build the service images, then create and start the service containers for the first time
-```
-If you want to use a Mage server image tagged with a different version than
-the `mage-server` Compose service currently defines, prepend the `MAGE_VERSION`
-environment variable to the command.
-```bash
-$ MAGE_VERSION=6.3.0-beta.1 docker compose up -d
+cd ./docker
+docker compose up -d # build the service images, then create and start the service containers for the first time
 ```
 With all the default settings, you should then be able to browse to
 http://localhost:4242 to interact with the Mage web app.
