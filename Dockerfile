@@ -32,8 +32,8 @@ RUN cd ${MAGE_SERVER}/web-app \
 
 RUN cd ${MAGE_SERVER}/plugins/image/service \
     && npm link ../../../service \
-    && npm run build && \
-    cd ${MAGE_PACKAGES} \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
     && npm pack ${MAGE_SERVER}/plugins/image/service
 
 RUN cd ${MAGE_SERVER}/plugins/sftp/service \
