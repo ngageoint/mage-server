@@ -71,6 +71,13 @@ with a locally running server, as well as facilitate testing that resource URLs 
 Node app is running behind a secure proxy.  The nginx container proxy references the configuration from
 [web-proxy/nginx.conf](./web-proxy/nginx.conf).
 
+You'll need to generate a self-signed key-certificate pair for the nginx proxy using `openssl`.  The Compose file 
+expects the certificate and key files at `docker/web-proxy/mage-web.crt` and `docker/web-proxy/mage-web.key`, 
+respectively.  Both files have entries in `docker/web-proxy/.gitignore` to avoid committing the private key to the 
+repository.  There are plenty of tutorials online about creating a self-signed certificate, for example, 
+https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu-16-04.
+Simply replace the file paths as appropriate.
+
 ### Interacting with the containers
 
 _NOTE:_ All of the following `docker compose` commands described below assume
