@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FeatureServiceConfig } from '../ArcGISConfig';
 import { ArcService, DiscoveredFeatureService, DiscoveryRequest, DiscoveryResult, FeatureLayer } from '../arc.service';
+import { RecentFeatureServiceUrlsService } from './recent-feature-service-urls.service';
 
 enum State { Validate, Layers }
 
@@ -68,6 +69,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	layerForm: FormGroup
 	layers: FeatureLayer[]
 	featureService: FeatureServiceConfig
+	recentFeatureServiceUrls: string[]
 
 	// validate/confirm persist a placeholder feature service (no layers) so the layers panel can
 	// authenticate against it before layers are actually chosen; if this dialog is for a brand new
@@ -80,13 +82,15 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	constructor(
 		public dialogRef: MatDialogRef<ArcLayerDialogComponent>,
 		@Inject(MAT_DIALOG_DATA) public data: DialogData,
-		private arcService: ArcService
+		private arcService: ArcService,
+		private recentUrlsService: RecentFeatureServiceUrlsService
 	) {
 		this.isNewService = data.featureService === undefined
 		if (data.featureService) {
 			this.featureService = data.featureService
 		}
 
+		this.recentFeatureServiceUrls = this.recentUrlsService.getRecent()
 		this.state = State.Validate
 		this.layerForm = new FormGroup({
 			url: new FormControl({ value: this.featureService?.url, disabled: this.featureService !== undefined }, [Validators.required]),
@@ -147,6 +151,11 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	get canValidate(): boolean {
 		const { url, authenticationType } = this.layerForm.getRawValue()
 		return !!url && !!authenticationType && this.hasRequiredAuthFields(authenticationType)
+	}
+
+	get filteredRecentUrls(): string[] {
+		const value = (this.layerForm.controls.url.value || '').toLowerCase()
+		return this.recentFeatureServiceUrls.filter(url => url.toLowerCase().includes(value))
 	}
 
 	private hasRequiredAuthFields(authenticationType: AuthenticationType): boolean {
@@ -240,6 +249,8 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		this.featureService = service
 		// the server may have resolved the portal url to something other than what was typed
 		this.layerForm.controls.portalUrl.setValue(service.portalUrl || '')
+		this.recentUrlsService.addRecent(service.url)
+		this.recentFeatureServiceUrls = this.recentUrlsService.getRecent()
 		this.fetchLayers(service.url)
 	}
 

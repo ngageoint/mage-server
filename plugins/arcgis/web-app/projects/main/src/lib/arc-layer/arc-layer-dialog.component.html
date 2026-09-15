@@ -29,8 +29,11 @@
           <form [formGroup]="layerForm" class="form validate">
             <mat-form-field *ngIf="entryMode === EntryMode.Url || featureService">
               <mat-label>Feature Service URL</mat-label>
-              <input matInput formControlName="url" required
+              <input matInput formControlName="url" required [matAutocomplete]="urlAuto"
                 placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer" />
+              <mat-autocomplete #urlAuto="matAutocomplete">
+                <mat-option *ngFor="let url of filteredRecentUrls" [value]="url">{{url}}</mat-option>
+              </mat-autocomplete>
               <mat-error *ngIf="layerForm.hasError('required')">URL is required</mat-error>
             </mat-form-field>
 
