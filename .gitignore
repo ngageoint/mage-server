@@ -17,6 +17,7 @@ pnpm-debug.log
 scratch/
 *.scratch/
 *.scratch.*
+*.tsbuildinfo
 /docker/auth-idp/ldap/config/*
 /docker/auth-idp/ldap/db/*
 .angular
