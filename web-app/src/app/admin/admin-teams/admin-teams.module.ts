@@ -19,7 +19,6 @@ import { TeamDashboardComponent } from './dashboard/team-dashboard.component';
 import { CreateTeamDialogComponent } from './create-team/create-team.component';
 import { AdminEventsService } from '../services/admin-events.service';
 import { TeamDetailsComponent } from './team-details/team-details.component';
-import { DeleteTeamComponent } from './delete-team/delete-team.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
@@ -28,8 +27,7 @@ import { RouterModule } from '@angular/router';
     declarations: [
         TeamDashboardComponent,
         CreateTeamDialogComponent,
-        TeamDetailsComponent,
-        DeleteTeamComponent
+        TeamDetailsComponent
     ],
     imports: [
         CommonModule,
