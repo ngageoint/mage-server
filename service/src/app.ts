@@ -1030,7 +1030,8 @@ async function initObservationsAppLayer(
     ),
     saveObservation: observationsImpl.SaveObservation(
       obsPermissionsService,
-      repos.users.userRepo
+      repos.users.userRepo,
+      log.child({ component: 'observations' })
     ),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(
       obsPermissionsService,
