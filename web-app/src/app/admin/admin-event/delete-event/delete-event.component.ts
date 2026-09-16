@@ -29,7 +29,9 @@ import { FormsModule } from '@angular/forms';
     ]
 })
 export class DeleteEventComponent {
+    // set once - never being reassigned, no signal declaration necessary
     event: MageEvent;
+    
     readonly deleting = signal(false);
     confirm: { text?: string } = {};
 

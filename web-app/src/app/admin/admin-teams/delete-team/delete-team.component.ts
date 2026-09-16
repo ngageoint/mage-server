@@ -28,7 +28,9 @@ import { FormsModule } from '@angular/forms';
     ]
 })
 export class DeleteTeamComponent {
+  // set once - never being reassigned, no signal declaration necessary
   team: Team;
+  
   deleteAllUsers = false;
   readonly deleting = signal(false);
   readonly error = signal<string | null>(null);

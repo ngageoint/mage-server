@@ -18,7 +18,9 @@ import { A11yModule } from '@angular/cdk/a11y';
     ]
 })
 export class DeleteLayerComponent {
+    // set once - never being reassigned, no signal declaration necessary
     layer: Layer;
+    
     readonly deleting = signal(false);
     readonly error = signal<string | null>(null);
 
