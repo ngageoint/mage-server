@@ -1,5 +1,7 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { Service, Feed } from '@ngageoint/mage.web-core-lib/feed';
 
 type ServiceWithFeeds = {
@@ -11,7 +13,12 @@ type ServiceWithFeeds = {
     selector: 'app-admin-service-delete',
     templateUrl: './admin-service-delete.component.html',
     styleUrls: ['./admin-service-delete.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatDialogModule,
+      MatButtonModule,
+      MatIconModule
+    ]
 })
 export class AdminServiceDeleteComponent {
 

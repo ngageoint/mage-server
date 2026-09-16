@@ -3,16 +3,20 @@
 </div>
 
 <div mat-dialog-content>
-  <div *ngIf="feeds?.length" class="danger-zone">
-    <h3 class="danger-zone-title">
-      <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
-      {{feeds.length}} {{feeds.length === 1 ? 'feed' : 'feeds'}} will also be deleted
-    </h3>
-    <p class="feed-list__label">The following feeds will be permanently deleted:</p>
-    <div class="feed-list">
-      <div *ngFor="let feed of feeds" class="feed-list__item">{{feed.title}}</div>
+  @if (feeds?.length) {
+    <div class="danger-zone">
+      <h3 class="danger-zone-title">
+        <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
+        {{feeds.length}} {{feeds.length === 1 ? 'feed' : 'feeds'}} will also be deleted
+      </h3>
+      <p class="feed-list__label">The following feeds will be permanently deleted:</p>
+      <div class="feed-list">
+        @for (feed of feeds; track feed.id) {
+          <div class="feed-list__item">{{feed.title}}</div>
+        }
+      </div>
     </div>
-  </div>
+  }
 </div>
 
 <mat-dialog-actions align="end">
