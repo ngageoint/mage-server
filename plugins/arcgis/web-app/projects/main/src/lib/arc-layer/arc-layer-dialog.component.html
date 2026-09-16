@@ -39,9 +39,12 @@
 
             <mat-form-field>
               <mat-label>Portal API URL</mat-label>
-              <input matInput formControlName="portalUrl"
+              <input matInput formControlName="portalUrl" [matAutocomplete]="portalUrlAuto"
                 [required]="entryMode === EntryMode.Portal && !featureService"
                 placeholder="http{s}://{domain}/arcgis/sharing/rest" />
+              <mat-autocomplete #portalUrlAuto="matAutocomplete">
+                <mat-option *ngFor="let url of filteredRecentPortalUrls" [value]="url">{{url}}</mat-option>
+              </mat-autocomplete>
               <mat-hint *ngIf="entryMode === EntryMode.Url">Leave empty to use default portal URL derived from feature service URL</mat-hint>
             </mat-form-field>
 

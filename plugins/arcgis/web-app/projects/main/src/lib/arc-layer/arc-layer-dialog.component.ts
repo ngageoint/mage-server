@@ -70,6 +70,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	layers: FeatureLayer[]
 	featureService: FeatureServiceConfig
 	recentFeatureServiceUrls: string[]
+	recentPortalUrls: string[]
 
 	// validate/confirm persist a placeholder feature service (no layers) so the layers panel can
 	// authenticate against it before layers are actually chosen; if this dialog is for a brand new
@@ -91,6 +92,7 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		}
 
 		this.recentFeatureServiceUrls = this.recentUrlsService.getRecent()
+		this.recentPortalUrls = this.recentUrlsService.getRecentPortalUrls()
 		this.state = State.Validate
 		this.layerForm = new FormGroup({
 			url: new FormControl({ value: this.featureService?.url, disabled: this.featureService !== undefined }, [Validators.required]),
@@ -156,6 +158,11 @@ export class ArcLayerDialogComponent implements OnDestroy {
 	get filteredRecentUrls(): string[] {
 		const value = (this.layerForm.controls.url.value || '').toLowerCase()
 		return this.recentFeatureServiceUrls.filter(url => url.toLowerCase().includes(value))
+	}
+
+	get filteredRecentPortalUrls(): string[] {
+		const value = (this.layerForm.controls.portalUrl.value || '').toLowerCase()
+		return this.recentPortalUrls.filter(url => url.toLowerCase().includes(value))
 	}
 
 	private hasRequiredAuthFields(authenticationType: AuthenticationType): boolean {
@@ -376,6 +383,8 @@ export class ArcLayerDialogComponent implements OnDestroy {
 		// the server may have resolved the portal url to something other than what was typed
 		if (result.portalUrl) {
 			this.layerForm.controls.portalUrl.setValue(result.portalUrl)
+			this.recentUrlsService.addRecentPortalUrl(result.portalUrl)
+			this.recentPortalUrls = this.recentUrlsService.getRecentPortalUrls()
 		}
 		// only a fresh sign-in includes this
 		if (result.mayLackEditPrivilege !== undefined) {
