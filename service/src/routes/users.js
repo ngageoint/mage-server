@@ -306,6 +306,13 @@ module.exports = function(app, security) {
           }
         };
 
+        log.info('account signup requested', {
+          username: user.username,
+          displayName: user.displayName,
+          email: user.email,
+          phones: user.phones
+        });
+
         new api.User()
           .create(user)
           .then(newUser => {

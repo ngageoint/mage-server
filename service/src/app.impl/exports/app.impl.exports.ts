@@ -177,6 +177,12 @@ export function CreateExport(
             }
           }
           await exportsRepository.updateExportForUser(newExport.id, user.id, update)
+          log.info(`${(user as { username?: string }).username ?? user.id} exported data`, {
+            format,
+            event: context.mageEvent.name,
+            observations: result.observations?.count ?? 0,
+            locations: result.locations?.count ?? 0
+          })
         }).catch(async (err) => {
           log.error('Export error', err)
           await contentStore.deleteContent(newExport)
