@@ -198,32 +198,39 @@ User.prototype.update = function (user, options, callback) {
 
   if (options.avatar) {
     operations.push(function (updatedUser, done) {
-      runPipeline(getAttachmentHooks(), { name: options.avatar.originalname }, options.avatar.path).then(outcome => {
-        // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
-        if (outcome.outcome === 'reject') {
-          fs.remove(options.avatar.path).catch(() => { });
-          return done(Object.assign(new Error(`avatar upload rejected: ${outcome.reason}`), { status: 400 }));
-        }
-        if (outcome.outcome === 'error') {
-          fs.remove(options.avatar.path).catch(() => { });
-          return done(Object.assign(new Error(`avatar scan failed: ${outcome.error.message}`), { status: 400 }));
-        }
+      runPipeline(getAttachmentHooks(), { name: options.avatar.originalname }, options.avatar.path).then(
+        outcome => {
+          try {
+            // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
+            if (outcome.outcome === 'reject') {
+              fs.remove(options.avatar.path).catch(() => { });
+              return done(Object.assign(new Error(`avatar upload rejected: ${outcome.reason}`), { status: 400 }));
+            }
+            if (outcome.outcome === 'error') {
+              fs.remove(options.avatar.path).catch(() => { });
+              return done(Object.assign(new Error(`avatar scan failed: ${outcome.error.message}`), { status: 400 }));
+            }
 
-        const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
-        fs.move(options.avatar.path, avatar.absolutePath, { clobber: true }, function (err) {
-          if (err) {
-            return done(err);
+            const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
+            fs.move(options.avatar.path, avatar.absolutePath, { clobber: true }, function (err) {
+              if (err) {
+                return done(err);
+              }
+
+              updatedUser.avatar = {
+                relativePath: avatar.relativePath,
+                contentType: options.avatar.mimetype,
+                size: options.avatar.size
+              };
+
+              done(null, updatedUser);
+            });
+          } catch (err) {
+            done(err);
           }
-
-          updatedUser.avatar = {
-            relativePath: avatar.relativePath,
-            contentType: options.avatar.mimetype,
-            size: options.avatar.size
-          };
-
-          done(null, updatedUser);
-        });
-      }, done);
+        },
+        done
+      );
     });
   }
 
@@ -250,31 +257,38 @@ User.prototype.update = function (user, options, callback) {
       }
     } else {
       operations.push(function (updatedUser, done) {
-        runPipeline(getAttachmentHooks(), { name: options.icon.originalname }, options.icon.path).then(outcome => {
-          // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
-          if (outcome.outcome === 'reject') {
-            fs.remove(options.icon.path).catch(() => { });
-            return done(Object.assign(new Error(`icon upload rejected: ${outcome.reason}`), { status: 400 }));
-          }
-          if (outcome.outcome === 'error') {
-            fs.remove(options.icon.path).catch(() => { });
-            return done(Object.assign(new Error(`icon scan failed: ${outcome.error.message}`), { status: 400 }));
-          }
+        runPipeline(getAttachmentHooks(), { name: options.icon.originalname }, options.icon.path).then(
+          outcome => {
+            try {
+              // fs.remove() is deleting the temp file to avoid an unhandled rejection that would cause node.js to crash
+              if (outcome.outcome === 'reject') {
+                fs.remove(options.icon.path).catch(() => { });
+                return done(Object.assign(new Error(`icon upload rejected: ${outcome.reason}`), { status: 400 }));
+              }
+              if (outcome.outcome === 'error') {
+                fs.remove(options.icon.path).catch(() => { });
+                return done(Object.assign(new Error(`icon scan failed: ${outcome.error.message}`), { status: 400 }));
+              }
 
-          const icon = iconPath(updatedUser._id, updatedUser, options.icon);
-          fs.move(options.icon.path, icon.absolutePath, { clobber: true }, function (err) {
-            if (err) return done(err);
+              const icon = iconPath(updatedUser._id, updatedUser, options.icon);
+              fs.move(options.icon.path, icon.absolutePath, { clobber: true }, function (err) {
+                if (err) return done(err);
 
-            updatedUser.icon.type = options.icon.type;
-            updatedUser.icon.relativePath = icon.relativePath;
-            updatedUser.icon.contentType = options.icon.mimetype;
-            updatedUser.icon.size = options.icon.size;
-            updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
-            updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
+                updatedUser.icon.type = options.icon.type;
+                updatedUser.icon.relativePath = icon.relativePath;
+                updatedUser.icon.contentType = options.icon.mimetype;
+                updatedUser.icon.size = options.icon.size;
+                updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
+                updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
 
-            done(null, updatedUser);
-          });
-        }, done);
+                done(null, updatedUser);
+              });
+            } catch (err) {
+              done(err);
+            }
+          },
+          done
+        );
       });
     }
   }
