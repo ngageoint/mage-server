@@ -69,6 +69,7 @@ const environment = {
   iconBaseDirectory: path.resolve(process.env.MAGE_ICON_DIR || '/var/lib/mage/icons'),
   attachmentBaseDirectory: path.resolve(process.env.MAGE_ATTACHMENT_DIR || '/var/lib/mage/attachments'),
   layerBaseDirectory: path.resolve(process.env.MAGE_LAYER_DIR || '/var/lib/mage/layers'),
+  userContentMaxSize: parseInt(process.env.MAGE_USER_CONTENT_MAX_SIZE) || 1024 * 1024, // Limiting icon size
   tempDirectory: path.resolve(process.env.MAGE_TEMP_DIR || '/tmp'),
   exportDirectory: path.resolve(process.env.MAGE_EXPORT_DIR || '/var/lib/mage/export'),
   securityDirectory: path.resolve(process.env.MAGE_SECURITY_DIR || '/var/lib/mage/security'),
