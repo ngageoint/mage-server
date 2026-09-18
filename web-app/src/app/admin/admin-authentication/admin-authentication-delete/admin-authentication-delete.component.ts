@@ -3,6 +3,7 @@ import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDi
 import { Strategy } from '../../admin-authentication/admin-settings.model'
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service'
 import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
 import { A11yModule } from '@angular/cdk/a11y'
 
 @Component({
@@ -13,6 +14,7 @@ import { A11yModule } from '@angular/cdk/a11y'
     imports: [
       MatDialogModule,
       MatButtonModule,
+      MatIconModule,
       A11yModule
     ]
 })

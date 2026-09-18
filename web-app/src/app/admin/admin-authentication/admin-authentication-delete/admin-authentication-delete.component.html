@@ -5,6 +5,9 @@
 </mat-dialog-content>
 
 <mat-dialog-actions>
-  <button matButton (click)="close()" cdkFocusInitial>Cancel</button>
-  <button matButton class="delete-button" (click)="delete()">Delete</button>
+  <button matButton type="button" (click)="close()" cdkFocusInitial data-testid="cancel-button">Cancel</button>
+  <button matButton type="button" class="delete-button" (click)="delete()" data-testid="delete-button">
+    <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+    Delete Authentication
+  </button>
 </mat-dialog-actions>
