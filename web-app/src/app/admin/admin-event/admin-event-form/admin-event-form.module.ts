@@ -28,8 +28,6 @@ import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.m
 
 @NgModule({
     declarations: [
-        AdminEventFormPreviewComponent,
-        AdminEventFormPreviewDialogComponent,
         FormDetailsComponent,
         FieldDialogComponent,
         SymbologyDialogComponent,
@@ -55,7 +53,9 @@ import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.m
         MatSelectModule,
         MatDividerModule,
         ObservationEditModule,
-        AdminBreadcrumbModule
+        AdminBreadcrumbModule,
+        AdminEventFormPreviewComponent,
+        AdminEventFormPreviewDialogComponent
     ],
     exports: [
         AdminEventFormPreviewComponent,
