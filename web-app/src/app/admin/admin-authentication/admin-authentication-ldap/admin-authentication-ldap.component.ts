@@ -1,5 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 interface Scope {
   value: string;
@@ -10,7 +15,14 @@ interface Scope {
     selector: 'admin-authentication-ldap',
     templateUrl: './admin-authentication-ldap.component.html',
     styleUrls: ['./admin-authentication-ldap.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatFormFieldModule,
+      FormsModule,
+      MatSelectModule,
+      MatInputModule,
+      MatExpansionModule,
+    ]
 })
 export class AdminAuthenticationLDAPComponent implements OnInit {
 

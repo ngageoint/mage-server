@@ -101,7 +101,11 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     PluginModule,
     AdminAuthenticationLocalComponent,
     PasswordPolicyComponent,
-    AccountLockComponent
+    AccountLockComponent,
+    AdminAuthenticationOidcComponent,
+    AdminAuthenticationOAuth2Component,
+    AdminAuthenticationLDAPComponent,
+    AdminAuthenticationSAMLComponent
   ],
   declarations: [
     SearchModalComponent,
@@ -115,10 +119,6 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AuthenticationDeleteComponent,
     ButtonPreviewComponent,
     IconUploadComponent,
-    AdminAuthenticationOidcComponent,
-    AdminAuthenticationOAuth2Component,
-    AdminAuthenticationLDAPComponent,
-    AdminAuthenticationSAMLComponent,
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

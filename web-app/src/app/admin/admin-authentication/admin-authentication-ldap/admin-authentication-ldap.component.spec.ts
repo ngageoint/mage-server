@@ -9,7 +9,7 @@ describe('AdminAuthenticationLDAPComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationLDAPComponent ],
+      imports: [ AdminAuthenticationLDAPComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

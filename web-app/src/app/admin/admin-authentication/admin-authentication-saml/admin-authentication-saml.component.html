@@ -49,9 +49,11 @@
   <mat-form-field appearance="fill">
     <mat-label>Signature Algorithm</mat-label>
     <mat-select [(ngModel)]="strategy.settings.signatureAlgorithm" (selectionChange)="setDirty(true)">
-      <mat-option *ngFor="let algorithm of signatureAlgorithms" [value]="algorithm.value">
-        {{ algorithm.viewValue }}
-      </mat-option>
+      @for (algorithm of signatureAlgorithms; track algorithm.value) {
+        <mat-option [value]="algorithm.value">
+          {{algorithm.viewValue}}
+        </mat-option>  
+      }
     </mat-select>
     <mat-hint>Signature algorithm for signing requests. Default: SHA-1.</mat-hint>
   </mat-form-field>
@@ -157,7 +159,11 @@
   <mat-form-field appearance="fill">
     <mat-label>RAC Comparison</mat-label>
     <mat-select [(ngModel)]="strategy.settings.RACComparison" (selectionChange)="setDirty(true)">
-      <mat-option *ngFor="let rac of racs" [value]="rac.value">{{ rac.viewValue }}</mat-option>
+      @for (rac of racs; track rac.value) {
+        <mat-option [value]="rac.value">
+          {{rac.viewValue}}
+        </mat-option>  
+      }
     </mat-select>
     <mat-hint>Requested Authentication Context comparison type. Default: Exact.</mat-hint>
   </mat-form-field>

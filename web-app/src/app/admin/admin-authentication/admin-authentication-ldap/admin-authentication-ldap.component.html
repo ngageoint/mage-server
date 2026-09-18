@@ -43,7 +43,9 @@
   <mat-form-field appearance="fill">
     <mat-label>Search Scope</mat-label>
     <mat-select [(ngModel)]="strategy.settings.searchScope" [disabled]="!editable" (selectionChange)="setDirty(true)">
-      <mat-option *ngFor="let scope of scopes" [value]="scope.value">{{ scope.viewValue }}</mat-option>
+      @for (scope of scopes; track scope.value) {
+        <mat-option [value]="scope.value">{{ scope.viewValue }}</mat-option>
+      }
     </mat-select>
     <mat-hint>Scope of the search. Default: sub.</mat-hint>
   </mat-form-field>
@@ -68,7 +70,9 @@
     <mat-label>Group Search Scope</mat-label>
     <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [disabled]="!editable"
       (selectionChange)="setDirty(true)">
-      <mat-option *ngFor="let scope of scopes" [value]="scope.value">{{ scope.viewValue }}</mat-option>
+      @for (scope of scopes; track scope.value) {
+        <mat-option [value]="scope.value">{{ scope.viewValue }}</mat-option>
+      }
     </mat-select>
     <mat-hint>Scope of the search. Default: sub.</mat-hint>
   </mat-form-field>
