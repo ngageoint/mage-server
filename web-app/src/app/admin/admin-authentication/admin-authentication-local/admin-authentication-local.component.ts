@@ -1,11 +1,17 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { AccountLockComponent } from './account-lock/account-lock.component';
+import { PasswordPolicyComponent } from './password-policy/password-policy.component';
 
 @Component({
     selector: 'admin-authentication-local',
     templateUrl: './admin-authentication-local.component.html',
     styleUrls: ['./admin-authentication-local.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      AccountLockComponent,
+      PasswordPolicyComponent
+    ]
 })
 export class AdminAuthenticationLocalComponent {
 
