@@ -116,7 +116,6 @@ export class AdminServiceComponent implements OnInit, OnDestroy {
           service: this.service,
           feeds: this.feeds
         },
-        autoFocus: false,
         disableClose: true
       })
       .afterClosed()

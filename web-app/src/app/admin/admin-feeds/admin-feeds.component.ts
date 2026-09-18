@@ -115,7 +115,6 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
   
     this.dialog.open(AdminServiceDeleteComponent, {
       data: { service, feeds: this._feeds.filter(f => f.service === service.id) },
-      autoFocus: false,
       disableClose: true
     }).afterClosed().subscribe(result => {
       if (result === true) {
@@ -137,7 +136,6 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
 
     this.dialog.open(AdminFeedDeleteComponent, {
       data: feed,
-      autoFocus: false,
       disableClose: true
     }).afterClosed().subscribe(result => {
       if (result === true) {

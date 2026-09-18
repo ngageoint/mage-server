@@ -215,8 +215,7 @@ export class AdminAuthenticationComponent
     this.dialog
       .open(AuthenticationDeleteComponent, {
         width: '500px',
-        data: strategy,
-        autoFocus: false
+        data: strategy
       })
       .afterClosed()
       .subscribe(async (result) => {

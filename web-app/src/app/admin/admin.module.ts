@@ -49,7 +49,6 @@ import { PluginModule } from './admin-plugins/plugins.module';
 import { AdminAuthenticationComponent } from './admin-authentication/admin-authentication.component';
 import { AdminAuthenticationSettingsComponent } from './admin-authentication/admin-authentication-settings.component';
 import { AuthenticationCreateComponent } from './admin-authentication/admin-authentication-create/admin-authentication-create.component';
-import { AuthenticationDeleteComponent } from './admin-authentication/admin-authentication-delete/admin-authentication-delete.component';
 import { ButtonPreviewComponent } from './admin-authentication/admin-authentication-create/button-preview/button-preview.component';
 import { IconUploadComponent } from './admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
 import { AdminAuthenticationOidcComponent } from './admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
@@ -110,7 +109,6 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AdminAuthenticationComponent,
     AdminAuthenticationSettingsComponent,
     AuthenticationCreateComponent,
-    AuthenticationDeleteComponent,
     ButtonPreviewComponent,
     IconUploadComponent,
     AdminAuthenticationOidcComponent,
