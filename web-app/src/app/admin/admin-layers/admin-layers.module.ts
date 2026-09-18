@@ -24,7 +24,6 @@ import { CreateLayerDialogComponent } from './create-layer/create-layer.componen
 import { LayersService } from './layers.service';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { LayerDetailsComponent } from './layer-details/layer-details.component';
-import { DeleteLayerComponent } from './delete-layer/delete-layer.component';
 import { LayerPreviewComponent } from './layer-preview/layer-preview.component';
 import { ImageryLayerSettingsComponent } from './imagery-layer-settings/imagery-layer-settings.component';
 import { RouterModule } from '@angular/router';
@@ -34,7 +33,6 @@ import { RouterModule } from '@angular/router';
         LayerDashboardComponent,
         CreateLayerDialogComponent,
         LayerDetailsComponent,
-        DeleteLayerComponent,
         LayerPreviewComponent,
         ImageryLayerSettingsComponent,
     ],

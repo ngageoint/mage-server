@@ -36,8 +36,8 @@ describe('DeleteTeamComponent', () => {
     mockUserService = jasmine.createSpyObj('UserService', ['deleteUser']);
 
     await TestBed.configureTestingModule({
-      declarations: [DeleteTeamComponent],
       imports: [
+        DeleteTeamComponent,
         FormsModule,
         MatIconModule,
         MatButtonModule,
@@ -66,8 +66,8 @@ describe('DeleteTeamComponent', () => {
   it('should initialize with correct team data', () => {
     expect(component.team).toEqual(mockTeam);
     expect(component.deleteAllUsers).toBe(false);
-    expect(component.deleting).toBe(false);
-    expect(component.error).toBeNull();
+    expect(component.deleting()).toBe(false);
+    expect(component.error()).toBeNull();
   });
 
   it('should display team name in the title', () => {
@@ -108,7 +108,7 @@ describe('DeleteTeamComponent', () => {
   });
 
   it('should disable delete button when deleting is in progress', () => {
-    component.deleting = true;
+    component.deleting.set(true);
     component.deleteAllUsers = true;
     fixture.detectChanges();
 
@@ -130,7 +130,7 @@ describe('DeleteTeamComponent', () => {
 
     it('should set deleting to true when starting deletion', () => {
       component.deleteTeam();
-      expect(component.deleting).toBe(true);
+      expect(component.deleting()).toBe(true);
     });
 
     it('should call teamsService.deleteTeam with correct team id', () => {
@@ -161,8 +161,8 @@ describe('DeleteTeamComponent', () => {
 
       component.deleteTeam();
 
-      expect(component.deleting).toBe(false);
-      expect(component.error).toBe('Delete failed');
+      expect(component.deleting()).toBe(false);
+      expect(component.error()).toBe('Delete failed');
       expect(console.error).toHaveBeenCalledWith('Error deleting team:', error);
     });
   });
@@ -229,12 +229,6 @@ describe('DeleteTeamComponent', () => {
     });
   });
 
-  describe('ngOnInit', () => {
-    it('should be defined and not throw error', () => {
-      expect(() => component.ngOnInit()).not.toThrow();
-    });
-  });
-
   describe('Template Integration', () => {
     it('should call cancel when cancel button is clicked', () => {
       spyOn(component, 'cancel');
@@ -264,7 +258,7 @@ describe('DeleteTeamComponent', () => {
     });
 
     it('should show progress icon when deleting', () => {
-      component.deleting = true;
+      component.deleting.set(true);
       component.deleteAllUsers = true;
       fixture.detectChanges();
 
@@ -273,7 +267,7 @@ describe('DeleteTeamComponent', () => {
     });
 
     it('should show delete icon when not deleting', () => {
-      component.deleting = false;
+      component.deleting.set(false);
       component.deleteAllUsers = true;
       fixture.detectChanges();
 

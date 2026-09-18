@@ -72,92 +72,96 @@ This section covers everything needed to run the SFTP plugin locally using Docke
 
 The plugin currently authenticates to the SFTP server using an RSA private key. Password authentication is not yet supported (Kubernetes secret support is planned for a future release).
 
-Create the `sftp-test/` directory at the repo root and generate a key pair there:
-
+From the repository root directory, generate a key pair.
 ```bash
-mkdir -p sftp-test/upload
-ssh-keygen -t rsa -b 4096 -f sftp-test/id_rsa -N ""
+mkdir docker/sftp/key/
+ssh-keygen -t rsa -b 4096 -f docker/sftp/key/id_rsa -N ""
 ```
 
 This produces two files:
-- `sftp-test/id_rsa` — private key, mounted into the MAGE server container
-- `sftp-test/id_rsa.pub` — public key, mounted into the SFTP server container
+- `docker/sftp/key/id_rsa` — private key, mounted into the MAGE server container
+- `docker/sftp/key/id_rsa.pub` — public key, mounted into the SFTP server container
 
-> **Do not commit these files.** `sftp-test/` should be in `.gitignore`.
+> The `docker/sftp/.gitignore` file will prevent commiting your key pair files.
 
-### 2. Verify `docker-compose.yml` has the SFTP lines active
+### 2. Verify the `mage-sftp` Compose service
 
-The following lines in `docker-compose.yml` must be present and uncommented.
+Ensure the following lines are merged into the indicated blocks in [`docker-compose.yml`](../../docker-compose.yml).
 
-**Under `mage-server` → `volumes`** (line 30):
 ```yaml
-- ./sftp-test/id_rsa:/run/secrets/sftp_key:ro
-```
+services:
+  # ...
+  mage-server:
+    volumes:
+      - ./docker/sftp/key/id_rsa:/run/secrets/mage/sftp_key:ro
+    environment:
+      MAGE_SFTP_KEY_FILE: /run/secrets/mage/sftp_key
+    command:
+      - --plugin
+      - @ngageoint/mage.sftp.service
+      - --web-plugin
+      - @ngageoint/mage.sftp.web
 
-**Under `mage-server` → `environment`** (lines 44–46):
-```yaml
-SFTP_PLUGIN_CONFIG_SALT: "A0E6D3B4-25BD-4DD6-BBC9-B367931966AB"
-MAGE_SFTP_KEY_FILE: /run/secrets/sftp_key
-MAGE_PLUGINS: '{"servicePlugins":["@ngageoint/mage.sftp.service",...],"webUIPlugins":["@ngageoint/mage.sftp.web",...]}'
-```
-
-> Change `SFTP_PLUGIN_CONFIG_SALT` to a unique UUID before any non-local deployment. Do **not** rotate it after deployment — it is used to encrypt stored config and changing it will break existing settings.
-
-**The `mage-sftp` service block** (lines 79–88) — the local SFTP server for development:
-```yaml
-mage-sftp:
-  image: atmoz/sftp
-  command: magetest::1001
-  volumes:
-    - ./sftp-test/id_rsa.pub:/home/magetest/.ssh/keys/id_rsa.pub:ro
-    - ./sftp-test/upload:/home/magetest/upload
-  ports:
-    - "2222:22"
-  networks:
-    - mage.net
+  # service that provides the sftp endpoint for mage-server
+  mage-sftp:
+    image: atmoz/sftp
+    command: mage::1001
+    volumes:
+      - ./docker/sftp/key/id_rsa.pub:/home/mage/.ssh/keys/id_rsa.pub:ro
+      - ./docker/sftp/upload:/home/mage/upload
+    ports:
+      - "2222:22"
+    networks:
+      - mage.net
 ```
 
 Uploaded zip archives will appear in `sftp-test/upload/` on your host machine.
 
-### 3. Verify the Dockerfile has the SFTP build stages active
+### 3. Verify the Dockerfile builds SFTP packages
 
-The SFTP plugin has two build stages in the `Dockerfile` that must be present and uncommented — one for the service plugin and one for the web UI plugin:
-
+The [`Dockerfile`](../../Dockerfile) should contain two uncommented `RUN` blocks that build the SFTP service and 
+web-app packages:
 ```dockerfile
-FROM node:20.11.1 AS build-sftpserviceplugin
-...
-FROM node:20.11.1 AS build-sftpwebplugin
-...
+RUN cd ${MAGE_SERVER}/plugins/sftp/service
+# ...
+RUN cd ${MAGE_SERVER}/plugins/sftp/web
+# ...
 ```
-
-Both stages should already be present. Check that the corresponding `COPY` and `RUN npm install` lines in the `build-instance` stage are also active.
+Both stages should already be present. Check that the corresponding `COPY` and `RUN npm install` lines in the 
+`build-instance` stage are also active.
 
 ### 4. Build and start
 
 ```bash
 docker compose up --build -d
 ```
+This starts at least three containers: `mage-db`, `mage-server`, and `mage-sftp`.  Verify the containers are running
+using the following command.
+```bash
+docker compose ps
+```
 
-This starts three containers: `mage-db`, `mage-server`, and `mage-sftp`.
+### 5. Activate the plugin
 
-### 5. Upload the private key and configure in the admin UI
-
-1. Open `mage` and log in
-2. Navigate to **Admin → Menu → SFTP**
-3. Under **SFTP Client Options**, upload the private key (`sftp-test/id_rsa`)
-4. Fill in the connection details for the local test server:
+1. Navigate to the Mage web app.
+1. Click the icon at the upper right to navigate to the admin page.
+1. Click the _SFTP_ tab on the left tab strip.
+1. Under **SFTP Client Options**, upload the private key.
+1. Fill in the connection details for the local test server:
    - **Host**: `mage-sftp`
    - **Port**: `22`
-   - **Username**: `magetest`
+   - **Username**: `mage`
    - **Path**: `/upload`
-5. Click **Test Connection** to verify
-6. Toggle **Enabled** to `true` and save
+1. Click **Test Connection** to verify.
+1. Toggle **Enabled** to `true` and save.
 
 > The remote path (`/upload` in this example) must already exist on the SFTP server. The plugin will not create it automatically.
 
 ### Connecting to a real SFTP server
 
-Replace the `mage-sftp` connection details with your server's host, port, username, and the remote directory path. Generate or obtain a key pair accepted by that server and upload the private key via the admin UI. The public key must be added to the server's `authorized_keys` (or equivalent) for the configured user.
+Replace the `mage-sftp` connection details with your server's host, port, username, and the remote directory path. 
+Generate or obtain a key pair accepted by that server and upload the private key via the admin UI. The public key must 
+be added to the server's `authorized_keys` (or equivalent) for the configured user.
 
 ---
 
