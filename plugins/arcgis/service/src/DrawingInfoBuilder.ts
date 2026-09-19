@@ -1,8 +1,9 @@
-import { ArcGISPluginConfig } from "./types/ArcGISPluginConfig";
+import { promisify } from 'node:util'
+import { readFile as readFileAsync } from 'node:fs/promises'
+import { ArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { LineStyle } from '@ngageoint/mage.service/lib/entities/entities.global';
 import api from '@ngageoint/mage.service/lib/api';
-import fs from "fs";
 import { fromBuffer } from 'file-type';
 import mimetypes from 'mime-types';
 import { IconDocumentResolved } from "@ngageoint/mage.service/lib/api/icon";
@@ -185,25 +186,22 @@ export class DrawingInfoBuilder {
    * @private
    */
   private async loadIconSymbol(icon: IconDocumentResolved): Promise<{ [key: string]: any } | null> {
-    return new Promise<{ [key: string]: any } | null>(async (resolve, reject) => {
-      fs.readFile(icon.path, async (err, data) => {
-        if (err) {
-          this._console.error(`error reading observation icon at path: ${icon.path}`);
-          reject(err);
-          return;
+    try {
+      const data = await readFileAsync(icon.path)
+      const fileTypeResult = await fromBuffer(data)
+      let mediaType: string | undefined = fileTypeResult?.mime;
+      if (!mediaType) {
+        const mimeType = mimetypes.lookup(icon.path);
+        if (mimeType !== false) {
+          mediaType = mimeType;
         }
-        fromBuffer(data).then(fileTypeResult => {
-          let mediaType: string | undefined = fileTypeResult?.mime;
-          if (!mediaType) {
-            const mimeType = mimetypes.lookup(icon.path);
-            if (mimeType !== false) {
-              mediaType = mimeType;
-            }
-          }
-          resolve(this.buildMarkerIconSymbol(data.toString('base64'), mediaType));
-        });
-      });
-    });
+      }
+      return this.buildMarkerIconSymbol(data.toString('base64'), mediaType)
+    }
+    catch (err) {
+      this._console.error(`error reading observation icon at path: ${icon.path}`)
+      throw err
+    }
   }
 
   /**
@@ -213,39 +211,37 @@ export class DrawingInfoBuilder {
    * @private
    */
   private async buildEventIconSymbol(event:MageEvent): Promise<{ [key: string]: any } | null> {
-    return new Promise<{ [key: string]: any } | null>(async (resolve, reject) => {
-      new api.Icon(event.id)
-        .getIcon((err, icon) => {
-          if (err) {
-            this._console.error(`error determining observation icon for event:${event.name} — ${err}`);
-            reject(err);
-            return;
-          }
-          if (icon) {
-            fs.readFile(icon.path, async (err, data) => {
-              if (err) {
-                this._console.error(`error reading observation icon for event:${event.name} — ${err}`);
-                reject(err);
-                return;
-              }
-              fromBuffer(data).then(fileTypeResult => {
-                let mediaType:string | undefined = fileTypeResult?.mime;
-                if (!mediaType) {
-                  const mimeType = mimetypes.lookup(icon.path);
-                  if (mimeType !== false) {
-                    mediaType = mimeType;
-                  }
-                }
-                this._console.debug(`found icon for event:${event.name} — ${icon.path}`);
-                resolve(this.buildMarkerIconSymbol(data.toString('base64'), mediaType));
-              });
-            });
-          } else {
-            this._console.debug(`no icon found for event:${event.name}`);
-            resolve(null);
-          }
-        });
-    });
+    const iconContext = new api.Icon(event.id)
+    const getIconAsync = promisify(iconContext.getIcon.bind(iconContext))
+    let icon: IconDocumentResolved | undefined
+    try {
+      icon = await getIconAsync()
+    }
+    catch (err) {
+      this._console.error(`error determining observation icon for event: ${event.name}`, err)
+      throw err
+    }
+    if (!icon) {
+      this._console.debug(`no icon found for event: ${event.name}`)
+      return null
+    }
+    try {
+      const data = await readFileAsync(icon.path)
+      const fileTypeResult = await fromBuffer(data)
+      let mediaType: string | undefined = fileTypeResult?.mime
+      if (!mediaType) {
+        const mimeType = mimetypes.lookup(icon.path)
+        if (mimeType !== false) {
+          mediaType = mimeType
+        }
+      }
+      this._console.debug(`found icon for event: ${event.name} — ${icon.path}`)
+      return this.buildMarkerIconSymbol(data.toString('base64'), mediaType)
+    }
+    catch (err) {
+      this._console.error(`error reading observation icon for event: ${event.name}`, err)
+      throw err
+    }
   }
 
   /**
@@ -279,16 +275,16 @@ export class DrawingInfoBuilder {
       return null;
     }
 
-    let uniqueValueInfos: { [key: string]: any }[] = [];
-    let renderer:{ [key:string]:any } = {
+    const uniqueValueInfos: { [key: string]: any }[] = [];
+    const renderer: { [key:string]: any } = {
       type: "uniqueValue",
       field1: null,
       field2: null,
       field3: null,
       fieldDelimiter: DrawingInfoBuilder.UNIQUE_VALUE_FIELD_DELIMITER,
-      uniqueValueInfos: uniqueValueInfos
+      uniqueValueInfos
     };
-    let drawingInfo:object = { renderer: renderer };
+    const drawingInfo: object = { renderer: renderer };
 
     const numEvents = this._events.length;
     if (numEvents == 1) {
@@ -324,12 +320,12 @@ export class DrawingInfoBuilder {
         const icons: IconDocumentResolved[] = await this.loadEventIcons(event);
         await Promise.all(icons.map(async (icon) => {
           const valueInfo = await this.buildValueInfo(icon, event, uniqueValuePrefix);
-          if (valueInfo != null) {
+          if (valueInfo) {
             uniqueValueInfos.push(valueInfo);
           }
         }));
-      } catch (error) {
-        this._console.error();
+      } catch (err) {
+        this._console.error(`error loading icons for event ${event.id} - ${event.name}`, err)
       }
     }));
 
@@ -343,21 +339,20 @@ export class DrawingInfoBuilder {
    * @param {MageEvent} event the event for which to load icons
    * @private
    */
-  private async loadEventIcons(event: MageEvent): Promise<IconDocumentResolved[]> {
-    return await new Promise<IconDocumentResolved[]>(
-      async (resolve, reject) => {
-        new api.Icon(event.id).getIcons((err, icons) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          if (icons != null) {
-            resolve(icons);
-            return;
-          }
-          resolve([]);
-        });
+  private loadEventIcons(event: MageEvent): Promise<IconDocumentResolved[]> {
+    return new Promise<IconDocumentResolved[]>((resolve, reject) => {
+      new api.Icon(event.id).getIcons((err, icons) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (icons != null) {
+          resolve(icons);
+          return;
+        }
+        resolve([]);
       });
+    });
   }
 
   /**
