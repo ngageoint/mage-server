@@ -18,6 +18,12 @@ export interface LayerInfoResult {
      * The feature layer id.
      */
     id: number
+
+    /**
+     * The name of the field ArcGIS uses to label/identify features from this layer.
+     * A field currently set as the display field cannot be deleted.
+     */
+    displayField?: string
 }
 
 /**
