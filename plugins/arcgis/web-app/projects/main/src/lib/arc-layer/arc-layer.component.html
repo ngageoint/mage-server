@@ -2,7 +2,7 @@
   <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title>Feature Layers</mat-card-title>
-      <mat-card-subtitle>ArcGIS feature service URLs and layers to sychronize MAGE data.</mat-card-subtitle>
+      <mat-hint>ArcGIS feature service URLs and layers to receive Mage data.</mat-hint>
     </mat-card-header>
     <mat-card-content>
       <div *ngIf="!config.featureServices.length" class="no-mappings">
@@ -12,11 +12,13 @@
           <mat-icon class="no-mappings__icon no-mappings__icon--margin material-icons-outlined" fontSet="material-icons-outlined">map</mat-icon>
         </div>
 
-        <div class="no-mappings__title">Create ArcGIS feature services used to synchronize MAGE data. Feature services you create will show up here.</div>
+        <div class="no-mappings__title">Create ArcGIS feature services used to synchronize Mage data. Feature services you create will show up here.</div>
       </div>
 
       <mat-list>
-        <mat-list-item *ngFor="let service of config.featureServices let lastService = last;">
+        <mat-list-item *ngFor="let service of config.featureServices let lastService = last;"
+          [class.read-only-service]="isReadOnly(service)"
+          [matTooltip]="isReadOnly(service) ? 'This feature service does not allow editing' : ''">
           <mat-icon matListItemIcon class="material-icons-outlined">map</mat-icon>
           <p matListItemTitle>{{service.url}}</p>
           <p matListItemLine class="subtitle">
@@ -27,16 +29,21 @@
           <p matListItemLine *ngIf="!service.authenticated" class="invalid-credentials">
             Credentials invalid or expired
           </p>
+          <p matListItemLine *ngIf="isReadOnly(service)" class="invalid-credentials">
+            Read-only: editing is not enabled for this feature service
+          </p>
 
-          <a mat-icon-button color="primary" href="{{service.url}}" target="_blank">
-            <mat-icon>open_in_new</mat-icon>
-          </a>
-          <button mat-icon-button color="primary" (click)="onEditService(service)">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="primary" (click)="onDeleteService(service)">
-            <mat-icon>delete</mat-icon>
-          </button>
+          <span matListItemMeta>
+            <a mat-icon-button color="primary" href="{{service.url}}" target="_blank">
+              <mat-icon>open_in_new</mat-icon>
+            </a>
+            <button mat-icon-button color="primary" (click)="onEditService(service)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="primary" (click)="onDeleteService(service)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </span>
 
           <mat-divider *ngIf="!lastService"></mat-divider>
         </mat-list-item>

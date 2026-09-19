@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { provideHttpClient } from '@angular/common/http';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ArcLayerDialogComponent } from './arc-layer-dialog.component';
-import { ArcService } from '../arc.service'; 
+import { ArcService } from '../arc.service';
 
 describe('Arc Layer Dialog', () => {
   let component: ArcLayerDialogComponent;
@@ -11,7 +12,7 @@ describe('Arc Layer Dialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatDialogModule],
+      imports: [MatDialogModule, MatAutocompleteModule],
       declarations: [ArcLayerDialogComponent],
       providers: [
         provideHttpClient(),
@@ -23,9 +24,9 @@ describe('Arc Layer Dialog', () => {
         },
         {
           provide: MAT_DIALOG_DATA,
-          useValue: {} 
+          useValue: {}
         },
-        ArcService 
+        ArcService
       ]
     }).compileComponents();
   });

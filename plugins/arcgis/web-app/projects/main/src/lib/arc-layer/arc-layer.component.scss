@@ -2,6 +2,15 @@ mat-card {
 	margin-bottom: 16px;
 }
 
+mat-card-header {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+mat-card-header mat-hint {
+	display: block;
+}
+
 .mat-list-icon {
 	color: rgba(0, 0, 0, 0.54);
 }
@@ -47,4 +56,8 @@ mat-card {
 
 .invalid-credentials {
 	color: #F44336;
+}
+
+.read-only-service {
+	--mdc-list-list-item-label-text-color: #F44336;
 }

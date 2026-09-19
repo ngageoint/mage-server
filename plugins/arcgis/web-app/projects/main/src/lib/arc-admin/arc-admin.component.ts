@@ -1,6 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog'
-import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, AttributeValueConfig } from '../ArcGISConfig';
+import { AttributeConfig, AttributeConcatenationConfig, AttributeDefaultConfig, AttributeValueConfig, FeatureServiceConfig } from '../ArcGISConfig';
 import { ArcGISPluginConfig, defaultArcGISPluginConfig } from '../ArcGISPluginConfig'
 import { ArcService, Form, MageEvent } from '../arc.service'
 import { Subject, first } from 'rxjs';
@@ -27,7 +27,25 @@ export class ArcAdminComponent implements OnInit {
   editName: string;
   editValue: any;
   editOptions: any[];
+  editSelectValue: any;
+  editValueOptions: any[] = [];
+  editIsAttributeName = false;
+  editIsFieldMappingAttribute = false;
+  editValueInput = '';
   events: MageEvent[] = [];
+
+  /**
+   * Feature services whose credentials are invalid/expired and that have at least one
+   * event actively mapped to a layer
+   */
+  get unauthenticatedSyncingFeatureServices(): FeatureServiceConfig[] {
+    if (!this.config.enabled || !this.config.featureServices) {
+      return []
+    }
+    return this.config.featureServices.filter(service =>
+      !service.authenticated && service.layers?.some(layer => layer.events && layer.events.length > 0)
+    )
+  }
 
   @ViewChild('infoDialog', { static: true })
   private infoTemplate: TemplateRef<unknown>
@@ -35,6 +53,8 @@ export class ArcAdminComponent implements OnInit {
   private editProcessingTemplate: TemplateRef<unknown>
   @ViewChild('editAttributesDialog', { static: true })
   private editAttributesTemplate: TemplateRef<unknown>
+  @ViewChild('resetConfigDialog', { static: true })
+  private resetConfigTemplate: TemplateRef<unknown>
   @ViewChild('deleteFieldDialog', { static: true })
   private deleteFieldTemplate: TemplateRef<unknown>
   @ViewChild('addFieldDialog', { static: true })
@@ -61,10 +81,9 @@ export class ArcAdminComponent implements OnInit {
     this.editConfig = this.copyConfig();
     this.editFieldMappings = false;
     this.attributesForm = this.fb.group({
-      observationIdField: [''], 
+      observationIdField: [''],
       idSeparator: [''],
       eventIdField: [''],
-      lastEditedDateField: [''],
       eventNameField: [''],
       userIdField: [''],
       usernameField: [''],
@@ -72,7 +91,8 @@ export class ArcAdminComponent implements OnInit {
       deviceIdField: [''],
       createdAtField: [''],
       lastModifiedField: [''],
-      geometryType: ['']
+      geometryType: [''],
+      iconSymbolField: ['']
     });
 
     arcService.fetchArcConfig().subscribe(x => {
@@ -94,12 +114,11 @@ export class ArcAdminComponent implements OnInit {
     this.arcService.fetchArcConfig().pipe(first()).subscribe({
       next: config => {
         if (config) {
-          // Populate form with values from config 
+          // Populate form with values from config
           this.attributesForm.patchValue({
             observationIdField: config.observationIdField || '',
             idSeparator: config.idSeparator || '',
             eventIdField: config.eventIdField || '',
-            lastEditedDateField: config.lastEditedDateField || '',
             eventNameField: config.eventNameField || '',
             userIdField: config.userIdField || '',
             usernameField: config.usernameField || '',
@@ -107,9 +126,9 @@ export class ArcAdminComponent implements OnInit {
             deviceIdField: config.deviceIdField || '',
             createdAtField: config.createdAtField || '',
             lastModifiedField: config.lastModifiedField || '',
-            geometryType: config.geometryType || ''
+            geometryType: config.geometryType || '',
+            iconSymbolField: config.iconSymbolField || 'icon_symbol'
           });
-          console.log('Form initialized with server config:', config);
         }
       },
       error: error => {
@@ -117,11 +136,9 @@ export class ArcAdminComponent implements OnInit {
       }
     });
   }
-  
-  //Save attributes form. If left blank, assign default value
-  onSubmit(): void {
-    console.log('submitting form...');
 
+  // Save attributes form. If left blank, assign default value
+  onSubmit(): void {
     if (this.attributesForm.valid) {
       const formValue = this.attributesForm.value;
       this.editConfig = {
@@ -129,7 +146,6 @@ export class ArcAdminComponent implements OnInit {
         observationIdField: formValue.observationIdField || this.editConfig.observationIdField,
         idSeparator: formValue.idSeparator || this.editConfig.idSeparator,
         eventIdField: formValue.eventIdField || this.editConfig.eventIdField,
-        lastEditedDateField: formValue.lastEditedDateField || this.editConfig.lastEditedDateField,
         eventNameField: formValue.eventNameField || this.editConfig.eventNameField,
         userIdField: formValue.userIdField || this.editConfig.userIdField,
         usernameField: formValue.usernameField || this.editConfig.usernameField,
@@ -137,21 +153,14 @@ export class ArcAdminComponent implements OnInit {
         deviceIdField: formValue.deviceIdField || this.editConfig.deviceIdField,
         createdAtField: formValue.createdAtField || this.editConfig.createdAtField,
         lastModifiedField: formValue.lastModifiedField || this.editConfig.lastModifiedField,
-        geometryType: formValue.geometryType || this.editConfig.geometryType
-    };
-  
-      console.log('Form Submitted:', this.editConfig);
-      console.log('formValue: ', formValue);
-
+        geometryType: formValue.geometryType || this.editConfig.geometryType,
+        iconSymbolField: formValue.iconSymbolField || this.editConfig.iconSymbolField
+      };
       this.saveEdit();
-      }
-      else{
-        console.log('Form is invalid, please correct the errors.')
-      }
     }
-  
+  }
+
   onCancel(): void {
-    console.log('Cancel selected');
     this.arcService.fetchArcConfig().pipe(first()).subscribe({
       next: config => {
         if (config) {
@@ -159,7 +168,6 @@ export class ArcAdminComponent implements OnInit {
             observationIdField: config.observationIdField || '',
             idSeparator: config.idSeparator || '',
             eventIdField: config.eventIdField || '',
-            lastEditedDateField: config.lastEditedDateField || '',
             eventNameField: config.eventNameField || '',
             userIdField: config.userIdField || '',
             usernameField: config.usernameField || '',
@@ -167,9 +175,9 @@ export class ArcAdminComponent implements OnInit {
             deviceIdField: config.deviceIdField || '',
             createdAtField: config.createdAtField || '',
             lastModifiedField: config.lastModifiedField || '',
-            geometryType: config.geometryType || ''
+            geometryType: config.geometryType || '',
+            iconSymbolField: config.iconSymbolField || 'icon_symbol'
           });
-          console.log('Form reloaded with server config:', config);
         }
       },
       error: error => {
@@ -199,7 +207,6 @@ export class ArcAdminComponent implements OnInit {
       value = undefined
     }
     (this.editConfig as any)[field] = value
-    console.log('Editing field: ' + field + ', value: ' + value)
   }
 
   setNumberField(field: string, value: any, min: number) {
@@ -214,7 +221,6 @@ export class ArcAdminComponent implements OnInit {
       }
     }
     (this.editConfig as any)[field] = value
-    console.log('Editing field: ' + field + ', value: ' + value)
   }
 
   copyConfig(): ArcGISPluginConfig {
@@ -224,83 +230,78 @@ export class ArcAdminComponent implements OnInit {
   saveEdit() {
     if (this.editConfig.enabled != undefined && this.editConfig.enabled != this.config.enabled) {
       this.config.enabled = this.editConfig.enabled
-      console.log('Edited enabled: ' + this.config.enabled)
     }
     if (this.editConfig.intervalSeconds != undefined && this.editConfig.intervalSeconds != this.config.intervalSeconds) {
       this.config.intervalSeconds = this.editConfig.intervalSeconds
-      console.log('Edited intervalSeconds: ' + this.config.intervalSeconds)
     }
     if (this.editConfig.startupIntervalSeconds != undefined && this.editConfig.startupIntervalSeconds != this.config.startupIntervalSeconds) {
       this.config.startupIntervalSeconds = this.editConfig.startupIntervalSeconds
-      console.log('Edited startupIntervalSeconds: ' + this.config.startupIntervalSeconds)
     }
     if (this.editConfig.updateIntervalSeconds != undefined && this.editConfig.updateIntervalSeconds != this.config.updateIntervalSeconds) {
       this.config.updateIntervalSeconds = this.editConfig.updateIntervalSeconds
-      console.log('Edited updateIntervalSeconds: ' + this.config.updateIntervalSeconds)
     }
     if (this.editConfig.batchSize != undefined && this.editConfig.batchSize != this.config.batchSize) {
       this.config.batchSize = this.editConfig.batchSize
-      console.log('Edited batchSize: ' + this.config.batchSize)
     }
     if (this.editConfig.attachmentModifiedTolerance != undefined && this.editConfig.attachmentModifiedTolerance != this.config.attachmentModifiedTolerance) {
       this.config.attachmentModifiedTolerance = this.editConfig.attachmentModifiedTolerance
-      console.log('Edited attachmentModifiedTolerance: ' + this.config.attachmentModifiedTolerance)
     }
     if (this.editConfig.observationIdField != undefined && this.editConfig.observationIdField != this.config.observationIdField) {
       this.config.observationIdField = this.editConfig.observationIdField
-      console.log('Edited observationIdField: ' + this.config.observationIdField)
     }
     if (this.editConfig.idSeparator != undefined && this.editConfig.idSeparator != this.config.idSeparator) {
       this.config.idSeparator = this.editConfig.idSeparator
-      console.log('Edited idSeparator: ' + this.config.idSeparator)
     }
     if (this.editConfig.eventIdField != this.config.eventIdField) {
       this.config.eventIdField = this.editConfig.eventIdField
-      console.log('Edited eventIdField: ' + this.config.eventIdField)
-    }
-    if (this.editConfig.lastEditedDateField != this.config.lastEditedDateField) {
-      this.config.lastEditedDateField = this.editConfig.lastEditedDateField
-      console.log('Edited lastEditedDateField: ' + this.config.lastEditedDateField)
     }
     if (this.editConfig.eventNameField != this.config.eventNameField) {
       this.config.eventNameField = this.editConfig.eventNameField
-      console.log('Edited eventNameField: ' + this.config.eventNameField)
     }
     if (this.editConfig.userIdField != this.config.userIdField) {
       this.config.userIdField = this.editConfig.userIdField
-      console.log('Edited userIdField: ' + this.config.userIdField)
     }
     if (this.editConfig.usernameField != this.config.usernameField) {
       this.config.usernameField = this.editConfig.usernameField
-      console.log('Edited usernameField: ' + this.config.usernameField)
     }
     if (this.editConfig.userDisplayNameField != this.config.userDisplayNameField) {
       this.config.userDisplayNameField = this.editConfig.userDisplayNameField
-      console.log('Edited userDisplayNameField: ' + this.config.userDisplayNameField)
     }
     if (this.editConfig.deviceIdField != this.config.deviceIdField) {
       this.config.deviceIdField = this.editConfig.deviceIdField
-      console.log('Edited deviceIdField: ' + this.config.deviceIdField)
     }
     if (this.editConfig.createdAtField != this.config.createdAtField) {
       this.config.createdAtField = this.editConfig.createdAtField
-      console.log('Edited createdAtField: ' + this.config.createdAtField)
     }
     if (this.editConfig.lastModifiedField != this.config.lastModifiedField) {
       this.config.lastModifiedField = this.editConfig.lastModifiedField
-      console.log('Edited lastModifiedField: ' + this.config.lastModifiedField)
     }
     if (this.editConfig.geometryType != this.config.geometryType) {
       this.config.geometryType = this.editConfig.geometryType
-      console.log('Edited geometryType: ' + this.config.geometryType)
+    }
+    if (this.editConfig.iconSymbolField != this.config.iconSymbolField) {
+      this.config.iconSymbolField = this.editConfig.iconSymbolField
     }
     this.saveConfig()
-    console.log('Saved configuration edit')
   }
 
   cancelEdit() {
-    console.log('Canceled configuration edit')
     this.editConfig = this.copyConfig();
+  }
+
+  showResetConfig() {
+    this.dialog.open<unknown, unknown, string>(this.resetConfigTemplate)
+  }
+
+  // Reset the entire ArcGIS configuration to the default values and reload the page
+  resetConfig() {
+    const defaults: ArcGISPluginConfig = JSON.parse(JSON.stringify(defaultArcGISPluginConfig));
+    this.arcService.putArcConfig(defaults).subscribe({
+      next: () => {
+        window.location.reload()
+      },
+      error: error => console.error('Failed to reset config:', error)
+    })
   }
 
   keys(value: any): string[] {
@@ -499,7 +500,7 @@ export class ArcAdminComponent implements OnInit {
     const exclude = new Set<string>()
     if (this.config.attributes != undefined) {
       for (const attribute of Object.keys(this.config.attributes)) {
-        exclude.add(attribute)
+        exclude.add(attribute.toLowerCase())
       }
     }
 
@@ -509,10 +510,10 @@ export class ArcAdminComponent implements OnInit {
   selectableConditionAttributes(attribute: string, conditions: AttributeValueConfig[]): string[] {
 
     const exclude = new Set<string>()
-    exclude.add(attribute)
+    exclude.add(attribute.toLowerCase())
     if (conditions != undefined) {
       for (const condition of conditions) {
-        exclude.add(condition.attribute)
+        exclude.add(condition.attribute.toLowerCase())
       }
     }
 
@@ -531,6 +532,7 @@ export class ArcAdminComponent implements OnInit {
     this.addAttribute(this.config.createdAtField, attributes, exclude)
     this.addAttribute(this.config.lastModifiedField, attributes, exclude)
     this.addAttribute(this.config.geometryType, attributes, exclude)
+    this.addAttribute(this.config.iconSymbolField, attributes, exclude)
 
     if (this.config.fieldAttributes != undefined) {
       for (const formMappings of Object.values(this.config.fieldAttributes)) {
@@ -549,7 +551,7 @@ export class ArcAdminComponent implements OnInit {
             if (form.fields != undefined) {
               for (const field of form.fields) {
                 if (this.fieldMapping(event.name, form.name, field.title) == undefined) {
-                  this.addAttribute(field.title, attributes, exclude)
+                  this.addAttribute(this.normalizeAttributeName(field.title), attributes, exclude)
                 }
               }
             }
@@ -565,9 +567,10 @@ export class ArcAdminComponent implements OnInit {
   private addAttribute(attribute: string | undefined, attributes: string[], unique: Set<string>) {
     if (attribute != undefined) {
       const attributeAdd = this.replaceSpaces(attribute)
-      if (!unique.has(attributeAdd)) {
+      const key = attributeAdd.toLowerCase()
+      if (!unique.has(key)) {
         attributes.push(attributeAdd)
-        unique.add(attributeAdd)
+        unique.add(key)
       }
     }
   }
@@ -608,6 +611,45 @@ export class ArcAdminComponent implements OnInit {
     return name.replace(/ /g, '_')
   }
 
+  // Normalize a string into an ArcGIS attribute name: spaces replaced with underscores and lowercased
+  private normalizeAttributeName(name: string): string {
+    return this.replaceSpaces(name).trim().toLowerCase()
+  }
+
+  /**
+   * The set of attribute names already claimed by the special fields configured on the
+   * Attributes tab (Observation Id Field, Event Id Field, Event Name Field, etc)
+   */
+  private reservedAttributeNames(): Set<string> {
+    const reserved = new Set<string>()
+    const specialFields = [
+      this.config.observationIdField,
+      this.config.eventIdField,
+      this.config.eventNameField,
+      this.config.userIdField,
+      this.config.usernameField,
+      this.config.userDisplayNameField,
+      this.config.deviceIdField,
+      this.config.createdAtField,
+      this.config.lastModifiedField,
+      this.config.geometryType,
+      this.config.iconSymbolField,
+    ]
+    for (const field of specialFields) {
+      if (field != undefined && field !== '') {
+        reserved.add(this.normalizeAttributeName(field))
+      }
+    }
+    return reserved
+  }
+
+  isReservedAttributeName(name: string): boolean {
+    if (!name) {
+      return false
+    }
+    return this.reservedAttributeNames().has(this.normalizeAttributeName(name))
+  }
+
   showInfo(title: string, message: string) {
     this.infoTitle = title
     this.infoMessage = message
@@ -636,10 +678,15 @@ export class ArcAdminComponent implements OnInit {
   showAddField(type: string, object: any) {
     this.editType = type;
     this.editObject = object;
+    this.editIsAttributeName = false;
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldTemplate)
   }
 
   addField(name: string) {
+    if (this.editIsAttributeName) {
+      name = this.normalizeAttributeName(name);
+    }
     if (this.editObject == undefined) {
       if (this.editType == 'Event') {
         this.config.fieldAttributes = {}
@@ -669,6 +716,8 @@ export class ArcAdminComponent implements OnInit {
   showAddFieldValue(type: string, object: any) {
     this.editType = type;
     this.editObject = object;
+    this.editIsAttributeName = false;
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldValueTemplate)
   }
 
@@ -682,6 +731,12 @@ export class ArcAdminComponent implements OnInit {
       attributeValue.values = [value]
       this.editObject.condition.push(attributeValue)
     } else {
+      if (this.editType == 'Field') {
+        value = this.normalizeAttributeName(value);
+        if (this.isReservedAttributeName(value)) {
+          return
+        }
+      }
       this.editObject[name] = value
     }
     this.saveConfig()
@@ -691,6 +746,9 @@ export class ArcAdminComponent implements OnInit {
     this.editType = type;
     this.editObject = object;
     this.editOptions = options;
+    this.editSelectValue = undefined;
+    this.editIsAttributeName = type === 'Attribute';
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.addFieldAutoTemplate)
   }
 
@@ -698,18 +756,31 @@ export class ArcAdminComponent implements OnInit {
     this.editType = type;
     this.editObject = object;
     this.editOptions = options;
+    this.editValueOptions = type === 'Field' ? this.selectableAttributes() : [];
+    this.editIsAttributeName = type === 'Field';
+    this.editIsFieldMappingAttribute = type === 'Field';
+    this.editValueInput = '';
     this.dialog.open<unknown, unknown, string>(this.addFieldAutoValueTemplate)
   }
 
-  showEditField(name: string, field: string, object: any, value: any) {
+  showEditField(name: string, field: string, object: any, value: any, isAttributeName = false, isFieldMappingAttribute = false) {
     this.editName = name;
     this.editType = field;
     this.editObject = object;
     this.editValue = value;
+    this.editIsAttributeName = isAttributeName;
+    this.editIsFieldMappingAttribute = isFieldMappingAttribute;
+    this.editValueInput = value;
     this.dialog.open<unknown, unknown, string>(this.editFieldTemplate)
   }
 
   editField(value: any) {
+    if (this.editIsAttributeName) {
+      value = this.normalizeAttributeName(value);
+      if (this.editIsFieldMappingAttribute && this.isReservedAttributeName(value)) {
+        return
+      }
+    }
     if (value != this.editValue) {
       const editObjectValue = this.editObject[this.editType]
       const existingValue = editObjectValue[this.editValue]
@@ -744,6 +815,9 @@ export class ArcAdminComponent implements OnInit {
       options.unshift(value);
     }
     this.editOptions = options;
+    this.editSelectValue = value;
+    this.editIsAttributeName = name === 'Attribute';
+    this.editIsFieldMappingAttribute = false;
     this.dialog.open<unknown, unknown, string>(this.editFieldAutoTemplate)
   }
 
@@ -752,6 +826,8 @@ export class ArcAdminComponent implements OnInit {
     this.editType = field;
     this.editObject = object;
     this.editValue = value;
+    this.editIsFieldMappingAttribute = false;
+    this.editIsAttributeName = false;
     this.dialog.open<unknown, unknown, string>(this.editBooleanFieldTemplate)
   }
 
@@ -827,7 +903,9 @@ export class ArcAdminComponent implements OnInit {
   }
 
   private saveConfig() {
-    this.arcService.putArcConfig(this.config)
+    this.arcService.putArcConfig(this.config).subscribe({
+      error: error => console.error('Failed to save config:', error)
+    })
   }
 
   private updateConfigForDeletion() {

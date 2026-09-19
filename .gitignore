@@ -17,6 +17,7 @@ pnpm-debug.log
 scratch/
 *.scratch/
 *.scratch.*
+*.tsbuildinfo
 .angular
 .DS_STORE
 # this line must be last
