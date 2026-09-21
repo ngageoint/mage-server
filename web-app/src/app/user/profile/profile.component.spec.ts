@@ -68,7 +68,6 @@ describe('Profile Component', () => {
     component.onSave();
 
     expect(component.saving).toBeTrue();
-    expect(component.profileError).toBeUndefined();
 
     const req = httpMock.expectOne('/api/users/myself');
     expect(req.request.method).toBe('PUT');
@@ -76,29 +75,26 @@ describe('Profile Component', () => {
 
     expect(component.saving).toBeFalse();
     expect(component.user).toEqual(updatedUser);
-    expect(component.profileError).toBeUndefined();
     expect(snackBar.open).toHaveBeenCalledWith('Profile updated successfully', undefined, { duration: 3000 });
   });
 
-  it('should show an inline error and stop saving when save fails', () => {
+  it('should show the server error as a snackbar and stop saving when save fails', () => {
     component.onSave();
 
     const req = httpMock.expectOne('/api/users/myself');
     req.flush('failure', { status: 500, statusText: 'Server Error' });
 
     expect(component.saving).toBeFalse();
-    expect(component.profileError).toBe('Error updating profile, please try again later.');
-    expect(snackBar.open).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith('failure', undefined, { duration: 6000 });
   });
 
-  it('should clear a previous error when a new save is attempted', () => {
-    component.onSave();
-    httpMock.expectOne('/api/users/myself').flush('failure', { status: 500, statusText: 'Server Error' });
-    expect(component.profileError).toBeDefined();
-
+  it('should fall back to a generic message when the error response has no string body', () => {
     component.onSave();
 
-    expect(component.profileError).toBeUndefined();
-    httpMock.expectOne('/api/users/myself').flush({ username: 'jdoe', displayName: 'Jane Doe' });
+    const req = httpMock.expectOne('/api/users/myself');
+    req.flush(null, { status: 0, statusText: 'Unknown Error' });
+
+    expect(component.saving).toBeFalse();
+    expect(snackBar.open).toHaveBeenCalledWith('Error updating profile, please try again later.', undefined, { duration: 6000 });
   });
 });

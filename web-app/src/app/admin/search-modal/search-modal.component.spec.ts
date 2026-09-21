@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule as MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -64,6 +65,7 @@ describe('SearchModalComponent', () => {
                 MatButtonModule,
                 MatFormFieldModule,
                 MatInputModule,
+                MatListModule,
                 FormsModule,
                 NoopAnimationsModule
             ],

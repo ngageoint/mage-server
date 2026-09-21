@@ -6,6 +6,7 @@ import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
 
 describe('AboutComponent', () => {
   let component: AboutComponent;
@@ -49,7 +50,7 @@ describe('AboutComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     TestBed.configureTestingModule({
-      imports: [MatToolbarModule, MatIconModule],
+      imports: [MatToolbarModule, MatIconModule, MatCardModule],
       declarations: [AboutComponent],
       providers: [
         { provide: ApiService, useValue: mockApiService },
