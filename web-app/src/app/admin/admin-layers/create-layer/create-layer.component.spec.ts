@@ -141,6 +141,17 @@ describe('CreateLayerDialogComponent', () => {
       expect(component.errorMessage).toBe('Name already in use');
     });
 
+    it('should show the server message on 400 with a plain-text error (e.g. GeoPackage scan rejection)', () => {
+      fillGeoPackageForm();
+      layersServiceSpy.createLayer.and.returnValue(
+        throwError(() => ({ status: 400, error: 'GeoPackage upload rejected: Eicar-Test-Signature' }))
+      );
+
+      component.save();
+
+      expect(component.errorMessage).toBe('GeoPackage upload rejected: Eicar-Test-Signature');
+    });
+
     it('should show the server message on 409 conflict', () => {
       fillGeoPackageForm();
       layersServiceSpy.createLayer.and.returnValue(
