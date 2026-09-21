@@ -5,6 +5,8 @@ const fs = require('fs-extra')
   , LayerModel = require('../models/layer')
   , CounterModel = require('../models/counter');
 
+const { runPipeline, getAttachmentHooks } = require('../plugins.api/plugins.api.attachments');
+
 class Layer {
   constructor(id) {
     this._id = id;
@@ -65,7 +67,18 @@ function removeFeatureLayer(layer) {
   return LayerModel.remove(layer);
 }
 
-function createGeoPackageLayer(id, layer) {
+// Throws (rather than swallowing) since nothing is persisted to Mongo yet at this point
+async function createGeoPackageLayer(id, layer) {
+  const outcome = await runPipeline(getAttachmentHooks(), { name: layer.geopackage.originalname }, layer.geopackage.path);
+  if (outcome.outcome === 'reject') {
+    await fs.remove(layer.geopackage.path).catch(() => {});
+    throw Object.assign(new Error(`GeoPackage upload rejected: ${outcome.reason}`), { status: 400 });
+  }
+  if (outcome.outcome === 'error') {
+    await fs.remove(layer.geopackage.path).catch(() => {});
+    throw Object.assign(new Error(`GeoPackage scan failed: ${outcome.error.message}`), { status: 400 });
+  }
+
   layer.file = {
     name: layer.geopackage.originalname,
     contentType: layer.geopackage.mimetype,

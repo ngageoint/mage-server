@@ -220,6 +220,10 @@ export class CreateLayerDialogComponent {
           } else {
             this.errorMessage = error.message ?? 'Validation failed';
           }
+        } else if (status === 400 && typeof error === 'string') {
+          // Non-ValidationError 400s (e.g. a GeoPackage scan rejection) are sent as plain text,
+          // not JSON, so they land here as a raw string instead of the error.errors shape above.
+          this.errorMessage = error;
         } else if (status === 409) {
           this.errorMessage = error;
         } else {
