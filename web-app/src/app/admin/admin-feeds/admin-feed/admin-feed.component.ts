@@ -313,7 +313,6 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
     this.dialog
       .open(AdminFeedDeleteComponent, {
         data: this.feed,
-        autoFocus: false,
         disableClose: true
       })
       .afterClosed()
