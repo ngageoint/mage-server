@@ -1,5 +1,6 @@
 import { JsonSchemaFormService, JsonSchemaFormComponent } from '@ngageoint/vendor-ajsf-core';
 import { Component } from '@angular/core';
+import { MaterialDesignFrameworkModule } from '@ngageoint/vendor-ajsf-material';
 
 /**
  * This wrapper components exists to workaround https://github.com/hamzahamidi/ajsf/issues/213.
@@ -15,11 +16,16 @@ import { Component } from '@angular/core';
 <form [autocomplete]="jsf?.formOptions?.autocomplete ? 'on' : 'off'" class="json-schema-form" (ngSubmit)="submitForm()">
   <root-widget [layout]="jsf?.layout"></root-widget>
 </form>
-<div *ngIf="debug || jsf?.formOptions?.debug">
+@if (debug || jsf?.formOptions?.debug) {
+<div>
   Debug output:
   <pre>{{debugOutput}}</pre>
 </div>
+}
 `,
-    standalone: false
+    standalone: true,
+    imports: [
+      MaterialDesignFrameworkModule
+    ]
 })
 export class JsonSchemaFormWithServiceComponent extends JsonSchemaFormComponent {}

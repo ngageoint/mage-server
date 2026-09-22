@@ -107,10 +107,10 @@ describe('FeedEditComponent', () => {
         AdminFeedEditTopicConfigurationComponent,
         AdminFeedEditConfigurationComponent,
         AdminFeedEditItemPropertiesComponent,
-        FeedItemSummaryComponent,
-        JsonSchemaWidgetAutocompleteComponent
+        FeedItemSummaryComponent
     ],
     imports: [MatAutocompleteModule,
+        JsonSchemaWidgetAutocompleteComponent,
         MatDividerModule,
         MatExpansionModule,
         MatListModule,
