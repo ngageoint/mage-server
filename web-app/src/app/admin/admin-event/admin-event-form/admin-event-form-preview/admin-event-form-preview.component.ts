@@ -6,7 +6,11 @@ import { AdminEventFormPreviewDialogComponent } from './form-preview-dialog/admi
     selector: 'admin-event-form-preview',
     templateUrl: './admin-event-form-preview.component.html',
     styleUrls: ['./admin-event-form-preview.component.scss'],
-    standalone: false
+    standalone: true,
+    // empty - template has no directives
+    imports: [
+
+    ]
 })
 export class AdminEventFormPreviewComponent implements OnChanges {
   @Input() formDefinition: any[];
