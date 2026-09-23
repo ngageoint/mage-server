@@ -104,13 +104,13 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AdminAuthenticationOidcComponent,
     AdminAuthenticationOAuth2Component,
     AdminAuthenticationLDAPComponent,
-    AdminAuthenticationSAMLComponent
+    AdminAuthenticationSAMLComponent,
+    AdminNavbarComponent,
+    AdminNavigationComponent
   ],
   declarations: [
     SearchModalComponent,
     AdminComponent,
-    AdminNavbarComponent,
-    AdminNavigationComponent,
     AdminPluginTabContentComponent,
     AdminAuthenticationComponent,
     AdminAuthenticationSettingsComponent,

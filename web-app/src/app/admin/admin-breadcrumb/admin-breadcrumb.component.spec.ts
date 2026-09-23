@@ -29,8 +29,8 @@ describe('AdminBreadcrumbComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatIconTestingModule, MatIconModule, RouterTestingModule],
-      declarations: [TestHostComponent, AdminBreadcrumbComponent],
+      imports: [MatIconTestingModule, MatIconModule, RouterTestingModule, AdminBreadcrumbComponent],
+      declarations: [TestHostComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   }));
