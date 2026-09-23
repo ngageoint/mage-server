@@ -1,5 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSelectModule } from '@angular/material/select';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 interface SignatureAlgorithm {
   value: string;
@@ -15,7 +21,15 @@ interface RACComparison {
     selector: 'admin-authentication-saml',
     templateUrl: './admin-authentication-saml.component.html',
     styleUrls: ['./admin-authentication-saml.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatFormFieldModule,
+      FormsModule,
+      MatInputModule,
+      MatSlideToggleModule,
+      MatSelectModule,
+      MatExpansionModule
+    ]
 })
 export class AdminAuthenticationSAMLComponent implements OnInit {
 

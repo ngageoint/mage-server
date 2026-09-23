@@ -1,11 +1,21 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
     selector: 'admin-authentication-oidc',
     templateUrl: './admin-authentication-oidc.component.html',
     styleUrls: ['./admin-authentication-oidc.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatFormFieldModule,
+      FormsModule,
+      MatInputModule,
+      MatExpansionModule
+    ]
 })
 export class AdminAuthenticationOidcComponent implements OnInit {
 

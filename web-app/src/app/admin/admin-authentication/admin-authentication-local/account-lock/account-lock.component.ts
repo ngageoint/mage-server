@@ -1,13 +1,23 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Strategy, AdminChoice } from '../../../admin-authentication/admin-settings.model';
 import { MaxLock } from './account-lock.model';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
 
 
 @Component({
     selector: 'account-lock',
     templateUrl: 'account-lock.component.html',
     styleUrls: ['./account-lock.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatInputModule
+    ]
 })
 export class AccountLockComponent implements OnInit {
     @Input() strategy: Strategy;
@@ -22,6 +32,7 @@ export class AccountLockComponent implements OnInit {
         description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
         value: true
     }];
+    // no signal - set once
     maxLock: MaxLock = {
         enabled: false
     };

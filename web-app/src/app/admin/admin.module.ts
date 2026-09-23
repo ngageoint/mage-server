@@ -52,13 +52,12 @@ import { AuthenticationCreateComponent } from './admin-authentication/admin-auth
 import { ButtonPreviewComponent } from './admin-authentication/admin-authentication-create/button-preview/button-preview.component';
 import { IconUploadComponent } from './admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
 import { AdminAuthenticationOidcComponent } from './admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
-import { AdminAuthenticationLocalComponent } from './admin-authentication/admin-authentication-local/admin-authentication-local.component';
 import { AdminAuthenticationOAuth2Component } from './admin-authentication/admin-authentication-oauth2/admin-authentication-oauth2.component';
 import { AdminAuthenticationLDAPComponent } from './admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
 import { AdminAuthenticationSAMLComponent } from './admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
+import { AdminAuthenticationLocalComponent } from './admin-authentication/admin-authentication-local/admin-authentication-local.component';
 import { PasswordPolicyComponent } from './admin-authentication/admin-authentication-local/password-policy/password-policy.component';
 import { AccountLockComponent } from './admin-authentication/admin-authentication-local/account-lock/account-lock.component';
-
 @NgModule({
   imports: [
     CommonModule,
@@ -98,7 +97,14 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AdminEventFormModule,
     AdminMapModule,
     ColorPickerModule,
-    PluginModule
+    PluginModule,
+    AdminAuthenticationLocalComponent,
+    PasswordPolicyComponent,
+    AccountLockComponent,
+    AdminAuthenticationOidcComponent,
+    AdminAuthenticationOAuth2Component,
+    AdminAuthenticationLDAPComponent,
+    AdminAuthenticationSAMLComponent
   ],
   declarations: [
     SearchModalComponent,
@@ -111,13 +117,6 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AuthenticationCreateComponent,
     ButtonPreviewComponent,
     IconUploadComponent,
-    AdminAuthenticationOidcComponent,
-    AdminAuthenticationLocalComponent,
-    AdminAuthenticationOAuth2Component,
-    AdminAuthenticationLDAPComponent,
-    AdminAuthenticationSAMLComponent,
-    PasswordPolicyComponent,
-    AccountLockComponent
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

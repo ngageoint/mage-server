@@ -8,7 +8,7 @@ describe('AdminAuthenticationLocalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AdminAuthenticationLocalComponent],
+      imports: [AdminAuthenticationLocalComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     }).compileComponents();
   }));
@@ -16,6 +16,17 @@ describe('AdminAuthenticationLocalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationLocalComponent);
     component = fixture.componentInstance;
+    component.strategy = {
+      enabled: true,
+      name: 'local',
+      type: 'local',
+      textColor: '#000000',
+      buttonColor: '#ffffff',
+      settings: {
+        accountLock: { enabled: false },
+        passwordPolicy: {}
+      }
+    };
     fixture.detectChanges();
   });
 
