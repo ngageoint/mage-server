@@ -23,9 +23,9 @@ describe('AutocompleteMaterialSelectComponent', () => {
         ReactiveFormsModule,
         MatAutocompleteModule,
         JsonSchemaModule,
-        NoopAnimationsModule
-      ],
-      declarations: [JsonSchemaWidgetAutocompleteComponent ]
+        NoopAnimationsModule,
+        JsonSchemaWidgetAutocompleteComponent
+      ]
     })
     .compileComponents();
   }));
