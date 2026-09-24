@@ -7,7 +7,7 @@ on:
         description: |
           Indicate whether to build the image from the the locally built packages, or from packages published in the
           NPM registry.
-        type: string
+        type: choice
         options:
           - local
           - published
