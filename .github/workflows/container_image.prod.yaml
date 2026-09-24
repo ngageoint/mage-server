@@ -46,7 +46,7 @@ jobs:
           image_tag="local"
           [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
           [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
-          image_repo="ghcr.io/${{ github.repository }}/mage }}"
+          image_repo="ghcr.io/${{ github.repository }}/mage"
           image_url="${image_repo}:${image_tag}"
           image_dockerfile="Dockerfile"
           image_version=$(jq -r .version < ./service/package.json)
