@@ -9,6 +9,7 @@ module.exports = function (app, security) {
     environment = require('../environment/env'),
     layerXform = require('../transformers/layer'),
     GeoPackageUtility = require('../utilities/geopackage').GeoPackageUtility,
+    findTrailingSqliteBytes = require('../utilities/geopackage').findTrailingSqliteBytes,
     { defaultHandler: upload } = require('../upload'),
     { userRoleHasPermission } = require('../permissions/permissions.role-based.base'),
     { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
@@ -44,6 +45,11 @@ module.exports = function (app, security) {
     req.newLayer.state = 'unavailable';
 
     try {
+      const trailingBytes = await findTrailingSqliteBytes(req.file.path, req.file.size);
+      if (trailingBytes) {
+        return res.status(400).send('Cannot create layer, GeoPackage contains unexpected trailing data past the end of its declared database content');
+      }
+
       req.newLayer.geopackage = req.file;
       const validationErrors = await GeoPackageUtility.getInstance().validate(req.file.path);
       if (validationErrors && validationErrors.length) {

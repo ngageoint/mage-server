@@ -1,8 +1,48 @@
 import { FeatureTiles, GeoPackage, GeoPackageAPI, setCanvasKitWasmLocateFile, ShadedFeaturesTile } from '@ngageoint/geopackage';
 import { GeoPackageValidationError } from '@ngageoint/geopackage/dist/lib/validate/geoPackageValidate';
 import { Feature, GeoJsonProperties, Geometry } from 'geojson';
+import { open } from 'fs/promises';
 import path from 'path';
 import environment from '../environment/env';
+
+const SQLITE_HEADER_MAGIC = 'SQLite format 3\0';
+
+/**
+ * ClamAV does not scan SQLite-family files (GeoPackage included) at all - it classifies them
+ * as CL_TYPE_IGNORED and never runs signature matching against their content. That means data
+ * appended past the end of a valid SQLite database (the only way to smuggle a payload in without
+ * corrupting the database structure itself) goes undetected regardless of AV scanning. This reads
+ * the same size fields SQLite itself relies on to independently catch that one attack pattern.
+ *
+ * Returns the number of unexplained trailing bytes (0 if the file matches its declared size),
+ * or null if the file isn't a plain SQLite database or its size can't be safely determined.
+ */
+export async function findTrailingSqliteBytes(filePath: string, actualSize: number): Promise<number | null> {
+  const header = Buffer.alloc(32);
+  const fd = await open(filePath, 'r');
+  try {
+    await fd.read(header, 0, 32, 0);
+  } finally {
+    await fd.close();
+  }
+
+  if (header.toString('ascii', 0, 16) !== SQLITE_HEADER_MAGIC) {
+    return null;
+  }
+
+  let pageSize = header.readUInt16BE(16);
+  if (pageSize === 1) {
+    pageSize = 65536; // SQLite's encoding quirk: a stored page size of 1 means 64KB
+  }
+
+  const pageCount = header.readUInt32BE(28);
+  if (pageCount === 0) {
+    return null; // legacy SQLite files may leave this unset - can't safely judge size
+  }
+
+  const declaredSize = pageSize * pageCount;
+  return actualSize > declaredSize ? actualSize - declaredSize : 0;
+}
 
 class ExpiringGeoPackageConnection {
   geoPackageConnection?: GeoPackage | undefined
