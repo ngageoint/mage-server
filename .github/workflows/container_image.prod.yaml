@@ -70,13 +70,12 @@ jobs:
       platforms: linux/amd64,linux/arm64
       file: ${{ needs.image-info.outputs.dockerfile }}
       push: ${{ needs.image-info.outputs.tag != 'local' }}
-      meta-images:
-        - ${{ needs.image-info.outputs.url }}
+      meta-images: ${{ needs.image-info.outputs.url }}
       meta-annotations: |
         org.opencontainers.image.revision=${{ github.sha }}
         org.opencontainers.image.version=${{ needs.image-info.outputs.version }}
     secrets:
-      registry-auths:
+      registry-auths: |
         - registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
