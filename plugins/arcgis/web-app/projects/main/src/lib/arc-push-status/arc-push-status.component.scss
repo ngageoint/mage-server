@@ -25,6 +25,29 @@
   margin-bottom: 8px;
 }
 
+.layer-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.layer-count-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+
+  &.mismatch {
+    background-color: #fdecea;
+    color: #c62828;
+    font-weight: 700;
+  }
+}
+
 .push-status-table {
   width: 100%;
 
