@@ -28,6 +28,7 @@ jobs:
   image-info:
     runs-on: ubuntu-latest
     outputs:
+      repo: ${{ steps.image-info.outputs.repo }}
       tag: ${{ steps.image-info.outputs.tag }}
       url: ${{ steps.image-info.outputs.url }}
       version: ${{ steps.image-info.outputs.version }}
@@ -45,7 +46,8 @@ jobs:
           image_tag="local"
           [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
           [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
-          image_url="${{ github.repository }}/mage:${image_tag}"
+          image_repo="${{ github.repository }}/mage }}"
+          image_url="${image_repo}:${image_tag}"
           image_dockerfile="Dockerfile"
           image_version=$(jq -r .version < ./service/package.json)
           if [[ "${{ inputs.image-packages }}" = "published" ]]
@@ -54,6 +56,7 @@ jobs:
             image_version=$(npm info @ngageoint/mage.service@latest version)
           fi
           echo "using image url ${image_url}"
+          echo "repo=${image_repo}" >> $GITHUB_OUTPUT
           echo "tag=${image_tag}" >> $GITHUB_OUTPUT
           echo "url=ghcr.io/${image_url}" >> $GITHUB_OUTPUT
           echo "version=${image_version}" >> $GITHUB_OUTPUT
@@ -65,13 +68,14 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      packages: write
     with:
       output: image
       platforms: linux/amd64,linux/arm64
       file: ${{ needs.image-info.outputs.dockerfile }}
       push: ${{ needs.image-info.outputs.tag != 'local' }}
-      meta-images: ${{ needs.image-info.outputs.url }}
+      meta-images: ${{ needs.image-info.outputs.repo }}
+      meta-tags: |
+        type=raw,value=${{ needs.image-info.outputs.tag }}
       meta-annotations: |
         org.opencontainers.image.revision=${{ github.sha }}
         org.opencontainers.image.version=${{ needs.image-info.outputs.version }}
