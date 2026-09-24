@@ -1,10 +1,19 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'admin-navigation',
   templateUrl: './admin-navigation.component.html',
   styleUrls: ['./admin-navigation.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [
+    MatIconModule,
+    MatBadgeModule,
+    RouterLink,
+    RouterLinkActive
+  ]
 })
 export class AdminNavigationComponent {
   @Input() stateName = '';
