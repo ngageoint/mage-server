@@ -79,6 +79,7 @@ jobs:
 #          password: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-push:
+    needs: image-info
     runs-on: ubuntu-latest
     steps:
       - name: Login to Github Registry ghcr.io
@@ -100,17 +101,17 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
-          file: ${{ steps.image-info.outputs.dockerfile }}
-          tags: ${{ steps.image-info.outputs.url }}
+          file: ${{ needs.image-info.outputs.dockerfile }}
+          tags: ${{ needs.image-info.outputs.url }}
           platforms: linux/amd64,linux/arm64
-          push: ${{ steps.image-info.outputs.tag != 'local' }}
+          push: ${{ needs.image-info.outputs.tag != 'local' }}
           annotations: |
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=${{ steps.image-info.outputs.version }}
+            org.opencontainers.image.version=${{ needs.image-info.outputs.version }}
 
       - name: Extract package-lock
         run: |
-          docker create --name mage-files ${{ steps.image-info.outputs.url }}
+          docker create --name mage-files ${{ needs.image-info.outputs.url }}
           docker cp mage-files:/mage/instance/package-lock.json ./mage-instance.package-lock.json
           docker rm mage-files
 
@@ -123,7 +124,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: 'image'
-          image-ref: '${{ steps.image-info.outputs.url }}'
+          image-ref: '${{ needs.image-info.outputs.url }}'
           ignore-unfixed: true
           format: 'table'
           output: 'trivy-image-report.txt'
