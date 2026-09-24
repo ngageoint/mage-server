@@ -3,11 +3,20 @@ name: Production Container Build
 on:
   workflow_dispatch:
     inputs:
+      image-packages:
+        description: |
+          Indicate whether to build the image from the the locally built packages, or from packages published in the
+          NPM registry.
+        type: string
+        options:
+          - local
+          - published
+        default: local
       image-tag:
         description: |
-          Supply a tag to push the image to ghcr.io with the given tag.  Without a tag, the workflow will not push,
-          but only build the image.  If the workflow runs from the develop branch for testing, the image will 
-          implicitly receive the 'dev' tag.
+          Supply a tag to push the image to the ghcr.io registry.  Without a tag, the workflow will not push,
+          but only build the image.  If the workflow runs from the develop branch, the image will  implicitly 
+          receive the 'dev' tag.  Examples: `6.7.0-beta.1` or `feature-123`.
         type: string
         required: false
 
@@ -16,6 +25,59 @@ permissions:
   packages: write
 
 jobs:
+  image-info:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.image-info.outputs.tag }}
+      url: ${{ steps.image-info.outputs.url }}
+      version: ${{ steps.image-info.outputs.version }}
+      dockerfile: ${{ steps.image-info.outputs.dockerfile }}
+    steps:
+      - name: install node.js
+        uses: actions/setup-node@v7
+
+      - name: checkout
+        uses: actions/checkout@v7
+
+      - name: image-info
+        id: image-info
+        run: |
+          image_tag="local"
+          [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
+          [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
+          image_url="${{ github.repository }}/mage:${image_tag}"
+          image_dockerfile="Dockerfile"
+          image_version=$(jq -r .version < ./service/package.json)
+          if [[ "${{ inputs.image-packages }}" = "published" ]]
+          then
+            image_dockerfile="Dockerfile.published"
+            image_version=$(npm info @ngageoint/mage.service@latest version)
+          fi
+          echo "using image url ${image_url}"
+          echo "tag=${image_tag}" >> $GITHUB_OUTPUT
+          echo "url=ghcr.io/${image_url}" >> $GITHUB_OUTPUT
+          echo "version=${image_version}" >> $GITHUB_OUTPUT
+          echo "dockerfile=./${image_dockerfile}" >> $GITHUB_OUTPUT
+
+#  build:
+#    needs: image-info
+#    uses: docker/github-builder/.github/workflows/build.yml@v1
+#    permissions:
+#      contents: read
+#      id-token: write
+#    with:
+#      output: image
+#      platforms: linux/amd64,linux/arm64
+#      file: ${{ needs.image-info.outputs.dockerfile }}
+#      push: ${{ needs.image-info.outputs.tag != 'local' }}
+#      meta-images:
+#        - ${{ needs.image-info.outputs.url }}
+#    secrets:
+#      registry-auths:
+#        - registry: ghcr.io
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -29,29 +91,33 @@ jobs:
       - name: checkout
         uses: actions/checkout@v7
 
-      - name: image-info
-        id: image-info
-        run: |
-          image_tag="local"
-          [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
-          [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
-          image_url="${{ github.repository }}/mage-prod:${image_tag}"
-          image_version=$(jq -r .version < ./service/package.json)
-          echo "using image url ${image_url}"
-          echo "tag=${image_tag}" >> $GITHUB_OUTPUT
-          echo "url=ghcr.io/${image_url}" >> $GITHUB_OUTPUT
-          echo "version=${image_version}" >> $GITHUB_OUTPUT
+      - name: Docker - Install QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Docker - Install buildx
+        uses: docker/setup-buildx-action@v4
 
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
-          file: ./docker/server/Dockerfile
+          file: ${{ steps.image-info.outputs.dockerfile }}
           tags: ${{ steps.image-info.outputs.url }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: ${{ steps.image-info.outputs.tag != 'local' }}
           annotations: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ steps.image-info.outputs.version }}
+
+      - name: Extract package-lock
+        run: |
+          docker create --name mage-files ${{ steps.image-info.outputs.url }}
+          docker cp mage-files:/mage/instance/package-lock.json ./mage-instance.package-lock.json
+          docker rm mage-files
+
+      - name: Upload package-lock
+        uses: actions/upload-artifact@v7
+        with:
+          path: 'mage-instance.package-lock.json'
 
       - name: Scan the docker image with Trivy
         uses: aquasecurity/trivy-action@v0.35.0
