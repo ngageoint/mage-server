@@ -1,9 +1,11 @@
 <ng-template #breadcrumbActions>
-  <div class="nav-actions" *ngIf="hasLayerCreatePermission">
-    <button matButton="filled" (click)="newLayer()">
-      <mat-icon>add</mat-icon>New Layer
-    </button>
-  </div>
+  @if (hasLayerCreatePermission) {
+    <div class="nav-actions">
+      <button matButton="filled" (click)="newLayer()">
+        <mat-icon>add</mat-icon>New Layer
+      </button>
+    </div>
+  }
 </ng-template>
 
 <div class="layers-page">
@@ -21,34 +23,36 @@
         <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
         <mat-label>Search layers</mat-label>
         <input matInput [(ngModel)]="layerSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="layerSearch" (click)="onSearchCleared()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
+        @if (layerSearch) {
+          <button matSuffix matIconButton (click)="onSearchCleared()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
       </mat-form-field>
     </div>
 
-    <mat-nav-list *ngIf="filteredLayers?.length; else noLayers">
-      <mat-list-item
-        *ngFor="let layer of getPaginatedLayers()"
-        [routerLink]="layerRoute(layer)"
-      >
-        <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
-        <span matListItemTitle>{{ layer.name }}</span>
-        <span matListItemLine>
-          {{ layer.description || 'No description' }}<ng-container *ngIf="layer.type"> · {{ layer.type }}</ng-container>
-        </span>
-      </mat-list-item>
-    </mat-nav-list>
-
-    <ng-template #noLayers>
+    @if (filteredLayers?.length) {
+      <mat-nav-list>
+        @for (layer of getPaginatedLayers(); track layer.id) {
+          <mat-list-item [routerLink]="layerRoute(layer)">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
+            <span matListItemTitle>{{ layer.name }}</span>
+            <span matListItemLine>
+              {{ layer.description || 'No description' }}@if (layer.type) { · {{ layer.type }} }
+            </span>
+          </mat-list-item>
+        }
+      </mat-nav-list>
+    } @else {
       <div class="empty-state">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">layers</mat-icon>
-        <div class="empty-state-text" *ngIf="layerSearch; else noLayersFound">No layers match your search</div>
-        <ng-template #noLayersFound>
+        @if (layerSearch) {
+          <div class="empty-state-text">No layers match your search</div>
+        } @else {
           <div class="empty-state-text">No layers found</div>
-        </ng-template>
+        }
       </div>
-    </ng-template>
+    }
 
     <mat-paginator
       [length]="totalLayers"

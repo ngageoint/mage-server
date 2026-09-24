@@ -34,13 +34,13 @@ import { CreateEventDialogComponent } from './create-event/create-event.componen
 
 @NgModule({
     declarations: [
-        EventDashboardComponent,
         CreateEventDialogComponent,
         EventDetailsComponent,
         UploadFormDialogComponent
     ],
     imports: [
         CommonModule,
+        EventDashboardComponent,
         FormsModule,
         ReactiveFormsModule,
         RouterModule,

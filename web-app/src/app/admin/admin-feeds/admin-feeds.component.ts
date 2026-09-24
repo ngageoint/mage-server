@@ -8,12 +8,38 @@ import { AdminServiceDeleteComponent } from './admin-service/admin-service-delet
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service'
 import { SessionService } from 'mage-web-app/http/session.service'
+import { MatCardModule } from '@angular/material/card'
+import { MatTabsModule } from '@angular/material/tabs'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
+import { MatButtonModule } from '@angular/material/button'
+import { MatListModule } from '@angular/material/list'
+import { MatPaginatorModule } from '@angular/material/paginator'
+import { FormsModule } from '@angular/forms'
+import { RouterLink } from '@angular/router'
+import { SlicePipe } from '@angular/common'
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
 
 @Component({
     selector: 'admin-feeds',
     templateUrl: './admin-feeds.component.html',
     styleUrls: ['./admin-feeds.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatCardModule,
+      MatTabsModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+      MatButtonModule,
+      MatListModule,
+      MatPaginatorModule,
+      FormsModule,
+      RouterLink,
+      SlicePipe,
+      FeedIconModule
+    ]
 })
 export class AdminFeedsComponent implements OnInit, OnDestroy {
   breadcrumbs: AdminBreadcrumb[] = [{

@@ -30,7 +30,6 @@ import { RouterModule } from '@angular/router';
 
 @NgModule({
     declarations: [
-        LayerDashboardComponent,
         CreateLayerDialogComponent,
         LayerDetailsComponent,
         LayerPreviewComponent,
@@ -38,6 +37,7 @@ import { RouterModule } from '@angular/router';
     ],
     imports: [
         CommonModule,
+        LayerDashboardComponent,
         FormsModule,
         ReactiveFormsModule,
         MatDialogModule,
