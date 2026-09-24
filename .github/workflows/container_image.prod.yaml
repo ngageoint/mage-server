@@ -65,7 +65,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      packages: read
+      packages: write
     with:
       output: image
       platforms: linux/amd64,linux/arm64
