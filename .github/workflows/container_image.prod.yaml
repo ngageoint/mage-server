@@ -118,7 +118,8 @@ jobs:
       - name: Upload package-lock
         uses: actions/upload-artifact@v7
         with:
-          path: 'mage-instance.package-lock.json'
+          name: mage-instance.package-lock.json
+          path: mage-instance.package-lock.json
 
       - name: Scan the docker image with Trivy
         uses: aquasecurity/trivy-action@v0.35.0
