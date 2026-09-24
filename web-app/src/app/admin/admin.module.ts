@@ -28,7 +28,6 @@ import { InputMaskModule } from '@ngneat/input-mask';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin-shell/admin.component';
 import { AdminBreadcrumbModule } from './admin-breadcrumb/admin-breadcrumb.module';
-import { AdminPluginTabContentComponent } from './plugin-tab/plugin-tab-content.component';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AdminTeamsModule } from './admin-teams/admin-teams.module';
@@ -111,7 +110,6 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
   declarations: [
     SearchModalComponent,
     AdminComponent,
-    AdminPluginTabContentComponent,
     AdminAuthenticationComponent,
     AdminAuthenticationSettingsComponent,
     AuthenticationCreateComponent,
