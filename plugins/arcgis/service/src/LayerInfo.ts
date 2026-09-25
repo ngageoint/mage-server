@@ -12,6 +12,16 @@ export class LayerInfo {
     url: string;
 
     /**
+     * The url to the feature service that hosts this layer.
+     */
+    featureServiceUrl: string;
+
+    /**
+     * The configured name/id of this layer on its feature service.
+     */
+    layerName: string;
+
+    /**
      * The access token
      */
     token?: string;
@@ -34,11 +44,15 @@ export class LayerInfo {
     /**
      * Constructor.
      * @param {string} url The url to the feature layer.
+     * @param {string} featureServiceUrl The url to the feature service that hosts this layer.
+     * @param {string} layerName The configured name/id of this layer on its feature service.
      * @param {MageEventId[]} events The events that are synching to this layer.
      * @param {LayerInfoResult} layerInfo The layer info.
      */
-    constructor(url: string, events: MageEventId[], layerInfo: LayerInfoResult) {
+    constructor(url: string, featureServiceUrl: string, layerName: string, events: MageEventId[], layerInfo: LayerInfoResult) {
         this.url = url
+        this.featureServiceUrl = featureServiceUrl
+        this.layerName = layerName
 
         if (events && events.length > 0) {
             for (const event of events) {

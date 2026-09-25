@@ -207,15 +207,23 @@ export class ObservationProcessor {
 	public async getPushedObservations(eventId: MageEventId, paging: PagingParameters): Promise<PushedObservationsPage> {
 		const layerProcessors = this._layerProcessors.filter(layerProcessor => layerProcessor.layerInfo.hasEvent(eventId));
 
+		const layerCounts: PushedLayerCount[] = layerProcessors.map(layerProcessor => ({
+			url: layerProcessor.layerInfo.url,
+			featureServiceUrl: layerProcessor.layerInfo.featureServiceUrl,
+			layerName: layerProcessor.layerInfo.layerName,
+			count: 0
+		}));
+
 		const arcFeaturesByObservationId = new Map<string, { objectId: number, layerProcessor: FeatureLayerProcessor }>();
-		await Promise.all(layerProcessors.map(layerProcessor =>
+		await Promise.all(layerProcessors.map((layerProcessor, index) =>
 			layerProcessor.featureQuerier.queryObservationsForEvent(eventId, (results) => {
+				layerCounts[index].count += results.length;
 				results.forEach(({ observationId, objectId }) => arcFeaturesByObservationId.set(observationId, { objectId, layerProcessor }));
 			})
 		));
 
 		if (arcFeaturesByObservationId.size === 0) {
-			return { items: [], totalCount: 0, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+			return { items: [], totalCount: 0, pageIndex: paging.pageIndex, pageSize: paging.pageSize, layerCounts };
 		}
 
 		const obsRepo = await this._obsRepos(eventId);
@@ -258,7 +266,7 @@ export class ObservationProcessor {
 		}
 
 		const items = pageItems.map(item => item.pushed);
-		return { items, totalCount: pushedObservations.length, pageIndex: paging.pageIndex, pageSize: paging.pageSize };
+		return { items, totalCount: pushedObservations.length, pageIndex: paging.pageIndex, pageSize: paging.pageSize, layerCounts };
 	}
 
 	/**
@@ -363,7 +371,7 @@ export class ObservationProcessor {
 									const layerFields = await admin.updateLayer(service, featureLayerConfig, layerInfo, this._eventRepo)
 									layerInfoResult = { ...layerInfo, fields: layerFields } as LayerInfoResult;
 								}
-								const info = new LayerInfo(url, eventIds, layerInfoResult);
+								const info = new LayerInfo(url, service.url, featureLayer.name.toString(), eventIds, layerInfoResult);
 								const layerProcessor = new FeatureLayerProcessor(info, config, identityManager, this._console);
 								this._layerProcessors.push(layerProcessor);
 							}
@@ -558,11 +566,23 @@ export interface PushedAttachment {
 }
 
 /**
- * A page of pushed observations, newest-modified-first, plus the total count across all pages.
+ * The number of observations for an event found on one configured ArcGIS feature layer.
+ */
+export interface PushedLayerCount {
+	url: string
+	featureServiceUrl: string
+	layerName: string
+	count: number
+}
+
+/**
+ * A page of pushed observations, newest-modified-first, plus the total count across all pages,
+ * and the per-layer observation counts for the requested event.
  */
 export interface PushedObservationsPage {
 	items: PushedObservation[]
 	totalCount: number
 	pageIndex: number
 	pageSize: number
+	layerCounts: PushedLayerCount[]
 }
