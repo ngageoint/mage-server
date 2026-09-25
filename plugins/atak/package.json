@@ -1,0 +1,51 @@
+{
+  "name": "@ngageoint/mage.atak",
+  "version": "1.0.0",
+  "description": "The ATAK package is a Mage server plugin that provides feeds from ATAK/CoT (Android Tactical Assault Kit/Cursor-on-Target) sources.",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "icons",
+    "!**/*.test.*"
+  ],
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build:tsc": "tsc -b src",
+    "build": "tsc -b src",
+    "test:run": "jest lib",
+    "test": "tsc -b src && jest",
+    "clean": "rm -rf lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngageoint/mage-server.git"
+  },
+  "keywords": [
+    "mage",
+    "plugin",
+    "feeds",
+    "atak",
+    "cot",
+    "tak"
+  ],
+  "author": "National Geospatial-Intelligence Agency",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ngageoint/mage-server/issues"
+  },
+  "homepage": "https://github.com/ngageoint/mage-server#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/geojson": "7946.0.16",
+    "@types/jest": "^30.0.0",
+    "@types/json-schema": "7.0.15",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta"
+  }
+}
