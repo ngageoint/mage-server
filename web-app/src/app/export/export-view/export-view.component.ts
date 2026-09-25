@@ -89,7 +89,7 @@ export class ExportViewComponent implements OnInit, AfterViewInit {
         .map(team => ({ type: 'team' as const, name: team.name }))
 
       if (userIds.length) {
-        this.eventService.getMembers(event).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(users => {
+        this.eventService.getMembers(event.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(users => {
           const userLabels = users
             .filter(user => userIds.includes(user.id))
             .map(user => ({ type: 'user' as const, name: user.displayName || user.username }))

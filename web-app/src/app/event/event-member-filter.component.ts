@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, computed, effect, input, output, signal } from '@angular/core'
+import { Component, DestroyRef, ElementRef, ViewChild, computed, effect, inject, input, output, signal, untracked } from '@angular/core'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { COMMA, ENTER } from '@angular/cdk/keycodes'
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
@@ -7,9 +7,10 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { User } from '@ngageoint/mage.web-core-lib/user'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { Subject, debounceTime, of, switchMap } from 'rxjs'
 import { EventService } from './event.service'
+import { EventId } from '../entities/event/entities.event'
 import { Team } from '../entities/team/entities.team'
 
 const SEARCH_DEBOUNCE_MS = 250
@@ -47,9 +48,9 @@ interface MemberOptionGroup {
   ]
 })
 export class EventMemberFilterComponent {
-  event = input<any>()
+  eventId = input<EventId | null | undefined>()
   teams = input<Team[]>([])
-  filter = input<MemberFilterSelection | null>(null)
+  initialFilter = input<MemberFilterSelection | null>(null)
 
   memberFilterChanged = output<MemberFilterSelection>()
 
@@ -60,15 +61,15 @@ export class EventMemberFilterComponent {
   inputControl = new FormControl('')
   private queryText = toSignal(this.inputControl.valueChanges, { initialValue: '' })
 
-  private search$ = new Subject<{ event: any; teams: Team[]; term: string }>()
+  private search$ = new Subject<{ eventId: EventId | null | undefined; teams: Team[]; term: string }>()
   private searchResults = toSignal(
     this.search$.pipe(
       debounceTime(SEARCH_DEBOUNCE_MS),
-      switchMap(({ event, teams, term }) => {
-        if (!event || !teams.length) {
+      switchMap(({ eventId, teams, term }) => {
+        if (eventId == null || !teams.length) {
           return of([] as User[])
         }
-        return this.eventService.searchMembers(event, term)
+        return this.eventService.searchMembers(eventId, term)
       })
     ),
     { initialValue: [] as User[] }
@@ -76,8 +77,12 @@ export class EventMemberFilterComponent {
 
   selected = signal<MemberOption[]>([])
 
+  private destroyRef = inject(DestroyRef)
+  private initialized = false
+  private lastEventId: EventId | null | undefined
+
   private teamOptions = computed<MemberOption[]>(() =>
-    this.event() ? this.teams().map(t => this.teamToOption(t)) : []
+    this.eventId() != null ? this.teams().map(t => this.teamToOption(t)) : []
   )
 
   private userOptions = computed<MemberOption[]>(() =>
@@ -90,35 +95,36 @@ export class EventMemberFilterComponent {
 
   constructor(private eventService: EventService) {
     effect(() => {
-      const event = this.event()
+      const eventId = this.eventId()
       const teams = this.teams()
       const term = this.queryText() ?? ''
-      this.search$.next({ event, teams, term: typeof term === 'string' ? term : '' })
+      this.search$.next({ eventId, teams, term: typeof term === 'string' ? term : '' })
     })
 
-    effect((onCleanup) => {
-      const event = this.event()
+    effect(() => {
+      const eventId = this.eventId()
       const teams = this.teams()
-      const filter = this.filter()
-      this.selected.set([])
+      const initialFilter = this.initialFilter()
+      if (this.initialized) return
 
-      if (!event || !teams.length || !filter) {
+      if (!initialFilter) {
+        this.initialized = true
         return
       }
+      if (eventId == null || !teams.length) return
 
-      const teamSelections = this.teamOptions().filter(o => filter.teamIds.includes(o.id))
+      this.initialized = true
+      untracked(() => this.select(eventId, initialFilter))
+    })
 
-      if (filter.userIds.length) {
-        const subscription = this.eventService.getMembers(event).subscribe((users: User[]) => {
-          const userSelections = users
-            .filter(u => filter.userIds.includes(u.id))
-            .map(u => this.userToOption(u))
-          this.selected.set([...teamSelections, ...userSelections])
-        })
-        onCleanup(() => subscription.unsubscribe())
-      } else {
-        this.selected.set(teamSelections)
-      }
+    effect(() => {
+      const eventId = this.eventId()
+      untracked(() => {
+        if (this.lastEventId !== undefined && eventId !== this.lastEventId) {
+          this.selected.set([])
+        }
+        this.lastEventId = eventId
+      })
     })
   }
 
@@ -140,6 +146,24 @@ export class EventMemberFilterComponent {
 
   displayFn(): string {
     return ''
+  }
+
+  private select(eventId: EventId, filter: MemberFilterSelection): void {
+    const teamSelections = this.teamOptions().filter(o => filter.teamIds.includes(o.id))
+
+    if (!filter.userIds.length) {
+      this.selected.set(teamSelections)
+      return
+    }
+
+    this.eventService.getMembers(eventId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(users => {
+      if (this.eventId() !== eventId) return
+
+      const userSelections = users
+        .filter(u => filter.userIds.includes(u.id))
+        .map(u => this.userToOption(u))
+      this.selected.set([...teamSelections, ...userSelections])
+    })
   }
 
   private buildGroups(): MemberOptionGroup[] {

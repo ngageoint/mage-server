@@ -23,8 +23,9 @@ mat-sidenav-container {
 }
 
 .feed {
-  background: #e1e2e1;
+  background: var(--mat-sys-surface-container);
   order: 1;
+  width: 100%;
   max-width: 100%;
   height: 100%;
   display: flex;
@@ -36,5 +37,6 @@ mat-sidenav-container {
 .feeds-nav {
   --mat-sidenav-container-width: 500px;
   --mat-sidenav-container-shape: 0;
+  --mat-sidenav-container-background-color: var(--mat-sys-surface-container);
   max-width: 100%;
 }

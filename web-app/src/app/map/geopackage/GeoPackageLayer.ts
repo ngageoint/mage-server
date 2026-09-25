@@ -1,21 +1,21 @@
-import { TileLayer, TileLayerOptions, Util } from 'leaflet';
+import { Coords, TileLayer, TileLayerOptions, Util } from 'leaflet';
 import { SimpleStyle } from '../layers/layer.service';
 
-export interface GeoPackageLayerOptions extends TileLayerOptions {
-  token: string;
+export interface GeoPackageRasterLayerOptions extends TileLayerOptions {
+  token: string | null;
   layerId: number;
   table: any;
   style?: SimpleStyle
 }
 
-export class GeoPackageLayer extends TileLayer {
+export class GeoPackageRasterLayer extends TileLayer {
   layerId: number;
   pane: any;
   table: any;
   style?: SimpleStyle;
   type = 'GeoPackage';
 
-  constructor(urlTemplate: string, options: GeoPackageLayerOptions) {
+  constructor(urlTemplate: string, options: GeoPackageRasterLayerOptions) {
     super(urlTemplate, options);
 
     this.layerId = options.layerId;
@@ -24,15 +24,15 @@ export class GeoPackageLayer extends TileLayer {
     this.style = options.style || {};
   }
 
-  getTileUrl(coords): string {
-    // @ts-ignore
+  getTileUrl(coords: Coords): string {
     const url = super.getTileUrl(coords);
 
-    const options = this.options as GeoPackageLayerOptions;
+    const options = this.options as GeoPackageRasterLayerOptions;
 
-    const params: any = {
-      access_token: options.token
-    };
+    const params: any = {};
+    if (options.token) {
+      params.access_token = options.token;
+    }
 
     const style = this.style || {}
     if (style.stroke) {
@@ -50,7 +50,7 @@ export class GeoPackageLayer extends TileLayer {
 
   setStyle(style: SimpleStyle): void {
     if (style) {
-      this.style = Object.assign(this.style, style);
+      this.style = { ...this.style, ...style };
     } else {
       this.style = {};
     }

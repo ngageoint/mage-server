@@ -81,12 +81,10 @@ mat-panel-description {
   line-height: 14px;
 }
 
-mat-expansion-panel {
-  --mat-expansion-container-background-color: white;
-}
-
 mat-toolbar {
-  background: white;
+  background: var(--mat-sys-surface-container-lowest);
+  color: var(--mat-sys-primary);
+  --mat-icon-button-icon-color: var(--mat-sys-primary);
   gap: 8px;
 }
 
@@ -105,7 +103,7 @@ mat-form-field {
 .export {
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--mat-sys-surface-container-low);
   height: 100%;
 }
 
@@ -306,6 +304,18 @@ mat-paginator {
 .time-field {
   width: 100%;
   margin-bottom: -1.25em;
+}
+
+.keyword-filter-field {
+  width: 100%;
+}
+
+.keyword-hint-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: help;
 }
 
 .form__field {

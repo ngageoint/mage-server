@@ -65,7 +65,10 @@ import { ExportListItemComponent } from '../export/export-list/export-list-item.
 import { ExportViewComponent } from '../export/export-view/export-view.component';
 import { ExportEmptyComponent } from '../export/export-empty/export-empty.component';
 import { ObservationFieldFilterComponent } from '../observation/observation-filter/observation-field-filter.component';
+import { ObservationFilterDialogComponent } from '../observation/observation-filter/observation-filter.component';
 import { EventMemberFilterComponent } from '../event/event-member-filter.component';
+import { LocationFilterDialogComponent } from '../user/location/location-filter.component';
+import { SearchBarComponent } from '../search-bar/search-bar.component';
 
 import { MapClipModule } from '../map/clip/map-clip.module';
 import { GeometryModule } from '../geometry/geometry.module';
@@ -118,7 +121,6 @@ import { ObservationViewPasswordComponent } from '../observation/observation-vie
 import { PasswordPipe } from '../observation/observation-view/observation-view-password/password.pipe';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
 import { NavigationComponent } from '../navigation/navigation.component';
-import { FilterComponent } from '../filter/filter.component';
 import { PreferencesComponent } from '../preferences/preferences.component';
 import { PollingIntervalComponent } from '../preferences/polling-interval/polling-interval.component';
 import { TimeFormatComponent } from '../preferences/time-format/time-format.component';
@@ -131,7 +133,6 @@ import { UserResolver } from '../ingress/user.resolver';
 import { HomeGuard } from '../ingress/home-guard.service';
 import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
 import { IngressModule } from '../ingress/ingress.module';
-import { FilterControlComponent } from '../map/controls/filter.component';
 import { MatMenuModule as MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 
@@ -204,11 +205,9 @@ class AngularModule { }
     AddObservationComponent,
     ContactDialogComponent,
     CoordinateSystemComponent,
-    DatetimePickerComponent,
     DMSValidatorDirective,
     ExportComponent,
     ExportCreateComponent,
-    ObservationFieldFilterComponent,
     ExportEmptyComponent,
     ExportListComponent,
     ExportListItemComponent,
@@ -216,15 +215,12 @@ class AngularModule { }
     FeedItemComponent,
     FeedItemMapPopupComponent,
     FeedListComponent,
-    FilterComponent,
-    FilterControlComponent,
     HomeComponent,
     LayerContentComponent,
     LayerHeaderComponent,
     LayersComponent,
     LayersControlComponent,
     LocationComponent,
-    MapComponent,
     MapComponent,
     MGRSValidatorDirective,
 
@@ -266,7 +262,12 @@ class AngularModule { }
   imports: [
     AngularModule,
     ColorPickerModule,
+    DatetimePickerComponent,
     EventMemberFilterComponent,
+    LocationFilterDialogComponent,
+    ObservationFieldFilterComponent,
+    ObservationFilterDialogComponent,
+    SearchBarComponent,
     FeedIconModule,
     FeedItemSummaryModule,
     GeometryModule,

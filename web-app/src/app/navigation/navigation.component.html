@@ -9,9 +9,6 @@
     <button class="event-title" [cdkMenuTriggerFor]="eventPanel" [cdkMenuPosition]="eventMenuPosition" (cdkMenuOpened)="onEventMenuOpened()">
       <span class="filter-event">{{ filteredEvent?.name || (eventsLoaded ? 'Select Event' : '') }}</span>
       <mat-icon>arrow_drop_down</mat-icon>
-      <span *ngIf="filteredTeams" class="filter-teams"><span>> {{ filteredTeams }}</span></span>
-      <span *ngIf="filteredInterval" class="filter-interval">
-        {{ filteredInterval }}</span>
     </button>
 
     <div class="collapsed-menu">

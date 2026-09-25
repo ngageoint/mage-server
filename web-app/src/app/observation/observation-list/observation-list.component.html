@@ -1,105 +1,70 @@
 <div class="observation-feed">
-  <mat-toolbar class="observation-feed-toolbar">
-    <span>Observations</span>
+  <mat-toolbar class="toolbar">
+    <div class="toolbar-text">
+      <div class="toolbar-text__title">
+        Observations
+        <mat-icon *ngIf="stale" class="stale-icon material-symbols-outlined" matTooltip="Results may be stale, last refresh failed">sync</mat-icon>
+      </div>
+      <div class="toolbar-text__subtitle">
+        <span *ngIf="observationCount != null">{{observationCount}} ·</span>{{filterTimerange}}
+        <span *ngIf="activeFilters.length" class="filter-icons">
+          <mat-icon *ngFor="let filter of activeFilters" class="filter-icon" [matTooltip]="filter.tooltip">{{filter.icon}}</mat-icon>
+        </span>
+      </div>
+    </div>
+    <button matIconButton (click)="openFilterDialog()">
+      <mat-icon [class.material-icons-outlined]="!filterCount" [matTooltip]="filterCount | i18nPlural: filterPluralMapping">filter_alt</mat-icon>
+    </button>
   </mat-toolbar>
 
-  <div class="actions">
-    <mat-chip-listbox selectable="true">
-      <mat-chip-option [selected]="filter === 'all'" (click)="filterChanged('all')">
-        All
-      </mat-chip-option>
-      <mat-chip-option [selected]="filter === 'favorite'" (click)="filterChanged('favorite')">
-        Favorites
-      </mat-chip-option>
-      <mat-chip-option [selected]="filter === 'important'" (click)="filterChanged('important')">
-        Important
-      </mat-chip-option>
-      <mat-chip-option [selected]="filter === 'attachments'" (click)="filterChanged('attachments')">
-        Attachments
-      </mat-chip-option>
-    </mat-chip-listbox>
-  </div>
-
-  <div class="feed-pages">
-    <mat-form-field class="feed-pages__select" appearance="outline">
-      <mat-label>Observation Page</mat-label>
-      <mat-select [(ngModel)]="currentObservationPage">
-        <mat-option *ngFor="
-            let observationPage of observationPages;
-            index as i;
-            trackBy: trackByPageId
-          " [value]="i">
-          {{ observationPage[0]?.properties?.timestamp | moment : 'fromNow' }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+  <div class="search-area">
+    <search-bar placeholder="Search observations..." (searchChange)="onSearch($event)"></search-bar>
   </div>
 
   <div class="page-container">
-    <div *ngIf="loaded; else mask">
-      <ng-container *ngFor="
-          let observation of observationPages[currentObservationPage];
-          trackBy: trackByObservationId
-        ">
-        <div class="feed-observation">
-          <observation-list-item [observation]="observation" [event]="event"></observation-list-item>
-        </div>
+    <ng-container *ngIf="searchError; else content">
+      <div class="list__empty">
+        <span class="material-symbols-outlined icon">error_outline</span>
+        <div class="list__empty-headline">Unable to Load Observations</div>
+        <div class="list__empty-subheader">Something went wrong while searching. Please try again.</div>
+        <button matButton (click)="retrySearch()">Retry</button>
+      </div>
+    </ng-container>
+    <ng-template #content>
+      <ng-container *ngIf="loaded; else mask">
+        <ng-container *ngIf="observations.length; else empty">
+          <ng-container *ngFor="let observation of observations; trackBy: trackByObservationId">
+            <div class="feed-observation">
+              <observation-list-item [observation]="observation" [event]="event"></observation-list-item>
+            </div>
+          </ng-container>
+        </ng-container>
       </ng-container>
-    </div>
+    </ng-template>
   </div>
+
+  <mat-paginator
+    [length]="totalObservations"
+    [pageSize]="pageSize"
+    [pageIndex]="currentPageIndex"
+    [pageSizeOptions]="[25, 50, 100]"
+    (page)="onPageChange($event)"
+    aria-label="Select page">
+  </mat-paginator>
 </div>
 
+<ng-template #empty>
+  <div class="list__empty">
+    <span class="material-symbols-outlined icon">distance</span>
+    <div class="list__empty-headline">No Observations</div>
+    <div class="list__empty-subheader">Try adjusting your filters or search term.</div>
+  </div>
+</ng-template>
+
 <ng-template #mask>
-  <div *ngFor="let i of [].constructor(20); trackBy: trackByPageId">
-    <mat-card class="feed-observation loading">
-      <div class="item-header">
-        <div class="item-header-content">
-          <div class="item-overline">
-            <div>
-              <span>Display Name</span>
-              <span>·</span>
-              <span>JUL 11 2012 10:00 AM</span>
-            </div>
-          </div>
-
-          <div class="item-header-text">Primary Value</div>
-
-          <div class="item-subhead">Secondary Value</div>
-        </div>
-
-        <div>
-          <mat-icon class="item-thumbnail">place</mat-icon>
-        </div>
-      </div>
-
-      <mat-card-footer>
-        <div class="actions">
-          <div class="actions-buttons">
-            <button matButton disabled class="actions__location-button">
-              <mat-icon class="actions__location-icon">my_location</mat-icon>
-              <span class="actions__location-text">0.000000, 0.000000</span>
-            </button>
-          </div>
-
-          <div class="actions-icons">
-            <div>
-              <button matIconButton disabled>
-                <mat-icon>flag</mat-icon>
-              </button>
-            </div>
-
-            <div class="actions__favorite">
-              <button matIconButton disabled>
-                <mat-icon>favorite</mat-icon>
-              </button>
-            </div>
-
-            <button matIconButton disabled>
-              <mat-icon>save_alt</mat-icon>
-            </button>
-          </div>
-        </div>
-      </mat-card-footer>
-    </mat-card>
+  <div class="list__empty">
+    <mat-progress-spinner mode="indeterminate" diameter="48" strokeWidth="4"></mat-progress-spinner>
+    <div class="list__empty-headline">One moment…</div>
+    <div class="list__empty-subheader">Gathering your observations</div>
   </div>
 </ng-template>

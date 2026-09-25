@@ -1,7 +1,7 @@
 :host {
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: var(--mat-sys-surface-container-low);
   height: 100%;
 }
 
@@ -13,7 +13,6 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 4px;
   padding: 16px;
 }
 
@@ -21,19 +20,24 @@
   font-size: 96px;
   width: 96px;
   height: 96px;
-  margin-bottom: 4px;
-  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 16px;
+  font-variation-settings: 'fill' 0, 'wght' 300, 'grad' 0, 'opsz' 96;
+  color: var(--mat-sys-outline);
 }
 
 .empty-state-title {
-  margin: 0;
-  font-size: var(--mat-sys-title-large-size);
-  color: var(--mat-sys-on-surface);
+  margin: 0 0 8px;
+  font: 400 24px / 32px Roboto, "Helvetica Neue", sans-serif;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .empty-state-text {
-  margin: 4px 0 32px;
-  font-size: var(--mat-sys-body-medium-size);
+  margin: 0;
+  font: 400 14px / 20px Roboto, "Helvetica Neue", sans-serif;
   color: var(--mat-sys-on-surface-variant);
   max-width: 350px;
+}
+
+.empty-state button {
+  margin-top: 16px;
 }

@@ -1,5 +1,5 @@
 import { Injectable, ComponentFactoryResolver, Injector, ApplicationRef } from '@angular/core';
-import { LeafletMouseEvent, Layer, Marker } from 'leaflet';
+import { LeafletMouseEvent, Layer } from 'leaflet';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { Feature } from 'geojson';
@@ -48,11 +48,11 @@ export class MapPopupService {
       .openPopup();
   }
 
-  public registerFeedItem(marker: Marker, feed: Feed, item: Feature): void {
+  public registerFeedItem(marker: Layer, feed: Feed, item: Feature): void {
     marker.on('click', ($event: LeafletMouseEvent) => this.popupFeedItem($event.target, feed, item));
   }
 
-  public popupFeedItem(marker: Marker, feed: Feed, item: Feature): void {
+  public popupFeedItem(marker: Layer, feed: Feed, item: Feature): void {
     const componentFactory = this.componentFactoryResolver.resolveComponentFactory(FeedItemMapPopupComponent);
     const component = componentFactory.create(this.injector);
     component.instance.item = item;

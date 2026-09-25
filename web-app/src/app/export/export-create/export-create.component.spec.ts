@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -50,7 +50,7 @@ describe('ExportCreateComponent', () => {
 
   const exportService = jasmine.createSpyObj('ExportService', ['export']);
   const eventService = jasmine.createSpyObj('EventService', ['query']);
-  const filterService = jasmine.createSpyObj('FilterService', ['getEvent', 'getTeams', 'getUsers']);
+  const filterService = jasmine.createSpyObj('FilterService', ['getEvent', 'getObservationFilter', 'getLocationFilter']);
   const observationService = jasmine.createSpyObj('ObservationService', ['getObservationsPage']);
   const locationService = jasmine.createSpyObj('LocationService', ['getUserLocationsCount']);
   const sessionService = { user: { id: 'user1' } };
@@ -59,8 +59,8 @@ describe('ExportCreateComponent', () => {
     exportService.export.and.returnValue(of({}));
     eventService.query.and.returnValue(of([event]));
     filterService.getEvent.and.returnValue(event);
-    filterService.getTeams.and.returnValue([]);
-    filterService.getUsers.and.returnValue([]);
+    filterService.getObservationFilter.and.returnValue(null);
+    filterService.getLocationFilter.and.returnValue(null);
     observationService.getObservationsPage.and.returnValue(of({ items: [], totalCount: 0, links: { next: null, prev: null } }));
     locationService.getUserLocationsCount.and.returnValue(of({ totalCount: 0 }));
     exportService.export.calls.reset();
@@ -175,12 +175,149 @@ describe('ExportCreateComponent', () => {
     expect(request.observations.startDate).not.toEqual(request.locations.startDate);
   });
 
-  it('includes keyword and condition in the export request from the field filter', () => {
+  it('includes keyword and condition in the export request from the field filter', fakeAsync(() => {
     component.eventControl.setValue(event);
-    component.onFilterChanged({ keyword: 'wildfire' });
+    component.keywordControl.setValue('wildfire');
+    tick(300);
     component.submit();
     const request = exportService.export.calls.mostRecent().args[1];
     expect(request.observations.keyword).toEqual('wildfire');
+  }));
+
+  it('applies the same keyword typed again after switching events', fakeAsync(() => {
+    component.eventControl.setValue(event);
+    component.keywordControl.setValue('wildfire');
+    tick(300);
+
+    component.onEventSelected({ option: { value: event } } as any);
+    component.keywordControl.setValue('wildfire');
+    tick(300);
+    component.submit();
+
+    const request = exportService.export.calls.mostRecent().args[1];
+    expect(request.observations.keyword).toEqual('wildfire');
+  }));
+
+  describe('defaults from the current filters', () => {
+    const condition = { formId: 10, field: 'field1', operator: '=', value: 'open' } as any;
+
+    function createWithFilters(observationFilter: any, locationFilter: any = null): ExportCreateComponent {
+      filterService.getObservationFilter.and.returnValue(observationFilter);
+      filterService.getLocationFilter.and.returnValue(locationFilter);
+      const seeded = TestBed.createComponent(ExportCreateComponent);
+      seeded.detectChanges();
+      return seeded.componentInstance;
+    }
+
+    it('starts with no filters when there are none', () => {
+      const seeded = createWithFilters(null);
+
+      expect(seeded.hasAttachments).toBe(false);
+      expect(seeded.isFavorite).toBe(false);
+      expect(seeded.isImportant).toBe(false);
+      expect(seeded.memberFilter).toBeNull();
+      expect(seeded.keywordControl.value).toBe('');
+      expect(seeded.filter).toBeNull();
+    });
+
+    it('seeds the attachment, favorite and important toggles', () => {
+      const seeded = createWithFilters({ timeInterval: {}, hasAttachments: true, isUserFavorite: true, isFlaggedImportant: true });
+
+      expect(seeded.hasAttachments).toBe(true);
+      expect(seeded.isFavorite).toBe(true);
+      expect(seeded.isImportant).toBe(true);
+    });
+
+    it('seeds the observation and location member filters separately', () => {
+      const seeded = createWithFilters(
+        { timeInterval: {}, memberFilter: { teamIds: ['t1'], userIds: [] } },
+        { timeInterval: {}, memberFilter: { teamIds: [], userIds: ['u1'] } }
+      );
+
+      expect(seeded.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
+      expect(seeded.locationMemberFilter).toEqual({ teamIds: [], userIds: ['u1'] });
+    });
+
+    it('seeds the keyword and condition into the field filter', () => {
+      const seeded = createWithFilters({ timeInterval: {}, fieldFilter: { keyword: 'wildfire', condition } });
+
+      expect(seeded.keywordControl.value).toBe('wildfire');
+      expect(seeded.currentCondition).toEqual(condition);
+      expect(seeded.filter).toEqual({ keyword: 'wildfire', condition });
+    });
+
+    it('sends the seeded filters in the export request', () => {
+      const seeded = createWithFilters({
+        timeInterval: {},
+        hasAttachments: true,
+        isUserFavorite: true,
+        isFlaggedImportant: true,
+        memberFilter: { teamIds: ['t1'], userIds: [] },
+        fieldFilter: { keyword: 'wildfire', condition }
+      });
+
+      seeded.submit();
+
+      const request = exportService.export.calls.mostRecent().args[1];
+      expect(request.observations.hasAttachments).toBe(true);
+      expect(request.observations.favorites).toBe(true);
+      expect(request.observations.important).toBe(true);
+      expect(request.observations.teams).toEqual(['t1']);
+      expect(request.observations.keyword).toEqual('wildfire');
+      expect(request.observations.condition).toEqual(condition);
+    });
+
+    it('requests the preview with the seeded filters', () => {
+      observationService.getObservationsPage.calls.reset();
+
+      createWithFilters({ timeInterval: {}, isFlaggedImportant: true, fieldFilter: { keyword: 'wildfire' } });
+
+      const options = observationService.getObservationsPage.calls.mostRecent().args[1];
+      expect(options.important).toBe(true);
+      expect(options.filter).toEqual({ keyword: 'wildfire', condition: undefined });
+    });
+
+    it('clears the seeded filters when a different event is selected', () => {
+      const seeded = createWithFilters({
+        timeInterval: {},
+        hasAttachments: true,
+        memberFilter: { teamIds: ['t1'], userIds: [] },
+        fieldFilter: { keyword: 'wildfire', condition }
+      });
+
+      seeded.onEventSelected({ option: { value: event } } as any);
+
+      expect(seeded.memberFilter).toBeNull();
+      expect(seeded.keywordControl.value).toBe('');
+      expect(seeded.currentCondition).toBeUndefined();
+      expect(seeded.filter).toBeNull();
+    });
+  });
+
+  it('clears the condition chips when the event is selected', () => {
+    const conditionFilter = jasmine.createSpyObj('ObservationFieldFilterComponent', ['clear']);
+    component.conditionFilter = conditionFilter;
+    component.eventControl.setValue(event);
+
+    component.onEventSelected({ option: { value: event } } as any);
+
+    expect(conditionFilter.clear).toHaveBeenCalled();
+  });
+
+  it('exports the day shown in the date pickers when a custom time range is left untouched', () => {
+    component.eventControl.setValue(event);
+    component.observationExportTime = 'custom';
+    component.locationExportTime = 'custom';
+
+    component.submit();
+
+    const request = exportService.export.calls.mostRecent().args[1];
+    const start = component.defaultStartDate.toISOString();
+    const end = component.defaultEndDate.toISOString();
+    expect(request.observations.startDate).toEqual(start);
+    expect(request.observations.endDate).toEqual(end);
+    expect(request.locations.startDate).toEqual(start);
+    expect(request.locations.endDate).toEqual(end);
   });
 
   it('keeps observation and location member filters independent', () => {

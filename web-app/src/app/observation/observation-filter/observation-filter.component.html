@@ -1,0 +1,56 @@
+<h2 mat-dialog-title>Observation Filter</h2>
+
+<div mat-dialog-content>
+  <div class="dialog-content">
+    <div>
+      <div class="mat-body-2">Time Range</div>
+      <mat-form-field class="time-field" appearance="fill">
+        <mat-select [(value)]="intervalChoice" [compareWith]="compareIntervalChoices">
+          @for (choice of intervalChoices; track choice.filter) {
+            <mat-option [value]="choice">{{choice.label}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (intervalChoice().filter === 'custom') {
+      <div class="datetime">
+        <div class="datetime__pickers">
+          <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone()" (dateTimeChange)="onStartDate($event)"></datetime-picker>
+          <datetime-picker title="End" [datetime]="defaultEndDate" [timezone]="timeZone()" (dateTimeChange)="onEndDate($event)"></datetime-picker>
+        </div>
+        <button matButton="outlined" class="timezone__button" (click)="onTimezone()">
+          @if (timeZone() === 'local') {
+            <span>Local ({{localOffset}})</span>
+          } @else {
+            <span>GMT (+00:00)</span>
+          }
+        </button>
+      </div>
+    }
+
+    <event-member-filter [eventId]="mageEvent?.id" [teams]="teams" [initialFilter]="initialMemberFilter" (memberFilterChanged)="onMemberFilterChanged($event)"></event-member-filter>
+
+    <div>
+      <div class="mat-body-2 filter-label">Filter by</div>
+      <div class="filter-toggles">
+        <button matIconButton [class.filter-toggle--active]="hasAttachments()" (click)="hasAttachments.set(!hasAttachments())" matTooltip="Has Attachments" matTooltipPosition="above">
+          <mat-icon [class.material-icons-outlined]="!hasAttachments()">attach_file</mat-icon>
+        </button>
+        <button matIconButton [class.filter-toggle--active]="isUserFavorite()" (click)="isUserFavorite.set(!isUserFavorite())" matTooltip="My Favorites" matTooltipPosition="above">
+          <mat-icon>{{ isUserFavorite() ? 'favorite' : 'favorite_border' }}</mat-icon>
+        </button>
+        <button matIconButton [class.filter-toggle--active]="isFlaggedImportant()" (click)="isFlaggedImportant.set(!isFlaggedImportant())" matTooltip="Important" matTooltipPosition="above">
+          <mat-icon>{{ isFlaggedImportant() ? 'flag' : 'outlined_flag' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <observation-field-filter [forms]="mageEvent?.forms" [condition]="condition()" [showIncompleteError]="showIncompleteConditionError()" (conditionChanged)="onConditionChanged($event)"></observation-field-filter>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button matButton (click)="onCancel()">Cancel</button>
+  <button matButton="filled" cdkFocusInitial (click)="onFilter()">Filter</button>
+</div>
