@@ -22,7 +22,7 @@ on:
 
 permissions:
   contents: read
-  packages: write
+  packages: read
 
 jobs:
   image-info:
@@ -66,7 +66,9 @@ jobs:
     needs: image-info
     uses: docker/github-builder/.github/workflows/build.yml@v1
     permissions:
+      contents: read
       id-token: write
+      packages: write
     with:
       output: image
       platforms: linux/amd64,linux/arm64
