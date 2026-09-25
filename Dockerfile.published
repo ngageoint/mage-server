@@ -13,20 +13,23 @@ ARG ARCGIS_VERSION="latest"
 ARG SFTP_VERSION="latest"
 ARG MSI_VERSION="latest"
 ARG IMAGE_VERSION="latest"
+ARG CLAMAV_VERSION=""
 ARG MAGE_INSTANCE
 WORKDIR ${MAGE_INSTANCE}
 
 RUN set -eux; \
-  npm i --omit=dev @ngageoint/mage.service@${CORE_VERSION}; \
-  npm i --omit=dev @ngageoint/mage.web-app@${CORE_VERSION}; \
+  npm i --omit dev @ngageoint/mage.service@${CORE_VERSION}; \
+  npm i --omit dev @ngageoint/mage.web-app@${CORE_VERSION}; \
   [ -n "${ARCGIS_VERSION}" ] && \
-  npm i --omit=dev @ngageoint/mage.arcgis.service@${ARCGIS_VERSION} @ngageoint/mage.arcgis.web-app@${ARCGIS_VERSION}; \
+  npm i --omit dev @ngageoint/mage.arcgis.service@${ARCGIS_VERSION} @ngageoint/mage.arcgis.web-app@${ARCGIS_VERSION}; \
   [ -n "${SFTP_VERSION}" ] && \
-  npm i --omit=dev @ngageoint/mage.sftp.service@${SFTP_VERSION} @ngageoint/mage.sftp.web@${SFTP_VERSION}; \
+  npm i --omit dev @ngageoint/mage.sftp.service@${SFTP_VERSION} @ngageoint/mage.sftp.web@${SFTP_VERSION}; \
   [ -n "${MSI_VERSION}" ] && \
-  npm i --omit=dev @ngageoint/mage.nga-msi@${MSI_VERSION}; \
+  npm i --omit dev @ngageoint/mage.nga-msi@${MSI_VERSION}; \
   [ -n "${IMAGE_VERSION}" ] && \
-  npm i --omit=dev @ngageoint/mage.image.service@${IMAGE_VERSION}; \
+  npm i --omit dev @ngageoint/mage.image.service@${IMAGE_VERSION}; \
+  [ -n "${CLAMAV_VERSION}" ] && \
+  npm i --omit dev @ngageoint/mage.clamav.service@${CLAMAV_VERSION}; \
   ln -sfn ./node_modules/.bin/mage.service ./mage.service
 
 FROM ${DIST_IMAGE}
