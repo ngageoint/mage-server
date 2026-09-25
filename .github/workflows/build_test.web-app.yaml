@@ -1,6 +1,7 @@
 name: build and test web-app
 
 on:
+  push:
   workflow_dispatch:
   workflow_call:
   pull_request:

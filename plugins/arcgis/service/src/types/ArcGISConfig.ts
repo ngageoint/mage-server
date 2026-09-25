@@ -16,7 +16,7 @@ export interface FeatureServiceConfig {
     portalUrl?: string
 
     /**
-    * Serialized ArcGISIdentityManager
+    * Serialized ArcGISIdentityManager, encrypted via CredentialEncryption.ts
     */
     identityManager: string
 

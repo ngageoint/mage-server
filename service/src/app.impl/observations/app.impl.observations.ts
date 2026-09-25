@@ -13,6 +13,14 @@ import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
 
 const pipeline = util.promisify(stream.pipeline)
 
+function principalIdentifier(req: api.SaveObservationRequest): string {
+  const principal = req.context.requestingPrincipal() as { id?: unknown, username?: unknown } | null | undefined
+  if (principal && typeof principal === 'object') {
+    return String(principal.username ?? principal.id ?? 'unknown')
+  }
+  return 'unknown'
+}
+
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
   return async function allocateObservationId(req: api.AllocateObservationIdRequest): ReturnType<api.AllocateObservationId> {
     const denied = await permissionService.ensureCreateObservationPermission(req.context)
@@ -25,7 +33,7 @@ export function AllocateObservationId(permissionService: api.ObservationPermissi
   }
 }
 
-export function SaveObservation(permissionService: api.ObservationPermissionService, userRepo: UserRepository): api.SaveObservation {
+export function SaveObservation(permissionService: api.ObservationPermissionService, userRepo: UserRepository, log: Logger = NoopLogger): api.SaveObservation {
   return async function saveObservation(req: api.SaveObservationRequest): ReturnType<api.SaveObservation> {
     const repo = req.context.observationRepository
     const mod = req.observation
@@ -42,6 +50,9 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
     }
     const saved = await repo.save(obs)
     if (saved instanceof Observation) {
+      if (!existingObservation) {
+        log.info(`${principalIdentifier(req)} added observation: ${saved.id}`)
+      }
       const userIds = { creator: saved.userId, importantFlagger: saved.important?.userId }
       const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
       const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
@@ -70,8 +81,8 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
       return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
     }
     const content = req.content
-    if (content.mediaType !== attachmentBefore.contentType || content.name !== attachmentBefore.name) {
-      const errorMessage = `attachment upload error - uploaded content name and media type ${content.name}|${content.mediaType} must match attachment ${attachmentBefore.name}|${attachmentBefore.contentType}`
+    if (content.mediaType !== attachmentBefore.contentType) {
+      const errorMessage = `attachment upload error - uploaded media type ${content.mediaType} must match attachment ${attachmentBefore.contentType}`
       return AppResponse.error(invalidInput(errorMessage))
     }
     const denied = await permissionService.ensureStoreAttachmentContentPermission(req.context, obsBefore, attachmentBefore.id)
