@@ -1,7 +1,5 @@
-import { User } from "@ngageoint/mage.web-core-lib/user"
-import { filterChanges } from "../event/event.types"
-import { MageEvent, Form } from "../entities/event/entities.event"
-import { Team } from "../entities/team/entities.team"
+import { MemberFilterSelection } from "../event/event-member-filter.component"
+import { ObservationFieldFilter } from "../entities/observation/filter/entities.observation.filter"
 
 export type FilterChoice = {
   filter: string | number
@@ -32,32 +30,33 @@ export type IntervalOptions = {
   localTime?: Boolean
 }
 
-export type SearchInterval = {
-    start: string
-    end: string
-}
-
 export type Interval = {
   choice?: FilterChoice
   options?: IntervalOptions
 }
 
-export type Filter = {
-  event?: MageEvent
-  teams?: Team[]
-  users?: User[]
-  forms?: Form[]
-  intervalChoice?: FilterChoice
-  timeInterval?: Interval
-  actionFilter?: string
+export type EventObservationFilter = {
+  timeInterval: Interval
+  memberFilter?: MemberFilterSelection | null
+  hasAttachments?: boolean
+  isUserFavorite?: boolean
+  isFlaggedImportant?: boolean
+  fieldFilter?: ObservationFieldFilter | null
 }
 
-export type Changes = {
-  event?: filterChanges
-  teams?: filterChanges
-  users?: filterChanges
-  forms?: filterChanges
-  timeInterval?: Interval
-  actionFilter?: string
-  intervalChoice?: FilterChoice
+export type EventLocationFilter = {
+  timeInterval: Interval
+  memberFilter?: MemberFilterSelection | null
+}
+
+const DEFAULT_TIME_INTERVAL: Interval = {
+  choice: INTERVAL_CHOICES[1]
+}
+
+export const DEFAULT_OBSERVATION_FILTER: EventObservationFilter = {
+  timeInterval: DEFAULT_TIME_INTERVAL
+}
+
+export const DEFAULT_LOCATION_FILTER: EventLocationFilter = {
+  timeInterval: DEFAULT_TIME_INTERVAL
 }

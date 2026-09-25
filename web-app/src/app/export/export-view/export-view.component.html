@@ -4,7 +4,13 @@
       <button matIconButton (click)="onClose()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <span>Export</span>
+      <span class="toolbar__title">Export</span>
+      <a matIconButton *ngIf="item.status === exportStatus.Completed" href="{{item.url}}?access_token={{token}}" matTooltip="Download" aria-label="Download">
+        <mat-icon class="material-icons-outlined">download</mat-icon>
+      </a>
+      <button matIconButton (click)="deleteExport(item)" matTooltip="Delete" aria-label="Delete">
+        <mat-icon class="material-icons-outlined">delete</mat-icon>
+      </button>
     </mat-toolbar-row>
   </mat-toolbar>
   <mat-card class="card">
@@ -128,14 +134,6 @@
       </div>
 
     </mat-card-content>
-    <mat-card-actions align="end">
-      <button matButton (click)="deleteExport(item)">
-        Delete
-      </button>
-      <a matButton *ngIf="item.status === exportStatus.Completed" href="{{item.url}}?access_token={{token}}">
-        Download
-      </a>
-    </mat-card-actions>
   </mat-card>
 </div>
 

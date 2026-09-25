@@ -1,48 +1,35 @@
-<div class="search-control" *ngIf="mapSettings?.webSearchType !== 'NONE'">
-  <button
-    matMiniFab
-    class="map-control-fab"
-    [ngClass]="{ 'is-active': searchState === SearchState.ON }"
-    matTooltip="Address / Place Name Search"
-    matTooltipPosition="after"
-    (click)="searchToggle()">
-    <mat-icon class="map-control-fab__icon">search</mat-icon>
-  </button>
-
-  <div [hidden]="searchState === SearchState.OFF">
-    <mat-card class="search-field">
-      <mat-form-field appearance="outline" class="search-field__form">
-        <mat-label>Address / Place Name</mat-label>
-
-        <input
-          matInput
-          #searchInput
-          type="search"
-          (keydown.enter)="search(searchInput.value)"/>
-
-        <button
-          *ngIf="!searching"
-          matIconButton
-          matSuffix
-          type="button"
-          (click)="clear($event, searchInput)">
-          <mat-icon>cancel</mat-icon>
+<div class="search-wrapper" *ngIf="mapSettings?.webSearchType !== 'NONE'">
+  <div class="search-pill" [class.expanded]="searchState === SearchState.ON" [class.results]="searchResults.length && searchState === SearchState.ON">
+    <div class="search-expand" [class.expanded]="searchState === SearchState.ON">
+      <input #searchInput class="search-input" placeholder="Address / Place Name" type="text"
+             autocomplete="off"
+             [tabindex]="searchState === SearchState.ON ? 0 : -1"
+             (keydown.enter)="search(searchInput.value)">
+      <div class="search-action">
+        <mat-spinner *ngIf="searching" diameter="20"></mat-spinner>
+        <button *ngIf="!searching" matIconButton class="search-clear"
+                [tabindex]="searchState === SearchState.ON ? 0 : -1"
+                (click)="clear($event, searchInput)">
+          <mat-icon>close</mat-icon>
         </button>
-
-        <mat-spinner *ngIf="searching" diameter="24" matSuffix></mat-spinner>
-      </mat-form-field>
-
-      <div class="search-results" [hidden]="!searchResults.length">
-        <mat-list #searchList>
-          <mat-list-item
-            matRipple
-            *ngFor="let result of searchResults"
-            (click)="searchResultClick(result)">
-            <mat-icon matListItemIcon>place</mat-icon>
-            <span matListItemTitle>{{ result.name }}</span>
-          </mat-list-item>
-        </mat-list>
       </div>
+    </div>
+    <button matMiniFab class="map-control-fab search-toggle"
+            matTooltip="Address / Place Name Search"
+            matTooltipPosition="before"
+            [matTooltipDisabled]="searchState === SearchState.ON"
+            (click)="searchToggle()">
+      <mat-icon fontSet="material-symbols-outlined">map_search</mat-icon>
+    </button>
+  </div>
+  <div class="search-results-wrapper" [class.results-hidden]="!searchResults.length || searchState === SearchState.OFF">
+    <mat-card class="search-results">
+      <mat-list #searchList>
+        <mat-list-item matRipple *ngFor="let result of searchResults" (click)="searchResultClick(result)">
+          <mat-icon matListItemIcon>place</mat-icon>
+          <span matListItemTitle>{{result.name}}</span>
+        </mat-list-item>
+      </mat-list>
     </mat-card>
   </div>
 </div>

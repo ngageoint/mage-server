@@ -1,81 +1,73 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild
+  booleanAttribute,
+  input,
+  linkedSignal,
+  output,
+  viewChild
 } from '@angular/core';
-import { NgModel } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import moment from 'moment';
 
 @Component({
-    selector: 'datetime-picker',
-    templateUrl: './datetime-picker.component.html',
-    styleUrls: ['./datetime-picker.component.scss'],
-    standalone: false
+  selector: 'datetime-picker',
+  templateUrl: './datetime-picker.component.html',
+  styleUrls: ['./datetime-picker.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatTimepickerModule]
 })
-export class DatetimePickerComponent implements OnChanges {
-  @Input() title: string;
-  @Input() required: boolean;
-  @Input() datetime: Date;
-  @Input() timezone: 'local' | 'gmt' = 'local';
+export class DatetimePickerComponent {
+  title = input('')
+  required = input(false, { transform: booleanAttribute })
+  datetime = input<Date | null>(null)
+  timezone = input<'local' | 'gmt'>('local')
 
-  @Output() dateTimeChange = new EventEmitter<Date>();
+  dateTimeChange = output<Date>()
 
-  @ViewChild('dateModel') dateModel: NgModel;
+  dateModel = viewChild<NgModel>('dateModel')
 
-  date: moment.Moment | null = null;
-  timeValue: moment.Moment | null = null;
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.datetime) {
-      const value = changes.datetime.currentValue;
-
-      if (value) {
-        const m = moment(value);
-        this.date = m.clone();
-        this.timeValue = m.clone();
-      } else {
-        this.date = null;
-        this.timeValue = null;
-      }
-    }
-  }
+  date = linkedSignal<moment.Moment | null>(() => this.datetime() ? moment(this.datetime()) : null)
+  timeValue = linkedSignal<moment.Moment | null>(() => this.datetime() ? moment(this.datetime()) : null)
 
   onDate(): void {
-    if (!this.date) {
-      this.timeValue = null;
-      return;
+    if (!this.date()) {
+      this.timeValue.set(null)
+      return
     }
 
-    if (!this.dateModel?.invalid) {
-      this.setValue();
+    if (!this.dateModel()?.invalid) {
+      this.setValue()
     }
   }
 
   onTime(): void {
-    if (this.timeValue) {
-      this.setValue();
+    if (this.timeValue()) {
+      this.setValue()
     }
   }
 
   private setValue(): void {
-    if (!this.date || !this.timeValue) {
-      return;
+    const date = this.date()
+    const time = this.timeValue()
+    if (!date || !time) {
+      return
     }
 
-    const date = this.date.clone().set({
-      hour: this.timeValue.hours(),
-      minute: this.timeValue.minutes(),
-      second: this.timeValue.seconds()
-    });
+    const value = date.clone().set({
+      hour: time.hours(),
+      minute: time.minutes(),
+      second: time.seconds()
+    })
 
-    if (this.timezone === 'gmt') {
-      date.utc(true);
+    if (this.timezone() === 'gmt') {
+      value.utc(true)
     }
 
-    this.dateTimeChange.emit(date.toDate());
+    this.dateTimeChange.emit(value.toDate())
   }
 }

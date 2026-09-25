@@ -1,7 +1,16 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core"
-import { groupBy } from "lodash";
+import { MageEvent } from "@ngageoint/mage.web-core-lib/event";
 import { Observable } from "rxjs";
+
+export type LocationsRequestOptions = {
+  startDate?: string
+  endDate?: string
+  teams?: string[]
+  users?: string[]
+  populate?: boolean
+  limit?: number
+}
 
 @Injectable({
   providedIn: 'root'
@@ -44,15 +53,18 @@ export class LocationService {
     return this.httpClient.get<{ totalCount: number }>(`/api/events/${event.id}/locations`, { params: parameters })
   }
 
-  getUserLocationsForEvent(event: any, options?: any): Observable<any> {
-    const parameters = {
-      groupBy: 'users',
-      populate: true,
-      ...(options?.interval?.start) && { startDate: options.interval.start },
-      ...(options?.interval?.end) && { endDate: options.interval.end }
-    }
+  getUserLocationsForEvent(event: MageEvent, options?: LocationsRequestOptions): Observable<any> {
+    let params = new HttpParams()
+      .set('limit', options?.limit || 1)
+      .set('populate', options?.populate ? true : false)
 
-    return this.httpClient.get<any>(`/api/events/${event.id}/locations/users`, { params: parameters } )
+    if (options?.startDate) params = params.set('startDate', options.startDate)
+    if (options?.endDate) params = params.set('endDate', options.endDate)
+
+    if (options?.users) params = params.set('users', options.users.join(','))
+    if (options?.teams) params = params.set('teams', options.teams.join(','))
+
+    return this.httpClient.get<any>(`/api/events/${event.id}/locations/users`, { params })
   }
 
 }

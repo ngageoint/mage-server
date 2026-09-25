@@ -45,7 +45,7 @@ describe('ObservationEditComponent', () => {
   beforeEach(waitForAsync(() => {
     userService = jasmine.createSpyObj('UserService', ['getEventPreferences']);
     eventService = jasmine.createSpyObj('EventService', ['getEventById', 'getFormsForEvent']);
-    eventService.getEventById.and.callFake((eventId: number) => ({ id: eventId }));
+    eventService.getEventById.and.callFake((eventId: number): any => ({ id: eventId }));
     eventService.getFormsForEvent.and.returnValue([]);
     userService.getEventPreferences.and.returnValue(of(null));
 

@@ -1,92 +1,85 @@
 import { Injectable } from "@angular/core";
-import { User } from "@ngageoint/mage.web-core-lib/user";
-import { Interval } from "../filter/filter.types";
-import { Form } from "../entities/event/entities.event";
+import { EventLocationFilter, EventObservationFilter, Interval } from "../filter/filter.types";
 
 @Injectable({
   providedIn: "root",
 })
 export class LocalStorageService {
   pollingIntervalKey = "pollingInterval";
-  timeIntervalKey = "timeInterval";
-  teamsKey = "teams";
-  usersKey = "users";
-  formsKey = "forms";
   mapPositionKey = "mapPosition";
   coordinateSystemViewKey = "coordinateSystemView";
   coordinateSystemEditKey = "coordinateSystemEdit";
   timeZoneViewKey = "timeZoneView";
   timeZoneEditKey = "timeZoneEdit";
   timeFormatKey = "timeFormat";
+  eventKey = "event";
+  observationFiltersKey = "observationFilters";
+  locationFiltersKey = "locationFilters";
 
-  setPollingInterval(pollingInterval) {
-    return this.setLocalItem(this.pollingIntervalKey, pollingInterval);
+  getEventId(): number | string | null {
+    return this.parseJson<number | string>(this.eventKey, this.getLocalItem(this.eventKey));
   }
 
-  getPollingInterval() {
-    return this.getLocalItem(this.pollingIntervalKey);
+  setEventId(id: number | string | null) {
+    if (id == null) return this.removeLocalItem(this.eventKey);
+    return this.setLocalItem(this.eventKey, JSON.stringify(id));
   }
 
-  setTimeInterval(timeInterval: Interval) {
-    return this.setLocalItem(
-      this.timeIntervalKey,
-      JSON.stringify(timeInterval)
-    );
+  getObservationFilter(eventId: string | number): EventObservationFilter | null {
+    const map = this.readFilterMap<EventObservationFilter>(this.observationFiltersKey);
+    return this.hydrateDates(map[eventId]);
   }
 
-  getTimeInterval() {
-    const item = this.getLocalItem(this.timeIntervalKey);
-    if (item) {
-      const time = JSON.parse(item);
+  setObservationFilter(eventId: string | number, filter: EventObservationFilter | null): void {
+    const map = this.readFilterMap<EventObservationFilter>(this.observationFiltersKey);
+    if (filter == null) {
+      delete map[eventId];
+    } else {
+      map[eventId] = filter;
+    }
+    this.setLocalItem(this.observationFiltersKey, JSON.stringify(map));
+  }
 
-      if (time && time.options) {
-        if (time.options.startDate) {
-          time.options.startDate = new Date(time.options.startDate);
-        }
-        if (time.options.endDate) {
-          time.options.endDate = new Date(time.options.endDate);
-        }
+  getLocationFilter(eventId: string | number): EventLocationFilter | null {
+    const map = this.readFilterMap<EventLocationFilter>(this.locationFiltersKey);
+    return this.hydrateDates(map[eventId]);
+  }
+
+  setLocationFilter(eventId: string | number, filter: EventLocationFilter | null): void {
+    const map = this.readFilterMap<EventLocationFilter>(this.locationFiltersKey);
+    if (filter == null) {
+      delete map[eventId];
+    } else {
+      map[eventId] = filter;
+    }
+    this.setLocalItem(this.locationFiltersKey, JSON.stringify(map));
+  }
+
+  private readFilterMap<T>(key: string): Record<string, T> {
+    const parsed = this.parseJson<unknown>(key, this.getLocalItem(key));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, T> : {};
+  }
+
+  private hydrateDates<T extends { timeInterval?: Interval }>(filter: T | null | undefined): T | null {
+    if (!filter) return null;
+    if (filter?.timeInterval?.options) {
+      if (filter.timeInterval.options.startDate) {
+        filter.timeInterval.options.startDate = new Date(filter.timeInterval.options.startDate);
       }
-
-      return time;
-    } else return undefined;
+      if (filter.timeInterval.options.endDate) {
+        filter.timeInterval.options.endDate = new Date(filter.timeInterval.options.endDate);
+      }
+    }
+    return filter;
   }
 
-  getTeams() {
-    const item = this.getLocalItem(this.teamsKey);
-    if (item) {
-      return JSON.parse(item);
-    } else return undefined;
+  setPollingInterval(pollingInterval: number) {
+    return this.setLocalItem(this.pollingIntervalKey, String(pollingInterval));
   }
 
-  setTeams(teams: any) {
-    return this.setLocalItem(this.teamsKey, JSON.stringify(teams));
-  }
-
-  getUsers(): User[] {
-    const item = this.getLocalItem(this.usersKey);
-    if (item) {
-      return JSON.parse(item) as User[];
-    } else return undefined;
-  }
-
-  setUsers(users: User[]) {
-    return this.setLocalItem(this.usersKey, JSON.stringify(users));
-  }
-
-  getForms(): Form[] {
-    const item = this.getLocalItem(this.formsKey);
-    if (item) {
-      return JSON.parse(item) as Form[];
-    } else return undefined;
-  }
-
-  setForms(forms: Form[]) {
-    return this.setLocalItem(this.formsKey, JSON.stringify(forms));
-  }
-
-  removeTeams() {
-    return this.removeLocalItem(this.teamsKey);
+  getPollingInterval(): number | null {
+    const interval = parseInt(this.getLocalItem(this.pollingIntervalKey) ?? '');
+    return Number.isNaN(interval) ? null : interval;
   }
 
   setMapPosition(mapPosition: any) {
@@ -94,10 +87,7 @@ export class LocalStorageService {
   }
 
   getMapPosition() {
-    const item = this.getLocalItem(this.mapPositionKey);
-    if (item) {
-      return JSON.parse(item);
-    } else return undefined;
+    return this.parseJson<any>(this.mapPositionKey, this.getLocalItem(this.mapPositionKey)) ?? undefined;
   }
 
   getCoordinateSystemView() {
@@ -143,23 +133,34 @@ export class LocalStorageService {
     return this.setLocalItem(this.timeFormatKey, timeFormat);
   }
 
-  getLocalItem(key: any) {
+  private parseJson<T>(key: string, item: string | null): T | null {
+    if (!item) return null;
+    try {
+      return JSON.parse(item) as T;
+    } catch {
+      console.warn(`Ignoring invalid JSON in localStorage key "${key}"`);
+      return null;
+    }
+  }
+
+  getLocalItem(key: any): string | null {
     try {
       if ("localStorage" in window && window["localStorage"] !== null) {
         return localStorage.getItem(key);
       }
     } catch (e) {
-      return undefined;
+      console.error('Failed to get local storage item', key, e)
     }
+    return null;
   }
 
   setLocalItem(key: any, value: any) {
     try {
       if ("localStorage" in window && window.localStorage !== null) {
-        return localStorage.setItem(key, value);
+       localStorage.setItem(key, value);
       }
     } catch (e) {
-      return undefined;
+      console.error('Failed to set local storage item', key, e)
     }
   }
 

@@ -1,9 +1,11 @@
 mat-toolbar {
-  background-color: white;
+  background-color: var(--mat-sys-surface-container-lowest);
+  color: var(--mat-sys-primary);
 }
 
 .export {
   height: 100%;
+  background-color: var(--mat-sys-surface-container-low);
 }
 
 .export__form {

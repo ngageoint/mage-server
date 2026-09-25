@@ -1,9 +1,14 @@
 import { User } from "@ngageoint/mage.web-core-lib/user"
 import { AttachmentAction } from "../../observation/observation-edit/observation-edit-attachment/observation-edit-attachment-action"
-import { Style } from "../map/entities.map"
 import { EventId } from "../event/entities.event"
 
 export type ObservationId = string
+
+export const ObservationStateName = Object.freeze({
+  Active: 'active',
+  Archived: 'archive'
+} as const)
+export type ObservationStateName = (typeof ObservationStateName)[keyof typeof ObservationStateName]
 
 export type FormProperties = {
   id: string
@@ -11,22 +16,28 @@ export type FormProperties = {
   [name: string]: any
 }
 
+export type ObservationStyle = {
+  color?: string
+  fillColor?: string
+  fillOpacity?: number
+  opacity?: number
+  weight?: number
+  iconUrl: string
+}
+
 export type Observation = {
   id: ObservationId
   eventId: EventId
   type: 'Feature'
-  geometry: {
-    type: string
-    coordinates: number[]
-  }
+  geometry: GeoJSON.Geometry
   url: string
   user?: Pick<User, 'id' | 'displayName'>
   userId?: string
   attachments: Attachment[]
   deviceId?: string
   createdAt: Date
-  lastModified: Date
-  style: Style
+  lastModified: string
+  style: ObservationStyle
   favoriteUserIds: string[]
   properties: {
     forms: FormProperties[]
@@ -37,7 +48,7 @@ export type Observation = {
   }
   state?: {
     id: string
-    name: 'active' | 'archived'
+    name: ObservationStateName
     userId?: string
     url: string
   }

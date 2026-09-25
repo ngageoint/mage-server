@@ -478,10 +478,10 @@ exports.addFavorite = function (event, observationId, user, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }).then(
-    r => callback(null, r),
-    e => callback(e)
-  );
+  observationModel(event)
+    .findByIdAndUpdate(observationId, update, { new: true })
+    .populate({ path: 'userId', select: 'displayName' })
+    .exec().then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeFavorite = function (event, observationId, user, callback) {
@@ -491,10 +491,10 @@ exports.removeFavorite = function (event, observationId, user, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }).then(
-    r => callback(null, r),
-    e => callback(e)
-  );
+  observationModel(event)
+    .findByIdAndUpdate(observationId, update, { new: true })
+    .populate({ path: 'userId', select: 'displayName' })
+    .exec().then(r => callback(null, r), e => callback(e));
 };
 
 exports.addImportant = function (event, observationId, important, callback) {
@@ -514,10 +514,11 @@ exports.removeImportant = function (event, id, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(id, update, { new: true }).then(
-    r => callback(null, r),
-    e => callback(e)
-  );
+  observationModel(event)
+    .findByIdAndUpdate(id, update, { new: true })
+    .populate({ path: 'userId', select: 'displayName' })
+    .populate({ path: 'important.userId', select: 'displayName' })
+    .exec().then(r => callback(null, r), e => callback(e));
 };
 
 exports.getAttachment = function (event, observationId, attachmentId, callback) {

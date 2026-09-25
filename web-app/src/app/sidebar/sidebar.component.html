@@ -11,7 +11,7 @@
 </div>
 
 <div class="feeds-content">
-  <user-view *ngIf="viewUser" @slide class="component__view" [user]="viewUser" [event]="event" (close)="onUserViewClose()"></user-view>
+  <user-view *ngIf="viewUser" @slide class="component__view" [user]="viewUser" (close)="onUserViewClose()"></user-view>
 
   <observation-view *ngIf="viewObservation" @slide class="component__view" [event]="event" [observation]="viewObservation" (close)="onObservationViewClose()" (delete)="onObservationDelete($event)"></observation-view>
   <observation-edit *ngIf="editObservation" @slide class="component__view" [observation]="editObservation" (close)="onObservationEditClose($event)"></observation-edit>

@@ -1,6 +1,6 @@
 .tabs {
   height: 100%;
-  background-color: white;
+  background-color: var(--mat-sys-surface);
 }
 
 mat-divider {
@@ -28,19 +28,9 @@ mat-divider {
   justify-content: flex-end;
 }
 
-observation-feed {
-  display: block;
-  height: 100%;
-}
-
-user-feed {
-  display: block;
-  height: 100%;
-}
-
 .feeds-nav {
   position: absolute;
-  background-color: white;
+  background-color: var(--mat-sys-surface);
   border-right: 1px solid var(--mat-sys-outline-variant);
   width: 3rem;
   height: 100%;
@@ -48,9 +38,11 @@ user-feed {
 }
 
 .feeds-content {
-  position: relative;
-  margin-left: 3rem;
-  width: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3rem;
+  right: 0;
 }
 
 .export-tab {

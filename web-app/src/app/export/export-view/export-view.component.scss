@@ -1,6 +1,7 @@
 mat-toolbar {
-  background-color: white;
+  background-color: var(--mat-sys-surface-container-lowest);
   color: var(--mat-sys-primary);
+  --mat-icon-button-icon-color: var(--mat-sys-primary);
   flex-shrink: 0;
 }
 
@@ -35,6 +36,10 @@ mat-expansion-panel {
   gap: 8px;
 }
 
+.toolbar__title {
+  flex: 1;
+}
+
 .chips {
   margin-bottom: 16px;
 }
@@ -61,7 +66,7 @@ mat-expansion-panel {
   display: flex;
   height: 100%;
   flex-direction: column;
-  background-color: #e1e2e1;
+  background-color: var(--mat-sys-surface-container-low);
 }
 
 .card {

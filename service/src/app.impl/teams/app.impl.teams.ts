@@ -21,6 +21,21 @@ export function SearchTeams(teamRepo: TeamRepository,permissions: api.TeamsPermi
  * single deduped user id list. Returns `undefined`, not an empty array, when neither input narrows
  * the result at all, or when a given team id list resolves to no members - callers should treat
  * `undefined` as "unconstrained" rather than "matches no one".
+ *
+ * KNOWN GAP: `teamIsAnyOf` is resolved via a global `teamRepo.findAllByIds()` lookup with no check
+ * that the given team ids actually belong to the event the caller is scoping to (observation/location
+ * search callers have a `context.mageEvent` available, but don't pass its teams in here). A team id
+ * for a team that was removed from the event - or that never belonged to it - still resolves normally
+ * and narrows results to that team's current membership.
+ *
+ * A correct fix needs the event's own team list, which isn't cheaply available yet: the event fetch
+ * this event context is built from (`EventRepository.findById`) does not populate `teams`; the only
+ * existing code that does is `findTeamsInEvent()` in `adapters.events.db.mongoose.ts`, which is itself
+ * marked `TODO: this is misplaced; create a team repository` and isn't wired into this request path.
+ * Fixing this means adding that event-team fetch (an extra DB round trip) to this function or its
+ * call sites (observation read, location read/recent, and likely exports), without disturbing the
+ * "team resolves to zero current members -> unconstrained" behavior documented above, which is a
+ * distinct, intentional case from "team id isn't associated with this event at all".
  */
 export async function resolveUserIsAnyOf(
   teamRepo: TeamRepository,
