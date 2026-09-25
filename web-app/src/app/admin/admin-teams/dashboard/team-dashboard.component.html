@@ -1,8 +1,10 @@
 <ng-template #breadcrumbActions>
   <div class="nav-actions">
-    <button matButton="filled" *ngIf="hasTeamCreatePermission" (click)="createTeam()">
+    @if (hasTeamCreatePermission) {
+    <button matButton="filled" (click)="createTeam()">
       <mat-icon>add</mat-icon>New Team
     </button>
+  }
   </div>
 </ng-template>
 
@@ -17,29 +19,36 @@
         <mat-icon matPrefix>search</mat-icon>
         <mat-label>Search teams</mat-label>
         <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="searchTerm" (click)="onSearchCleared()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
+        @if (searchTerm) {
+          <button matSuffix matIconButton (click)="onSearchCleared()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
       </mat-form-field>
     </div>
 
-    <mat-nav-list *ngIf="teams.length; else noTeams">
-      <mat-list-item *ngFor="let team of teams" [routerLink]="['../teams', team.id]">
-        <mat-icon matListItemIcon>groups</mat-icon>
-        <span matListItemTitle>{{ team.name }}</span>
-        <span matListItemLine *ngIf="team.description">{{ team.description }}</span>
-      </mat-list-item>
-    </mat-nav-list>
-
-    <ng-template #noTeams>
+    @if (teams.length) {
+      <mat-nav-list>
+        @for (team of teams; track team.id) {
+          <mat-list-item [routerLink]="['../teams', team.id]">
+            <mat-icon matListItemIcon>groups</mat-icon>
+            <span matListItemTitle>{{ team.name }}</span>
+            @if (team.description) {
+              <span matListItemLine>{{ team.description }}</span>
+            }
+          </mat-list-item>
+        }
+      </mat-nav-list>
+    } @else {
       <div class="empty-state">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
-        <div class="empty-state-text" *ngIf="searchTerm; else noTeamsFound">No teams match your search</div>
-        <ng-template #noTeamsFound>
+        @if (searchTerm) {
+          <div class="empty-state-text">No teams match your search</div>
+        } @else {
           <div class="empty-state-text">No teams found</div>
-        </ng-template>
+        }
       </div>
-    </ng-template>
+    }
 
     <mat-paginator
       [length]="totalTeams"

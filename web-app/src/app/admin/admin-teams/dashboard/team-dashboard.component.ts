@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -9,6 +9,14 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 /**
  * Team dashboard component that displays a paginated list of teams with search functionality.
@@ -18,7 +26,18 @@ import { SessionService } from 'mage-web-app/http/session.service';
     selector: 'mage-admin-teams',
     templateUrl: './team-dashboard.component.html',
     styleUrls: ['./team-dashboard.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatCardModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+      MatButtonModule,
+      MatListModule,
+      MatPaginatorModule,
+      FormsModule,
+      RouterModule
+    ]
 })
 export class TeamDashboardComponent implements OnInit, OnDestroy {
   searchTerm = '';

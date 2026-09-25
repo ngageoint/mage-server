@@ -44,7 +44,6 @@ import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
-    AdminFeedsComponent,
     AdminFeedComponent,
     AdminFeedEditComponent,
     AdminServiceEditComponent,
@@ -56,6 +55,7 @@ import { RouterModule } from '@angular/router';
     AdminServiceComponent,
   ],
   imports: [
+    AdminFeedsComponent,
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
