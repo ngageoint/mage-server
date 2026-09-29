@@ -8,12 +8,34 @@ import { CreateLayerDialogComponent } from '../create-layer/create-layer.compone
 import { AdminToastService } from '../../services/admin-toast.service';
 import { layerIconName } from '../../../entities/layer/entities.layer';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'mage-layer-dashboard',
     templateUrl: './layer-dashboard.component.html',
     styleUrls: ['./layer-dashboard.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatCardModule,
+      MatChipsModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+      MatButtonModule,
+      MatListModule,
+      MatPaginatorModule,
+      FormsModule,
+      RouterLink
+    ]
 })
 export class LayerDashboardComponent implements OnInit, OnDestroy {
   layers: Layer[] = [];

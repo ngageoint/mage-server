@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
 import {
   AdminDeviceService,
   DevicesResponse,
@@ -14,12 +14,33 @@ import { Subject, takeUntil } from 'rxjs';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { deviceIconName, platformLabel as getDevicePlatformLabel } from '../../../entities/device/device';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'admin-devices',
     templateUrl: './devices-dashboard.component.html',
     styleUrls: ['./devices-dashboard.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatCardModule,
+      MatChipsModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+      MatButtonModule,
+      MatListModule,
+      MatPaginatorModule,
+      FormsModule,
+      RouterLink
+    ]
 })
 export class DeviceDashboardComponent implements OnInit, OnDestroy {
   devices!: DevicesResponse;

@@ -61,9 +61,9 @@ import { RouterModule } from '@angular/router';
     MatOptionModule,
     AdminBreadcrumbModule,
     RouterModule,
+    UserDashboardComponent,
   ],
   declarations: [
-    UserDashboardComponent,
     UserDetailsComponent,
     UserDetailsViewComponent,
     UserDetailsEditComponent,

@@ -32,7 +32,6 @@ import { LoginsModule } from '../admin-logins/admin-logins.module';
 
 @NgModule({
     declarations: [
-        DeviceDashboardComponent,
         DeviceDetailsComponent,
         CreateDeviceDialogComponent,
     ],
@@ -66,7 +65,8 @@ import { LoginsModule } from '../admin-logins/admin-logins.module';
         MatPaginatorModule,
         DragDropModule,
         AdminUsersModule,
-        LoginsModule
+        LoginsModule,
+        DeviceDashboardComponent
     ],
     exports: [
         DeviceDashboardComponent,

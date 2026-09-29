@@ -78,8 +78,8 @@ describe('EventDashboardComponent', () => {
     toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
     await TestBed.configureTestingModule({
-      declarations: [EventDashboardComponent],
       imports: [
+        EventDashboardComponent,
         MatDialogModule,
         MatPaginatorModule,
         MatFormFieldModule,

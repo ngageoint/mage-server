@@ -70,8 +70,7 @@ describe('TeamDashboardComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [TeamDashboardComponent],
-      imports: [NoopAnimationsModule],
+      imports: [NoopAnimationsModule, TeamDashboardComponent],
       providers: [
         { provide: TeamService, useValue: mockTeamsService },
         { provide: MatDialog, useValue: mockDialog },

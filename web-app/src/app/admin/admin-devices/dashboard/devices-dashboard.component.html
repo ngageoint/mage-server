@@ -1,8 +1,10 @@
 <ng-template #breadcrumbActions>
   <div class="nav-actions">
-    <button matButton="filled" *ngIf="hasDeviceCreatePermission" (click)="createDevice()">
-      <mat-icon>add</mat-icon>New Device
-    </button>
+    @if (hasDeviceCreatePermission) {
+      <button matButton="filled" (click)="createDevice()">
+        <mat-icon>add</mat-icon>New Device
+      </button>
+    }
   </div>
 </ng-template>
 
@@ -25,29 +27,34 @@
         <mat-icon matPrefix>search</mat-icon>
         <mat-label>Search devices</mat-label>
         <input matInput [(ngModel)]="deviceSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="deviceSearch" (click)="onSearchCleared()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
+        @if (deviceSearch) {
+          <button matSuffix matIconButton (click)="onSearchCleared()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
       </mat-form-field>
     </div>
 
-    <mat-nav-list *ngIf="filteredDevices.length; else noDevices">
-      <mat-list-item *ngFor="let device of filteredDevices" [routerLink]="['../devices', device.id]">
-        <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(device) }}</mat-icon>
-        <span matListItemTitle>{{ device.user?.displayName || 'No Associated User' }}</span>
-        <span matListItemLine>{{ platformName(device) }} · {{ device.userAgent || 'Unknown' }}</span>
-      </mat-list-item>
-    </mat-nav-list>
-
-    <ng-template #noDevices>
+    @if (filteredDevices.length) {
+      <mat-nav-list>
+        @for (device of filteredDevices; track device.id) {
+          <mat-list-item [routerLink]="['../devices', device.id]">
+            <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(device) }}</mat-icon>
+            <span matListItemTitle>{{ device.user?.displayName || 'No Associated User' }}</span>
+            <span matListItemLine>{{ platformName(device) }} · {{ device.userAgent || 'Unknown' }}</span>
+          </mat-list-item>
+        }
+      </mat-nav-list>
+    } @else {
       <div class="empty-state">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">devices</mat-icon>
-        <div class="empty-state-text" *ngIf="deviceSearch; else noDevicesFound">No devices match your search</div>
-        <ng-template #noDevicesFound>
+        @if (deviceSearch) {
+          <div class="empty-state-text">No devices match your search</div>
+        } @else {
           <div class="empty-state-text">No devices found</div>
-        </ng-template>
+        }
       </div>
-    </ng-template>
+    }
 
     <mat-paginator
       [length]="totalDevices"

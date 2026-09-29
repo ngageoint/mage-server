@@ -29,6 +29,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
 import { UserService } from '../../../user/user.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { AdminToastService } from '../../services/admin-toast.service';
@@ -37,7 +39,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 @Component({
     selector: 'user-avatar',
     template: '',
-    standalone: false
+    standalone: true
 })
 class MockUserAvatarComponent {
   @Input() user: any;
@@ -163,9 +165,9 @@ describe('UserDashboardComponent', () => {
         MatChipsModule,
         MatFormFieldModule,
         MatInputModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        UserDashboardComponent
       ],
-      declarations: [UserDashboardComponent, MockUserAvatarComponent],
       providers: [
         { provide: MatDialog, useValue: dialogSpy },
         { provide: UserService, useValue: userServiceSpy },
@@ -175,7 +177,25 @@ describe('UserDashboardComponent', () => {
         { provide: AdminToastService, useValue: toastSpy }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
+    })
+      .overrideComponent(UserDashboardComponent, {
+        set: {
+          imports: [
+            MatCardModule,
+            MatChipsModule,
+            MatFormFieldModule,
+            MatIconModule,
+            MatInputModule,
+            MatButtonModule,
+            MatListModule,
+            MatPaginatorModule,
+            FormsModule,
+            RouterLink,
+            MockUserAvatarComponent
+          ]
+        }
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(UserDashboardComponent);
     component = fixture.componentInstance;

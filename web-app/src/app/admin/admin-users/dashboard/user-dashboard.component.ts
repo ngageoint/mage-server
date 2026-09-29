@@ -15,6 +15,17 @@ import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.
 import { UserService } from '../../../user/user.service';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { UserAvatarModule } from 'src/app/user/user-avatar/user-avatar.module';
 
 type UserFilter = {
   limit?: number;
@@ -27,7 +38,20 @@ type UserFilter = {
     selector: 'admin-users',
     templateUrl: './user-dashboard.component.html',
     styleUrls: ['./user-dashboard.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatCardModule,
+      MatChipsModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+      MatButtonModule,
+      MatListModule,
+      MatPaginatorModule,
+      FormsModule,
+      RouterLink,
+      UserAvatarModule
+    ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
   dataSource: User[] = [];

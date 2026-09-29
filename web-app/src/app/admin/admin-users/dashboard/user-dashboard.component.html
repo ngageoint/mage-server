@@ -1,11 +1,13 @@
 <ng-template #breadcrumbActions>
   <div class="nav-actions">
-    <button matButton="outlined" class="import-users-button" *ngIf="hasUserCreatePermission" (click)="openImportModal()">
-      <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Import Users
-    </button>
-    <button matButton="filled" *ngIf="hasUserCreatePermission" (click)="createUser()">
-      <mat-icon>add</mat-icon>New User
-    </button>
+    @if (hasUserCreatePermission) {
+      <button matButton="outlined" class="import-users-button" (click)="openImportModal()">
+        <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Import Users
+      </button>
+      <button matButton="filled" (click)="createUser()">
+        <mat-icon>add</mat-icon>New User
+      </button>
+    }
   </div>
 </ng-template>
 
@@ -26,27 +28,36 @@
         <mat-icon matPrefix>search</mat-icon>
         <mat-label>Search users</mat-label>
         <input matInput [(ngModel)]="userSearch" (ngModelChange)="onSearchTermChanged($event)" autocomplete="off">
-        <button matSuffix matIconButton *ngIf="userSearch" (click)="onSearchCleared()" aria-label="Clear">
-          <mat-icon>close</mat-icon>
-        </button>
+        @if (userSearch) {
+          <button matSuffix matIconButton (click)="onSearchCleared()" aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
       </mat-form-field>
     </div>
 
-    <mat-nav-list *ngIf="dataSource.length">
-      <mat-list-item *ngFor="let user of dataSource" [routerLink]="['../users', user.id]">
-        <user-avatar matListItemAvatar [user]="user" avatar-width="40" avatar-height="40"></user-avatar>
-        <span matListItemTitle>{{ user.displayName }}</span>
-        <span matListItemLine>{{ user.email }}</span>
-      </mat-list-item>
-    </mat-nav-list>
+    @if (dataSource.length) {
+      <mat-nav-list>
+        @for (user of dataSource; track user.id) {
+          <mat-list-item [routerLink]="['../users', user.id]">
+            <user-avatar matListItemAvatar [user]="user" avatar-width="40" avatar-height="40"></user-avatar>
+            <span matListItemTitle>{{ user.displayName }}</span>
+            <span matListItemLine>{{ user.email }}</span>
+          </mat-list-item>
+        }
+      </mat-nav-list>
+    }
 
-    <div class="empty-state" *ngIf="!dataSource.length">
-      <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">group</mat-icon>
-      <div class="empty-state-text" *ngIf="userSearch; else noUsers">No users match your search</div>
-      <ng-template #noUsers>
-        <div class="empty-state-text">No users found</div>
-      </ng-template>
-    </div>
+    @if (!dataSource.length) {
+      <div class="empty-state">
+        <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">group</mat-icon>
+        @if (userSearch) {
+          <div class="empty-state-text">No users match your search</div>
+        } @else {
+          <div class="empty-state-text">No users found</div>
+        }
+      </div>
+    }
 
     <mat-paginator
       [length]="totalUsers"
