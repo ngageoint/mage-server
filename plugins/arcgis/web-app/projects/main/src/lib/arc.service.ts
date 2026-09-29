@@ -41,11 +41,20 @@ export interface PushedObservation {
   attachments?: PushedAttachment[]
 }
 
+// the number of observations for an event found on one configured ArcGIS feature layer
+export interface PushedLayerCount {
+  url: string
+  featureServiceUrl: string
+  layerName: string
+  count: number
+}
+
 export interface PushedObservationsPage {
   items: PushedObservation[]
   totalCount: number
   pageIndex: number
   pageSize: number
+  layerCounts: PushedLayerCount[]
 }
 
 export class MageEvent {

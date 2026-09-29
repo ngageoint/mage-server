@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
-import { ArcService, MageEvent, PushedObservation } from '../arc.service';
+import { ArcService, MageEvent, PushedLayerCount, PushedObservation } from '../arc.service';
 
 @Component({
   standalone: false,
@@ -15,6 +15,8 @@ export class ArcPushStatusComponent implements OnInit {
 
   pushedObservations: PushedObservation[] = [];
   readonly displayedColumns = ['status', 'id', 'attachments', 'location', 'lastModified', 'createdAt'];
+
+  layerCounts: PushedLayerCount[] = [];
 
   totalCount = 0;
   pageIndex = 0;
@@ -98,10 +100,25 @@ export class ArcPushStatusComponent implements OnInit {
     return `${row.latitude.toFixed(5)}, ${row.longitude.toFixed(5)}`;
   }
 
+  // flags a layer's count as a mismatch from total observations
+  isMismatched(count: number): boolean {
+    if (this.layerCounts.length < 2) {
+      return false;
+    }
+    const counts = this.layerCounts.map(layerCount => layerCount.count);
+    const countTally = new Map<number, number>();
+    for (const c of counts) {
+      countTally.set(c, (countTally.get(c) || 0) + 1);
+    }
+    const mostCommonCount = [...countTally.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return count !== mostCommonCount;
+  }
+
   private load(): void {
     if (this.selectedEventId == null) {
       this.pushedObservations = [];
       this.totalCount = 0;
+      this.layerCounts = [];
       return;
     }
 
@@ -110,12 +127,14 @@ export class ArcPushStatusComponent implements OnInit {
       next: (page) => {
         this.pushedObservations = page.items;
         this.totalCount = page.totalCount;
+        this.layerCounts = page.layerCounts;
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Failed to fetch push status:', error);
         this.pushedObservations = [];
         this.totalCount = 0;
+        this.layerCounts = [];
         this.isLoading = false;
       }
     });
