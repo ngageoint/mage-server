@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { User } from '@ngageoint/mage.web-core-lib/user'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { Subject, debounceTime, of, switchMap } from 'rxjs'
+import { Subject, catchError, debounceTime, of, switchMap } from 'rxjs'
 import { EventService } from './event.service'
 import { EventId } from '../entities/event/entities.event'
 import { Team } from '../entities/team/entities.team'
@@ -69,7 +69,7 @@ export class EventMemberFilterComponent {
         if (eventId == null || !teams.length) {
           return of([] as User[])
         }
-        return this.eventService.searchMembers(eventId, term)
+        return this.eventService.searchMembers(eventId, term).pipe(catchError(() => of([] as User[])))
       })
     ),
     { initialValue: [] as User[] }
@@ -156,7 +156,10 @@ export class EventMemberFilterComponent {
       return
     }
 
-    this.eventService.getMembers(eventId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(users => {
+    this.eventService.getMembers(eventId).pipe(
+      catchError(() => of([] as User[])),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(users => {
       if (this.eventId() !== eventId) return
 
       const userSelections = users

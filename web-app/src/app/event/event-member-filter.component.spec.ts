@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
-import { Subject, of } from 'rxjs'
+import { Subject, of, throwError } from 'rxjs'
 import { EventService } from './event.service'
 import { EventMemberFilterComponent, MemberFilterSelection } from './event-member-filter.component'
 
@@ -217,6 +217,37 @@ describe('EventMemberFilterComponent', () => {
       tick(SEARCH_DEBOUNCE_MS)
 
       expect(component.selected().length).toBe(0)
+    }))
+  })
+
+  describe('when the members request fails', () => {
+    it('recovers instead of erroring, and keeps searching afterward', fakeAsync(() => {
+      eventService.searchMembers.and.returnValue(throwError(() => new Error('network error')))
+      setEventAndTeams(1, [team1, team2])
+      tick(SEARCH_DEBOUNCE_MS)
+
+      expect(() => component.filteredGroups()).not.toThrow()
+      expect(component.filteredGroups().find(g => g.label === 'Members')).toBeUndefined()
+
+      eventService.searchMembers.and.callFake((_eventId: any, term: string) => {
+        const q = (term || '').toLowerCase()
+        return of(eventMembers.filter(u => u.displayName.toLowerCase().includes(q)) as any)
+      })
+      component.inputControl.setValue('ali')
+      fixture.detectChanges()
+      tick(SEARCH_DEBOUNCE_MS)
+
+      const memberGroup = component.filteredGroups().find(g => g.label === 'Members')
+      expect(memberGroup?.options.length).toBe(1)
+    }))
+
+    it('still selects the saved teams when the saved-user lookup fails', fakeAsync(() => {
+      eventService.getMembers.and.returnValue(throwError(() => new Error('network error')))
+
+      expect(() => setEventTeamsAndFilter(1, [team1], { teamIds: ['team1'], userIds: ['u1'] })).not.toThrow()
+      tick(SEARCH_DEBOUNCE_MS)
+
+      expect(component.selected().map(s => s.id)).toEqual(['team1'])
     }))
   })
 
