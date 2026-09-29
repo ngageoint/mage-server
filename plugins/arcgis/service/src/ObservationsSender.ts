@@ -7,16 +7,13 @@ import { AttachmentInfo } from './types/AttachmentInfosResult';
 import environment from '@ngageoint/mage.service/lib/environment/env'
 import fs from 'fs'
 import path from 'path'
-import { ArcGISIdentityManager, ArcGISRequestError, IFeature } from "@esri/arcgis-rest-request"
+import { ArcGISIdentityManager, ArcGISRequestError, IFeature, cleanUrl } from "@esri/arcgis-rest-request"
 import {
-    addAttachment,
     addFeatures,
     deleteAttachments,
     deleteFeatures,
     getAttachments,
-    updateAttachment,
     updateFeatures,
-    IAddAttachmentOptions,
     IEditFeatureResult
 } from "@esri/arcgis-rest-feature-service";
 
@@ -296,6 +293,37 @@ export class ObservationsSender {
     }
 
     /**
+     * Posts a multipart attachment operation (addAttachment/updateAttachment)
+     * @param operation `addAttachment` or `updateAttachment`.
+     * @param featureId The arc object id of the observation.
+     * @param attachmentFile The attachment file content.
+     * @param extraFields Additional multipart fields the operation requires (e.g. `attachmentId` for updates).
+     */
+    private async postAttachmentMultipart(operation: 'addAttachment' | 'updateAttachment', featureId: number, attachmentFile: File, extraFields: Record<string, string> = {}): Promise<IEditFeatureResult> {
+        const token = await this._identityManager.getToken(this._url);
+        const endpoint = `${cleanUrl(this._url)}/${featureId}/${operation}?token=${encodeURIComponent(token)}`;
+
+        const formData = new FormData();
+        formData.append('f', 'json');
+        for (const [key, value] of Object.entries(extraFields)) {
+            formData.append(key, value);
+        }
+        formData.append('attachment', attachmentFile, attachmentFile.name);
+
+        const response = await fetch(endpoint, { method: 'POST', body: formData });
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('json')) {
+            const body = await response.text();
+            throw new Error(`Expected JSON response from ${operation} but got content-type "${contentType}": ${body.slice(0, 200)}`);
+        }
+        const json = await response.json();
+        if (json.error) {
+            throw new Error(`ArcGIS error from ${operation}! code: ${json.error.code}, message: ${json.error.message}, details: ${json.error.details}`);
+        }
+        return json[`${operation}Result`];
+    }
+
+    /**
      * Send an observation attachment.
      * @param {ArcAttachment} attachment The observation attachment.
      * @param {number} objectId The arc object id of the observation.
@@ -309,17 +337,10 @@ export class ObservationsSender {
             const readStream = await fs.openAsBlob(file);
             const attachmentFile = new File([readStream], fileName, { type: attachment.mediaType });
 
-            this._console.info('ArcGIS sending file ' + fileName + ' from ' + file + ' for ' + objectId + ', ' + attachmentFile.size + ' bytes');
+            this._console.info('ArcGIS sending a file ' + fileName + ' from ' + file + ' for ' + objectId + ', ' + attachmentFile.size + ' bytes');
 
-            const o = {
-                url: this._url,
-                authentication: this._identityManager,
-                featureId: objectId,
-                attachment: attachmentFile
-            } as IAddAttachmentOptions;
             try {
-                const response: { addAttachmentResult: IEditFeatureResult; } = await addAttachment(o);
-                const result = response.addAttachmentResult;
+                const result = await this.postAttachmentMultipart('addAttachment', objectId, attachmentFile);
                 if (!result.success) {
                     this._console.error(`Error sending attachment! code: ${result.error?.code}, description: ${result.error?.description}`);
                 }
@@ -351,14 +372,7 @@ export class ObservationsSender {
             this._console.info('ArcGIS sending file ' + fileName + ' from ' + file + ' for update to ' + objectId + ', ' + attachmentFile.size + ' bytes');
 
             try {
-                const response = await updateAttachment({
-                    url: this._url,
-                    authentication: this._identityManager,
-                    featureId: objectId,
-                    attachmentId,
-                    attachment: attachmentFile
-                });
-                const result = response.updateAttachmentResult
+                const result = await this.postAttachmentMultipart('updateAttachment', objectId, attachmentFile, { attachmentId: String(attachmentId) });
                 if (!result.success) {
                     this._console.error(`Error updating attachment! code: ${result.error?.code}, description: ${result.error?.description}`);
                 }
