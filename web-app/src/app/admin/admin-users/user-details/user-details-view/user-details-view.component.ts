@@ -1,12 +1,23 @@
 import { Component, DestroyRef, EventEmitter, Input, OnInit, OnDestroy, OnChanges, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTableDataSource } from '@angular/material/table';
-import { PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { take } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { UserService } from '../../../../user/user.service';
 import { AdminEventsService } from '../../../services/admin-events.service';
@@ -17,12 +28,29 @@ import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { LoginsModule } from '../../../admin-logins/admin-logins.module';
 
 @Component({
     selector: 'mage-user-details-view',
     templateUrl: './user-details-view.component.html',
     styleUrls: ['./user-details-view.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MatButtonModule,
+      MatIconModule,
+      MatCardModule,
+      MatDividerModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatListModule,
+      MatPaginatorModule,
+      MatProgressSpinnerModule,
+      MatTooltipModule,
+      RouterModule,
+      LoginsModule
+    ]
 })
 export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   @Input() user!: User;

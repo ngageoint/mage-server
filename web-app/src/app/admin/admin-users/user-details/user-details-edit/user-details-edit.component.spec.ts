@@ -53,6 +53,7 @@ describe('UserDetailsEditComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        UserDetailsEditComponent,
         CommonModule,
         FormsModule,
         NoopAnimationsModule,
@@ -63,7 +64,6 @@ describe('UserDetailsEditComponent', () => {
         MatInputModule,
         MatSelectModule
       ],
-      declarations: [UserDetailsEditComponent],
       providers: [
         { provide: UserService, useValue: mockUserService },
         { provide: SessionService, useValue: mockSessionService }
@@ -109,7 +109,7 @@ describe('UserDetailsEditComponent', () => {
 
     expect(mockUserService.updateUser as jasmine.Spy).toHaveBeenCalled();
     expect(emitted).toBeTruthy();
-    expect(component.saving).toBeFalse();
+    expect(component.saving()).toBeFalse();
   }));
 
   it('should set an error and stop saving when the update fails', fakeAsync(() => {
@@ -124,7 +124,7 @@ describe('UserDetailsEditComponent', () => {
     tick();
 
     expect(component.error).toBe('boom');
-    expect(component.saving).toBeFalse();
+    expect(component.saving()).toBeFalse();
   }));
 
   it('should emit cancelled when cancel is requested', () => {
