@@ -164,14 +164,13 @@ function parseExportObservationFilter(body: any): ExportCreateParams['filter']['
   const endDate = parseExportDate(iso8601EndDate, 'observations.endDate')
   if (endDate instanceof MageError) return endDate
 
-  let fieldFilter: ObservationFieldFilter | undefined
+  const fieldFilter: ObservationFieldFilter = {}
   if (typeof keyword === 'string' && keyword.length) {
-    fieldFilter = { keyword }
-  } else if (condition) {
-    const parsedCondition = parseConditionFilter(condition)
-    if (parsedCondition) {
-      fieldFilter = { condition: parsedCondition }
-    }
+    fieldFilter.keyword = keyword
+  }
+  const parsedCondition = condition ? parseConditionFilter(condition) : undefined
+  if (parsedCondition) {
+    fieldFilter.condition = parsedCondition
   }
 
   return {
@@ -183,7 +182,7 @@ function parseExportObservationFilter(body: any): ExportCreateParams['filter']['
     userIsAnyOf: Array.isArray(users) ? users : undefined,
     teamIsAnyOf: Array.isArray(teams) ? teams : undefined,
     hasAttachments: hasAttachments || undefined,
-    fieldFilter,
+    fieldFilter: Object.keys(fieldFilter).length ? fieldFilter : undefined,
     projection: Array.isArray(projection) ? projection : undefined
   }
 }

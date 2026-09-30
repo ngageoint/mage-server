@@ -119,6 +119,8 @@ describe("marking favorite observations", function () {
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match({ '$addToSet': { favoriteUserIds: userId } }), sinon.match.any)
+      .chain('populate')
+      .chain('exec')
       .resolves(mockObservation);
 
     request(app)
@@ -169,6 +171,8 @@ describe("marking favorite observations", function () {
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match({ '$pull': { favoriteUserIds: userId } }), sinon.match.any)
+      .chain('populate')
+      .chain('exec')
       .resolves(mockObservation);
 
     request(app)

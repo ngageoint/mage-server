@@ -4,6 +4,7 @@ import { Map, GeoJSON, PathOptions, Layer, control, TileLayer, WMSOptions, Circl
 import { MapService } from '../map.service'
 import { LocalStorageService } from '../../http/local-storage.service'
 import { fixedWidthMarker } from '../marker/FixedWidthMarker'
+import { RasterLayer, RenderedRasterLayer } from '../entities.map-layer'
 
 interface FeatureWithStyle extends Feature {
   style?: any
@@ -12,7 +13,7 @@ interface FeatureWithStyle extends Feature {
 export interface PointAccuracy {
   latlng: LatLng,
   radius: number,
-  color: string,
+  color?: string,
   zoomTo: boolean
 }
 
@@ -31,7 +32,7 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   map: Map
   layer: GeoJSON
   accuracyLayer: Circle
-  layers = {}
+  baseLayer?: Layer
   zoomControl = control.zoom()
   mapListener = {
     onBaseLayerSelected: this.onBaseLayerSelected.bind(this)
@@ -78,22 +79,17 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
     this.mapService.removeListener(this.mapListener)
   }
 
-  onBaseLayerSelected(baseLayer): void {
-    let layer = this.layers[baseLayer.name]
-    if (layer) this.map.removeLayer(layer.layer)
+  onBaseLayerSelected(selected: RenderedRasterLayer | null): void {
+    if (!selected) return
 
-    layer = this.createRasterLayer(baseLayer)
-    this.layers[baseLayer.name] = { type: 'tile', layer: baseLayer, rasterLayer: layer }
+    if (this.baseLayer) this.map.removeLayer(this.baseLayer)
 
-    layer.addTo(this.map)
+    this.baseLayer = this.createRasterLayer(selected)
+    this.baseLayer.addTo(this.map)
   }
 
-  createRasterLayer(layer): Layer {
-    let baseLayer: Layer = null
-    if (layer.format === 'XYZ' || layer.format === 'TMS') {
-      const options = { tms: layer.format === 'TMS', maxZoom: 18 }
-      baseLayer = new TileLayer(layer.url, options)
-    } else if (layer.format === 'WMS') {
+  createRasterLayer(layer: RasterLayer): Layer {
+    if (layer.format === 'WMS') {
       const options: WMSOptions = {
         layers: layer.wms.layers,
         version: layer.wms.version,
@@ -102,10 +98,10 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
       }
 
       if (layer.wms.styles) options.styles = layer.wms.styles
-      baseLayer = new TileLayer.WMS(layer.url, options)
+      return new TileLayer.WMS(layer.url, options)
     }
 
-    return baseLayer
+    return new TileLayer(layer.url, { tms: layer.format === 'TMS', maxZoom: 18 })
   }
 
   addFeature(): void {

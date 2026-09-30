@@ -5,7 +5,6 @@ import { FilterService } from '../filter/filter.service';
 import { MapService } from '../map/map.service';
 import { UserService } from '../user/user.service';
 import { EventService } from '../event/event.service';
-import { PollingService } from '../event/polling.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { Router } from '@angular/router';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -25,18 +24,15 @@ describe('Navigation Component', () => {
   let userService: jasmine.SpyObj<UserService>;
 
   beforeEach(waitForAsync(() => {
-    filterService = jasmine.createSpyObj('FilterService', ['setFilter', 'removeFilters', 'getIntervalChoice'], {
-      event$: of(null),
-      teams$: of([]),
-      interval$: of({})
+    filterService = jasmine.createSpyObj('FilterService', ['setEvent', 'getSavedEventId', 'destroy'], {
+      event$: of(null)
     });
-    filterService.getIntervalChoice.and.returnValue({ filter: 'all', label: 'All' });
+    filterService.getSavedEventId.and.returnValue(null);
 
     eventService = jasmine.createSpyObj('EventService', ['query', 'init', 'destroy']);
     eventService.query.and.returnValue(of([eventA, eventB]));
 
-    userService = jasmine.createSpyObj('UserService', ['getRecentEventId', 'logout']);
-    userService.getRecentEventId.and.returnValue(null);
+    userService = jasmine.createSpyObj('UserService', ['logout']);
 
     TestBed.configureTestingModule({
       declarations: [NavigationComponent],
@@ -46,7 +42,6 @@ describe('Navigation Component', () => {
         { provide: MapService, useValue: jasmine.createSpyObj('MapService', ['init', 'destroy', 'onLocationStop']) },
         { provide: UserService, useValue: userService },
         { provide: EventService, useValue: eventService },
-        { provide: PollingService, useValue: jasmine.createSpyObj('PollingService', ['getPollingInterval', 'setPollingInterval']) },
         { provide: SessionService, useValue: { amAdmin: false } },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         provideHttpClient(withInterceptorsFromDi()),
@@ -64,18 +59,18 @@ describe('Navigation Component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('selects the first event when there is no recently used event', () => {
+  it('selects the first event when there is no saved event', () => {
     component.ngOnInit();
 
-    expect(filterService.setFilter).toHaveBeenCalledWith({ event: eventA });
+    expect(filterService.setEvent).toHaveBeenCalledWith(eventA);
   });
 
-  it('selects the recently used event when one is saved', () => {
-    userService.getRecentEventId.and.returnValue(eventB.id);
+  it('selects the saved event when one is stored', () => {
+    filterService.getSavedEventId.and.returnValue(eventB.id);
 
     component.ngOnInit();
 
-    expect(filterService.setFilter).toHaveBeenCalledWith({ event: eventB });
+    expect(filterService.setEvent).toHaveBeenCalledWith(eventB);
   });
 
   it('does not select an event when none are available', () => {
@@ -83,7 +78,18 @@ describe('Navigation Component', () => {
 
     component.ngOnInit();
 
-    expect(filterService.setFilter).not.toHaveBeenCalled();
+    expect(filterService.setEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not select an event when the events arrive after the component is destroyed', () => {
+    const events$ = new Subject<any[]>();
+    eventService.query.and.returnValue(events$.asObservable());
+    component.ngOnInit();
+    fixture.destroy();
+
+    events$.next([eventA, eventB]);
+
+    expect(filterService.setEvent).not.toHaveBeenCalled();
   });
 
   it('sorts the event list by name for the picker', () => {
@@ -107,12 +113,12 @@ describe('Navigation Component', () => {
     component.eventSearchControl.setValue('bravo');
   });
 
-  it('calls setFilter when an event is selected from the picker', () => {
+  it('calls setEvent when an event is selected from the picker', () => {
     component.ngOnInit();
 
     component.onSelectEvent(eventB);
 
-    expect(filterService.setFilter).toHaveBeenCalledWith({ event: eventB });
+    expect(filterService.setEvent).toHaveBeenCalledWith(eventB);
   });
 
   it('does not show the "no event" placeholder until the event query resolves', () => {
@@ -128,12 +134,12 @@ describe('Navigation Component', () => {
     expect(component.eventsLoaded).toBe(true);
   });
 
-  it('unsubscribes and cleans up on destroy', () => {
+  it('cleans up on destroy', () => {
     component.ngOnInit();
 
     component.ngOnDestroy();
 
-    expect(filterService.removeFilters).toHaveBeenCalled();
     expect(eventService.destroy).toHaveBeenCalled();
+    expect(filterService.destroy).toHaveBeenCalled();
   });
 });

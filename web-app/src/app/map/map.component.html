@@ -1,4 +1,5 @@
 <div class="map-controls-layers">
+  <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
   <map-control-layers (onLayerPanelToggle)="drawer.toggle()"></map-control-layers>
 </div>
 
@@ -20,10 +21,6 @@
   <mat-sidenav-content>
     <div id="map" #map>
       <div class="map-controls-left" #mapControlsLeft>
-        <div class="map-controls-left__top">
-          <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
-          <map-control-filter (click)="onFilter()"></map-control-filter>
-        </div>
         <map-control-add-observation (onAddObservation)="onAddObservation()"></map-control-add-observation>
       </div>
       <div class="map-controls-right" #mapControlsRight>

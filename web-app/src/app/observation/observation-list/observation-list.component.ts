@@ -1,9 +1,22 @@
-import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { merge } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { PageEvent } from '@angular/material/paginator';
 import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
+import { ObservationService } from '../observation.service';
+import { SearchBarComponent } from '../../search-bar/search-bar.component';
+import { ObservationFilterDialogComponent } from '../observation-filter/observation-filter.component';
+import { EventObservationFilter } from '../../filter/filter.types';
+
+const filterDefinitions = {
+  members: { icon: 'group', tooltip: 'Members' },
+  attachments: { icon: 'attach_file', tooltip: 'Has attachments' },
+  favorites: { icon: 'favorite', tooltip: 'Favorites' },
+  important: { icon: 'flag', tooltip: 'Important' },
+  fieldFilters: { icon: 'tune', tooltip: 'Field filters' }
+}
 
 @Component({
     selector: 'observation-list',
@@ -13,104 +26,131 @@ import { FilterService } from '../../filter/filter.service';
 })
 export class ObservationListComponent implements OnInit, OnDestroy {
   loaded = false
+  searchError = false
+  stale = false
+
+  observations: any[] = []
+  currentPageIndex = 0
+  pageSize = 50
+  totalObservations = 0
+
+  @ViewChild(SearchBarComponent) private searchBar: SearchBarComponent
 
   event: any
 
-  observationsById = {}
-
-  currentObservationPage = 0
-  observationPages = []
-  observationsPerPage = 50
-
-  filter = 'all'
-
-  filterChangedListener: any
+  filterCount = 0
+  filterPluralMapping = {
+    '=0': 'No active filters',
+    '=1': '1 active filter',
+    'other': '# active filters'
+  }
+  activeFilters: { icon: string; tooltip: string }[] = []
+  observationCount: number
+  filterTimerange: string
 
   constructor(
+    private dialog: MatDialog,
     private eventService: EventService,
     private filterService: FilterService,
-    private destroyRef: DestroyRef) {
-  }
+    private observationService: ObservationService,
+    private destroyRef: DestroyRef
+  ) {}
 
   ngOnInit(): void {
-    this.event = this.filterService.getEvent()
-    this.eventService.addObservationsChangedListener(this)
-    merge(
-      this.filterService.event$,
-      this.filterService.teams$,
-      this.filterService.users$,
-      this.filterService.forms$,
-      this.filterService.interval$,
-      this.filterService.actionFilter$
-    )
+    this.filterService.event$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.onFilterChanged())
+      .subscribe(event => this.onEvent(event))
+
+    this.filterService.observationFilter$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((filter) => this.onObservationFilter(filter))
+
+    this.eventService.observationPage$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((page) => this.onObservationPage(page))
   }
 
   ngOnDestroy(): void {
-    this.eventService.removeObservationsChangedListener(this)
+    this.observationService.clearPagingOptions()
   }
 
-  trackByPageId(index: number, page: any): any {
-    return index
-  }
-
-  trackByObservationId(index: number, observation: any): any {
+  trackByObservationId(_index: number, observation: any): any {
     return observation.id
   }
 
-  onFilterChanged(): void {
-    this.currentObservationPage = 0
+  onSearch(text: string): void {
+    const keyword = text?.trim()
+    this.filterService.setObservationKeyword(keyword || undefined)
   }
 
-  filterChanged(filter): void {
-    this.filter = filter;
-    this.filterService.setFilter({ actionFilter: filter });
+  openFilterDialog(): void {
+    this.dialog.open(ObservationFilterDialogComponent, {
+      autoFocus: false,
+      restoreFocus: false,
+      width: '675px'
+    })
   }
 
-  onObservationsChanged(changed): void {
+  onEvent(event: any) {
+    this.event = event
+    this.currentPageIndex = 0
+  }
+
+  onObservationPage(page: any) {
+    if (page === null) return
+    this.observations = page.data ?? []
+    this.observationCount = page.totalCount
+    this.totalObservations = page.totalCount ?? 0
+    this.currentPageIndex = page.pageIndex ?? 0
     this.loaded = true
 
-    this.event = this.filterService.getEvent()
-
-    const { added = [], updated = [], removed = [] } = changed
-    added.forEach(observation => {
-      this.observationsById[observation.id] = observation
-    })
-
-    updated.forEach(observation => {
-      this.observationsById[observation.id] = observation
-    })
-
-    removed.forEach(observation => {
-      delete this.observationsById[observation.id]
-    })
-
-    this.calculateObservationPages(Object.values(this.observationsById))
+    const hasError = page.error != null
+    this.searchError = hasError && this.observations.length === 0
+    this.stale = hasError && this.observations.length > 0
   }
 
-  calculateObservationPages(observations: any[]): void {
-    if (!observations) return;
+  retrySearch(): void {
+    this.eventService.retrySearch()
+  }
 
-    // Sort the observations
-    observations.sort((a, b) => {
-      return moment(b.properties.timestamp).valueOf() - moment(a.properties.timestamp).valueOf()
-    })
+  private onObservationFilter(filter: EventObservationFilter) {
+    this.loaded = false
+    this.searchError = false
+    this.stale = false
+    this.observations = []
+    this.currentPageIndex = 0
+    this.observationService.setPagingOptions({ page: 0, page_size: this.pageSize })
+    this.searchBar?.setValue(filter?.fieldFilter?.keyword ?? '')
 
-    // Slice into pages
-    const pages = []
-    for (let i = 0, j = observations.length; i < j; i += this.observationsPerPage) {
-      pages.push(observations.slice(i, i + this.observationsPerPage))
+    this.filterTimerange = filter ? this.formatTimeInterval(filter.timeInterval) : ''
+    this.activeFilters = filter ? this.buildActiveFilters(filter) : []
+    this.filterCount = this.activeFilters.length
+  }
+
+  private formatTimeInterval(timeInterval?: EventObservationFilter['timeInterval']): string {
+    const choice = timeInterval?.choice
+    if (!choice || choice.label === 'All') return 'All time'
+
+    if (choice.filter === 'custom') {
+      const format = (date?: Date) => date ? moment(date).format('MMM D, YYYY') : '?'
+      return `${format(timeInterval.options?.startDate)} – ${format(timeInterval.options?.endDate)}`
     }
+    return choice.label
+  }
 
-    this.observationPages = pages
+  private buildActiveFilters(filter: EventObservationFilter): { icon: string; tooltip: string }[] {
+    const { memberFilter, hasAttachments, isUserFavorite, isFlaggedImportant, fieldFilter } = filter
+    const filters: { icon: string; tooltip: string }[] = []
+    if (memberFilter && (memberFilter.teamIds.length > 0 || memberFilter.userIds.length > 0)) filters.push(filterDefinitions.members)
+    if (hasAttachments) filters.push(filterDefinitions.attachments)
+    if (isUserFavorite) filters.push(filterDefinitions.favorites)
+    if (isFlaggedImportant) filters.push(filterDefinitions.important)
+    if (fieldFilter && (fieldFilter.condition != null || fieldFilter.keyword)) filters.push(filterDefinitions.fieldFilters)
+    return filters
+  }
 
-    // If a new page showed up that wasn't there before, switch to it
-    if (this.currentObservationPage === -1 && pages.length) {
-      this.currentObservationPage = 0
-    }
-
-    // ensure the page that they were on did not go away
-    this.currentObservationPage = Math.min(this.currentObservationPage, pages.length - 1)
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize
+    this.observationService.setPagingOptions({ page: event.pageIndex, page_size: event.pageSize })
   }
 }

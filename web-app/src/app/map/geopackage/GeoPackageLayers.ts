@@ -1,15 +1,17 @@
-import { Layer, geoJSON, Map, LatLng, LeafletMouseEvent } from 'leaflet';
-import { GeoPackageLayer } from './GeoPackageLayer';
-import { Feature, Geometry } from 'geojson';
+import { Layer, LayerEvent, geoJSON, Map, LatLng, LeafletMouseEvent } from 'leaflet';
+import { GeoPackageRasterLayer } from './GeoPackageLayer';
 import { SessionService } from 'src/app/http/session.service';
+import { ClosestFeature, LayerService } from '../../layer/layer.service';
+import { FilterService } from '../../filter/filter.service';
+import { GeoPackageLayer } from '../entities.map-layer';
 
 export default class GeoPackageLayers {
-  visibleGeoPackageLayers: GeoPackageLayer[];
-  closestLayer: Layer & { feature?: { layerId?: number; gp_table?: string } };
+  visibleGeoPackageLayers: GeoPackageRasterLayer[];
+  closestLayer?: Layer & { feature?: { layerId?: number; gp_table?: string } };
   constructor(
     public map: Map,
-    public layerService: any,
-    public filterService: any,
+    public layerService: LayerService,
+    public filterService: FilterService,
     public sessionService: SessionService
   ) {
     this.map = map;
@@ -23,39 +25,45 @@ export default class GeoPackageLayers {
     this.map.on('layerremove', this.mapLayerRemoved.bind(this));
   }
 
-  createGeoPackageLayer(table, id, pane): Layer {
-    const filteredEvent = this.filterService.getEvent();
-    const layer = new GeoPackageLayer('api/events/' + filteredEvent.id + '/layers/' + id + '/' + table.name + '/{z}/{x}/{y}.png', {
+  createGeoPackageLayer(layerInfo: GeoPackageLayer, pane: string): Layer {
+    const layer = new GeoPackageRasterLayer(layerInfo.url, {
       token: this.sessionService.getToken(),
-      minZoom: table.minZoom,
-      maxZoom: table.maxZoom,
-      layerId: id,
+      minZoom: layerInfo.minZoom,
+      maxZoom: layerInfo.maxZoom,
+      layerId: layerInfo.layerId,
       pane: pane,
-      table: table
+      table: {
+        name: layerInfo.name,
+        type: layerInfo.renderAs,
+        minZoom: layerInfo.minZoom,
+        maxZoom: layerInfo.maxZoom,
+        bbox: layerInfo.bbox
+      }
     });
 
     return layer;
   }
 
-  mapLayerAdded(event): void {
-    if (event.layer.type === 'GeoPackage') {
+  mapLayerAdded(event: LayerEvent): void {
+    if (event.layer instanceof GeoPackageRasterLayer) {
       this.visibleGeoPackageLayers.push(event.layer);
     }
   }
 
-  mapLayerRemoved(event): void {
-    if (event.layer.type === 'GeoPackage') {
+  mapLayerRemoved(event: LayerEvent): void {
+    const removed = event.layer;
+    if (removed instanceof GeoPackageRasterLayer) {
       if (
         this.closestLayer &&
         this.closestLayer.feature &&
-        event.layer.layerId === this.closestLayer.feature.layerId &&
-        event.layer.table.name === this.closestLayer.feature.gp_table
+        removed.layerId === this.closestLayer.feature.layerId &&
+        removed.table.name === this.closestLayer.feature.gp_table
       ) {
         this.map.removeLayer(this.closestLayer);
       }
 
       this.visibleGeoPackageLayers = this.visibleGeoPackageLayers.filter(layer => {
-        return event.layer.layerId !== layer.layerId;
+        return removed.layerId !== layer.layerId;
       });
     }
   }
@@ -94,54 +102,50 @@ export default class GeoPackageLayers {
         };
       });
 
-      this.layerService.getClosestFeaturesForLayers(layers, event.latlng, this.getTileFromPoint(event.latlng)).then(features => {
+      const mageEvent = this.filterService.getEvent()
+      if (!mageEvent) return
+      this.layerService.getClosestFeaturesForLayers(mageEvent, layers, event.latlng, this.getTileFromPoint(event.latlng)).subscribe((features: ClosestFeature[]) => {
         if (this.closestLayer) {
           this.map.removeLayer(this.closestLayer);
         }
 
         if (!features.length) return;
 
-        let popup;
         const layer = this.visibleGeoPackageLayers.find(layer => {
           return layer.layerId === features[0].layerId && layer.table.name === features[0].gp_table;
         });
         if (!layer) {
           throw new Error(`no layer found for id ${features[0].layerId}`)
         }
-        this.closestLayer = geoJSON(features[0], {
-          pane: layer.pane,
-          onEachFeature(
-            feature: Feature<Geometry> & { gp_table: string; feature_count: number; coverage: number },
-            layer
-          ) {
-            let geojsonPopupHtml = '<div class="geojson-popup"><h6>' + feature.gp_table + '</h6>';
-            if (feature.coverage) {
-              geojsonPopupHtml += 'There are ' + feature.feature_count + ' features in this area.';
-            } else {
-              geojsonPopupHtml += '<table>';
-              for (const key in feature.properties) {
-                if (feature.properties.hasOwnProperty(key) && feature.properties[key] !== Object(feature.properties[key])) {
-                  geojsonPopupHtml +=
-                    '<tr><td class="title" style="padding-right: 8px;">' +
-                    key +
-                    '</td><td class="text">' +
-                    feature.properties[key] +
-                    '</td></tr>';
-                }
-              }
-              geojsonPopupHtml += '</table>';
-            }
-            geojsonPopupHtml += '</div>';
-            popup = layer.bindPopup(geojsonPopupHtml, {
-              maxHeight: 300
-            });
-          }
-        }).getLayers()[0] as Layer;
-        this.map.addLayer(this.closestLayer);
-        if (popup) {
-          popup.openPopup(event.latlng);
-        }
+
+        const closestLayer = geoJSON(features[0], { pane: layer.pane }).getLayers()[0]
+        closestLayer.bindPopup(this.popupHtml(features[0]), { maxHeight: 300 })
+        this.closestLayer = closestLayer
+        this.map.addLayer(closestLayer);
+        closestLayer.openPopup(event.latlng);
       });
     }
+  }
+
+  private popupHtml(feature: ClosestFeature): string {
+    let html = '<div class="geojson-popup"><h6>' + feature.gp_table + '</h6>';
+    if (feature.coverage) {
+      html += 'There are ' + feature.feature_count + ' features in this area.';
+    } else {
+      html += '<table>';
+      for (const key in feature.properties) {
+        if (feature.properties.hasOwnProperty(key) && feature.properties[key] !== Object(feature.properties[key])) {
+          html +=
+            '<tr><td class="title" style="padding-right: 8px;">' +
+            key +
+            '</td><td class="text">' +
+            feature.properties[key] +
+            '</td></tr>';
+        }
+      }
+      html += '</table>';
+    }
+    html += '</div>';
+    return html;
   }
 }

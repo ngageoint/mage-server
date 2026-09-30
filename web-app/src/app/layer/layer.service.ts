@@ -1,7 +1,11 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { FilterService } from "../filter/filter.service";
+import { LatLng } from "leaflet";
+import { MageEvent } from "../entities/event/entities.event";
+import { Layer, LayerId } from "../entities/layer/entities.layer";
+
+export type ClosestFeature = GeoJSON.Feature & { layerId: LayerId; gp_table: string; feature_count?: number; coverage?: number };
 
 @Injectable({
   providedIn: 'root'
@@ -9,24 +13,23 @@ import { FilterService } from "../filter/filter.service";
 export class LayerService {
 
   constructor(
-    private httpClient: HttpClient,
-    private filterService: FilterService
+    private httpClient: HttpClient
   ) { }
 
-  getLayersForEvent(event, includeUnavailable?: any): Observable<any> {
-    return this.httpClient.get(`/api/events/${event.id}/layers`, { params: { includeUnavailable } } )
+  getLayersForEvent(event: MageEvent, includeUnavailable = false): Observable<Layer[]> {
+    const params: Record<string, boolean> = includeUnavailable ? { includeUnavailable: true } : {}
+    return this.httpClient.get<Layer[]>(`/api/events/${event.id}/layers`, { params })
   }
 
-  getClosestFeaturesForLayers(layerIds, latlng, tile): Observable<any> {
-    const event = this.filterService.getEvent();
-    return this.httpClient.post<any>(`/api/events/${event.id}/features`, { layerIds: layerIds, latlng: latlng, tile: tile })
+  getClosestFeaturesForLayers(event: MageEvent, layerIds: { id: LayerId, table: string }[], latlng: LatLng, tile: { z: number, x: number, y: number }): Observable<ClosestFeature[]> {
+    return this.httpClient.post<ClosestFeature[]>(`/api/events/${event.id}/features`, { layerIds: layerIds, latlng: latlng, tile: tile })
   }
 
-  makeAvailable(layerId) {
+  makeAvailable(layerId: LayerId) {
     return this.httpClient.get<any>(`/api/layers/${layerId}/available`)
   }
 
-  uploadGeopackage(data) {
+  uploadGeopackage(data: Record<string, string | Blob | null | undefined>) {
     const formData = new FormData();
     for (const property in data) {
       if (data[property] != null) {

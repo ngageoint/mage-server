@@ -79,18 +79,18 @@ export class SearchComponent implements AfterViewInit {
 
   search(value: string): void {
     this.searching = true;
-    this.searchService.search(this.mapSettings, value).subscribe(
-      (results: PlacenameSearchResult[]) => {
+    this.searchService.search(this.mapSettings, value).subscribe({
+      next: (results: PlacenameSearchResult[]) => {
         this.searching = false;
         this.searchResults = results;
       },
-      () => {
+      error: () => {
         this.searching = false;
-        this.snackBar.open('Error accessing place name server ', undefined, {
+        this.snackBar.open('Error accessing place name server', undefined, {
           duration: 2000
         });
       }
-    );
+    });
   }
 
   clear($event: MouseEvent, input: HTMLInputElement): void {
@@ -104,7 +104,6 @@ export class SearchComponent implements AfterViewInit {
   }
 
   searchResultClick(result: PlacenameSearchResult): void {
-    this.searchToggle();
     this.onSearch.emit({ result });
   }
 }
