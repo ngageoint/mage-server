@@ -73,8 +73,8 @@ describe('BulkUserComponent', () => {
     mockTeamsService.addUserToTeam.calls.reset();
 
     await TestBed.configureTestingModule({
-      declarations: [BulkUserComponent],
       imports: [
+        BulkUserComponent,
         FormsModule,
         MatFormFieldModule,
         MatSelectModule,
