@@ -1,11 +1,13 @@
 import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { Strategy } from '../../admin-settings.model';
 
 @Component({
     selector: 'icon-upload',
     templateUrl: './icon-upload.component.html',
     styleUrls: ['./icon-upload.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [MatButtonModule]
 })
 export class IconUploadComponent {
   @Input() strategy: Strategy;

@@ -105,16 +105,16 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AdminAuthenticationLDAPComponent,
     AdminAuthenticationSAMLComponent,
     AdminNavbarComponent,
-    AdminNavigationComponent
+    AdminNavigationComponent,
+    AuthenticationCreateComponent,
+    ButtonPreviewComponent,
+    IconUploadComponent
   ],
   declarations: [
     SearchModalComponent,
     AdminComponent,
     AdminAuthenticationComponent,
-    AdminAuthenticationSettingsComponent,
-    AuthenticationCreateComponent,
-    ButtonPreviewComponent,
-    IconUploadComponent,
+    AdminAuthenticationSettingsComponent
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

@@ -1,4 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { AdminAuthenticationOidcComponent } from '../admin-authentication-oidc/admin-authentication-oidc.component';
+import { AdminAuthenticationOAuth2Component } from '../admin-authentication-oauth2/admin-authentication-oauth2.component';
+import { AdminAuthenticationLDAPComponent } from '../admin-authentication-ldap/admin-authentication-ldap.component';
+import { AdminAuthenticationSAMLComponent } from '../admin-authentication-saml/admin-authentication-saml.component';
+import { ButtonPreviewComponent } from './button-preview/button-preview.component';
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
@@ -13,6 +24,7 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  ReactiveFormsModule,
   ValidationErrors,
   Validators
 } from '@angular/forms';
@@ -22,7 +34,21 @@ import {
     templateUrl: './admin-authentication-create.component.html',
     styleUrls: ['./admin-authentication-create.component.scss'],
     providers: [],
-    standalone: false
+    standalone: true,
+    imports: [
+      ReactiveFormsModule,
+      MatStepperModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatButtonModule,
+      MatIconModule,
+      MatSelectModule,
+      AdminAuthenticationOidcComponent,
+      AdminAuthenticationOAuth2Component,
+      AdminAuthenticationLDAPComponent,
+      AdminAuthenticationSAMLComponent,
+      ButtonPreviewComponent
+    ]
 })
 export class AuthenticationCreateComponent implements OnInit, OnDestroy {
   breadcrumbs: AdminBreadcrumb[] = [{
