@@ -3,6 +3,7 @@ export type LayerId = number
 export type Layer = {
   id: LayerId
   name: string
+  description?: string
   type: 'Imagery' | 'Feature' | 'GeoPackage'
   state: 'available' | 'unavailable' | 'processing'
   url?: string

@@ -6,9 +6,7 @@ import { RouterModule } from '@angular/router';
 import { MatButtonModule as MatButtonModule } from '@angular/material/button';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule as MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectModule as MatSelectModule } from '@angular/material/select';
@@ -35,12 +33,12 @@ import { CreateEventDialogComponent } from './create-event/create-event.componen
 @NgModule({
     declarations: [
         CreateEventDialogComponent,
-        EventDetailsComponent,
         UploadFormDialogComponent
     ],
     imports: [
         CommonModule,
         EventDashboardComponent,
+        EventDetailsComponent,
         FormsModule,
         ReactiveFormsModule,
         RouterModule,
@@ -49,9 +47,7 @@ import { CreateEventDialogComponent } from './create-event/create-event.componen
         MatButtonModule,
         MatCardModule,
         MatChipsModule,
-        MatTableModule,
         MatPaginatorModule,
-        MatSortModule,
         MatDialogModule,
         MatFormFieldModule,
         MatDividerModule,

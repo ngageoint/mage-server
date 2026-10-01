@@ -1,651 +1,484 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, DestroyRef, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, DestroyRef, inject, signal, computed, linkedSignal, effect } from '@angular/core'
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { KeyValuePipe } from '@angular/common'
+import { MatDialog } from '@angular/material/dialog'
+import { MatSnackBar } from '@angular/material/snack-bar'
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
+import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
+import { MatListModule } from '@angular/material/list'
+import { MatMenuModule } from '@angular/material/menu'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
-import { forkJoin, Observable } from 'rxjs';
-import { NgForm } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { forkJoin, Observable } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { FormsModule, NgForm } from '@angular/forms'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 
-import { Layer } from 'mage-web-app/entities/layer/entities.layer';
-import { MageEvent } from 'mage-web-app/entities/event/entities.event';
-import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
-import { AdminEventsService } from '../../services/admin-events.service';
-import { User as MageUser } from '@ngageoint/mage.web-core-lib/user';
+import { Layer, layerIconName } from 'mage-web-app/entities/layer/entities.layer'
+import { Form, MageEvent } from 'mage-web-app/entities/event/entities.event'
+import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model'
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service'
+import { AdminEventsService } from '../../services/admin-events.service'
+import { User as MageUser } from '@ngageoint/mage.web-core-lib/user'
 import {
   SearchModalComponent,
   SearchModalData,
   SearchModalResult,
   SearchModalColumn
-} from '../../search-modal/search-modal.component';
-import { DeleteEventComponent } from '../delete-event/delete-event.component';
-import { CreateEventDialogComponent } from '../create-event/create-event.component';
-import { UploadFormDialogComponent } from '../upload-form/upload-form.component';
-import { layerIconName } from '../../../entities/layer/entities.layer';
+} from '../../search-modal/search-modal.component'
+import { DeleteEventComponent } from '../delete-event/delete-event.component'
+import { CreateEventDialogComponent } from '../create-event/create-event.component'
+import { UploadFormDialogComponent } from '../upload-form/upload-form.component'
+import { AdminEventFormPreviewComponent } from '../admin-event-form/admin-event-form-preview/admin-event-form-preview.component'
+import { RouteReuse } from '../../../route-reuse.strategy'
 
-interface ExtendedEvent extends MageEvent {
-  complete?: boolean;
-  minObservationForms?: number;
-  maxObservationForms?: number;
-  teamIds?: string[];
-  layerIds?: string[];
+interface EventWithStatus extends MageEvent {
+  complete?: boolean
 }
 
-interface PagedResult<T> {
-  items: T[];
-  totalCount?: number;
-  pageSize?: number;
-  pageIndex?: number;
+interface RestrictionsError {
+  message?: string
+  errors?: Record<string, { message: string }>
 }
+
+const EVENTS_BREADCRUMB: AdminBreadcrumb = { title: 'Events', icon: 'event', route: ['/admin/events'] }
+
+const EMPTY_PAGE: PageOf<never> = { items: [], totalCount: 0, pageSize: 0, pageIndex: 0 }
 
 @Component({
     selector: 'mage-event-details',
     templateUrl: './event-details.component.html',
     styleUrls: ['./event-details.component.scss'],
-    standalone: false
+    imports: [
+        KeyValuePipe,
+        FormsModule,
+        RouterLink,
+        DragDropModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDividerModule,
+        MatIconModule,
+        MatInputModule,
+        MatListModule,
+        MatMenuModule,
+        MatPaginatorModule,
+        MatProgressSpinnerModule,
+        MatTooltipModule,
+        AdminEventFormPreviewComponent
+    ]
 })
 export class EventDetailsComponent implements OnInit, OnDestroy {
 
-  @ViewChild('restrictions', { static: false }) restrictionsForm?: NgForm;
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange
 
-  event: ExtendedEvent | null = null;
-  eventTeam: Team | null = null;
-
-  #breadcrumbs: AdminBreadcrumb[] = [{
-    title: 'Events',
-    icon: 'event',
-    route: ['/admin/events']
-  }];
-  set breadcrumbs(value: AdminBreadcrumb[]) {
-    this.#breadcrumbs = value;
-    this.breadcrumbService.setBreadcrumbs(value);
-  }
-  get breadcrumbs(): AdminBreadcrumb[] {
-    return this.#breadcrumbs;
-  }
+  @ViewChild('restrictions', { static: false }) restrictionsForm?: NgForm
 
   @ViewChild('breadcrumbActions', { static: true })
-  breadcrumbActions!: TemplateRef<unknown>;
+  breadcrumbActions!: TemplateRef<unknown>
 
-  hasReadPermission = false;
-  hasUpdatePermission = false;
-  hasDeletePermission = false;
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
+  private dialog = inject(MatDialog)
+  private snackBar = inject(MatSnackBar)
+  private destroyRef = inject(DestroyRef)
 
-  showArchivedForms = false;
-  previewForm: any = null;
-  restrictionsError: any = null;
-  formsAnimationState = 0;
+  private teamService = inject(TeamService)
+  private eventsService = inject(AdminEventsService)
+  private breadcrumbService = inject(AdminBreadcrumbService)
 
-  loadingMembers = true;
-  membersPageIndex = 0;
-  membersPageSize = 5;
-  membersPage: PagedResult<MageUser> = { items: [], totalCount: 0 };
-  memberSearchTerm = '';
-  membersDataSource = new MatTableDataSource<MageUser>();
-  pageSizeOptions = [5, 10, 25];
+  private takeUntilDestroyed = <T>() => takeUntilDestroyed<T>(this.destroyRef)
 
-  loadingTeams = true;
-  teamsPageIndex = 0;
-  teamsPageSize = 5;
-  teamsPage: PagedResult<Team> = { items: [], totalCount: 0 };
-  teamSearchTerm = '';
-  teamsDataSource = new MatTableDataSource<Team>();
+  readonly eventId: string = this.route.snapshot.paramMap.get('eventId')
 
-  loadingLayers = true;
-  layersPageIndex = 0;
-  layersPageSize = 5;
-  layersPage: PagedResult<Layer> = { items: [], totalCount: 0 };
-  layerSearchTerm = '';
-  eventLayers: Layer[] = [];
-  layersDataSource = new MatTableDataSource<Layer>();
+  private eventResource = rxResource({
+    stream: () => forkJoin({
+      event: this.eventsService.getEventById(this.eventId),
+      teams: this.eventsService.getTeamsInEvent(this.eventId, { page: 0, page_size: 100, total: false })
+    }).pipe(
+      map(({ event, teams }) => ({
+        event: event as EventWithStatus,
+        eventTeam: teams.items.find((team) => team.teamEventId === event.id) || null
+      }))
+    )
+  })
 
-  #destroyRef = inject(DestroyRef)
-  #takeUntilDestroyed = <T>() => takeUntilDestroyed<T>(this.#destroyRef)
+  event = linkedSignal<EventWithStatus | null>(() =>
+    this.eventResource.hasValue() ? this.eventResource.value().event : null)
+  eventTeam = linkedSignal<Team | null>(() =>
+    this.eventResource.hasValue() ? this.eventResource.value().eventTeam : null)
+  eventLoadError = this.eventResource.error
 
-  constructor(
-    private eventsService: AdminEventsService,
-    private teamService: TeamService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private route: ActivatedRoute,
-    private router: Router,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  breadcrumbs = computed<AdminBreadcrumb[]>(() => {
+    const event = this.event()
+    return event ? [EVENTS_BREADCRUMB, { title: event.name || 'Event' }] : [EVENTS_BREADCRUMB]
+  })
+
+  readonly hasUpdatePermission = signal(true).asReadonly()
+  readonly hasDeletePermission = signal(true).asReadonly()
+
+  showArchivedForms = signal(false)
+  previewForm = signal<Form | null>(null)
+  restrictionsError = signal<RestrictionsError | null>(null)
+
+  readonly pageSizeOptions = [5, 10, 25]
+
+  membersPageIndex = signal(0)
+  membersPageSize = signal(5)
+  memberSearchTerm = signal('')
+
+  members = rxResource({
+    params: () => ({
+      page: this.membersPageIndex(),
+      pageSize: this.membersPageSize(),
+      term: this.memberSearchTerm()
+    }),
+    stream: ({ params }) => this.eventsService.getMembers(this.eventId, {
+      page: params.page,
+      page_size: params.pageSize,
+      term: params.term,
+      total: true
+    })
+  })
+  membersPage = computed<PageOf<MageUser>>(() => this.members.hasValue() ? this.members.value() : EMPTY_PAGE)
+  loadingMembers = this.members.isLoading
+
+  teamsPageIndex = signal(0)
+  teamsPageSize = signal(5)
+  teamSearchTerm = signal('')
+
+  teams = rxResource({
+    params: () => ({
+      page: this.teamsPageIndex(),
+      pageSize: this.teamsPageSize(),
+      term: this.teamSearchTerm()
+    }),
+    stream: ({ params }) => this.eventsService.getTeamsInEvent(this.eventId, {
+      page: params.page,
+      page_size: params.pageSize,
+      term: params.term,
+      total: true,
+      omit_event_teams: true
+    })
+  })
+  teamsPage = computed<PageOf<Team>>(() => this.teams.hasValue() ? this.teams.value() : EMPTY_PAGE)
+  loadingTeams = this.teams.isLoading
+
+  layersPageIndex = signal(0)
+  layersPageSize = signal(5)
+  layerSearchTerm = signal('')
+
+  layers = rxResource({
+    stream: () => this.eventsService.getLayersForEvent(this.eventId)
+  })
+  loadingLayers = this.layers.isLoading
+
+  layersPage = computed<PageOf<Layer>>(() => {
+    const term = this.layerSearchTerm().toLowerCase()
+    const allLayers = this.layers.hasValue() ? this.layers.value() : []
+    const filteredLayers = term
+      ? allLayers.filter((layer) => (layer.name || '').toLowerCase().includes(term))
+      : allLayers
+
+    const pageIndex = this.layersPageIndex()
+    const pageSize = this.layersPageSize()
+    const start = pageIndex * pageSize
+
+    return {
+      items: filteredLayers.slice(start, start + pageSize),
+      totalCount: filteredLayers.length,
+      pageSize,
+      pageIndex
+    }
+  })
+
+  readonly layerIcon = layerIconName
+
+  nonArchivedForms = computed(() => (this.event()?.forms || []).filter((form) => !form.archived))
+  filteredForms = computed(() => {
+    const forms = this.event()?.forms || []
+    return this.showArchivedForms() ? forms : forms.filter((form) => !form.archived)
+  })
+
+  constructor() {
+    effect(() => this.breadcrumbService.setBreadcrumbs(this.breadcrumbs()))
+  }
 
   ngOnInit(): void {
-    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-    this.breadcrumbService.setActions(this.breadcrumbActions);
-
-    const eventId = this.route.snapshot.paramMap.get('eventId') || this.route.snapshot.paramMap.get('id');
-
-    if (!eventId) {
-      console.error('Missing eventId route param');
-      this.router.navigate(['../../events'], { relativeTo: this.route });
-      return;
-    }
-
-    forkJoin({
-      event: this.eventsService.getEventById(eventId),
-      teams: this.eventsService.getTeamsInEvent(String(eventId), {
-        page: 0,
-        page_size: 100,
-        total: false
-      })
-    })
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: ({ event, teams }) => {
-          this.event = event;
-
-          this.eventTeam =
-            teams.items.find((team) => team.teamEventId === event.id) || null;
-
-          this.getMembersPage();
-          this.getTeamsPage();
-          this.loadLayers();
-
-          this.breadcrumbs.push({ title: this.event?.name || 'Event' });
-          this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-        },
-        error: (error) => {
-          console.error('Error loading event:', error);
-        }
-      });
-
-    this.hasReadPermission = true;
-    this.hasUpdatePermission = true;
-    this.hasDeletePermission = true;
+    this.breadcrumbService.setActions(this.breadcrumbActions)
   }
 
   ngOnDestroy(): void {
-    this.breadcrumbService.setActions(null);
+    this.breadcrumbService.setActions(null)
   }
 
-  getMembersPage(): void {
-    if (!this.event?.id) {
-      return;
-    }
-    this.eventsService
-      .getMembers(String(this.event.id), {
-        page: this.membersPageIndex,
-        page_size: this.membersPageSize,
-        term: this.memberSearchTerm,
-        total: true
-      })
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: (page) => {
-          this.loadingMembers = false;
-          this.membersPage = {
-            items: page.items,
-            totalCount: page.totalCount || 0,
-            pageSize: page.pageSize,
-            pageIndex: page.pageIndex
-          };
-          this.membersDataSource.data = page.items;
-        },
-        error: (error) => {
-          this.loadingMembers = false;
-          console.error('Error loading members:', error);
-        }
-      });
+  reloadEvent(): void {
+    this.eventResource.reload()
   }
 
   removeMember($event: MouseEvent, user: MageUser): void {
-    $event.stopPropagation();
+    $event.stopPropagation()
 
-    if (!this.eventTeam?.id) {
-      console.error('Event team not found');
-      return;
+    const eventTeam = this.eventTeam()
+    if (!eventTeam?.id) {
+      console.error('Event team not found')
+      return
     }
 
-    const eventTeamId = String(this.eventTeam.id);
+    const eventTeamId = String(eventTeam.id)
 
     this.teamService
       .removeMember(eventTeamId, String(user.id))
-      .pipe(this.#takeUntilDestroyed())
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
         next: () => {
-          this.getMembersPage();
+          this.members.reload()
 
-          const snackBarRef = this.snackBar.open(`Removed ${user.displayName} from team`, 'Undo', { duration: 5000 });
+          const snackBarRef = this.snackBar.open(`Removed ${user.displayName} from team`, 'Undo', { duration: 5000 })
           snackBarRef.onAction().subscribe(() => {
             this.teamService.addUserToTeam(eventTeamId, user).subscribe({
-              next: () => this.getMembersPage(),
+              next: () => this.members.reload(),
               error: (error) => {
-                console.error('Error restoring member:', error);
-                this.snackBar.open('Error restoring member', 'Close', { duration: 5000 });
+                console.error('Error restoring member:', error)
+                this.snackBar.open('Error restoring member', 'Close', { duration: 5000 })
               }
-            });
-          });
+            })
+          })
         },
         error: (error) => console.error('Error removing member:', error)
-      });
-  }
-
-  searchMembers(): void {
-    this.membersPageIndex = 0;
-    this.getMembersPage();
-  }
-
-  getTeamsPage(): void {
-    if (!this.event?.id) {
-      return;
-    }
-    this.eventsService
-      .getTeamsInEvent(String(this.event.id), {
-        page: this.teamsPageIndex,
-        page_size: this.teamsPageSize,
-        term: this.teamSearchTerm,
-        total: true,
-        omit_event_teams: true
       })
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: (page) => {
-          this.loadingTeams = false;
-          this.teamsPage = {
-            items: page.items,
-            totalCount: page.totalCount || 0,
-            pageSize: page.pageSize,
-            pageIndex: page.pageIndex
-          };
-          this.teamsDataSource.data = page.items;
-        },
-        error: (error) => {
-          this.loadingTeams = false;
-          console.error('Error loading teams:', error);
-        }
-      });
   }
 
   removeTeam($event: MouseEvent, team: Team): void {
-    $event.stopPropagation();
-
-    if (!this.event?.id) {
-      return;
-    }
-
-    const eventId = String(this.event.id);
-
+    $event.stopPropagation()
     this.eventsService
-      .removeEventFromTeam(eventId, String(team.id))
-      .pipe(this.#takeUntilDestroyed())
+      .removeEventFromTeam(this.eventId, String(team.id))
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
         next: () => {
-          this.getTeamsPage();
+          this.teams.reload()
 
-          const snackBarRef = this.snackBar.open(`Removed ${team.name} from event`, 'Undo', { duration: 5000 });
+          const snackBarRef = this.snackBar.open(`Removed ${team.name} from event`, 'Undo', { duration: 5000 })
           snackBarRef.onAction().subscribe(() => {
-            this.eventsService.addTeamToEvent(eventId, team).subscribe({
-              next: () => this.getTeamsPage(),
+            this.eventsService.addTeamToEvent(this.eventId, team).subscribe({
+              next: () => this.teams.reload(),
               error: (error) => {
-                console.error('Error restoring team:', error);
-                this.snackBar.open('Error restoring team', 'Close', { duration: 5000 });
+                console.error('Error restoring team:', error)
+                this.snackBar.open('Error restoring team', 'Close', { duration: 5000 })
               }
-            });
-          });
+            })
+          })
         },
         error: (error) => console.error('Error removing team:', error)
-      });
-  }
-
-  searchTeams(): void {
-    this.teamsPageIndex = 0;
-    this.getTeamsPage();
-  }
-
-  loadLayers(): void {
-    if (!this.event?.id) {
-      return;
-    }
-    this.eventsService
-      .getLayersForEvent(String(this.event.id))
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: (layers) => {
-          this.loadingLayers = false;
-          this.eventLayers = layers || [];
-          this.filterAndPaginateLayers();
-        },
-        error: (error) => {
-          this.loadingLayers = false;
-          console.error('Error loading layers:', error);
-        }
-      });
-  }
-
-  filterAndPaginateLayers(): void {
-    let filteredLayers = this.eventLayers || [];
-
-    if (this.layerSearchTerm) {
-      const term = this.layerSearchTerm.toLowerCase();
-      filteredLayers = filteredLayers.filter((layer) =>
-        (layer.name || '').toLowerCase().includes(term)
-      );
-    }
-
-    const startIndex = this.layersPageIndex * this.layersPageSize;
-    const endIndex = startIndex + this.layersPageSize;
-    const paginatedLayers = filteredLayers.slice(startIndex, endIndex);
-
-    this.layersPage = {
-      items: paginatedLayers,
-      totalCount: filteredLayers.length,
-      pageSize: this.layersPageSize,
-      pageIndex: this.layersPageIndex
-    };
-    this.layersDataSource.data = paginatedLayers;
-  }
-
-  searchLayers(): void {
-    this.layersPageIndex = 0;
-    this.filterAndPaginateLayers();
-  }
-
-  layerIcon(layer: Layer): string {
-    return layerIconName(layer);
-  }
-
-  addLayer($event: MouseEvent, layer: Layer): void {
-    $event.stopPropagation();
-    if (!this.event?.id) {
-      return;
-    }
-    this.eventsService
-      .addLayerToEvent(String(this.event.id), { id: layer.id })
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: () => this.loadLayers(),
-        error: (error) => console.error('Error adding layer:', error)
-      });
+      })
   }
 
   removeLayer($event: MouseEvent, layer: Layer): void {
-    $event.stopPropagation();
-
-    if (!this.event?.id) {
-      return;
-    }
-
-    const eventId = String(this.event.id);
-
+    $event.stopPropagation()
     this.eventsService
-      .removeLayerFromEvent(eventId, layer.id)
-      .pipe(this.#takeUntilDestroyed())
+      .removeLayerFromEvent(this.eventId, layer.id)
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
         next: () => {
-          this.loadLayers();
+          this.layers.reload()
 
-          const snackBarRef = this.snackBar.open(`Removed ${layer.name} from event`, 'Undo', { duration: 5000 });
+          const snackBarRef = this.snackBar.open(`Removed ${layer.name} from event`, 'Undo', { duration: 5000 })
           snackBarRef.onAction().subscribe(() => {
-            this.eventsService.addLayerToEvent(eventId, { id: layer.id }).subscribe({
-              next: () => this.loadLayers(),
+            this.eventsService.addLayerToEvent(this.eventId, { id: layer.id }).subscribe({
+              next: () => this.layers.reload(),
               error: (error) => {
-                console.error('Error restoring layer:', error);
-                this.snackBar.open('Error restoring layer', 'Close', { duration: 5000 });
+                console.error('Error restoring layer:', error)
+                this.snackBar.open('Error restoring layer', 'Close', { duration: 5000 })
               }
-            });
-          });
+            })
+          })
         },
         error: (error) => console.error('Error removing layer:', error)
-      });
-  }
-
-  get nonArchivedForms(): any[] {
-    return this.event?.forms ? this.event.forms.filter((f: any) => !f.archived) : [];
+      })
   }
 
   saveFormRestrictions(): void {
-    if (!this.event?.id) {
-      return;
+    const event = this.event()
+    this.restrictionsError.set(null)
+    const eventUpdate: Partial<MageEvent> = {
+      minObservationForms: event.minObservationForms,
+      maxObservationForms: event.maxObservationForms,
+      forms: event.forms
     }
-    this.restrictionsError = null;
-    const forms = Array.isArray(this.event.forms) ? this.event.forms : [];
-    const eventUpdate: any = {
-      minObservationForms: this.event.minObservationForms,
-      maxObservationForms: this.event.maxObservationForms,
-      forms: forms.map((form: any) => ({
-        ...form,
-        min: form.min,
-        max: form.max
-      }))
-    };
 
     this.eventsService
-      .updateEvent(String(this.event.id), eventUpdate)
-      .pipe(this.#takeUntilDestroyed())
+      .updateEvent(this.eventId, eventUpdate)
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
-        next: (updatedEvent: any) => {
-          if (!this.event) {
-            return;
-          }
-          this.event.minObservationForms = updatedEvent.minObservationForms;
-          this.event.maxObservationForms = updatedEvent.maxObservationForms;
-          updatedEvent.forms?.forEach((updatedForm: any) => {
-            const localForm = this.event?.forms?.find((f: any) => f.id === updatedForm.id);
-            if (localForm) {
-              localForm.min = updatedForm.min;
-              localForm.max = updatedForm.max;
-            }
-          });
-          this.restrictionsForm?.form.markAsPristine();
+        next: (updated: EventWithStatus) => {
+          this.event.update((event) => event && {
+            ...event,
+            minObservationForms: updated.minObservationForms,
+            maxObservationForms: updated.maxObservationForms,
+            forms: (event.forms || []).map((form) => {
+              const savedForm = updated.forms?.find((saved) => saved.id === form.id)
+              return savedForm ? { ...form, min: savedForm.min, max: savedForm.max } : form
+            })
+          })
+          this.restrictionsForm?.form.markAsPristine()
         },
         error: (error) => {
-          console.error('Error saving form restrictions:', error);
-          this.restrictionsError = error?.error || {
+          console.error('Error saving form restrictions:', error)
+          this.restrictionsError.set(error?.error || {
             message: 'Failed to save form restrictions. Please try again.'
-          };
+          })
         }
-      });
+      })
   }
 
   uploadForm(): void {
-    if (!this.event) {
-      return;
-    }
     const dialogRef = this.dialog.open(UploadFormDialogComponent, {
       width: '600px',
       maxWidth: '50vw',
-      data: { event: this.event }
-    });
+      data: { event: this.event() }
+    })
 
     dialogRef.afterClosed().subscribe((result: any) => {
-      if (result?.id && this.event?.id) {
-        this.router.navigate(['../../events', this.event.id, 'forms', result.id], { relativeTo: this.route });
+      if (result?.id) {
+        this.router.navigate(['../../events', this.eventId, 'forms', result.id], { relativeTo: this.route })
       }
-    });
+    })
   }
 
-  onFormsReordered(event: CdkDragDrop<any[]>): void {
-    if (!this.event?.forms) {
-      return;
-    }
-    const forms = [...this.event.forms];
-    moveItemInArray(forms, event.previousIndex, event.currentIndex);
-    this.updateFormsOrder(forms);
+  onFormsReordered(drop: CdkDragDrop<Form[]>): void {
+    const forms = [...this.event().forms]
+    moveItemInArray(forms, drop.previousIndex, drop.currentIndex)
+    this.updateFormsOrder(forms)
   }
 
-  private updateFormsOrder(forms: any[]): void {
-    if (!this.event?.id) {
-      return;
-    }
-    this.event.forms = forms;
-    this.formsAnimationState++;
+  private updateFormsOrder(forms: Form[]): void {
+    const previousForms = this.event().forms
+    this.event.update((event) => event && { ...event, forms })
     this.eventsService
-      .updateEvent(String(this.event.id), { forms })
-      .pipe(this.#takeUntilDestroyed())
+      .updateEvent(this.eventId, { forms })
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
-        next: (updatedEvent) => {
-          this.event = updatedEvent as any;
-        },
         error: (error) => {
-          console.error('Error updating forms order:', error);
-          this.eventsService
-            .getEventById(String(this.event.id))
-            .pipe(this.#takeUntilDestroyed())
-            .subscribe({
-              next: (event) => {
-                this.event = event as any;
-              }
-            });
+          console.error('Error updating forms order:', error)
+          this.event.update((event) => event && { ...event, forms: previousForms })
+          this.snackBar.open('Error saving the form order', 'Close', { duration: 5000 })
         }
-      });
+      })
   }
 
-  preview($event: MouseEvent, form: any): void {
-    $event.stopPropagation();
-    this.previewForm = form;
+  preview($event: MouseEvent, form: Form): void {
+    $event.stopPropagation()
+    this.previewForm.set(form)
   }
 
   closePreview(): void {
-    this.previewForm = null;
-  }
-
-  trackByFormId(_: number, form: any): any {
-    return form?.id ?? form;
-  }
-
-  get filteredForms(): any[] {
-    const forms = this.event?.forms || [];
-    return this.showArchivedForms ? forms : forms.filter((f: any) => !f.archived);
-  }
-
-  getUserRole(user: MageUser): string {
-    if (!this.eventTeam?.acl) {
-      return 'GUEST';
-    }
-    const key = String(user.id);
-    return this.eventTeam.acl[key]?.role || 'GUEST';
-  }
-
-  getRoleClass(user: MageUser): string {
-    const role = this.getUserRole(user);
-    return `user-role-badge role-${role.toLowerCase()}`;
-  }
-
-  updateUserRole(user: MageUser, newRole: string): void {
-    if (!this.eventTeam?.id || !newRole) {
-      return;
-    }
-    this.teamService
-      .updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: (updatedTeam: Team) => {
-          this.eventTeam = updatedTeam;
-          this.membersDataSource.data = [...this.membersDataSource.data];
-        },
-        error: (error) => console.error('Error updating user role:', error)
-      });
+    this.previewForm.set(null)
   }
 
   editEventDetails(): void {
-    if (!this.event) {
-      return;
-    }
     const dialogRef = this.dialog.open(CreateEventDialogComponent, {
       width: '600px',
-      data: { event: this.event }
-    });
+      data: { event: this.event() }
+    })
 
-    dialogRef.afterClosed().subscribe((updatedEvent: ExtendedEvent | undefined) => {
-      if (!updatedEvent) {
-        return;
+    dialogRef.afterClosed().subscribe((updatedEvent: EventWithStatus | undefined) => {
+      if (updatedEvent) {
+        this.event.set(updatedEvent)
       }
-      this.event = updatedEvent;
-      this.breadcrumbs = [{ title: 'Events', icon: 'event', route: ['/admin/events'] }, { title: this.event?.name || 'Event' }];
-    });
+    })
   }
 
-  completeEvent(mageEvent: ExtendedEvent): void {
-    if (!mageEvent?.id) {
-      return;
-    }
-    const updatedEvent = { ...mageEvent, complete: true };
-    this.eventsService
-      .updateEvent(String(mageEvent.id), updatedEvent)
-      .pipe(this.#takeUntilDestroyed())
-      .subscribe({
-        next: (updated) => (this.event = updated as any),
-        error: (error) => console.error('Error completing event:', error)
-      });
+  completeEvent(mageEvent: EventWithStatus): void {
+    this.setEventComplete(mageEvent, true)
   }
 
-  activateEvent(mageEvent: ExtendedEvent): void {
-    if (!mageEvent?.id) {
-      return;
-    }
-    const updatedEvent = { ...mageEvent, complete: false };
+  activateEvent(mageEvent: EventWithStatus): void {
+    this.setEventComplete(mageEvent, false)
+  }
+
+  private setEventComplete(mageEvent: EventWithStatus, complete: boolean): void {
+    const updatedEvent = { ...mageEvent, complete }
     this.eventsService
-      .updateEvent(String(mageEvent.id), updatedEvent)
-      .pipe(this.#takeUntilDestroyed())
+      .updateEvent(this.eventId, updatedEvent)
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
-        next: (updated) => (this.event = updated as any),
-        error: (error) => console.error('Error activating event:', error)
-      });
+        next: (saved: EventWithStatus) => this.event.update((event) => event && { ...event, complete: saved.complete }),
+        error: (error) => console.error(`Error ${complete ? 'completing' : 'activating'} event:`, error)
+      })
   }
 
   deleteEvent(): void {
-    if (!this.event) {
-      return;
-    }
     const dialogRef = this.dialog.open(DeleteEventComponent, {
       width: '600px',
-      data: { event: this.event }
-    });
+      data: { event: this.event() }
+    })
 
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.router.navigate(['../../events'], { relativeTo: this.route });
+        this.router.navigate(['../../events'], { relativeTo: this.route })
       }
-    });
+    })
   }
 
   onMemberSearchChange(searchTerm?: string): void {
-    this.memberSearchTerm = searchTerm || '';
-    this.membersPageIndex = 0;
-    this.getMembersPage();
+    this.memberSearchTerm.set(searchTerm || '')
+    this.membersPageIndex.set(0)
   }
 
   onMembersPageChange(event: PageEvent): void {
-    this.membersPageIndex = event.pageIndex;
-    this.membersPageSize = event.pageSize;
-    this.getMembersPage();
+    this.membersPageIndex.set(event.pageIndex)
+    this.membersPageSize.set(event.pageSize)
   }
 
   onTeamSearchChange(searchTerm?: string): void {
-    this.teamSearchTerm = searchTerm || '';
-    this.teamsPageIndex = 0;
-    this.getTeamsPage();
+    this.teamSearchTerm.set(searchTerm || '')
+    this.teamsPageIndex.set(0)
   }
 
   onTeamsPageChange(event: PageEvent): void {
-    this.teamsPageIndex = event.pageIndex;
-    this.teamsPageSize = event.pageSize;
-    this.getTeamsPage();
+    this.teamsPageIndex.set(event.pageIndex)
+    this.teamsPageSize.set(event.pageSize)
   }
 
   onLayerSearchChange(searchTerm?: string): void {
-    this.layerSearchTerm = searchTerm || '';
-    this.layersPageIndex = 0;
-    this.filterAndPaginateLayers();
+    this.layerSearchTerm.set(searchTerm || '')
+    this.layersPageIndex.set(0)
   }
 
   onLayersPageChange(event: PageEvent): void {
-    this.layersPageIndex = event.pageIndex;
-    this.layersPageSize = event.pageSize;
-    this.filterAndPaginateLayers();
+    this.layersPageIndex.set(event.pageIndex)
+    this.layersPageSize.set(event.pageSize)
+  }
+
+  getUserRole(user: MageUser): string {
+    return this.eventTeam()?.acl?.[String(user.id)]?.role || 'GUEST'
+  }
+
+  updateUserRole(user: MageUser, newRole: string): void {
+    const eventTeam = this.eventTeam()
+    if (!eventTeam?.id) {
+      return
+    }
+    this.teamService
+      .updateUserRole(String(eventTeam.id), String(user.id), newRole)
+      .pipe(this.takeUntilDestroyed())
+      .subscribe({
+        next: (updatedTeam: Team) => this.eventTeam.set(updatedTeam),
+        error: (error) => console.error('Error updating user role:', error)
+      })
   }
 
   addMemberToEvent(): void {
-    if (!this.eventTeam?.id) {
-      console.error('Event team not found');
-      return;
+    const eventTeam = this.eventTeam()
+    if (!eventTeam?.id) {
+      console.error('Event team not found')
+      return
     }
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
@@ -657,50 +490,43 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         type: 'members',
         icon: 'person',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return this.eventsService.getNonMembers(String(this.event?.id), {
+          return this.eventsService.getNonMembers(this.eventId, {
             term: searchTerm,
             page,
             page_size: pageSize,
             total: true
-          });
+          })
         },
-        columns: [
-          {
-            key: 'name',
-            label: 'Name',
-            displayFunction: (user: MageUser) => user.username || 'Unknown',
-            width: '40%'
-          },
-          {
-            key: 'displayName',
-            label: 'Display Name',
-            displayFunction: (user: MageUser) => user.displayName || 'Unknown',
-            width: '35%'
-          },
-          {
-            key: 'email',
-            label: 'Email',
-            displayFunction: (user: MageUser) => (user as any).email || 'No email provided',
-            width: '35%'
-          }
-        ] as SearchModalColumn[]
+        columns: [{
+          key: 'name',
+          label: 'Name',
+          displayFunction: (user: MageUser) => user.username || 'Unknown',
+          width: '40%'
+        },{
+          key: 'displayName',
+          label: 'Display Name',
+          displayFunction: (user: MageUser) => user.displayName || 'Unknown',
+          width: '35%'
+        },{
+          key: 'email',
+          label: 'Email',
+          displayFunction: (user: MageUser) => user.email || 'No email provided',
+          width: '35%'
+        }] as SearchModalColumn[]
       } as SearchModalData
-    });
+    })
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result?.selectedItem && this.eventTeam?.id) {
-        this.teamService.addUserToTeam(String(this.eventTeam.id), result.selectedItem).subscribe({
-          next: () => this.getMembersPage(),
+      if (result?.selectedItem) {
+        this.teamService.addUserToTeam(String(eventTeam.id), result.selectedItem).subscribe({
+          next: () => this.members.reload(),
           error: (error) => console.error('Error adding member:', error)
-        });
+        })
       }
-    });
+    })
   }
 
   addTeamToEvent(): void {
-    if (!this.event?.id) {
-      return;
-    }
     const dialogRef = this.dialog.open(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
@@ -710,45 +536,39 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         type: 'teams',
         icon: 'groups',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return this.eventsService.getTeamsNotInEvent(String(this.event?.id), {
+          return this.eventsService.getTeamsNotInEvent(this.eventId, {
             term: searchTerm,
             page,
             page_size: pageSize,
             total: true,
             omit_event_teams: true
-          });
+          })
         },
-        columns: [
-          {
-            key: 'name',
-            label: 'Team Name',
-            displayFunction: (team: Team) => team.name || 'Unnamed Team',
-            width: '50%'
-          },
-          {
-            key: 'description',
-            label: 'Description',
-            displayFunction: (team: Team) => team.description || 'No description',
-            width: '50%'
-          }
-        ] as SearchModalColumn[]
+        columns: [{
+          key: 'name',
+          label: 'Team Name',
+          displayFunction: (team: Team) => team.name || 'Unnamed Team',
+          width: '50%'
+        },{
+          key: 'description',
+          label: 'Description',
+          displayFunction: (team: Team) => team.description || 'No description',
+          width: '50%'
+        }] as SearchModalColumn[]
       } as SearchModalData
-    });
+    })
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result?.selectedItem && this.event?.id) {
-        this.eventsService.addTeamToEvent(String(this.event.id), result.selectedItem).subscribe({
-          next: () => this.getTeamsPage(),
+      if (result?.selectedItem) {
+        this.eventsService.addTeamToEvent(this.eventId, result.selectedItem).subscribe({
+          next: () => this.teams.reload(),
           error: (error) => console.error('Error adding team:', error)
-        });
+        })
       }
-    });
+    })
   }
 
   addLayerToEvent(): void {
-    if (!this.event?.id) {
-      return;
-    }
     const dialogRef = this.dialog.open(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
@@ -756,42 +576,27 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         title: 'Add Layer to Event',
         searchPlaceholder: 'Search for layers to add...',
         type: 'layers',
-        icon: (layer: Layer) => this.layerIcon(layer),
+        icon: layerIconName,
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return new Observable((observer) => {
-            this.eventsService.getAllLayers().subscribe({
-              next: (allLayers) => {
-                this.eventsService.getLayersForEvent(String(this.event?.id)).subscribe({
-                  next: (eventLayers) => {
-                    const eventLayerIds = (eventLayers || []).map((l) => l.id);
-                    let filteredLayers = (allLayers || []).filter(
-                      (layer) => !eventLayerIds.includes(layer.id)
-                    );
-
-                    if (searchTerm) {
-                      const term = searchTerm.toLowerCase();
-                      filteredLayers = filteredLayers.filter((layer) =>
-                        (layer.name || '').toLowerCase().includes(term)
-                      );
-                    }
-
-                    const start = page * pageSize;
-                    const paginatedLayers = filteredLayers.slice(start, start + pageSize);
-
-                    observer.next({
-                      items: paginatedLayers,
-                      totalCount: filteredLayers.length,
-                      pageSize,
-                      pageIndex: page
-                    });
-                    observer.complete();
-                  },
-                  error: (error) => observer.error(error)
-                });
-              },
-              error: (error) => observer.error(error)
-            });
-          });
+          // Search and page the layers that are not already in the event
+          return forkJoin({
+            allLayers: this.eventsService.getAllLayers(),
+            eventLayers: this.eventsService.getLayersForEvent(this.eventId)
+          }).pipe(
+            map(({ allLayers, eventLayers }) => {
+              const eventLayerIds = new Set((eventLayers || []).map((layer) => layer.id))
+              const term = searchTerm?.toLowerCase()
+              const layers = (allLayers || []).filter((layer) =>
+                !eventLayerIds.has(layer.id) && (!term || (layer.name || '').toLowerCase().includes(term)))
+              const start = page * pageSize
+              return {
+                items: layers.slice(start, start + pageSize),
+                totalCount: layers.length,
+                pageSize,
+                pageIndex: page
+              }
+            })
+          )
         },
         columns: [
           {
@@ -803,28 +608,28 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
           {
             key: 'type',
             label: 'Type',
-            displayFunction: (layer: Layer) => (layer as any).type || 'Unknown',
+            displayFunction: (layer: Layer) => layer.type || 'Unknown',
             width: '30%'
           },
           {
             key: 'state',
             label: 'State',
-            displayFunction: (layer: Layer) => (layer as any).state || 'Unknown',
+            displayFunction: (layer: Layer) => layer.state || 'Unknown',
             width: '30%'
           }
         ] as SearchModalColumn[]
       } as SearchModalData
-    });
+    })
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result?.selectedItem && this.event?.id) {
+      if (result?.selectedItem) {
         this.eventsService
-          .addLayerToEvent(String(this.event.id), { id: result.selectedItem.id })
+          .addLayerToEvent(this.eventId, { id: result.selectedItem.id })
           .subscribe({
-            next: () => this.loadLayers(),
+            next: () => this.layers.reload(),
             error: (error) => console.error('Error adding layer:', error)
-          });
+          })
       }
-    });
+    })
   }
 }

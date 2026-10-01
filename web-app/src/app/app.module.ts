@@ -5,7 +5,9 @@ import { CommonModule, HashLocationStrategy, LocationStrategy } from '@angular/c
 import { AppComponent } from './app.component';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { RouteReuseStrategy } from '@angular/router';
 import { AppRoutingModule } from './routing.module';
+import { RouteReuseByComponentStrategy } from './route-reuse.strategy';
 import { LocalStorageService } from './http/local-storage.service';
 import { TokenInterceptorService } from './http/token.interceptor';
 import { BannerModule } from './banner/banner.module';
@@ -24,6 +26,7 @@ import { IngressModule } from './ingress/ingress.module';
         LocalStorageService,
         TokenInterceptorService,
         { provide: LocationStrategy, useClass: HashLocationStrategy },
+        { provide: RouteReuseStrategy, useClass: RouteReuseByComponentStrategy },
         { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true },
         provideHttpClient(withInterceptorsFromDi())
     ] })
