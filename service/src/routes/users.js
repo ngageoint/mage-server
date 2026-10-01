@@ -309,7 +309,7 @@ module.exports = function(app, security) {
 
         const user = {
           username: req.payload.subject,
-          roleId: req.userRole._id,
+          roleId: req.userRole.id,
           displayName: req.account.displayName,
           email: req.account.email,
           phones: req.account.phones,

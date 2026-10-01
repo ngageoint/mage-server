@@ -11,7 +11,7 @@ import { ExportPermission } from '../../../lib/entities/authorization/entities.p
 import { UserIconType } from '../../../lib/entities/users/entities.users'
 import mongoose from 'mongoose'
 import { ExportExpanded } from '../../../src/entities/exports/entities.exports'
-import { RoleModelInstance } from '../../../src/models/role'
+import { Role } from '../../../src/entities/authorization/entities.authorization'
 import { UserJson } from '../../../src/models/user'
 import { Readable } from 'stream'
 import sinon from 'sinon'
@@ -46,11 +46,15 @@ const mockUser = Object.freeze({
   id: mockUserId.toHexString(),
   username: 'testUser',
   displayName: 'Test User',
-  roleId: {
-    _id: new mongoose.Types.ObjectId(),
-    get id() { return this._id.toHexString() },
-    permissions: [ExportPermission.READ_EXPORT]
-  } as RoleModelInstance,
+  roleId: (() => {
+    const roleId = new mongoose.Types.ObjectId()
+    return {
+      _id: roleId,
+      id: roleId.toHexString(),
+      name: 'MOCK_ROLE',
+      permissions: [ExportPermission.READ_EXPORT]
+    } as unknown as Role
+  })(),
 }) as unknown as Required<UserWithRole>
 const expandedUser: ExportExpanded['user'] = pick(mockUser, 'id', 'username', 'displayName')
 
