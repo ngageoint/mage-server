@@ -1,6 +1,18 @@
 import { Component, OnInit, Input, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import type { PageEvent } from '@angular/material/paginator';
 import moment from 'moment';
 import { of } from 'rxjs';
@@ -18,7 +30,21 @@ import { LoginService } from './login.service';
     selector: 'mage-logins',
     templateUrl: './admin-logins.component.html',
     styleUrls: ['./admin-logins.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDatepickerModule,
+        MatMomentDateModule,
+        MatNativeDateModule,
+        MatAutocompleteModule,
+        MatListModule,
+        MatPaginatorModule
+    ]
 })
 export class LoginsComponent implements OnInit {
   @Input() userId?: string;

@@ -35,8 +35,7 @@ describe('LoginsComponent', () => {
 
   async function createComponent(init?: Partial<LoginsComponent>) {
     await TestBed.configureTestingModule({
-      imports: [FormsModule],
-      declarations: [LoginsComponent],
+      imports: [FormsModule, LoginsComponent],
       providers: [
         { provide: LoginService, useValue: mockLoginService },
         { provide: UserPagingService, useValue: mockUserPaging },
