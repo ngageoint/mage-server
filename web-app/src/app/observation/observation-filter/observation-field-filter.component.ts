@@ -1,11 +1,17 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core'
-import { FormControl } from '@angular/forms'
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { AsyncPipe } from '@angular/common'
+import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { ErrorStateMatcher } from '@angular/material/core'
-import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete'
-import { MatChipGrid } from '@angular/material/chips'
-import { MatDatepicker, MatDatepickerInputEvent } from '@angular/material/datepicker'
-import { Observable, Subject, map, startWith, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs'
-import { ObservationFieldFilter, SimpleCondition } from '../../entities/observation/filter/entities.observation.filter'
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete'
+import { MatButtonModule } from '@angular/material/button'
+import { MatChipGrid, MatChipsModule } from '@angular/material/chips'
+import { MatDatepicker, MatDatepickerInputEvent, MatDatepickerModule } from '@angular/material/datepicker'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { Observable, map, startWith } from 'rxjs'
+import { Condition, SimpleCondition } from '../../entities/observation/filter/entities.observation.filter'
 import {
   AutocompleteOption,
   buildFieldGroups,
@@ -25,13 +31,24 @@ import {
   selector: 'observation-field-filter',
   templateUrl: './observation-field-filter.component.html',
   styleUrls: ['./observation-field-filter.component.scss'],
-  standalone: false
+  imports: [
+    AsyncPipe,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatButtonModule,
+    MatChipsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatTooltipModule
+  ]
 })
-export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
+export class ObservationFieldFilterComponent implements OnChanges {
   @Input() forms: any[] = []
-  @Input() filter: ObservationFieldFilter | null = null
+  @Input() condition: Condition | null | undefined = null
   @Input() showIncompleteError = false
-  @Output() filterChanged = new EventEmitter<ObservationFieldFilter>()
+  @Output() conditionChanged = new EventEmitter<Condition | undefined>()
 
   @ViewChild('filterInput') filterInput: ElementRef<HTMLInputElement>
   @ViewChild(MatAutocompleteTrigger) autoTrigger: MatAutocompleteTrigger
@@ -39,10 +56,11 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
   @ViewChild('chipGridCondition') chipGridCondition?: MatChipGrid
 
   incompleteErrorStateMatcher: ErrorStateMatcher = {
-    isErrorState: () => this.showIncompleteError && this.hasIncompleteCondition
+    isErrorState: () => this.showInvalidNumberError || (this.showIncompleteError && this.hasIncompleteCondition)
   }
 
-  keywordControl = new FormControl('')
+  showInvalidNumberError = false
+
   inputControl = new FormControl('')
   conditionGroups: FilterConditionGroup[] = []
   filteredOptions: Observable<AutocompleteOption[]>
@@ -60,7 +78,6 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
   pendingValueDisplay: string = null
 
   private allFieldGroups: FormGroup[] = []
-  private destroy$ = new Subject<void>()
 
   get hasConditions(): boolean {
     return this.conditionGroups.some(g => g.conditions.length > 0)
@@ -81,6 +98,15 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     return (this.inputControl.value || '').toString().trim().length > 0
   }
 
+  get hasInvalidNumberValue(): boolean {
+    if (this.conditionState !== 'value') return false
+    if (this.selectedField?.type !== 'numberfield') return false
+    if (this.pendingValue != null) return false
+    const input = (this.inputControl.value || '').toString().trim()
+    if (!input) return false
+    return isNaN(Number(input))
+  }
+
   // true whenever the user has started picking a field/operator/value
   // but hasn't clicked Add or New Group to actually commit it yet.
   get hasIncompleteCondition(): boolean {
@@ -99,25 +125,16 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     if (changes.forms) {
       this.allFieldGroups = buildFieldGroups(this.forms)
       this.conditionGroups = []
-      this.keywordControl.setValue('')
       this.resetState()
-      this.setupKeywordSubscription()
     }
 
-    if (changes.filter) {
-      this.populateFilter(this.filter)
+    if (changes.condition) {
+      this.populateCondition(this.condition)
     }
 
-    // showIncompleteError is the other half of incompleteErrorStateMatcher;
-    // mat-chip-grid won't re-evaluate it on its own (see updateChipGridErrorState).
     if (changes.showIncompleteError) {
       this.updateChipGridErrorState()
     }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next()
-    this.destroy$.complete()
   }
 
   onOptionSelected(event: MatAutocompleteSelectedEvent): void {
@@ -230,7 +247,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     if (this.conditionState !== 'value') return
     if (this.isNullOperatorState) { this.finalizeCondition(); return }
     const value = this.resolveValue()
-    if (value == null) return
+    if (value == null) { this.blockIfInvalidNumber(); return }
     this.finalizeCondition(value)
   }
 
@@ -241,7 +258,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
       return
     }
     const value = this.resolveValue()
-    if (value == null) return
+    if (value == null) { this.blockIfInvalidNumber(); return }
     this.finalizeCondition(value)
   }
 
@@ -253,9 +270,20 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
       return
     }
     const value = this.resolveValue()
-    if (value == null) return
+    if (value == null) { this.blockIfInvalidNumber(); return }
     this.conditionGroups.push({ conditions: [] })
     this.finalizeCondition(value)
+  }
+
+  private blockIfInvalidNumber(): void {
+    if (!this.hasInvalidNumberValue) return
+    this.showInvalidNumberError = true
+    this.updateChipGridErrorState()
+  }
+
+  clear(): void {
+    this.conditionGroups = []
+    this.resetState()
   }
 
   removeCondition(groupIndex: number, conditionIndex: number): void {
@@ -264,13 +292,17 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     if (group.conditions.length === 0) {
       this.conditionGroups.splice(groupIndex, 1)
     }
-    this.emitFilter()
+    this.emitCondition()
   }
 
   private clearInput(): void {
     this.inputControl.setValue('', { emitEvent: false })
     if (this.filterInput) {
       this.filterInput.nativeElement.value = ''
+    }
+    if (this.showInvalidNumberError) {
+      this.showInvalidNumberError = false
+      this.updateChipGridErrorState()
     }
   }
 
@@ -396,31 +428,13 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
       condition,
     })
 
-    this.emitFilter()
+    this.emitCondition()
     this.resetState()
   }
 
-  private setupKeywordSubscription(): void {
-    this.destroy$.next()
-    this.keywordControl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      this.emitFilter()
-    })
-  }
-
-  private populateFilter(filter: ObservationFieldFilter | null): void {
-    if (!filter) return
-
-    if (filter.keyword != null) {
-      this.keywordControl.setValue(filter.keyword, { emitEvent: false })
-    }
-
-    if (filter.condition) {
-      this.conditionGroups = this.conditionGroupsFromFilter(filter.condition)
-    }
+  private populateCondition(condition: Condition | null | undefined): void {
+    if (!condition) return
+    this.conditionGroups = this.conditionGroupsFromFilter(condition)
   }
 
   private conditionGroupsFromFilter(condition: any): FilterConditionGroup[] {
@@ -467,7 +481,7 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
     }
   }
 
-  private emitFilter(): void {
+  private emitCondition(): void {
     const groups = this.conditionGroups
       .filter(g => g.conditions.length > 0)
       .map(group => {
@@ -477,17 +491,13 @@ export class ObservationFieldFilterComponent implements OnChanges, OnDestroy {
         return { or: group.conditions.map(c => c.condition) }
       })
 
-    const filter: ObservationFieldFilter = {}
-
-    const keyword = (this.keywordControl.value || '').toString().trim()
-    if (keyword) filter.keyword = keyword
-
+    let condition: Condition | undefined
     if (groups.length === 1) {
-      filter.condition = groups[0]
+      condition = groups[0]
     } else if (groups.length > 1) {
-      filter.condition = { and: groups }
+      condition = { and: groups }
     }
 
-    this.filterChanged.emit(filter)
+    this.conditionChanged.emit(condition)
   }
 }

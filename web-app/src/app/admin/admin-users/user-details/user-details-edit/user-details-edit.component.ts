@@ -9,9 +9,17 @@ import {
   EventEmitter,
   ElementRef,
   TemplateRef,
-  ViewChild
+  ViewChild,
+  signal
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
 
 import { UserService } from '../../../../user/user.service';
 import { User } from '../../user';
@@ -34,7 +42,16 @@ interface IconMetadata {
     selector: 'mage-user-details-edit',
     templateUrl: './user-details-edit.component.html',
     styleUrls: ['./user-details-edit.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      FormsModule,
+      MatButtonModule,
+      MatIconModule,
+      MatCardModule,
+      MatFormFieldModule,
+      MatSelectModule,
+      MatInputModule
+    ]
 })
 export class UserDetailsEditComponent implements OnInit, OnChanges {
   @Input() user!: User;
@@ -53,7 +70,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
   editUser!: EditableUser;
   roles: any[] = [];
 
-  saving = false;
+  saving = signal(false);
   error: string | null = null;
 
   iconPreviewUrl: string | null = null;
@@ -334,7 +351,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
   saveUser(): void {
     if (!this.editUser) return;
 
-    this.saving = true;
+    this.saving.set(true);
     this.error = null;
 
     const userToSave: any = {
@@ -400,7 +417,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
             }
           }
 
-          this.saving = false;
+          this.saving.set(false);
           this.iconPreviewUrl = null;
           this.avatarPreviewUrl = null;
           this.removeIconSelected = false;
@@ -409,7 +426,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
         },
         error: (err) => {
           this.error = err?.error || 'Failed to update user';
-          this.saving = false;
+          this.saving.set(false);
         }
       });
   }

@@ -9,6 +9,8 @@ import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
+import { Form } from '../../entities/event/entities.event';
+import { FormProperties, Observation } from '../../entities/observation/entities.observation';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
@@ -47,7 +49,11 @@ export class ObservationViewComponent implements OnChanges {
     description?: string
   } = { open: false }
 
-  observationForm: any
+  observationForm?: {
+    geometryField: { title: string, type: string, value: Observation['geometry'] },
+    timestampField: { title: string, type: string, value: Date },
+    forms: Form[]
+  }
   primaryFeedField: any = {}
   secondaryFeedField: any = {}
 
@@ -68,7 +74,7 @@ export class ObservationViewComponent implements OnChanges {
 
     if (changes.observation) {
       this.updateFavorites()
-      this.importantEditor.description = this.observation.important ? this.observation.important.description : null
+      this.importantEditor.description = this.observation.important?.description ?? undefined
     }
   }
 
@@ -107,13 +113,15 @@ export class ObservationViewComponent implements OnChanges {
   }
 
   markAsImportant(): void {
-    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).subscribe(() => {
+    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).subscribe(observation => {
+      this.observation.important = observation.important
       this.importantEditor.open = false
     })
   }
 
   clearImportant(): void {
-    this.eventService.clearObservationAsImportant(this.observation).subscribe(() => {
+    this.eventService.clearObservationAsImportant(this.observation).subscribe(observation => {
+      this.observation.important = observation.important
       this.importantEditor.open = false
       delete this.importantEditor.description
     })
@@ -172,10 +180,14 @@ export class ObservationViewComponent implements OnChanges {
     const aclPermissions = myAccess.permissions || []
     this.canEditImportant = this.sessionService.user.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
 
-    const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce((map, form) => {
+    const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce<Record<number, Form>>((map, form) => {
       map[form.id] = form
       return map
     }, {})
+
+    const forms: Form[] = this.observation.properties.forms.map((propertyForm: FormProperties) => {
+      return this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
+    })
 
     this.observationForm = {
       geometryField: {
@@ -188,24 +200,19 @@ export class ObservationViewComponent implements OnChanges {
         type: 'date',
         value: moment(this.observation.properties.timestamp).toDate()
       },
-      forms: []
+      forms
     }
-
-    this.observation.properties.forms.forEach(propertyForm => {
-      const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
-      this.observationForm.forms.push(observationForm)
-    })
 
     this.primaryFeedField = {}
     this.secondaryFeedField = {}
 
     if (this.observation.properties.forms.length > 0) {
       const firstForm = this.observation.properties.forms[0]
-      const observationForm = this.observationForm.forms.find(observationForm => {
+      const observationForm = forms.find(observationForm => {
         return observationForm.id === firstForm.formId
       })
 
-      if (observationForm.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
+      if (observationForm?.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
         const field = observationForm.fields.find(field => field.name === observationForm.primaryFeedField)
         this.primaryFeedField = {
           field: field,
@@ -213,7 +220,7 @@ export class ObservationViewComponent implements OnChanges {
         }
       }
 
-      if (observationForm.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
+      if (observationForm?.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
         const field = observationForm.fields.find(field => field.name === observationForm.secondaryFeedField)
         this.secondaryFeedField = {
           field: field,

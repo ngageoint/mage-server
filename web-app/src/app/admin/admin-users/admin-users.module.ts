@@ -62,14 +62,14 @@ import { RouterModule } from '@angular/router';
     AdminBreadcrumbModule,
     RouterModule,
     UserDashboardComponent,
+    UserDetailsViewComponent,
+    UserDetailsEditComponent,
+    BulkUserComponent,
   ],
   declarations: [
     UserDetailsComponent,
-    UserDetailsViewComponent,
-    UserDetailsEditComponent,
     ChangePasswordComponent,
     CreateUserModalComponent,
-    BulkUserComponent,
     UserSearchBoxComponent
   ],
   exports: [

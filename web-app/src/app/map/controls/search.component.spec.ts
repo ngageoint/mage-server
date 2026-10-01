@@ -66,7 +66,7 @@ describe('SearchComponent', () => {
   });
 
   it('should toggle search on', () => {
-    const button = fixture.debugElement.query(By.css('button'));
+    const button = fixture.debugElement.query(By.css('.search-toggle'));
     button.nativeElement.click();
 
     expect(component.searchState as SearchState).toBe(SearchState.ON);
@@ -75,7 +75,7 @@ describe('SearchComponent', () => {
   it('should toggle search off', () => {
     component.searchState = SearchState.ON;
 
-    const button = fixture.debugElement.query(By.css('button'));
+    const button = fixture.debugElement.query(By.css('.search-toggle'));
     button.nativeElement.click();
 
     expect(component.searchState as SearchState).toBe(SearchState.OFF);
@@ -151,7 +151,7 @@ describe('SearchComponent', () => {
 
     expect(input.value).toEqual('test');
 
-    const clearButton = fixture.debugElement.queryAll(By.css('button'))[1];
+    const clearButton = fixture.debugElement.query(By.css('.search-clear'));
     clearButton.nativeElement.click();
 
     fixture.detectChanges();

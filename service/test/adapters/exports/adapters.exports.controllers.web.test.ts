@@ -317,6 +317,29 @@ describe('exports web controller', function() {
       })
     })
 
+    it('combines a keyword and a condition into one filter', async function() {
+      let capturedParams: any
+      createRequestFactory.createRequest(Arg.all()).mimicks((req: express.Request, params: any) => {
+        capturedParams = params
+        return { ...params, context: {} }
+      })
+      appLayer.createExport(Arg.all()).resolves(AppResponse.success(exp as unknown as Export))
+
+      await postClient.post(`${root}`).send({
+        format: 'kml',
+        observations: {
+          keyword: 'wildfire',
+          condition: { formId: 1, field: 'field1', operator: '=', value: 'value1' }
+        }
+      })
+
+      const params = (capturedParams as CreateExportRequest).filter as any
+      expect(params.observations.fieldFilter).to.deep.equal({
+        keyword: 'wildfire',
+        condition: { formId: 1, field: 'field1', operator: '=', value: 'value1' }
+      })
+    })
+
     it('rejects an invalid observationStartDate', async function() {
       const res = await postClient.post(`${root}`).send({
         format: 'kml',

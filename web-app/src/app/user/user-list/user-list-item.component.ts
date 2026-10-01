@@ -12,14 +12,12 @@ import { SidebarService } from '../../sidebar/sidebar.service';
 })
 export class UserListItemComponent implements OnChanges {
   @Input() userWithLocation: any
-  @Input() follow: any
-  @Input() followable: boolean
 
   @Output() click = new EventEmitter<any>()
 
   @ViewChild(MatRipple) ripple: MatRipple
 
-  token: string | undefined
+  token: string | null
   followingUser: any
 
   user: any
@@ -39,7 +37,7 @@ export class UserListItemComponent implements OnChanges {
     this.location = this.userWithLocation.location
   }
 
-  followUser(event): void {
+  followUser(event: MouseEvent): void {
     event.stopPropagation();
     this.mapService.followFeatureInLayer(this.userWithLocation, 'people')
   }

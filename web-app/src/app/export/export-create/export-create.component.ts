@@ -6,14 +6,14 @@ import { FilterService } from 'src/app/filter/filter.service';
 import { FilterChoice, INTERVAL_CHOICES } from 'src/app/filter/filter.types';
 import { MageEvent as FilterEvent } from 'src/app/entities/event/entities.event';
 import { Export, ExportFormat, ExportFormProjection, ExportRequest, FormProjection } from '../entities.export';
-import { ObservationFieldFilter } from '../../entities/observation/filter/entities.observation.filter'
+import { Condition, ObservationFieldFilter } from '../../entities/observation/filter/entities.observation.filter'
 import { MemberFilterSelection } from '../../event/event-member-filter.component';
-import { EMPTY, map, Observable, startWith, Subject, switchMap } from 'rxjs';
+import { debounceTime, EMPTY, map, Observable, startWith, Subject, switchMap } from 'rxjs';
 import { PageEvent } from '@angular/material/paginator';
 import { AbstractControl, FormControl, ValidationErrors } from '@angular/forms';
 import { EventService } from 'src/app/event/event.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { ObservationService, ObservationsPageRequestOptions } from 'src/app/observation/observation.service';
+import { ObservationService, ObservationsPage, ObservationsPageRequestOptions } from 'src/app/observation/observation.service';
 import { SessionService } from 'src/app/http/session.service';
 import { LocationService } from 'src/app/user/location/location.service';
 import { Form } from '../../entities/event/entities.event';
@@ -101,6 +101,8 @@ export class ExportCreateComponent implements OnInit {
 
   formProjections: FormProjection[] = []
   filter: ObservationFieldFilter | null = null
+  keywordControl = new FormControl('')
+  currentCondition?: Condition
   memberFilter: MemberFilterSelection | null = null
   locationMemberFilter: MemberFilterSelection | null = null
 
@@ -126,11 +128,7 @@ export class ExportCreateComponent implements OnInit {
 
   showObservationPreview = false
 
-  preview?: {
-    items: any[],
-    totalCount: number,
-    links: { next: number | null, prev: number | null }
-  }
+  preview?: ObservationsPage
 
   locationPreview?: { totalCount: number }
   loadingLocationPreview = true
@@ -156,15 +154,16 @@ export class ExportCreateComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const timeKey = this.mapCurrentFilterTimeValue()
-    this.observationExportTime = timeKey
-    this.locationExportTime = timeKey
-    if (timeKey === 'custom') {
-      this.observationStartDate = this.filterService.interval.options?.startDate ?? this.defaultStartDate
-      this.observationEndDate = this.filterService.interval.options?.endDate ?? this.defaultEndDate
-      this.locationStartDate = this.filterService.interval.options?.startDate ?? this.defaultStartDate
-      this.locationEndDate = this.filterService.interval.options?.endDate ?? this.defaultEndDate
-    }
+    const observationFilter = this.filterService.getObservationFilter()
+    const locationFilter = this.filterService.getLocationFilter()
+
+    this.observationExportTime = observationFilter?.timeInterval?.choice?.filter ?? 86400
+    this.locationExportTime = locationFilter?.timeInterval?.choice?.filter ?? 86400
+
+    this.observationStartDate = observationFilter?.timeInterval?.options?.startDate ?? this.defaultStartDate
+    this.observationEndDate = observationFilter?.timeInterval?.options?.endDate ?? this.defaultEndDate
+    this.locationStartDate = locationFilter?.timeInterval?.options?.startDate ?? this.defaultStartDate
+    this.locationEndDate = locationFilter?.timeInterval?.options?.endDate ?? this.defaultEndDate
 
     this.getObservations$.pipe(
       switchMap(options => this.exportEvent ? this.observationService.getObservationsPage(this.exportEvent, options) : EMPTY)
@@ -180,17 +179,24 @@ export class ExportCreateComponent implements OnInit {
       this.loadingLocationPreview = false
     })
 
+    this.keywordControl.valueChanges.pipe(
+      debounceTime(300)
+    ).subscribe(() => this.updateFieldFilter())
+
     const event = this.filterService.getEvent()
     this.eventControl.setValue(event)
     this.setEvent(event)
 
-    const currentMemberFilter = this.mapCurrentMemberFilter()
-    if (currentMemberFilter) {
-      this.memberFilter = currentMemberFilter
-      this.locationMemberFilter = currentMemberFilter
-      this.refreshPreview()
-      this.refreshLocationPreview()
-    }
+    this.hasAttachments = observationFilter?.hasAttachments ?? false
+    this.isFavorite = observationFilter?.isUserFavorite ?? false
+    this.isImportant = observationFilter?.isFlaggedImportant ?? false
+    this.memberFilter = observationFilter?.memberFilter ?? null
+    this.keywordControl.setValue(observationFilter?.fieldFilter?.keyword ?? '', { emitEvent: false })
+    this.currentCondition = observationFilter?.fieldFilter?.condition ?? undefined
+    this.updateFieldFilter()
+
+    this.locationMemberFilter = locationFilter?.memberFilter ?? null
+    this.refreshLocationPreview()
 
     this.eventService.query().subscribe((events: FilterEvent[]) => {
       this.events = events
@@ -356,8 +362,16 @@ export class ExportCreateComponent implements OnInit {
     this.close.emit()
   }
 
-  onFilterChanged(filter: ObservationFieldFilter): void {
-    this.filter = (filter?.condition || filter?.keyword?.length) ? filter : null
+  onConditionChanged(condition: Condition | undefined): void {
+    this.currentCondition = condition
+    this.updateFieldFilter()
+  }
+
+  private updateFieldFilter(): void {
+    const keyword = (this.keywordControl.value || '').trim()
+    this.filter = (keyword || this.currentCondition)
+      ? { keyword: keyword || undefined, condition: this.currentCondition }
+      : null
     this.refreshPreview()
   }
 
@@ -416,6 +430,9 @@ export class ExportCreateComponent implements OnInit {
   private setEvent(event: FilterEvent | null) {
     this.exportEvent = event
     this.filter = null
+    this.currentCondition = undefined
+    this.conditionFilter?.clear()
+    this.keywordControl.setValue('', { emitEvent: false })
     this.memberFilter = null
     this.locationMemberFilter = null
     this.showObservationPreview = false
@@ -497,16 +514,6 @@ export class ExportCreateComponent implements OnInit {
     if (memberFilter.teamIds.length) parts.push(`${memberFilter.teamIds.length} team${memberFilter.teamIds.length === 1 ? '' : 's'}`)
     if (memberFilter.userIds.length) parts.push(`${memberFilter.userIds.length} user${memberFilter.userIds.length === 1 ? '' : 's'}`)
     return `Members: ${parts.join(', ')}`
-  }
-
-  private mapCurrentMemberFilter(): MemberFilterSelection | null {
-    const teamIds = this.filterService.getTeams().map(team => team.id)
-    const userIds = this.filterService.getUsers().map(user => user.id)
-    return (teamIds.length || userIds.length) ? { teamIds, userIds } : null
-  }
-
-  private mapCurrentFilterTimeValue(): string | number {
-    return this.filterService.interval?.choice?.filter ?? 86400
   }
 
   private exportInterval(filterValue: string | number, startDate?: Date, endDate?: Date): { start?: string, end?: string } {

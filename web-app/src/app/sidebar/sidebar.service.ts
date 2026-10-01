@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { Feature } from 'geojson';
 import { Subject } from 'rxjs';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
+import { Observation } from '../entities/observation/entities.observation';
+import { UserWithLocation } from '../entities/user/entities.user-location';
 
 export interface ObservationEvent {
-  observation: any;
+  observation: Observation;
 }
 
 export interface UserEvent {
-  user: any;
+  user: UserWithLocation;
 }
 
 export interface ExportEvent {
@@ -46,19 +48,19 @@ export class SidebarService {
 
   item$ = this.itemSource.asObservable()
 
-  viewObservation(observation: any): void {
+  viewObservation(observation: Observation): void {
     this.viewObservationSource.next({
       observation: observation
     });
   }
 
-  edit(observation: any): void {
+  edit(observation: Observation): void {
     this.editObservationSource.next({
       observation: observation
     });
   }
 
-  viewUser(user: any): void {
+  viewUser(user: UserWithLocation): void {
     this.viewUserSource.next({
       user: user
     });

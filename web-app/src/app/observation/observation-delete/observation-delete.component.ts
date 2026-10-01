@@ -1,11 +1,7 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EventService } from '../../event/event.service';
-
-export interface Observation {
-  id: string;
-  eventId: number;
-}
+import { Observation } from '../../entities/observation/entities.observation';
 
 @Component({
     selector: 'observation-delete',
