@@ -8,6 +8,7 @@ interface ImageryLayer {
   type: 'Imagery'
   id: LayerId
   name: string
+  description?: string
   state: LayerState
   url?: string
   base?: boolean
@@ -19,6 +20,7 @@ interface FeatureLayer {
   type: 'Feature'
   id: LayerId
   name: string
+  description?: string
   state: LayerState
   url?: string
 }
@@ -35,6 +37,7 @@ interface GeoPackageLayer {
   type: 'GeoPackage'
   id: LayerId
   name: string
+  description?: string
   state: LayerState
   tables?: GeoPackageTable[]
 }
