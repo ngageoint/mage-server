@@ -45,15 +45,6 @@ import { AdminNavigationComponent } from './admin-navigation/admin-navigation.co
 import { AdminNavbarComponent } from './admin-shell/admin-navbar/admin-navbar.component';
 import { PluginModule } from './admin-plugins/plugins.module';
 
-import { AdminAuthenticationComponent } from './admin-authentication/admin-authentication.component';
-import { AdminAuthenticationSettingsComponent } from './admin-authentication/admin-authentication-settings.component';
-import { AdminAuthenticationOidcComponent } from './admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
-import { AdminAuthenticationOAuth2Component } from './admin-authentication/admin-authentication-oauth2/admin-authentication-oauth2.component';
-import { AdminAuthenticationLDAPComponent } from './admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
-import { AdminAuthenticationSAMLComponent } from './admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
-import { AdminAuthenticationLocalComponent } from './admin-authentication/admin-authentication-local/admin-authentication-local.component';
-import { PasswordPolicyComponent } from './admin-authentication/admin-authentication-local/password-policy/password-policy.component';
-import { AccountLockComponent } from './admin-authentication/admin-authentication-local/account-lock/account-lock.component';
 @NgModule({
   imports: [
     CommonModule,
@@ -94,21 +85,12 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AdminMapModule,
     ColorPickerModule,
     PluginModule,
-    AdminAuthenticationLocalComponent,
-    PasswordPolicyComponent,
-    AccountLockComponent,
-    AdminAuthenticationOidcComponent,
-    AdminAuthenticationOAuth2Component,
-    AdminAuthenticationLDAPComponent,
-    AdminAuthenticationSAMLComponent,
     AdminNavbarComponent,
     AdminNavigationComponent
   ],
   declarations: [
     SearchModalComponent,
-    AdminComponent,
-    AdminAuthenticationComponent,
-    AdminAuthenticationSettingsComponent
+    AdminComponent
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

@@ -1,11 +1,18 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
+import { AdminAuthenticationSettingsComponent } from './admin-authentication-settings.component';
 import { lastValueFrom, Subject, takeUntil } from 'rxjs';
 import { AuthenticationConfigurationService } from '../services/admin-authentication-configuration.service';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
@@ -20,7 +27,16 @@ export interface CanComponentDeactivate {
     selector: 'admin-authentication',
     templateUrl: 'admin-authentication.component.html',
     styleUrls: ['./admin-authentication.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        RouterModule,
+        MatButtonModule,
+        MatIconModule,
+        MatExpansionModule,
+        FormsModule,
+        MatSlideToggleModule,
+        AdminAuthenticationSettingsComponent
+    ]
 })
 export class AdminAuthenticationComponent
   implements OnInit, OnDestroy, CanComponentDeactivate
@@ -33,11 +49,11 @@ export class AdminAuthenticationComponent
   teams: Team[] = [];
   events: any[] = [];
 
-  isDirty = false;
+  isDirty = signal(false);
 
   strategies: Strategy[] = [];
 
-  hasAuthConfigEditPermission = false;
+  hasAuthConfigEditPermission = signal(false);
 
   private destroy$ = new Subject<void>();
 
@@ -58,8 +74,9 @@ export class AdminAuthenticationComponent
     this.sessionService.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
-        this.hasAuthConfigEditPermission =
-          user?.role?.permissions?.includes('UPDATE_AUTH_CONFIG') || false;
+        this.hasAuthConfigEditPermission.set(
+          user?.role?.permissions?.includes('UPDATE_AUTH_CONFIG') || false
+        );
       });
 
     this.loadInitialData().catch((err) => {
@@ -153,7 +170,7 @@ export class AdminAuthenticationComponent
         { duration: 2000 }
       );
     }
-    this.isDirty = false;
+    this.isDirty.set(false);
   }
 
   onAuthenticationDeleted(status: boolean): void {
@@ -166,7 +183,7 @@ export class AdminAuthenticationComponent
         duration: 2000
       });
     }
-    this.isDirty = false;
+    this.isDirty.set(false);
   }
 
   async save(): Promise<void> {
@@ -207,7 +224,7 @@ export class AdminAuthenticationComponent
 
       this.onAuthenticationSaved(false);
     } finally {
-      this.isDirty = false;
+      this.isDirty.set(false);
     }
   }
 
@@ -242,7 +259,7 @@ export class AdminAuthenticationComponent
 
   onAuthenticationToggled(strategy: Strategy): void {
     (strategy as any).isDirty = true;
-    this.isDirty = true;
+    this.isDirty.set(true);
   }
 
   canDeactivate(): boolean | Promise<boolean> {
@@ -250,7 +267,7 @@ export class AdminAuthenticationComponent
   }
 
   async onUnsavedChanges(): Promise<boolean> {
-    if (this.isDirty) {
+    if (this.isDirty()) {
       const ref = this.dialog.open(AdminSettingsUnsavedComponent);
       const result = await lastValueFrom(ref.afterClosed());
 
@@ -259,7 +276,7 @@ export class AdminAuthenticationComponent
         discard = result.discard;
       }
       if (discard) {
-        this.isDirty = false;
+        this.isDirty.set(false);
       }
       return discard;
     }
