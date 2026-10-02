@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
   ServiceType,
@@ -10,6 +11,14 @@ import {
 } from 'core-lib-src/feed';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import {
   trigger,
   state,
@@ -49,7 +58,19 @@ import { SessionService } from 'mage-web-app/http/session.service';
             transition('0 => 1', animate('250ms ease-in'))
         ])
     ],
-    standalone: false
+    standalone: true,
+    imports: [
+        CommonModule,
+        RouterModule,
+        MatCardModule,
+        MatDividerModule,
+        MatIconModule,
+        MatButtonModule,
+        MatListModule,
+        MatPaginatorModule,
+        MatProgressSpinnerModule,
+        FeedIconModule
+    ]
 })
 export class AdminFeedComponent implements OnInit, OnDestroy {
   breadcrumbs: AdminBreadcrumb[] = [{
