@@ -4,33 +4,45 @@
   </mat-card-header>
 
   <div class="filter-section">
-    <mat-form-field *ngIf="!userId">
-      <mat-label>User</mat-label>
-      <input matInput [(ngModel)]="userText" (ngModelChange)="onUserSearchChange($event)"
-        [matAutocomplete]="userAuto" />
-      <button matSuffix matIconButton *ngIf="userText" (click)="onClearUserInput()" type="button">
-        <mat-icon>close</mat-icon>
-      </button>
-      <mat-autocomplete #userAuto (optionSelected)="selectUser($event.option.value)">
-        <mat-option *ngFor="let u of loginSearchResults" [value]="u">
-          {{ u.displayName }}
-        </mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
+    @if (!userId) {
+      <mat-form-field>
+        <mat-label>User</mat-label>
+        <input matInput [(ngModel)]="userText" (ngModelChange)="onUserSearchChange($event)"
+          [matAutocomplete]="userAuto" />
+        @if (userText) {
+          <button matSuffix matIconButton (click)="onClearUserInput()" type="button">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <mat-autocomplete #userAuto (optionSelected)="selectUser($event.option.value)">
+          @for (u of loginSearchResults; track u.id) {
+            <mat-option [value]="u">
+              {{ u.displayName }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+    }
 
-    <mat-form-field *ngIf="!deviceId">
-      <mat-label>Device</mat-label>
-      <input matInput [(ngModel)]="deviceText" (ngModelChange)="onDeviceSearchChange($event)"
-        [matAutocomplete]="deviceAuto" />
-      <button matSuffix matIconButton *ngIf="deviceText" (click)="onClearDeviceInput()" type="button">
-        <mat-icon>close</mat-icon>
-      </button>
-      <mat-autocomplete #deviceAuto (optionSelected)="selectDevice($event.option.value)">
-        <mat-option *ngFor="let d of loginDeviceSearchResults" [value]="d">
-          {{ d?.uid || d?.userAgent || 'Unknown Device' }}
-        </mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
+    @if (!deviceId) {
+      <mat-form-field>
+        <mat-label>Device</mat-label>
+        <input matInput [(ngModel)]="deviceText" (ngModelChange)="onDeviceSearchChange($event)"
+          [matAutocomplete]="deviceAuto" />
+        @if (deviceText) {
+          <button matSuffix matIconButton (click)="onClearDeviceInput()" type="button">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <mat-autocomplete #deviceAuto (optionSelected)="selectDevice($event.option.value)">
+          @for (d of loginDeviceSearchResults; track d.uid) {
+            <mat-option [value]="d">
+              {{ d?.uid || d?.userAgent || 'Unknown Device' }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+    }
 
     <mat-form-field>
       <mat-label>Start Date</mat-label>
@@ -49,36 +61,44 @@
 
   <div class="list-content">
     <mat-list>
-      <mat-list-item *ngFor="let login of loginPage?.logins || []">
-        <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
-        <span matListItemTitle>
-          <a
-            *ngIf="login.user?.id; else userDisplayName"
-            class="login-link"
-            tabindex="0"
-            role="link"
-            (click)="goToUser($event, login)"
-            (keydown.enter)="goToUser($event, login)"
-          >{{ login.user?.displayName || 'Unknown User' }}</a>
-          <ng-template #userDisplayName>{{ login.user?.displayName || 'Unknown User' }}</ng-template>
-          <span class="login-via">via</span>
-          <a
-            *ngIf="login.device?.id; else deviceDisplayName"
-            class="login-link login-device"
-            tabindex="0"
-            role="link"
-            (click)="goToDevice($event, login)"
-            (keydown.enter)="goToDevice($event, login)"
-          >{{ platformLabel(login.device) }}</a>
-          <ng-template #deviceDisplayName><span class="login-device">{{ platformLabel(login.device) }}</span></ng-template>
-        </span>
-        <span matListItemLine>{{ fromNow(login.timestamp) }} · {{ absoluteTime(login.timestamp) }}</span>
-      </mat-list-item>
+      @for (login of loginPage?.logins || []; track login.id) {
+        <mat-list-item>
+          <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
+          <span matListItemTitle>
+            @if (login.user?.id) {
+              <a
+                class="login-link"
+                tabindex="0"
+                role="link"
+                (click)="goToUser($event, login)"
+                (keydown.enter)="goToUser($event, login)"
+              >{{ login.user?.displayName || 'Unknown User' }}</a>
+            } @else {
+              {{ login.user?.displayName || 'Unknown User' }}
+            }
+            <span class="login-via">via</span>
+            @if (login.device?.id) {
+              <a
+                class="login-link login-device"
+                tabindex="0"
+                role="link"
+                (click)="goToDevice($event, login)"
+                (keydown.enter)="goToDevice($event, login)"
+              >{{ platformLabel(login.device) }}</a>
+            } @else {
+              <span class="login-device">{{ platformLabel(login.device) }}</span>
+            }
+          </span>
+          <span matListItemLine>{{ fromNow(login.timestamp) }} · {{ absoluteTime(login.timestamp) }}</span>
+        </mat-list-item>
+      }
 
-      <div class="empty-state" *ngIf="!loginPage || loginPage.logins.length === 0">
-        <mat-icon>login</mat-icon>
-        <span class="empty-desc">No login history found</span>
-      </div>
+      @if (!loginPage || loginPage.logins.length === 0) {
+        <div class="empty-state">
+          <mat-icon>login</mat-icon>
+          <span class="empty-desc">No login history found</span>
+        </div>
+      }
     </mat-list>
   </div>
 
