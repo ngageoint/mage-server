@@ -47,9 +47,6 @@ import { PluginModule } from './admin-plugins/plugins.module';
 
 import { AdminAuthenticationComponent } from './admin-authentication/admin-authentication.component';
 import { AdminAuthenticationSettingsComponent } from './admin-authentication/admin-authentication-settings.component';
-import { AuthenticationCreateComponent } from './admin-authentication/admin-authentication-create/admin-authentication-create.component';
-import { ButtonPreviewComponent } from './admin-authentication/admin-authentication-create/button-preview/button-preview.component';
-import { IconUploadComponent } from './admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
 import { AdminAuthenticationOidcComponent } from './admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
 import { AdminAuthenticationOAuth2Component } from './admin-authentication/admin-authentication-oauth2/admin-authentication-oauth2.component';
 import { AdminAuthenticationLDAPComponent } from './admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
@@ -105,10 +102,7 @@ import { AccountLockComponent } from './admin-authentication/admin-authenticatio
     AdminAuthenticationLDAPComponent,
     AdminAuthenticationSAMLComponent,
     AdminNavbarComponent,
-    AdminNavigationComponent,
-    AuthenticationCreateComponent,
-    ButtonPreviewComponent,
-    IconUploadComponent
+    AdminNavigationComponent
   ],
   declarations: [
     SearchModalComponent,
