@@ -73,7 +73,7 @@
         </mat-card-header>
 
         <div class="list-content">
-          @if (loadingEvents) {
+          @if (loadingEvents()) {
             <div class="loading-overlay">
               <mat-spinner diameter="32"></mat-spinner>
             </div>

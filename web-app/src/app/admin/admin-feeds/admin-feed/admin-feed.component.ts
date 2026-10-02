@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -111,7 +111,7 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   eventsPage = 0;
   totalFeedEvents = 0;
   feedEvents: any[] = [];
-  loadingEvents = false;
+  loadingEvents = signal(false);
 
   service!: Service;
   feedServiceType!: ServiceType;
@@ -182,7 +182,7 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   loadAllEvents(): void {
     if (!this.feed?.id) return;
 
-    this.loadingEvents = true;
+    this.loadingEvents.set(true);
 
     this.eventsService
       .getEvents({
@@ -202,11 +202,11 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
           this.clampEventsPage();
           this.applyEventsPage();
 
-          this.loadingEvents = false;
+          this.loadingEvents.set(false);
         },
         error: (err) => {
           console.error('Error loading feed events:', err);
-          this.loadingEvents = false;
+          this.loadingEvents.set(false);
         }
       });
   }
