@@ -4,8 +4,14 @@ import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 import { Team } from '@ngageoint/mage.web-core-lib/team'
 import { Observable } from 'rxjs';
 import { Layer } from 'mage-web-app/entities/layer/entities.layer';
-import { MageEvent } from 'mage-web-app/entities/event/entities.event';
+import { EventAccessType, EventRole, MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { User } from '@ngageoint/mage.web-core-lib/user';
+
+export interface EventAclEntry {
+    user: Pick<User, 'id' | 'username' | 'displayName' | 'email'>;
+    role: EventRole;
+    permissions: EventAccessType[];
+}
 
 export interface SearchOptions {
     term?: string;
@@ -176,7 +182,15 @@ export class AdminEventsService {
         return this.http.put(`/api/events/${eventId}/forms/${formId}`, formData);
     }
 
-    deleteForm(eventId: string, formId: string): Observable<void> {
-        return this.http.delete<void>(`/api/events/${eventId}/forms/${formId}`);
+    getEventAcl(eventId: string): Observable<EventAclEntry[]> {
+        return this.http.get<EventAclEntry[]>(`/api/events/${eventId}/acl`);
+    }
+
+    setEventAclRole(eventId: string, userId: string, role: EventRole): Observable<EventAclEntry[]> {
+        return this.http.put<EventAclEntry[]>(`/api/events/${eventId}/acl/${userId}`, { role });
+    }
+
+    removeEventAclUser(eventId: string, userId: string): Observable<EventAclEntry[]> {
+        return this.http.delete<EventAclEntry[]>(`/api/events/${eventId}/acl/${userId}`);
     }
 }

@@ -57,11 +57,14 @@
 
 .event-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &.event-header--actions {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
 }
 
 .media-content {
@@ -126,35 +129,10 @@
   }
 }
 
-.detail-row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 16px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  mat-form-field {
-    width: 100%;
-  }
-}
-
-.detail-label {
-  font-size: var(--mat-sys-label-small-size);
-  font-weight: 400;
+.event-description {
+  font: var(--mat-sys-body-medium);
   color: var(--mat-sys-on-surface-variant);
-}
-
-.detail-value {
-  font-size: var(--mat-sys-body-large-size);
-  color: var(--mat-sys-on-surface);
   white-space: pre-wrap;
-}
-
-.section-divider {
-  margin: 20px 0;
 }
 
 .event-actions {
@@ -221,6 +199,12 @@
   gap: 8px;
 }
 
+.card-description {
+  margin: -8px 20px 16px;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .toolbar {
   padding: 0 20px;
   margin-bottom: 8px;
@@ -269,22 +253,48 @@
   }
 }
 
+.role-badge-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+
+  &.role-badge-lock {
+    font-size: 14px;
+    width: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 .role-badge-trigger {
   border: none;
   cursor: pointer;
   font-family: inherit;
-
-  .role-badge-chevron {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    vertical-align: middle;
-    margin-left: 4px;
-  }
 }
 
 .delete-icon {
   color: var(--mat-sys-error);
+}
+
+.locked-action {
+  cursor: default;
+
+  .delete-icon {
+    color: var(--mat-sys-on-surface);
+    opacity: 0.38;
+  }
+}
+
+.role-option {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-option-description {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .empty-state {
@@ -328,22 +338,24 @@ mat-paginator {
   margin-bottom: 16px;
 }
 
-.restrictions-card mat-card-header {
-  margin-bottom: 16px;
-
-  & + mat-divider {
-    margin: 8px 0 16px;
-  }
-
-  mat-card-subtitle {
-    font-size: var(--mat-sys-label-medium-size);
-    color: var(--mat-sys-on-surface-variant);
-    margin-top: 2px;
-  }
+.restrictions-content {
+  padding: 0 20px 20px;
 }
 
-.restrictions-card .section-divider {
-  margin: 8px 0 20px;
+.restrictions-section-title {
+  margin: 0;
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-on-surface);
+}
+
+.restrictions-section-description {
+  margin: 4px 0 16px;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.restrictions-divider {
+  margin: 24px 0;
 }
 
 .form-info {
@@ -409,7 +421,7 @@ mat-paginator {
   display: flex;
   gap: 8px;
 
-  @include mat.form-field-density(-4);
+  @include mat.form-field-density(-1);
 
   mat-form-field {
     width: 80px;
@@ -439,10 +451,6 @@ mat-paginator {
   flex-wrap: wrap;
 }
 
-.full-width {
-  width: 100%;
-  margin-bottom: 16px;
-}
 
 .text-danger {
   color: var(--mat-sys-error);

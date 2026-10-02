@@ -62,8 +62,6 @@ export declare function getUsers(eventId: MageEventId, callback: Callback<UserDo
 export declare function addTeam(event: MageEventModelInstance, team: any, callback: Callback<MageEventModelInstance>): void
 export declare function getTeams(eventId: MageEventId, options: { populate: string[] | null }, callback: Callback): void
 export declare function removeTeam(event: MageEventModelInstance, team: any, callback: Callback<MageEventModelInstance>): void
-export declare function updateUserInAcl(eventId: MageEventId, userId: string, role: string, callback: Callback<MageEventModelInstance>): void
-export declare function removeUserFromAcl(eventId: MageEventId, userId: string, callback: Callback<MageEventModelInstance>): void
 export declare function getMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
 export declare function getNonMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
 export declare function getTeamsInEvent(eventId: MageEventId, options: TODO): Promise<PageInfo>

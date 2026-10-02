@@ -517,23 +517,11 @@ exports.updateUserInAcl = function (teamId, userId, role, callback) {
   Team.findOneAndUpdate({ _id: teamId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
-exports.updateUserInAclForEventTeam = function (eventId, userId, role, callback) {
-  const update = { ['acl.' + userId.toString()]: role };
-  Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
-};
-
 exports.removeUserFromAcl = function (teamId, userId, callback) {
   const update = {
     $unset: { ['acl.' + userId.toString()]: true }
   };
   Team.findByIdAndUpdate(teamId, update, { new: true }).then(r => callback(null, r), e => callback(e));
-};
-
-exports.removeUserFromAclForEventTeam = function (eventId, userId, callback) {
-  const update = {
-    $unset: { ['acl.' + userId.toString()]: true }
-  };
-  Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeUserFromAllAcls = function (user, callback) {

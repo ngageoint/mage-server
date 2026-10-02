@@ -28,6 +28,8 @@ import * as feedsApi from './app.api/feeds/app.api.feeds';
 import * as feedsImpl from './app.impl/feeds/app.impl.feeds';
 import * as eventsApi from './app.api/events/app.api.events';
 import * as eventsImpl from './app.impl/events/app.impl.events';
+import * as eventAclApi from './app.api/events/app.api.events.acl';
+import * as eventAclImpl from './app.impl/events/app.impl.events.acl';
 import * as observationsApi from './app.api/observations/app.api.observations';
 import * as observationsImpl from './app.impl/observations/app.impl.observations';
 import * as observationsSearchImpl from './app.impl/observations/app.impl.observations.search';
@@ -54,6 +56,9 @@ import {
   MageEventRepository
 } from './entities/events/entities.events';
 import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web';
+import { EventAclRoutes } from './adapters/events/adapters.events.acl.controllers.web';
+import { MongooseEventAclRepository } from './adapters/events/adapters.events.acl.db.mongoose';
+import { EventAclRepository } from './entities/events/entities.events.acl';
 import {
   MongooseStaticIconRepository,
   StaticIconModel
@@ -456,6 +461,9 @@ type AppLayer = {
     listEventFeeds: eventsApi.ListEventFeeds
     removeFeedFromEvent: eventsApi.RemoveFeedFromEvent
     fetchFeedContent: feedsApi.FetchFeedContent
+    listEventAcl: eventAclApi.ListEventAcl
+    setEventAclRole: eventAclApi.SetEventAclRole
+    removeEventAclUser: eventAclApi.RemoveEventAclUser
   }
   observations: {
     readObservations: observationsApi.ReadObservations
@@ -600,6 +608,7 @@ type Repositories = {
   }
   events: {
     eventRepo: MageEventRepository
+    eventAclRepo: EventAclRepository
   }
   exports: {
     exportRepo: ExportsRepository
@@ -670,6 +679,7 @@ async function initRepositories(
     new SimpleIdFactory()
   );
   const eventRepo = new MongooseMageEventRepository(models.events.event);
+  const eventAclRepo = new MongooseEventAclRepository(models.events.event);
   const deviceRepo = new MongooseDeviceRepository(models.devices.device);
   const exportRepo = new MongooseExportsRepository(
     models.exports.export,
@@ -725,7 +735,8 @@ async function initRepositories(
       feedRepo
     },
     events: {
-      eventRepo
+      eventRepo,
+      eventAclRepo
     },
     exports: {
       exportRepo,
@@ -988,6 +999,20 @@ async function initEventsAppLayer(
       repos.feeds.serviceRepo,
       repos.feeds.feedRepo,
       jsonSchemaService
+    ),
+    listEventAcl: eventAclImpl.ListEventAcl(
+      eventPermissions.defaultEventPermissionsService,
+      repos.users.userRepo
+    ),
+    setEventAclRole: eventAclImpl.SetEventAclRole(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventAclRepo,
+      repos.users.userRepo
+    ),
+    removeEventAclUser: eventAclImpl.RemoveEventAclUser(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventAclRepo,
+      repos.users.userRepo
     )
   };
 }
@@ -1305,6 +1330,21 @@ async function initWebLayer(
     appRequestFactory
   );
   webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
+
+  const eventAclRequestFactory: WebAppRequestFactory<eventAclApi.EventAclRequest> = <Params extends object = {}>(
+    req: express.Request,
+    params?: Params
+  ) => {
+    return {
+      ...params,
+      context: { ...baseAppRequestContext(req), event: req.eventEntity! }
+    } as eventAclApi.EventAclRequest & Params;
+  };
+  const eventAclRoutes = EventAclRoutes(
+    { ...app.events, eventRepo: repos.events.eventRepo },
+    eventAclRequestFactory
+  );
+  webController.use('/api/events', [bearerAuthentication, eventAclRoutes]);
 
   const exportRequestFactory: ExportWebAppRequestFactory = <
     Params extends object | undefined
