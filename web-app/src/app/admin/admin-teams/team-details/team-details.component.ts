@@ -1,9 +1,18 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, computed, effect, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 import { User } from '@ngageoint/mage.web-core-lib/user'
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { Observable } from 'rxjs';
@@ -13,94 +22,90 @@ import { CreateTeamDialogComponent } from '../create-team/create-team.component'
 import {
   SearchModalComponent,
   SearchModalData,
-  SearchModalResult,
-  SearchModalColumn
+  SearchModalResult
 } from '../../search-modal/search-modal.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { MageEvent } from 'mage-web-app/entities/event/entities.event'
 
+const TEAMS_BREADCRUMB: AdminBreadcrumb = { title: 'Teams', icon: 'groups', route: ['/admin/teams'] };
+
 @Component({
     selector: 'mage-team-details',
     templateUrl: './team-details.component.html',
     styleUrls: ['./team-details.component.scss'],
-    standalone: false
+    imports: [
+      FormsModule,
+      RouterLink,
+      MatButtonModule,
+      MatCardModule,
+      MatDividerModule,
+      MatIconModule,
+      MatInputModule,
+      MatListModule,
+      MatMenuModule,
+      MatPaginatorModule,
+      MatProgressSpinnerModule
+    ]
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
-  team: Team | null = null;
-  teamId = '';
-
-  hasUpdatePermission = false;
-  hasDeletePermission = false;
-
-  private get myself(): any | null {
-    return this.sessionService.user;
-  }
-
-  loadingMembers = true;
-  membersPageIndex = 0;
-  membersPageSize = 5;
-  memberSearchTerm = '';
-  membersDataSource = new MatTableDataSource<User>();
-  membersDisplayedColumns = ['content'];
-  totalMembers = 0;
-  pageSizeOptions = [5, 10, 25];
-
-  loadingEvents = true;
-  teamEvents: MageEvent[] = [];
-  teamEventsPage = 0;
-  eventsPerPage = 5;
-  eventSearch = '';
-  teamEventSearch = '';
-  filteredEvents: MageEvent[] = [];
-
-  eventsDataSource = new MatTableDataSource<MageEvent>();
-  eventsDisplayedColumns = ['content'];
-  totalEvents = 0;
-  eventsPageSize = 5;
-
-  #breadcrumbs: AdminBreadcrumb[] = [{
-    title: 'Teams',
-    icon: 'groups',
-    route: ['/admin/teams']
-  }];
-  set breadcrumbs(value: AdminBreadcrumb[]) {
-    this.#breadcrumbs = value;
-    this.breadcrumbService.setBreadcrumbs(value);
-  }
-  get breadcrumbs(): AdminBreadcrumb[] {
-    return this.#breadcrumbs;
-  }
+  private route: ActivatedRoute = inject(ActivatedRoute);
+  private router: Router = inject(Router);
+  private dialog: MatDialog = inject(MatDialog);
+  private snackBar: MatSnackBar = inject(MatSnackBar);
+  private sessionService: SessionService = inject(SessionService);
+  private teamService: TeamService = inject(TeamService);
+  private eventsService: AdminEventsService = inject(AdminEventsService);
+  private breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
 
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
 
-  private asId(value: any): string {
-    if (!value) {
-      return '';
-    }
-    return String(value);
+  teamId = signal('');
+  team = signal<Team | null>(null);
+
+  private myAclPermissions = computed(() => {
+    const myId = this.sessionService.user?.id;
+    return (myId && this.team()?.acl?.[myId]?.permissions) || [];
+  });
+
+  hasUpdatePermission = computed(() => this.team() !== null &&
+    (this.sessionService.hasPermission('UPDATE_TEAM') || this.myAclPermissions().includes('update')));
+  hasDeletePermission = computed(() => this.team() !== null &&
+    (this.sessionService.hasPermission('DELETE_TEAM') || this.myAclPermissions().includes('delete')));
+
+  breadcrumbs = computed<AdminBreadcrumb[]>(() => {
+    const team = this.team();
+    return team ? [TEAMS_BREADCRUMB, { title: team.name || 'Team' }] : [TEAMS_BREADCRUMB];
+  });
+
+  readonly pageSizeOptions = [5, 10, 25];
+
+  members = signal<User[]>([]);
+  totalMembers = signal(0);
+  loadingMembers = signal(true);
+  membersPageIndex = signal(0);
+  membersPageSize = signal(5);
+  memberSearchTerm = signal('');
+
+  events = signal<MageEvent[]>([]);
+  totalEvents = signal(0);
+  loadingEvents = signal(true);
+  eventsPageIndex = signal(0);
+  eventsPageSize = signal(5);
+  eventSearchTerm = signal('');
+
+  constructor() {
+    effect(() => this.breadcrumbService.setBreadcrumbs(this.breadcrumbs()));
   }
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private sessionService: SessionService,
-    private teamService: TeamService,
-    private eventsService: AdminEventsService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
-
   ngOnInit(): void {
-    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
     this.route.paramMap.subscribe((params) => {
-      this.teamId = params.get('teamId') || '';
-      if (!this.teamId) {
+      this.teamId.set(params.get('teamId') || '');
+      if (!this.teamId()) {
         return;
       }
       this.loadTeam();
@@ -113,94 +118,84 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadTeam(): void {
-    if (!this.teamId) {
-      return;
-    }
-
-    this.teamService.getTeamById(this.teamId).subscribe((team: Team) => {
-      this.team = team;
-      const myId = this.myself?.id;
-      const myAccess =
-        myId && this.team?.acl ? this.team.acl[myId] ?? null : null;
-      const aclPermissions: string[] = myAccess?.permissions || [];
-
-      this.hasUpdatePermission =
-        this.sessionService.hasPermission('UPDATE_TEAM') ||
-        aclPermissions.includes('update');
-
-      this.hasDeletePermission =
-        this.sessionService.hasPermission('DELETE_TEAM') ||
-        aclPermissions.includes('delete');
-
+    this.teamService.getTeamById(this.teamId()).subscribe((team: Team) => {
+      this.team.set(team);
       this.getMembers();
       this.getTeamEvents();
-
-      this.breadcrumbs = [{ title: 'Teams', icon: 'groups', route: ['/admin/teams'] }, { title: this.team?.name || 'Team' }];
     });
   }
 
   getMembers(): void {
-    if (!this.team?.id) {
+    const teamId = this.team()?.id;
+    if (!teamId) {
       return;
     }
 
-    this.loadingMembers = true;
+    this.loadingMembers.set(true);
     this.teamService
       .getMembers({
-        teamId: this.team.id,
-        term: this.memberSearchTerm,
-        pageIndex: this.membersPageIndex,
-        pageSize: this.membersPageSize
+        teamId,
+        term: this.memberSearchTerm(),
+        pageIndex: this.membersPageIndex(),
+        pageSize: this.membersPageSize()
       })
       .subscribe({
         next: (results) => {
-          this.loadingMembers = false;
-          this.membersDataSource.data = results.items || [];
-          this.totalMembers = results.totalCount || 0;
+          this.loadingMembers.set(false);
+          this.members.set(results.items || []);
+          this.totalMembers.set(results.totalCount || 0);
         },
-        error: (error) => {
-          this.loadingMembers = false;
-          this.membersDataSource.data = [];
-          this.totalMembers = 0;
+        error: () => {
+          this.loadingMembers.set(false);
+          this.members.set([]);
+          this.totalMembers.set(0);
         }
       });
   }
 
   getTeamEvents(): void {
-    if (!this.teamId) {
+    const teamId = this.teamId();
+    if (!teamId) {
       return;
     }
 
-    this.loadingEvents = true;
+    this.loadingEvents.set(true);
     this.eventsService
       .getEvents({
-        term: this.teamEventSearch,
-        teamId: this.teamId,
-        page: this.teamEventsPage,
-        page_size: this.eventsPerPage
+        term: this.eventSearchTerm(),
+        teamId,
+        page: this.eventsPageIndex(),
+        page_size: this.eventsPageSize()
       })
-      .subscribe((results) => {
-        this.loadingEvents = false;
-        this.teamEvents = results.items || [];
-        this.eventsDataSource.data = results.items || [];
-        this.totalEvents = results.totalCount || 0;
+      .subscribe({
+        next: (results) => {
+          this.loadingEvents.set(false);
+          this.events.set(results.items || []);
+          this.totalEvents.set(results.totalCount || 0);
+        },
+        error: () => {
+          this.loadingEvents.set(false);
+          this.events.set([]);
+          this.totalEvents.set(0);
+        }
       });
   }
 
   onMembersPageChange(event: PageEvent): void {
-    this.membersPageSize = event.pageSize;
-    this.membersPageIndex = event.pageIndex;
+    this.membersPageSize.set(event.pageSize);
+    this.membersPageIndex.set(event.pageIndex);
     this.getMembers();
   }
 
-  onMembersSearchChange(searchTerm: string = ''): void {
-    this.membersPageIndex = 0;
-    this.memberSearchTerm = searchTerm || '';
+  onMembersSearchChange(searchTerm?: string): void {
+    this.membersPageIndex.set(0);
+    this.memberSearchTerm.set(searchTerm || '');
     this.getMembers();
   }
 
   editTeamDetails(): void {
-    if (!this.team) {
+    const team = this.team();
+    if (!team) {
       return;
     }
 
@@ -208,68 +203,61 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       width: '40vw',
       maxWidth: '40vw',
       disableClose: true,
-      data: { team: this.team }
+      data: { team }
     });
 
     dialogRef.afterClosed().subscribe((updatedTeam: Team) => {
-      if (!updatedTeam) {
-        return;
+      if (updatedTeam) {
+        this.team.set(updatedTeam);
       }
-      this.team = updatedTeam;
-      this.breadcrumbs = [{ title: 'Teams', icon: 'groups', route: ['/admin/teams'] }, { title: this.team?.name || 'Team' }];
     });
   }
 
   addMember(): void {
-    const teamId = this.asId(this.team?.id);
+    const teamId = this.team()?.id;
     if (!teamId) {
       return;
     }
-    const dialogRef = this.dialog.open(SearchModalComponent, {
+    const dialogRef = this.dialog.open<SearchModalComponent, SearchModalData, SearchModalResult>(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Members to Team',
         searchPlaceholder: 'Search for users to add...',
-        type: 'members',
         icon: 'person',
-        teamId,
         searchFunction: (
           term: string,
           pageIndex: number,
           pageSize: number
-        ): Observable<any> => {
+        ): Observable<PageOf<User>> => {
           return this.teamService.getNonMembers({ teamId, term, pageIndex, pageSize });
         },
-        columns: [
-          {
-            key: 'name',
-            label: 'Name',
-            displayFunction: (user: User) => user.username || 'Unknown',
-            width: '40%'
-          },
-          {
-            key: 'displayName',
-            label: 'Display Name',
-            displayFunction: (user: User) => user.displayName || 'Unknown',
-            width: '35%'
-          },
-          {
-            key: 'email',
-            label: 'Email',
-            displayFunction: (user: User) => user.email || 'No email provided',
-            width: '35%'
-          }
-        ] as SearchModalColumn[]
-      } as SearchModalData
+        columns: [{
+          key: 'name',
+          label: 'Name',
+          displayFunction: (user: User) => user.username || 'Unknown',
+          width: '40%'
+        },{
+          key: 'displayName',
+          label: 'Display Name',
+          displayFunction: (user: User) => user.displayName || 'Unknown',
+          width: '35%'
+        },{
+          key: 'email',
+          label: 'Email',
+          displayFunction: (user: User) => user.email || 'No email provided',
+          width: '35%'
+        }]
+      }
     });
 
-    dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result?.selectedItem && this.team?.id) {
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.selectedItem) {
         this.teamService
-          .addUserToTeam(this.asId(this.team.id), result.selectedItem)
+          .addUserToTeam(teamId, result.selectedItem)
           .subscribe({
-            next: () => this.getMembers()
+            next: () => this.getMembers(),
+            error: (error) => console.error('Error adding member:', error)
           });
       }
     });
@@ -277,11 +265,11 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   removeMember($event: MouseEvent, user: User): void {
     $event.stopPropagation();
-    if (!this.team?.id) {
+    const teamId = this.team()?.id;
+    if (!teamId) {
       return;
     }
 
-    const teamId = this.team.id;
     this.teamService.removeMember(teamId, user.id).subscribe({
       next: () => {
         this.getMembers();
@@ -296,135 +284,132 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
             }
           });
         });
-      }
+      },
+      error: (error) => console.error('Error removing member:', error)
     });
   }
 
   getUserRole(user: User): string {
-    const userAcl = this.team?.acl?.[user.id];
-    return userAcl?.role || 'GUEST';
-  }
-
-  getRoleClass(user: User): string {
-    const role = this.getUserRole(user);
-    return `user-role-badge role-${role.toLowerCase()}`;
+    return this.team()?.acl?.[user.id]?.role || 'GUEST';
   }
 
   updateUserRole(user: User, newRole: string): void {
-    if (!this.team?.id || !newRole) {
+    const teamId = this.team()?.id;
+    if (!teamId) {
       return;
     }
     this.teamService
-      .updateUserRole(this.asId(this.team.id), this.asId(user.id), newRole)
+      .updateUserRole(teamId, user.id, newRole)
       .subscribe({
-        next: (updatedTeam: Team) => {
-          this.team = updatedTeam;
-          this.getMembers();
-        }
+        next: (updatedTeam: Team) => this.team.set(updatedTeam),
+        error: (error) => console.error('Error updating member role:', error)
       });
   }
 
   addEventToTeam(): void {
-    if (!this.team?.id) {
+    const team = this.team();
+    if (!team) {
       return;
     }
-    const dialogRef = this.dialog.open(SearchModalComponent, {
+    const dialogRef = this.dialog.open<SearchModalComponent, SearchModalData, SearchModalResult>(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
       data: {
         title: 'Add Events to Team',
         searchPlaceholder: 'Search for events to add...',
-        type: 'events',
         searchFunction: (
           searchTerm: string,
           page: number,
           pageSize: number
-        ): Observable<any> => {
+        ): Observable<PageOf<MageEvent>> => {
           return this.eventsService.getEvents({
             term: searchTerm,
             page,
             page_size: pageSize,
-            excludeTeamId: this.team.id
+            excludeTeamId: team.id
           });
         },
-        columns: [
-          {
-            key: 'name',
-            label: 'Event Name',
-            displayFunction: (event: any) => event.name || 'Unnamed Event',
-            width: '50%'
-          },
-          {
-            key: 'description',
-            label: 'Description',
-            displayFunction: (event: any) => event.description || 'No description',
-            width: '50%'
-          }
-        ] as SearchModalColumn[]
-      } as SearchModalData
+        columns: [{
+          key: 'name',
+          label: 'Event Name',
+          displayFunction: (event: MageEvent) => event.name || 'Unnamed Event',
+          width: '50%'
+        },{
+          key: 'description',
+          label: 'Description',
+          displayFunction: (event: MageEvent) => event.description || 'No description',
+          width: '50%'
+        }]
+      }
     });
 
-    dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result?.selectedItem && this.team?.id) {
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.selectedItem) {
         this.eventsService
-          .addTeamToEvent(this.asId(result.selectedItem.id), this.team)
-          .subscribe(() => this.getTeamEvents());
+          .addTeamToEvent(String(result.selectedItem.id), team)
+          .subscribe({
+            next: () => this.getTeamEvents(),
+            error: (error) => console.error('Error adding event:', error)
+          });
       }
     });
   }
 
   removeEventFromTeam($event: MouseEvent, event: MageEvent): void {
     $event.stopPropagation();
-    if (!this.team?.id) {
+    const team = this.team();
+    if (!team) {
       return;
     }
 
-    const team = this.team;
-
     this.eventsService
-      .removeEventFromTeam(this.asId(event.id), this.asId(team.id))
-      .subscribe(() => {
-        this.getTeamEvents();
+      .removeEventFromTeam(String(event.id), team.id)
+      .subscribe({
+        next: () => {
+          this.getTeamEvents();
 
-        const snackBarRef = this.snackBar.open(`Removed ${event.name} from team`, 'Undo', { duration: 5000 });
-        snackBarRef.onAction().subscribe(() => {
-          this.eventsService.addTeamToEvent(this.asId(event.id), team).subscribe({
-            next: () => this.getTeamEvents(),
-            error: (error) => {
-              console.error('Error restoring event:', error);
-              this.snackBar.open('Error restoring event', 'Close', { duration: 5000 });
-            }
+          const snackBarRef = this.snackBar.open(`Removed ${event.name} from team`, 'Undo', { duration: 5000 });
+          snackBarRef.onAction().subscribe(() => {
+            this.eventsService.addTeamToEvent(String(event.id), team).subscribe({
+              next: () => this.getTeamEvents(),
+              error: (error) => {
+                console.error('Error restoring event:', error);
+                this.snackBar.open('Error restoring event', 'Close', { duration: 5000 });
+              }
+            });
           });
-        });
+        },
+        error: (error) => console.error('Error removing event:', error)
       });
   }
 
   deleteTeam(): void {
-    if (!this.team) {
+    const team = this.team();
+    if (!team) {
       return;
     }
 
     const dialogRef = this.dialog.open(DeleteTeamComponent, {
       width: '600px',
-      data: { team: this.team }
+      data: { team }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
+    dialogRef.afterClosed().subscribe((deleted: boolean) => {
+      if (deleted) {
         this.router.navigate(['../../teams'], { relativeTo: this.route });
       }
     });
   }
 
   onEventsPageChange(event: PageEvent): void {
-    this.eventsPerPage = event.pageSize;
-    this.teamEventsPage = event.pageIndex;
+    this.eventsPageSize.set(event.pageSize);
+    this.eventsPageIndex.set(event.pageIndex);
     this.getTeamEvents();
   }
 
   onTeamEventSearchChange(searchTerm?: string): void {
-    this.teamEventsPage = 0;
-    this.teamEventSearch = searchTerm || '';
+    this.eventsPageIndex.set(0);
+    this.eventSearchTerm.set(searchTerm || '');
     this.getTeamEvents();
   }
 }
