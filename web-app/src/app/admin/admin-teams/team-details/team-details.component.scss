@@ -72,32 +72,6 @@ mat-card.list-card {
   color: var(--mat-sys-on-surface-variant);
 }
 
-.detail-row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 16px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  mat-form-field {
-    width: 100%;
-  }
-}
-
-.detail-label {
-  font-size: var(--mat-sys-label-small-size);
-  font-weight: 400;
-  color: var(--mat-sys-on-surface-variant);
-}
-
-.detail-value {
-  font-size: var(--mat-sys-body-large-size);
-  color: var(--mat-sys-on-surface);
-}
-
 .section-divider {
   margin-bottom: 16px;
 }
