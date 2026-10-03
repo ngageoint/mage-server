@@ -27,7 +27,6 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MomentModule } from '../../../app/moment/moment.module';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { AdminFeedsComponent } from './admin-feeds.component';
-import { AdminFeedComponent } from './admin-feed/admin-feed.component';
 import { AdminFeedEditComponent } from './admin-feed/admin-feed-edit/admin-feed-edit.component';
 import { JsonSchemaWidgetAutocompleteComponent } from '../json-schema/json-schema-widget/json-schema-widget-autocomplete.component';
 import { AdminServiceEditComponent } from './admin-service/admin-service-edit/admin-service-edit.component';
@@ -44,7 +43,6 @@ import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
-    AdminFeedComponent,
     AdminFeedEditComponent,
     AdminServiceEditComponent,
     AdminFeedEditItemPropertiesComponent,
@@ -94,7 +92,6 @@ import { RouterModule } from '@angular/router';
   ],
   exports: [
     AdminFeedsComponent,
-    AdminFeedComponent,
     AdminFeedEditComponent,
     AdminServiceEditComponent
   ]

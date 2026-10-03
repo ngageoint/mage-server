@@ -121,8 +121,7 @@ describe('AdminFeedComponent', () => {
     } as any);
 
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, NoopAnimationsModule],
-      declarations: [AdminFeedComponent],
+      imports: [FormsModule, ReactiveFormsModule, NoopAnimationsModule, AdminFeedComponent],
       providers: [
         { provide: FeedService, useValue: feedServiceSpy },
         { provide: SessionService, useValue: sessionServiceSpy },
