@@ -11,7 +11,7 @@
 
 <div class="auth-page">
   <mat-accordion>
-    @for (strategy of strategies; track strategy.name; let isFirst = $first) {
+    @for (strategy of strategies; track strategy; let isFirst = $first) {
       <mat-expansion-panel [expanded]="isFirst">
         <mat-expansion-panel-header>
           <mat-panel-title>

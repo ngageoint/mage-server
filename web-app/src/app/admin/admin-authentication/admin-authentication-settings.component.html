@@ -1,6 +1,6 @@
 @if (!strategy) {
   <div class="p-4">Loading authentication settings…</div>
-} @else if (strategy?.settings; as settings) {
+} @else if (strategy.settings; as settings) {
   <p class="field-label">New User Accounts Require Admin Approval</p>
   <mat-form-field appearance="fill">
     <mat-select
