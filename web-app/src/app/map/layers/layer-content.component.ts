@@ -1,60 +1,64 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSliderModule } from '@angular/material/slider';
 import { MapLayerService, SimpleStyle } from './layer.service';
+import { RenderedMapLayer } from '../entities.map-layer';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { trigger, style, transition, animate } from '@angular/animations';
+import { ColorPickerModule } from 'src/app/color-picker/color-picker.module';
 
 @Component({
     selector: 'layer-content',
     templateUrl: './layer-content.component.html',
     styleUrls: ['./layer-content.component.scss'],
-    animations: [
-        trigger('visibility', [
-            transition(':enter', [
-                style({ height: 0, opacity: 0 }),
-                animate('225ms', style({ height: '*', opacity: 1 }))
-            ]),
-            transition(':leave', [animate('225ms', style({ height: 0, opacity: 0 }))])
-        ])
-    ],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatSliderModule,
+        ColorPickerModule
+    ]
 })
 export class LayerContentComponent {
-  @Input() layer: any;
-  @Input() style: SimpleStyle;
+  private layerService: MapLayerService = inject(MapLayerService);
 
-  @ViewChild('color') color: ElementRef;
+  layer = input.required<RenderedMapLayer>();
 
-  showColorPicker = false;
-  stroke = '#000000';
+  canOverrideStyle = computed(() => {
+    const layer = this.layer();
+    return layer.type === 'GeoPackage' && layer.renderAs === 'feature';
+  });
 
-  constructor(private layerService: MapLayerService) {}
+  style = signal<SimpleStyle | null>(null);
 
   toggleStyle(): void {
-    if (this.style) {
-      this.style = null;
-    } else {
-      this.style = {
-        stroke: '#000000FF',
-        fill: '#00000011',
-        width: 1
-      };
-    }
+    this.style.set(this.style() ? null : {
+      stroke: '#000000FF',
+      fill: '#00000011',
+      width: 1
+    });
 
-    this.layerService.style(this.layer, this.style);
+    this.layerService.style(this.layer(), this.style());
   }
 
   opacityChanged(value: number): void {
-    this.layerService.opacity(this.layer, value / 100);
+    this.layerService.opacity(this.layer(), value / 100);
   }
 
   colorChanged(event: ColorEvent, key: string): void {
-    this.layerService.style(this.layer, {
+    this.layerService.style(this.layer(), {
       [key]: event.color
     });
   }
 
-  widthChanged(width: any): void {
-    this.layerService.style(this.layer, {
+  widthChanged(width: number): void {
+    this.layerService.style(this.layer(), {
       width: width
     });
   }
