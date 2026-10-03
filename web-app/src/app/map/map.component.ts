@@ -21,7 +21,7 @@ import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
-import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerId, RasterLayer, RenderedMapLayer, VectorLayer } from './entities.map-layer'
+import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
 import { MatDialog as MatDialog } from '@angular/material/dialog'
 import * as _ from 'lodash'
 import moment from 'moment';
@@ -235,40 +235,42 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   opacityChanged(event: OpacityEvent): void {
-    const pane = this.map.getPanes()[event.layer.layer.pane]
-    pane.style.opacity = `${event.opacity}`
-    if (event.layer.layer.setOpacity) {
-      event.layer.layer.setOpacity(event.opacity)
+    const layer = event.layer
+    if (layer.type === 'vector') {
+      this.map.getPanes()[layer.layer.options.pane].style.opacity = `${event.opacity}`
+    } else {
+      layer.layer.setOpacity(event.opacity)
     }
   }
 
   styleChanged(event: StyleEvent): void {
-    event.layer.layer.setStyle(event.style);
+    if (event.layer.type === 'GeoPackage') {
+      event.layer.layer.setStyle(event.style)
+    }
   }
 
   reorder($event: ReorderEvent): void {
     moveItemInArray($event.layers, $event.previousIndex, $event.currentIndex)
-    const offset =
-      $event.type === 'feature'
-        ? MapComponent.FEATURE_PANE_Z_INDEX_OFFSET
-        : MapComponent.TILE_PANE_Z_INDEX_OFFSET
+    const offset = this.groups[$event.group].offset
 
-    $event.layers.forEach((layer: any, index: number) => {
+    $event.layers.forEach((layer, index) => {
       layer.zIndex = offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1)
-      const pane = this.map.getPanes()[layer.layer.pane]
-      pane.style.zIndex = layer.zIndex
+      const pane = this.map.getPanes()[layer.layer.options.pane]
+      pane.style.zIndex = `${layer.zIndex}`
     })
   }
 
   zoom($event: LayerZoomEvent): void {
-    const layer = $event.layer.layer
-    if (layer.getBounds) {
-      const bounds = layer.getBounds()
-      this.map.fitBounds(bounds)
-    } else if (layer.table && layer.table.bbox) {
+    const layer = $event.layer
+    if ('getBounds' in layer.layer) {
+      const bounds = layer.layer.getBounds()
+      if (bounds.isValid()) {
+        this.map.fitBounds(bounds)
+      }
+    } else if (layer.type === 'GeoPackage' && layer.bbox) {
       this.map.fitBounds([
-        [layer.table.bbox[1], layer.table.bbox[0]],
-        [layer.table.bbox[3], layer.table.bbox[2]]
+        [layer.bbox[1], layer.bbox[0]],
+        [layer.bbox[3], layer.bbox[2]]
       ])
     }
   }
@@ -763,28 +765,29 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   layerTogged(event: ToggleEvent): void {
-    if (event.layer.base) {
-      this.baseToggled(event)
+    if (event.layer.type === 'Imagery' && event.layer.base) {
+      this.baseToggled(event.layer)
     } else {
       this.overlayToggled(event)
     }
   }
 
-  baseToggled(event: ToggleEvent): void {
+  baseToggled(layer: RenderedRasterLayer): void {
     const baseLayers = this.groups['base'].layers
-    const previousBaseLayer = baseLayers.find((layer: any) => layer.selected)
+    const previousBaseLayer = baseLayers.find(baseLayer => baseLayer.selected)
     if (previousBaseLayer) {
       previousBaseLayer.selected = false
       this.map.removeLayer(previousBaseLayer.layer)
     }
 
-    event.layer.selected = true
-    this.map.addLayer(event.layer.layer)
+    layer.selected = true
+    this.map.addLayer(layer.layer)
 
-    this.mapService.selectBaseLayer(event.layer)
+    this.mapService.selectBaseLayer(layer)
   }
 
   overlayToggled(event: ToggleEvent): void {
+    event.layer.selected = event.value
     if (event.value) {
       this.map.addLayer(event.layer.layer)
     } else {

@@ -1,19 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LayersComponent } from './layers.component';
-import { LayerHeaderComponent } from './layer-header.component';
-import { LayerContentComponent } from './layer-content.component';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
-import { MatSliderModule as MatSliderModule } from '@angular/material/slider';
-import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
-import { FormsModule } from '@angular/forms';
-import { CheckboardModule, HueModule, SaturationModule, AlphaModule } from 'ngx-color';
 import { Component, ViewChild } from '@angular/core';
+import { RenderedMapLayer } from '../entities.map-layer';
 
 @Component({
     selector: `host-component`,
@@ -24,17 +13,18 @@ import { Component, ViewChild } from '@angular/core';
     [featureOverlays]="featureOverlays"
     [gridOverlays]="gridOverlays">
   </map-layers-panel>`,
-    standalone: false
+    standalone: true,
+    imports: [LayersComponent]
 })
 class TestHostComponent {
 
-  mageLayers = [];
-  baseLayers= [];
+  mageLayers: RenderedMapLayer[] = [];
+  baseLayers: RenderedMapLayer[] = [];
   tileOverlays = [];
   featureOverlays = [];
   gridOverlays = [];
 
-  @ViewChild(LayersComponent) layers: LayersComponent;
+  @ViewChild(LayersComponent) layers!: LayersComponent;
 }
 
 
@@ -45,8 +35,7 @@ describe('LayersComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule, MatCardModule, MatFormFieldModule, MatIconModule, MatSliderModule, MatCheckboxModule, MatRadioModule, MatExpansionModule, CheckboardModule, HueModule, SaturationModule, AlphaModule ],
-      declarations: [ LayersComponent, LayerHeaderComponent, LayerContentComponent, ColorPickerComponent, TestHostComponent ]
+      imports: [ TestHostComponent ]
     })
     .compileComponents();
   }));
@@ -70,16 +59,41 @@ describe('LayersComponent', () => {
       currentIndex: 1,
       previousIndex: 0
     }
-    const type = 'tile';
-    const layers: [any] = [{}];
-    component.reorderLayers(event, type, layers);
+    const layers: any[] = [{}];
+    component.reorderLayers(event, 'mage', layers);
 
     expect(component.onReorder.emit).toHaveBeenCalledWith({
-      type: type,
+      group: 'mage',
       layers: layers,
       currentIndex: 1,
       previousIndex: 0
     });
+  });
+
+  it('should toggle panel with the expansion indicator when header is clicked', () => {
+    hostComponent.mageLayers = [{ id: 'layer1', name: 'Layer One', type: 'vector', layer: {} } as unknown as RenderedMapLayer];
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('mat-expansion-panel-header');
+    expect(header.querySelector('.mat-expansion-indicator')).not.toBeNull();
+
+    header.click();
+    fixture.detectChanges();
+    expect(header.getAttribute('aria-expanded')).toEqual('true');
+
+    header.click();
+    fixture.detectChanges();
+    expect(header.getAttribute('aria-expanded')).toEqual('false');
+  });
+
+  it('should show move cursor on draggable headers', () => {
+    hostComponent.mageLayers = [{ id: 'layer1', name: 'Layer One', type: 'vector', layer: {} } as unknown as RenderedMapLayer];
+    hostComponent.baseLayers = [{ id: 1, name: 'Layer Two', type: 'Imagery', layer: {} } as unknown as RenderedMapLayer];
+    fixture.detectChanges();
+
+    const [mageHeader, baseHeader] = fixture.nativeElement.querySelectorAll('mat-expansion-panel-header');
+    expect(getComputedStyle(mageHeader).cursor).toEqual('move');
+    expect(getComputedStyle(baseHeader).cursor).toEqual('pointer');
   });
 
   it('should not reorder if indices are the same', () => {
@@ -89,9 +103,8 @@ describe('LayersComponent', () => {
       currentIndex: 0,
       previousIndex: 0
     }
-    const type = 'tile';
-    const layers: [any] = [{}];
-    component.reorderLayers(event, type, layers);
+    const layers: any[] = [{}];
+    component.reorderLayers(event, 'mage', layers);
 
     expect(component.onReorder.emit).not.toHaveBeenCalled();
   });

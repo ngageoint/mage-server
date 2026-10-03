@@ -1,35 +1,23 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LayerContentComponent } from './layer-content.component';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule as MatInputModule } from '@angular/material/input';
-import { MatSliderModule as MatSliderModule } from '@angular/material/slider';
-import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
-import {
-  CheckboardModule,
-  SaturationModule,
-  HueModule,
-  AlphaModule
-} from 'ngx-color';
-import { FormsModule } from '@angular/forms';
 import { MapLayerService } from './layer.service';
 import { Component, ViewChild } from '@angular/core';
+import { RenderedMapLayer } from '../entities.map-layer';
+
+const imageryLayer = { id: 1, name: 'Layer One', type: 'Imagery', layer: {} } as unknown as RenderedMapLayer;
+const geoPackageLayer = { id: 'layer1', name: 'Layer One', type: 'GeoPackage', renderAs: 'feature', layer: {} } as unknown as RenderedMapLayer;
 
 @Component({
     selector: `host-component`,
     template: `<layer-content [layer]="layer"></layer-content>`,
-    standalone: false
+    standalone: true,
+    imports: [LayerContentComponent]
 })
 class TestHostComponent {
-  layer = {
-    layer: {
-      type: 'Tile'
-    }
-  };
+  layer = imageryLayer;
 
-  @ViewChild(LayerContentComponent) layerContent: LayerContentComponent;
+  @ViewChild(LayerContentComponent) layerContent!: LayerContentComponent;
 }
 
 describe('LayerContentComponent', () => {
@@ -39,24 +27,8 @@ describe('LayerContentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        MatInputModule,
-        MatFormFieldModule,
-        MatCardModule,
-        MatSliderModule,
-        MatIconModule,
-        CheckboardModule,
-        SaturationModule,
-        HueModule,
-        AlphaModule
-      ],
-      providers: [MapLayerService],
-      declarations: [
-        ColorPickerComponent,
-        TestHostComponent,
-        LayerContentComponent
-      ]
+      imports: [TestHostComponent],
+      providers: [MapLayerService]
     }).compileComponents();
   }));
 
@@ -71,9 +43,22 @@ describe('LayerContentComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should label the opacity slider', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input[matSliderThumb]');
+    expect(input.getAttribute('aria-label')).toEqual('Opacity');
+  });
+
+  it('should only show style override for GeoPackage feature layers', () => {
+    expect(fixture.nativeElement.querySelector('.style-actions')).toBeNull();
+
+    hostComponent.layer = geoPackageLayer;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.style-actions')).not.toBeNull();
+  });
+
   it('should toggle default style on', () => {
     component.toggleStyle();
-    expect(component.style).toEqual({
+    expect(component.style()).toEqual({
       stroke: '#000000FF',
       fill: '#00000011',
       width: 1
@@ -84,8 +69,8 @@ describe('LayerContentComponent', () => {
     spyOn(component['layerService'], 'style');
     component.toggleStyle();
     expect(component['layerService'].style).toHaveBeenCalledWith(
-      component.layer,
-      component.style
+      component.layer(),
+      component.style()
     );
   });
 
@@ -93,7 +78,7 @@ describe('LayerContentComponent', () => {
     spyOn(component['layerService'], 'opacity');
     component.opacityChanged(0.5 as any);
     expect(component['layerService'].opacity).toHaveBeenCalledWith(
-      component.layer,
+      component.layer(),
       0.5 / 100
     );
   });
@@ -105,7 +90,7 @@ describe('LayerContentComponent', () => {
     };
     component.colorChanged(event, 'fill');
     expect(component['layerService'].style).toHaveBeenCalledWith(
-      component.layer,
+      component.layer(),
       { fill: '#000000' }
     );
   });
@@ -114,7 +99,7 @@ describe('LayerContentComponent', () => {
     spyOn(component['layerService'], 'style');
     component.widthChanged(10);
     expect(component['layerService'].style).toHaveBeenCalledWith(
-      component.layer,
+      component.layer(),
       { width: 10 }
     );
   });

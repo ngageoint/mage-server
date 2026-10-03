@@ -1,30 +1,27 @@
 <div class="item-container">
   <div class="item-content">
-    <mat-checkbox *ngIf="multi"
-      class="item-action"
-      [checked]="layer.selected"
-      (click)="$event.stopPropagation()"
-      (change)="checkChanged($event)">
-    </mat-checkbox>
+    @if (multi()) {
+      <mat-checkbox
+        class="item-action"
+        [checked]="layer().selected"
+        (click)="$event.stopPropagation()"
+        (change)="checkChanged($event)">
+      </mat-checkbox>
+    } @else {
+      <mat-radio-button
+        class="item-action"
+        [checked]="layer().selected"
+        (click)="$event.stopPropagation()"
+        (change)="radioChanged()">
+      </mat-radio-button>
+    }
 
-    <mat-radio-button *ngIf="!multi"
-      class="item-action"
-      [checked]="layer.selected"
-      (click)="$event.stopPropagation()"
-      (change)="radioChanged()">
-    </mat-radio-button>
-
-    <mat-label>{{ layer.name }}</mat-label>
+    <span>{{ layer().name }}</span>
   </div>
 
-  <div class="item-actions">
-    <button *ngIf="hasBounds()" matIconButton matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event)">
+  @if (hasBounds()) {
+    <button class="item-action" matIconButton matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event)">
       <mat-icon>crop_free</mat-icon>
     </button>
-
-    <button class="item-action" matIconButton (click)="toggle()">
-      <mat-icon class="item-action__icon" [@expanded]="expanded">more_vert</mat-icon>
-    </button>
-  </div>
-  
+  }
 </div>
