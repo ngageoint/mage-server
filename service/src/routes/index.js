@@ -3,7 +3,6 @@ module.exports = function(app, security) {
   const api = require('../api');
   const Event = require('../models/event');
   const Team = require('../models/team');
-  const Role = require('../models/role');
   const Device = require('../models/device');
   const Icon = require('../models/icon');
   const { modulesPathsInDir } = require('../utilities/loader');
@@ -72,15 +71,6 @@ module.exports = function(app, security) {
     Device.getDeviceById(deviceId, function(err, device) {
       if (!device) return res.status(404).send('Device not found');
       req.device = device;
-      next();
-    });
-  });
-
-  // Grab the role for any endpoint that uses roleId
-  app.param('roleId', function(req, res, next, roleId) {
-    Role.getRoleById(roleId, function(err, role) {
-      if (!role) return res.status(404).send('Role ' + roleId + ' not found');
-      req.role = role;
       next();
     });
   });

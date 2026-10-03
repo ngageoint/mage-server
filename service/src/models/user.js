@@ -387,7 +387,8 @@ exports.removeRolesForUser = function (user, callback) {
 };
 
 exports.removeRoleFromUsers = function (role, callback) {
-  User.updateMany({ role: role._id }, { roles: undefined }).then(
+  const roleId = role.id || role._id;
+  User.updateMany({ roleId }, { $unset: { roleId: 1 } }).then(
     number => callback(null, number),
     err => callback(err)
   );
