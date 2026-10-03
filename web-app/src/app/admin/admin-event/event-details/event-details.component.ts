@@ -22,11 +22,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 
 import { Layer, layerIconName } from 'mage-web-app/entities/layer/entities.layer'
-import { Form, MageEvent } from 'mage-web-app/entities/event/entities.event'
+import { EventRole, Form, MageEvent } from 'mage-web-app/entities/event/entities.event'
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model'
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service'
-import { AdminEventsService } from '../../services/admin-events.service'
-import { User as MageUser } from '@ngageoint/mage.web-core-lib/user'
+import { AdminEventsService, EventAclEntry } from '../../services/admin-events.service'
+import { SessionService } from 'mage-web-app/http/session.service'
+import { User as MageUser, UserReadService, UserSearchResult } from '@ngageoint/mage.web-core-lib/user'
 import {
   SearchModalComponent,
   SearchModalData,
@@ -92,6 +93,8 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   private teamService = inject(TeamService)
   private eventsService = inject(AdminEventsService)
   private breadcrumbService = inject(AdminBreadcrumbService)
+  private sessionService = inject(SessionService)
+  private userReadService = inject(UserReadService)
 
   private takeUntilDestroyed = <T>() => takeUntilDestroyed<T>(this.destroyRef)
 
@@ -120,8 +123,20 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     return event ? [EVENTS_BREADCRUMB, { title: event.name || 'Event' }] : [EVENTS_BREADCRUMB]
   })
 
-  readonly hasUpdatePermission = signal(true).asReadonly()
-  readonly hasDeletePermission = signal(true).asReadonly()
+  private myAclEntry = computed(() => {
+    const myId = this.sessionService.user?.id
+    return myId ? this.event()?.acl?.[myId] : undefined
+  })
+  private eventAclPermissions = computed(() => this.myAclEntry()?.permissions || [])
+
+  hasUpdatePermission = computed(() =>
+    this.sessionService.hasPermission('UPDATE_EVENT') || this.eventAclPermissions().includes('update'))
+  hasDeletePermission = computed(() =>
+    this.sessionService.hasPermission('DELETE_EVENT') || this.eventAclPermissions().includes('delete'))
+
+  // Granting the owner role, or changing or removing an owner, is limited to owners and users with the role permission
+  canManageOwners = computed(() =>
+    this.sessionService.hasPermission('UPDATE_EVENT') || this.myAclEntry()?.role === EventRole.Owner)
 
   showArchivedForms = signal(false)
   previewForm = signal<Form | null>(null)
@@ -199,6 +214,45 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   })
 
   readonly layerIcon = layerIconName
+
+  readonly eventRoles: { role: EventRole, title: string, description: string }[] = [
+    { role: EventRole.Guest, title: 'Guest', description: 'Read only access to this event' },
+    { role: EventRole.Manager, title: 'Manager', description: 'Read and update access to this event' },
+    { role: EventRole.Owner, title: 'Owner', description: 'Read, update, and delete access to this event' }
+  ]
+  assignableRoles = computed(() =>
+    this.canManageOwners() ? this.eventRoles : this.eventRoles.filter((option) => option.role !== EventRole.Owner))
+
+  accessPageIndex = signal(0)
+  accessPageSize = signal(5)
+  accessSearchTerm = signal('')
+
+  acl = rxResource({
+    params: () => this.hasUpdatePermission() || undefined,
+    stream: () => this.eventsService.getEventAcl(this.eventId)
+  })
+  loadingAcl = this.acl.isLoading
+  aclEntries = computed(() => this.acl.hasValue() ? this.acl.value() : [])
+  private aclOwnerCount = computed(() => this.aclEntries().filter((entry) => entry.role === EventRole.Owner).length)
+
+  accessPage = computed<PageOf<EventAclEntry>>(() => {
+    const term = this.accessSearchTerm().toLowerCase()
+    const entries = term
+      ? this.aclEntries().filter(({ user }) =>
+          [user.displayName, user.username, user.email].some((value) => (value || '').toLowerCase().includes(term)))
+      : this.aclEntries()
+
+    const pageIndex = this.accessPageIndex()
+    const pageSize = this.accessPageSize()
+    const start = pageIndex * pageSize
+
+    return {
+      items: entries.slice(start, start + pageSize),
+      totalCount: entries.length,
+      pageSize,
+      pageIndex
+    }
+  })
 
   nonArchivedForms = computed(() => (this.event()?.forms || []).filter((form) => !form.archived))
   filteredForms = computed(() => {
@@ -456,22 +510,117 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     this.layersPageSize.set(event.pageSize)
   }
 
-  getUserRole(user: MageUser): string {
-    return this.eventTeam()?.acl?.[String(user.id)]?.role || 'GUEST'
+  onAccessSearchChange(searchTerm?: string): void {
+    this.accessSearchTerm.set(searchTerm || '')
+    this.accessPageIndex.set(0)
   }
 
-  updateUserRole(user: MageUser, newRole: string): void {
-    const eventTeam = this.eventTeam()
-    if (!eventTeam?.id) {
+  onAccessPageChange(event: PageEvent): void {
+    this.accessPageIndex.set(event.pageIndex)
+    this.accessPageSize.set(event.pageSize)
+  }
+
+  // The server requires an event to keep at least one owner
+  isLastOwner(entry: EventAclEntry): boolean {
+    return entry.role === EventRole.Owner && this.aclOwnerCount() === 1
+  }
+
+  private setAccess(entries: EventAclEntry[]): void {
+    this.acl.set(entries)
+    this.event.update((event) => event && { ...event, acl: aclFromEntries(entries) })
+  }
+
+  // Why the entry's role cannot be changed or the user removed, or null if it can
+  accessLockReason(entry: EventAclEntry): string | null {
+    if (this.isLastOwner(entry)) {
+      return 'An event must have at least one owner'
+    }
+    if (entry.role === EventRole.Owner && !this.canManageOwners()) {
+      return 'Only owners can change other owners'
+    }
+    return null
+  }
+
+  setAclRole(entry: EventAclEntry, role: EventRole): void {
+    if (entry.role === role) {
       return
     }
-    this.teamService
-      .updateUserRole(String(eventTeam.id), String(user.id), newRole)
+    this.eventsService
+      .setEventAclRole(this.eventId, entry.user.id, role)
       .pipe(this.takeUntilDestroyed())
       .subscribe({
-        next: (updatedTeam: Team) => this.eventTeam.set(updatedTeam),
-        error: (error) => console.error('Error updating user role:', error)
+        next: (entries) => this.setAccess(entries),
+        error: (error) => {
+          console.error('Error updating event access:', error)
+          this.snackBar.open('Error updating event access', 'Close', { duration: 5000 })
+        }
       })
+  }
+
+  removeAclUser($event: MouseEvent, entry: EventAclEntry): void {
+    $event.stopPropagation()
+    if (this.accessLockReason(entry)) {
+      return
+    }
+    this.eventsService
+      .removeEventAclUser(this.eventId, entry.user.id)
+      .pipe(this.takeUntilDestroyed())
+      .subscribe({
+        next: (entries) => this.setAccess(entries),
+        error: (error) => {
+          console.error('Error removing event access:', error)
+          this.snackBar.open('Error removing event access', 'Close', { duration: 5000 })
+        }
+      })
+  }
+
+  addUserToAcl(): void {
+    const dialogRef = this.dialog.open(SearchModalComponent, {
+      width: '600px',
+      panelClass: 'search-modal-dialog',
+      data: {
+        title: 'Add User to Event Access',
+        searchPlaceholder: 'Search for users to add...',
+        type: 'members',
+        icon: 'person',
+        searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
+          // Leave out users already in the ACL
+          const aclUserIds = new Set(this.aclEntries().map((entry) => entry.user.id))
+          return this.userReadService.search({ term: searchTerm, pageIndex: page, pageSize }).pipe(
+            map((results) => ({ ...results, items: results.items.filter((user) => !aclUserIds.has(user.id)) }))
+          )
+        },
+        columns: [{
+          key: 'name',
+          label: 'Name',
+          displayFunction: (user: UserSearchResult) => user.username || 'Unknown',
+          width: '40%'
+        },{
+          key: 'displayName',
+          label: 'Display Name',
+          displayFunction: (user: UserSearchResult) => user.displayName || 'Unknown',
+          width: '35%'
+        },{
+          key: 'email',
+          label: 'Email',
+          displayFunction: (user: UserSearchResult) => user.email || 'No email provided',
+          width: '35%'
+        }] as SearchModalColumn[]
+      } as SearchModalData
+    })
+
+    dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
+      if (!result?.selectedItem) {
+        return
+      }
+      this.eventsService.setEventAclRole(this.eventId, result.selectedItem.id, EventRole.Guest).subscribe({
+        next: (entries) => this.setAccess(entries),
+        error: (error) => {
+          console.error('Error adding event access:', error)
+          this.snackBar.open('Error adding event access', 'Close', { duration: 5000 })
+        }
+      })
+    })
   }
 
   addMemberToEvent(): void {
@@ -632,4 +781,8 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
       }
     })
   }
+}
+
+function aclFromEntries(entries: EventAclEntry[]): MageEvent['acl'] {
+  return Object.fromEntries(entries.map(({ user, role, permissions }) => [user.id, { role, permissions }]))
 }
