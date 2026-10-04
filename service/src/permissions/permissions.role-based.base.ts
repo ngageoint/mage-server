@@ -1,8 +1,8 @@
 import { UserModelInstance } from '../models/user'
-import { RoleModelInstance } from '../models/role'
 import { AppRequestContext } from '../app.api/app.api.global'
 import { PermissionDeniedError, permissionDenied } from '../app.api/app.api.errors'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
+import { Role } from '../entities/authorization/entities.authorization'
 
 export type AnonymousUser = {
   roleId?: never
@@ -14,7 +14,7 @@ export type AnonymousUser = {
  * puts the user Mongoose document on the request.
  */
 export type UserWithRole = Omit<UserModelInstance, 'roleId'> & {
-  roleId: RoleModelInstance
+  roleId: Role
 }
 
 export function ensureContextUserHasPermission(context: AppRequestContext<UserWithRole | AnonymousUser>, permission: AnyPermission): null | PermissionDeniedError {
@@ -38,6 +38,6 @@ export function userRoleHasPermission(user: UserWithRole, permission: AnyPermiss
   if (!user || !user.roleId) {
     return false
   }
-  const role = user.roleId as RoleModelInstance
+  const role = user.roleId
   return role.permissions.indexOf(permission) !== -1
 }

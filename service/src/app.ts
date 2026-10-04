@@ -176,6 +176,12 @@ import * as locationsApi from './app.api/locations/app.api.locations';
 import * as locationsImpl from './app.impl/locations/app.impl.locations';
 import { UserLocationPermissionServiceImpl } from './permissions/permissions.locations';
 import { UserLocationRoutes, UserLocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
+import { MongooseRoleRepository, RoleModel } from './adapters/roles/adapters.roles.db.mongoose';
+import { RoleRepository } from './entities/authorization/entities.authorization';
+import * as rolesApi from './app.api/roles/app.api.roles';
+import * as rolesImpl from './app.impl/roles/app.impl.roles';
+import { RolePermissionServiceImpl } from './permissions/permissions.roles';
+import { RoleRoutes, RoleWebAppRequestFactory } from './adapters/roles/adapters.roles.controllers.web';
 import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
 import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
 import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
@@ -444,6 +450,9 @@ type DatabaseLayer = {
     location: UserLocationModel
     recentLocation: RecentUserLocationsModel
   }
+  roles: {
+    role: RoleModel
+  }
   settings: {
     setting: SettingsModel
   }
@@ -487,6 +496,13 @@ type AppLayer = {
     readUserLocations: locationsApi.ReadUserLocations
     readLocationsGroupedByUser: locationsApi.ReadLocationsGroupedByUser
     saveUserLocations: locationsApi.SaveUserLocations
+  }
+  roles: {
+    readRoles: rolesApi.ReadRoles
+    readRole: rolesApi.ReadRole
+    createRole: rolesApi.CreateRole
+    updateRole: rolesApi.UpdateRole
+    deleteRole: rolesApi.DeleteRole
   }
   icons: StaticIconsAppLayer
   users: UsersAppLayer
@@ -585,6 +601,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
       location: UserLocationModel(conn),
       recentLocation: RecentUserLocationModel(conn)
     },
+    roles: {
+      role: RoleModel(conn)
+    },
     settings: {
       setting: settingModel
     },
@@ -628,6 +647,9 @@ type Repositories = {
   locations: {
     locationRepo: UserLocationRepository
     recentLocationRepo: RecentUserLocationsRepository
+  };
+  roles: {
+    roleRepo: RoleRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -702,6 +724,9 @@ async function initRepositories(
     userLocationRepo: locationRepo,
     recentUserLocationRepo: recentLocationRepo
   });
+  const roleRepo = new MongooseRoleRepository(models.roles.role);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/role').initialize({ roleRepo });
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -753,6 +778,9 @@ async function initRepositories(
       locationRepo,
       recentLocationRepo
     },
+    roles: {
+      roleRepo
+    },
     teams: {
       teamRepo
     },
@@ -767,6 +795,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   const events = await initEventsAppLayer(repos)
   const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }))
   const locations = await initLocationsAppLayer(repos)
+  const roles = await initRolesAppLayer(repos)
   const observations = await initObservationsAppLayer(repos, attachmentHooks)
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
@@ -781,6 +810,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
     events,
     exports,
     locations,
+    roles,
     observations,
     feeds,
     icons,
@@ -842,6 +872,24 @@ async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['loc
       repos.locations.recentLocationRepo,
       DomainEvents
     )
+  };
+}
+
+async function initRolesAppLayer(repos: Repositories): Promise<AppLayer['roles']> {
+  const rolePermissionService = new RolePermissionServiceImpl();
+  // TODO: replace with a UserRepository write method once User is migrated
+  // to this architecture. for now this delegates to the legacy models/user.js #removeRoleFromUsers.
+  const removeRoleFromUsers: rolesImpl.RemoveRoleFromUsers = (roleId) => new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('./models/user').removeRoleFromUsers({ id: roleId }, (err: any) => err ? reject(err) : resolve());
+  });
+
+  return {
+    readRoles: rolesImpl.ReadRoles(rolePermissionService, repos.roles.roleRepo),
+    readRole: rolesImpl.ReadRole(rolePermissionService, repos.roles.roleRepo),
+    createRole: rolesImpl.CreateRole(rolePermissionService, repos.roles.roleRepo),
+    updateRole: rolesImpl.UpdateRole(rolePermissionService, repos.roles.roleRepo),
+    deleteRole: rolesImpl.DeleteRole(rolePermissionService, repos.roles.roleRepo, removeRoleFromUsers)
   };
 }
 
@@ -1351,6 +1399,18 @@ async function initWebLayer(
 
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
   webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
+
+  const roleRequestFactory: RoleWebAppRequestFactory = <Params extends object>(
+    req: express.Request,
+    params?: Params
+  ) => {
+    return {
+      ...params,
+      context: baseAppRequestContext(req)
+    } as Params & rolesApi.RoleRequest;
+  };
+  const roleRoutes = RoleRoutes(app.roles, roleRequestFactory);
+  webController.use('/api/roles', [bearerAuthentication, roleRoutes]);
 
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 

@@ -75,7 +75,7 @@ module.exports = function (app, security) {
           });
         },
         function (role, done) {
-          req.user.roleId = role._id;
+          req.user.roleId = role.id;
           done();
         },
         function (done) {

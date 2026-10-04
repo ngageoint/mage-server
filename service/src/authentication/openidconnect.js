@@ -43,7 +43,7 @@ function configure(strategy) {
             displayName: jsonProfile[strategy.settings.profile.displayName] || profileId,
             email: jsonProfile[strategy.settings.profile.email],
             active: false,
-            roleId: role._id,
+            roleId: role.id,
             authentication: {
               type: strategy.name,
               id: profileId,
