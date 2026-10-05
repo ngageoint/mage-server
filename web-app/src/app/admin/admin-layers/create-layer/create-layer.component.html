@@ -53,17 +53,17 @@
 
     @if (layerForm.get('type')?.value === 'GeoPackage' && !isEditMode) {
       <div class="geopackage-section">
-        <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="uploading">
+        <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="uploading()">
           <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
           {{ geopackageFileName || 'Upload GeoPackage' }}
         </button>
         <input #fileInput type="file" class="file-input" accept=".gpkg" (change)="onGeoPackageFileSelected($event)">
 
-        @if (uploading) {
+        @if (uploading()) {
           <mat-progress-bar
             class="upload-progress"
-            [mode]="uploadProgress === null ? 'indeterminate' : 'determinate'"
-            [value]="uploadProgress"
+            [mode]="uploadProgress() === null ? 'indeterminate' : 'determinate'"
+            [value]="uploadProgress()"
           ></mat-progress-bar>
         }
       </div>
@@ -71,14 +71,14 @@
   </form>
 </mat-dialog-content>
 
-@if (errorMessage) {
+@if (errorMessage()) {
   <div class="error-alert">
     <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
-    <span>{{ errorMessage }}</span>
+    <span>{{ errorMessage() }}</span>
   </div>
 }
 
 <mat-dialog-actions>
-  <button matButton type="button" (click)="cancel()" [disabled]="uploading">Cancel</button>
-  <button matButton="filled" type="button" (click)="save()" [disabled]="canSave">{{ uploading ? (uploadProgress === null ? 'Processing…' : 'Uploading ' + uploadProgress + '%') : (isEditMode ? 'Save Layer' : 'Create Layer') }}</button>
+  <button matButton type="button" (click)="cancel()" [disabled]="uploading()">Cancel</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="canSave">{{ uploading() ? (uploadProgress() === null ? 'Processing…' : 'Uploading ' + uploadProgress() + '%') : (isEditMode ? 'Save Layer' : 'Create Layer') }}</button>
 </mat-dialog-actions>

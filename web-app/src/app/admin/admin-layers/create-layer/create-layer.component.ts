@@ -1,9 +1,10 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import {
   FormBuilder,
   FormGroup,
+  FormControlStatus,
   ReactiveFormsModule,
   Validators,
   AbstractControl,
@@ -29,7 +30,6 @@ import { ImageryLayerConfig, ImageryLayerSettingsComponent } from '../imagery-la
     styleUrls: ['./create-layer.component.scss'],
     standalone: true,
     imports: [
-        CommonModule,
         ReactiveFormsModule,
         MatDialogModule,
         MatFormFieldModule,
@@ -44,11 +44,12 @@ import { ImageryLayerConfig, ImageryLayerSettingsComponent } from '../imagery-la
 })
 export class CreateLayerDialogComponent {
   layerForm: FormGroup;
-  errorMessage = '';
+  formStatus: Signal<FormControlStatus>;
+  errorMessage = signal('');
   geopackageFile: File | null = null;
   geopackageFileName = '';
-  uploading = false;
-  uploadProgress: number | null = null;
+  uploading = signal(false);
+  uploadProgress = signal<number | null>(null);
 
   isEditMode: boolean;
 
@@ -62,39 +63,42 @@ export class CreateLayerDialogComponent {
 
   selectedWmsLayersString = '';
 
+  data = inject<{ layer: Partial<Layer> }>(MAT_DIALOG_DATA);
+
   constructor(
     public dialogRef: MatDialogRef<CreateLayerDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { layer: Partial<Layer> },
     private fb: FormBuilder,
     private layersService: LayersService
   ) {
-    this.isEditMode = data.layer?.id != null;
+    this.isEditMode = this.data.layer?.id != null;
 
     this.layerForm = this.fb.group({
       name: [
-        data.layer?.name ?? '',
+        this.data.layer?.name ?? '',
         [Validators.required],
         [this.duplicateLayerNameValidator()]
       ],
-      type: [data.layer?.type ?? '', [Validators.required]],
-      description: [data.layer?.description ?? ''],
-      base: [data.layer?.base ?? false]
+      type: [this.data.layer?.type ?? '', [Validators.required]],
+      description: [this.data.layer?.description ?? ''],
+      base: [this.data.layer?.base ?? false]
     });
+
+    this.formStatus = toSignal(this.layerForm.statusChanges, { initialValue: this.layerForm.status });
 
     if (this.isEditMode) {
       this.layerForm.get('type')?.disable();
 
-      if (data.layer?.type === 'Imagery') {
+      if (this.data.layer?.type === 'Imagery') {
         this.imageryConfig = {
-          url: data.layer.url || '',
-          format: data.layer.format || 'XYZ',
-          wmsVersion: data.layer.wms?.version || '1.3.0',
-          wmsTransparent: data.layer.wms?.transparent !== false,
-          wmsStyles: data.layer.wms?.styles || ''
+          url: this.data.layer.url || '',
+          format: this.data.layer.format || 'XYZ',
+          wmsVersion: this.data.layer.wms?.version || '1.3.0',
+          wmsTransparent: this.data.layer.wms?.transparent !== false,
+          wmsStyles: this.data.layer.wms?.styles || ''
         };
 
         this.selectedWmsLayersString =
-          data.layer.format === 'WMS' ? data.layer.wms?.layers || '' : '';
+          this.data.layer.format === 'WMS' ? this.data.layer.wms?.layers || '' : '';
       }
     }
   }
@@ -156,7 +160,7 @@ export class CreateLayerDialogComponent {
 
   save(): void {
     if (this.layerForm.invalid) {
-      this.errorMessage = 'Please fill in all required fields.';
+      this.errorMessage.set('Please fill in all required fields.');
       return;
     }
 
@@ -164,16 +168,16 @@ export class CreateLayerDialogComponent {
     const type = formValue.type;
 
     if (!this.isEditMode && type === 'GeoPackage' && !this.geopackageFile) {
-      this.errorMessage = 'Please select a GeoPackage file.';
+      this.errorMessage.set('Please select a GeoPackage file.');
       return;
     }
 
     if (type === 'Imagery' && !this.imageryConfig.url) {
-      this.errorMessage = 'Please enter a layer URL.';
+      this.errorMessage.set('Please enter a layer URL.');
       return;
     }
 
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     if (this.isEditMode) {
       this.saveEdit(formValue, type);
@@ -217,35 +221,35 @@ export class CreateLayerDialogComponent {
       }
     }
 
-    this.uploading = true;
-    this.uploadProgress = 0;
+    this.uploading.set(true);
+    this.uploadProgress.set(0);
 
     this.layersService.createLayer(layerData).subscribe({
       next: (event) => {
         if (event.type === HttpEventType.UploadProgress) {
-          this.uploadProgress = event.total
-            ? Math.round((100 * event.loaded) / event.total)
-            : null;
+          this.uploadProgress.set(
+            event.total ? Math.round((100 * event.loaded) / event.total) : null
+          );
         } else if (event.type === HttpEventType.Response) {
-          this.uploading = false;
+          this.uploading.set(false);
           this.dialogRef.close(event.body);
         }
       },
       error: ({ status, error }) => {
-        this.uploading = false;
-        this.uploadProgress = null;
+        this.uploading.set(false);
+        this.uploadProgress.set(null);
 
         if (status === 400 && error?.errors) {
           const fieldErrors = error.errors;
           if (fieldErrors.name?.type === 'unique') {
-            this.errorMessage = fieldErrors.name.message;
+            this.errorMessage.set(fieldErrors.name.message);
           } else {
-            this.errorMessage = error.message ?? 'Validation failed';
+            this.errorMessage.set(error.message ?? 'Validation failed');
           }
         } else if (status === 409) {
-          this.errorMessage = error;
+          this.errorMessage.set(error);
         } else {
-          this.errorMessage = 'Failed to create layer. Please try again.';
+          this.errorMessage.set('Failed to create layer. Please try again.');
         }
       }
     });
@@ -282,21 +286,21 @@ export class CreateLayerDialogComponent {
         if (status === 400 && error?.errors) {
           const fieldErrors = error.errors;
           if (fieldErrors.name?.type === 'unique') {
-            this.errorMessage = fieldErrors.name.message;
+            this.errorMessage.set(fieldErrors.name.message);
           } else {
-            this.errorMessage = error.message ?? 'Validation failed';
+            this.errorMessage.set(error.message ?? 'Validation failed');
           }
         } else if (status === 409) {
-          this.errorMessage = error;
+          this.errorMessage.set(error);
         } else {
-          this.errorMessage = 'Failed to save layer. Please try again.';
+          this.errorMessage.set('Failed to save layer. Please try again.');
         }
       }
     });
   }
 
   get canSave(): boolean {
-    if (this.uploading) return true;
+    if (this.uploading()) return true;
 
     const nameControl = this.layerForm.get('name');
     const type = this.isEditMode
@@ -309,7 +313,7 @@ export class CreateLayerDialogComponent {
 
     if (type === 'Imagery' && !this.imageryConfig.url) return true;
 
-    return this.layerForm.invalid;
+    return this.formStatus() === 'INVALID';
   }
 
   cancel(): void {

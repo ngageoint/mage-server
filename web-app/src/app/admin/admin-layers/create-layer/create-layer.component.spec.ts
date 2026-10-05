@@ -81,8 +81,8 @@ describe('CreateLayerDialogComponent', () => {
 
       component.save();
 
-      expect(component.uploading).toBeTrue();
-      expect(component.uploadProgress).toBe(0);
+      expect(component.uploading()).toBeTrue();
+      expect(component.uploadProgress()).toBe(0);
       expect(component.canSave).toBeTrue();
     });
 
@@ -94,10 +94,10 @@ describe('CreateLayerDialogComponent', () => {
       component.save();
 
       events.next({ type: HttpEventType.UploadProgress, loaded: 25, total: 100 });
-      expect(component.uploadProgress).toBe(25);
+      expect(component.uploadProgress()).toBe(25);
 
       events.next({ type: HttpEventType.UploadProgress, loaded: 75, total: 100 });
-      expect(component.uploadProgress).toBe(75);
+      expect(component.uploadProgress()).toBe(75);
     });
 
     it('should set uploadProgress to null when total is unknown', () => {
@@ -108,7 +108,7 @@ describe('CreateLayerDialogComponent', () => {
       component.save();
 
       events.next({ type: HttpEventType.UploadProgress, loaded: 25, total: undefined });
-      expect(component.uploadProgress).toBeNull();
+      expect(component.uploadProgress()).toBeNull();
     });
 
     it('should close the dialog with the created layer on Response and clear uploading', () => {
@@ -121,7 +121,7 @@ describe('CreateLayerDialogComponent', () => {
       const newLayer = { id: 1, name: 'My Layer', type: 'GeoPackage' };
       events.next({ type: HttpEventType.Response, body: newLayer });
 
-      expect(component.uploading).toBeFalse();
+      expect(component.uploading()).toBeFalse();
       expect(dialogRefSpy.close).toHaveBeenCalledWith(newLayer);
     });
 
@@ -136,9 +136,9 @@ describe('CreateLayerDialogComponent', () => {
 
       component.save();
 
-      expect(component.uploading).toBeFalse();
-      expect(component.uploadProgress).toBeNull();
-      expect(component.errorMessage).toBe('Name already in use');
+      expect(component.uploading()).toBeFalse();
+      expect(component.uploadProgress()).toBeNull();
+      expect(component.errorMessage()).toBe('Name already in use');
     });
 
     it('should show the server message on 409 conflict', () => {
@@ -149,7 +149,7 @@ describe('CreateLayerDialogComponent', () => {
 
       component.save();
 
-      expect(component.errorMessage).toBe('Layer name conflict');
+      expect(component.errorMessage()).toBe('Layer name conflict');
     });
 
     it('should show a generic error for unexpected failures', () => {
@@ -160,7 +160,7 @@ describe('CreateLayerDialogComponent', () => {
 
       component.save();
 
-      expect(component.errorMessage).toBe('Failed to create layer. Please try again.');
+      expect(component.errorMessage()).toBe('Failed to create layer. Please try again.');
     });
 
     it('should require a GeoPackage file before saving', () => {
@@ -169,7 +169,7 @@ describe('CreateLayerDialogComponent', () => {
 
       component.save();
 
-      expect(component.errorMessage).toBe('Please select a GeoPackage file.');
+      expect(component.errorMessage()).toBe('Please select a GeoPackage file.');
       expect(layersServiceSpy.createLayer).not.toHaveBeenCalled();
     });
   });
@@ -181,7 +181,7 @@ describe('CreateLayerDialogComponent', () => {
       fillGeoPackageForm();
       expect(component.canSave).toBeFalse();
 
-      component.uploading = true;
+      component.uploading.set(true);
       expect(component.canSave).toBeTrue();
     });
   });
