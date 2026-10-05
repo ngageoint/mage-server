@@ -7,6 +7,10 @@ import {
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatTabGroupHarness } from '@angular/material/tabs/testing';
+import { MAT_TABS_CONFIG } from '@angular/material/tabs';
+import { provideRouter } from '@angular/router';
 
 import { AdminFeedsComponent } from './admin-feeds.component';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
@@ -58,7 +62,9 @@ describe('AdminFeedsComponent', () => {
       providers: [
         { provide: FeedService, useValue: feedService },
         { provide: MatDialog, useValue: dialog },
-        { provide: SessionService, useValue: sessionService }
+        { provide: SessionService, useValue: sessionService },
+        { provide: MAT_TABS_CONFIG, useValue: { animationDuration: '0ms' } },
+        provideRouter([])
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -69,6 +75,29 @@ describe('AdminFeedsComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('services tab delete button', () => {
+    async function renderServiceDeleteButton(permissions: string[]): Promise<HTMLElement | null> {
+      setPermissions(permissions);
+      feedService.fetchServices.and.returnValue(of([makeService()] as any));
+      feedService.fetchAllFeeds.and.returnValue(of([] as any));
+
+      fixture.detectChanges();
+      const tabs = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatTabGroupHarness);
+      await tabs.selectTab({ label: 'Services' });
+
+      expect(fixture.nativeElement.textContent).toContain('Alpha Service');
+      return fixture.nativeElement.querySelector('button[aria-label="Delete service"]');
+    }
+
+    it('shows Delete when the user can manage services', async () => {
+      expect(await renderServiceDeleteButton(['FEEDS_CREATE_SERVICE'])).not.toBeNull();
+    });
+
+    it('hides Delete when the user can only manage feeds', async () => {
+      expect(await renderServiceDeleteButton(['FEEDS_CREATE_FEED'])).toBeNull();
+    });
   });
 
   describe('ngOnInit', () => {
@@ -83,7 +112,6 @@ describe('AdminFeedsComponent', () => {
 
       expect(component.hasServiceDeletePermission).toBeTrue();
       expect(component.hasFeedCreatePermission).toBeTrue();
-      expect(component.hasFeedEditPermission).toBeTrue();
       expect(component.hasFeedDeletePermission).toBeTrue();
     }));
 
@@ -98,7 +126,6 @@ describe('AdminFeedsComponent', () => {
 
       expect(component.hasServiceDeletePermission).toBeFalse();
       expect(component.hasFeedCreatePermission).toBeFalse();
-      expect(component.hasFeedEditPermission).toBeFalse();
       expect(component.hasFeedDeletePermission).toBeFalse();
     }));
 
@@ -121,13 +148,13 @@ describe('AdminFeedsComponent', () => {
       component.ngOnInit();
       tick();
 
-      expect(component.services.length).toBe(2);
-      expect(component.services[0].title).toBe('Alpha Service');
-      expect(component.services[1].title).toBe('Zulu Service');
+      expect(component.services().length).toBe(2);
+      expect(component.services()[0].title).toBe('Alpha Service');
+      expect(component.services()[1].title).toBe('Zulu Service');
 
-      expect(component.feeds.length).toBe(2);
-      expect(component.feeds[0].title).toBe('Alpha Feed');
-      expect(component.feeds[1].title).toBe('Zulu Feed');
+      expect(component.feeds().length).toBe(2);
+      expect(component.feeds()[0].title).toBe('Alpha Feed');
+      expect(component.feeds()[1].title).toBe('Zulu Feed');
     }));
   });
 
@@ -169,8 +196,8 @@ describe('AdminFeedsComponent', () => {
       component.onFeedSearchChange();
 
       expect(component.feedPage).toBe(0);
-      expect(component.feeds.length).toBe(1);
-      expect(component.feeds[0].title).toBe('Gamma');
+      expect(component.feeds().length).toBe(1);
+      expect(component.feeds()[0].title).toBe('Gamma');
     });
 
     it('onServiceSearchChange resets page and filters services', () => {
@@ -179,32 +206,32 @@ describe('AdminFeedsComponent', () => {
       component.onServiceSearchChange();
 
       expect(component.servicePage).toBe(0);
-      expect(component.services.length).toBe(1);
-      expect(component.services[0].title).toBe('Beta');
+      expect(component.services().length).toBe(1);
+      expect(component.services()[0].title).toBe('Beta');
     });
 
     it('clearFeedSearch resets page, clears text, restores feeds', () => {
       component.feedSearch = 'x';
-      component.feeds = [];
+      component.feeds.set([]);
       component.feedPage = 9;
 
       component.clearFeedSearch();
 
       expect(component.feedPage).toBe(0);
       expect(component.feedSearch).toBe('');
-      expect(component.feeds.length).toBe(2);
+      expect(component.feeds().length).toBe(2);
     });
 
     it('clearServiceSearch resets page, clears text, restores services', () => {
       component.serviceSearch = 'x';
-      component.services = [];
+      component.services.set([]);
       component.servicePage = 9;
 
       component.clearServiceSearch();
 
       expect(component.servicePage).toBe(0);
       expect(component.serviceSearch).toBe('');
-      expect(component.services.length).toBe(2);
+      expect(component.services().length).toBe(2);
     });
   });
 
@@ -231,7 +258,7 @@ describe('AdminFeedsComponent', () => {
     }));
 
     it('does nothing when dialog not confirmed', fakeAsync(() => {
-      const svc = component.services[0] as any;
+      const svc = component.services()[0] as any;
       const clickEvent = new MouseEvent('click');
       spyOn(clickEvent, 'stopPropagation');
 
@@ -246,7 +273,7 @@ describe('AdminFeedsComponent', () => {
     }));
 
     it('deletes service and removes related feeds when confirmed', fakeAsync(() => {
-      const svc = component.services.find((s: any) => s.id === 'svc-1') as any;
+      const svc = component.services().find((s: any) => s.id === 'svc-1') as any;
       const clickEvent = new MouseEvent('click');
       spyOn(clickEvent, 'stopPropagation');
 
@@ -267,9 +294,9 @@ describe('AdminFeedsComponent', () => {
       tick();
 
       expect(feedService.deleteService).toHaveBeenCalledWith(svc);
-      expect(component.services.some((s: any) => s.id === 'svc-1')).toBeFalse();
+      expect(component.services().some((s: any) => s.id === 'svc-1')).toBeFalse();
       expect(
-        component.feeds.some((f: any) => f.service === 'svc-1')
+        component.feeds().some((f: any) => f.service === 'svc-1')
       ).toBeFalse();
     }));
   });
@@ -293,7 +320,7 @@ describe('AdminFeedsComponent', () => {
     }));
 
     it('does nothing when dialog not confirmed', fakeAsync(() => {
-      const feed = component.feeds[0] as any;
+      const feed = component.feeds()[0] as any;
       const clickEvent = new MouseEvent('click');
       spyOn(clickEvent, 'stopPropagation');
 
@@ -308,7 +335,7 @@ describe('AdminFeedsComponent', () => {
     }));
 
     it('deletes feed when confirmed', fakeAsync(() => {
-      const feed = component.feeds.find((f: any) => f.id === 'feed-1') as any;
+      const feed = component.feeds().find((f: any) => f.id === 'feed-1') as any;
       const clickEvent = new MouseEvent('click');
       spyOn(clickEvent, 'stopPropagation');
 
@@ -322,7 +349,7 @@ describe('AdminFeedsComponent', () => {
       tick();
 
       expect(feedService.deleteFeed).toHaveBeenCalledWith(feed);
-      expect(component.feeds.some((f: any) => f.id === 'feed-1')).toBeFalse();
+      expect(component.feeds().some((f: any) => f.id === 'feed-1')).toBeFalse();
     }));
   });
 });
