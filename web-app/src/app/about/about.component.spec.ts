@@ -1,12 +1,9 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AboutComponent } from './about.component';
 import { ApiService } from '../api/api.service';
 import { of } from 'rxjs';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
 
 describe('AboutComponent', () => {
   let component: AboutComponent;
@@ -15,94 +12,78 @@ describe('AboutComponent', () => {
   let mockLocation: jasmine.SpyObj<Location>;
   let mockRouter: jasmine.SpyObj<Router>;
 
-  const MOCK_VERSION = { major: 1, minor: 2, patch: 3 };
-  const MOCK_APK = 'app.apk';
-  const MOCK_NODE_VERSION = 'v18.0.0';
-  const MOCK_MONGO_VERSION = '5.0.0';
   const MOCK_CONTACT_INFO = {
     email: 'admin@example.com',
     phone: '1234567890',
     showDevContact: true
   };
   const MOCK_API_RESPONSE_WITH_CONTACT = {
-    version: MOCK_VERSION,
-    apk: MOCK_APK,
+    version: { major: 1, minor: 2, patch: 3 },
+    apk: 'app.apk',
     environment: {
-      nodeVersion: MOCK_NODE_VERSION,
-      mongodbVersion: MOCK_MONGO_VERSION
+      nodeVersion: 'v18.0.0',
+      mongodbVersion: '5.0.0'
     },
     contactInfo: MOCK_CONTACT_INFO
   };
 
   const MOCK_API_RESPONSE_NO_CONTACT = {
-    version: { major: 2, minor: 1, patch: 0 },
-    apk: 'another.apk',
-    environment: {
-      nodeVersion: 'v20.0.0',
-      mongodbVersion: '6.0.0'
-    },
     contactInfo: null
   };
 
-  beforeEach(waitForAsync(() => {
+  function createComponent(apiResponse: any): void {
+    mockApiService.getApi.and.returnValue(of(apiResponse));
+    fixture = TestBed.createComponent(AboutComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }
+
+  beforeEach(async () => {
     mockApiService = jasmine.createSpyObj('ApiService', ['getApi']);
     mockLocation = jasmine.createSpyObj('Location', ['back']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    TestBed.configureTestingModule({
-      imports: [MatToolbarModule, MatIconModule, MatCardModule],
-      declarations: [AboutComponent],
+    await TestBed.configureTestingModule({
+      imports: [AboutComponent],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         { provide: Location, useValue: mockLocation },
         { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(AboutComponent);
-    component = fixture.componentInstance;
   });
 
   it('should create', () => {
+    createComponent(MOCK_API_RESPONSE_WITH_CONTACT);
+
     expect(component).toBeTruthy();
   });
 
-  it('should load API data on init with full contact info', () => {
-    mockApiService.getApi.and.returnValue(of(MOCK_API_RESPONSE_WITH_CONTACT));
-
-    component.ngOnInit();
+  it('should load API data', () => {
+    createComponent(MOCK_API_RESPONSE_WITH_CONTACT);
 
     expect(mockApiService.getApi).toHaveBeenCalled();
-    expect(component.apiVersion).toEqual(MOCK_VERSION);
-    expect(component.apk).toBe(MOCK_APK);
-    expect(component.nodeVersion).toBe(MOCK_NODE_VERSION);
-    expect(component.mongoVersion).toBe(MOCK_MONGO_VERSION);
-    expect(component.adminEmail).toBe(MOCK_CONTACT_INFO.email);
-    expect(component.adminPhone).toBe(MOCK_CONTACT_INFO.phone);
-    expect(component.showDevContact).toBeTrue();
+    expect(component.api()).toEqual(MOCK_API_RESPONSE_WITH_CONTACT);
   });
 
-  it('should handle missing contactInfo', () => {
-    mockApiService.getApi.and.returnValue(of(MOCK_API_RESPONSE_NO_CONTACT));
+  it('should show contact info when present', () => {
+    createComponent(MOCK_API_RESPONSE_WITH_CONTACT);
 
-    component.ngOnInit();
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Contact Us');
+    expect(text).toContain(MOCK_CONTACT_INFO.phone);
+    expect(text).toContain(MOCK_CONTACT_INFO.email);
+    expect(text).toContain('NGA Support');
+  });
 
-    expect(component.apiVersion).toEqual(MOCK_API_RESPONSE_NO_CONTACT.version);
-    expect(component.apk).toBe(MOCK_API_RESPONSE_NO_CONTACT.apk);
-    expect(component.nodeVersion).toBe(
-      MOCK_API_RESPONSE_NO_CONTACT.environment.nodeVersion
-    );
-    expect(component.mongoVersion).toBe(
-      MOCK_API_RESPONSE_NO_CONTACT.environment.mongodbVersion
-    );
-    expect(component.adminEmail).toBeNull();
-    expect(component.adminPhone).toBeNull();
-    expect(component.showDevContact).toBeFalse();
+  it('should hide contact info when missing', () => {
+    createComponent(MOCK_API_RESPONSE_NO_CONTACT);
+
+    expect(fixture.nativeElement.textContent).not.toContain('Contact Us');
   });
 
   it('should go back on onBack call when navigation history exists', () => {
+    createComponent(MOCK_API_RESPONSE_WITH_CONTACT);
     spyOnProperty(window.history, 'state', 'get').and.returnValue({ navigationId: 2 });
 
     component.onBack();
@@ -111,6 +92,7 @@ describe('AboutComponent', () => {
   });
 
   it('should navigate home on onBack call when no navigation history exists', () => {
+    createComponent(MOCK_API_RESPONSE_WITH_CONTACT);
     spyOnProperty(window.history, 'state', 'get').and.returnValue({ navigationId: 1 });
 
     component.onBack();
