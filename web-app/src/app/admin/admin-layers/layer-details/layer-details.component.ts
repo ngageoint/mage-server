@@ -1,10 +1,23 @@
-import { Component, ElementRef, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, TemplateRef, viewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { HttpClient } from '@angular/common/http';
+
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 import { LayersService, Layer } from '../layers.service';
 import { AdminEventsService } from '../../services/admin-events.service';
@@ -18,6 +31,7 @@ import {
 } from '../../search-modal/search-modal.component';
 import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
+import { LayerPreviewComponent } from '../layer-preview/layer-preview.component';
 import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { Observable } from 'rxjs';
 import { layerIconName } from '../../../entities/layer/entities.layer';
@@ -52,7 +66,22 @@ interface PagedResult<T> {
     selector: 'mage-layer-details',
     templateUrl: './layer-details.component.html',
     styleUrls: ['./layer-details.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        RouterModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatDividerModule,
+        MatProgressBarModule,
+        MatProgressSpinnerModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatListModule,
+        MatPaginatorModule,
+        LayerPreviewComponent
+    ]
 })
 export class LayerDetailsComponent implements OnInit, OnDestroy {
   private _breadcrumbs: AdminBreadcrumb[] = [{
@@ -68,8 +97,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
     return this._breadcrumbs;
   }
 
-  @ViewChild('breadcrumbActions', { static: true })
-  breadcrumbActions!: TemplateRef<unknown>;
+  breadcrumbActions = viewChild.required<TemplateRef<unknown>>('breadcrumbActions');
 
   layer?: Layer;
   layerEvents: MageEvent[] = [];
@@ -90,7 +118,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   completedUploads: UploadStatus[] = [];
   isUploading = false;
 
-  @ViewChild('fileInput') fileInputRef?: ElementRef<HTMLInputElement>;
+  fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   get hasLayerEditPermission(): boolean {
     return this.sessionService.hasPermission('UPDATE_LAYER');
@@ -118,7 +146,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-    this.breadcrumbService.setActions(this.breadcrumbActions);
+    this.breadcrumbService.setActions(this.breadcrumbActions());
 
     const layerId = this.route.snapshot.paramMap.get('layerId');
     if (!layerId) {
@@ -437,8 +465,9 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   clearUpload(): void {
     this.upload = {};
-    if (this.fileInputRef) {
-      this.fileInputRef.nativeElement.value = '';
+    const fileInput = this.fileInputRef();
+    if (fileInput) {
+      fileInput.nativeElement.value = '';
     }
   }
 

@@ -1,13 +1,14 @@
 import {
   Component,
-  Input,
+  input,
   OnChanges,
   SimpleChanges,
   AfterViewInit,
   ElementRef,
-  ViewChild
+  viewChild
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { MatIconModule } from '@angular/material/icon';
 import * as L from 'leaflet';
 
 import { Layer } from '../layers.service';
@@ -21,11 +22,12 @@ interface LayerBounds {
     selector: 'mage-layer-preview',
     templateUrl: './layer-preview.component.html',
     styleUrls: ['./layer-preview.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [MatIconModule]
 })
 export class LayerPreviewComponent implements AfterViewInit, OnChanges {
-  @Input() layer!: Layer & LayerBounds;
-  @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
+  layer = input.required<Layer & LayerBounds>();
+  mapContainer = viewChild<ElementRef>('mapContainer');
 
   private map?: L.Map;
   private mapLayer?: L.Layer;
@@ -47,9 +49,10 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   private initializeMap(): void {
-    if (!this.mapContainer?.nativeElement) return;
+    const container = this.mapContainer();
+    if (!container?.nativeElement) return;
 
-    this.map = L.map(this.mapContainer.nativeElement, {
+    this.map = L.map(container.nativeElement, {
       center: [0, 0],
       zoom: 3,
       minZoom: 0,
@@ -69,32 +72,32 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   private updateMap(): void {
-    if (!this.map || !this.layer) return;
+    if (!this.map || !this.layer()) return;
 
     if (this.mapLayer) {
       this.map.removeLayer(this.mapLayer);
       this.mapLayer = undefined;
     }
 
-    if (this.layer.type === 'Feature') {
+    if (this.layer().type === 'Feature') {
       this.addFeatureLayer();
-    } else if (this.layer.type === 'Imagery') {
+    } else if (this.layer().type === 'Imagery') {
       this.addImageryLayer();
-    } else if (this.layer.type === 'GeoPackage' && this.layer.tables) {
+    } else if (this.layer().type === 'GeoPackage' && this.layer().tables) {
       this.addGeoPackageLayer();
     }
 
-    if (this.layer.bounds && this.layer.bounds.length === 4) {
+    if (this.layer().bounds && this.layer().bounds!.length === 4) {
       const bounds = L.latLngBounds(
-        [this.layer.bounds[1], this.layer.bounds[0]],
-        [this.layer.bounds[3], this.layer.bounds[2]]
+        [this.layer().bounds![1], this.layer().bounds![0]],
+        [this.layer().bounds![3], this.layer().bounds![2]]
       );
       this.map.fitBounds(bounds);
     }
   }
 
   private addFeatureLayer(): void {
-    const url = `/api/layers/${this.layer.id}/features`;
+    const url = `/api/layers/${this.layer().id}/features`;
 
     this.http.get<any>(url).subscribe({
       next: (featureCollection) => {
@@ -148,36 +151,37 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   private addImageryLayer(): void {
-    if (!this.map || !this.layer.url || !this.layer.format) return;
+    const layer = this.layer();
+    if (!this.map || !layer.url || !layer.format) return;
 
-    if (this.layer.format === 'XYZ' || this.layer.format === 'TMS') {
+    if (layer.format === 'XYZ' || layer.format === 'TMS') {
       const options: L.TileLayerOptions = {
         maxZoom: 18,
-        tms: this.layer.format === 'TMS'
+        tms: layer.format === 'TMS'
       };
 
-      this.mapLayer = L.tileLayer(this.layer.url, options).addTo(this.map);
+      this.mapLayer = L.tileLayer(layer.url, options).addTo(this.map);
       return;
     }
 
-    if (this.layer.format === 'WMS' && this.layer.wms) {
+    if (layer.format === 'WMS' && layer.wms) {
       const options: L.WMSOptions = {
-        layers: this.layer.wms.layers || '',
-        version: this.layer.wms.version || '1.3.0',
-        format: this.layer.wms.format || 'image/png',
-        transparent: this.layer.wms.transparent ?? true
+        layers: layer.wms.layers || '',
+        version: layer.wms.version || '1.3.0',
+        format: layer.wms.format || 'image/png',
+        transparent: layer.wms.transparent ?? true
       };
 
-      if (this.layer.wms.styles) {
-        options.styles = this.layer.wms.styles;
+      if (layer.wms.styles) {
+        options.styles = layer.wms.styles;
       }
 
-      this.mapLayer = L.tileLayer.wms(this.layer.url, options).addTo(this.map);
+      this.mapLayer = L.tileLayer.wms(layer.url, options).addTo(this.map);
 
-      if (this.layer.wms.extent && this.layer.wms.extent.length === 4) {
+      if (layer.wms.extent && layer.wms.extent.length === 4) {
         const bounds = L.latLngBounds(
-          [this.layer.wms.extent[1], this.layer.wms.extent[0]],
-          [this.layer.wms.extent[3], this.layer.wms.extent[2]]
+          [layer.wms.extent[1], layer.wms.extent[0]],
+          [layer.wms.extent[3], layer.wms.extent[2]]
         );
         this.map.fitBounds(bounds);
       }
@@ -185,13 +189,14 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   private addGeoPackageLayer(): void {
-    if (!this.map || !this.layer.tables || this.layer.tables.length === 0)
+    const layer = this.layer();
+    if (!this.map || !layer.tables || layer.tables.length === 0)
       return;
 
     const accessToken = this.sessionService.getToken();
 
-    this.layer.tables.forEach((table) => {
-      const url = `/api/layers/${this.layer!.id}/${
+    layer.tables.forEach((table) => {
+      const url = `/api/layers/${layer.id}/${
         table.name
       }/{z}/{x}/{y}.png?access_token=${accessToken}`;
 
@@ -204,11 +209,12 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   shouldShowMap(): boolean {
+    const layer = this.layer();
     return (
-      !!this.layer &&
-      (this.layer.type === 'Imagery' ||
-        this.layer.type === 'Feature' ||
-        (this.layer.type === 'GeoPackage' && !!this.layer.tables?.length))
+      !!layer &&
+      (layer.type === 'Imagery' ||
+        layer.type === 'Feature' ||
+        (layer.type === 'GeoPackage' && !!layer.tables?.length))
     );
   }
 }

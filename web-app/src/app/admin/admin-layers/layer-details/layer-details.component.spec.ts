@@ -94,14 +94,14 @@ describe('LayerDetailsComponent', () => {
     buildMocks();
 
     await TestBed.configureTestingModule({
-    declarations: [LayerDetailsComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     imports: [MatDialogModule,
         MatSnackBarModule,
         NoopAnimationsModule,
         RouterTestingModule,
         MatIconModule,
-        MatPaginatorModule],
+        MatPaginatorModule,
+        LayerDetailsComponent],
     providers: [
         { provide: ActivatedRoute, useValue: makeActivatedRoute(params) },
         { provide: LayersService, useValue: mockLayersService },
