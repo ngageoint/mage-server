@@ -5,8 +5,12 @@
     <mat-form-field appearance="fill">
       <mat-label>Layer Name</mat-label>
       <input matInput type="text" formControlName="name" placeholder="Enter layer name" />
-      <mat-error *ngIf="layerForm.controls.name.hasError('required')">Name is required</mat-error>
-      <mat-error *ngIf="layerForm.controls.name.hasError('duplicateName')">A layer with this name already exists</mat-error>
+      @if (layerForm.controls.name.hasError('required')) {
+        <mat-error>Name is required</mat-error>
+      }
+      @if (layerForm.controls.name.hasError('duplicateName')) {
+        <mat-error>A layer with this name already exists</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
@@ -16,10 +20,18 @@
         <mat-option value="Feature">Feature</mat-option>
         <mat-option value="GeoPackage">GeoPackage</mat-option>
       </mat-select>
-      <mat-hint *ngIf="layerForm.get('type')?.value === 'Imagery'">WMS, XYZ or TMS layers</mat-hint>
-      <mat-hint *ngIf="layerForm.get('type')?.value === 'Feature'">Static layers (KML/KMZ)</mat-hint>
-      <mat-hint *ngIf="layerForm.get('type')?.value === 'GeoPackage'">Downloadable GeoPackage layers</mat-hint>
-      <mat-error *ngIf="layerForm.controls.type.hasError('required')">Type is required</mat-error>
+      @if (layerForm.get('type')?.value === 'Imagery') {
+        <mat-hint>WMS, XYZ or TMS layers</mat-hint>
+      }
+      @if (layerForm.get('type')?.value === 'Feature') {
+        <mat-hint>Static layers (KML/KMZ)</mat-hint>
+      }
+      @if (layerForm.get('type')?.value === 'GeoPackage') {
+        <mat-hint>Downloadable GeoPackage layers</mat-hint>
+      }
+      @if (layerForm.controls.type.hasError('required')) {
+        <mat-error>Type is required</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill" subscriptSizing="dynamic">
@@ -27,37 +39,44 @@
       <textarea matInput formControlName="description" rows="3" placeholder="Enter layer description (optional)"></textarea>
     </mat-form-field>
 
-    <div *ngIf="layerForm.get('type')?.value === 'Imagery'" class="conditional-section">
-      <mage-imagery-layer-settings
-        [config]="imageryConfig"
-        (configChange)="onImageryConfigChange($event)"
-        (wmsLayersSelected)="onWmsLayersSelected($event)"
-      >
-        <mat-checkbox formControlName="base">Base Layer</mat-checkbox>
-      </mage-imagery-layer-settings>
-    </div>
+    @if (layerForm.get('type')?.value === 'Imagery') {
+      <div class="conditional-section">
+        <mage-imagery-layer-settings
+          [config]="imageryConfig"
+          (configChange)="onImageryConfigChange($event)"
+          (wmsLayersSelected)="onWmsLayersSelected($event)"
+        >
+          <mat-checkbox formControlName="base">Base Layer</mat-checkbox>
+        </mage-imagery-layer-settings>
+      </div>
+    }
 
-    <div *ngIf="layerForm.get('type')?.value === 'GeoPackage' && !isEditMode" class="geopackage-section">
-      <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="uploading">
-        <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
-        {{ geopackageFileName || 'Upload GeoPackage' }}
-      </button>
-      <input #fileInput type="file" class="file-input" accept=".gpkg" (change)="onGeoPackageFileSelected($event)">
+    @if (layerForm.get('type')?.value === 'GeoPackage' && !isEditMode) {
+      <div class="geopackage-section">
+        <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="uploading">
+          <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
+          {{ geopackageFileName || 'Upload GeoPackage' }}
+        </button>
+        <input #fileInput type="file" class="file-input" accept=".gpkg" (change)="onGeoPackageFileSelected($event)">
 
-      <mat-progress-bar
-        *ngIf="uploading"
-        class="upload-progress"
-        [mode]="uploadProgress === null ? 'indeterminate' : 'determinate'"
-        [value]="uploadProgress"
-      ></mat-progress-bar>
-    </div>
+        @if (uploading) {
+          <mat-progress-bar
+            class="upload-progress"
+            [mode]="uploadProgress === null ? 'indeterminate' : 'determinate'"
+            [value]="uploadProgress"
+          ></mat-progress-bar>
+        }
+      </div>
+    }
   </form>
 </mat-dialog-content>
 
-<div class="error-alert" *ngIf="errorMessage">
-  <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
-  <span>{{ errorMessage }}</span>
-</div>
+@if (errorMessage) {
+  <div class="error-alert">
+    <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+}
 
 <mat-dialog-actions>
   <button matButton type="button" (click)="cancel()" [disabled]="uploading">Cancel</button>

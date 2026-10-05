@@ -1,5 +1,14 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import * as L from 'leaflet';
 
 export interface ImageryLayerConfig {
@@ -14,7 +23,18 @@ export interface ImageryLayerConfig {
     selector: 'mage-imagery-layer-settings',
     templateUrl: './imagery-layer-settings.component.html',
     styleUrls: ['./imagery-layer-settings.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRadioModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatExpansionModule,
+        MatSlideToggleModule
+    ]
 })
 export class ImageryLayerSettingsComponent implements OnChanges {
     @Input() config: ImageryLayerConfig = {
@@ -30,11 +50,11 @@ export class ImageryLayerSettingsComponent implements OnChanges {
     @Output() wmsLayersSelected = new EventEmitter<string>();
 
     wmsCapabilities: any = null;
-    wmsError: string = '';
+    wmsError = signal('');
     wmsLayers: any[] = [];
     wmsOtherLayers: any[] = [];
     selectedWmsLayers: { [key: string]: boolean } = {};
-    isLoadingWms: boolean = false;
+    isLoadingWms = signal(false);
     previewMap: L.Map | null = null;
     previewMapLayer: L.Layer | null = null;
     wmsLayerSearchQuery: string = '';
@@ -71,7 +91,7 @@ export class ImageryLayerSettingsComponent implements OnChanges {
 
     private resetWmsData(): void {
         this.wmsCapabilities = null;
-        this.wmsError = '';
+        this.wmsError.set('');
         this.wmsLayers = [];
         this.wmsOtherLayers = [];
         this.selectedWmsLayers = {};
@@ -82,12 +102,12 @@ export class ImageryLayerSettingsComponent implements OnChanges {
      */
     fetchWmsCapabilities(): void {
         if (!this.config.url) {
-            this.wmsError = 'Please enter a WMS URL first';
+            this.wmsError.set('Please enter a WMS URL first');
             return;
         }
 
-        this.isLoadingWms = true;
-        this.wmsError = '';
+        this.isLoadingWms.set(true);
+        this.wmsError.set('');
         this.wmsCapabilities = null;
         this.wmsLayers = [];
         this.wmsOtherLayers = [];
@@ -96,7 +116,7 @@ export class ImageryLayerSettingsComponent implements OnChanges {
         const baseUrl = this.config.url.split('?')[0];
         this.http.post<any>('/api/layers/wms/getcapabilities', { url: baseUrl }).subscribe({
             next: (response) => {
-                this.isLoadingWms = false;
+                this.isLoadingWms.set(false);
                 if (response?.Capability) {
                     this.wmsCapabilities = response;
                     this.parseWmsLayers(response.Capability.Layer, this.wmsLayers, this.wmsOtherLayers);
@@ -113,14 +133,14 @@ export class ImageryLayerSettingsComponent implements OnChanges {
                     }
 
                     if (this.wmsLayers.length === 0 && this.wmsOtherLayers.length === 0) {
-                        this.wmsError = 'No layers found in WMS Capabilities document.';
+                        this.wmsError.set('No layers found in WMS Capabilities document.');
                     }
                 } else {
-                    this.wmsError = 'Invalid response received from WMS Server, please check your URL and try again.';
+                    this.wmsError.set('Invalid response received from WMS Server, please check your URL and try again.');
                 }
             },
             error: (error) => {
-                this.isLoadingWms = false;
+                this.isLoadingWms.set(false);
                 let errorMessage = 'Failed to load WMS Capabilities document.';
 
                 if (error.error) {
@@ -131,7 +151,7 @@ export class ImageryLayerSettingsComponent implements OnChanges {
                     }
                 }
 
-                this.wmsError = errorMessage;
+                this.wmsError.set(errorMessage);
             }
         });
     }

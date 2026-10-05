@@ -1,24 +1,46 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import {
   FormBuilder,
   FormGroup,
+  ReactiveFormsModule,
   Validators,
   AbstractControl,
   ValidationErrors,
   AsyncValidatorFn
 } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { LayersService, Layer } from '../layers.service';
 import { Observable, of } from 'rxjs';
 import { map, catchError, debounceTime, first } from 'rxjs/operators';
-import { ImageryLayerConfig } from '../imagery-layer-settings/imagery-layer-settings.component';
+import { ImageryLayerConfig, ImageryLayerSettingsComponent } from '../imagery-layer-settings/imagery-layer-settings.component';
 
 @Component({
     selector: 'mage-admin-layer-create',
     templateUrl: './create-layer.component.html',
     styleUrls: ['./create-layer.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatProgressBarModule,
+        ImageryLayerSettingsComponent
+    ]
 })
 export class CreateLayerDialogComponent {
   layerForm: FormGroup;

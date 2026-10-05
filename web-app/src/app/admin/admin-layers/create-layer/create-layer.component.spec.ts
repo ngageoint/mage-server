@@ -35,7 +35,6 @@ describe('CreateLayerDialogComponent', () => {
     layersServiceSpy.getLayers.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
-      declarations: [CreateLayerDialogComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       imports: [
         ReactiveFormsModule,
@@ -47,7 +46,8 @@ describe('CreateLayerDialogComponent', () => {
         MatSelectModule,
         MatIconModule,
         MatCheckboxModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        CreateLayerDialogComponent
       ],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: data },
