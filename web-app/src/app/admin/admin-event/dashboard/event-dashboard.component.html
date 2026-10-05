@@ -9,7 +9,7 @@
 </ng-template>
 
 <div class="events-page">
-  <mat-card appearance="elevated" class="events-card">
+  <mat-card appearance="raised" class="events-card">
     <div class="filter-row">
       <mat-chip-listbox [(ngModel)]="eventStatusFilter" (change)="onStatusFilterChange($event.value)">
         <mat-chip-option value="all">All</mat-chip-option>
@@ -31,9 +31,9 @@
       </mat-form-field>
     </div>
 
-    @if (filteredEvents?.length) {
+    @if (filteredEvents().length) {
       <mat-nav-list>
-        @for (event of filteredEvents; track trackByEventId($index, event)) {
+        @for (event of filteredEvents(); track event.id) {
           <mat-list-item [routerLink]="['../events', event.id]">
             <mat-icon matListItemIcon fontSet="material-symbols-outlined">event</mat-icon>
             <span matListItemTitle>{{ event.name }}</span>
@@ -56,7 +56,7 @@
       </div>
     }
 
-    <mat-paginator [length]="totalEvents" [pageSize]="searchOptions.page_size" [pageIndex]="searchOptions.page"
+    <mat-paginator [length]="totalEvents()" [pageSize]="searchOptions.page_size" [pageIndex]="searchOptions.page"
       [pageSizeOptions]="pageSizeOptions" showFirstLastButtons (page)="onPageChange($event)"></mat-paginator>
   </mat-card>
 </div>

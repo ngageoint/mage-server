@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { LayersService, Layer } from '../layers.service';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
@@ -15,7 +15,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -23,7 +22,6 @@ import { RouterLink } from '@angular/router';
     selector: 'mage-layer-dashboard',
     templateUrl: './layer-dashboard.component.html',
     styleUrls: ['./layer-dashboard.component.scss'],
-    standalone: true,
     imports: [
       MatCardModule,
       MatChipsModule,
@@ -39,12 +37,12 @@ import { RouterLink } from '@angular/router';
 })
 export class LayerDashboardComponent implements OnInit, OnDestroy {
   layers: Layer[] = [];
-  filteredLayers: Layer[] = [];
+  readonly filteredLayers = signal<Layer[]>([]);
 
   layerSearch = '';
   page = 0;
   itemsPerPage = 10;
-  totalLayers = 0;
+  readonly totalLayers = signal(0);
   pageSizeOptions = [5, 10, 25, 50];
 
   typeFilter: 'all' | 'online' | 'offline' = 'all';
@@ -90,7 +88,7 @@ export class LayerDashboardComponent implements OnInit, OnDestroy {
   private applyFilters(): void {
     const term = this.layerSearch.trim().toLowerCase();
 
-    this.filteredLayers = (this.layers ?? []).filter(layer => {
+    const filtered = (this.layers ?? []).filter(layer => {
       const matchesSearch =
         !term ||
         (layer.name ?? '').toLowerCase().includes(term) ||
@@ -102,7 +100,8 @@ export class LayerDashboardComponent implements OnInit, OnDestroy {
       return matchesSearch && matchesType;
     });
 
-    this.totalLayers = this.filteredLayers.length;
+    this.filteredLayers.set(filtered);
+    this.totalLayers.set(filtered.length);
   }
 
   private filterByType(layer: Layer): boolean {
@@ -121,7 +120,7 @@ export class LayerDashboardComponent implements OnInit, OnDestroy {
   getPaginatedLayers(): Layer[] {
     const startIndex = this.page * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    return this.filteredLayers.slice(startIndex, endIndex);
+    return this.filteredLayers().slice(startIndex, endIndex);
   }
 
   onSearchTermChanged(term: string): void {

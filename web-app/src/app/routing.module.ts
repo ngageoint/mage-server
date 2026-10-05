@@ -13,8 +13,8 @@ const appRoutes: Routes = [
   },
   {
     path: 'about',
-    loadChildren: () =>
-      import('./about/about.module').then((m) => m.AboutModule)
+    loadComponent: () =>
+      import('./about/about.component').then((m) => m.AboutComponent)
   },
   {
     path: 'profile',

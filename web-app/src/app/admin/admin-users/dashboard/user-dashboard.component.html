@@ -1,19 +1,19 @@
 <ng-template #breadcrumbActions>
-  <div class="nav-actions">
-    @if (hasUserCreatePermission) {
+  @if (hasUserCreatePermission) {
+    <div class="nav-actions">
       <button matButton="outlined" class="import-users-button" (click)="openImportModal()">
         <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>Import Users
       </button>
       <button matButton="filled" (click)="createUser()">
         <mat-icon>add</mat-icon>New User
       </button>
-    }
-  </div>
+    </div>
+  }
 </ng-template>
 
 <div class="users-page">
 
-  <mat-card appearance="elevated" class="users-card">
+  <mat-card appearance="raised" class="users-card">
     <div class="filter-row">
       <mat-chip-listbox [(ngModel)]="userStatusFilter" (change)="onStatusFilterChange($event.value)">
         <mat-chip-option value="all">All</mat-chip-option>
@@ -36,9 +36,9 @@
       </mat-form-field>
     </div>
 
-    @if (dataSource.length) {
+    @if (dataSource().length) {
       <mat-nav-list>
-        @for (user of dataSource; track user.id) {
+        @for (user of dataSource(); track user.id) {
           <mat-list-item [routerLink]="['../users', user.id]">
             <user-avatar matListItemAvatar [user]="user" avatar-width="40" avatar-height="40"></user-avatar>
             <span matListItemTitle>{{ user.displayName }}</span>
@@ -46,9 +46,7 @@
           </mat-list-item>
         }
       </mat-nav-list>
-    }
-
-    @if (!dataSource.length) {
+    } @else {
       <div class="empty-state">
         <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">group</mat-icon>
         @if (userSearch) {
@@ -60,7 +58,7 @@
     }
 
     <mat-paginator
-      [length]="totalUsers"
+      [length]="totalUsers()"
       [pageSize]="pageSize"
       [pageIndex]="pageIndex"
       [pageSizeOptions]="pageSizeOptions"

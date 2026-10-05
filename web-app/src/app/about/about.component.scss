@@ -3,12 +3,9 @@
 }
 
 mat-toolbar {
-  background-color: var(--mat-sys-primary);
-  color: #ffffff;
-
-  mat-icon {
-    color: #ffffff;
-  }
+  --mat-toolbar-container-background-color: var(--mat-sys-primary);
+  --mat-toolbar-container-text-color: var(--mat-sys-on-primary);
+  --mat-icon-button-icon-color: var(--mat-sys-on-primary);
 }
 
 .navigation {
