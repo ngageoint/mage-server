@@ -1,14 +1,13 @@
-import { Component, DestroyRef, EventEmitter, Input, OnInit, OnDestroy, OnChanges, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnInit, OnDestroy, Output, TemplateRef, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
-import { take } from 'rxjs';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, take } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -25,7 +24,6 @@ import { DeleteUserComponent } from '../../delete-user/delete-user.component';
 import { ChangePasswordComponent } from '../../change-password/change-password.component';
 import { User } from '../../user';
 import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
-import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { LoginsModule } from '../../../admin-logins/admin-logins.module';
@@ -34,7 +32,6 @@ import { LoginsModule } from '../../../admin-logins/admin-logins.module';
     selector: 'mage-user-details-view',
     templateUrl: './user-details-view.component.html',
     styleUrls: ['./user-details-view.component.scss'],
-    standalone: true,
     imports: [
       CommonModule,
       FormsModule,
@@ -52,9 +49,8 @@ import { LoginsModule } from '../../../admin-logins/admin-logins.module';
       LoginsModule
     ]
 })
-export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
+export class UserDetailsViewComponent implements OnInit, OnDestroy {
   @Input() user!: User;
-  @Input() breadcrumbs: AdminBreadcrumb[] = [];
 
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
@@ -64,27 +60,27 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
 
   private currentUserId: string | null = null;
 
-  teamsDataSource = new MatTableDataSource<Team>();
-  eventsDataSource = new MatTableDataSource<any>();
+  readonly userTeams = signal<Team[]>([]);
+  readonly userEvents = signal<any[]>([]);
 
-  loadingTeams = true;
-  loadingEvents = true;
+  readonly loadingTeams = signal(true);
+  readonly loadingEvents = signal(true);
 
-  totalUserTeams = 0;
-  totalUserEvents = 0;
+  readonly totalUserTeams = signal(0);
+  readonly totalUserEvents = signal(0);
   userTeamsPageSize = 5;
   userEventsPageSize = 5;
   userTeamsPageIndex = 0;
   userEventsPageIndex = 0;
   pageSizeOptions = [5, 10, 25];
 
-  userTeamSearch = '';
-  userEventSearch = '';
   teamSearchTerm = '';
   eventSearchTerm = '';
 
-  private userTeams: any[] = [];
-  private userEvents: any[] = [];
+  private readonly loadTeams$ = new Subject<void>();
+  private readonly loadEvents$ = new Subject<void>();
+  private readonly teamSearch$ = new Subject<string>();
+  private readonly eventSearch$ = new Subject<string>();
 
   constructor(
     private userService: UserService,
@@ -97,10 +93,79 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
     private route: ActivatedRoute,
     private destroyRef: DestroyRef,
     private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  ) {
+    this.loadTeams$
+      .pipe(
+        switchMap(() =>
+          this.teamsService
+            .search({
+              members: [this.user.id],
+              term: this.teamSearchTerm || undefined,
+              pageSize: this.userTeamsPageSize,
+              pageIndex: this.userTeamsPageIndex,
+              omitEventTeams: true
+            })
+            .pipe(catchError(() => of(null)))
+        ),
+        takeUntilDestroyed()
+      )
+      .subscribe((results: any) => {
+        let teams: Team[] = [];
+        let total = 0;
+        if (Array.isArray(results) && results.length && results[0]?.items) {
+          const page = results[0];
+          teams = page.items || [];
+          total = page.totalCount ?? teams.length;
+        } else if (Array.isArray(results)) {
+          teams = results;
+          total = results.length;
+        } else if (results?.items) {
+          teams = results.items || [];
+          total = results.totalCount ?? teams.length;
+        }
+
+        this.userTeams.set(teams);
+        this.totalUserTeams.set(total);
+        this.loadingTeams.set(false);
+      });
+
+    this.loadEvents$
+      .pipe(
+        switchMap(() =>
+          this.eventsService
+            .getEvents({
+              userId: this.user.id,
+              term: this.eventSearchTerm || undefined,
+              page: this.userEventsPageIndex,
+              page_size: this.userEventsPageSize
+            })
+            .pipe(catchError(() => of(null)))
+        ),
+        takeUntilDestroyed()
+      )
+      .subscribe((results: any) => {
+        const events = results?.items || [];
+        this.userEvents.set(events);
+        this.totalUserEvents.set(results?.totalCount || events.length);
+        this.loadingEvents.set(false);
+      });
+
+    this.teamSearch$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe(() => {
+        this.userTeamsPageIndex = 0;
+        this.loadUserTeams();
+      });
+
+    this.eventSearch$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe(() => {
+        this.userEventsPageIndex = 0;
+        this.loadUserEvents();
+      });
+  }
 
   ngOnInit(): void {
-    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
     this.sessionService.user$
@@ -111,12 +176,6 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
 
     this.loadUserTeams();
     this.loadUserEvents();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.breadcrumbs) {
-      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-    }
   }
 
   ngOnDestroy(): void {
@@ -136,77 +195,21 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get isSelf(): boolean {
-    return !!this.currentUserId && this.currentUserId === this.user?.id;
+    return Boolean(this.currentUserId) && this.currentUserId === this.user?.id;
   }
 
   private loadUserTeams(): void {
     if (!this.user?.id) {
       return;
     }
-    this.teamsService
-      .search({
-        members: [this.user.id],
-        term: this.userTeamSearch || undefined,
-        pageSize: this.userTeamsPageSize,
-        pageIndex: this.userTeamsPageIndex,
-        omitEventTeams: true
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (results: any) => {
-          if (Array.isArray(results) && results.length && results[0]?.items) {
-            const page = results[0];
-            this.userTeams = page.items || [];
-            this.totalUserTeams = page.totalCount ?? this.userTeams.length;
-          } else if (Array.isArray(results)) {
-            this.userTeams = results;
-            this.totalUserTeams = results.length;
-          } else if (results?.items) {
-            this.userTeams = results.items || [];
-            this.totalUserTeams = results.totalCount ?? this.userTeams.length;
-          } else {
-            this.userTeams = [];
-            this.totalUserTeams = 0;
-          }
-
-          this.teamsDataSource.data = this.userTeams;
-          this.loadingTeams = false;
-        },
-        error: () => {
-          this.userTeams = [];
-          this.totalUserTeams = 0;
-          this.teamsDataSource.data = [];
-          this.loadingTeams = false;
-        }
-      });
+    this.loadTeams$.next();
   }
 
   private loadUserEvents(): void {
     if (!this.user?.id) {
       return;
     }
-    this.eventsService
-      .getEvents({
-        userId: this.user.id,
-        term: this.userEventSearch || undefined,
-        page: this.userEventsPageIndex,
-        page_size: this.userEventsPageSize
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (results: any) => {
-          this.userEvents = results.items || [];
-          this.totalUserEvents = results.totalCount || this.userEvents.length;
-          this.eventsDataSource.data = this.userEvents;
-          this.loadingEvents = false;
-        },
-        error: () => {
-          this.userEvents = [];
-          this.totalUserEvents = 0;
-          this.eventsDataSource.data = [];
-          this.loadingEvents = false;
-        }
-      });
+    this.loadEvents$.next();
   }
 
   onUserTeamsPageChange(event: PageEvent): void {
@@ -223,16 +226,12 @@ export class UserDetailsViewComponent implements OnInit, OnChanges, OnDestroy {
 
   onTeamSearchChange(term?: string): void {
     this.teamSearchTerm = term || '';
-    this.userTeamSearch = this.teamSearchTerm;
-    this.userTeamsPageIndex = 0;
-    this.loadUserTeams();
+    this.teamSearch$.next(this.teamSearchTerm);
   }
 
   onEventSearchChange(term?: string): void {
     this.eventSearchTerm = term || '';
-    this.userEventSearch = this.eventSearchTerm;
-    this.userEventsPageIndex = 0;
-    this.loadUserEvents();
+    this.eventSearch$.next(this.eventSearchTerm);
   }
 
   accessTeamNames(eventItem: any): string[] {
