@@ -1,11 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { map, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 import { UserService } from '../../../user/user.service';
 import { User } from '../user';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
+import { RouteReuse } from '../../../route-reuse.strategy';
 
 @Component({
     selector: 'mage-user-details',
@@ -17,40 +18,44 @@ import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.
  * Admin component for viewing and managing a user's details, teams, events, devices, logins, and credentials.
  */
 export class UserDetailsComponent implements OnInit, OnDestroy {
-  private _user?: User;
-  set user(value: User | undefined) {
-    this._user = value;
-    this.breadcrumbs = [{ title: 'Users', icon: 'person', route: ['/admin/users'] }, { title: value?.displayName || 'Unknown User' }];
-  }
-  get user(): User | undefined {
-    return this._user;
-  }
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
 
-  error: string | null = null;
+  readonly user = signal<User | undefined>(undefined);
+  readonly error = signal<string | null>(null);
   isEditingUser = false;
 
   private destroy$ = new Subject<void>();
 
-  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Users', icon: 'person', route: ['/admin/users'] }, { title: 'Unknown User' }];
+  readonly breadcrumbs = computed<AdminBreadcrumb[]>(() => [
+    { title: 'Users', icon: 'person', route: ['/admin/users'] },
+    { title: this.user()?.displayName || 'Unknown User' }
+  ]);
 
   constructor(
     private route: ActivatedRoute,
     private userService: UserService,
     private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  ) {
+    effect(() => this.breadcrumbService.setBreadcrumbs(this.breadcrumbs()));
+  }
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        map((pm) => pm.get('userId')),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((userId) => {
-        if (!userId) {
-          this.error = 'Missing userId route param';
-          return;
+    const userId = this.route.snapshot.paramMap.get('userId');
+    if (!userId) {
+      this.error.set('Missing userId route param');
+      return;
+    }
+
+    this.userService
+      .getUser(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+        },
+        error: (err) => {
+          this.error.set(err?.error?.message || 'Failed to load user');
         }
-        this.initForUser(userId);
       });
   }
 
@@ -60,35 +65,18 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private initForUser(userId: string): void {
-    this.error = null;
-    this.user = undefined;
-
-    this.userService
-      .getUser(userId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (user) => {
-          this.user = user;
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Failed to load user';
-        }
-      });
-  }
-
   toggleEditUser(): void {
-    this.error = null;
+    this.error.set(null);
     this.isEditingUser = !this.isEditingUser;
   }
 
   onUserSaved(updatedUser: User): void {
-    this.user = updatedUser;
+    this.user.set(updatedUser);
     this.isEditingUser = false;
   }
 
   onUserChanged(updatedUser: User): void {
-    this.user = updatedUser;
+    this.user.set(updatedUser);
   }
 
   onEditCancelled(): void {

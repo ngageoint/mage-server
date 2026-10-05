@@ -1,9 +1,9 @@
 import {
   Component,
   DestroyRef,
+  Injector,
+  afterNextRender,
   OnInit,
-  OnChanges,
-  SimpleChanges,
   Input,
   Output,
   EventEmitter,
@@ -24,7 +24,6 @@ import { MatInputModule } from '@angular/material/input';
 import { UserService } from '../../../../user/user.service';
 import { User } from '../../user';
 import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
-import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -42,7 +41,6 @@ interface IconMetadata {
     selector: 'mage-user-details-edit',
     templateUrl: './user-details-edit.component.html',
     styleUrls: ['./user-details-edit.component.scss'],
-    standalone: true,
     imports: [
       FormsModule,
       MatButtonModule,
@@ -53,9 +51,8 @@ interface IconMetadata {
       MatInputModule
     ]
 })
-export class UserDetailsEditComponent implements OnInit, OnChanges {
+export class UserDetailsEditComponent implements OnInit {
   @Input() user!: User;
-  @Input() breadcrumbs: AdminBreadcrumb[] = [];
 
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
@@ -68,13 +65,13 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
   }
 
   editUser!: EditableUser;
-  roles: any[] = [];
+  readonly roles = signal<any[]>([]);
 
   saving = signal(false);
-  error: string | null = null;
+  readonly error = signal<string | null>(null);
 
-  iconPreviewUrl: string | null = null;
-  avatarPreviewUrl: string | null = null;
+  readonly iconPreviewUrl = signal<string | null>(null);
+  readonly avatarPreviewUrl = signal<string | null>(null);
 
   removeIconSelected = false;
   iconMetadata: IconMetadata = { type: 'none' };
@@ -85,11 +82,11 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
     private userService: UserService,
     private sessionService: SessionService,
     private destroyRef: DestroyRef,
-    private breadcrumbService: AdminBreadcrumbService
+    private breadcrumbService: AdminBreadcrumbService,
+    private injector: Injector
   ) {}
 
   ngOnInit(): void {
-    this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
     this.editUser = { ...this.user } as EditableUser;
@@ -110,22 +107,16 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
     if (this.iconMetadata.type === 'create') {
       if (!this.iconMetadata.text) this.setIconInitials(this.user.displayName);
       if (!this.iconMetadata.color) this.iconMetadata.color = this.randomColor();
-      setTimeout(() => this.updateMapIconCanvas(), 0);
+      afterNextRender(() => this.updateMapIconCanvas(), { injector: this.injector });
     }
 
     this.userService
       .getRoles()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((roles: any[]) => {
-        this.roles = roles;
+        this.roles.set(roles);
         this.setSelectedRoleFromUser();
       });
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['breadcrumbs']) {
-      this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-    }
   }
 
   getPhoneNumber(): string {
@@ -152,11 +143,11 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
   }
 
   private setSelectedRoleFromUser(): void {
-    if (!this.canEditRole || !this.user || !this.roles?.length) return;
+    if (!this.canEditRole || !this.user || !this.roles()?.length) return;
     if (!this.editUser) return;
 
     const userRole: any = (this.user as any).role;
-    const roleMatch = this.roles.find((role: any) => {
+    const roleMatch = this.roles().find((role: any) => {
       return (
         role?.id === userRole?.id ||
         role?.name === userRole?.name ||
@@ -178,13 +169,13 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
       if (!this.iconMetadata.color)
         this.iconMetadata.color = this.randomColor();
       if (this.editUser) (this.editUser as any).icon = null;
-      this.iconPreviewUrl = null;
+      this.iconPreviewUrl.set(null);
       this.removeIconSelected = false;
-      setTimeout(() => this.updateMapIconCanvas(), 0);
+      afterNextRender(() => this.updateMapIconCanvas(), { injector: this.injector });
     } else if (this.iconMetadata.type === 'upload') {
       this.removeIconSelected = false;
     } else {
-      this.iconPreviewUrl = null;
+      this.iconPreviewUrl.set(null);
       if (this.editUser) (this.editUser as any).icon = null;
       this.removeIconSelected = true;
     }
@@ -305,7 +296,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files[0];
     if (!file) {
-      this.iconPreviewUrl = null;
+      this.iconPreviewUrl.set(null);
       return;
     }
 
@@ -315,7 +306,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
-      this.iconPreviewUrl = e.target.result as string;
+      this.iconPreviewUrl.set(e.target.result as string);
     };
     reader.readAsDataURL(file);
   }
@@ -326,7 +317,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files[0];
     if (!file) {
-      this.avatarPreviewUrl = null;
+      this.avatarPreviewUrl.set(null);
       (this.editUser as any).avatar = null;
       return;
     }
@@ -335,7 +326,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
-      this.avatarPreviewUrl = e.target.result as string;
+      this.avatarPreviewUrl.set(e.target.result as string);
     };
     reader.readAsDataURL(file);
   }
@@ -343,7 +334,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
   removeIcon(): void {
     if (!this.editUser) return;
     this.removeIconSelected = true;
-    this.iconPreviewUrl = null;
+    this.iconPreviewUrl.set(null);
     this.iconMetadata = { type: 'none' };
     (this.editUser as any).icon = null;
   }
@@ -352,7 +343,7 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
     if (!this.editUser) return;
 
     this.saving.set(true);
-    this.error = null;
+    this.error.set(null);
 
     const userToSave: any = {
       id: this.editUser.id,
@@ -411,21 +402,21 @@ export class UserDetailsEditComponent implements OnInit, OnChanges {
               (this.editUser as any)?.selectedRole?.id ||
               (this.user as any)?.role?.id;
 
-            if (roleId && Array.isArray(this.roles)) {
-              const fullRole = this.roles.find((r: any) => r?.id === roleId);
+            if (roleId && Array.isArray(this.roles())) {
+              const fullRole = this.roles().find((r: any) => r?.id === roleId);
               if (fullRole) merged.role = fullRole;
             }
           }
 
           this.saving.set(false);
-          this.iconPreviewUrl = null;
-          this.avatarPreviewUrl = null;
+          this.iconPreviewUrl.set(null);
+          this.avatarPreviewUrl.set(null);
           this.removeIconSelected = false;
 
           this.saved.emit(merged as User);
         },
         error: (err) => {
-          this.error = err?.error || 'Failed to update user';
+          this.error.set(err?.error || 'Failed to update user');
           this.saving.set(false);
         }
       });

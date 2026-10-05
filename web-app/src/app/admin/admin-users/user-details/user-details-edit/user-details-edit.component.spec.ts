@@ -79,6 +79,35 @@ describe('UserDetailsEditComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  function canvasHasPixels(): boolean {
+    const canvas: HTMLCanvasElement | null = fixture.nativeElement.querySelector('canvas');
+    if (!canvas) return false;
+    const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
+    return data.some((value, i) => i % 4 === 3 && value > 0);
+  }
+
+  it('should draw the created map icon after the first render', async () => {
+    component.user = { ...mockUser, icon: { type: 'create', text: 'TU', color: '#ff0000' } };
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(canvasHasPixels()).toBeTrue();
+  });
+
+  it('should draw the map icon after switching the icon type to create', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.iconMetadata.type).toBe('upload');
+
+    component.iconMetadata.type = 'create';
+    component.iconTypeChanged();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(canvasHasPixels()).toBeTrue();
+  });
+
   it('should initialize editUser and load roles on init', fakeAsync(() => {
     component.ngOnInit();
     tick();
@@ -86,7 +115,7 @@ describe('UserDetailsEditComponent', () => {
     expect(mockUserService.getRoles as jasmine.Spy).toHaveBeenCalled();
     expect(component.editUser).toBeTruthy();
     expect(component.editUser.displayName).toBe(mockUser.displayName);
-    expect(component.roles.length).toBe(2);
+    expect(component.roles().length).toBe(2);
   }));
 
   it('should update the phone number on the draft user', () => {
@@ -123,7 +152,7 @@ describe('UserDetailsEditComponent', () => {
     component.saveUser();
     tick();
 
-    expect(component.error).toBe('boom');
+    expect(component.error()).toBe('boom');
     expect(component.saving()).toBeFalse();
   }));
 

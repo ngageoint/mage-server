@@ -1,20 +1,22 @@
-<div class="error-alert" *ngIf="error">
-  <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
-  <span>{{ error }}</span>
-</div>
+@if (error()) {
+  <div class="error-alert">
+    <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+    <span>{{ error() }}</span>
+  </div>
+}
 
-<mage-user-details-view
-  *ngIf="user && !isEditingUser"
-  [user]="user"
-  [breadcrumbs]="breadcrumbs"
-  (editRequested)="toggleEditUser()"
-  (userChanged)="onUserChanged($event)"
-></mage-user-details-view>
-
-<mage-user-details-edit
-  *ngIf="user && isEditingUser"
-  [user]="user"
-  [breadcrumbs]="breadcrumbs"
-  (saved)="onUserSaved($event)"
-  (cancelled)="onEditCancelled()"
-></mage-user-details-edit>
+@if (user(); as user) {
+  @if (isEditingUser) {
+    <mage-user-details-edit
+      [user]="user"
+      (saved)="onUserSaved($event)"
+      (cancelled)="onEditCancelled()"
+    ></mage-user-details-edit>
+  } @else {
+    <mage-user-details-view
+      [user]="user"
+      (editRequested)="toggleEditUser()"
+      (userChanged)="onUserChanged($event)"
+    ></mage-user-details-view>
+  }
+}
