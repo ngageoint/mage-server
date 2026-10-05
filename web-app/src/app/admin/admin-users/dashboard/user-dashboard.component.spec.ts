@@ -231,18 +231,18 @@ describe('UserDashboardComponent', () => {
     tick();
 
     expect(pagingServiceSpy.refresh).toHaveBeenCalled();
-    expect(component.dataSource.length).toBe(3);
-    expect(component.totalUsers).toBe(2);
+    expect(component.dataSource().length).toBe(3);
+    expect(component.totalUsers()).toBe(2);
   }));
 
   it('should search and update user list', fakeAsync(() => {
     component.onSearchTermChanged('user');
-    tick();
+    tick(300);
 
     expect(component.userSearch).toBe('user');
     expect(component.pageIndex).toBe(0);
     expect(pagingServiceSpy.search).toHaveBeenCalled();
-    expect(component.dataSource.length).toBe(3);
+    expect(component.dataSource().length).toBe(3);
   }));
 
   it('should log error when search fails', fakeAsync(() => {
@@ -253,9 +253,35 @@ describe('UserDashboardComponent', () => {
     );
 
     component.onSearchTermChanged('x');
-    tick();
+    tick(300);
 
     expect(consoleSpy).toHaveBeenCalled();
+  }));
+
+  it('should debounce search input into a single request', fakeAsync(() => {
+    pagingServiceSpy.search.calls.reset();
+
+    component.onSearchTermChanged('u');
+    tick(100);
+    component.onSearchTermChanged('us');
+    tick(100);
+    component.onSearchTermChanged('user');
+    tick(300);
+
+    expect(pagingServiceSpy.search).toHaveBeenCalledTimes(1);
+    expect(pagingServiceSpy.search).toHaveBeenCalledWith(jasmine.anything(), 'user');
+  }));
+
+  it('should clear search through the paging search so the term is reset', fakeAsync(() => {
+    pagingServiceSpy.search.calls.reset();
+
+    component.onSearchTermChanged('user');
+    tick(300);
+    component.onSearchCleared();
+    tick(300);
+
+    expect(component.userSearch).toBe('');
+    expect(pagingServiceSpy.search).toHaveBeenCalledWith(jasmine.anything(), '');
   }));
 
   it('should handle pagination event and refresh users', fakeAsync(() => {

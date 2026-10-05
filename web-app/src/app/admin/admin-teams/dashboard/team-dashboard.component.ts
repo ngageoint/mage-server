@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { EMPTY, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
@@ -26,7 +26,6 @@ import { RouterModule } from '@angular/router';
     selector: 'mage-admin-teams',
     templateUrl: './team-dashboard.component.html',
     styleUrls: ['./team-dashboard.component.scss'],
-    standalone: true,
     imports: [
       MatCardModule,
       MatFormFieldModule,
@@ -41,8 +40,8 @@ import { RouterModule } from '@angular/router';
 })
 export class TeamDashboardComponent implements OnInit, OnDestroy {
   searchTerm = '';
-  teams: Team[] = [];
-  totalTeams = 0;
+  readonly teams = signal<Team[]>([]);
+  readonly totalTeams = signal(0);
   pageSize = 10;
   pageIndex = 0;
   pageSizeOptions = [5, 10, 25];
@@ -57,6 +56,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
   }
 
   private destroy$ = new Subject<void>();
+  private readonly refresh$ = new Subject<void>();
+  private readonly searchTerm$ = new Subject<string>();
 
   constructor(
     private modal: MatDialog,
@@ -64,7 +65,40 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private toastService: AdminToastService,
     private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  ) {
+    this.refresh$
+      .pipe(
+        switchMap(() => this.teamService
+          .search({
+            term: this.searchTerm,
+            pageSize: this.pageSize,
+            pageIndex: this.pageIndex,
+            omitEventTeams: true,
+          })
+          .pipe(
+            catchError((err) => {
+              console.error('Error fetching teams:', err);
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((page) => {
+        this.teams.set(page.items);
+        if (typeof page.totalCount === 'number') {
+          this.totalTeams.set(page.totalCount);
+        }
+      });
+
+    this.searchTerm$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.totalTeams.set(0);
+        this.pageIndex = 0;
+        this.fetchTeams();
+      });
+  }
 
   /**
    * Fetches the initial set of teams when the component loads
@@ -88,19 +122,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * Fetches teams from the service based on current search term and pagination settings
    */
   fetchTeams(): void {
-    this.teamService
-      .search({
-        term: this.searchTerm,
-        pageSize: this.pageSize,
-        pageIndex: this.pageIndex,
-        omitEventTeams: true,
-      })
-      .subscribe((page) => {
-        this.teams = page.items;
-        if (typeof page.totalCount === 'number') {
-          this.totalTeams = page.totalCount
-        }
-      });
+    this.refresh$.next();
   }
 
   /**
@@ -121,9 +143,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    */
   onSearchTermChanged(term: string): void {
     this.searchTerm = term;
-    this.totalTeams = 0;
-    this.pageIndex = 0; // Reset to first page when searching
-    this.fetchTeams();
+    this.searchTerm$.next(term);
   }
 
   /**
@@ -131,9 +151,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    */
   onSearchCleared(): void {
     this.searchTerm = '';
-    this.totalTeams = 0;
-    this.pageIndex = 0;
-    this.fetchTeams();
+    this.searchTerm$.next('');
   }
 
   /**
