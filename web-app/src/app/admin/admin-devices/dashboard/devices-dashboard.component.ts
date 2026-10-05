@@ -1,6 +1,8 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Subject, catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import {
   AdminDeviceService,
   DevicesResponse,
@@ -10,7 +12,6 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { Device } from '../../../entities/device/device';
 import { CreateDeviceDialogComponent } from '../create-device/create-device.component';
-import { Subject, takeUntil } from 'rxjs';
 import { AdminToastService } from '../../services/admin-toast.service';
 import { deviceIconName, platformLabel as getDevicePlatformLabel } from '../../../entities/device/device';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -28,7 +29,6 @@ import { RouterLink } from '@angular/router';
     selector: 'admin-devices',
     templateUrl: './devices-dashboard.component.html',
     styleUrls: ['./devices-dashboard.component.scss'],
-    standalone: true,
     imports: [
       MatCardModule,
       MatChipsModule,
@@ -44,7 +44,7 @@ import { RouterLink } from '@angular/router';
 })
 export class DeviceDashboardComponent implements OnInit, OnDestroy {
   devices!: DevicesResponse;
-  filteredDevices: Device[] = [];
+  readonly filteredDevices = signal<Device[]>([]);
 
   deviceSearch = '';
 
@@ -54,9 +54,11 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
     state: 'all'
   };
 
-  totalDevices = 0;
+  readonly totalDevices = signal(0);
   pageSizeOptions = [5, 10, 25, 50];
-  hasDeviceCreatePermission = false;
+  get hasDeviceCreatePermission(): boolean {
+    return this.sessionService.hasPermission('CREATE_DEVICE');
+  }
 
   deviceStatusFilter: 'all' | 'registered' | 'unregistered' = 'all';
 
@@ -65,7 +67,8 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
 
-  private destroy$ = new Subject<void>();
+  private readonly refresh$ = new Subject<void>();
+  private readonly searchTerm$ = new Subject<string>();
 
   constructor(
     private modal: MatDialog,
@@ -73,46 +76,51 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private toastService: AdminToastService,
     private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  ) {
+    this.refresh$
+      .pipe(
+        switchMap(() => this.deviceService.getDevices(this.searchOptions).pipe(
+          catchError((err) => {
+            console.error('Error fetching devices:', err);
+            return EMPTY;
+          })
+        )),
+        takeUntilDestroyed()
+      )
+      .subscribe((devices) => {
+        this.devices = devices;
+        this.applyFilters();
+      });
+
+    this.searchTerm$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((term) => {
+        this.searchOptions = { ...this.searchOptions, page: 0, term: term.trim() || undefined };
+        this.refreshDevices();
+      });
+  }
 
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
-    this.subscribeToUser();
     this.refreshDevices();
   }
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private subscribeToUser(): void {
-    this.sessionService.user$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((user) => {
-        this.hasDeviceCreatePermission =
-          user?.role?.permissions?.includes('CREATE_DEVICE') || false;
-      });
   }
 
   refreshDevices(): void {
-    this.deviceService.getDevices(this.searchOptions).subscribe({
-      next: (devices) => {
-        this.devices = devices;
-        this.applyFilters();
-      },
-      error: (err) => console.error('Error fetching devices:', err)
-    });
+    this.refresh$.next();
   }
 
   private applyFilters(): void {
     if (!this.devices) return;
 
-    this.filteredDevices = this.devices.items.devices || [];
-    this.totalDevices = this.devices.totalCount ?? this.filteredDevices.length;
+    const devices = this.devices.items.devices || [];
+    this.filteredDevices.set(devices);
+    this.totalDevices.set(this.devices.totalCount ?? devices.length);
   }
 
   iconName(device: Device): string {
@@ -125,14 +133,12 @@ export class DeviceDashboardComponent implements OnInit, OnDestroy {
 
   onSearchTermChanged(term: string): void {
     this.deviceSearch = term;
-    this.searchOptions = { ...this.searchOptions, page: 0, term: term.trim() || undefined };
-    this.refreshDevices();
+    this.searchTerm$.next(term);
   }
 
   onSearchCleared(): void {
     this.deviceSearch = '';
-    this.searchOptions = { ...this.searchOptions, page: 0, term: undefined };
-    this.refreshDevices();
+    this.searchTerm$.next('');
   }
 
   onPageChange(event: PageEvent): void {

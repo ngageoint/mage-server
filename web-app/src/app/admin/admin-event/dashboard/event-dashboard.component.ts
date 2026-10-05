@@ -1,6 +1,8 @@
-import { Component, OnInit, OnDestroy, HostListener, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Subject, catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 
 import {
@@ -21,7 +23,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -29,7 +30,6 @@ import { RouterLink } from '@angular/router';
     selector: 'admin-events',
     templateUrl: './event-dashboard.component.html',
     styleUrls: ['./event-dashboard.component.scss'],
-    standalone: true,
     imports: [
       MatCardModule,
       MatChipsModule,
@@ -45,10 +45,8 @@ import { RouterLink } from '@angular/router';
 })
 export class EventDashboardComponent implements OnInit, OnDestroy {
   events: PageOf<MageEvent> | null = null;
-  filteredEvents: MageEvent[] = [];
+  readonly filteredEvents = signal<MageEvent[]>([]);
 
-  numChars = 180;
-  toolTipWidth = '1000px';
   eventSearch = '';
 
   searchOptions: SearchOptions = {
@@ -57,7 +55,7 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
     state: 'all'
   };
 
-  totalEvents = 0;
+  readonly totalEvents = signal(0);
   pageSizeOptions = [5, 10, 25, 50];
 
   get hasEventCreatePermission(): boolean {
@@ -71,20 +69,46 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
 
+  private readonly refresh$ = new Subject<void>();
+  private readonly searchTerm$ = new Subject<string>();
+
   constructor(
     private modal: MatDialog,
     private eventService: AdminEventsService,
     private sessionService: SessionService,
     private toastService: AdminToastService,
     private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  ) {
+    this.refresh$
+      .pipe(
+        switchMap(() => this.eventService.getEvents(this.searchOptions).pipe(
+          catchError((err) => {
+            console.error('Error fetching events:', err);
+            return EMPTY;
+          })
+        )),
+        takeUntilDestroyed()
+      )
+      .subscribe((events) => {
+        this.events = events;
+        const items = events?.items || [];
+        this.filteredEvents.set(items);
+        this.totalEvents.set(events?.totalCount ?? items.length);
+      });
+
+    this.searchTerm$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((term) => {
+        this.searchOptions = { ...this.searchOptions, term, page: 0 };
+        this.refreshEvents();
+      });
+  }
 
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
     this.refreshEvents();
-    this.updateResponsiveLayout();
   }
 
   ngOnDestroy(): void {
@@ -92,46 +116,17 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
   }
 
   refreshEvents(): void {
-    this.eventService.getEvents(this.searchOptions).subscribe({
-      next: (events) => {
-        this.events = events;
-        this.filteredEvents = events?.items || [];
-        this.totalEvents = events?.totalCount ?? this.filteredEvents.length;
-      },
-      error: (err) => console.error('Error fetching events:', err)
-    });
+    this.refresh$.next();
   }
 
   onSearchTermChanged(term: string): void {
     this.eventSearch = term || '';
-    this.searchOptions = {
-      ...this.searchOptions,
-      term: this.eventSearch,
-      page: 0
-    };
-    this.refreshEvents();
+    this.searchTerm$.next(this.eventSearch);
   }
 
   onSearchCleared(): void {
     this.eventSearch = '';
-    this.searchOptions = {
-      ...this.searchOptions,
-      term: '',
-      page: 0
-    };
-    this.refreshEvents();
-  }
-
-  reset(): void {
-    this.eventSearch = '';
-    this.eventStatusFilter = 'all';
-    this.searchOptions = {
-      ...this.searchOptions,
-      page: 0,
-      state: 'all',
-      term: ''
-    };
-    this.refreshEvents();
+    this.searchTerm$.next('');
   }
 
   onPageChange(event: PageEvent): void {
@@ -165,19 +160,5 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
         this.refreshEvents();
       }
     });
-  }
-
-  @HostListener('window:resize')
-  onResize(): void {
-    this.updateResponsiveLayout();
-  }
-
-  private updateResponsiveLayout(): void {
-    this.numChars = Math.ceil(window.innerWidth / 8.5);
-    this.toolTipWidth = `${window.innerWidth * 0.75}px`;
-  }
-
-  trackByEventId(_: number, event: MageEvent): any {
-    return (event as any)?.id ?? event;
   }
 }

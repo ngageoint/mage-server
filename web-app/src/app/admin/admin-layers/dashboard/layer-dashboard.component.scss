@@ -79,9 +79,3 @@ mat-paginator {
   --mat-paginator-container-background-color: var(--mat-sys-surface-container);
   flex-shrink: 0;
 }
-
-::ng-deep .layer-desc-tooltip {
-  white-space: normal;
-  word-wrap: break-word;
-  max-width: 80vw;
-}
