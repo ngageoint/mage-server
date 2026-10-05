@@ -30,7 +30,6 @@ import { AdminComponent } from './admin-shell/admin.component';
 import { AdminBreadcrumbModule } from './admin-breadcrumb/admin-breadcrumb.module';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
-import { AdminTeamsModule } from './admin-teams/admin-teams.module';
 import { AdminEventsModule } from './admin-event/admin-events.module';
 import { AdminLayersModule } from './admin-layers/admin-layers.module';
 import { AdminDevicesModule } from './admin-devices/admin-devices.module';
@@ -76,7 +75,6 @@ import { PluginModule } from './admin-plugins/plugins.module';
     AdminRoutingModule,
     AdminDashboardModule,
     AdminUsersModule,
-    AdminTeamsModule,
     AdminEventsModule,
     AdminLayersModule,
     AdminDevicesModule,
