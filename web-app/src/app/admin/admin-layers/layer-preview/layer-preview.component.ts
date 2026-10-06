@@ -72,8 +72,8 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   private updateMap(): void {
-    if (!this.map) return;
     const layer = this.layer();
+    if (!this.map) return;
 
     if (this.mapLayer) {
       this.map.removeLayer(this.mapLayer);
