@@ -14,6 +14,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of, Observable } from 'rxjs';
 
 import { LayerDetailsComponent } from './layer-details.component';
+import { LayerPreviewComponent } from '../layer-preview/layer-preview.component';
 import { LayersService } from '../layers.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -94,14 +95,14 @@ describe('LayerDetailsComponent', () => {
     buildMocks();
 
     await TestBed.configureTestingModule({
-    declarations: [LayerDetailsComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     imports: [MatDialogModule,
         MatSnackBarModule,
         NoopAnimationsModule,
         RouterTestingModule,
         MatIconModule,
-        MatPaginatorModule],
+        MatPaginatorModule,
+        LayerDetailsComponent],
     providers: [
         { provide: ActivatedRoute, useValue: makeActivatedRoute(params) },
         { provide: LayersService, useValue: mockLayersService },
@@ -110,7 +111,11 @@ describe('LayerDetailsComponent', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
     ]
-}).compileComponents();
+})
+      .overrideComponent(LayerDetailsComponent, {
+        remove: { imports: [LayerPreviewComponent] }
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(LayerDetailsComponent);
     component = fixture.componentInstance;
