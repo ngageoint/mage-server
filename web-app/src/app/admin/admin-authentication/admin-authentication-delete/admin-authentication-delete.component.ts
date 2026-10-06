@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, Inject, signal } from '@angular/core'
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog'
+import { Component, OnInit, inject, signal } from '@angular/core'
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog'
 import { Strategy } from '../../admin-authentication/admin-settings.model'
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service'
 import { MatButtonModule } from '@angular/material/button'
@@ -10,7 +10,6 @@ import { A11yModule } from '@angular/cdk/a11y'
     selector: 'admin-authentication-delete',
     templateUrl: './admin-authentication-delete.component.html',
     styleUrls: ['./admin-authentication-delete.component.scss'],
-    standalone: true,
     imports: [
       MatDialogModule,
       MatButtonModule,
@@ -18,16 +17,14 @@ import { A11yModule } from '@angular/cdk/a11y'
       A11yModule
     ]
 })
-export class AuthenticationDeleteComponent implements AfterViewInit {
+export class AuthenticationDeleteComponent implements OnInit {
+  private readonly dialogRef: MatDialogRef<AuthenticationDeleteComponent> = inject(MatDialogRef)
+  readonly strategy: Strategy = inject(MAT_DIALOG_DATA)
+  private readonly authenticationConfigurationService: AuthenticationConfigurationService = inject(AuthenticationConfigurationService)
+
   readonly userCount = signal(0)
 
-  constructor(
-    public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
-    @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
-    private authenticationConfigurationService: AuthenticationConfigurationService
-  ) {}
-
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
     this.authenticationConfigurationService.countUsers(this.strategy._id).subscribe({
       next: (result: any) => {
         this.userCount.set(result?.data?.count ?? result?.count ?? 0)

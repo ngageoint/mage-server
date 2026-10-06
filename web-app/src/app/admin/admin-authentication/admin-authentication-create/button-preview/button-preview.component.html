@@ -1,33 +1,33 @@
-@if (editable) {
+@if (editable()) {
    <div>
       <div class="button-option">
          <p class="field-label">Text Color</p>
-         <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')">
+         <color-picker [hexColor]="strategy().textColor" (onColorChanged)="colorChanged($event, 'textColor')">
          </color-picker>
       </div>
       <div class="button-option">
          <p class="field-label">Button Color</p>
-         <color-picker [hexColor]="strategy.buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')">
+         <color-picker [hexColor]="strategy().buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')">
          </color-picker>
       </div>
       <div class="button-option">
          <p class="field-label">Button Icon</p>
-         <icon-upload [strategy]="strategy"></icon-upload>
+         <icon-upload [strategy]="strategy()" (iconChange)="iconChanged($event)"></icon-upload>
       </div>
    </div>
 }
 <div class="preview-button">
    <div class="auth-button-preview"
-      [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor}">
-      <span class="third-party-logo" [ngStyle]="{'color': strategy.buttonColor}">
-         @if (strategy.icon) {
-            <img [src]="strategy.icon" style="width:32px; height:32px">
+      [style.color]="strategy().textColor" [style.background-color]="strategy().buttonColor">
+      <span class="third-party-logo" [style.color]="strategy().buttonColor">
+         @if (strategy().icon) {
+            <img [src]="strategy().icon" style="width:32px; height:32px">
          } @else {
             <mat-icon>security</mat-icon>
          }
       </span>
-      <span class="third-party-button-text" [ngStyle]="{color: strategy.textColor}">
-         Sign In With {{strategy.title}}
+      <span class="third-party-button-text" [style.color]="strategy().textColor">
+         Sign In With {{strategy().title}}
       </span>
    </div>
 </div>

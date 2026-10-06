@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,16 +15,14 @@ import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service';
-import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
 
 import {
   AbstractControl,
   FormBuilder,
   FormControl,
-  FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
   Validators
@@ -33,8 +32,6 @@ import {
     selector: 'admin-authentication-create',
     templateUrl: './admin-authentication-create.component.html',
     styleUrls: ['./admin-authentication-create.component.scss'],
-    providers: [],
-    standalone: true,
     imports: [
       ReactiveFormsModule,
       MatStepperModule,
@@ -50,8 +47,16 @@ import {
       ButtonPreviewComponent
     ]
 })
-export class AuthenticationCreateComponent implements OnInit, OnDestroy {
-  breadcrumbs: AdminBreadcrumb[] = [{
+export class AuthenticationCreateComponent implements OnInit {
+  private readonly fb: FormBuilder = inject(FormBuilder);
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly authenticationConfigurationService: AuthenticationConfigurationService = inject(AuthenticationConfigurationService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  readonly breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Authentication',
     icon: 'lock',
     route: ['/admin/security']
@@ -61,12 +66,12 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
 
   strategy: Strategy & { settings: any } = this.buildDefaultStrategy();
 
-  readonly TYPE_CHOICES: TypeChoice[] = [
+  readonly typeChoices = signal<TypeChoice[]>([
     { title: 'OpenID Connect', type: 'openidconnect', name: 'openidconnect' },
     { title: 'OAuth2', type: 'oauth', name: 'oauth' },
     { title: 'LDAP', type: 'ldap', name: 'ldap' },
     { title: 'SAML', type: 'saml', name: 'saml' }
-  ];
+  ]);
 
   private readonly REQUIRED_SETTINGS: Record<string, string[]> = {
     oauth: [
@@ -88,32 +93,11 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
     saml: ['entryPoint', 'cert']
   };
 
-  private readonly destroy$ = new Subject<void>();
-
-  readonly form: FormGroup<{
-    title: FormControl<string>;
-    name: FormControl<string>;
-    settingsValid: FormControl<boolean>;
-  }>;
-
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly snackBar: MatSnackBar,
-    private readonly router: Router,
-    private route: ActivatedRoute,
-    private readonly authenticationConfigurationService: AuthenticationConfigurationService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {
-    this.form = this.fb.group({
-      title: this.fb.nonNullable.control('', Validators.required),
-      name: this.fb.nonNullable.control('', Validators.required),
-      settingsValid: this.fb.nonNullable.control(true, this.settingsValidator())
-    });
-
-    this.strategy = this.buildDefaultStrategy();
-    this.form.markAsPristine();
-    this.form.markAsUntouched();
-  }
+  readonly form = this.fb.group({
+    title: this.fb.nonNullable.control('', Validators.required),
+    name: this.fb.nonNullable.control('', Validators.required),
+    settingsValid: this.fb.nonNullable.control(true, this.settingsValidator())
+  });
 
   get titleCtrl(): FormControl<string> {
     return this.form.controls.title;
@@ -131,12 +115,12 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
 
     this.titleCtrl.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((v) => {
         this.strategy.title = v ?? '';
       });
 
-    this.nameCtrl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((v) => {
+    this.nameCtrl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((v) => {
       this.strategy.name = v ?? '';
       if (this.strategy.name) {
         this.loadTemplate();
@@ -146,28 +130,21 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
 
     this.authenticationConfigurationService
       .getAllConfigurations({ includeDisabled: true })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response: any) => {
           const strategies: any[] = Array.isArray(response?.data)
             ? response.data
             : [];
-          strategies.forEach((s) => {
-            const idx = this.TYPE_CHOICES.findIndex(
-              (choice) => choice.name === s?.name
-            );
-            if (idx > -1) this.TYPE_CHOICES.splice(idx, 1);
-          });
+          const usedNames = new Set(strategies.map((s) => s?.name));
+          this.typeChoices.update((choices) =>
+            choices.filter((choice) => !usedNames.has(choice.name))
+          );
         },
         error: () => {
           return;
         }
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   onSettingsChanged(): void {
@@ -216,18 +193,17 @@ export class AuthenticationCreateComponent implements OnInit, OnDestroy {
 
     this.authenticationConfigurationService
       .createConfiguration(this.strategy)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.router.navigate(['../../security'], { relativeTo: this.route });
         },
         error: () => {
           this.snackBar.open(
-            'An error occured while creating ' + (this.strategy?.title || ''),
+            'An error occurred while creating ' + (this.strategy?.title || ''),
             undefined,
             { duration: 2000 }
           );
-          this.router.navigate(['../../security'], { relativeTo: this.route });
         }
       });
   }

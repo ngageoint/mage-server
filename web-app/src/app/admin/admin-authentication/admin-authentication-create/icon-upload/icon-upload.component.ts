@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { Strategy } from '../../admin-settings.model';
 
@@ -6,13 +6,11 @@ import { Strategy } from '../../admin-settings.model';
     selector: 'icon-upload',
     templateUrl: './icon-upload.component.html',
     styleUrls: ['./icon-upload.component.scss'],
-    standalone: true,
     imports: [MatButtonModule]
 })
 export class IconUploadComponent {
-  @Input() strategy: Strategy;
-
-  constructor(private changeDetector: ChangeDetectorRef) { }
+  readonly strategy = input.required<Strategy>();
+  readonly iconChange = output<string>();
 
   onImageChange(e: any): void {
     const reader = new FileReader();
@@ -22,8 +20,7 @@ export class IconUploadComponent {
 
       reader.onload = (e: Event): void => {
         const target = e.target as FileReader;
-        this.strategy.icon = target.result as string;
-        this.changeDetector.detectChanges();
+        this.iconChange.emit(target.result as string);
       };
 
       reader.readAsDataURL(file);

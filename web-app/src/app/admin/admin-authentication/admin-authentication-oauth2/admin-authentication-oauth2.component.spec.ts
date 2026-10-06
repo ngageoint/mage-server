@@ -18,7 +18,7 @@ describe('AdminAuthenticationOAuth2Component', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationOAuth2Component);
     component = fixture.componentInstance;
-    component.strategy = {
+    fixture.componentRef.setInput('strategy', {
       enabled: true,
       name: '',
       type: '',
@@ -36,7 +36,7 @@ describe('AdminAuthenticationOAuth2Component', () => {
         headers: {},
         profile: {}
       }
-    }
+    });
     fixture.detectChanges();
   });
 

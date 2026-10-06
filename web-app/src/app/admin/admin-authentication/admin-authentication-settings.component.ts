@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -14,7 +14,6 @@ import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml/ad
   selector: 'admin-authentication-settings',
   templateUrl: 'admin-authentication-settings.component.html',
   styleUrls: ['./admin-authentication-settings.component.scss'],
-  standalone: true,
   imports: [
     FormsModule,
     MatFormFieldModule,
@@ -27,10 +26,10 @@ import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml/ad
   ]
 })
 export class AdminAuthenticationSettingsComponent {
-  @Input() strategy: Strategy;
-  @Input() teams: Team[] = [];
-  @Input() events: any[] = [];
-  @Output() strategyDirty = new EventEmitter<boolean>();
+  readonly strategy = input.required<Strategy>();
+  readonly teams = input<Team[]>([]);
+  readonly events = input<any[]>([]);
+  readonly strategyDirty = output<boolean>();
 
   readonly usersReqAdminChoices: AdminChoice[] = [
     {
@@ -58,10 +57,7 @@ export class AdminAuthenticationSettingsComponent {
   ];
 
   setDirty(isDirty: boolean): void {
-    if (!this.strategy) {
-      return;
-    }
-    this.strategy.isDirty = isDirty;
+    this.strategy().isDirty = isDirty;
     this.onStrategyDirty(isDirty);
   }
 
@@ -70,7 +66,7 @@ export class AdminAuthenticationSettingsComponent {
   }
 
   userReqAdminChanged(): void {
-    const settings = this.strategy?.settings;
+    const settings = this.strategy().settings;
     if (!settings) {
       return;
     }
