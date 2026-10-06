@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { UserResolver } from './ingress/user.resolver';
 
 const appRoutes: Routes = [
   {
@@ -18,8 +19,9 @@ const appRoutes: Routes = [
   },
   {
     path: 'profile',
-    loadChildren: () =>
-      import('./user/profile/profile.module').then((m) => m.ProfileModule)
+    loadComponent: () =>
+      import('./user/profile/profile.component').then((m) => m.ProfileComponent),
+    resolve: { user: UserResolver }
   },
   {
     path: 'swagger',
