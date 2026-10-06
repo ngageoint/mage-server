@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminDashboardComponent } from './admin-dashboard';
-import { LoginsModule } from '../admin-logins/admin-logins.module';
+import { LoginsComponent } from '../admin-logins/admin-logins.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
@@ -26,7 +26,7 @@ import { RouterModule } from '@angular/router';
   imports: [
     CommonModule,
     FormsModule,
-    LoginsModule,
+    LoginsComponent,
     MatToolbarModule,
     MatIconModule,
     MatFormFieldModule,

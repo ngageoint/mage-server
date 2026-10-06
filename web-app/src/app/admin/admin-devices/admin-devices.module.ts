@@ -28,7 +28,7 @@ import { AdminDeviceService } from '../services/admin-device.service';
 import { CreateDeviceDialogComponent } from './create-device/create-device.component';
 import { AdminUsersModule } from '../admin-users/admin-users.module';
 import { DeviceDetailsComponent } from './device-details/device-details.component';
-import { LoginsModule } from '../admin-logins/admin-logins.module';
+import { LoginsComponent } from '../admin-logins/admin-logins.component';
 
 @NgModule({
     declarations: [
@@ -65,7 +65,7 @@ import { LoginsModule } from '../admin-logins/admin-logins.module';
         MatPaginatorModule,
         DragDropModule,
         AdminUsersModule,
-        LoginsModule,
+        LoginsComponent,
         DeviceDashboardComponent
     ],
     exports: [

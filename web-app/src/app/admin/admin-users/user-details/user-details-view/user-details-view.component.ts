@@ -26,7 +26,7 @@ import { User } from '../../user';
 import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
-import { LoginsModule } from '../../../admin-logins/admin-logins.module';
+import { LoginsComponent } from '../../../admin-logins/admin-logins.component';
 
 @Component({
     selector: 'mage-user-details-view',
@@ -46,7 +46,7 @@ import { LoginsModule } from '../../../admin-logins/admin-logins.module';
       MatProgressSpinnerModule,
       MatTooltipModule,
       RouterModule,
-      LoginsModule
+      LoginsComponent
     ]
 })
 export class UserDetailsViewComponent implements OnInit, OnDestroy {
