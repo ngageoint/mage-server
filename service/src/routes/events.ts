@@ -652,34 +652,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     }
   );
 
-  app.put(
-    '/api/events/:eventId/acl/:targetUserId',
-    security.authentication.bearerAuthentication,
-    middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function (req, res, next) {
-      EventModel.updateUserInAcl(req.event!._id, req.params.targetUserId, req.body.role, function (err, event) {
-        if (err) {
-          return next(err);
-        }
-        res.json(event);
-      });
-    }
-  );
-
-  app.delete(
-    '/api/events/:eventId/acl/:targetUserId',
-    security.authentication.bearerAuthentication,
-    middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function (req, res, next) {
-      EventModel.removeUserFromAcl(req.event!._id, req.params.targetUserId, function (err, event) {
-        if (err) {
-          return next(err);
-        }
-        res.json(event);
-      });
-    }
-  );
-
   app.get(
     '/api/events/:id/members',
     security.authentication.bearerAuthentication,

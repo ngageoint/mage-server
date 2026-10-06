@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
 import { TeamService } from '@ngageoint/mage.web-core-lib/team'
+import { UserReadService } from '@ngageoint/mage.web-core-lib/user'
 import { AdminBreadcrumbService } from 'mage-web-app/admin/admin-breadcrumb/admin-breadcrumb.service'
 import { of, throwError } from 'rxjs'
 
@@ -12,6 +13,7 @@ import { EventDetailsComponent } from './event-details.component'
 import { AdminEventsService } from '../../services/admin-events.service'
 import { RouteReuse } from '../../../route-reuse.strategy'
 import { Form } from 'mage-web-app/entities/event/entities.event'
+import { SessionService } from 'mage-web-app/http/session.service'
 
 describe('EventDetailsComponent', () => {
   let component: EventDetailsComponent
@@ -22,6 +24,8 @@ describe('EventDetailsComponent', () => {
   let dialog: jasmine.SpyObj<MatDialog>
   let router: jasmine.SpyObj<Router>
   let breadcrumbService: jasmine.SpyObj<AdminBreadcrumbService>
+  let sessionService: { user: any, hasPermission: jasmine.Spy }
+  let userReadService: jasmine.SpyObj<UserReadService>
 
   const USER_ONE: any = {
     id: '1',
@@ -55,11 +59,7 @@ describe('EventDetailsComponent', () => {
   const EVENT_TEAM: any = {
     id: 'team-1',
     name: 'Event Team',
-    teamEventId: 1,
-    acl: {
-      '1': { role: 'OWNER', permissions: [] },
-      '2': { role: 'MANAGER', permissions: [] }
-    }
+    teamEventId: 1
   }
 
   // Runs change detection so effects and resources run, then waits for their loads to finish
@@ -89,13 +89,17 @@ describe('EventDetailsComponent', () => {
       'getAllLayers',
       'getLayersForEvent',
       'addLayerToEvent',
-      'removeLayerFromEvent'
+      'removeLayerFromEvent',
+      'getEventAcl',
+      'setEventAclRole',
+      'removeEventAclUser'
     ])
+
+    userReadService = jasmine.createSpyObj('UserReadService', ['search'])
 
     const teamsServiceSpy = jasmine.createSpyObj('AdminTeamsService', [
       'addUserToTeam',
-      'removeMember',
-      'updateUserRole'
+      'removeMember'
     ])
 
     const dialogSpy = jasmine.createSpyObj('MatDialog', ['open'])
@@ -103,6 +107,11 @@ describe('EventDetailsComponent', () => {
     snackBarSpy.open.and.returnValue({ onAction: () => of() })
     const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl'])
     const breadcrumbServiceSpy = jasmine.createSpyObj('BreadcrumbService', ['setBreadcrumbs', 'setActions'])
+
+    sessionService = {
+      user: { id: 'me' },
+      hasPermission: jasmine.createSpy('hasPermission').and.returnValue(false)
+    }
 
     await TestBed.configureTestingModule({
       imports: [EventDetailsComponent, NoopAnimationsModule],
@@ -113,7 +122,9 @@ describe('EventDetailsComponent', () => {
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ eventId: '1' }) } } },
-        { provide: AdminBreadcrumbService, useValue: breadcrumbServiceSpy }
+        { provide: AdminBreadcrumbService, useValue: breadcrumbServiceSpy },
+        { provide: SessionService, useValue: sessionService },
+        { provide: UserReadService, useValue: userReadService }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents()
@@ -138,10 +149,12 @@ describe('EventDetailsComponent', () => {
     eventsService.addTeamToEvent.and.returnValue(of({} as any))
     eventsService.removeEventFromTeam.and.returnValue(of({} as any))
     eventsService.updateEvent.and.returnValue(of(makeEvent()))
+    eventsService.getEventAcl.and.returnValue(of([]))
+    eventsService.setEventAclRole.and.returnValue(of([]))
+    eventsService.removeEventAclUser.and.returnValue(of([]))
 
     teamsService.addUserToTeam.and.returnValue(of({} as any))
     teamsService.removeMember.and.returnValue(of({} as any))
-    teamsService.updateUserRole.and.returnValue(of({} as any))
 
     fixture = TestBed.createComponent(EventDetailsComponent)
     component = fixture.componentInstance
@@ -223,6 +236,273 @@ describe('EventDetailsComponent', () => {
     })
   })
 
+  describe('Permissions', () => {
+    const aclEntry = (...permissions: string[]) => ({ me: { role: 'GUEST', permissions } })
+
+    it('should deny update and delete without a role permission or ACL entry', () => {
+      component.event.set(makeEvent({ acl: {} }))
+
+      expect(component.hasUpdatePermission()).toBe(false)
+      expect(component.hasDeletePermission()).toBe(false)
+    })
+
+    it('should allow update and delete from role permissions', () => {
+      sessionService.hasPermission.and.callFake((p: string) => ['UPDATE_EVENT', 'DELETE_EVENT'].includes(p))
+      component.event.set(makeEvent({ acl: {} }))
+
+      expect(component.hasUpdatePermission()).toBe(true)
+      expect(component.hasDeletePermission()).toBe(true)
+    })
+
+    it('should allow update from the event ACL', () => {
+      component.event.set(makeEvent({ acl: aclEntry('read', 'update') }))
+
+      expect(component.hasUpdatePermission()).toBe(true)
+      expect(component.hasDeletePermission()).toBe(false)
+    })
+
+    it('should allow delete from the event ACL', () => {
+      component.event.set(makeEvent({ acl: aclEntry('read', 'update', 'delete') }))
+
+      expect(component.hasDeletePermission()).toBe(true)
+    })
+
+    it('should ignore ACL entries for other users', () => {
+      component.event.set(makeEvent({ acl: { someoneElse: { role: 'OWNER', permissions: ['read', 'update', 'delete'] } } }))
+
+      expect(component.hasUpdatePermission()).toBe(false)
+      expect(component.hasDeletePermission()).toBe(false)
+    })
+  })
+
+  describe('Access', () => {
+    const aclEntry = (user: any, role: string) => ({
+      user: { id: user.id, username: user.username, displayName: user.displayName, email: user.email },
+      role,
+      permissions: []
+    } as any)
+
+    const OWNER_ENTRY = aclEntry(USER_ONE, 'OWNER')
+    const GUEST_ENTRY = aclEntry(USER_TWO, 'GUEST')
+
+    const canUpdateEvent = () => sessionService.hasPermission.and.callFake((p: string) => p === 'UPDATE_EVENT')
+
+    it('should not load or show access without update permission', async () => {
+      await load()
+
+      expect(eventsService.getEventAcl).not.toHaveBeenCalled()
+      expect(fixture.nativeElement.textContent).not.toContain('Access')
+    })
+
+    it('should load and show the event access for users that can update the event', async () => {
+      canUpdateEvent()
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+
+      await load()
+
+      expect(eventsService.getEventAcl).toHaveBeenCalledWith('1')
+      expect(component.accessPage().items).toEqual([OWNER_ENTRY, GUEST_ENTRY])
+      const badges: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.user-role-badge'))
+      expect(badges.map((badge) => badge.textContent?.trim().replace(/\s*(arrow_drop_down|lock)$/, ''))).toEqual(['OWNER', 'GUEST'])
+    })
+
+    it('should search and page access locally', async () => {
+      canUpdateEvent()
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+      await load()
+
+      component.onAccessSearchChange('two')
+      expect(component.accessPage().items).toEqual([GUEST_ENTRY])
+      expect(component.accessPageIndex()).toBe(0)
+
+      component.onAccessSearchChange()
+      component.onAccessPageChange({ pageIndex: 1, pageSize: 1, length: 2 } as any)
+      expect(component.accessPage().items).toEqual([GUEST_ENTRY])
+      expect(component.accessPage().totalCount).toBe(2)
+    })
+
+    it('should protect the last owner', async () => {
+      canUpdateEvent()
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+      await load()
+
+      expect(component.isLastOwner(OWNER_ENTRY)).toBe(true)
+      expect(component.isLastOwner(GUEST_ENTRY)).toBe(false)
+    })
+
+    it('should not protect an owner when another owner remains', async () => {
+      canUpdateEvent()
+      const secondOwner = aclEntry(USER_TWO, 'OWNER')
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, secondOwner]))
+      await load()
+
+      expect(component.isLastOwner(OWNER_ENTRY)).toBe(false)
+    })
+
+    it('should let users with the role permission manage owners', async () => {
+      canUpdateEvent()
+      const secondOwner = aclEntry(USER_TWO, 'OWNER')
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, secondOwner]))
+      await load()
+
+      expect(component.assignableRoles().map((option) => option.role)).toEqual(['GUEST', 'MANAGER', 'OWNER'])
+      expect(component.accessLockReason(OWNER_ENTRY)).toBeNull()
+    })
+
+    it('should not let a manager grant the owner role or change owners', async () => {
+      eventsService.getEventById.and.returnValue(of(makeEvent({ acl: { me: { role: 'MANAGER', permissions: ['read', 'update'] } } })))
+      const secondOwner = aclEntry(USER_TWO, 'OWNER')
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, secondOwner]))
+      await load()
+
+      expect(component.hasUpdatePermission()).toBe(true)
+      expect(component.assignableRoles().map((option) => option.role)).toEqual(['GUEST', 'MANAGER'])
+      expect(component.accessLockReason(OWNER_ENTRY)).toBe('Only owners can change other owners')
+    })
+
+    it('should let a manager change guests', async () => {
+      eventsService.getEventById.and.returnValue(of(makeEvent({ acl: { me: { role: 'MANAGER', permissions: ['read', 'update'] } } })))
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+      await load()
+
+      expect(component.accessLockReason(GUEST_ENTRY)).toBeNull()
+    })
+
+    it('should explain why the last owner is locked', async () => {
+      canUpdateEvent()
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+      await load()
+
+      expect(component.accessLockReason(OWNER_ENTRY)).toBe('An event must have at least one owner')
+    })
+
+    it('should change a role and show the returned access without reloading', async () => {
+      canUpdateEvent()
+      await load()
+      eventsService.getEventAcl.calls.reset()
+      const managerEntry = aclEntry(USER_TWO, 'MANAGER')
+      eventsService.setEventAclRole.and.returnValue(of([OWNER_ENTRY, managerEntry]))
+
+      component.setAclRole(GUEST_ENTRY, 'MANAGER')
+      await load()
+
+      expect(eventsService.setEventAclRole).toHaveBeenCalledWith('1', USER_TWO.id, 'MANAGER')
+      expect(component.aclEntries()).toEqual([OWNER_ENTRY, managerEntry])
+      expect(eventsService.getEventAcl).not.toHaveBeenCalled()
+    })
+
+    it('should not change a role to the same role', async () => {
+      canUpdateEvent()
+      await load()
+
+      component.setAclRole(GUEST_ENTRY, 'GUEST')
+
+      expect(eventsService.setEventAclRole).not.toHaveBeenCalled()
+    })
+
+    it('should remove a user and show the returned access without reloading', async () => {
+      canUpdateEvent()
+      await load()
+      eventsService.getEventAcl.calls.reset()
+      eventsService.removeEventAclUser.and.returnValue(of([OWNER_ENTRY]))
+
+      component.removeAclUser(new MouseEvent('click'), GUEST_ENTRY)
+      await load()
+
+      expect(eventsService.removeEventAclUser).toHaveBeenCalledWith('1', USER_TWO.id)
+      expect(component.aclEntries()).toEqual([OWNER_ENTRY])
+      expect(eventsService.getEventAcl).not.toHaveBeenCalled()
+    })
+
+    it('should hide access when the current user removes their own access', async () => {
+      const myEntry = { user: { id: 'me', username: 'me', displayName: 'Current User' }, role: 'MANAGER', permissions: ['read', 'update'] } as any
+      eventsService.getEventById.and.returnValue(of(makeEvent({ acl: { me: { role: 'MANAGER', permissions: ['read', 'update'] } } })))
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, myEntry]))
+      eventsService.removeEventAclUser.and.returnValue(of([OWNER_ENTRY]))
+      await load()
+      expect(component.hasUpdatePermission()).toBe(true)
+
+      component.removeAclUser(new MouseEvent('click'), myEntry)
+      await load()
+
+      expect(component.hasUpdatePermission()).toBe(false)
+      expect(fixture.nativeElement.textContent).not.toContain('Search access')
+    })
+
+    it('should stop managing owners when the current user demotes themselves', async () => {
+      const myOwnerEntry = { user: { id: 'me', username: 'me', displayName: 'Current User' }, role: 'OWNER', permissions: ['read', 'update', 'delete'] } as any
+      const myManagerEntry = { ...myOwnerEntry, role: 'MANAGER', permissions: ['read', 'update'] }
+      eventsService.getEventById.and.returnValue(of(makeEvent({ acl: { me: { role: 'OWNER', permissions: ['read', 'update', 'delete'] } } })))
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, myOwnerEntry]))
+      eventsService.setEventAclRole.and.returnValue(of([OWNER_ENTRY, myManagerEntry]))
+      await load()
+      expect(component.canManageOwners()).toBe(true)
+
+      component.setAclRole(myOwnerEntry, 'MANAGER')
+      await load()
+
+      expect(component.canManageOwners()).toBe(false)
+      expect(component.hasUpdatePermission()).toBe(true)
+      expect(component.assignableRoles().map((option) => option.role)).toEqual(['GUEST', 'MANAGER'])
+    })
+
+    it('should not remove a locked user', async () => {
+      canUpdateEvent()
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+      await load()
+      const evt = new MouseEvent('click')
+      spyOn(evt, 'stopPropagation')
+
+      component.removeAclUser(evt, OWNER_ENTRY)
+
+      expect(evt.stopPropagation).toHaveBeenCalled()
+      expect(eventsService.removeEventAclUser).not.toHaveBeenCalled()
+    })
+
+    it('should show an error when changing access fails', async () => {
+      canUpdateEvent()
+      await load()
+      eventsService.setEventAclRole.and.returnValue(throwError(() => new Error('Update failed')))
+      spyOn(console, 'error')
+      const snackBar = TestBed.inject(MatSnackBar) as jasmine.SpyObj<MatSnackBar>
+
+      component.setAclRole(GUEST_ENTRY, 'MANAGER')
+
+      expect(snackBar.open).toHaveBeenCalledWith('Error updating event access', 'Close', { duration: 5000 })
+    })
+
+    it('should search users that are not in the access list', async () => {
+      canUpdateEvent()
+      eventsService.getEventAcl.and.returnValue(of([OWNER_ENTRY]))
+      userReadService.search.and.returnValue(of(makePage([USER_ONE, USER_TWO])))
+      await load()
+      closedDialog(null)
+
+      component.addUserToAcl()
+
+      const searchFunction = (dialog.open.calls.mostRecent().args[1] as any).data.searchFunction
+      let results: any
+      searchFunction('', 0, 10).subscribe((page: any) => results = page)
+      expect(userReadService.search).toHaveBeenCalledWith({ term: '', pageIndex: 0, pageSize: 10 })
+      expect(results.items).toEqual([USER_TWO])
+    })
+
+    it('should add the selected user as a guest and show the returned access without reloading', async () => {
+      canUpdateEvent()
+      await load()
+      eventsService.getEventAcl.calls.reset()
+      eventsService.setEventAclRole.and.returnValue(of([OWNER_ENTRY, GUEST_ENTRY]))
+      closedDialog({ selectedItem: USER_TWO })
+
+      component.addUserToAcl()
+      await load()
+
+      expect(eventsService.setEventAclRole).toHaveBeenCalledWith('1', USER_TWO.id, 'GUEST')
+      expect(component.aclEntries()).toEqual([OWNER_ENTRY, GUEST_ENTRY])
+      expect(eventsService.getEventAcl).not.toHaveBeenCalled()
+    })
+  })
+
   describe('Computed Forms', () => {
     it('should return non-archived forms', () => {
       component.event.set(makeEvent({
@@ -297,57 +577,15 @@ describe('EventDetailsComponent', () => {
       expect(component.loadingMembers()).toBe(false)
     })
 
-    it('should show a role badge for each member', async () => {
+    it('should list members by name without roles', async () => {
       eventsService.getMembers.and.returnValue(of(makePage([USER_ONE, USER_TWO])))
       component.members.reload()
       await load()
 
-      const badges = fixture.nativeElement.querySelectorAll('.user-role-badge')
-      expect(badges.length).toBe(2)
-      expect(badges[0].classList).toContain('role-owner')
-      expect(badges[1].classList).toContain('role-manager')
-    })
-
-    it('should get user role from the event team ACL', () => {
-      expect(component.getUserRole(USER_ONE)).toBe('OWNER')
-      expect(component.getUserRole(USER_TWO)).toBe('MANAGER')
-    })
-
-    it('should return GUEST when user not in ACL', () => {
-      expect(component.getUserRole({ id: '999' } as any)).toBe('GUEST')
-    })
-
-    it('should return GUEST when no event team', () => {
-      component.eventTeam.set(null)
-      expect(component.getUserRole(USER_ONE)).toBe('GUEST')
-    })
-
-    it('should update user role and set the returned event team', () => {
-      const updatedTeam = { ...EVENT_TEAM, acl: { '1': { role: 'MANAGER', permissions: [] } } }
-      teamsService.updateUserRole.and.returnValue(of(updatedTeam))
-
-      component.updateUserRole(USER_ONE, 'MANAGER')
-
-      expect(teamsService.updateUserRole).toHaveBeenCalledWith('team-1', '1', 'MANAGER')
-      expect(component.getUserRole(USER_ONE)).toBe('MANAGER')
-    })
-
-    it('should not update user role without event team', () => {
-      component.eventTeam.set(null)
-
-      component.updateUserRole(USER_ONE, 'MANAGER')
-
-      expect(teamsService.updateUserRole).not.toHaveBeenCalled()
-    })
-
-    it('should handle error when updating user role fails', () => {
-      teamsService.updateUserRole.and.returnValue(throwError(() => new Error('Update failed')))
-      spyOn(console, 'error')
-
-      component.updateUserRole(USER_ONE, 'MANAGER')
-
-      expect(console.error).toHaveBeenCalledWith('Error updating user role:', jasmine.any(Error))
-      expect(component.getUserRole(USER_ONE)).toBe('OWNER')
+      const text = fixture.nativeElement.textContent
+      expect(text).toContain(USER_ONE.displayName)
+      expect(text).toContain(USER_TWO.displayName)
+      expect(fixture.nativeElement.querySelectorAll('.user-role-badge').length).toBe(0)
     })
 
     it('should open dialog to add member to event', () => {

@@ -70,8 +70,8 @@ const FormSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: false },
   default: { type: Boolean, default: false },
-  min: { type: Number, required: false },
-  max: { type: Number, required: false },
+  min: { type: Number, required: false, min: [0, 'Form minimum cannot be negative'] },
+  max: { type: Number, required: false, min: [0, 'Form maximum cannot be negative'] },
   color: { type: String, required: true },
   archived: { type: Boolean, required: true, default: false },
   primaryField: { type: String, required: false },
@@ -94,8 +94,8 @@ const EventSchema = new Schema({
   layerIds: [{ type: Number, ref: 'Layer' }],
   feedIds: [{ type: String, ref: 'Feed' }],
   forms: [FormSchema],
-  minObservationForms: { type: Number },
-  maxObservationForms: { type: Number },
+  minObservationForms: { type: Number, min: [0, 'Minimum forms per observation cannot be negative'] },
+  maxObservationForms: { type: Number, min: [0, 'Maximum forms per observation cannot be negative'] },
   observationSearchStatus: { type: String, enum: ['pending', 'running', 'indexed'] },
   style: {
     type: Schema.Types.Mixed,
@@ -481,9 +481,6 @@ exports.getById = function (id, options, callback) {
     err => callback(err)
   );
 };
-
-// TODO probably should live in event api
-exports.filterEventsByUserId = filterEventsByUserId;
 
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
@@ -886,51 +883,6 @@ exports.removeTeamFromEvents = function (team, callback) {
   };
   Event.updateMany({}, update).then(
     () => callback(null),
-    err => callback(err)
-  );
-};
-
-exports.updateUserInAcl = function (eventId, userId, role, callback) {
-  // validate userId
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    const err = new Error('Invalid userId');
-    err.status = 400;
-    return callback(err);
-  }
-
-  // validate role
-  if (Object.keys(EventRolePermissions).indexOf(role) === -1) {
-    const err = new Error('Invalid role');
-    err.status = 400;
-    return callback(err);
-  }
-
-  const update = {};
-  update['acl.' + userId] = role;
-
-  Event.findOneAndUpdate({ _id: eventId }, update, { new: true, runValidators: true }).then(
-    event => {
-      Team.updateUserInAclForEventTeam(eventId, userId, role, function (err) {
-        callback(err, event);
-      });
-    },
-    err => callback(err)
-  );
-};
-
-
-exports.removeUserFromAcl = function (eventId, userId, callback) {
-  const update = {
-    $unset: {}
-  };
-  update.$unset['acl.' + userId] = true;
-
-  Event.findByIdAndUpdate(eventId, update, { new: true, runValidators: true }).then(
-    event => {
-      Team.removeUserFromAclForEventTeam(eventId, userId, function (err) {
-        callback(err, event);
-      });
-    },
     err => callback(err)
   );
 };
