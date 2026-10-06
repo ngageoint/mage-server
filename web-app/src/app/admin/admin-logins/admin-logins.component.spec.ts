@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { of } from 'rxjs';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { delay, of } from 'rxjs';
+import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
 
 import { LoginsComponent } from './admin-logins.component';
 
@@ -33,7 +34,7 @@ describe('LoginsComponent', () => {
     search: jasmine.createSpy('search').and.returnValue(of([]))
   };
 
-  async function createComponent(init?: Partial<LoginsComponent>) {
+  async function createComponent(inputs?: { userId?: string; deviceId?: string }) {
     await TestBed.configureTestingModule({
       imports: [FormsModule, LoginsComponent],
       providers: [
@@ -49,7 +50,7 @@ describe('LoginsComponent', () => {
     fixture = TestBed.createComponent(LoginsComponent);
     component = fixture.componentInstance;
 
-    Object.assign(component, init || {});
+    Object.entries(inputs || {}).forEach(([name, value]) => fixture.componentRef.setInput(name, value));
     fixture.detectChanges();
   }
 
@@ -73,7 +74,7 @@ describe('LoginsComponent', () => {
   });
 
   it('ngOnInit should set filter.user/device when userId/deviceId inputs are provided', async () => {
-    await createComponent({ userId: 'u1', deviceId: 'd1' } as any);
+    await createComponent({ userId: 'u1', deviceId: 'd1' });
 
     component.ngOnInit();
 
@@ -82,7 +83,7 @@ describe('LoginsComponent', () => {
   });
 
   it('initUserSourceIfNeeded should NOT call paging when userId is provided', async () => {
-    await createComponent({ userId: 'u1' } as any);
+    await createComponent({ userId: 'u1' });
 
     component.ngOnInit();
 
@@ -100,7 +101,7 @@ describe('LoginsComponent', () => {
   });
 
   it('initDeviceSourceIfNeeded should NOT call paging when deviceId is provided', async () => {
-    await createComponent({ deviceId: 'd1' } as any);
+    await createComponent({ deviceId: 'd1' });
 
     component.ngOnInit();
 
@@ -116,27 +117,26 @@ describe('LoginsComponent', () => {
 
     expect(mockDevicePaging.constructDefault).toHaveBeenCalled();
     expect(mockDevicePaging.refresh).toHaveBeenCalled();
-    expect(component.loginDeviceSearchResults.length).toBe(1);
-    expect((component.loginDeviceSearchResults[0] as any).uid).toBe('Paged Device');
+    expect(component.loginDeviceSearchResults().length).toBe(1);
+    expect((component.loginDeviceSearchResults()[0] as any).uid).toBe('Paged Device');
   });
 
   it('hasNext should be false for invalid next links and true for valid link', async () => {
     await createComponent();
-  
-    component.loginPage = { logins: [], next: 'null', prev: null } as any;
+
+    component.loginPage.set({ logins: [], next: 'null', prev: null } as any);
     expect(component.hasNext).toBe(false);
-  
-    component.loginPage = { logins: [], next: '   ', prev: null } as any;
+
+    component.loginPage.set({ logins: [], next: '   ', prev: null } as any);
     expect(component.hasNext).toBe(false);
-  
-    component.loginPage = {
+
+    component.loginPage.set({
       logins: [{ id: 'a' }],
       next: 'http://next?start=25&limit=25',
       prev: null
-    } as any;
+    } as any);
     expect(component.hasNext).toBe(true);
   });
-  
 
   it('pageLogin should not call loginService.query for invalid url', async () => {
     await createComponent();
@@ -150,7 +150,7 @@ describe('LoginsComponent', () => {
   it('pageLogin should update loginPage for a non-empty next page', async () => {
     await createComponent();
 
-    component.loginPage = { logins: [{ id: 'old' }], next: 'http://next', prev: null } as any;
+    component.loginPage.set({ logins: [{ id: 'old' }], next: 'http://next', prev: null } as any);
 
     mockLoginService.query.and.returnValue(
       of({ logins: [{ id: 'new' }], next: 'http://next2', prev: 'http://prev2' })
@@ -158,24 +158,25 @@ describe('LoginsComponent', () => {
 
     component.pageLogin('http://next');
 
-    expect(component.loginPage!.logins[0].id).toBe('new');
-    expect((component.loginPage as any).next).toBe('http://next2');
-    expect((component.loginPage as any).prev).toBe('http://prev2');
+    expect(component.loginPage()!.logins[0].id).toBe('new');
+    expect((component.loginPage() as any).next).toBe('http://next2');
+    expect((component.loginPage() as any).prev).toBe('http://prev2');
   });
 
   it('pageLogin should guard against empty page and null out current loginPage.next', async () => {
     await createComponent();
 
-    component.loginPage = { logins: [{ id: 'old' }], next: 'http://next', prev: null } as any;
+    component.loginPage.set({ logins: [{ id: 'old' }], next: 'http://next', prev: null } as any);
 
     mockLoginService.query.and.returnValue(
       of({ logins: [], next: 'http://still-next', prev: 'http://prev' })
     );
 
-    component.pageLogin('http://next');
+    component.onLoginPage({ pageIndex: 1, previousPageIndex: 0, pageSize: 10, length: 20 });
 
-    expect(component.loginPage!.logins[0].id).toBe('old');
-    expect((component.loginPage as any).next).toBeNull();
+    expect(component.loginPage()!.logins[0].id).toBe('old');
+    expect((component.loginPage() as any).next).toBeNull();
+    expect(component.loginPageIndex()).toBe(0);
   });
 
   it('filterLogins should call loadInitialLogins when no user/device/date filters selected', async () => {
@@ -216,10 +217,10 @@ describe('LoginsComponent', () => {
     await createComponent();
     spyOn(component, 'filterLogins').and.stub();
 
-    component.loginSearchResults = [{ displayName: 'x' } as any];
+    component.loginSearchResults.set([{ displayName: 'x' } as any]);
     component.onUserSearchChange('');
 
-    expect(component.loginSearchResults).toEqual([]);
+    expect(component.loginSearchResults()).toEqual([]);
     expect(component.filterLogins).toHaveBeenCalled();
   });
 
@@ -234,7 +235,7 @@ describe('LoginsComponent', () => {
     component.onUserSearchChange('abc');
 
     expect(mockUserPaging.search).toHaveBeenCalledWith((component as any).userStateAndData.all, 'abc');
-    expect(component.loginSearchResults.length).toBe(2);
+    expect(component.loginSearchResults().length).toBe(2);
   });
 
   it('onDeviceSearchChange should use devicePagingService.search when deviceStateAndData exists', async () => {
@@ -246,18 +247,18 @@ describe('LoginsComponent', () => {
     component.onDeviceSearchChange('term');
 
     expect(mockDevicePaging.search).toHaveBeenCalled();
-    expect(component.loginDeviceSearchResults.length).toBe(2);
+    expect(component.loginDeviceSearchResults().length).toBe(2);
   });
 
   it('selectUser should set user, userText, clear results, and call filterLogins', async () => {
     await createComponent();
     spyOn(component, 'filterLogins').and.stub();
 
-    component.loginSearchResults = [{ displayName: 'x' } as any];
+    component.loginSearchResults.set([{ displayName: 'x' } as any]);
     component.selectUser({ id: 'u1', displayName: 'Name' } as any);
 
     expect(component.userText).toBe('Name');
-    expect(component.loginSearchResults).toEqual([]);
+    expect(component.loginSearchResults()).toEqual([]);
     expect(component.filterLogins).toHaveBeenCalled();
   });
 
@@ -265,12 +266,12 @@ describe('LoginsComponent', () => {
     await createComponent();
     spyOn(component, 'filterLogins').and.stub();
 
-    component.loginDeviceSearchResults = [{ uid: 'x' } as any];
+    component.loginDeviceSearchResults.set([{ uid: 'x' } as any]);
     component.selectDevice({ id: 'd1', uid: 'UID1' } as any);
 
     expect(component.device).toEqual({ id: 'd1', uid: 'UID1' } as any);
     expect(component.deviceText).toBe('UID1');
-    expect(component.loginDeviceSearchResults).toEqual([]);
+    expect(component.loginDeviceSearchResults()).toEqual([]);
     expect(component.filterLogins).toHaveBeenCalled();
   });
 
@@ -279,5 +280,37 @@ describe('LoginsComponent', () => {
 
     expect(component.displayUser(null as any)).toBe('');
     expect(component.displayUser({} as any)).toBe('');
+  });
+});
+
+describe('LoginsComponent without zone.js', () => {
+  it('should render logins that load asynchronously', async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoginsComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        {
+          provide: LoginService,
+          useValue: {
+            query: () => of({
+              logins: [{ id: 'login-1', timestamp: new Date().toISOString(), user: { id: 'user-1', displayName: 'User One' } }],
+              next: null,
+              prev: null
+            }).pipe(delay(0))
+          }
+        },
+        { provide: UserPagingService, useValue: { constructDefault: () => ({ all: {} }), refresh: () => of(null), users: () => [] } },
+        { provide: DeviceService, useValue: { constructDefault: () => ({ all: {} }), refresh: () => of(null), devices: () => [] } }
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(LoginsComponent);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.textContent).toContain('User One');
+    expect(fixture.nativeElement.textContent).not.toContain('No login history found');
   });
 });

@@ -15,7 +15,7 @@ import { UserDetailsComponent } from './user-details/user-details.component';
 import { UserDetailsViewComponent } from './user-details/user-details-view/user-details-view.component';
 import { UserDetailsEditComponent } from './user-details/user-details-edit/user-details-edit.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
-import { LoginsModule } from '../admin-logins/admin-logins.module';
+import { LoginsComponent } from '../admin-logins/admin-logins.component';
 import { UserDashboardComponent } from './dashboard/user-dashboard.component';
 import { UserAvatarModule } from 'src/app/user/user-avatar/user-avatar.module';
 import { CreateUserModalComponent } from './create-user/create-user.component';
@@ -48,7 +48,7 @@ import { RouterModule } from '@angular/router';
     MatListModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    LoginsModule,
+    LoginsComponent,
     UserAvatarModule,
     MatFormFieldModule,
     MatInputModule,
