@@ -16,7 +16,7 @@ describe('AdminAuthenticationLocalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationLocalComponent);
     component = fixture.componentInstance;
-    component.strategy = {
+    fixture.componentRef.setInput('strategy', {
       enabled: true,
       name: 'local',
       type: 'local',
@@ -26,7 +26,7 @@ describe('AdminAuthenticationLocalComponent', () => {
         accountLock: { enabled: false },
         passwordPolicy: {}
       }
-    };
+    });
     fixture.detectChanges();
   });
 

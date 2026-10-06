@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit, input, output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,6 @@ interface RACComparison {
     selector: 'admin-authentication-saml',
     templateUrl: './admin-authentication-saml.component.html',
     styleUrls: ['./admin-authentication-saml.component.scss'],
-    standalone: true,
     imports: [
       MatFormFieldModule,
       FormsModule,
@@ -33,17 +32,17 @@ interface RACComparison {
 })
 export class AdminAuthenticationSAMLComponent implements OnInit {
 
-  @Input() strategy: Strategy
-  @Input() editable = true
-  @Output() strategyDirty = new EventEmitter<boolean>();
+  readonly strategy = input.required<Strategy>();
+  readonly editable = input(true);
+  readonly strategyDirty = output<boolean>();
 
-  signatureAlgorithms: SignatureAlgorithm[] = [
+  readonly signatureAlgorithms: SignatureAlgorithm[] = [
     {value: 'sha1', viewValue: 'SHA-1'},
     {value: 'sha256', viewValue: 'SHA-256'},
     {value: 'sha512', viewValue: 'SHA-512'}
   ];
 
-  racs: RACComparison[] = [
+  readonly racs: RACComparison[] = [
     {value: 'exact', viewValue: 'Exact'},
     {value: 'minimum', viewValue: 'Minimum'},
     {value: 'maximum', viewValue: 'Maximum'},
@@ -51,17 +50,17 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    if (!this.strategy.settings.headers) {
-      this.strategy.settings.headers = {};
+    if (!this.strategy().settings.headers) {
+      this.strategy().settings.headers = {};
     }
 
-    if (!this.strategy.settings.profile) {
-      this.strategy.settings.profile = {};
+    if (!this.strategy().settings.profile) {
+      this.strategy().settings.profile = {};
     }
   }
 
   setDirty(isDirty: boolean): void {
-    this.strategy.isDirty = isDirty;
+    this.strategy().isDirty = isDirty;
     this.strategyDirty.emit(isDirty);
   }
 }

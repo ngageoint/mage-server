@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { Strategy } from '../../../admin-authentication/admin-settings.model';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,6 @@ import { FormsModule } from '@angular/forms';
     selector: 'password-policy',
     templateUrl: 'password-policy.component.html',
     styleUrls: ['./password-policy.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
         MatSlideToggleModule,
@@ -22,12 +21,11 @@ import { FormsModule } from '@angular/forms';
     ]
 })
 export class PasswordPolicyComponent {
-    // No signal needed - strategy is never reassigned
-    @Input() strategy: Strategy;
-    @Output() strategyDirty = new EventEmitter<boolean>();
+    readonly strategy = input.required<Strategy>();
+    readonly strategyDirty = output<boolean>();
 
     setDirty(isDirty: boolean): void {
-        this.strategy.isDirty = isDirty;
+        this.strategy().isDirty = isDirty;
         this.strategyDirty.emit(isDirty);
     }
 }
