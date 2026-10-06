@@ -395,16 +395,19 @@ export class ObservationProcessor {
 		const config = await this.updateConfig();
 		if (this._isRunning) {
 			if (config.enabled && this._layerProcessors.length > 0) {
+				const activeEvents = await this._eventRepo.findActiveEvents();
+				const activeLayerProcessors = this._layerProcessors.filter(layerProcessor =>
+					activeEvents.some(event => layerProcessor.layerInfo.hasEvent(event.id))
+				);
 				this._console.info('ArcGIS plugin checking for any pending updates or adds');
 				const pendingPromises = [];
-				for (const layerProcessor of this._layerProcessors) {
+				for (const layerProcessor of activeLayerProcessors) {
 					pendingPromises.push(layerProcessor.processPendingUpdates());
 				}
 				await Promise.all(pendingPromises);
 				this._console.info('ArcGIS plugin processing new observations...');
-				const activeEvents = await this._eventRepo.findActiveEvents();
 				const enabledEvents = activeEvents.filter(event =>
-					this._layerProcessors.some(layerProcessor =>
+					activeLayerProcessors.some(layerProcessor =>
 						layerProcessor.layerInfo.hasEvent(event.id)
 					)
 				);
