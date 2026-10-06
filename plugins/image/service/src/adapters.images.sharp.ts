@@ -1,5 +1,5 @@
 import { ImageContent, ImageDescriptor, ImageService } from './processor'
-import sharp, { OutputInfo } from 'sharp'
+import sharp, { OutputInfo, Sharp, SharpOptions } from 'sharp'
 
 
 function ImageDescriptor(info: OutputInfo): Required<ImageDescriptor> {
@@ -15,7 +15,7 @@ function ImageDescriptor(info: OutputInfo): Required<ImageDescriptor> {
 
 class ImageOperation {
 
-  static apply(transform: sharp.Sharp): Promise<Required<ImageDescriptor> | Error> & { to: (input: NodeJS.ReadableStream, output: NodeJS.WritableStream) => any } {
+  static apply(transform: Sharp): Promise<Required<ImageDescriptor> | Error> & { to: (input: NodeJS.ReadableStream, output: NodeJS.WritableStream) => any } {
 
     const state = {
       resolve: ((x: Required<ImageDescriptor> | Error) => void(0) as any),
@@ -51,7 +51,7 @@ class ImageOperation {
   }
 }
 
-const defaultOptions: sharp.SharpOptions = {
+const defaultOptions: SharpOptions = {
   failOn: 'error'
 }
 
