@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
-import { BehaviorSubject, of, throwError } from 'rxjs'
+import { of, throwError } from 'rxjs'
 
 import { TeamDetailsComponent } from './team-details.component'
 import { Team, TeamMemberRole, TeamService } from '@ngageoint/mage.web-core-lib/team'
@@ -12,14 +12,12 @@ import { SessionService } from 'mage-web-app/http/session.service'
 import { User as CoreUser } from '@ngageoint/mage.web-core-lib/user'
 import { DeleteTeamComponent } from '../delete-team/delete-team.component'
 import { SearchModalComponent } from '../../search-modal/search-modal.component'
+import { RouteReuse } from '../../../route-reuse.strategy'
 
 describe('TeamDetailsComponent', () => {
   let component: TeamDetailsComponent
   let fixture: ComponentFixture<TeamDetailsComponent>
 
-  let paramMap$: BehaviorSubject<any>
-
-  let mockRoute: any
   let mockRouter: jasmine.SpyObj<Router>
   let mockDialog: jasmine.SpyObj<MatDialog>
   let mockSessionService: { user: any, hasPermission: jasmine.Spy }
@@ -63,13 +61,14 @@ describe('TeamDetailsComponent', () => {
     description: 'Test Event Description'
   }
 
-  beforeEach(waitForAsync(() => {
-    paramMap$ = new BehaviorSubject(convertToParamMap({ teamId: 'team123' }))
-    mockRoute = {
-      paramMap: paramMap$.asObservable(),
-      snapshot: { paramMap: convertToParamMap({ teamId: 'team123' }) }
-    }
+  // Runs change detection so effects and resources run, then waits for their loads to finish
+  const load = async () => {
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
+  }
 
+  beforeEach(async () => {
     mockRouter = jasmine.createSpyObj<Router>('Router', ['navigate', 'navigateByUrl'])
     mockDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
 
@@ -104,10 +103,10 @@ describe('TeamDetailsComponent', () => {
       of({ items: [mockEvent], totalCount: 1 } as any)
     )
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [TeamDetailsComponent, NoopAnimationsModule, MatSnackBarModule],
       providers: [
-        { provide: ActivatedRoute, useValue: mockRoute },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ teamId: 'team123' }) } } },
         { provide: Router, useValue: mockRouter },
         { provide: MatDialog, useValue: mockDialog },
         { provide: SessionService, useValue: mockSessionService },
@@ -115,199 +114,195 @@ describe('TeamDetailsComponent', () => {
         { provide: AdminEventsService, useValue: mockEventsService }
       ]
     }).compileComponents()
-  }))
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TeamDetailsComponent)
     component = fixture.componentInstance
   })
 
-  it('should create', () => {
-    expect(component).toBeTruthy()
-    expect(component.hasUpdatePermission()).toBeFalse()
-    expect(component.hasDeletePermission()).toBeFalse()
-  })
-
-  it('should load team + members + events on init', () => {
-    fixture.detectChanges()
-
-    expect(component.teamId()).toBe('team123')
-    expect(mockTeamsService.getTeamById).toHaveBeenCalledWith('team123')
-    expect(mockTeamsService.getMembers).toHaveBeenCalled()
-    expect(mockEventsService.getEvents).toHaveBeenCalled()
-    expect(component.team()).toEqual(mockTeam)
-  })
-
-  it('should render the team, its members with roles, and its events', () => {
-    fixture.detectChanges()
-
-    const element: HTMLElement = fixture.nativeElement
-    expect(element.querySelector('.team-name')?.textContent).toContain('Test Team')
-    expect(element.textContent).toContain('Test User')
-    expect(element.textContent).toContain('Test Event')
-    expect(element.querySelector('.user-role-badge')?.classList).toContain('role-owner')
-  })
-
-  it('should build breadcrumbs from the team', () => {
-    fixture.detectChanges()
-
-    expect(component.breadcrumbs().map((crumb) => crumb.title)).toEqual(['Teams', 'Test Team'])
-  })
-
-  it('should set permissions via global role permissions', () => {
-    mockSessionService.user = mockMyselfWithGlobalPerms
-
-    fixture.detectChanges()
-
-    expect(component.hasUpdatePermission()).toBeTrue()
-    expect(component.hasDeletePermission()).toBeTrue()
-  })
-
-  it('should set permissions via ACL permissions when global perms missing', () => {
-    mockSessionService.user = mockMyselfNoGlobalPerms
-
-    fixture.detectChanges()
-
-    expect(component.hasUpdatePermission()).toBeTrue()
-    expect(component.hasDeletePermission()).toBeTrue()
-  })
-
-  it('should deny permissions when no global perms and no ACL match', () => {
-    mockSessionService.user = { id: 'someoneElse', role: { permissions: [] } }
-    mockTeamsService.getTeamById.and.returnValue(
-      of({ ...mockTeam, acl: {} } as any)
-    )
-
-    fixture.detectChanges()
-
-    expect(component.hasUpdatePermission()).toBeFalse()
-    expect(component.hasDeletePermission()).toBeFalse()
-  })
-
-  describe('getMembers', () => {
-    beforeEach(() => {
-      component.team.set(mockTeam)
+  describe('loading', () => {
+    it('should create', () => {
+      expect(component).toBeTruthy()
+      expect(component.hasUpdatePermission()).toBeFalse()
+      expect(component.hasDeletePermission()).toBeFalse()
     })
 
-    it('should fetch members and update the list + counts', () => {
-      mockTeamsService.getMembers.and.returnValue(
-        of({ items: [mockMember], totalCount: 1 } as any)
+    it('should load the team, members, and events for the route id', async () => {
+      await load()
+
+      expect(component.teamId).toBe('team123')
+      expect(mockTeamsService.getTeamById).toHaveBeenCalledWith('team123')
+      expect(mockTeamsService.getMembers).toHaveBeenCalledWith({ teamId: 'team123', pageIndex: 0, pageSize: 5, term: '' })
+      expect(mockEventsService.getEvents).toHaveBeenCalledWith({ teamId: 'team123', term: '', page: 0, page_size: 5 })
+      expect(component.team()).toEqual(mockTeam)
+    })
+
+    it('should render the team, its members with roles, and its events', async () => {
+      await load()
+
+      const element: HTMLElement = fixture.nativeElement
+      expect(element.querySelector('.team-name')?.textContent).toContain('Test Team')
+      expect(element.textContent).toContain('Test User')
+      expect(element.textContent).toContain('Test Event')
+      expect(element.querySelector('.user-role-badge')?.classList).toContain('role-owner')
+    })
+
+    it('should build breadcrumbs from the team', async () => {
+      await load()
+
+      expect(component.breadcrumbs().map((crumb) => crumb.title)).toEqual(['Teams', 'Test Team'])
+    })
+
+    it('should show an error state when the team fails to load', async () => {
+      mockTeamsService.getTeamById.and.returnValue(throwError(() => new Error('Load failed')))
+
+      await load()
+
+      expect(component.team()).toBeNull()
+      expect(component.teamLoadError()).toBeTruthy()
+      expect(fixture.nativeElement.querySelector('.team-error')?.textContent).toContain('Failed to load team')
+      expect(fixture.nativeElement.querySelector('.team-page')).toBeNull()
+    })
+
+    it('should load the team again on retry', async () => {
+      mockTeamsService.getTeamById.and.returnValue(throwError(() => new Error('Load failed')))
+      await load()
+
+      mockTeamsService.getTeamById.and.returnValue(of(mockTeam))
+      component.reloadTeam()
+      await load()
+
+      expect(component.teamLoadError()).toBeFalsy()
+      expect(component.team()).toEqual(mockTeam)
+      expect(fixture.nativeElement.querySelector('.team-error')).toBeNull()
+      expect(fixture.nativeElement.querySelector('.team-page')).not.toBeNull()
+    })
+
+    it('should get a new component instead of being reused when the team id changes', () => {
+      expect(TeamDetailsComponent.routeReuse).toBe(RouteReuse.RecreateOnParamChange)
+    })
+  })
+
+  describe('permissions', () => {
+    it('should set permissions via global role permissions', async () => {
+      mockSessionService.user = mockMyselfWithGlobalPerms
+
+      await load()
+
+      expect(component.hasUpdatePermission()).toBeTrue()
+      expect(component.hasDeletePermission()).toBeTrue()
+    })
+
+    it('should set permissions via ACL permissions when global perms missing', async () => {
+      mockSessionService.user = mockMyselfNoGlobalPerms
+
+      await load()
+
+      expect(component.hasUpdatePermission()).toBeTrue()
+      expect(component.hasDeletePermission()).toBeTrue()
+    })
+
+    it('should deny permissions when no global perms and no ACL match', async () => {
+      mockSessionService.user = { id: 'someoneElse', role: { permissions: [] } }
+      mockTeamsService.getTeamById.and.returnValue(
+        of({ ...mockTeam, acl: {} } as any)
       )
 
-      component.getMembers()
+      await load()
 
-      expect(mockTeamsService.getMembers).toHaveBeenCalledWith({
-        teamId: mockTeam.id,
-        term: component.memberSearchTerm(),
-        pageIndex: component.membersPageIndex(),
-        pageSize: component.membersPageSize()
-      })
+      expect(component.hasUpdatePermission()).toBeFalse()
+      expect(component.hasDeletePermission()).toBeFalse()
+    })
+  })
+
+  describe('members', () => {
+    it('should show the members page', async () => {
+      await load()
+
+      expect(component.membersPage().items).toEqual([mockMember])
+      expect(component.membersPage().totalCount).toBe(1)
       expect(component.loadingMembers()).toBeFalse()
-      expect(component.members()).toEqual([mockMember])
-      expect(component.totalMembers()).toBe(1)
     })
 
-    it('should handle error fetching members by resetting data', () => {
-      mockTeamsService.getMembers.and.returnValue(
-        throwError(() => new Error('fail'))
-      )
+    it('should show an empty page when members fail to load', async () => {
+      mockTeamsService.getMembers.and.returnValue(throwError(() => new Error('fail')))
 
-      component.getMembers()
+      await load()
 
+      expect(component.membersPage().items).toEqual([])
+      expect(component.membersPage().totalCount).toBe(0)
       expect(component.loadingMembers()).toBeFalse()
-      expect(component.members()).toEqual([])
-      expect(component.totalMembers()).toBe(0)
     })
 
-    it('should return early if team not loaded', () => {
-      component.team.set(null)
-      component.getMembers()
-      expect(mockTeamsService.getMembers).not.toHaveBeenCalled()
-    })
-  })
+    it('should reload members for a page change', async () => {
+      await load()
 
-  describe('getTeamEvents', () => {
-    it('should fetch events and update the list + counts', () => {
-      component.teamId.set('team123')
-      mockEventsService.getEvents.and.returnValue(
-        of({ items: [mockEvent], totalCount: 1 } as any)
-      )
-
-      component.getTeamEvents()
-
-      expect(mockEventsService.getEvents).toHaveBeenCalledWith({
-        term: component.eventSearchTerm(),
-        teamId: component.teamId(),
-        page: component.eventsPageIndex(),
-        page_size: component.eventsPageSize()
-      })
-      expect(component.loadingEvents()).toBeFalse()
-      expect(component.events()).toEqual([mockEvent])
-      expect(component.totalEvents()).toBe(1)
-    })
-
-    it('should handle error fetching events by resetting data', () => {
-      component.teamId.set('team123')
-      mockEventsService.getEvents.and.returnValue(
-        throwError(() => new Error('fail'))
-      )
-
-      component.getTeamEvents()
-
-      expect(component.loadingEvents()).toBeFalse()
-      expect(component.events()).toEqual([])
-      expect(component.totalEvents()).toBe(0)
-    })
-
-    it('should return early if teamId missing', () => {
-      component.teamId.set('')
-      component.getTeamEvents()
-      expect(mockEventsService.getEvents).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('pagination + search', () => {
-    beforeEach(() => {
-      component.team.set(mockTeam)
-      component.teamId.set('team123')
-      spyOn(component, 'getMembers')
-      spyOn(component, 'getTeamEvents')
-    })
-
-    it('onMembersPageChange should update pagination and reload', () => {
       component.onMembersPageChange({ pageIndex: 2, pageSize: 10 } as any)
+      await load()
+
       expect(component.membersPageIndex()).toBe(2)
       expect(component.membersPageSize()).toBe(10)
-      expect(component.getMembers).toHaveBeenCalled()
+      expect(mockTeamsService.getMembers).toHaveBeenCalledWith({ teamId: 'team123', pageIndex: 2, pageSize: 10, term: '' })
     })
 
-    it('onMembersSearchChange should reset page and reload', () => {
+    it('should reload members for a new search term from the first page', async () => {
+      await load()
       component.membersPageIndex.set(5)
+
       component.onMembersSearchChange('abc')
+      await load()
+
       expect(component.membersPageIndex()).toBe(0)
       expect(component.memberSearchTerm()).toBe('abc')
-      expect(component.getMembers).toHaveBeenCalled()
+      expect(mockTeamsService.getMembers).toHaveBeenCalledWith({ teamId: 'team123', pageIndex: 0, pageSize: 5, term: 'abc' })
+    })
+  })
+
+  describe('events', () => {
+    it('should show the events page', async () => {
+      await load()
+
+      expect(component.eventsPage().items).toEqual([mockEvent])
+      expect(component.eventsPage().totalCount).toBe(1)
+      expect(component.loadingEvents()).toBeFalse()
     })
 
-    it('onEventsPageChange should update pagination and reload', () => {
+    it('should show an empty page when events fail to load', async () => {
+      mockEventsService.getEvents.and.returnValue(throwError(() => new Error('fail')))
+
+      await load()
+
+      expect(component.eventsPage().items).toEqual([])
+      expect(component.eventsPage().totalCount).toBe(0)
+      expect(component.loadingEvents()).toBeFalse()
+    })
+
+    it('should reload events for a page change', async () => {
+      await load()
+
       component.onEventsPageChange({ pageIndex: 1, pageSize: 25 } as any)
+      await load()
+
       expect(component.eventsPageIndex()).toBe(1)
       expect(component.eventsPageSize()).toBe(25)
-      expect(component.getTeamEvents).toHaveBeenCalled()
+      expect(mockEventsService.getEvents).toHaveBeenCalledWith({ teamId: 'team123', term: '', page: 1, page_size: 25 })
     })
 
-    it('onTeamEventSearchChange should reset page and reload', () => {
+    it('should reload events for a new search term from the first page', async () => {
+      await load()
       component.eventsPageIndex.set(3)
+
       component.onTeamEventSearchChange('zzz')
+      await load()
+
       expect(component.eventsPageIndex()).toBe(0)
       expect(component.eventSearchTerm()).toBe('zzz')
-      expect(component.getTeamEvents).toHaveBeenCalled()
+      expect(mockEventsService.getEvents).toHaveBeenCalledWith({ teamId: 'team123', term: 'zzz', page: 0, page_size: 5 })
     })
   })
 
   describe('editing team details', () => {
-    beforeEach(() => {
-      component.team.set(mockTeam)
+    beforeEach(async () => {
+      await load()
     })
 
     it('editTeamDetails should open the edit dialog with the current team', () => {
@@ -328,28 +323,29 @@ describe('TeamDetailsComponent', () => {
       component.editTeamDetails()
 
       expect(component.team()).toEqual(updated as any)
-      expect(component.breadcrumbs().length).toBe(2)
       expect(component.breadcrumbs()[1].title).toBe('Updated Team')
+      expect(mockTeamsService.getTeamById).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('member management', () => {
-    beforeEach(() => {
-      component.team.set(mockTeam)
+    beforeEach(async () => {
       mockTeamsService.addUserToTeam.and.returnValue(of({} as any))
       mockTeamsService.removeMember.and.returnValue(of({} as any))
       mockTeamsService.getNonMembers.and.returnValue(
         of({ items: [mockMember], totalCount: 1 } as any)
       )
-      spyOn(component, 'getMembers')
+      await load()
+      mockTeamsService.getMembers.calls.reset()
     })
 
-    it('addMember should open SearchModal and add selected user', () => {
+    it('addMember should open SearchModal, add the selected user, and reload members', async () => {
       mockDialog.open.and.returnValue({
         afterClosed: () => of({ selectedItem: mockMember })
       } as any)
 
       component.addMember()
+      await load()
 
       expect(mockDialog.open).toHaveBeenCalledWith(
         SearchModalComponent,
@@ -359,7 +355,7 @@ describe('TeamDetailsComponent', () => {
         mockTeam.id,
         mockMember
       )
-      expect(component.getMembers).toHaveBeenCalled()
+      expect(mockTeamsService.getMembers).toHaveBeenCalled()
     })
 
     it('addMember should do nothing if dialog returns no selection', () => {
@@ -372,22 +368,35 @@ describe('TeamDetailsComponent', () => {
       expect(mockTeamsService.addUserToTeam).not.toHaveBeenCalled()
     })
 
-    it('removeMember should stop propagation and call service', () => {
+    it('addMember should log an error when adding fails', () => {
+      mockDialog.open.and.returnValue({
+        afterClosed: () => of({ selectedItem: mockMember })
+      } as any)
+      mockTeamsService.addUserToTeam.and.returnValue(throwError(() => new Error('fail')))
+      spyOn(console, 'error')
+
+      component.addMember()
+
+      expect(console.error).toHaveBeenCalledWith('Error adding member:', jasmine.any(Error))
+    })
+
+    it('removeMember should stop propagation, remove the member, and reload members', async () => {
       const ev = jasmine.createSpyObj<MouseEvent>('MouseEvent', [
         'stopPropagation'
       ])
       spyOn((component as any).snackBar, 'open').and.returnValue({
-        onAction: () => of(undefined)
+        onAction: () => of()
       } as any)
 
       component.removeMember(ev, mockMember)
+      await load()
 
       expect(ev.stopPropagation).toHaveBeenCalled()
       expect(mockTeamsService.removeMember).toHaveBeenCalledWith(
         mockTeam.id,
         mockMember.id
       )
-      expect(component.getMembers).toHaveBeenCalled()
+      expect(mockTeamsService.getMembers).toHaveBeenCalled()
     })
 
     it('removeMember should restore the member when undo is clicked', () => {
@@ -407,19 +416,6 @@ describe('TeamDetailsComponent', () => {
       )
     })
 
-    it('addMember should log an error when adding fails', () => {
-      mockDialog.open.and.returnValue({
-        afterClosed: () => of({ selectedItem: mockMember })
-      } as any)
-      mockTeamsService.addUserToTeam.and.returnValue(throwError(() => new Error('fail')))
-      spyOn(console, 'error')
-
-      component.addMember()
-
-      expect(console.error).toHaveBeenCalledWith('Error adding member:', jasmine.any(Error))
-      expect(component.getMembers).not.toHaveBeenCalled()
-    })
-
     it('removeMember should log an error when removing fails', () => {
       mockTeamsService.removeMember.and.returnValue(throwError(() => new Error('fail')))
       spyOn(console, 'error')
@@ -427,7 +423,23 @@ describe('TeamDetailsComponent', () => {
       component.removeMember(new MouseEvent('click'), mockMember)
 
       expect(console.error).toHaveBeenCalledWith('Error removing member:', jasmine.any(Error))
-      expect(component.getMembers).not.toHaveBeenCalled()
+    })
+
+    it('getUserRole should return the role from the team ACL, or GUEST', () => {
+      expect(component.getUserRole(mockMember)).toBe('OWNER')
+      expect(component.getUserRole({ id: 'nobody' } as any)).toBe('GUEST')
+    })
+
+    it('updateUserRole should set the returned team without reloading members', async () => {
+      const updated = { ...mockTeam, acl: { user123: { role: TeamMemberRole.MANAGER, permissions: ['update'] } } }
+      mockTeamsService.updateUserRole.and.returnValue(of(updated as any))
+
+      component.updateUserRole(mockMember, 'MANAGER')
+      await load()
+
+      expect(mockTeamsService.updateUserRole).toHaveBeenCalledWith(mockTeam.id, mockMember.id, 'MANAGER')
+      expect(component.getUserRole(mockMember)).toBe('MANAGER')
+      expect(mockTeamsService.getMembers).not.toHaveBeenCalled()
     })
 
     it('updateUserRole should log an error and keep the role when updating fails', () => {
@@ -439,39 +451,23 @@ describe('TeamDetailsComponent', () => {
       expect(console.error).toHaveBeenCalledWith('Error updating member role:', jasmine.any(Error))
       expect(component.getUserRole(mockMember)).toBe('OWNER')
     })
-
-    it('getUserRole should return the role from the team ACL, or GUEST', () => {
-      expect(component.getUserRole(mockMember)).toBe('OWNER')
-      expect(component.getUserRole({ id: 'nobody' } as any)).toBe('GUEST')
-    })
-
-    it('updateUserRole should set the returned team without reloading members', () => {
-      const updated = { ...mockTeam, acl: { user123: { role: TeamMemberRole.MANAGER, permissions: ['update'] } } }
-      mockTeamsService.updateUserRole.and.returnValue(of(updated as any))
-
-      component.updateUserRole(mockMember, 'MANAGER')
-
-      expect(mockTeamsService.updateUserRole).toHaveBeenCalledWith(mockTeam.id, mockMember.id, 'MANAGER')
-      expect(component.getUserRole(mockMember)).toBe('MANAGER')
-      expect(component.getMembers).not.toHaveBeenCalled()
-    })
   })
 
   describe('event management', () => {
-    beforeEach(() => {
-      component.team.set(mockTeam)
-      component.teamId.set(mockTeam.id)
+    beforeEach(async () => {
       mockEventsService.addTeamToEvent.and.returnValue(of({} as any))
       mockEventsService.removeEventFromTeam.and.returnValue(of({} as any))
-      spyOn(component, 'getTeamEvents')
+      await load()
+      mockEventsService.getEvents.calls.reset()
     })
 
-    it('addEventToTeam should open SearchModal and add selected event', () => {
+    it('addEventToTeam should open SearchModal, add the selected event, and reload events', async () => {
       mockDialog.open.and.returnValue({
         afterClosed: () => of({ selectedItem: mockEvent })
       } as any)
 
       component.addEventToTeam()
+      await load()
 
       expect(mockDialog.open).toHaveBeenCalledWith(
         SearchModalComponent,
@@ -481,7 +477,7 @@ describe('TeamDetailsComponent', () => {
         String(mockEvent.id),
         mockTeam
       )
-      expect(component.getTeamEvents).toHaveBeenCalled()
+      expect(mockEventsService.getEvents).toHaveBeenCalled()
     })
 
     it('addEventToTeam should log an error when adding fails', () => {
@@ -494,35 +490,25 @@ describe('TeamDetailsComponent', () => {
       component.addEventToTeam()
 
       expect(console.error).toHaveBeenCalledWith('Error adding event:', jasmine.any(Error))
-      expect(component.getTeamEvents).not.toHaveBeenCalled()
     })
 
-    it('removeEventFromTeam should log an error when removing fails', () => {
-      mockEventsService.removeEventFromTeam.and.returnValue(throwError(() => new Error('fail')))
-      spyOn(console, 'error')
-
-      component.removeEventFromTeam(new MouseEvent('click'), mockEvent)
-
-      expect(console.error).toHaveBeenCalledWith('Error removing event:', jasmine.any(Error))
-      expect(component.getTeamEvents).not.toHaveBeenCalled()
-    })
-
-    it('removeEventFromTeam should stop propagation and call service', () => {
+    it('removeEventFromTeam should stop propagation, remove the event, and reload events', async () => {
       const ev = jasmine.createSpyObj<MouseEvent>('MouseEvent', [
         'stopPropagation'
       ])
       spyOn((component as any).snackBar, 'open').and.returnValue({
-        onAction: () => of(undefined)
+        onAction: () => of()
       } as any)
 
       component.removeEventFromTeam(ev, mockEvent)
+      await load()
 
       expect(ev.stopPropagation).toHaveBeenCalled()
       expect(mockEventsService.removeEventFromTeam).toHaveBeenCalledWith(
         String(mockEvent.id),
         String(mockTeam.id)
       )
-      expect(component.getTeamEvents).toHaveBeenCalled()
+      expect(mockEventsService.getEvents).toHaveBeenCalled()
     })
 
     it('removeEventFromTeam should restore the event when undo is clicked', () => {
@@ -541,11 +527,20 @@ describe('TeamDetailsComponent', () => {
         mockTeam
       )
     })
+
+    it('removeEventFromTeam should log an error when removing fails', () => {
+      mockEventsService.removeEventFromTeam.and.returnValue(throwError(() => new Error('fail')))
+      spyOn(console, 'error')
+
+      component.removeEventFromTeam(new MouseEvent('click'), mockEvent)
+
+      expect(console.error).toHaveBeenCalledWith('Error removing event:', jasmine.any(Error))
+    })
   })
 
   describe('deleteTeam', () => {
-    beforeEach(() => {
-      component.team.set(mockTeam)
+    beforeEach(async () => {
+      await load()
       mockRouter.navigate.and.returnValue(Promise.resolve(true))
     })
 

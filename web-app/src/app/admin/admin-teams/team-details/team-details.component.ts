@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
+import { Component, DestroyRef, OnDestroy, OnInit, TemplateRef, ViewChild, computed, effect, inject, linkedSignal, signal } from '@angular/core'
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MatButtonModule } from '@angular/material/button'
@@ -28,8 +29,11 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model'
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service'
 import { SessionService } from 'mage-web-app/http/session.service'
 import { MageEvent } from 'mage-web-app/entities/event/entities.event'
+import { RouteReuse } from '../../../route-reuse.strategy'
 
 const TEAMS_BREADCRUMB: AdminBreadcrumb = { title: 'Teams', icon: 'groups', route: ['/admin/teams'] }
+
+const EMPTY_PAGE: PageOf<never> = { items: [], totalCount: 0, pageSize: 0, pageIndex: 0 }
 
 @Component({
     selector: 'mage-team-details',
@@ -50,20 +54,32 @@ const TEAMS_BREADCRUMB: AdminBreadcrumb = { title: 'Teams', icon: 'groups', rout
     ]
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
-  private route: ActivatedRoute = inject(ActivatedRoute)
-  private router: Router = inject(Router)
-  private dialog: MatDialog = inject(MatDialog)
-  private snackBar: MatSnackBar = inject(MatSnackBar)
-  private sessionService: SessionService = inject(SessionService)
-  private teamService: TeamService = inject(TeamService)
-  private eventsService: AdminEventsService = inject(AdminEventsService)
-  private breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService)
+
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange
+
+  private readonly route: ActivatedRoute = inject(ActivatedRoute)
+  private readonly router: Router = inject(Router)
+  private readonly dialog: MatDialog = inject(MatDialog)
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar)
+  private readonly destroyRef: DestroyRef = inject(DestroyRef)
+  private readonly sessionService: SessionService = inject(SessionService)
+  private readonly teamService: TeamService = inject(TeamService)
+  private readonly eventsService: AdminEventsService = inject(AdminEventsService)
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService)
+
+  private takeUntilDestroyed = <T>() => takeUntilDestroyed<T>(this.destroyRef)
 
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>
 
-  teamId = signal('')
-  team = signal<Team | null>(null)
+  readonly teamId: string = this.route.snapshot.paramMap.get('teamId')
+
+  private teamResource = rxResource({
+    stream: () => this.teamService.getTeamById(this.teamId)
+  })
+
+  team = linkedSignal<Team | null>(() => this.teamResource.hasValue() ? this.teamResource.value() : null)
+  teamLoadError = this.teamResource.error
 
   private myAclPermissions = computed(() => {
     const myId = this.sessionService.user?.id
@@ -82,19 +98,40 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   readonly pageSizeOptions = [5, 10, 25]
 
-  members = signal<User[]>([])
-  totalMembers = signal(0)
-  loadingMembers = signal(true)
   membersPageIndex = signal(0)
   membersPageSize = signal(5)
   memberSearchTerm = signal('')
 
-  events = signal<MageEvent[]>([])
-  totalEvents = signal(0)
-  loadingEvents = signal(true)
+  members = rxResource({
+    params: () => ({
+      pageIndex: this.membersPageIndex(),
+      pageSize: this.membersPageSize(),
+      term: this.memberSearchTerm()
+    }),
+    stream: ({ params }) => this.teamService.getMembers({ teamId: this.teamId, ...params })
+  })
+  membersPage = computed<PageOf<User>>(() => this.members.hasValue() ? this.members.value() : EMPTY_PAGE)
+  loadingMembers = this.members.isLoading
+
   eventsPageIndex = signal(0)
   eventsPageSize = signal(5)
   eventSearchTerm = signal('')
+
+  events = rxResource({
+    params: () => ({
+      page: this.eventsPageIndex(),
+      pageSize: this.eventsPageSize(),
+      term: this.eventSearchTerm()
+    }),
+    stream: ({ params }) => this.eventsService.getEvents({
+      teamId: this.teamId,
+      term: params.term,
+      page: params.page,
+      page_size: params.pageSize
+    })
+  })
+  eventsPage = computed<PageOf<MageEvent>>(() => this.events.hasValue() ? this.events.value() : EMPTY_PAGE)
+  loadingEvents = this.events.isLoading
 
   constructor() {
     effect(() => this.breadcrumbService.setBreadcrumbs(this.breadcrumbs()))
@@ -102,14 +139,6 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.breadcrumbService.setActions(this.breadcrumbActions)
-
-    this.route.paramMap.subscribe((params) => {
-      this.teamId.set(params.get('teamId') || '')
-      if (!this.teamId()) {
-        return
-      }
-      this.loadTeam()
-    })
   }
 
   ngOnDestroy(): void {
@@ -117,80 +146,18 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.snackBar.dismiss()
   }
 
-  private loadTeam(): void {
-    this.teamService.getTeamById(this.teamId()).subscribe((team: Team) => {
-      this.team.set(team)
-      this.getMembers()
-      this.getTeamEvents()
-    })
-  }
-
-  getMembers(): void {
-    const teamId = this.team()?.id
-    if (!teamId) {
-      return
-    }
-
-    this.loadingMembers.set(true)
-    this.teamService
-      .getMembers({
-        teamId,
-        term: this.memberSearchTerm(),
-        pageIndex: this.membersPageIndex(),
-        pageSize: this.membersPageSize()
-      })
-      .subscribe({
-        next: (results) => {
-          this.loadingMembers.set(false)
-          this.members.set(results.items || [])
-          this.totalMembers.set(results.totalCount || 0)
-        },
-        error: () => {
-          this.loadingMembers.set(false)
-          this.members.set([])
-          this.totalMembers.set(0)
-        }
-      })
-  }
-
-  getTeamEvents(): void {
-    const teamId = this.teamId()
-    if (!teamId) {
-      return
-    }
-
-    this.loadingEvents.set(true)
-    this.eventsService
-      .getEvents({
-        term: this.eventSearchTerm(),
-        teamId,
-        page: this.eventsPageIndex(),
-        page_size: this.eventsPageSize()
-      })
-      .subscribe({
-        next: (results) => {
-          this.loadingEvents.set(false)
-          this.events.set(results.items || [])
-          this.totalEvents.set(results.totalCount || 0)
-        },
-        error: () => {
-          this.loadingEvents.set(false)
-          this.events.set([])
-          this.totalEvents.set(0)
-        }
-      })
+  reloadTeam(): void {
+    this.teamResource.reload()
   }
 
   onMembersPageChange(event: PageEvent): void {
     this.membersPageSize.set(event.pageSize)
     this.membersPageIndex.set(event.pageIndex)
-    this.getMembers()
   }
 
   onMembersSearchChange(searchTerm?: string): void {
     this.membersPageIndex.set(0)
     this.memberSearchTerm.set(searchTerm || '')
-    this.getMembers()
   }
 
   editTeamDetails(): void {
@@ -214,10 +181,6 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   addMember(): void {
-    const teamId = this.team()?.id
-    if (!teamId) {
-      return
-    }
     const dialogRef = this.dialog.open<SearchModalComponent, SearchModalData, SearchModalResult>(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
@@ -230,7 +193,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
           pageIndex: number,
           pageSize: number
         ): Observable<PageOf<User>> => {
-          return this.teamService.getNonMembers({ teamId, term, pageIndex, pageSize })
+          return this.teamService.getNonMembers({ teamId: this.teamId, term, pageIndex, pageSize })
         },
         columns: [{
           key: 'name',
@@ -254,9 +217,10 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result?.selectedItem) {
         this.teamService
-          .addUserToTeam(teamId, result.selectedItem)
+          .addUserToTeam(this.teamId, result.selectedItem)
+          .pipe(this.takeUntilDestroyed())
           .subscribe({
-            next: () => this.getMembers(),
+            next: () => this.members.reload(),
             error: (error) => console.error('Error adding member:', error)
           })
       }
@@ -265,28 +229,26 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   removeMember($event: MouseEvent, user: User): void {
     $event.stopPropagation()
-    const teamId = this.team()?.id
-    if (!teamId) {
-      return
-    }
+    this.teamService
+      .removeMember(this.teamId, user.id)
+      .pipe(this.takeUntilDestroyed())
+      .subscribe({
+        next: () => {
+          this.members.reload()
 
-    this.teamService.removeMember(teamId, user.id).subscribe({
-      next: () => {
-        this.getMembers()
-
-        const snackBarRef = this.snackBar.open(`Removed ${user.displayName} from team`, 'Undo', { duration: 5000 })
-        snackBarRef.onAction().subscribe(() => {
-          this.teamService.addUserToTeam(teamId, user).subscribe({
-            next: () => this.getMembers(),
-            error: (error) => {
-              console.error('Error restoring member:', error)
-              this.snackBar.open('Error restoring member', 'Close', { duration: 5000 })
-            }
+          const snackBarRef = this.snackBar.open(`Removed ${user.displayName} from team`, 'Undo', { duration: 5000 })
+          snackBarRef.onAction().subscribe(() => {
+            this.teamService.addUserToTeam(this.teamId, user).subscribe({
+              next: () => this.members.reload(),
+              error: (error) => {
+                console.error('Error restoring member:', error)
+                this.snackBar.open('Error restoring member', 'Close', { duration: 5000 })
+              }
+            })
           })
-        })
-      },
-      error: (error) => console.error('Error removing member:', error)
-    })
+        },
+        error: (error) => console.error('Error removing member:', error)
+      })
   }
 
   getUserRole(user: User): string {
@@ -294,12 +256,9 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   updateUserRole(user: User, newRole: string): void {
-    const teamId = this.team()?.id
-    if (!teamId) {
-      return
-    }
     this.teamService
-      .updateUserRole(teamId, user.id, newRole)
+      .updateUserRole(this.teamId, user.id, newRole)
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
         next: (updatedTeam: Team) => this.team.set(updatedTeam),
         error: (error) => console.error('Error updating member role:', error)
@@ -347,8 +306,9 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       if (result?.selectedItem) {
         this.eventsService
           .addTeamToEvent(String(result.selectedItem.id), team)
+          .pipe(this.takeUntilDestroyed())
           .subscribe({
-            next: () => this.getTeamEvents(),
+            next: () => this.events.reload(),
             error: (error) => console.error('Error adding event:', error)
           })
       }
@@ -364,14 +324,15 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
     this.eventsService
       .removeEventFromTeam(String(event.id), team.id)
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
         next: () => {
-          this.getTeamEvents()
+          this.events.reload()
 
           const snackBarRef = this.snackBar.open(`Removed ${event.name} from team`, 'Undo', { duration: 5000 })
           snackBarRef.onAction().subscribe(() => {
             this.eventsService.addTeamToEvent(String(event.id), team).subscribe({
-              next: () => this.getTeamEvents(),
+              next: () => this.events.reload(),
               error: (error) => {
                 console.error('Error restoring event:', error)
                 this.snackBar.open('Error restoring event', 'Close', { duration: 5000 })
@@ -404,12 +365,10 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   onEventsPageChange(event: PageEvent): void {
     this.eventsPageSize.set(event.pageSize)
     this.eventsPageIndex.set(event.pageIndex)
-    this.getTeamEvents()
   }
 
   onTeamEventSearchChange(searchTerm?: string): void {
     this.eventsPageIndex.set(0)
     this.eventSearchTerm.set(searchTerm || '')
-    this.getTeamEvents()
   }
 }
