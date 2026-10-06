@@ -1,6 +1,10 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, input } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCardModule } from '@angular/material/card';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Field } from '../../helpers/observation-feed-helper';
 import { FieldDialogComponent, FieldDialogData } from '../form-details/field-dialog/field-dialog.component';
 
@@ -18,13 +22,20 @@ export interface AttachmentType {
     selector: 'mage-fields-list',
     templateUrl: './fields-list.component.html',
     styleUrls: ['./fields-list.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        DragDropModule,
+        MatButtonModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatCardModule
+    ]
 })
 export class FieldsListComponent {
-    @Input() fields: Field[] = [];
-    @Input() fieldTypes: FieldType[] = [];
-    @Input() attachmentAllowedTypes: AttachmentType[] = [];
-    @Input() userFields: string[] = [];
+    fields = input<Field[]>([]);
+    fieldTypes = input<FieldType[]>([]);
+    attachmentAllowedTypes = input<AttachmentType[]>([]);
+    userFields = input<string[]>([]);
     @Output() fieldsChange = new EventEmitter<Field[]>();
 
     constructor(private dialog: MatDialog) { }
@@ -33,10 +44,10 @@ export class FieldsListComponent {
         const dialogRef = this.dialog.open(FieldDialogComponent, {
             width: '600px',
             data: {
-                fieldTypes: this.fieldTypes,
-                attachmentAllowedTypes: this.attachmentAllowedTypes,
+                fieldTypes: this.fieldTypes(),
+                attachmentAllowedTypes: this.attachmentAllowedTypes(),
                 editMode: false,
-                existingFields: this.fields
+                existingFields: this.fields()
             } as FieldDialogData
         });
 
@@ -44,8 +55,7 @@ export class FieldsListComponent {
             if (result) {
                 result.id = this.getNextFieldId();
                 result.name = 'field' + result.id;
-                this.fields.push(result);
-                this.fieldsChange.emit(this.fields);
+                this.fieldsChange.emit([...this.fields(), result]);
             }
         });
     }
@@ -54,29 +64,25 @@ export class FieldsListComponent {
         const dialogRef = this.dialog.open(FieldDialogComponent, {
             width: '600px',
             data: {
-                fieldTypes: this.fieldTypes,
-                attachmentAllowedTypes: this.attachmentAllowedTypes,
+                fieldTypes: this.fieldTypes(),
+                attachmentAllowedTypes: this.attachmentAllowedTypes(),
                 editMode: true,
                 existingField: field,
                 isMemberField: this.isMemberField(field),
-                existingFields: this.fields
+                existingFields: this.fields()
             } as FieldDialogData
         });
 
         dialogRef.afterClosed().subscribe((result: Field | undefined) => {
             if (result) {
                 Object.assign(field, result);
-                this.fieldsChange.emit(this.fields);
+                this.fieldsChange.emit(this.fields());
             }
         });
     }
 
     removeField(field: Field): void {
-        const index = this.fields.findIndex(f => f.id === field.id);
-        if (index !== -1) {
-            this.fields.splice(index, 1);
-        }
-        this.fieldsChange.emit(this.fields);
+        this.fieldsChange.emit(this.fields().filter(f => f.id !== field.id));
     }
 
     onDrop(event: CdkDragDrop<Field[]>): void {
@@ -87,19 +93,18 @@ export class FieldsListComponent {
         const activeFields = this.getActiveFields();
         moveItemInArray(activeFields, event.previousIndex, event.currentIndex);
 
-        const archivedFields = this.fields.filter(f => f.archived);
-        this.fields = [...activeFields, ...archivedFields];
-        this.fieldsChange.emit(this.fields);
+        const archivedFields = this.fields().filter(f => f.archived);
+        this.fieldsChange.emit([...activeFields, ...archivedFields]);
     }
 
     getFieldTypeLabel(type: string, field?: Field): string {
         if (field && this.isMemberField(field)) {
-            const userType = this.fieldTypes.find(ft => ft.name === 'userDropdown');
+            const userType = this.fieldTypes().find(ft => ft.name === 'userDropdown');
             return userType?.title || 'User Select';
         }
 
         const lookupType = type === 'multiselectdropdown' ? 'dropdown' : type;
-        const fieldType = this.fieldTypes.find(ft => ft.name === lookupType);
+        const fieldType = this.fieldTypes().find(ft => ft.name === lookupType);
         if (fieldType) {
             return fieldType.title;
         }
@@ -107,7 +112,7 @@ export class FieldsListComponent {
     }
 
     getActiveFields(): Field[] {
-        return this.fields.filter(f => !f.archived);
+        return this.fields().filter(f => !f.archived);
     }
 
     showAddOptions(field: Field): boolean {
@@ -120,7 +125,7 @@ export class FieldsListComponent {
         }
         return field.allowedAttachmentTypes
             .map(type => {
-                const attachmentType = this.attachmentAllowedTypes.find(at => at.name === type);
+                const attachmentType = this.attachmentAllowedTypes().find(at => at.name === type);
                 return attachmentType?.title || type;
             })
             .join(', ');
@@ -128,12 +133,13 @@ export class FieldsListComponent {
 
     isMemberField(field: Field): boolean {
         const isExplicitUserType = field.type === 'userDropdown' || field.type === 'multiSelectUserDropdown';
-        return isExplicitUserType || this.userFields.includes(field.name || '');
+        return isExplicitUserType || this.userFields().includes(field.name || '');
     }
 
     private getNextFieldId(): number {
-        if (this.fields.length === 0) return 0;
-        return Math.max(...this.fields.map(f => f.id || 0)) + 1;
+        const fields = this.fields();
+        if (fields.length === 0) return 0;
+        return Math.max(...fields.map(f => f.id || 0)) + 1;
     }
 
     trackByFieldId(_index: number, field: Field): any {

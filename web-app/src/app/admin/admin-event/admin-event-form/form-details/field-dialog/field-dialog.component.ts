@@ -1,5 +1,17 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
+import {
+    MatDialogRef as MatDialogRef,
+    MAT_DIALOG_DATA as MAT_DIALOG_DATA,
+    MatDialogModule
+} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { A11yModule } from '@angular/cdk/a11y';
 import { Field } from '../../../helpers/observation-feed-helper';
 
 export interface FieldDialogData {
@@ -28,7 +40,18 @@ export interface FieldResult {
     selector: 'mage-field-dialog',
     templateUrl: './field-dialog.component.html',
     styleUrls: ['./field-dialog.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        A11yModule
+    ]
 })
 export class FieldDialogComponent {
     field: Field;

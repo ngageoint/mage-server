@@ -1,8 +1,19 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, viewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
-import { MatStepper } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 
 import { AdminEventsService } from '../../../services/admin-events.service';
@@ -24,6 +35,7 @@ import {
   EditFormDialogComponent,
   EditFormDialogData
 } from './edit-form-dialog/edit-form-dialog.component';
+import { FieldsListComponent } from '../fields-list/fields-list.component';
 import {
   decorateFormForDisplay,
   deriveUserFieldNames,
@@ -56,7 +68,22 @@ interface ErrorDialogData {
     selector: 'mage-form-details',
     templateUrl: './form-details.component.html',
     styleUrls: ['./form-details.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        DatePipe,
+        MatStepperModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatDividerModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCheckboxModule,
+        MatSelectModule,
+        MatTooltipModule,
+        FieldsListComponent
+    ]
 })
 export class FormDetailsComponent implements OnInit {
   event: MageEvent | null = null;
@@ -76,7 +103,7 @@ export class FormDetailsComponent implements OnInit {
 
   creatingNewForm = false;
 
-  @ViewChild('formStepper') formStepper?: MatStepper;
+  formStepper = viewChild<MatStepper>('formStepper');
 
   showFieldsSection = false;
   showMapSection = false;
@@ -290,7 +317,7 @@ export class FormDetailsComponent implements OnInit {
     if (!this.validateForm()) {
       return;
     }
-    this.formStepper?.next();
+    this.formStepper()?.next();
   }
 
   saveForm(): void {

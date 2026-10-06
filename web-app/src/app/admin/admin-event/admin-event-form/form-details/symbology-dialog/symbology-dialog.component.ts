@@ -1,5 +1,14 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
+import {
+  MAT_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatDialogRef as MatDialogRef,
+  MatDialogModule
+} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 export interface SymbologyDialogData {
     primary?: string;
@@ -18,7 +27,15 @@ export interface SymbologyDialogData {
     selector: 'symbology-dialog',
     templateUrl: './symbology-dialog.component.html',
     styleUrls: ['./symbology-dialog.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule
+    ]
 })
 export class SymbologyDialogComponent implements OnInit {
     style: {
