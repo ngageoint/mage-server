@@ -97,6 +97,7 @@ describe('feature service drawing info builder', () => {
     expect(valueInfos[0]).toHaveProperty("value", '999/icon.svg');
     expect(renderer).toHaveProperty("defaultSymbol");
     expect(renderer?.defaultSymbol?.type).toEqual("esriPMS");
+    expect(renderer?.defaultSymbol?.contentType).toEqual("image/svg+xml");
     expect(atob(renderer?.defaultSymbol?.imageData))
       .toEqual('<svg/>');
   });
@@ -200,5 +201,61 @@ describe('feature service drawing info builder', () => {
     expect(values).toContain(`${testEventId}/icon.svg`);
     expect(values).toContain(`${testEventId}/1/icon.svg`);
     expect(values).toContain(`${testEventId}/2/icon.svg`);
+  });
+
+  test('sets the icon content type from the icon data, falling back to the file extension', async () => {
+
+    const eventWithIconTypes = new MageEvent({
+      id: 555, name: 'test event with icon types', layerIds: [], feedIds: [],
+      forms: [simpleForm, secondSimpleForm], style: simpleStyle, acl: emptyACL
+    });
+    let events: MageEvent[] = [eventWithIconTypes];
+
+    const testEventId = eventWithIconTypes.id;
+    const pngBytes = Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex');
+
+    fs.mkdirSync(`${tempdir}/${testEventId}/1`, { recursive: true });
+    fs.mkdirSync(`${tempdir}/${testEventId}/2`, { recursive: true });
+    // png data with a png extension
+    fs.writeFileSync(`${tempdir}/${testEventId}/icon.png`, pngBytes);
+    // png data with the wrong extension
+    fs.writeFileSync(`${tempdir}/${testEventId}/1/icon.jpg`, pngBytes);
+    // unrecognized data, so the type comes from the extension
+    fs.writeFileSync(`${tempdir}/${testEventId}/2/icon.gif`, 'not an image');
+
+    // mock the icon data that would otherwise have been loaded from MongoDB
+    const iconFindOneMock = (query:Query<any, any>) => {
+      const findQuery = query.getQuery();
+      if (findQuery['eventId'] != null && findQuery['formId'] == null) {
+        return {eventId: testEventId, relativePath: `${testEventId}/icon.png`}
+      }
+      return null;
+    }
+    const iconFindMock = (query:Query<any, any>) => {
+      const findQuery = query.getQuery();
+      if (findQuery['eventId'] != null) {
+        return [
+          {eventId: testEventId, relativePath: `${testEventId}/1/icon.jpg`, formId: 1},
+          {eventId: testEventId, relativePath: `${testEventId}/2/icon.gif`, formId: 2},
+          {eventId: testEventId, relativePath: `${testEventId}/icon.png`, formId: null},
+        ]
+      }
+      return [];
+    }
+    mockingoose(IconModel).toReturn(iconFindOneMock, 'findOne');
+    mockingoose(IconModel).toReturn(iconFindMock, 'find');
+
+    const drawingInfo = await new DrawingInfoBuilder(console, config)
+      .events(events)
+      .build();
+    const renderer = drawingInfo?.renderer;
+    expect(renderer?.defaultSymbol?.contentType).toEqual('image/png');
+    const valueInfos: { [key: string]: any }[] = renderer?.uniqueValueInfos;
+    const contentTypes = Object.fromEntries(valueInfos.map(vi => [vi.value, vi.symbol?.contentType]));
+    expect(contentTypes).toEqual({
+      [`${testEventId}/icon.png`]: 'image/png',
+      [`${testEventId}/1/icon.jpg`]: 'image/png',
+      [`${testEventId}/2/icon.gif`]: 'image/gif'
+    });
   });
 });
