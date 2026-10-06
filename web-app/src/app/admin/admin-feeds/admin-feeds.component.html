@@ -38,36 +38,36 @@
 
           </div>
 
-          <mat-nav-list>
-            @for (feed of feeds | slice: feedPage * itemsPerPage : (feedPage + 1) * itemsPerPage; track feed.id) {
-              <mat-list-item [routerLink]="['../feeds', feed.id]">
-                <feed-icon matListItemIcon class="feed__icon" [icon]="feed.icon"></feed-icon>
-                <span matListItemTitle>{{ feed.title }}</span>
-                <span matListItemLine>{{ feed.summary }}</span>
-                @if (hasFeedDeletePermission) {
-                  <span matListItemMeta>
-                    <button matIconButton (click)="deleteFeed($event, feed)" aria-label="Delete feed">
-                      <mat-icon>delete_outline</mat-icon>
-                    </button>
-                  </span>
-                }
-              </mat-list-item>
-            }
-
-            @if (!feeds || feeds.length === 0) {
-              <div class="empty-state">
-                <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">rss_feed</mat-icon>
-                @if (feedSearch) {
-                  <div class="empty-state-text">No feeds match your search</div>
-                } @else {
-                  <div class="empty-state-text">No feeds found</div>
-                }
-              </div>
-            }
-          </mat-nav-list>
+          @if (feeds().length) {
+            <mat-nav-list>
+              @for (feed of feeds() | slice: feedPage * itemsPerPage : (feedPage + 1) * itemsPerPage; track feed.id) {
+                <mat-list-item [routerLink]="['../feeds', feed.id]">
+                  <feed-icon matListItemIcon class="feed__icon" [icon]="feed.icon"></feed-icon>
+                  <span matListItemTitle>{{ feed.title }}</span>
+                  <span matListItemLine>{{ feed.summary }}</span>
+                  @if (hasFeedDeletePermission) {
+                    <span matListItemMeta>
+                      <button matIconButton (click)="deleteFeed($event, feed)" aria-label="Delete feed">
+                        <mat-icon class="delete-icon">delete_outline</mat-icon>
+                      </button>
+                    </span>
+                  }
+                </mat-list-item>
+              }
+            </mat-nav-list>
+          } @else {
+            <div class="empty-state">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">rss_feed</mat-icon>
+              @if (feedSearch) {
+                <div class="empty-state-text">No feeds match your search</div>
+              } @else {
+                <div class="empty-state-text">No feeds found</div>
+              }
+            </div>
+          }
 
           <mat-paginator
-            [length]="feeds.length"
+            [length]="feeds().length"
             [pageSize]="itemsPerPage"
             (page)="feedPage = $event.pageIndex"
           ></mat-paginator>
@@ -100,36 +100,36 @@
             </mat-form-field>
           </div>
 
-          <mat-nav-list>
-            @for (service of services | slice: servicePage * itemsPerPage : (servicePage + 1) * itemsPerPage; track service.id) {
-              <mat-list-item [routerLink]="['../services', service.id]">
-                <mat-icon matListItemIcon>cloud_queue</mat-icon>
-                <span matListItemTitle>{{ service.title }}</span>
-                <span matListItemLine>{{ service.summary }}</span>
-                @if (hasFeedDeletePermission) {
-                  <span matListItemMeta>
-                    <button matIconButton (click)="deleteService($event, service)" aria-label="Delete service">
-                      <mat-icon>delete_outline</mat-icon>
-                    </button>
-                  </span>
-                }
-              </mat-list-item>
-            }
-
-            @if (!services || services.length === 0) {
-              <div class="empty-state">
-                <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">cloud_queue</mat-icon>
-                @if (serviceSearch) {
-                  <div class="empty-state-text">No services match your search</div>
-                } @else {
-                  <div class="empty-state-text">No services found</div>
-                }
-              </div>
-            }
-          </mat-nav-list>
+          @if (services().length) {
+            <mat-nav-list>
+              @for (service of services() | slice: servicePage * itemsPerPage : (servicePage + 1) * itemsPerPage; track service.id) {
+                <mat-list-item [routerLink]="['../services', service.id]">
+                  <mat-icon matListItemIcon>cloud_queue</mat-icon>
+                  <span matListItemTitle>{{ service.title }}</span>
+                  <span matListItemLine>{{ service.summary }}</span>
+                  @if (hasServiceDeletePermission) {
+                    <span matListItemMeta>
+                      <button matIconButton (click)="deleteService($event, service)" aria-label="Delete service">
+                        <mat-icon class="delete-icon">delete_outline</mat-icon>
+                      </button>
+                    </span>
+                  }
+                </mat-list-item>
+              }
+            </mat-nav-list>
+          } @else {
+            <div class="empty-state">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">cloud_queue</mat-icon>
+              @if (serviceSearch) {
+                <div class="empty-state-text">No services match your search</div>
+              } @else {
+                <div class="empty-state-text">No services found</div>
+              }
+            </div>
+          }
 
           <mat-paginator
-            [length]="services.length"
+            [length]="services().length"
             [pageSize]="itemsPerPage"
             (page)="servicePage = $event.pageIndex"
           ></mat-paginator>

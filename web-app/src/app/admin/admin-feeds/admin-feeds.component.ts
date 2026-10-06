@@ -1,7 +1,7 @@
-import _ from 'underscore'
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core'
+import { Component, DestroyRef, OnInit, OnDestroy, TemplateRef, ViewChild, inject, signal } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { Feed, Service, FeedService } from '@ngageoint/mage.web-core-lib/feed'
-import { MatDialog as MatDialog } from '@angular/material/dialog'
+import { MatDialog } from '@angular/material/dialog'
 import { forkJoin } from 'rxjs'
 import { AdminFeedDeleteComponent } from './admin-feed/admin-feed-delete/admin-feed-delete.component'
 import { AdminServiceDeleteComponent } from './admin-service/admin-service-delete/admin-service-delete.component'
@@ -25,7 +25,6 @@ import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
     selector: 'admin-feeds',
     templateUrl: './admin-feeds.component.html',
     styleUrls: ['./admin-feeds.component.scss'],
-    standalone: true,
     imports: [
       MatCardModule,
       MatTabsModule,
@@ -42,6 +41,12 @@ import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
     ]
 })
 export class AdminFeedsComponent implements OnInit, OnDestroy {
+  private readonly feedService: FeedService = inject(FeedService)
+  private readonly dialog: MatDialog = inject(MatDialog)
+  private readonly sessionService: SessionService = inject(SessionService)
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService)
+  private readonly destroyRef: DestroyRef = inject(DestroyRef)
+
   breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Feeds',
     icon: 'rss_feed',
@@ -50,11 +55,11 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>
 
-  services: Service[] = []
+  readonly services = signal<Service[]>([])
   private _services: Service[] = []
 
   private _feeds: Feed[] = []
-  feeds: Feed[] = []
+  readonly feeds = signal<Feed[]>([])
 
   feedSearch = ''
   serviceSearch = ''
@@ -63,22 +68,11 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
   servicePage = 0
   itemsPerPage = 10
 
-  constructor(
-    private feedService: FeedService,
-    public dialog: MatDialog,
-    private sessionService: SessionService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
-
   get hasServiceDeletePermission(): boolean {
     return this.sessionService.hasPermission('FEEDS_CREATE_SERVICE')
   }
 
   get hasFeedCreatePermission(): boolean {
-    return this.sessionService.hasPermission('FEEDS_CREATE_FEED')
-  }
-
-  get hasFeedEditPermission(): boolean {
     return this.sessionService.hasPermission('FEEDS_CREATE_FEED')
   }
 
@@ -93,12 +87,12 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
     forkJoin({
       services: this.feedService.fetchServices(),
       feeds: this.feedService.fetchAllFeeds()
-    }).subscribe(({ services, feeds }) => {
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ services, feeds }) => {
       this._services = (services ?? []).sort(this.sortByTitle)
-      this.services = this._services.slice()
-    
+      this.services.set(this._services.slice())
+
       this._feeds = (feeds ?? []).sort(this.sortByTitle)
-      this.feeds = this._feeds.slice()
+      this.feeds.set(this._feeds.slice())
     })
   }
 
@@ -119,21 +113,21 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
   clearFeedSearch(): void {
     this.feedPage = 0
     this.feedSearch = ''
-    this.feeds = this._feeds.slice()
+    this.feeds.set(this._feeds.slice())
   }
 
   clearServiceSearch(): void {
     this.servicePage = 0
     this.serviceSearch = ''
-    this.services = this._services.slice()
+    this.services.set(this._services.slice())
   }
 
   updateFilteredFeeds(): void {
-    this.feeds = this._feeds.filter(this.filterByTitleAndSummary(this.feedSearch))
+    this.feeds.set(this._feeds.filter(this.filterByTitleAndSummary(this.feedSearch)))
   }
 
   updateFilteredServices(): void {
-    this.services = this._services.filter(this.filterByTitleAndSummary(this.serviceSearch))
+    this.services.set(this._services.filter(this.filterByTitleAndSummary(this.serviceSearch)))
   }
 
   deleteService($event: MouseEvent, service: Service): void {
@@ -146,8 +140,7 @@ export class AdminFeedsComponent implements OnInit, OnDestroy {
       if (result === true) {
         this.feedService.deleteService(service).subscribe(() => {
           this._services = this._services.filter(s => s.id !== service.id)
-          this.services = this.services.filter(s => s.id !== service.id)
-  
+
           this._feeds = this._feeds.filter(f => f.service !== service.id)
   
           this.updateFilteredFeeds()

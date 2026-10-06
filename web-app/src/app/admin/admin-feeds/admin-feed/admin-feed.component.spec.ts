@@ -4,10 +4,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 
 import { AdminFeedComponent } from './admin-feed.component';
+import { RouteReuse } from '../../../route-reuse.strategy';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { EventService } from '../../../event/event.service';
@@ -43,12 +45,6 @@ describe('AdminFeedComponent', () => {
       id: 'topic-1',
       title: 'Example Topic'
     }
-  } as any;
-
-  const mockServiceType = {
-    id: 'service-type-1',
-    title: 'Example Service Type',
-    summary: 'Example Summary'
   } as any;
 
   const mockFeedEvents = [
@@ -100,7 +96,6 @@ describe('AdminFeedComponent', () => {
     sessionServiceSpy.user = { id: 'user-1', role: { permissions: [] } };
 
     feedServiceSpy.fetchFeed.and.returnValue(of(mockFeed));
-    feedServiceSpy.fetchServiceType.and.returnValue(of(mockServiceType));
 
     adminEventsServiceSpy.getEvents.and.returnValue(
       of({
@@ -121,7 +116,7 @@ describe('AdminFeedComponent', () => {
     } as any);
 
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, NoopAnimationsModule, AdminFeedComponent],
+      imports: [FormsModule, ReactiveFormsModule, AdminFeedComponent],
       providers: [
         { provide: FeedService, useValue: feedServiceSpy },
         { provide: SessionService, useValue: sessionServiceSpy },
@@ -130,7 +125,9 @@ describe('AdminFeedComponent', () => {
         { provide: MatDialog, useValue: dialogSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: ActivatedRoute, useValue: routeStub }
+        { provide: ActivatedRoute, useValue: routeStub },
+        provideHttpClient(),
+        provideHttpClientTesting()
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -146,11 +143,13 @@ describe('AdminFeedComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load feed, service type, and initial events on init', () => {
+  it('should get a new component instead of being reused when the feed id changes', () => {
+    expect(AdminFeedComponent.routeReuse).toBe(RouteReuse.RecreateOnParamChange);
+  });
+
+  it('should load the feed and initial events on init', () => {
     expect(feedServiceSpy.fetchFeed).toHaveBeenCalledWith('feed-1');
-    expect(feedServiceSpy.fetchServiceType).toHaveBeenCalledWith(
-      'service-type-1'
-    );
+    expect(feedServiceSpy.fetchServiceType).not.toHaveBeenCalled();
 
     expect(adminEventsServiceSpy.getEvents).toHaveBeenCalledWith({
       feedId: 'feed-1',
@@ -158,14 +157,12 @@ describe('AdminFeedComponent', () => {
       page_size: 1000
     } as any);
 
-    expect(component.feed.id).toBe('feed-1');
-    expect(component.feedServiceType.id).toBe('service-type-1');
-    expect(component.totalFeedEvents).toBe(3);
-    expect(component.feedEvents.length).toBe(3);
+    expect(component.feed()?.id).toBe('feed-1');
+    expect(component.totalFeedEvents()).toBe(3);
+    expect(component.feedEvents().length).toBe(3);
   });
 
   it('should handle user permissions when myself$ has no permissions', () => {
-    expect(component.hasFeedCreatePermission).toBeFalse();
     expect(component.hasFeedEditPermission).toBeFalse();
     expect(component.hasFeedDeletePermission).toBeFalse();
     expect(component.hasUpdateEventPermission).toBeFalse();
@@ -180,7 +177,6 @@ describe('AdminFeedComponent', () => {
 
     f2.detectChanges();
 
-    expect(c2.hasFeedCreatePermission).toBeTrue();
     expect(c2.hasFeedEditPermission).toBeTrue();
     expect(c2.hasFeedDeletePermission).toBeTrue();
     expect(c2.hasUpdateEventPermission).toBeTrue();
@@ -194,7 +190,6 @@ describe('AdminFeedComponent', () => {
 
     f2.detectChanges();
 
-    expect(c2.hasFeedCreatePermission).toBeFalse();
     expect(c2.hasFeedEditPermission).toBeFalse();
     expect(c2.hasFeedDeletePermission).toBeFalse();
     expect(c2.hasUpdateEventPermission).toBeFalse();
@@ -238,14 +233,6 @@ describe('AdminFeedComponent', () => {
     );
   });
 
-  it('addEventToFeed should do nothing when feed is not loaded', () => {
-    component.feed = null as any;
-
-    component.addEventToFeed();
-
-    expect(dialogSpy.open).not.toHaveBeenCalled();
-  });
-
   it('addEventToFeed should open the search modal and add the feed to the selected event', () => {
     adminEventsServiceSpy.getEvents.calls.reset();
     dialogSpy.open.and.returnValue({
@@ -263,6 +250,46 @@ describe('AdminFeedComponent', () => {
       page_size: 1000
     } as any);
     expect(snackBarSpy.open).toHaveBeenCalled();
+  });
+
+  describe('addEventToFeed searchFunction', () => {
+    const candidateEvents = [
+      { id: 'event-1', name: 'Already Has Feed', feedId: 'feed-1', acl: { 'user-1': { permissions: ['update'] } } },
+      { id: 'event-5', name: 'Can Update', acl: { 'user-1': { permissions: ['update'] } } },
+      { id: 'event-6', name: 'Read Only', acl: { 'user-1': { permissions: ['read'] } } }
+    ] as any[];
+
+    function openAndGetSearchFunction(): (term: string, page: number, pageSize: number) => any {
+      dialogSpy.open.and.returnValue({ afterClosed: () => of(undefined) } as any);
+      component.addEventToFeed();
+      return (dialogSpy.open.calls.mostRecent().args[1]!.data as any).searchFunction;
+    }
+
+    beforeEach(() => {
+      adminEventsServiceSpy.getEvents.and.returnValue(
+        of({ items: candidateEvents, totalCount: 3 } as any)
+      );
+    });
+
+    it('excludes events that already have the feed', () => {
+      sessionServiceSpy.hasPermission.and.callFake((permission: string) => permission === 'UPDATE_EVENT');
+      let result: any;
+
+      openAndGetSearchFunction()('even', 1, 10).subscribe((page: any) => (result = page));
+
+      expect(adminEventsServiceSpy.getEvents).toHaveBeenCalledWith({ page: 1, page_size: 10, term: 'even' } as any);
+      expect(result.items.map((e: any) => e.id)).toEqual(['event-5', 'event-6']);
+      expect(result).toEqual(jasmine.objectContaining({ totalCount: 3, pageSize: 10, pageIndex: 1 }));
+    });
+
+    it('only shows events the user can update without UPDATE_EVENT', () => {
+      let result: any;
+
+      openAndGetSearchFunction()('', 0, 10).subscribe((page: any) => (result = page));
+
+      expect(adminEventsServiceSpy.getEvents).toHaveBeenCalledWith({ page: 0, page_size: 10 } as any);
+      expect(result.items.map((e: any) => e.id)).toEqual(['event-5']);
+    });
   });
 
   it('addEventToFeed should show a failure snackbar when addFeed errors', () => {
@@ -300,7 +327,7 @@ describe('AdminFeedComponent', () => {
 
     component.onEventsPageChange({ pageIndex: 2, pageSize: 25 });
 
-    expect(component.eventsPage).toBe(2);
+    expect(component.eventsPage()).toBe(2);
     expect(component.eventsPerPage).toBe(25);
     expect(adminEventsServiceSpy.getEvents).not.toHaveBeenCalled();
   });
