@@ -37,7 +37,7 @@
   },
   "peerDependencies": {
     "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta",
-    "express": "4.22.2",
+    "express": "4.22.3",
     "mongoose": "^8.0.0"
   },
   "optionalDependencies": {
