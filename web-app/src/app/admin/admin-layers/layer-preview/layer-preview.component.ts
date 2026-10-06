@@ -72,25 +72,26 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   }
 
   private updateMap(): void {
-    if (!this.map || !this.layer()) return;
+    if (!this.map) return;
+    const layer = this.layer();
 
     if (this.mapLayer) {
       this.map.removeLayer(this.mapLayer);
       this.mapLayer = undefined;
     }
 
-    if (this.layer().type === 'Feature') {
+    if (layer.type === 'Feature') {
       this.addFeatureLayer();
-    } else if (this.layer().type === 'Imagery') {
+    } else if (layer.type === 'Imagery') {
       this.addImageryLayer();
-    } else if (this.layer().type === 'GeoPackage' && this.layer().tables) {
+    } else if (layer.type === 'GeoPackage' && layer.tables) {
       this.addGeoPackageLayer();
     }
 
-    if (this.layer().bounds && this.layer().bounds!.length === 4) {
+    if (layer.bounds && layer.bounds.length === 4) {
       const bounds = L.latLngBounds(
-        [this.layer().bounds![1], this.layer().bounds![0]],
-        [this.layer().bounds![3], this.layer().bounds![2]]
+        [layer.bounds[1], layer.bounds[0]],
+        [layer.bounds[3], layer.bounds[2]]
       );
       this.map.fitBounds(bounds);
     }
@@ -211,10 +212,9 @@ export class LayerPreviewComponent implements AfterViewInit, OnChanges {
   shouldShowMap(): boolean {
     const layer = this.layer();
     return (
-      !!layer &&
-      (layer.type === 'Imagery' ||
-        layer.type === 'Feature' ||
-        (layer.type === 'GeoPackage' && !!layer.tables?.length))
+      layer.type === 'Imagery' ||
+      layer.type === 'Feature' ||
+      (layer.type === 'GeoPackage' && Boolean(layer.tables?.length))
     );
   }
 }
