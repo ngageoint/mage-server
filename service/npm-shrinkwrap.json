@@ -29,7 +29,6 @@
         "commander": "12.0.0",
         "express": "4.22.3",
         "express-session": "1.18.2",
-        "file-type": "16.5.4",
         "fs-extra": "11.3.4",
         "geojson": "0.5.0",
         "geojson-validation": "1.0.2",
@@ -37,6 +36,7 @@
         "jsonwebtoken": "9.0.2",
         "ldapts": "^8.1.8",
         "lodash": "4.18.1",
+        "magic-bytes.js": "1.13.1",
         "mgrs": "1.0.0",
         "mime-types": "2.1.35",
         "moment": "2.30.1",
@@ -1216,12 +1216,6 @@
         "color": "^5.0.2",
         "text-hex": "1.0.x"
       }
-    },
-    "node_modules/@tokenizer/token": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/@tokenizer/token/-/token-0.3.0.tgz",
-      "integrity": "sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==",
-      "license": "MIT"
     },
     "node_modules/@turf/bbox": {
       "version": "6.3.0",
@@ -4846,23 +4840,6 @@
       },
       "engines": {
         "node": "^10.12.0 || >=12.0.0"
-      }
-    },
-    "node_modules/file-type": {
-      "version": "16.5.4",
-      "resolved": "https://registry.npmjs.org/file-type/-/file-type-16.5.4.tgz",
-      "integrity": "sha512-/yFHK0aGjFEgDJjEKP0pWCplsPFPhwyfwevf/pVxiN0tmE4L9LmwWxWukdJSHdoCli4VgQLehjJtwQBnqmsKcw==",
-      "license": "MIT",
-      "dependencies": {
-        "readable-web-to-node-stream": "^3.0.0",
-        "strtok3": "^6.2.4",
-        "token-types": "^4.1.1"
-      },
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "url": "https://github.com/sindresorhus/file-type?sponsor=1"
       }
     },
     "node_modules/file-uri-to-path": {
@@ -9227,19 +9204,6 @@
         "through": "~2.3"
       }
     },
-    "node_modules/peek-readable": {
-      "version": "4.1.0",
-      "resolved": "https://registry.npmjs.org/peek-readable/-/peek-readable-4.1.0.tgz",
-      "integrity": "sha512-ZI3LnwUv5nOGbQzD9c2iDG6toheuXSZP5esSHBjopsXH4dg19soufvpUGA3uohi5anFtGb2lhAVdHzH6R/Evvg==",
-      "license": "MIT",
-      "engines": {
-        "node": ">=8"
-      },
-      "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/Borewit"
-      }
-    },
     "node_modules/pend": {
       "version": "1.2.0",
       "resolved": "https://registry.npmjs.org/pend/-/pend-1.2.0.tgz",
@@ -9932,22 +9896,6 @@
       },
       "engines": {
         "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
-      }
-    },
-    "node_modules/readable-web-to-node-stream": {
-      "version": "3.0.4",
-      "resolved": "https://registry.npmjs.org/readable-web-to-node-stream/-/readable-web-to-node-stream-3.0.4.tgz",
-      "integrity": "sha512-9nX56alTf5bwXQ3ZDipHJhusu9NTQJ/CVPtb/XHAJCXihZeitfJvIRS4GqQ/mfIoOE3IelHMrpayVrosdHBuLw==",
-      "license": "MIT",
-      "dependencies": {
-        "readable-stream": "^4.7.0"
-      },
-      "engines": {
-        "node": ">=8"
-      },
-      "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/Borewit"
       }
     },
     "node_modules/readdir-glob": {
@@ -11230,23 +11178,6 @@
         "url": "https://github.com/sponsors/sindresorhus"
       }
     },
-    "node_modules/strtok3": {
-      "version": "6.3.0",
-      "resolved": "https://registry.npmjs.org/strtok3/-/strtok3-6.3.0.tgz",
-      "integrity": "sha512-fZtbhtvI9I48xDSywd/somNqgUHl2L2cstmXCCif0itOf96jeW18MBSyrLuNicYQVkvpOxkZtkzujiTJ9LW5Jw==",
-      "license": "MIT",
-      "dependencies": {
-        "@tokenizer/token": "^0.3.0",
-        "peek-readable": "^4.1.0"
-      },
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/Borewit"
-      }
-    },
     "node_modules/superagent": {
       "version": "8.1.2",
       "resolved": "https://registry.npmjs.org/superagent/-/superagent-8.1.2.tgz",
@@ -11501,23 +11432,6 @@
       "resolved": "https://registry.npmjs.org/token-stream/-/token-stream-1.0.0.tgz",
       "integrity": "sha512-VSsyNPPW74RpHwR8Fc21uubwHY7wMDeJLys2IX5zJNih+OnAnaifKHo+1LHT7DAdloQ7apeaaWg8l7qnf/TnEg==",
       "license": "MIT"
-    },
-    "node_modules/token-types": {
-      "version": "4.2.1",
-      "resolved": "https://registry.npmjs.org/token-types/-/token-types-4.2.1.tgz",
-      "integrity": "sha512-6udB24Q737UD/SDsKAHI9FCRP7Bqc9D/MQUV02ORQg5iskjtLJlZJNdN4kKtcdtwCeWIwIHDGaUsTsCCAa8sFQ==",
-      "license": "MIT",
-      "dependencies": {
-        "@tokenizer/token": "^0.3.0",
-        "ieee754": "^1.2.1"
-      },
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/Borewit"
-      }
     },
     "node_modules/tr46": {
       "version": "5.1.1",
