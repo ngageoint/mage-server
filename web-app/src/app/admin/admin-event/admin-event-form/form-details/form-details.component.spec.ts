@@ -70,7 +70,7 @@ describe('FormDetailsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [FormDetailsComponent],
+      imports: [FormDetailsComponent],
       providers: [
         { provide: AdminEventsService, useValue: mockEventsService },
         { provide: MatDialog, useValue: mockDialog },
@@ -102,53 +102,63 @@ describe('FormDetailsComponent', () => {
         return null;
       });
 
-      component.ngOnInit();
+      // eventId is read once at construction time now, so a component
+      // that should see a missing eventId needs to be built after the
+      // route mock is reconfigured.
+      const f2 = TestBed.createComponent(FormDetailsComponent);
+      const c2 = f2.componentInstance;
+      spyOn<any>(c2, 'generateSampleObservations');
+      spyOn<any>(c2, 'fetchFormIcons');
+
+      c2.ngOnInit();
 
       expect(mockEventsService.getEventById).not.toHaveBeenCalled();
-      expect(component.event).toBeNull();
+      expect(c2.event()).toBeNull();
     });
 
     it('loads event and sets up breadcrumbs for new form', () => {
       mockEventsService.getEventById.and.returnValue(of(mockEvent));
-      mockRoute.snapshot.paramMap.get.and.callFake((key: string) => {
-        if (key === 'eventId') return '1';
-        if (key === 'formId') return null;
-        return null;
-      });
 
       component.ngOnInit();
 
       expect(mockSessionService.getToken).toHaveBeenCalled();
       expect(component.token).toBe('test-token');
       expect(mockEventsService.getEventById).toHaveBeenCalledWith('1');
-      expect(component.event).toEqual(mockEvent);
+      expect(component.event()).toEqual(mockEvent);
       expect(component.breadcrumbs.length).toBe(3);
       expect(component.breadcrumbs[2].title).toBe('New Form');
 
-      expect(component.form.archived).toBe(false);
-      expect(component.form.color).toMatch(/^#[0-9a-f]{6}$/i);
-      expect(component.form.fields).toEqual([]);
-      expect(component.form.userFields).toEqual([]);
+      expect(component.form().archived).toBe(false);
+      expect(component.form().color).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(component.form().fields).toEqual([]);
+      expect(component.form().userFields).toEqual([]);
     });
 
     it('loads event and existing form for edit and sets routes', () => {
-      mockEventsService.getEventById.and.returnValue(of(mockEvent));
       mockRoute.snapshot.paramMap.get.and.callFake((key: string) => {
         if (key === 'eventId') return '1';
         if (key === 'formId') return '1';
         return null;
       });
+      mockEventsService.getEventById.and.returnValue(of(mockEvent));
 
-      component.ngOnInit();
+      // formId is also read once at construction time, so edit-mode
+      // needs its own component built after the route mock is set.
+      const f2 = TestBed.createComponent(FormDetailsComponent);
+      const c2 = f2.componentInstance;
+      spyOn<any>(c2, 'generateSampleObservations');
+      spyOn<any>(c2, 'fetchFormIcons');
 
-      expect(component.event).toEqual(mockEvent);
-      expect(component.form).toEqual(
+      c2.ngOnInit();
+
+      expect(c2.event()).toEqual(mockEvent);
+      expect(c2.form()).toEqual(
         jasmine.objectContaining(mockEvent.forms[0] as any)
       );
-      expect(component.breadcrumbs[2].title).toBe('Test Form');
+      expect(c2.breadcrumbs[2].title).toBe('Test Form');
 
-      expect((component as any).generateSampleObservations).toHaveBeenCalled();
-      expect((component as any).fetchFormIcons).toHaveBeenCalled();
+      expect((c2 as any).generateSampleObservations).toHaveBeenCalled();
+      expect((c2 as any).fetchFormIcons).toHaveBeenCalled();
     });
 
     it('handles error when loading event', () => {
@@ -175,15 +185,20 @@ describe('FormDetailsComponent', () => {
         return null;
       });
 
-      component.ngOnInit();
+      const f2 = TestBed.createComponent(FormDetailsComponent);
+      const c2 = f2.componentInstance;
+      spyOn<any>(c2, 'generateSampleObservations');
+      spyOn<any>(c2, 'fetchFormIcons');
 
-      expect(component.form.id).toBeUndefined();
+      c2.ngOnInit();
+
+      expect(c2.form().id).toBeUndefined();
     });
   });
 
   describe('validateForm', () => {
     it('returns true when form is valid', () => {
-      component.form = { name: 'Test Form', color: '#ff0000' };
+      component.form.set({ name: 'Test Form', color: '#ff0000' });
       component.generalFormSubmitted = false;
 
       const result = component.validateForm();
@@ -193,7 +208,7 @@ describe('FormDetailsComponent', () => {
     });
 
     it('returns false when name is missing', () => {
-      component.form = { name: '', color: '#ff0000' };
+      component.form.set({ name: '', color: '#ff0000' });
 
       const result = component.validateForm();
 
@@ -201,7 +216,7 @@ describe('FormDetailsComponent', () => {
     });
 
     it('returns false when color is missing', () => {
-      component.form = { name: 'Test Form', color: '' };
+      component.form.set({ name: 'Test Form', color: '' });
 
       const result = component.validateForm();
 
@@ -209,7 +224,7 @@ describe('FormDetailsComponent', () => {
     });
 
     it('returns false when both name and color are missing', () => {
-      component.form = {};
+      component.form.set({});
 
       const result = component.validateForm();
 
@@ -219,17 +234,17 @@ describe('FormDetailsComponent', () => {
 
   describe('saveForm', () => {
     beforeEach(() => {
-      component.event = mockEvent;
-      component.form = {
+      component.event.set(mockEvent);
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         fields: [],
         userFields: []
-      };
+      });
     });
 
     it('does not save if form is invalid', () => {
-      component.form = { name: '', color: '' };
+      component.form.set({ name: '', color: '' });
 
       component.saveForm();
 
@@ -238,7 +253,7 @@ describe('FormDetailsComponent', () => {
     });
 
     it('does not save if event is not loaded', () => {
-      component.event = null;
+      component.event.set(null);
 
       component.saveForm();
 
@@ -247,14 +262,14 @@ describe('FormDetailsComponent', () => {
     });
 
     it('updates existing form', () => {
-      component.form = {
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         id: 1,
         fields: [],
         userFields: []
-      };
-      const savedForm = { ...component.form };
+      });
+      const savedForm = { ...component.form() };
       mockEventsService.updateForm.and.returnValue(of(savedForm as any));
 
       component.saveForm();
@@ -285,14 +300,13 @@ describe('FormDetailsComponent', () => {
       );
       spyOn(component, 'showError');
 
-      component.form = {
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         fields: [],
         userFields: []
-      };
-      component.event = mockEvent;
-      component.form.id = undefined;
+      });
+      component.event.set(mockEvent);
 
       component.saveForm();
 
@@ -311,14 +325,13 @@ describe('FormDetailsComponent', () => {
       );
       spyOn(component, 'showError');
 
-      component.form = {
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         fields: [],
         userFields: []
-      };
-      component.event = mockEvent;
-      component.form.id = undefined;
+      });
+      component.event.set(mockEvent);
 
       component.saveForm();
 
@@ -333,22 +346,27 @@ describe('FormDetailsComponent', () => {
 
   describe('archiveForm', () => {
     beforeEach(() => {
-      component.event = mockEvent;
-      component.form = {
+      component.event.set(mockEvent);
+      component.form.set({
         id: 1,
         name: 'Test Form',
         archived: false,
         fields: [],
         userFields: []
-      };
+      });
     });
 
     it('archives form successfully', () => {
-      mockEventsService.updateForm.and.returnValue(of(component.form as any));
+      // The mock response reflects what the server would actually echo
+      // back (archived: true), rather than a snapshot of component.form()
+      // taken before archiveForm() runs its own local update.
+      mockEventsService.updateForm.and.returnValue(
+        of({ ...component.form(), archived: true } as any)
+      );
 
       component.archiveForm();
 
-      expect(component.form.archived).toBe(true);
+      expect(component.form().archived).toBe(true);
       expect(mockEventsService.updateForm).toHaveBeenCalledWith(
         '1',
         '1',
@@ -362,7 +380,7 @@ describe('FormDetailsComponent', () => {
     });
 
     it('does not archive if event is not loaded', () => {
-      component.event = null;
+      component.event.set(null);
 
       component.archiveForm();
 
@@ -390,22 +408,24 @@ describe('FormDetailsComponent', () => {
 
   describe('restoreForm', () => {
     beforeEach(() => {
-      component.event = mockEvent;
-      component.form = {
+      component.event.set(mockEvent);
+      component.form.set({
         id: 1,
         name: 'Test Form',
         archived: true,
         fields: [],
         userFields: []
-      };
+      });
     });
 
     it('restores form successfully', () => {
-      mockEventsService.updateForm.and.returnValue(of(component.form as any));
+      mockEventsService.updateForm.and.returnValue(
+        of({ ...component.form(), archived: false } as any)
+      );
 
       component.restoreForm();
 
-      expect(component.form.archived).toBe(false);
+      expect(component.form().archived).toBe(false);
       expect(mockEventsService.updateForm).toHaveBeenCalledWith(
         '1',
         '1',
@@ -454,20 +474,20 @@ describe('FormDetailsComponent', () => {
 
   describe('getDropdownFields', () => {
     it('returns empty array when form has no fields', () => {
-      component.form = { name: 'Test Form', color: '#ff0000', fields: [] };
+      component.form.set({ name: 'Test Form', color: '#ff0000', fields: [] });
 
       expect(component.getDropdownFields()).toEqual([]);
     });
 
     it('excludes non-dropdown fields', () => {
-      component.form = {
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         fields: [
           { name: 'notes', type: 'textfield' } as any,
           { name: 'count', type: 'numberfield' } as any
         ]
-      };
+      });
 
       expect(component.getDropdownFields()).toEqual([]);
     });
@@ -486,11 +506,11 @@ describe('FormDetailsComponent', () => {
         archived: true
       } as any;
 
-      component.form = {
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         fields: [dropdown, userDropdown, multiselect, archived]
-      };
+      });
 
       expect(component.getDropdownFields()).toEqual([dropdown, userDropdown]);
     });
@@ -499,11 +519,11 @@ describe('FormDetailsComponent', () => {
       const primary = { name: 'status', type: 'dropdown' } as any;
       const secondary = { name: 'severity', type: 'dropdown' } as any;
 
-      component.form = {
+      component.form.set({
         name: 'Test Form',
         color: '#ff0000',
         fields: [primary, secondary]
-      };
+      });
 
       expect(component.getDropdownFields('status')).toEqual([secondary]);
     });
@@ -515,24 +535,24 @@ describe('FormDetailsComponent', () => {
     });
 
     it('returns the form-wide default icon for an empty primary', () => {
-      (component as any).iconCache = { icon: 'default-icon-url' };
+      (component as any).iconCache.set({ icon: 'default-icon-url' });
 
       expect(component.getIconUrl('')).toBe('default-icon-url');
     });
 
     it('returns the icon for a primary choice', () => {
-      (component as any).iconCache = {
+      (component as any).iconCache.set({
         Active: { icon: 'active-icon-url' },
         icon: 'default-icon-url'
-      };
+      });
 
       expect(component.getIconUrl('Active')).toBe('active-icon-url');
     });
 
     it('returns the icon for a primary/variant combination', () => {
-      (component as any).iconCache = {
+      (component as any).iconCache.set({
         Active: { High: 'active-high-icon-url', icon: 'active-icon-url' }
-      };
+      });
 
       expect(component.getIconUrl('Active', 'High')).toBe(
         'active-high-icon-url'
@@ -540,9 +560,9 @@ describe('FormDetailsComponent', () => {
     });
 
     it('falls back to the primary icon when the variant has no icon', () => {
-      (component as any).iconCache = {
+      (component as any).iconCache.set({
         Active: { icon: 'active-icon-url' }
-      };
+      });
 
       expect(component.getIconUrl('Active', 'High')).toBe(
         'active-icon-url'
@@ -554,9 +574,8 @@ describe('FormDetailsComponent', () => {
     let mockAnchor: any;
 
     beforeEach(() => {
-      component.event = mockEvent;
-      component.form = { id: 1, name: 'Test Form' };
-      component.token = 'test-token';
+      component.event.set(mockEvent);
+      component.form.set({ id: 1, name: 'Test Form' });
 
       mockAnchor = {
         href: '',
@@ -587,21 +606,34 @@ describe('FormDetailsComponent', () => {
       expect(document.body.removeChild).toHaveBeenCalledWith(mockAnchor);
     });
 
-    it('does not export if token is not available', () => {
-      component.token = null;
-
-      component.exportForm();
-
-      expect(document.createElement).not.toHaveBeenCalled();
-      expect(mockSnackBar.open).not.toHaveBeenCalled();
-    });
-
     it('uses default filename if form name is not set', () => {
-      component.form = { id: 1 };
+      component.form.set({ id: 1 });
 
       component.exportForm();
 
       expect(mockAnchor.download).toBe('form.zip');
+    });
+  });
+
+  describe('exportForm when token is unavailable', () => {
+    it('does not export if token is not available', () => {
+      // token is read once at construction time now, so a null token
+      // needs its own component built after the session mock is set —
+      // and built before document.createElement gets spied below, since
+      // TestBed.createComponent() needs the real DOM API to insert its
+      // root element.
+      mockSessionService.getToken.and.returnValue(null);
+      const f2 = TestBed.createComponent(FormDetailsComponent);
+      const c2 = f2.componentInstance;
+      c2.event.set(mockEvent);
+      c2.form.set({ id: 1, name: 'Test Form' });
+
+      spyOn(document, 'createElement');
+
+      c2.exportForm();
+
+      expect(document.createElement).not.toHaveBeenCalled();
+      expect(mockSnackBar.open).not.toHaveBeenCalled();
     });
   });
 });

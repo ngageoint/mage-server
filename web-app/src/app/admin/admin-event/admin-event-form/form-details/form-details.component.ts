@@ -1,12 +1,25 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
-import { MatStepper } from '@angular/material/stepper';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 
 import { AdminEventsService } from '../../../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { RouteReuse } from '../../../../route-reuse.strategy';
 
 import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
@@ -24,6 +37,7 @@ import {
   EditFormDialogComponent,
   EditFormDialogData
 } from './edit-form-dialog/edit-form-dialog.component';
+import { FieldsListComponent } from '../fields-list/fields-list.component';
 import {
   decorateFormForDisplay,
   deriveUserFieldNames,
@@ -56,13 +70,42 @@ interface ErrorDialogData {
     selector: 'mage-form-details',
     templateUrl: './form-details.component.html',
     styleUrls: ['./form-details.component.scss'],
-    standalone: false
+    imports: [
+        FormsModule,
+        DatePipe,
+        MatStepperModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatDividerModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCheckboxModule,
+        MatSelectModule,
+        MatTooltipModule,
+        FieldsListComponent
+    ]
 })
 export class FormDetailsComponent implements OnInit {
-  event: MageEvent | null = null;
-  form: FormData = {};
-  token: string | null = null;
-  saving = false;
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
+
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly eventsService: AdminEventsService = inject(AdminEventsService);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly dialog: MatDialog = inject(MatDialog);
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  readonly eventId: string | null = this.route.snapshot.paramMap.get('eventId');
+  readonly formId: string | null = this.route.snapshot.paramMap.get('formId');
+  readonly creatingNewForm: boolean = !this.formId;
+  readonly token: string | null = this.sessionService.getToken() ?? null;
+
+  readonly event = signal<MageEvent | null>(null);
+  readonly form = signal<FormData>({});
+  readonly saving = signal(false);
   generalFormSubmitted = false;
 
   private _breadcrumbs: AdminBreadcrumb[] = [];
@@ -74,21 +117,19 @@ export class FormDetailsComponent implements OnInit {
     return this._breadcrumbs;
   }
 
-  creatingNewForm = false;
-
-  @ViewChild('formStepper') formStepper?: MatStepper;
+  formStepper = viewChild<MatStepper>('formStepper');
 
   showFieldsSection = false;
   showMapSection = false;
   showFeedSection = false;
-  fieldsChanged = false;
-  mapChanged = false;
-  feedsChanged = false;
-  savingFields = false;
-  savingMap = false;
-  savingFeeds = false;
+  readonly fieldsChanged = signal(false);
+  readonly mapChanged = signal(false);
+  readonly feedsChanged = signal(false);
+  readonly savingFields = signal(false);
+  readonly savingMap = signal(false);
+  readonly savingFeeds = signal(false);
 
-  observations: Observation[] = [];
+  readonly observations = signal<Observation[]>([]);
   fieldTypes = [
     { name: 'textfield', title: 'Text' },
     { name: 'textarea', title: 'Text Area' },
@@ -109,7 +150,7 @@ export class FormDetailsComponent implements OnInit {
     { name: 'audio', title: 'Audio' }
   ];
 
-  private iconCache: any = {};
+  private readonly iconCache = signal<any>({});
   private pendingIconUploads: Array<{
     primary: string;
     file: File;
@@ -117,26 +158,7 @@ export class FormDetailsComponent implements OnInit {
     previewUrl: string;
   }> = [];
 
-  eventId: string | null = null;
-  formId: string | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private eventsService: AdminEventsService,
-    private sessionService: SessionService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private breadcrumbService: AdminBreadcrumbService
-  ) { }
-
   ngOnInit(): void {
-    this.token = this.sessionService.getToken() ?? null;
-
-    this.eventId = this.route.snapshot.paramMap.get('eventId');
-    this.formId = this.route.snapshot.paramMap.get('formId');
-    this.creatingNewForm = !this.formId;
-
     this.breadcrumbs = [{
       title: 'Events',
       icon: 'event',
@@ -147,63 +169,68 @@ export class FormDetailsComponent implements OnInit {
 
     if (!this.eventId) return;
 
-    this.eventsService.getEventById(this.eventId).subscribe({
-      next: (event) => {
-        this.event = event;
+    this.eventsService.getEventById(this.eventId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (event) => {
+          this.event.set(event);
 
-        this.breadcrumbs = [{
-          title: 'Events',
-          icon: 'event',
-          route: ['/admin/events']
-        }, {
-          title: event.name,
-          route: ['/admin/events', String(event?.id ?? '')]
-        }, {
-          title: this.formId ? 'Edit Form' : 'New Form'
-        }];
+          this.breadcrumbs = [{
+            title: 'Events',
+            icon: 'event',
+            route: ['/admin/events']
+          }, {
+            title: event.name,
+            route: ['/admin/events', String(event?.id ?? '')]
+          }, {
+            title: this.formId ? 'Edit Form' : 'New Form'
+          }];
 
-        if (this.formId && event.forms) {
-          const existingForm = event.forms.find(
-            (f) => f.id?.toString() === this.formId
-          );
-          if (existingForm) {
-            this.form = { ...existingForm };
-            if (!this.form.fields) this.form.fields = [];
-            if (!this.form.userFields) this.form.userFields = [];
-            this.breadcrumbs[2].title = existingForm.name || 'Edit Form';
-            this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+          if (this.formId && event.forms) {
+            const existingForm = event.forms.find(
+              (f) => f.id?.toString() === this.formId
+            );
+            if (existingForm) {
+              const form: FormData = { ...existingForm };
+              if (!form.fields) form.fields = [];
+              if (!form.userFields) form.userFields = [];
+              this.form.set(form);
+              this.breadcrumbs[2].title = existingForm.name || 'Edit Form';
+              this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+            }
+          } else {
+            this.form.set({
+              archived: false,
+              color:
+                '#' +
+                ((Math.random() * 0xffffff) << 0).toString(16).padStart(6, '0'),
+              fields: [],
+              userFields: []
+            });
           }
-        } else {
-          this.form = {
-            archived: false,
-            color:
-              '#' +
-              ((Math.random() * 0xffffff) << 0).toString(16).padStart(6, '0'),
-            fields: [],
-            userFields: []
-          };
-        }
 
-        decorateFormForDisplay(this.form as FormData);
+          decorateFormForDisplay(this.form());
 
-        if (this.form.id) {
-          this.generateSampleObservations();
-          this.fetchFormIcons();
+          if (this.form().id) {
+            this.generateSampleObservations();
+            this.fetchFormIcons();
+          }
+        },
+        error: (error) => {
+          console.error('Error loading event:', error);
+          this.snackBar.open('Error loading event', 'Close', {
+            duration: 3000
+          });
         }
-      },
-      error: (error) => {
-        console.error('Error loading event:', error);
-        this.snackBar.open('Error loading event', 'Close', {
-          duration: 3000
-        });
-      }
-    });
+      });
   }
 
   fetchFormIcons(): void {
-    if (!this.event?.id || !this.form.id || !this.token) return;
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id || !this.token) return;
 
-    const url = `/api/events/${this.event.id}/icons/${this.form.id}.json?access_token=${this.token}`;
+    const url = `/api/events/${event.id}/icons/${form.id}.json?access_token=${this.token}`;
 
     fetch(url)
       .then((response) => {
@@ -213,20 +240,24 @@ export class FormDetailsComponent implements OnInit {
         return response.json();
       })
       .then((icons: any[]) => {
-        icons.forEach((iconData) => {
-          if (iconData.primary && iconData.variant) {
-            if (!this.iconCache[iconData.primary]) {
-              this.iconCache[iconData.primary] = {};
+        this.iconCache.update((iconCache) => {
+          const next = { ...iconCache };
+          icons.forEach((iconData) => {
+            if (iconData.primary && iconData.variant) {
+              next[iconData.primary] = {
+                ...next[iconData.primary],
+                [iconData.variant]: iconData.icon
+              };
+            } else if (iconData.primary) {
+              next[iconData.primary] = {
+                ...next[iconData.primary],
+                icon: iconData.icon
+              };
+            } else {
+              next.icon = iconData.icon;
             }
-            this.iconCache[iconData.primary][iconData.variant] = iconData.icon;
-          } else if (iconData.primary) {
-            this.iconCache[iconData.primary] = {
-              ...this.iconCache[iconData.primary],
-              icon: iconData.icon
-            };
-          } else {
-            this.iconCache.icon = iconData.icon;
-          }
+          });
+          return next;
         });
       })
       .catch((error) => {
@@ -235,11 +266,12 @@ export class FormDetailsComponent implements OnInit {
   }
 
   openEditDialog(): void {
+    const form = this.form();
     const dialogData: EditFormDialogData = {
-      name: this.form.name || '',
-      description: this.form.description || '',
-      color: this.form.color || '',
-      default: this.form.default || false
+      name: form.name || '',
+      description: form.description || '',
+      color: form.color || '',
+      default: form.default || false
     };
 
     const dialogRef = this.dialog.open(EditFormDialogComponent, {
@@ -250,9 +282,11 @@ export class FormDetailsComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result: EditFormDialogData | undefined) => {
-      if (!result || !this.event?.id || !this.form.id) return;
+      const event = this.event();
+      const currentForm = this.form();
+      if (!result || !event?.id || !currentForm.id) return;
 
-      const payload = prepareFormPayload<FormData>(this.form as FormData, {
+      const payload = prepareFormPayload<FormData>(currentForm, {
         name: result.name,
         description: result.description,
         color: result.color,
@@ -260,11 +294,10 @@ export class FormDetailsComponent implements OnInit {
       });
 
       this.eventsService
-        .updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+        .updateForm(event.id.toString(), currentForm.id.toString(), payload)
         .subscribe({
           next: (savedForm) => {
-            Object.assign(this.form, savedForm);
-            decorateFormForDisplay(this.form as FormData);
+            this.form.update((f) => decorateFormForDisplay({ ...f, ...savedForm }));
             this.snackBar.open('Form details updated successfully', 'Close', { duration: 3000 });
           },
           error: (response) => {
@@ -283,14 +316,15 @@ export class FormDetailsComponent implements OnInit {
 
   validateForm(): boolean {
     this.generalFormSubmitted = true;
-    return Boolean(this.form.name && this.form.color);
+    const form = this.form();
+    return Boolean(form.name && form.color);
   }
 
   goToFieldsStep(): void {
     if (!this.validateForm()) {
       return;
     }
-    this.formStepper?.next();
+    this.formStepper()?.next();
   }
 
   saveForm(): void {
@@ -298,29 +332,30 @@ export class FormDetailsComponent implements OnInit {
       return;
     }
 
-    if (!this.event?.id) {
+    const event = this.event();
+    if (!event?.id) {
       return;
     }
 
-    this.saving = true;
-    const wasNew = !this.form.id;
+    this.saving.set(true);
+    const form = this.form();
+    const wasNew = !form.id;
 
-    const payload = prepareFormPayload<FormData>(this.form as FormData);
+    const payload = prepareFormPayload<FormData>(form);
 
-    const saveObservable = this.form.id
+    const saveObservable = form.id
       ? this.eventsService.updateForm(
-        this.event.id.toString(),
-        this.form.id.toString(),
+        event.id.toString(),
+        form.id.toString(),
         payload
       )
-      : this.eventsService.createForm(this.event.id.toString(), payload);
+      : this.eventsService.createForm(event.id.toString(), payload);
 
     saveObservable.subscribe({
       next: (savedForm) => {
-        this.saving = false;
+        this.saving.set(false);
         this.generalFormSubmitted = false;
-        Object.assign(this.form, savedForm);
-        decorateFormForDisplay(this.form as FormData);
+        this.form.update((f) => decorateFormForDisplay({ ...f, ...savedForm }));
         this.snackBar.open('Form saved successfully', 'Close', {
           duration: 3000
         });
@@ -329,7 +364,7 @@ export class FormDetailsComponent implements OnInit {
         }
       },
       error: (response) => {
-        this.saving = false;
+        this.saving.set(false);
         const data = response.error || {};
         this.showError({
           title: 'Error Saving Form',
@@ -343,42 +378,48 @@ export class FormDetailsComponent implements OnInit {
   }
 
   saveFieldsToApi(): void {
-    if (!this.event?.id || !this.form.id || this.savingFields) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id || this.savingFields()) {
       return;
     }
 
-    this.savingFields = true;
-    this.form.userFields = deriveUserFieldNames(this.form.fields);
+    this.savingFields.set(true);
 
-    const currentPrimaryField = this.form.primaryField;
-    const currentVariantField = this.form.variantField;
-    const currentPrimaryFeedField = this.form.primaryFeedField;
-    const currentSecondaryFeedField = this.form.secondaryFeedField;
+    const userFields = deriveUserFieldNames(form.fields);
+    this.form.update((f) => ({ ...f, userFields }));
 
-    const payload = prepareFormPayload<FormData>(this.form as FormData);
+    const currentPrimaryField = form.primaryField;
+    const currentVariantField = form.variantField;
+    const currentPrimaryFeedField = form.primaryFeedField;
+    const currentSecondaryFeedField = form.secondaryFeedField;
+
+    const payload = prepareFormPayload<FormData>({ ...form, userFields });
 
     this.eventsService
-      .updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+      .updateForm(event.id.toString(), form.id.toString(), payload)
       .subscribe({
         next: (savedForm) => {
-          this.savingFields = false;
-          this.fieldsChanged = false;
-          Object.assign(this.form, savedForm);
-          decorateFormForDisplay(this.form as FormData);
-          if (savedForm.primaryField === undefined)
-            this.form.primaryField = currentPrimaryField;
-          if (savedForm.variantField === undefined)
-            this.form.variantField = currentVariantField;
-          if (savedForm.primaryFeedField === undefined)
-            this.form.primaryFeedField = currentPrimaryFeedField;
-          if (savedForm.secondaryFeedField === undefined)
-            this.form.secondaryFeedField = currentSecondaryFeedField;
+          this.savingFields.set(false);
+          this.fieldsChanged.set(false);
+          this.form.update((f) => {
+            const next = decorateFormForDisplay({ ...f, ...savedForm });
+            if (savedForm.primaryField === undefined)
+              next.primaryField = currentPrimaryField;
+            if (savedForm.variantField === undefined)
+              next.variantField = currentVariantField;
+            if (savedForm.primaryFeedField === undefined)
+              next.primaryFeedField = currentPrimaryFeedField;
+            if (savedForm.secondaryFeedField === undefined)
+              next.secondaryFeedField = currentSecondaryFeedField;
+            return next;
+          });
           this.snackBar.open('Fields saved successfully', 'Close', {
             duration: 3000
           });
         },
         error: (response) => {
-          this.savingFields = false;
+          this.savingFields.set(false);
           const data = response.error || {};
           this.showError({
             title: 'Error Saving Fields',
@@ -392,26 +433,29 @@ export class FormDetailsComponent implements OnInit {
   }
 
   saveMap(): void {
-    if (!this.event?.id || !this.form.id) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id) {
       return;
     }
 
-    this.savingMap = true;
+    this.savingMap.set(true);
 
-    this.form.userFields = deriveUserFieldNames(this.form.fields);
-    const payload = prepareFormPayload<FormData>(this.form as FormData);
+    const userFields = deriveUserFieldNames(form.fields);
+    this.form.update((f) => ({ ...f, userFields }));
+    const payload = prepareFormPayload<FormData>({ ...form, userFields });
 
     this.eventsService
-      .updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+      .updateForm(event.id.toString(), form.id.toString(), payload)
       .subscribe({
         next: () => {
-          decorateFormForDisplay(this.form as FormData);
+          this.form.update((f) => decorateFormForDisplay({ ...f }));
 
           if (this.pendingIconUploads.length > 0) {
             this.uploadPendingIcons();
           } else {
-            this.savingMap = false;
-            this.mapChanged = false;
+            this.savingMap.set(false);
+            this.mapChanged.set(false);
             this.snackBar.open(
               'Map configuration saved successfully',
               'Close',
@@ -420,7 +464,7 @@ export class FormDetailsComponent implements OnInit {
           }
         },
         error: (response) => {
-          this.savingMap = false;
+          this.savingMap.set(false);
           const data = response.error || {};
           this.showError({
             title: 'Error Saving Map Configuration',
@@ -444,8 +488,8 @@ export class FormDetailsComponent implements OnInit {
     Promise.allSettled(uploadPromises).then((results) => {
       const hasError = results.some((result) => result.status === 'rejected');
 
-      this.savingMap = false;
-      this.mapChanged = false;
+      this.savingMap.set(false);
+      this.mapChanged.set(false);
 
       if (hasError) {
         this.snackBar.open(
@@ -462,27 +506,30 @@ export class FormDetailsComponent implements OnInit {
   }
 
   saveFeeds(): void {
-    if (!this.event?.id || !this.form.id) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id) {
       return;
     }
 
-    this.savingFeeds = true;
-    this.form.userFields = deriveUserFieldNames(this.form.fields);
-    const payload = prepareFormPayload<FormData>(this.form as FormData);
+    this.savingFeeds.set(true);
+    const userFields = deriveUserFieldNames(form.fields);
+    this.form.update((f) => ({ ...f, userFields }));
+    const payload = prepareFormPayload<FormData>({ ...form, userFields });
 
     this.eventsService
-      .updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+      .updateForm(event.id.toString(), form.id.toString(), payload)
       .subscribe({
         next: () => {
-          this.savingFeeds = false;
-          this.feedsChanged = false;
-          decorateFormForDisplay(this.form as FormData);
+          this.savingFeeds.set(false);
+          this.feedsChanged.set(false);
+          this.form.update((f) => decorateFormForDisplay({ ...f }));
           this.snackBar.open('Feed configuration saved successfully', 'Close', {
             duration: 3000
           });
         },
         error: (response) => {
-          this.savingFeeds = false;
+          this.savingFeeds.set(false);
           const data = response.error || {};
           this.showError({
             title: 'Error Saving Feed Configuration',
@@ -496,22 +543,23 @@ export class FormDetailsComponent implements OnInit {
   }
 
   archiveForm(): void {
-    if (!this.event?.id || !this.form.id) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id) {
       return;
     }
 
-    this.form.archived = true;
-    const payload = prepareFormPayload<FormData>(this.form as FormData, {
+    this.form.update((f) => ({ ...f, archived: true }));
+    const payload = prepareFormPayload<FormData>(form, {
       archived: true
     });
 
     this.eventsService
-      .updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+      .updateForm(event.id.toString(), form.id.toString(), payload)
       .subscribe({
         next: (savedForm) => {
           if (savedForm) {
-            Object.assign(this.form, savedForm);
-            decorateFormForDisplay(this.form as FormData);
+            this.form.update((f) => decorateFormForDisplay({ ...f, ...savedForm }));
           }
           this.snackBar.open('Form archived successfully', 'Close', {
             duration: 3000
@@ -527,22 +575,23 @@ export class FormDetailsComponent implements OnInit {
   }
 
   restoreForm(): void {
-    if (!this.event?.id || !this.form.id) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id) {
       return;
     }
 
-    this.form.archived = false;
-    const payload = prepareFormPayload<FormData>(this.form as FormData, {
+    this.form.update((f) => ({ ...f, archived: false }));
+    const payload = prepareFormPayload<FormData>(form, {
       archived: false
     });
 
     this.eventsService
-      .updateForm(this.event.id.toString(), this.form.id.toString(), payload)
+      .updateForm(event.id.toString(), form.id.toString(), payload)
       .subscribe({
         next: (savedForm) => {
           if (savedForm) {
-            Object.assign(this.form, savedForm);
-            decorateFormForDisplay(this.form as FormData);
+            this.form.update((f) => decorateFormForDisplay({ ...f, ...savedForm }));
           }
           this.snackBar.open('Form restored successfully', 'Close', {
             duration: 3000
@@ -563,20 +612,24 @@ export class FormDetailsComponent implements OnInit {
   }
 
   finishCreating(): void {
-    if (!this.event?.id || !this.form.id) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id) {
       return;
     }
 
-    this.router.navigate(['/admin/events', this.event.id, 'forms', this.form.id]);
+    this.router.navigate(['/admin/events', event.id, 'forms', form.id]);
   }
 
   exportForm(): void {
-    if (!this.event?.id || !this.form.id || !this.token) {
+    const event = this.event();
+    const form = this.form();
+    if (!event?.id || !form.id || !this.token) {
       return;
     }
 
-    const url = `/api/events/${this.event.id}/${this.form.id}/form.zip?access_token=${this.token}`;
-    const fileName = `${this.form.name || 'form'}.zip`;
+    const url = `/api/events/${event.id}/${form.id}/form.zip?access_token=${this.token}`;
+    const fileName = `${form.name || 'form'}.zip`;
 
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -590,22 +643,24 @@ export class FormDetailsComponent implements OnInit {
   }
 
   onFieldsChange(fields: Field[]): void {
-    this.form.fields = fields;
-    this.form.userFields = deriveUserFieldNames(this.form.fields);
-    this.fieldsChanged = true;
+    const userFields = deriveUserFieldNames(fields);
+    this.form.update((f) => ({ ...f, fields, userFields }));
+    this.fieldsChanged.set(true);
     this.saveFieldsToApi();
   }
 
   getActiveFields(): Field[] {
-    if (!this.form.fields) return [];
-    return this.form.fields
+    const fields = this.form().fields;
+    if (!fields) return [];
+    return fields
       .filter((field) => !field.archived)
       .sort((a, b) => (a.id || 0) - (b.id || 0));
   }
 
   getDropdownFields(excludeField?: string): Field[] {
-    if (!this.form.fields) return [];
-    return this.form.fields.filter(
+    const fields = this.form().fields;
+    if (!fields) return [];
+    return fields.filter(
       (field) =>
         (field.type === 'dropdown' || field.type === 'userDropdown') &&
         !field.multiselect &&
@@ -615,7 +670,7 @@ export class FormDetailsComponent implements OnInit {
   }
 
   onMapFieldChange(): void {
-    this.mapChanged = true;
+    this.mapChanged.set(true);
   }
 
   toggleFieldsSection(): void {
@@ -631,61 +686,66 @@ export class FormDetailsComponent implements OnInit {
   }
 
   getPrimaryFieldChoices(): any[] {
-    if (!this.form.primaryField || !this.form.fields) return [];
-    const primaryField = this.form.fields.find(
-      (f) => f.name === this.form.primaryField
+    const form = this.form();
+    if (!form.primaryField || !form.fields) return [];
+    const primaryField = form.fields.find(
+      (f) => f.name === form.primaryField
     );
     return primaryField?.choices || [];
   }
 
   getVariantFieldChoices(): any[] {
-    if (!this.form.variantField || !this.form.fields) return [];
-    const variantField = this.form.fields.find(
-      (f) => f.name === this.form.variantField
+    const form = this.form();
+    if (!form.variantField || !form.fields) return [];
+    const variantField = form.fields.find(
+      (f) => f.name === form.variantField
     );
     return variantField?.choices || [];
   }
 
   getIconUrl(primary: string, variant?: string): string | null {
-    if (variant && this.iconCache[primary]?.[variant]) {
-      return this.iconCache[primary][variant];
-    } else if (this.iconCache[primary]?.icon) {
-      return this.iconCache[primary].icon;
-    } else if (this.iconCache.icon) {
-      return this.iconCache.icon;
+    const iconCache = this.iconCache();
+    if (variant && iconCache[primary]?.[variant]) {
+      return iconCache[primary][variant];
+    } else if (iconCache[primary]?.icon) {
+      return iconCache[primary].icon;
+    } else if (iconCache.icon) {
+      return iconCache.icon;
     }
     return null;
   }
 
   getLineColor(primary: string, variant?: string): string {
-    if (!this.form.style) return '#3388ff';
+    const style = this.form().style;
+    if (!style) return '#3388ff';
 
     try {
       if (variant) {
-        return this.form.style[primary]?.[variant]?.stroke || '#3388ff';
+        return style[primary]?.[variant]?.stroke || '#3388ff';
       }
-      return this.form.style[primary]?.stroke || '#3388ff';
+      return style[primary]?.stroke || '#3388ff';
     } catch (e) {
       return '#3388ff';
     }
   }
 
   getFillColor(primary: string, variant?: string): string {
-    if (!this.form.style) return '#3388ff';
+    const style = this.form().style;
+    if (!style) return '#3388ff';
 
     try {
       if (variant) {
-        return this.form.style[primary]?.[variant]?.fill || '#3388ff';
+        return style[primary]?.[variant]?.fill || '#3388ff';
       }
-      return this.form.style[primary]?.fill || '#3388ff';
+      return style[primary]?.fill || '#3388ff';
     } catch (e) {
       return '#3388ff';
     }
   }
 
   onFeedFieldChange(): void {
-    this.feedsChanged = true;
-    if (this.form.id) {
+    this.feedsChanged.set(true);
+    if (this.form().id) {
       this.generateSampleObservations();
     }
   }
@@ -716,7 +776,8 @@ export class FormDetailsComponent implements OnInit {
   }
 
   private getStyleForChoice(primary: string, variant?: string): any {
-    if (!this.form.style) {
+    const style = this.form().style;
+    if (!style) {
       return {
         stroke: '#3388ff',
         strokeOpacity: 1.0,
@@ -736,7 +797,7 @@ export class FormDetailsComponent implements OnInit {
       };
 
       if (variant) {
-        const variantData = this.form.style[primary]?.[variant];
+        const variantData = style[primary]?.[variant];
         if (variantData) {
           return {
             stroke: variantData.stroke || defaultStyle.stroke,
@@ -748,7 +809,7 @@ export class FormDetailsComponent implements OnInit {
           };
         }
       } else {
-        const primaryData = this.form.style[primary];
+        const primaryData = style[primary];
         if (primaryData) {
           return {
             stroke: primaryData.stroke || defaultStyle.stroke,
@@ -779,43 +840,41 @@ export class FormDetailsComponent implements OnInit {
     file?: File,
     variant?: string
   ): void {
-    if (!this.form.style) {
-      this.form.style = {};
-    }
+    this.form.update((f) => {
+      const nextStyle: any = { ...(f.style || {}) };
 
-    if (variant) {
-      if (!this.form.style[primary]) {
-        this.form.style[primary] = {};
+      if (variant) {
+        nextStyle[primary] = {
+          ...nextStyle[primary],
+          [variant]: {
+            ...nextStyle[primary]?.[variant],
+            ...style
+          }
+        };
+      } else {
+        nextStyle[primary] = {
+          ...nextStyle[primary],
+          ...style
+        };
       }
-      this.form.style[primary][variant] = {
-        ...this.form.style[primary][variant],
-        ...style
-      };
-    } else {
-      this.form.style[primary] = {
-        ...this.form.style[primary],
-        ...style
-      };
-    }
+
+      return { ...f, style: nextStyle };
+    });
 
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const previewUrl = e.target.result;
 
-        if (variant) {
-          if (!this.iconCache[primary]) {
-            this.iconCache[primary] = {};
+        this.iconCache.update((iconCache) => {
+          const next = { ...iconCache };
+          if (variant) {
+            next[primary] = { ...next[primary], [variant]: previewUrl };
+          } else {
+            next[primary] = { ...next[primary], icon: previewUrl };
           }
-          this.iconCache[primary][variant] = previewUrl;
-        } else {
-          if (!this.iconCache[primary]) {
-            this.iconCache[primary] = {};
-          }
-          this.iconCache[primary].icon = previewUrl;
-        }
-
-        this.iconCache = { ...this.iconCache };
+          return next;
+        });
       };
       reader.readAsDataURL(file);
 
@@ -826,7 +885,7 @@ export class FormDetailsComponent implements OnInit {
       this.pendingIconUploads.push({ primary, file, variant, previewUrl: '' });
     }
 
-    this.mapChanged = true;
+    this.mapChanged.set(true);
   }
 
   private uploadIcon(
@@ -835,7 +894,9 @@ export class FormDetailsComponent implements OnInit {
     variant?: string
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.event?.id || !this.form.id) {
+      const event = this.event();
+      const form = this.form();
+      if (!event?.id || !form.id) {
         reject(new Error('Missing event or form ID'));
         return;
       }
@@ -843,7 +904,7 @@ export class FormDetailsComponent implements OnInit {
       const formData = new FormData();
       formData.append('icon', file);
 
-      let url = `/api/events/${this.event.id}/icons/${this.form.id
+      let url = `/api/events/${event.id}/icons/${form.id
         }/${encodeURIComponent(primary)}`;
       if (variant) {
         url += `/${encodeURIComponent(variant)}`;
@@ -859,19 +920,15 @@ export class FormDetailsComponent implements OnInit {
             const response = JSON.parse(xhr.responseText);
 
             if (response.icon) {
-              if (variant) {
-                if (!this.iconCache[primary]) {
-                  this.iconCache[primary] = {};
+              this.iconCache.update((iconCache) => {
+                const next = { ...iconCache };
+                if (variant) {
+                  next[primary] = { ...next[primary], [variant]: response.icon };
+                } else {
+                  next[primary] = { ...next[primary], icon: response.icon };
                 }
-                this.iconCache[primary][variant] = response.icon;
-              } else {
-                if (!this.iconCache[primary]) {
-                  this.iconCache[primary] = {};
-                }
-                this.iconCache[primary].icon = response.icon;
-              }
-
-              this.iconCache = { ...this.iconCache };
+                return next;
+              });
             }
 
             resolve();
@@ -892,8 +949,9 @@ export class FormDetailsComponent implements OnInit {
   }
 
   getFieldTitle(fieldName: string | undefined): string {
-    if (!fieldName || !this.form.fields) return '';
-    const field = this.form.fields.find((f) => f.name === fieldName);
+    const fields = this.form().fields;
+    if (!fieldName || !fields) return '';
+    const field = fields.find((f) => f.name === fieldName);
     return field?.title || fieldName;
   }
 
@@ -901,7 +959,7 @@ export class FormDetailsComponent implements OnInit {
     if (!fieldName || !formData) return '';
     const value = formData[fieldName];
     if (value == null) return '';
-    const field = this.form.fields?.find((f: any) => f.name === fieldName);
+    const field = this.form().fields?.find((f: any) => f.name === fieldName);
     if (field?.type === 'geometry' && value?.coordinates) {
       return `${value.coordinates[1].toFixed(5)}, ${value.coordinates[0].toFixed(5)}`;
     }
@@ -914,22 +972,25 @@ export class FormDetailsComponent implements OnInit {
       const token = this.sessionService.getToken() ?? null;
 
       if (!eventId || !token) {
-        this.observations = [];
+        this.observations.set([]);
         return;
       }
 
       const myself = await firstValueFrom(this.sessionService.user$);
+      const form = this.form();
 
-      this.observations = ObservationFeedHelper.generateSampleObservations(
-        this.form,
-        Number(this.form.id),
-        myself,
-        eventId,
-        token
+      this.observations.set(
+        ObservationFeedHelper.generateSampleObservations(
+          form,
+          Number(form.id),
+          myself,
+          eventId,
+          token
+        )
       );
     } catch (e) {
       console.error('Error generating sample observations:', e);
-      this.observations = [];
+      this.observations.set([]);
     }
   }
 
