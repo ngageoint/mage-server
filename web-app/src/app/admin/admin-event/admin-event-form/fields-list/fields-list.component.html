@@ -7,7 +7,7 @@
     </p>
 
     <div class="draggable-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-        @for (field of getActiveFields(); track trackByFieldId($index, field)) {
+        @for (field of getActiveFields(); track field.id) {
         <div class="list-item" cdkDrag>
             <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
             <div class="item-content">

@@ -17,7 +17,6 @@ export interface EditFormDialogData {
   selector: 'mage-edit-form-dialog',
   templateUrl: './edit-form-dialog.component.html',
   styleUrls: ['./edit-form-dialog.component.scss'],
-  standalone: true,
   imports: [
     FormsModule,
     MatDialogModule,

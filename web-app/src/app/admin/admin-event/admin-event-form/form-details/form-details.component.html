@@ -1,4 +1,4 @@
-@if (event) {
+@if (event()) {
 <div class="form-page">
 
   @if (creatingNewForm) {
@@ -7,8 +7,8 @@
       <div class="stepper-step-content">
         <mat-form-field appearance="fill" subscriptSizing="dynamic">
           <mat-label>Name</mat-label>
-          <input matInput type="text" placeholder="Form name" [(ngModel)]="form.name" name="name" required>
-          @if (generalFormSubmitted && !form.name) {
+          <input matInput type="text" placeholder="Form name" [(ngModel)]="form().name" name="name" required>
+          @if (generalFormSubmitted && !form().name) {
           <mat-error>Name is required</mat-error>
           }
         </mat-form-field>
@@ -16,22 +16,22 @@
         <mat-form-field appearance="fill" subscriptSizing="dynamic">
           <mat-label>Description</mat-label>
           <textarea matInput rows="3" placeholder="Brief description of the form."
-            [(ngModel)]="form.description" name="description"></textarea>
+            [(ngModel)]="form().description" name="description"></textarea>
         </mat-form-field>
 
         <div class="color-field">
-          <input type="color" class="form-color-swatch" [(ngModel)]="form.color" name="colorSwatch"
+          <input type="color" class="form-color-swatch" [(ngModel)]="form().color" name="colorSwatch"
             aria-label="Form color">
           <mat-form-field appearance="fill" subscriptSizing="dynamic" class="color-text-field">
             <mat-label>Color</mat-label>
-            <input matInput type="text" [(ngModel)]="form.color" name="color" required>
-            @if (generalFormSubmitted && !form.color) {
+            <input matInput type="text" [(ngModel)]="form().color" name="color" required>
+            @if (generalFormSubmitted && !form().color) {
             <mat-error>Color is required</mat-error>
             }
           </mat-form-field>
         </div>
 
-        <mat-checkbox [(ngModel)]="form.default" name="default">Add To Every New Observation</mat-checkbox>
+        <mat-checkbox [(ngModel)]="form().default" name="default">Add To Every New Observation</mat-checkbox>
 
         <mat-divider></mat-divider>
 
@@ -45,8 +45,8 @@
 
     <mat-step label="Fields">
       <div class="stepper-step-content">
-        <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
-          [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="form.userFields || []"
+        <mage-fields-list [fields]="form().fields || []" [fieldTypes]="fieldTypes"
+          [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="form().userFields || []"
           (fieldsChange)="onFieldsChange($event)">
         </mage-fields-list>
 
@@ -54,8 +54,8 @@
 
         <div class="stepper-actions">
           <button matButton="filled" type="button" (click)="saveForm()"
-            [disabled]="getActiveFields().length === 0 || saving">
-            {{ saving ? 'Creating...' : 'Finish' }}
+            [disabled]="getActiveFields().length === 0 || saving()">
+            {{ saving() ? 'Creating...' : 'Finish' }}
           </button>
         </div>
       </div>
@@ -68,36 +68,36 @@
     <mat-card appearance="outlined" class="details-card">
       <div class="form-header">
         <div class="form-icon-placeholder">
-          <mat-icon fontSet="material-symbols-outlined" [style.color]="form.color">description</mat-icon>
+          <mat-icon fontSet="material-symbols-outlined" [style.color]="form().color">description</mat-icon>
         </div>
         <div class="form-info">
           <div class="form-name-row">
-            <span class="form-name">{{ form.name }}</span>
-            @if (!form.archived) {
+            <span class="form-name">{{ form().name }}</span>
+            @if (!form().archived) {
             <span class="status-badge status-badge-active">Active</span>
             }
-            @if (form.archived) {
+            @if (form().archived) {
             <span class="status-badge status-badge-archived">Archived</span>
             }
           </div>
-          <div class="form-description">{{ form.description || 'No description' }}</div>
+          <div class="form-description">{{ form().description || 'No description' }}</div>
         </div>
       </div>
 
       <div class="detail-row">
         <span class="detail-label">Color</span>
         <div class="detail-value color-display">
-          <span class="color-swatch-preview" [style.background-color]="form.color"></span>
-          {{ form.color }}
+          <span class="color-swatch-preview" [style.background-color]="form().color"></span>
+          {{ form().color }}
         </div>
       </div>
 
       <div class="detail-row">
         <span class="detail-label">Default Form</span>
-        <span class="detail-value">{{ form.default ? 'Yes – Added to every new observation' : 'No' }}</span>
+        <span class="detail-value">{{ form().default ? 'Yes – Added to every new observation' : 'No' }}</span>
       </div>
 
-      @if (form.id) {
+      @if (form().id) {
       <mat-divider class="section-divider"></mat-divider>
 
       <div class="form-actions">
@@ -107,7 +107,7 @@
         <button matButton="outlined" type="button" (click)="exportForm()">
           <mat-icon fontSet="material-symbols-outlined">download</mat-icon>Export
         </button>
-        @if (!form.archived) {
+        @if (!form().archived) {
         <div class="action-with-info">
           <button matButton="outlined" type="button" class="archive-button" (click)="archiveForm()">
             <mat-icon fontSet="material-symbols-outlined">archive</mat-icon>Archive
@@ -116,7 +116,7 @@
             matTooltip="Archiving a form will remove it from the list of forms users see when creating an observation. The form can be restored at any time.">info</mat-icon>
         </div>
         }
-        @if (form.archived) {
+        @if (form().archived) {
         <div class="action-with-info">
           <button matButton="outlined" type="button" class="restore-button" (click)="restoreForm()">
             <mat-icon fontSet="material-symbols-outlined">undo</mat-icon>Restore
@@ -129,7 +129,7 @@
       }
     </mat-card>
 
-    @if (form.id) {
+    @if (form().id) {
     <div class="configuration-sections">
 
       <mat-card appearance="outlined" class="configuration-card">
@@ -152,8 +152,8 @@
         <mat-divider></mat-divider>
         <div class="section-body">
 
-          <mage-fields-list [fields]="form.fields || []" [fieldTypes]="fieldTypes"
-            [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="form.userFields || []"
+          <mage-fields-list [fields]="form().fields || []" [fieldTypes]="fieldTypes"
+            [attachmentAllowedTypes]="attachmentAllowedTypes" [userFields]="form().userFields || []"
             (fieldsChange)="onFieldsChange($event)">
           </mage-fields-list>
         </div>
@@ -228,7 +228,7 @@
           @if (getDropdownFields().length > 0) {
           <mat-form-field appearance="fill" class="config-select-field">
             <mat-label>Primary Field</mat-label>
-            <mat-select [(ngModel)]="form.primaryField" (ngModelChange)="onMapFieldChange()" name="primaryField">
+            <mat-select [(ngModel)]="form().primaryField" (ngModelChange)="onMapFieldChange()" name="primaryField">
               <mat-option [value]="undefined">No Primary Field</mat-option>
               @for (field of getDropdownFields(); track field.name) {
               <mat-option [value]="field.name">{{ field.title }}</mat-option>
@@ -237,12 +237,12 @@
             <mat-hint>Select a dropdown field to use for primary map symbology.</mat-hint>
           </mat-form-field>
 
-          @if (form.primaryField && getDropdownFields(form.primaryField).length > 0) {
+          @if (form().primaryField && getDropdownFields(form().primaryField).length > 0) {
           <mat-form-field appearance="fill" class="config-select-field">
             <mat-label>Variant Field</mat-label>
-            <mat-select [(ngModel)]="form.variantField" (ngModelChange)="onMapFieldChange()" name="variantField">
+            <mat-select [(ngModel)]="form().variantField" (ngModelChange)="onMapFieldChange()" name="variantField">
               <mat-option [value]="undefined">No Variant Field</mat-option>
-              @for (field of getDropdownFields(form.primaryField); track field.name) {
+              @for (field of getDropdownFields(form().primaryField); track field.name) {
               <mat-option [value]="field.name">{{ field.title }}</mat-option>
               }
             </mat-select>
@@ -251,7 +251,7 @@
           }
           }
 
-          @if (form.primaryField && getPrimaryFieldChoices().length > 0) {
+          @if (form().primaryField && getPrimaryFieldChoices().length > 0) {
           <div class="primary-choices-section">
             <div class="choices-list">
               @for (choice of getPrimaryFieldChoices(); track choice.id) {
@@ -340,9 +340,9 @@
 
           <div class="section-save-actions">
             <button matButton="filled" type="button" (click)="saveMap()"
-              [disabled]="!mapChanged || savingMap">
+              [disabled]="!mapChanged() || savingMap()">
               <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
-              {{ savingMap ? 'Saving...' : 'Save Map Configuration' }}
+              {{ savingMap() ? 'Saving...' : 'Save Map Configuration' }}
             </button>
           </div>
         </div>
@@ -373,7 +373,7 @@
           <div class="feed-config-inline">
             <mat-form-field appearance="fill" class="config-select-field">
               <mat-label>Primary Field</mat-label>
-              <mat-select [(ngModel)]="form.primaryFeedField" (ngModelChange)="onFeedFieldChange()"
+              <mat-select [(ngModel)]="form().primaryFeedField" (ngModelChange)="onFeedFieldChange()"
                 name="primaryFeedField">
                 <mat-option [value]="null">No Primary Field</mat-option>
                 @for (field of getActiveFields(); track field.name) {
@@ -387,7 +387,7 @@
 
             <mat-form-field appearance="fill" class="config-select-field">
               <mat-label>Secondary Field</mat-label>
-              <mat-select [(ngModel)]="form.secondaryFeedField" (ngModelChange)="onFeedFieldChange()"
+              <mat-select [(ngModel)]="form().secondaryFeedField" (ngModelChange)="onFeedFieldChange()"
                 name="secondaryFeedField">
                 <mat-option [value]="null">No Secondary Field</mat-option>
                 @for (field of getActiveFields(); track field.name) {
@@ -400,11 +400,11 @@
             </mat-form-field>
           </div>
 
-          @if (observations.length > 0) {
+          @if (observations().length > 0) {
           <div class="feed-samples-section">
             <div class="field-hint">Preview how observations appear in the feed.</div>
             <div class="observation-feed-preview">
-              @for (observation of observations; track observation) {
+              @for (observation of observations(); track observation) {
               <mat-card appearance="outlined" class="observation-list-item">
                 <div class="item">
                   <div class="item-header">
@@ -415,18 +415,18 @@
                         <span>{{ observation.properties?.timestamp | date:'short' }}</span>
                       </div>
 
-                      @if (form.primaryFeedField && observation.properties?.forms[0]?.[form.primaryFeedField]) {
+                      @if (form().primaryFeedField && observation.properties?.forms[0]?.[form().primaryFeedField]) {
                       <div>
                         <div class="item-header-text">
-                          {{ getFeedFieldDisplayValue(form.primaryFeedField, observation.properties?.forms[0]) }}
+                          {{ getFeedFieldDisplayValue(form().primaryFeedField, observation.properties?.forms[0]) }}
                         </div>
                       </div>
                       }
 
-                      @if (form.secondaryFeedField && observation.properties?.forms[0]?.[form.secondaryFeedField]) {
+                      @if (form().secondaryFeedField && observation.properties?.forms[0]?.[form().secondaryFeedField]) {
                       <div>
                         <div class="item-subhead">
-                          {{ getFeedFieldDisplayValue(form.secondaryFeedField, observation.properties?.forms[0]) }}
+                          {{ getFeedFieldDisplayValue(form().secondaryFeedField, observation.properties?.forms[0]) }}
                         </div>
                       </div>
                       }
@@ -470,9 +470,9 @@
 
           <div class="section-save-actions">
             <button matButton="filled" type="button" (click)="saveFeeds()"
-              [disabled]="!feedsChanged || savingFeeds">
+              [disabled]="!feedsChanged() || savingFeeds()">
               <mat-icon fontSet="material-symbols-outlined">save</mat-icon>
-              {{ savingFeeds ? 'Saving...' : 'Save Feed Configuration' }}
+              {{ savingFeeds() ? 'Saving...' : 'Save Feed Configuration' }}
             </button>
           </div>
         </div>

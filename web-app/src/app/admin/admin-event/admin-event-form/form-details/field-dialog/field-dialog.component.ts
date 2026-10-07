@@ -40,7 +40,6 @@ export interface FieldResult {
     selector: 'mage-field-dialog',
     templateUrl: './field-dialog.component.html',
     styleUrls: ['./field-dialog.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
         MatDialogModule,

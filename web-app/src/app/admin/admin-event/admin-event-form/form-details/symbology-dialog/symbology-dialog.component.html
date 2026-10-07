@@ -1,5 +1,13 @@
 <h2 mat-dialog-title>
-  Map Symbology@if (data.primary) { <span> — {{ data.primary }}@if (data.variant) { <span> / {{ data.variant }}</span> }</span> }
+  Map Symbology
+  @if (data.primary) {
+    <span>
+      — {{ data.primary }}
+      @if (data.variant) {
+        <span> / {{ data.variant }}</span>
+      }
+    </span>
+  }
 </h2>
 
 <mat-dialog-content>
@@ -8,12 +16,12 @@
     <div class="icon-section">
       <div class="section-label">Point Icon</div>
       <div class="icon-upload">
-        @if (iconPreview) {
+        @if (iconPreview()) {
         <div class="icon-preview">
-          <img [src]="iconPreview" alt="Icon preview" />
+          <img [src]="iconPreview()" alt="Icon preview" />
         </div>
         }
-        @if (!iconPreview) {
+        @if (!iconPreview()) {
         <div class="icon-preview placeholder">
           <mat-icon fontSet="material-symbols-outlined">place</mat-icon>
         </div>

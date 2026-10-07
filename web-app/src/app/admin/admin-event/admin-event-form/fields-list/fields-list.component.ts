@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +22,6 @@ export interface AttachmentType {
     selector: 'mage-fields-list',
     templateUrl: './fields-list.component.html',
     styleUrls: ['./fields-list.component.scss'],
-    standalone: true,
     imports: [
         DragDropModule,
         MatButtonModule,
@@ -36,7 +35,7 @@ export class FieldsListComponent {
     fieldTypes = input<FieldType[]>([]);
     attachmentAllowedTypes = input<AttachmentType[]>([]);
     userFields = input<string[]>([]);
-    @Output() fieldsChange = new EventEmitter<Field[]>();
+    fieldsChange = output<Field[]>();
 
     constructor(private dialog: MatDialog) { }
 
@@ -75,8 +74,10 @@ export class FieldsListComponent {
 
         dialogRef.afterClosed().subscribe((result: Field | undefined) => {
             if (result) {
-                Object.assign(field, result);
-                this.fieldsChange.emit(this.fields());
+                const updatedField = { ...field, ...result };
+                this.fieldsChange.emit(
+                    this.fields().map(f => (f.id === field.id ? updatedField : f))
+                );
             }
         });
     }
@@ -140,9 +141,5 @@ export class FieldsListComponent {
         const fields = this.fields();
         if (fields.length === 0) return 0;
         return Math.max(...fields.map(f => f.id || 0)) + 1;
-    }
-
-    trackByFieldId(_index: number, field: Field): any {
-        return field.id;
     }
 }

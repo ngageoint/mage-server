@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   MAT_DIALOG_DATA as MAT_DIALOG_DATA,
@@ -27,7 +27,6 @@ export interface SymbologyDialogData {
     selector: 'symbology-dialog',
     templateUrl: './symbology-dialog.component.html',
     styleUrls: ['./symbology-dialog.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
         MatDialogModule,
@@ -46,7 +45,7 @@ export class SymbologyDialogComponent implements OnInit {
         fillOpacity: number;
     };
     iconFile: File | null = null;
-    iconPreview: string | null = null;
+    readonly iconPreview = signal<string | null>(null);
 
     constructor(
         public dialogRef: MatDialogRef<SymbologyDialogComponent>,
@@ -66,7 +65,7 @@ export class SymbologyDialogComponent implements OnInit {
             this.style = { ...this.style, ...data.style };
         }
 
-        this.iconPreview = data.icon || null;
+        this.iconPreview.set(data.icon || null);
     }
 
     ngOnInit(): void { }
@@ -79,7 +78,7 @@ export class SymbologyDialogComponent implements OnInit {
             // Create preview
             const reader = new FileReader();
             reader.onload = (e: any) => {
-                this.iconPreview = e.target.result;
+                this.iconPreview.set(e.target.result);
             };
             reader.readAsDataURL(file);
         }
