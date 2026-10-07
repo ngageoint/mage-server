@@ -5,7 +5,7 @@ The plugin adheres to [Semantic Versioning](http://semver.org/).
 
 ---
 
-## [1.0.0]
+## [1.0.1]
 ### Service
 #### Features
 * Looks up push status for each observation as it's sent to ArcGIS
