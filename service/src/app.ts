@@ -183,6 +183,8 @@ import { UserLocationPermissionServiceImpl } from './permissions/permissions.loc
 import { UserLocationRoutes, UserLocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
 import { MongooseRoleRepository, RoleModel } from './adapters/roles/adapters.roles.db.mongoose';
 import { RoleRepository } from './entities/authorization/entities.authorization';
+import { MongooseSequenceRepository, CounterModel } from './adapters/counters/adapters.counters.db.mongoose';
+import { SequenceRepository } from './entities/entities.global';
 import * as rolesApi from './app.api/roles/app.api.roles';
 import * as rolesImpl from './app.impl/roles/app.impl.roles';
 import { RolePermissionServiceImpl } from './permissions/permissions.roles';
@@ -458,6 +460,9 @@ type DatabaseLayer = {
   roles: {
     role: RoleModel
   }
+  counters: {
+    counter: CounterModel
+  }
   settings: {
     setting: SettingsModel
   }
@@ -612,6 +617,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
     roles: {
       role: RoleModel(conn)
     },
+    counters: {
+      counter: CounterModel(conn)
+    },
     settings: {
       setting: settingModel
     },
@@ -659,6 +667,9 @@ type Repositories = {
   };
   roles: {
     roleRepo: RoleRepository
+  };
+  counters: {
+    sequenceRepo: SequenceRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -737,6 +748,9 @@ async function initRepositories(
   const roleRepo = new MongooseRoleRepository(models.roles.role);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('./models/role').initialize({ roleRepo });
+  const sequenceRepo = new MongooseSequenceRepository(models.counters.counter);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/counter').initialize({ sequenceRepo });
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -791,6 +805,9 @@ async function initRepositories(
     },
     roles: {
       roleRepo
+    },
+    counters: {
+      sequenceRepo
     },
     teams: {
       teamRepo
