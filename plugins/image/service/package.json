@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.image.service",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Orient images attached to Mage observations according to EXIF meta-data and generate configurable size thumbnails.",
   "main": "lib/index.js",
   "files": [
@@ -36,7 +36,7 @@
     "sharp": "^0.35.5"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta",
+    "@ngageoint/mage.service": "^6.7.0",
     "express": "4.22.3",
     "mongoose": "^8.0.0"
   },

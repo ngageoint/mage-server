@@ -43,12 +43,12 @@
     "@esri/arcgis-rest-request": "4.3.0",
     "@terraformer/arcgis": "2.1.2",
     "@terraformer/wkt": "2.2.1",
-    "file-type": "16.5.4",
     "form-data": "4.0.6",
+    "magic-bytes.js": "1.13.1",
     "mime-types": "3.0.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta",
+    "@ngageoint/mage.service": "^6.7.0",
     "express": "4.22.3"
   },
   "devDependencies": {

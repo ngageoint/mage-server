@@ -5,7 +5,7 @@ The plugin adheres to [Semantic Versioning](http://semver.org/).
 
 ---
 
-## [1.0.0-beta.4]
+## [1.0.0]
 ### Service
 #### Features
 * Looks up push status for each observation as it's sent to ArcGIS
@@ -13,6 +13,8 @@ The plugin adheres to [Semantic Versioning](http://semver.org/).
 #### Bug Fixes
 * Fixed local `@ngageoint/mage.service` linking so `npm ci` works correctly when developing the plugin against the local source tree
 * Improved handling of attribute field mappings to avoid collisions and errors
+* Observations are only polled for layers tied to an active event that is set to push to that layer
+* Fixed attachment uploads failing with "SyntaxError: Unexpected token '<'" on ArcGIS deployments that check the auth token in the URL query string before parsing a multipart body
 
 ### Web App
 #### Features
