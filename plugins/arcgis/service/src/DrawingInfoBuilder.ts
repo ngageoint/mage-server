@@ -4,7 +4,7 @@ import { ArcGISPluginConfig } from './types/ArcGISPluginConfig';
 import { MageEvent } from '@ngageoint/mage.service/lib/entities/events/entities.events';
 import { LineStyle } from '@ngageoint/mage.service/lib/entities/entities.global';
 import api from '@ngageoint/mage.service/lib/api';
-import { fromBuffer } from 'file-type';
+import { filetypeinfo } from 'magic-bytes.js';
 import mimetypes from 'mime-types';
 import { IconDocumentResolved } from "@ngageoint/mage.service/lib/api/icon";
 
@@ -188,8 +188,7 @@ export class DrawingInfoBuilder {
   private async loadIconSymbol(icon: IconDocumentResolved): Promise<{ [key: string]: any } | null> {
     try {
       const data = await readFileAsync(icon.path)
-      const fileTypeResult = await fromBuffer(data)
-      let mediaType: string | undefined = fileTypeResult?.mime;
+      let mediaType: string | undefined = filetypeinfo(data).find(x => x.mime)?.mime;
       if (!mediaType) {
         const mimeType = mimetypes.lookup(icon.path);
         if (mimeType !== false) {
@@ -227,8 +226,7 @@ export class DrawingInfoBuilder {
     }
     try {
       const data = await readFileAsync(icon.path)
-      const fileTypeResult = await fromBuffer(data)
-      let mediaType: string | undefined = fileTypeResult?.mime
+      let mediaType: string | undefined = filetypeinfo(data).find(x => x.mime)?.mime
       if (!mediaType) {
         const mimeType = mimetypes.lookup(icon.path)
         if (mimeType !== false) {
