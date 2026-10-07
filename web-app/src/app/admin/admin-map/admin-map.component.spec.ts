@@ -48,9 +48,10 @@ describe('AdminMapComponent', () => {
     mockMapSettingsService.updateMapSettings.and.returnValue(of({} as any));
 
     await TestBed.configureTestingModule({
-    declarations: [AdminMapComponent, TestHostComponent],
+    declarations: [TestHostComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [MatInputModule,
+    imports: [AdminMapComponent,
+        MatInputModule,
         MatSnackBarModule,
         MatRadioModule,
         MatFormFieldModule,

@@ -1,6 +1,13 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { Component, DestroyRef, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule, NgForm } from '@angular/forms';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatButtonModule } from '@angular/material/button';
 
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
@@ -14,9 +21,22 @@ type WebSearchType = 'NONE' | 'NOMINATIM';
     selector: 'mage-admin-map',
     templateUrl: './admin-map.component.html',
     styleUrls: ['./admin-map.component.scss'],
-    standalone: false
+    imports: [
+        FormsModule,
+        MatCardModule,
+        MatRadioModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatDividerModule,
+        MatButtonModule
+    ]
 })
 export class AdminMapComponent implements OnInit {
+  private readonly mapSettingsService = inject(MapSettingsService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly breadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef = inject(DestroyRef);
+
   @ViewChild('mapForm') mapForm!: NgForm;
 
   readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Map', icon: 'public' }];
@@ -30,12 +50,8 @@ export class AdminMapComponent implements OnInit {
   webNominatimUrl: string = '';
   mobileNominatimUrl: string = '';
 
-  constructor(
-    private mapSettingsService: MapSettingsService,
-    private snackBar: MatSnackBar,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {
-    this.mapSettingsService.getMapSettings().subscribe({
+  constructor() {
+    this.mapSettingsService.getMapSettings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (settings: MapSettings | null | undefined) => {
         const s: any = settings ?? {};
 
@@ -81,7 +97,7 @@ export class AdminMapComponent implements OnInit {
     if (webType === 'NOMINATIM') payload.webNominatimUrl = this.webNominatimUrl;
     if (mobileType === 'NOMINATIM') payload.mobileNominatimUrl = this.mobileNominatimUrl;
 
-    this.mapSettingsService.updateMapSettings(payload).subscribe({
+    this.mapSettingsService.updateMapSettings(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open('Map settings saved', undefined, { duration: 2000 });
       },
