@@ -1,336 +1,347 @@
 <ng-template #breadcrumbActions>
-  @if (layer && (hasLayerEditPermission || hasLayerDeletePermission)) {
-    <div class="nav-actions">
-      @if (isLayerFileBased() && hasLayerEditPermission) {
-        <button matButton="outlined" (click)="downloadLayer()"
-          [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating">
-          <mat-icon fontSet="material-symbols-outlined">download</mat-icon>Download
-        </button>
-      }
-      @if (hasLayerDeletePermission) {
-        <button matButton="outlined" class="delete-layer-button" (click)="deleteLayer()">
-          <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
-        </button>
-      }
-    </div>
+  @if (layer(); as layer) {
+    @if (hasLayerEditPermission || hasLayerDeletePermission) {
+      <div class="nav-actions">
+        @if (isLayerFileBased() && hasLayerEditPermission) {
+          <button matButton="outlined" (click)="downloadLayer()"
+            [disabled]="(layer.type === 'GeoPackage' && layer.state === 'processing') || layer.validating">
+            <mat-icon fontSet="material-symbols-outlined">download</mat-icon>Download
+          </button>
+        }
+        @if (hasLayerDeletePermission) {
+          <button matButton="outlined" class="delete-layer-button" (click)="deleteLayer()">
+            <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+          </button>
+        }
+      </div>
+    }
   }
 </ng-template>
 
-@if (loading && !layer) {
+@if (loading() && !layer()) {
   <div class="loading-state">
     <mat-spinner></mat-spinner>
     <p>Loading layer details...</p>
   </div>
 }
 
-@if (error && !layer) {
+@if (error() && !layer()) {
   <div class="error-state">
     <mat-icon fontSet="material-symbols-outlined" class="error-icon">error</mat-icon>
-    <p>{{ error }}</p>
+    <p>{{ error() }}</p>
     <button matButton="filled" (click)="ngOnInit()">Retry</button>
   </div>
 }
 
-@if (layer && !loading) {
-  <div class="layer-page">
-    <mat-card appearance="outlined" class="details-card">
-      <div class="layer-header">
-        <div class="media-content">
-          <div class="layer-icon-placeholder">
-            <mat-icon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
+@if (layer(); as layer) {
+  @if (!loading()) {
+    <div class="layer-page">
+      <mat-card appearance="outlined" class="details-card">
+        <div class="layer-header">
+          <div class="media-content">
+            <div class="layer-icon-placeholder">
+              <mat-icon fontSet="material-symbols-outlined">{{ layerIcon(layer) }}</mat-icon>
+            </div>
+          </div>
+
+          <div class="layer-info">
+            <div class="layer-name-row">
+              <span class="layer-name">{{ layer.name }}</span>
+              <span class="layer-type-badge">{{ layer.type }}</span>
+            </div>
+            @if (layer.description) {
+              <span class="layer-description">{{ layer.description }}</span>
+            }
           </div>
         </div>
 
-        <div class="layer-info">
-          <div class="layer-name-row">
-            <span class="layer-name">{{ layer.name }}</span>
-            <span class="layer-type-badge">{{ layer.type }}</span>
+        @if (layer.type === 'Imagery') {
+          <div class="detail-row">
+            <span class="detail-label">Base Layer</span>
+            <span class="detail-value">{{ layer.base }}</span>
           </div>
-          @if (layer.description) {
-            <span class="layer-description">{{ layer.description }}</span>
-          }
-        </div>
-      </div>
 
-      @if (layer.type === 'Imagery') {
-        <div class="detail-row">
-          <span class="detail-label">Base Layer</span>
-          <span class="detail-value">{{ layer.base }}</span>
-        </div>
+          <div class="detail-row">
+            <span class="detail-label">Format</span>
+            <span class="detail-value">{{ layer.format }}</span>
+          </div>
 
-        <div class="detail-row">
-          <span class="detail-label">Format</span>
-          <span class="detail-value">{{ layer.format }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">URL</span>
-          <span class="detail-value">{{ layer.url }}</span>
-        </div>
-      }
-
-      @if (layer.format === 'WMS' && layer.type === 'Imagery') {
-        <div class="detail-row">
-          <span class="detail-label">Layers</span>
-          <span class="detail-value">{{ layer.wms?.layers }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">Styles</span>
-          <span class="detail-value">{{ layer.wms?.styles }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">WMS Format</span>
-          <span class="detail-value">{{ layer.wms?.format }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">Transparent</span>
-          <span class="detail-value">{{ layer.wms?.transparent }}</span>
-        </div>
-
-        <div class="detail-row">
-          <span class="detail-label">Version</span>
-          <span class="detail-value">{{ layer.wms?.version }}</span>
-        </div>
-      }
-
-      @if (hasLayerEditPermission) {
-        <mat-divider class="section-divider"></mat-divider>
-
-        <div class="layer-actions">
-          <button matButton="outlined" type="button" (click)="editLayerDetails()">
-            <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
-            Edit Layer
-          </button>
-        </div>
-      }
-    </mat-card>
-
-    @if (layer.invalid) {
-      <mat-card appearance="outlined" class="section-card">
-        <h3 class="section-title">GeoPackage Validation Errors</h3>
-
-        @for (error of layer.invalid.errors; track $index) {
-          <div class="error-item">
-            @if (error.warning) {
-              <span class="warning-message">
-                <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ error.error }}
-              </span>
-            }
-            @if (error.fatal) {
-              <span class="error-message">
-                <mat-icon fontSet="material-symbols-outlined">block</mat-icon>{{ error.error }}
-              </span>
-            }
+          <div class="detail-row">
+            <span class="detail-label">URL</span>
+            <span class="detail-value">{{ layer.url }}</span>
           </div>
         }
 
-        @if (layer.state === 'unavailable') {
-          <mat-card appearance="outlined" class="danger-zone-card">
-            <h3 class="danger-zone-title">Proceed With Layer Creation</h3>
-            <p class="danger-zone-description">
-              The GeoPackage used to create this layer is invalid. This layer is not currently available to any user of
-              MAGE. You may proceed with the creation of this layer, but be aware doing so
-              <strong>may result in unintended consequences including app and server crashes.</strong>
-            </p>
-            <button matButton="outlined" class="warning-button" (click)="confirmCreateLayer()">
-              <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>Proceed With Layer Creation
+        @if (layer.format === 'WMS' && layer.type === 'Imagery') {
+          <div class="detail-row">
+            <span class="detail-label">Layers</span>
+            <span class="detail-value">{{ layer.wms?.layers }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Styles</span>
+            <span class="detail-value">{{ layer.wms?.styles }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">WMS Format</span>
+            <span class="detail-value">{{ layer.wms?.format }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Transparent</span>
+            <span class="detail-value">{{ layer.wms?.transparent }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Version</span>
+            <span class="detail-value">{{ layer.wms?.version }}</span>
+          </div>
+        }
+
+        @if (hasLayerEditPermission) {
+          <mat-divider class="section-divider"></mat-divider>
+
+          <div class="layer-actions">
+            <button matButton="outlined" type="button" (click)="editLayerDetails()">
+              <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+              Edit Layer
             </button>
-          </mat-card>
-        }
-      </mat-card>
-    }
-
-    @if (layer.type === 'GeoPackage' && layer.state === 'processing') {
-      <mat-card appearance="outlined" class="section-card">
-        <h3 class="processing-title">
-          <mat-icon fontSet="material-symbols-outlined" class="spin">progress_activity</mat-icon>Processing
-        </h3>
-        <p class="processing-description">
-          The GeoPackage file is being optimized for maximum performance across all MAGE clients. This includes
-          indexing the feature layers and processing the tile layers for quick access.
-        </p>
-
-        @for (status of layer.processing; track $index) {
-          <div class="processing-status">
-            <h5 class="status-header">
-              @if (status.complete) {
-                <mat-icon fontSet="material-symbols-outlined" class="status-complete">check</mat-icon>
-              }
-              @if (status.type === 'tile') {
-                <span>"{{ status.layer }}" layer optimization</span>
-              }
-              @if (status.type === 'feature') {
-                <span>"{{ status.layer }}" layer index</span>
-              }
-            </h5>
-
-            @if (!status.total) {
-              <mat-progress-bar [mode]="status.complete ? 'determinate' : 'indeterminate'" [value]="100"></mat-progress-bar>
-              @if (!status.complete) {
-                <div class="progress-label">{{ status.description }}</div>
-              }
-            }
-
-            @if (status.total) {
-              <mat-progress-bar mode="determinate" [value]="(status.count / status.total) * 100"></mat-progress-bar>
-              <div class="progress-label">{{ status.count }} of {{ status.total }} {{ status.type }}s</div>
-            }
           </div>
         }
       </mat-card>
-    }
 
-    @if (layer.state === 'available') {
-      @if (layer.type === 'Feature' && hasLayerEditPermission) {
+      @if (layer.invalid) {
         <mat-card appearance="outlined" class="section-card">
-          <h3 class="section-title">Add KML or KMZ Data</h3>
-          <p class="section-description">Add features to this layer by uploading a KML, KMZ, or zipped shapefile (50MB max).</p>
+          <h3 class="section-title">GeoPackage Validation Errors</h3>
 
-          @if (completedUploads.length > 0) {
-            <div class="completed-uploads-section">
-              <h4 class="completed-uploads-title">Upload Results:</h4>
-
-              @for (status of completedUploads; track $index) {
-                <div>
-                  @if (!status.error) {
-                    <div class="upload-status" [class.upload-status--warning]="(status.features || 0) === 0">
-                      <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
-                      <span>Created {{ status.features || 0 }} Features From File {{ status.name }}</span>
-                    </div>
-                  }
-
-                  @if (status.error) {
-                    <div class="upload-error">
-                      <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ status.name }}: {{ status.error }}
-                    </div>
-                  }
-                </div>
+          @for (error of layer.invalid.errors; track $index) {
+            <div class="error-item">
+              @if (error.warning) {
+                <span class="warning-message">
+                  <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ error.error }}
+                </span>
+              }
+              @if (error.fatal) {
+                <span class="error-message">
+                  <mat-icon fontSet="material-symbols-outlined">block</mat-icon>{{ error.error }}
+                </span>
               }
             </div>
           }
 
-          <div class="upload-item">
-            <div class="upload-placeholder">
-              <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="isUploading">
-                <mat-icon fontSet="material-symbols-outlined" [class.spin]="isUploading">
-                  {{ isUploading ? 'progress_activity' : 'upload' }}
-                </mat-icon>
-                {{ isUploading ? 'Uploading...' : (upload.file?.name || 'Choose KML/KMZ File') }}
+          @if (layer.state === 'unavailable') {
+            <mat-card appearance="outlined" class="danger-zone-card">
+              <h3 class="danger-zone-title">Proceed With Layer Creation</h3>
+              <p class="danger-zone-description">
+                The GeoPackage used to create this layer is invalid. This layer is not currently available to any user of
+                MAGE. You may proceed with the creation of this layer, but be aware doing so
+                <strong>may result in unintended consequences including app and server crashes.</strong>
+              </p>
+              <button matButton="outlined" class="warning-button" (click)="confirmCreateLayer()">
+                <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>Proceed With Layer Creation
               </button>
-              <input #fileInput type="file" class="file-input" accept=".kml,.kmz,.zip" (change)="onFileSelected($event)" [disabled]="isUploading">
-              @if (upload.file) {
-                <button
-                  matIconButton
-                  (click)="clearUpload()"
-                  [disabled]="isUploading"
-                  aria-label="Remove selected file"
-                >
-                  <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
-                </button>
-              }
-            </div>
-
-            @if (upload.file && !upload.error && !isUploading) {
-              <div class="upload-info">
-                {{ (upload.file.size / 1024).toFixed(2) }} KB
-              </div>
-            }
-
-            @if (upload.error) {
-              <div class="upload-error">
-                <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ upload.error }}
-              </div>
-            }
-          </div>
+            </mat-card>
+          }
         </mat-card>
       }
 
-      <mat-card appearance="outlined" class="events-card">
-        <div class="card-header">
-          <h3 class="section-title">Events</h3>
-          @if (hasLayerEditPermission) {
-            <div class="card-actions">
-              <button matButton="outlined" (click)="addEventToLayer()">
-                <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Event
-              </button>
+      @if (layer.type === 'GeoPackage' && layer.state === 'processing') {
+        <mat-card appearance="outlined" class="section-card">
+          <h3 class="processing-title">
+            <mat-icon fontSet="material-symbols-outlined" class="spin">progress_activity</mat-icon>Processing
+          </h3>
+          <p class="processing-description">
+            The GeoPackage file is being optimized for maximum performance across all MAGE clients. This includes
+            indexing the feature layers and processing the tile layers for quick access.
+          </p>
+
+          @for (status of layer.processing; track $index) {
+            <div class="processing-status">
+              <h5 class="status-header">
+                @if (status.complete) {
+                  <mat-icon fontSet="material-symbols-outlined" class="status-complete">check</mat-icon>
+                }
+                @if (status.type === 'tile') {
+                  <span>"{{ status.layer }}" layer optimization</span>
+                }
+                @if (status.type === 'feature') {
+                  <span>"{{ status.layer }}" layer index</span>
+                }
+              </h5>
+
+              @if (!status.total) {
+                <mat-progress-bar [mode]="status.complete ? 'determinate' : 'indeterminate'" [value]="100"></mat-progress-bar>
+                @if (!status.complete) {
+                  <div class="progress-label">{{ status.description }}</div>
+                }
+              }
+
+              @if (status.total) {
+                <mat-progress-bar mode="determinate" [value]="(status.count / status.total) * 100"></mat-progress-bar>
+                <div class="progress-label">{{ status.count }} of {{ status.total }} {{ status.type }}s</div>
+              }
             </div>
           }
-        </div>
+        </mat-card>
+      }
 
-        <div class="toolbar">
-          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-            <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-            <mat-label>Search events</mat-label>
-            <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
-            @if (eventSearchTerm) {
-              <button matSuffix matIconButton (click)="onEventSearchChange()" aria-label="Clear">
-                <mat-icon>close</mat-icon>
-              </button>
+      @if (layer.state === 'available') {
+        @if (layer.type === 'Feature' && hasLayerEditPermission) {
+          <mat-card appearance="outlined" class="section-card">
+            <h3 class="section-title">Add KML or KMZ Data</h3>
+            <p class="section-description">Add features to this layer by uploading a KML, KMZ, or zipped shapefile (50MB max).</p>
+
+            @let completedUploads = this.completedUploads();
+            @let upload = this.upload();
+            @let isUploading = this.isUploading();
+
+            @if (completedUploads.length > 0) {
+              <div class="completed-uploads-section">
+                <h4 class="completed-uploads-title">Upload Results:</h4>
+
+                @for (status of completedUploads; track $index) {
+                  <div>
+                    @if (!status.error) {
+                      <div class="upload-status" [class.upload-status--warning]="(status.features || 0) === 0">
+                        <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
+                        <span>Created {{ status.features || 0 }} Features From File {{ status.name }}</span>
+                      </div>
+                    }
+
+                    @if (status.error) {
+                      <div class="upload-error">
+                        <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ status.name }}: {{ status.error }}
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
             }
-          </mat-form-field>
-        </div>
 
-        <div class="events-content">
-          @if (eventsPage.totalCount > 0 && !loadingEvents) {
-            <mat-nav-list>
-              @for (event of eventsDataSource.data; track event.id) {
-                <mat-list-item [routerLink]="['../events', event.id]">
-                  <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
-                  <span matListItemTitle>{{ event.name }}</span>
-                  @if (event.description) {
-                    <span matListItemLine>{{ event.description }}</span>
-                  }
-                  @if (hasLayerEditPermission) {
-                    <span matListItemMeta>
-                      <button
-                        matIconButton
-                        (click)="removeEventFromLayer(event, $event)"
-                        aria-label="Remove Event"
-                      >
-                        <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
-                      </button>
-                    </span>
-                  }
-                </mat-list-item>
+            <div class="upload-item">
+              <div class="upload-placeholder">
+                <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="isUploading">
+                  <mat-icon fontSet="material-symbols-outlined" [class.spin]="isUploading">
+                    {{ isUploading ? 'progress_activity' : 'upload' }}
+                  </mat-icon>
+                  {{ isUploading ? 'Uploading...' : (upload.file?.name || 'Choose KML/KMZ File') }}
+                </button>
+                <input #fileInput type="file" class="file-input" accept=".kml,.kmz,.zip" (change)="onFileSelected($event)" [disabled]="isUploading">
+                @if (upload.file) {
+                  <button
+                    matIconButton
+                    (click)="clearUpload()"
+                    [disabled]="isUploading"
+                    aria-label="Remove selected file"
+                  >
+                    <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+                  </button>
+                }
+              </div>
+
+              @if (upload.file && !upload.error && !isUploading) {
+                <div class="upload-info">
+                  {{ (upload.file.size / 1024).toFixed(2) }} KB
+                </div>
               }
-            </mat-nav-list>
-          }
 
-          @if (eventsPage.totalCount === 0 && !loadingEvents) {
-            <div class="empty-state">
-              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+              @if (upload.error) {
+                <div class="upload-error">
+                  <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>{{ upload.error }}
+                </div>
+              }
+            </div>
+          </mat-card>
+        }
+
+        <mat-card appearance="outlined" class="events-card">
+          @let eventsPage = this.eventsPage();
+          @let loadingEvents = this.loadingEvents();
+
+          <div class="card-header">
+            <h3 class="section-title">Events</h3>
+            @if (hasLayerEditPermission) {
+              <div class="card-actions">
+                <button matButton="outlined" (click)="addEventToLayer()">
+                  <mat-icon fontSet="material-symbols-outlined">add</mat-icon>Add Event
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="toolbar">
+            <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+              <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+              <mat-label>Search events</mat-label>
+              <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
               @if (eventSearchTerm) {
-                <div class="empty-state-text">No events match your search</div>
-              } @else {
-                <div class="empty-state-text">This layer is not part of any events</div>
+                <button matSuffix matIconButton (click)="onEventSearchChange()" aria-label="Clear">
+                  <mat-icon>close</mat-icon>
+                </button>
               }
-            </div>
-          }
+            </mat-form-field>
+          </div>
 
-          @if (loadingEvents) {
-            <div class="loading-overlay">
-              <mat-spinner diameter="32"></mat-spinner>
-            </div>
-          }
-        </div>
+          <div class="events-content">
+            @if (eventsPage.totalCount > 0 && !loadingEvents) {
+              <mat-nav-list>
+                @for (event of layerEvents(); track event.id) {
+                  <mat-list-item [routerLink]="['../events', event.id]">
+                    <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
+                    <span matListItemTitle>{{ event.name }}</span>
+                    @if (event.description) {
+                      <span matListItemLine>{{ event.description }}</span>
+                    }
+                    @if (hasLayerEditPermission) {
+                      <span matListItemMeta>
+                        <button
+                          matIconButton
+                          (click)="removeEventFromLayer(event, $event)"
+                          aria-label="Remove Event"
+                        >
+                          <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+                        </button>
+                      </span>
+                    }
+                  </mat-list-item>
+                }
+              </mat-nav-list>
+            }
 
-        <mat-paginator
-          [length]="eventsPage.totalCount || 0"
-          [pageSize]="eventsPageSize"
-          [pageSizeOptions]="pageSizeOptions"
-          (page)="onEventsPageChange($event)"
-        ></mat-paginator>
-      </mat-card>
-    }
+            @if (eventsPage.totalCount === 0 && !loadingEvents) {
+              <div class="empty-state">
+                <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+                @if (eventSearchTerm) {
+                  <div class="empty-state-text">No events match your search</div>
+                } @else {
+                  <div class="empty-state-text">This layer is not part of any events</div>
+                }
+              </div>
+            }
 
-    @if (layer.state === 'available') {
-      <mat-card appearance="outlined" class="section-card">
-        <h3 class="section-title">Layer Preview</h3>
-        <mage-layer-preview [layer]="layer"></mage-layer-preview>
-      </mat-card>
-    }
-  </div>
+            @if (loadingEvents) {
+              <div class="loading-overlay">
+                <mat-spinner diameter="32"></mat-spinner>
+              </div>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="eventsPage.totalCount || 0"
+            [pageSize]="eventsPageSize"
+            [pageSizeOptions]="pageSizeOptions"
+            (page)="onEventsPageChange($event)"
+          ></mat-paginator>
+        </mat-card>
+      }
+
+      @if (layer.state === 'available') {
+        <mat-card appearance="outlined" class="section-card">
+          <h3 class="section-title">Layer Preview</h3>
+          <mage-layer-preview [layer]="layer"></mage-layer-preview>
+        </mat-card>
+      }
+    </div>
+  }
 }
