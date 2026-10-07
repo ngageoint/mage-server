@@ -48,7 +48,7 @@
     "mime-types": "3.0.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.5.8 || ^6.6.0-beta",
+    "@ngageoint/mage.service": "^6.7.0",
     "express": "4.22.2"
   },
   "devDependencies": {
