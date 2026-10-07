@@ -298,7 +298,9 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
               searchOptions.term = searchTerm;
             }
 
-            this.eventsService.getEvents(searchOptions).subscribe({
+            this.eventsService.getEvents(searchOptions)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
               next: (response) => {
                 let filteredEvents = response.items || [];
 
@@ -342,11 +344,15 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
       } as SearchModalData
     });
 
-    dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result: SearchModalResult) => {
       if (result?.selectedItem && layer.id) {
         const selectedEvent = result.selectedItem;
 
-        this.eventsService.addLayerToEvent(String(selectedEvent.id), { id: layer.id }).subscribe({
+        this.eventsService.addLayerToEvent(String(selectedEvent.id), { id: layer.id })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
           next: () => {
             this.getEventsPage();
             this.snackBar.open(`Layer added to event: ${selectedEvent.name}`, undefined, { duration: 2000 });
@@ -367,13 +373,19 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
     const layerId = layer.id;
 
-    this.eventsService.removeLayerFromEvent(event.id.toString(), layerId).subscribe({
+    this.eventsService.removeLayerFromEvent(event.id.toString(), layerId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: () => {
         this.getEventsPage();
 
         const snackBarRef = this.snackBar.open(`Removed ${event.name} from layer`, 'Undo', { duration: 5000 });
-        snackBarRef.onAction().subscribe(() => {
-          this.eventsService.addLayerToEvent(event.id.toString(), { id: layerId }).subscribe({
+        snackBarRef.onAction()
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+          this.eventsService.addLayerToEvent(event.id.toString(), { id: layerId })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
             next: () => this.getEventsPage(),
             error: (error) => {
               console.error('Error restoring event:', error);
@@ -398,7 +410,9 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
       data: { layer }
     });
 
-    dialogRef.afterClosed().subscribe((updatedLayer?: Layer) => {
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updatedLayer?: Layer) => {
       if (!updatedLayer) return;
 
       const nextLayer = { ...layer, ...updatedLayer };
@@ -418,7 +432,9 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
       data: { layer }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
       if (result) {
         this.snackBar.open('Layer deleted successfully', 'Close', { duration: 3000 });
 
@@ -510,7 +526,9 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
     this.isUploading.set(true);
     this.upload.update((u) => ({ ...u, uploading: true, error: undefined }));
 
-    this.uploadFile(file).subscribe({
+    this.uploadFile(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (response) => {
         this.isUploading.set(false);
 
