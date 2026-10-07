@@ -60,7 +60,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ### Plugins
 #### ArcGIS
-* Released 1.0.0; see the [ArcGIS plugin changelog](plugins/arcgis/CHANGELOG.md)
+* Released 1.0.1; see the [ArcGIS plugin changelog](plugins/arcgis/CHANGELOG.md)
 #### Image
 * Upgraded `sharp` to 0.35.5, fixing high-severity vulnerabilities in its bundled libvips, libheif, and librsvg libraries
 #### nga-msi
