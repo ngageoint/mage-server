@@ -1,8 +1,8 @@
-import { Component, Inject, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
-  MAT_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatDialogRef as MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogRef,
   MatDialogModule
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +37,9 @@ export interface SymbologyDialogData {
     ]
 })
 export class SymbologyDialogComponent implements OnInit {
+    private readonly dialogRef = inject(MatDialogRef<SymbologyDialogComponent>);
+    readonly data = inject<SymbologyDialogData>(MAT_DIALOG_DATA);
+
     style: {
         stroke: string;
         strokeOpacity: number;
@@ -47,10 +50,7 @@ export class SymbologyDialogComponent implements OnInit {
     iconFile: File | null = null;
     readonly iconPreview = signal<string | null>(null);
 
-    constructor(
-        public dialogRef: MatDialogRef<SymbologyDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: SymbologyDialogData
-    ) {
+    constructor() {
         // Initialize with defaults
         this.style = {
             stroke: '#3388ff',
@@ -61,11 +61,11 @@ export class SymbologyDialogComponent implements OnInit {
         };
 
         // Override with existing values if provided
-        if (data.style) {
-            this.style = { ...this.style, ...data.style };
+        if (this.data.style) {
+            this.style = { ...this.style, ...this.data.style };
         }
 
-        this.iconPreview.set(data.icon || null);
+        this.iconPreview.set(this.data.icon || null);
     }
 
     ngOnInit(): void { }

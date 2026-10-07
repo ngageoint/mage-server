@@ -1,8 +1,8 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
-    MatDialogRef as MatDialogRef,
-    MAT_DIALOG_DATA as MAT_DIALOG_DATA,
+    MatDialogRef,
+    MAT_DIALOG_DATA,
     MatDialogModule
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -53,21 +53,21 @@ export interface FieldResult {
     ]
 })
 export class FieldDialogComponent {
+    private readonly dialogRef = inject(MatDialogRef<FieldDialogComponent>);
+    readonly data = inject<FieldDialogData>(MAT_DIALOG_DATA);
+
     field: Field;
     newOptionTitle = '';
     isEditMode = false;
 
-    constructor(
-        public dialogRef: MatDialogRef<FieldDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: FieldDialogData
-    ) {
-        this.isEditMode = data.editMode || false;
+    constructor() {
+        this.isEditMode = this.data.editMode || false;
 
-        if (this.isEditMode && data.existingField) {
-            this.field = JSON.parse(JSON.stringify(data.existingField));
+        if (this.isEditMode && this.data.existingField) {
+            this.field = JSON.parse(JSON.stringify(this.data.existingField));
             const originalType = this.field.type;
 
-            if (data.isMemberField) {
+            if (this.data.isMemberField) {
                 const wasMultiselect = originalType === 'multiselectdropdown' || !!this.field.multiselect;
                 this.field.type = 'userDropdown';
                 this.field.multiselect = wasMultiselect;
@@ -80,7 +80,7 @@ export class FieldDialogComponent {
             }
         } else {
             this.field = {
-                type: data.fieldTypes && data.fieldTypes.length > 0 ? data.fieldTypes[0].name : 'textfield',
+                type: this.data.fieldTypes && this.data.fieldTypes.length > 0 ? this.data.fieldTypes[0].name : 'textfield',
                 title: '',
                 required: false,
                 multiselect: false,

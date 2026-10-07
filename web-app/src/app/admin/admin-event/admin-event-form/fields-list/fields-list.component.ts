@@ -1,5 +1,5 @@
-import { Component, input, output } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { Component, inject, input, output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -31,13 +31,13 @@ export interface AttachmentType {
     ]
 })
 export class FieldsListComponent {
+    private readonly dialog = inject(MatDialog);
+
     fields = input<Field[]>([]);
     fieldTypes = input<FieldType[]>([]);
     attachmentAllowedTypes = input<AttachmentType[]>([]);
     userFields = input<string[]>([]);
     fieldsChange = output<Field[]>();
-
-    constructor(private dialog: MatDialog) { }
 
     addField(): void {
         const dialogRef = this.dialog.open(FieldDialogComponent, {

@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,14 +27,10 @@ export interface EditFormDialogData {
   ]
 })
 export class EditFormDialogComponent {
-  form: EditFormDialogData;
+  private readonly dialogRef = inject(MatDialogRef<EditFormDialogComponent>);
+  private readonly data = inject<EditFormDialogData>(MAT_DIALOG_DATA);
 
-  constructor(
-    public dialogRef: MatDialogRef<EditFormDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: EditFormDialogData
-  ) {
-    this.form = { ...data };
-  }
+  form: EditFormDialogData = { ...this.data };
 
   onSave(): void {
     this.dialogRef.close(this.form);
