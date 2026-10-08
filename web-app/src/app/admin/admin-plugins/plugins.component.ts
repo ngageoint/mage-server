@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { PluginService, PluginsById } from '../plugin/plugin.service';
 
 export interface AdminPluginListItem {
@@ -11,14 +12,14 @@ export interface AdminPluginListItem {
     selector: 'mage-plugins',
     templateUrl: './plugins.component.html',
     styleUrls: ['./plugins.component.scss'],
-    standalone: false
+    imports: [RouterModule]
 })
 export class PluginsComponent implements OnInit {
-  plugins: AdminPluginListItem[] = [];
-  loading = true;
-  error: string | null = null;
+  private readonly pluginService = inject(PluginService);
 
-  constructor(private pluginService: PluginService) {}
+  plugins: AdminPluginListItem[] = [];
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     try {
@@ -35,9 +36,9 @@ export class PluginsComponent implements OnInit {
         })
         .sort((a, b) => a.title.localeCompare(b.title));
     } catch (e) {
-      this.error = 'Failed to load plugins.';
+      this.error.set('Failed to load plugins.');
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }

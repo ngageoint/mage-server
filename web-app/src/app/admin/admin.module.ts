@@ -42,7 +42,6 @@ import { SearchModalComponent } from './search-modal/search-modal.component';
 import { AdminGuard } from './services/admin-guard.service';
 import { AdminNavigationComponent } from './admin-navigation/admin-navigation.component';
 import { AdminNavbarComponent } from './admin-shell/admin-navbar/admin-navbar.component';
-import { PluginModule } from './admin-plugins/plugins.module';
 
 @NgModule({
   imports: [
@@ -82,7 +81,6 @@ import { PluginModule } from './admin-plugins/plugins.module';
     AdminEventFormModule,
     AdminMapModule,
     ColorPickerModule,
-    PluginModule,
     AdminNavbarComponent,
     AdminNavigationComponent
   ],

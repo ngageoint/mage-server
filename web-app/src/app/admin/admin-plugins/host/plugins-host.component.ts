@@ -4,9 +4,11 @@ import {
   OnInit,
   Type,
   ViewChild,
-  ViewContainerRef
+  ViewContainerRef,
+  inject,
+  signal
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { PluginService } from '../../plugin/plugin.service';
@@ -17,14 +19,18 @@ import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.
     selector: 'mage-plugins-host',
     templateUrl: './plugins-host.component.html',
     styleUrls: ['./plugins-host.component.scss'],
-    standalone: false
+    imports: [RouterModule]
 })
 export class PluginHostComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly pluginService = inject(PluginService);
+  private readonly breadcrumbService = inject(AdminBreadcrumbService);
+
   @ViewChild('host', { read: ViewContainerRef, static: true })
   host!: ViewContainerRef;
 
-  loading = true;
-  error: string | null = null;
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   private _breadcrumbs: AdminBreadcrumb[] = [{ title: 'Plugin', icon: 'extension' }];
   set breadcrumbs(value: AdminBreadcrumb[]) {
@@ -37,12 +43,6 @@ export class PluginHostComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private route: ActivatedRoute,
-    private pluginService: PluginService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
-
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
 
@@ -52,8 +52,8 @@ export class PluginHostComponent implements OnInit, OnDestroy {
         const pluginId = params.get('pluginId');
         if (!pluginId) return;
 
-        this.loading = true;
-        this.error = null;
+        this.loading.set(true);
+        this.error.set(null);
         this.host.clear();
 
         try {
@@ -131,9 +131,9 @@ export class PluginHostComponent implements OnInit, OnDestroy {
 
           this.host.createComponent(entry, { injector: moduleRef.injector });
         } catch (e: any) {
-          this.error = e?.message ?? 'Failed to load plugin.';
+          this.error.set(e?.message ?? 'Failed to load plugin.');
         } finally {
-          this.loading = false;
+          this.loading.set(false);
         }
       });
   }
