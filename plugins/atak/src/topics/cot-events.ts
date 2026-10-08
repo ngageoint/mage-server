@@ -3,6 +3,7 @@ import { FeedTopic, FeedTopicContent } from '@ngageoint/mage.service/lib/entitie
 import { PluginResourceUrl } from '@ngageoint/mage.service/lib/entities/entities.global'
 import { Feature } from 'geojson'
 import { AtakRequest, AtakResponse } from '../atak'
+import { CotEvent, parseCotEvent } from '../cot/parse'
 
 export const topicDescriptor: FeedTopic = {
   id: 'cot-events',
@@ -42,23 +43,6 @@ export const topicDescriptor: FeedTopic = {
   }
 }
 
-interface CotPoint {
-  lat: number
-  lon: number
-  hae: number
-  ce: number
-  le: number
-}
-
-interface CotEvent {
-  uid: string
-  type: string
-  time: string
-  start: string
-  stale: string
-  point: CotPoint
-}
-
 const geoJsonFromCotEvent = (x: CotEvent): Feature => {
   return {
     type: 'Feature',
@@ -91,17 +75,33 @@ export const createContentRequest = (params?: JsonObject): AtakRequest => {
  * Marti's docs list this endpoint's response as `application/json`, an
  * array of strings, with no sample body or further schema. Working theory,
  * unconfirmed (see mage-notes/TRACKING.md, 2026-09-28): each string is a
- * serialized CoT XML <event> document, meaning this would still need an
- * XML-parsing step per array element despite the JSON content-type. Left
- * unimplemented until that's verified against a real response - returns no
- * items for now rather than parse against a guessed shape.
+ * serialized CoT XML <event> document. Since that shape is still unverified
+ * against a real server, a response that isn't an array of strings is
+ * treated as "no items" rather than thrown as an error - same resilience
+ * convention nws-alerts uses for an unreachable/misbehaving source.
  */
 export const transformResponse = (res: AtakResponse, req: AtakRequest): FeedTopicContent => {
+  const rawEvents = Array.isArray(res.body) ? res.body : []
+
+  const features: Feature[] = []
+  for (const rawEvent of rawEvents) {
+    if (typeof rawEvent !== 'string') {
+      console.warn('atak cot-events: skipping non-string entry in response', rawEvent)
+      continue
+    }
+    const event = parseCotEvent(rawEvent)
+    if (!event) {
+      console.warn('atak cot-events: skipping unparseable CoT event', rawEvent)
+      continue
+    }
+    features.push(geoJsonFromCotEvent(event))
+  }
+
   return {
     topic: topicDescriptor.id,
     items: {
       type: 'FeatureCollection',
-      features: []
+      features
     }
   }
 }
