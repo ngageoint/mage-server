@@ -1,13 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogModule as MatDialogModule, MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule as MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule as MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { FormsModule } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { PageEvent } from '@angular/material/paginator';
 import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -54,19 +47,8 @@ describe('SearchModalComponent', () => {
         mockSearchData.searchFunction = mockSearchFunction;
 
         await TestBed.configureTestingModule({
-            declarations: [
-                SearchModalComponent
-            ],
             imports: [
-                MatDialogModule,
-                MatTableModule,
-                MatPaginatorModule,
-                MatIconModule,
-                MatButtonModule,
-                MatFormFieldModule,
-                MatInputModule,
-                MatListModule,
-                FormsModule,
+                SearchModalComponent,
                 NoopAnimationsModule
             ],
             providers: [
@@ -95,7 +77,7 @@ describe('SearchModalComponent', () => {
             expect(component.loading).toBeFalse();
             expect(component.pageIndex).toBe(0);
             expect(component.pageSize).toBe(5);
-            expect(component.totalCount).toBe(0);
+            expect(component.totalCount()).toBe(0);
             expect(component.pageSizeOptions).toEqual([5]);
             expect(component.currentSearchTerm).toBe('');
         });
@@ -132,8 +114,8 @@ describe('SearchModalComponent', () => {
         it('should update data source and total count on successful search', () => {
             component.search();
 
-            expect(component.dataSource.data).toEqual(mockSearchResults.items);
-            expect(component.totalCount).toBe(3);
+            expect(component.items()).toEqual(mockSearchResults.items);
+            expect(component.totalCount()).toBe(3);
             expect(component.loading).toBeFalse();
         });
 
@@ -142,8 +124,8 @@ describe('SearchModalComponent', () => {
 
             component.search();
 
-            expect(component.dataSource.data).toEqual(mockSearchResults.items);
-            expect(component.totalCount).toBe(3);
+            expect(component.items()).toEqual(mockSearchResults.items);
+            expect(component.totalCount()).toBe(3);
         });
 
         it('should handle search error', () => {
@@ -153,8 +135,8 @@ describe('SearchModalComponent', () => {
             component.search();
 
             expect(component.loading).toBeFalse();
-            expect(component.dataSource.data).toEqual([]);
-            expect(component.totalCount).toBe(0);
+            expect(component.items()).toEqual([]);
+            expect(component.totalCount()).toBe(0);
             expect(consoleErrorSpy).toHaveBeenCalledWith('Search error:', 'Search failed');
         });
 
@@ -370,18 +352,6 @@ describe('SearchModalComponent', () => {
         });
     });
 
-    describe('Component Destruction', () => {
-        it('should complete destroy subject on destroy', () => {
-            const destroySpy = spyOn(component['destroy$'], 'next');
-            const completeSpy = spyOn(component['destroy$'], 'complete');
-
-            component.ngOnDestroy();
-
-            expect(destroySpy).toHaveBeenCalled();
-            expect(completeSpy).toHaveBeenCalled();
-        });
-    });
-
     describe('Template Integration', () => {
         beforeEach(() => {
             fixture.detectChanges();
@@ -398,7 +368,7 @@ describe('SearchModalComponent', () => {
         });
 
         it('should show no results message when no data', () => {
-            component.dataSource.data = [];
+            component.items.set([]);
             fixture.detectChanges();
 
             const noResults = fixture.debugElement.nativeElement.querySelector('[data-testid="no-results"]');
@@ -407,7 +377,7 @@ describe('SearchModalComponent', () => {
         });
 
         it('should show paginator when totalCount > 0', () => {
-            component.totalCount = 10;
+            component.totalCount.set(10);
             fixture.detectChanges();
 
             const paginator = fixture.debugElement.nativeElement.querySelector('[data-testid="paginator"]');
@@ -441,8 +411,8 @@ describe('SearchModalComponent', () => {
 
             component.search();
 
-            expect(component.dataSource.data).toEqual([]);
-            expect(component.totalCount).toBe(0);
+            expect(component.items()).toEqual([]);
+            expect(component.totalCount()).toBe(0);
         });
 
         it('should handle search results with null items', () => {
@@ -450,8 +420,8 @@ describe('SearchModalComponent', () => {
 
             component.search();
 
-            expect(component.dataSource.data).toEqual([]);
-            expect(component.totalCount).toBe(0);
+            expect(component.items()).toEqual([]);
+            expect(component.totalCount()).toBe(0);
         });
 
         it('should handle search results without items property', () => {
@@ -460,8 +430,8 @@ describe('SearchModalComponent', () => {
 
             component.search();
 
-            expect(component.dataSource.data).toEqual(directResults);
-            expect(component.totalCount).toBe(1);
+            expect(component.items()).toEqual(directResults);
+            expect(component.totalCount()).toBe(1);
         });
 
         it('should handle items without ids in comparison', () => {

@@ -1,9 +1,14 @@
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 export interface SearchModalColumn {
     key: string;
@@ -35,39 +40,45 @@ export interface SearchModalResult {
     selector: 'app-search-modal',
     templateUrl: './search-modal.component.html',
     styleUrls: ['./search-modal.component.scss'],
-    standalone: false
+    imports: [
+      FormsModule,
+      MatDialogModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatIconModule,
+      MatButtonModule,
+      MatListModule,
+      MatPaginatorModule
+    ]
 })
-export class SearchModalComponent implements OnInit, OnDestroy {
-    dataSource = new MatTableDataSource<any>();
+export class SearchModalComponent implements OnInit {
+    readonly dialogRef = inject(MatDialogRef<SearchModalComponent>);
+    readonly data = inject<SearchModalData>(MAT_DIALOG_DATA);
+    private readonly destroyRef = inject(DestroyRef);
+
+    readonly items = signal<any[]>([]);
     displayedColumns: string[] = [];
     columns: SearchModalColumn[] = [];
 
     loading = false;
     pageIndex = 0;
     pageSize = 5;
-    totalCount = 0;
+    readonly totalCount = signal(0);
     pageSizeOptions = [5];
 
     selectedItem: any = null;
     currentSearchTerm = '';
 
-    private destroy$ = new Subject<void>();
-
     /**
      * Component constructor. Initializes the modal with provided data and sets up columns.
-     * @param dialogRef - Reference to the Material dialog for closing and returning results
-     * @param data - Configuration data including search function, columns, and modal settings
      */
-    constructor(
-        public dialogRef: MatDialogRef<SearchModalComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: SearchModalData
-    ) {
-        if (data.selectedItem) {
-            this.selectedItem = data.selectedItem;
+    constructor() {
+        if (this.data.selectedItem) {
+            this.selectedItem = this.data.selectedItem;
         }
 
-        this.columns = data.columns;
-        this.displayedColumns = data.columns.map(col => col.key);
+        this.columns = this.data.columns;
+        this.displayedColumns = this.data.columns.map(col => col.key);
     }
 
     /**
@@ -78,14 +89,6 @@ export class SearchModalComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Component destruction lifecycle hook.
-     */
-    ngOnDestroy(): void {
-        this.destroy$.next();
-        this.destroy$.complete();
-    }
-
-    /**
      * Executes a search using the provided search function.
      */
     search(): void {
@@ -93,18 +96,19 @@ export class SearchModalComponent implements OnInit, OnDestroy {
         this.loading = true;
 
         this.data.searchFunction(searchTerm, this.pageIndex, this.pageSize)
-            .pipe(takeUntil(this.destroy$))
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (results) => {
                     this.loading = false;
-                    this.dataSource.data = results.items || results || [];
-                    this.totalCount = results.totalCount || this.dataSource.data.length;
+                    const items = Array.isArray(results) ? results : (results.items ?? []);
+                    this.items.set(items);
+                    this.totalCount.set(results.totalCount || items.length);
                 },
                 error: (error) => {
                     this.loading = false;
                     console.error('Search error:', error);
-                    this.dataSource.data = [];
-                    this.totalCount = 0;
+                    this.items.set([]);
+                    this.totalCount.set(0);
                 }
             });
     }

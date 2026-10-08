@@ -84,11 +84,9 @@ import { PluginModule } from './admin-plugins/plugins.module';
     ColorPickerModule,
     PluginModule,
     AdminNavbarComponent,
-    AdminNavigationComponent
-  ],
-  declarations: [
-    SearchModalComponent,
-    AdminComponent
+    AdminNavigationComponent,
+    AdminComponent,
+    SearchModalComponent
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

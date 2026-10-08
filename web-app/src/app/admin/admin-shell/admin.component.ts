@@ -1,79 +1,88 @@
 import {
   AfterViewInit,
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
-  ViewChild
+  ViewChild,
+  inject,
+  signal
 } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { MatSidenav } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 
 import { PluginService } from '../plugin/plugin.service';
 import { UserPagingService } from '../services/user-paging.service';
 import { DeviceService } from '../admin-devices/device.service';
 import { SidenavService } from './sidenav.service';
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
+import { AdminBreadcrumbComponent } from '../admin-breadcrumb/admin-breadcrumb.component';
+import { NgTemplateOutlet } from '@angular/common';
+import { AdminNavbarComponent } from './admin-navbar/admin-navbar.component';
+import { AdminNavigationComponent } from '../admin-navigation/admin-navigation.component';
 
 @Component({
     selector: 'admin',
     templateUrl: './admin.component.html',
     styleUrls: ['./admin.component.scss'],
-    standalone: false
+    imports: [
+      MatSidenavModule,
+      RouterModule,
+      NgTemplateOutlet,
+      AdminNavbarComponent,
+      AdminNavigationComponent,
+      AdminBreadcrumbComponent
+    ]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly router = inject(Router);
+  private readonly plugins = inject(PluginService);
+  private readonly userPaging = inject(UserPagingService);
+  private readonly deviceService = inject(DeviceService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly sidenavService = inject(SidenavService);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly breadcrumbService = inject(AdminBreadcrumbService);
+
   @ViewChild('adminMainContent')
   adminMainContent?: ElementRef<HTMLElement>;
 
   @ViewChild(MatSidenav)
   sidenav?: MatSidenav;
 
-  isMobile = false;
+  readonly isMobile = signal(false);
 
-  stateName = '';
+  readonly stateName = signal('');
 
   pluginActive = false;
 
-  pluginTabs: Array<{
-    id: string;
-    title: string;
-    state: string;
-    icon?: string;
-  }> = [];
+  readonly pluginTabs = signal<
+    Array<{ id: string; title: string; state: string; icon?: string }>
+  >([]);
 
   userState: 'inactive' = 'inactive';
-  inactiveUsers: any[] = [];
+  readonly inactiveUsers = signal<any[]>([]);
   stateAndData: any;
 
   deviceState: 'unregistered' = 'unregistered';
-  unregisteredDevices: any[] = [];
+  readonly unregisteredDevices = signal<any[]>([]);
   deviceStateAndData: any;
 
-  private destroy$ = new Subject<void>();
-
-  constructor(
-    private router: Router,
-    private plugins: PluginService,
-    private userPaging: UserPagingService,
-    private deviceService: DeviceService,
-    private breakpointObserver: BreakpointObserver,
-    private sidenavService: SidenavService,
-    public breadcrumbService: AdminBreadcrumbService
-  ) {}
-
   ngOnInit(): void {
-    this.stateName = this.router.url;
+    this.stateName.set(this.router.url);
     this.router.events
       .pipe(
         filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-        takeUntil(this.destroy$)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((e) => {
-        this.stateName = e.urlAfterRedirects;
+        this.stateName.set(e.urlAfterRedirects);
 
-        if (this.isMobile) {
+        if (this.isMobile()) {
           this.sidenav?.close();
         }
 
@@ -102,9 +111,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.breakpointObserver
       .observe('(max-width: 768px)')
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
-        this.isMobile = result.matches;
+        this.isMobile.set(result.matches);
         if (result.matches) {
           this.sidenav?.close();
         } else {
@@ -113,15 +122,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
     this.sidenavService.toggle$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.sidenav?.toggle());
   }
 
   ngOnDestroy(): void {
     this.breadcrumbService.setBreadcrumbs([]);
     this.breadcrumbService.setActions(null);
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   pluginActiveChanged(active: any): void {
@@ -143,11 +150,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   private refreshInactiveUsers(): void {
     this.userPaging
       .refresh(this.stateAndData)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.inactiveUsers = this.userPaging.users(
-            this.stateAndData[this.userState]
+          this.inactiveUsers.set(
+            this.userPaging.users(this.stateAndData[this.userState])
           );
         },
         error: (err) => console.error('Error refreshing inactive users', err)
@@ -157,11 +164,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   private refreshUnregisteredDevices(): void {
     this.deviceService
       .refresh(this.deviceStateAndData)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.unregisteredDevices = this.deviceService.devices(
-            this.deviceStateAndData[this.deviceState]
+          this.unregisteredDevices.set(
+            this.deviceService.devices(this.deviceStateAndData[this.deviceState])
           );
         },
         error: (err) =>
@@ -192,7 +199,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           []
         );
 
-        this.pluginTabs = tabs;
+        this.pluginTabs.set(tabs);
       })
       .catch((err) => {
         console.error('Error loading plugins', err);
