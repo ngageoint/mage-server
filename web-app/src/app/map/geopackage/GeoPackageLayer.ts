@@ -49,12 +49,7 @@ export class GeoPackageRasterLayer extends TileLayer {
   }
 
   setStyle(style: SimpleStyle | null): void {
-    if (style) {
-      this.style = { ...this.style, ...style };
-    } else {
-      this.style = {};
-    }
-
+    this.style = style || {};
     this.redraw();
   }
 }

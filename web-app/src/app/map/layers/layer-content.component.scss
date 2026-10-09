@@ -1,5 +1,27 @@
+@use '@angular/material' as mat;
+
 .opacity {
   padding-right: 24px;
+}
+
+.style-override {
+  @include mat.slide-toggle-overrides((
+    track-width: 36px,
+    track-height: 20px,
+    state-layer-size: 28px,
+    unselected-handle-size: 10px,
+    unselected-handle-horizontal-margin: 0 5px,
+    unselected-pressed-handle-horizontal-margin: 0 1px,
+    unselected-with-icon-handle-horizontal-margin: 0 3px,
+    selected-handle-size: 14px,
+    selected-handle-horizontal-margin: 0 19px,
+    selected-pressed-handle-horizontal-margin: 0 17px,
+    selected-with-icon-handle-horizontal-margin: 0 19px,
+    with-icon-handle-size: 14px,
+    pressed-handle-size: 18px,
+    selected-icon-size: 10px,
+    unselected-icon-size: 10px
+  ));
 }
 
 .opacity-label {
@@ -50,12 +72,4 @@ mat-form-field {
     margin-top: 0;
     opacity: 0;
   }
-}
-
-.style-actions {
-  margin-left: -8px;
-}
-
-.style-actions>button {
-  padding: 0 8px;
 }

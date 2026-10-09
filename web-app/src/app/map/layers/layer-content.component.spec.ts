@@ -6,6 +6,7 @@ import { Component, ViewChild } from '@angular/core';
 import { RenderedMapLayer } from '../entities.map-layer';
 
 const imageryLayer = { id: 1, name: 'Layer One', type: 'Imagery', layer: {} } as unknown as RenderedMapLayer;
+const defaultStyle = { stroke: '#000000FF', fill: '#00000011', width: 2 };
 const geoPackageLayer = { id: 'layer1', name: 'Layer One', type: 'GeoPackage', renderAs: 'feature', layer: {} } as unknown as RenderedMapLayer;
 
 @Component({
@@ -49,38 +50,78 @@ describe('LayerContentComponent', () => {
   });
 
   it('should only show style override for GeoPackage feature layers', () => {
-    expect(fixture.nativeElement.querySelector('.style-actions')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.style-override')).toBeNull();
 
     hostComponent.layer = geoPackageLayer;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.style-actions')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.style-override')).not.toBeNull();
   });
 
-  it('should toggle default style on', () => {
-    component.toggleStyle();
-    expect(component.style()).toEqual({
-      stroke: '#000000FF',
-      fill: '#00000011',
-      width: 1
-    });
+  it('should only show style when override is on', () => {
+    hostComponent.layer = geoPackageLayer;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.style')).toBeNull();
+
+    component.overrideChanged(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.style')).not.toBeNull();
   });
 
-  it('should toggle default style off', () => {
+  it('should start with override off', () => {
+    expect(component.override()).toBeFalse();
+    expect(component.style()).toEqual(defaultStyle);
+  });
+
+  it('should apply style when override is turned on', () => {
     spyOn(component['layerService'], 'style');
-    component.toggleStyle();
+    component.overrideChanged(true);
+    expect(component.override()).toBeTrue();
     expect(component['layerService'].style).toHaveBeenCalledWith(
       component.layer(),
-      component.style()
+      defaultStyle
+    );
+  });
+
+  it('should remove style when override is turned off', () => {
+    component.overrideChanged(true);
+    spyOn(component['layerService'], 'style');
+    component.overrideChanged(false);
+    expect(component.override()).toBeFalse();
+    expect(component['layerService'].style).toHaveBeenCalledWith(
+      component.layer(),
+      null
+    );
+  });
+
+  it('should restore last style when override is turned back on', () => {
+    component.overrideChanged(true);
+    component.widthChanged(10);
+    component.overrideChanged(false);
+    spyOn(component['layerService'], 'style');
+    component.overrideChanged(true);
+    expect(component['layerService'].style).toHaveBeenCalledWith(
+      component.layer(),
+      { ...defaultStyle, width: 10 }
     );
   });
 
   it('should change opacity', () => {
     spyOn(component['layerService'], 'opacity');
-    component.opacityChanged(0.5 as any);
+    component.opacityChanged(50);
+    expect(component.opacity()).toEqual(50);
     expect(component['layerService'].opacity).toHaveBeenCalledWith(
       component.layer(),
-      0.5 / 100
+      50 / 100
     );
+  });
+
+  it('should show opacity in the label', () => {
+    const label: HTMLElement = fixture.nativeElement.querySelector('.opacity-label');
+    expect(label.textContent?.trim()).toEqual('Opacity 100%');
+
+    component.opacityChanged(75);
+    fixture.detectChanges();
+    expect(label.textContent?.trim()).toEqual('Opacity 75%');
   });
 
   it('should change color', () => {
@@ -91,7 +132,7 @@ describe('LayerContentComponent', () => {
     component.colorChanged(event, 'fill');
     expect(component['layerService'].style).toHaveBeenCalledWith(
       component.layer(),
-      { fill: '#000000' }
+      { ...defaultStyle, fill: '#000000' }
     );
   });
 
@@ -100,8 +141,15 @@ describe('LayerContentComponent', () => {
     component.widthChanged(10);
     expect(component['layerService'].style).toHaveBeenCalledWith(
       component.layer(),
-      { width: 10 }
+      { ...defaultStyle, width: 10 }
     );
+  });
+
+  it('should ignore cleared line width', () => {
+    spyOn(component['layerService'], 'style');
+    component.widthChanged(null);
+    expect(component.style()).toEqual(defaultStyle);
+    expect(component['layerService'].style).not.toHaveBeenCalled();
   });
 
   it('should format opacity', () => {

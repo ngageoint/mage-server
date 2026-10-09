@@ -1,25 +1,23 @@
 <div class="opacity">
-  <span class="opacity-label">Opacity</span>
-  <mat-slider class="opacity-slider" min="0" max="100" step="1" discrete [displayWith]="formatOpacity">
-    <input matSliderThumb aria-label="Opacity" [value]="100" (valueChange)="opacityChanged($event)" />
+  <span class="opacity-label">Opacity {{ formatOpacity(opacity()) }}</span>
+  <mat-slider class="opacity-slider" min="0" max="100" step="1" [displayWith]="formatOpacity">
+    <input matSliderThumb aria-label="Opacity" [ngModel]="opacity()" (ngModelChange)="opacityChanged($event)" />
   </mat-slider>
 </div>
 
 @if (canOverrideStyle()) {
-  <div class="style-actions">
-    <button matButton (click)="toggleStyle()">
-      <mat-icon>palette</mat-icon>{{ style() ? 'Reset To Default' : 'Override Style' }}
-    </button>
-  </div>
+  <mat-slide-toggle class="style-override" [checked]="override()" (change)="overrideChanged($event.checked)">
+    Override Style
+  </mat-slide-toggle>
 
-  @if (style(); as style) {
+  @if (override()) {
     <div class="style" animate.enter="style--enter" animate.leave="style--leave">
       <div class="style__content">
-        <color-picker label="Stroke" [hexColor]="style.stroke" (onColorChanged)="colorChanged($event, 'stroke')"></color-picker>
-        <color-picker label="Fill" [hexColor]="style.fill" (onColorChanged)="colorChanged($event, 'fill')"></color-picker>
+        <color-picker label="Stroke" [hexColor]="style().stroke" (onColorChanged)="colorChanged($event, 'stroke')"></color-picker>
+        <color-picker label="Fill" [hexColor]="style().fill" (onColorChanged)="colorChanged($event, 'fill')"></color-picker>
         <mat-form-field appearance="outline">
           <mat-label>Stroke Width</mat-label>
-          <input matInput type="number" [ngModel]="style.width" (ngModelChange)="widthChanged($event)" />
+          <input matInput type="number" [ngModel]="style().width" (ngModelChange)="widthChanged($event)" />
         </mat-form-field>
       </div>
     </div>
