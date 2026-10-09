@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, Condition, copyObservationAttrs, EventScopedObservationRepository, FindObservationsSort, FindObservationsStreamSpec, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, Condition, copyObservationAttrs, FindObservationsSort, FindObservationsStreamSpec, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -19,7 +19,6 @@ export interface ObservationRequestContext<Principal = unknown> extends AppReque
    */
   userId: UserId
   deviceId: string
-  observationRepository: EventScopedObservationRepository
 }
 export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> { }
 

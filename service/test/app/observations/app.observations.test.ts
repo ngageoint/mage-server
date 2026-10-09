@@ -48,6 +48,7 @@ import {
   ObservationEmitted,
   ObservationRepositoryError,
   ObservationRepositoryErrorCode,
+  ObservationRepositoryForEvent,
   ObservationState,
   patchAttachment,
   putAttachmentThumbnailForMinDimension,
@@ -81,6 +82,7 @@ describe('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
+  let obsRepoFactory: ObservationRepositoryForEvent
   let userRepo: SubstituteOf<UserRepository>
   let permissions: SubstituteOf<api.ObservationPermissionService>
   let context: api.ObservationRequestContext
@@ -98,6 +100,7 @@ describe('observations use case interactions', function() {
       style: {}
     })
     obsRepo = Sub.for<EventScopedObservationRepository>()
+    obsRepoFactory = async () => obsRepo
     userRepo = Sub.for<UserRepository>()
     permissions = Sub.for<api.ObservationPermissionService>()
     principalHandle = Sub.for<{ requestingPrincipal(): string }>()
@@ -105,7 +108,6 @@ describe('observations use case interactions', function() {
       mageEvent,
       userId: uniqid(),
       deviceId: uniqid(),
-      observationRepository: obsRepo,
       requestToken: uniqid(),
       requestingPrincipal() { return principalHandle.requestingPrincipal() },
       locale() { return null }
@@ -484,7 +486,7 @@ describe('observations use case interactions', function() {
     beforeEach(function() {
       teamRepo = Sub.for<TeamRepository>()
       searchRepo = Sub.for<ObservationSearchRepository>()
-      readObservations = ReadObservations(permissions, teamRepo, searchRepo)
+      readObservations = ReadObservations(permissions, obsRepoFactory, teamRepo, searchRepo)
     })
 
     it('fails without permission', async function() {
@@ -614,7 +616,7 @@ describe('observations use case interactions', function() {
     let allocateObservationId: api.AllocateObservationId
 
     beforeEach(function() {
-      allocateObservationId = AllocateObservationId(permissions)
+      allocateObservationId = AllocateObservationId(permissions, obsRepoFactory)
     })
 
     it('fails without permission', async function() {
@@ -649,7 +651,7 @@ describe('observations use case interactions', function() {
     let minimalObs: ObservationAttrs
 
     beforeEach(function() {
-      saveObservation = SaveObservation(permissions, userRepo)
+      saveObservation = SaveObservation(permissions, obsRepoFactory, userRepo)
       minimalObs = {
         id: uniqid(),
         eventId: mageEvent.id,
@@ -821,7 +823,7 @@ describe('observations use case interactions', function() {
 
         const deny = Sub.for<api.ObservationPermissionService>()
         deny.ensureCreateObservationPermission(Arg.all()).resolves(permissionDenied('test create', context.userId, minimalObs.id))
-        saveObservation = SaveObservation(deny, userRepo)
+        saveObservation = SaveObservation(deny, obsRepoFactory, userRepo)
         const req: api.SaveObservationRequest = {
           context,
           observation: observationModFor(minimalObs)
@@ -1003,7 +1005,7 @@ describe('observations use case interactions', function() {
 
         const deny = Sub.for<api.ObservationPermissionService>()
         deny.ensureUpdateObservationPermission(Arg.all()).resolves(permissionDenied('test update', context.userId, minimalObs.id))
-        saveObservation = SaveObservation(deny, userRepo)
+        saveObservation = SaveObservation(deny, obsRepoFactory, userRepo)
         const req: api.SaveObservationRequest = {
           context,
           observation: observationModFor(minimalObs)
@@ -1816,7 +1818,7 @@ describe('observations use case interactions', function() {
         }
       ]
       obs = Observation.evaluate(baseObsAttrs, mageEvent)
-      storeAttachmentContent = StoreAttachmentContent(permissions, store, [])
+      storeAttachmentContent = StoreAttachmentContent(permissions, obsRepoFactory, store, [])
 
       expect(obs.validation.hasErrors).to.be.false
     })
@@ -2175,7 +2177,7 @@ describe('observations use case interactions', function() {
         }
       ]
       obs = Observation.evaluate(baseObsAttrs, mageEvent)
-      readAttachmentContent = ReadAttachmentContent(permissions, store)
+      readAttachmentContent = ReadAttachmentContent(permissions, obsRepoFactory, store)
 
       expect(obs.validation.hasErrors).to.be.false
     })

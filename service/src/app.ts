@@ -123,7 +123,6 @@ import {
 import { AnonymousUser, UserWithRole } from './permissions/permissions.role-based.base';
 import {
   AttachmentStore,
-  EventScopedObservationRepository,
   ObservationRepositoryForEvent,
   ObservationSearchRepository
 } from './entities/observations/entities.observations';
@@ -1096,24 +1095,29 @@ async function initObservationsAppLayer(
   return {
     readObservations: observationsImpl.ReadObservations(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.teams.teamRepo,
       repos.observations.searchRepo
     ),
     allocateObservationId: observationsImpl.AllocateObservationId(
-      obsPermissionsService
+      obsPermissionsService,
+      repos.observations.obsRepoFactory
     ),
     saveObservation: observationsImpl.SaveObservation(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.users.userRepo,
       log.child({ component: 'observations' })
     ),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.observations.attachmentStore,
       attachmentHooks
     ),
     readAttachmentContent: observationsImpl.ReadAttachmentContent(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.observations.attachmentStore
     )
   };
@@ -1264,9 +1268,7 @@ interface MageEventRequestContext extends AppRequestContext<UserWithRole> {
   event: MageEventDocument | MageEvent | undefined;
 }
 
-const exportEventScopeKey = 'exportEventScope' as const;
-const observationEventScopeKey = 'observationEventScope' as const;
-const locationEventScopeKey = 'locationEventScope' as const;
+const eventScopeKey = 'eventScopeKey' as const;
 
 async function initWebLayer(
   repos: Repositories,
@@ -1353,10 +1355,9 @@ async function initWebLayer(
   ) => {
     const context: observationsApi.ObservationRequestContext = {
       ...baseAppRequestContext(req),
-      mageEvent: req[observationEventScopeKey]!.mageEvent,
+      mageEvent: req[eventScopeKey]!.mageEvent,
       userId: (req.user as any).id,
-      deviceId: (req as any).provisionedDeviceId,
-      observationRepository: req[observationEventScopeKey]!.observationRepository
+      deviceId: (req as any).provisionedDeviceId
     };
     return { ...params, context };
   };
@@ -1367,9 +1368,9 @@ async function initWebLayer(
     observationRequestFactory
   );
 
-  webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
+  webController.use(`/api/events/:${eventScopeKey}/observations`, [
     bearerAuthentication,
-    ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),
+    ensureEventScope(repos.events.eventRepo),
     observationsRoutes
   ]);
 
@@ -1402,15 +1403,15 @@ async function initWebLayer(
   ) => {
     const context: exportsApi.CreateExportRequestContext = {
       ...baseAppRequestContext(req),
-      mageEvent: req[exportEventScopeKey]!.mageEvent
+      mageEvent: req[eventScopeKey]!.mageEvent
     };
 
     return { ...params, context };
   };
   const exportRoutes = ExportRoutes(app.exports, exportRequestFactory);
-  webController.use(`/api/events/:${exportEventScopeKey}/exports`, [
+  webController.use(`/api/events/:${eventScopeKey}/exports`, [
     bearerAuthentication,
-    ensureExportEventScope(repos.events.eventRepo),
+    ensureEventScope(repos.events.eventRepo),
     exportRoutes
   ]);
 
@@ -1425,15 +1426,15 @@ async function initWebLayer(
   ) => {
     const context: locationsApi.UserLocationRequestContext = {
       ...baseAppRequestContext(req),
-      mageEvent: req[locationEventScopeKey]!.mageEvent
+      mageEvent: req[eventScopeKey]!.mageEvent
     };
 
     return { ...params, context };
   };
   const userLocationRoutes = UserLocationRoutes(app.locations, locationRequestFactory);
-  webController.use(`/api/events/:${locationEventScopeKey}/locations`, [
+  webController.use(`/api/events/:${eventScopeKey}/locations`, [
     bearerAuthentication,
-    ensureLocationEventScope(repos.events.eventRepo),
+    ensureEventScope(repos.events.eventRepo),
     userLocationRoutes
   ]);
 
@@ -1539,7 +1540,7 @@ function baseAppRequestContext(req: express.Request): AppRequestContext<UserWith
   }
 }
 
-function ensureExportEventScope(
+function ensureEventScope(
   eventRepo: MageEventRepository
 ): express.RequestHandler {
   return async (
@@ -1547,61 +1548,13 @@ function ensureExportEventScope(
     res: express.Response,
     next: express.NextFunction
   ): Promise<void> => {
-    const eventIdFromPath = req.params[exportEventScopeKey];
+    const eventIdFromPath = req.params[eventScopeKey];
     const eventId: MageEventId = parseInt(eventIdFromPath);
     const mageEvent = Number.isInteger(eventId)
       ? await eventRepo.findById(eventId)
       : null;
     if (mageEvent) {
-      req[exportEventScopeKey] = { mageEvent };
-      next();
-      return;
-    }
-    res.status(404).json(`event not found: ${eventIdFromPath}`);
-  };
-}
-
-function ensureObservationEventScope(
-  eventRepo: MageEventRepository,
-  createObsRepo: ObservationRepositoryForEvent
-): express.RequestHandler {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> => {
-    const eventIdFromPath = req.params[observationEventScopeKey];
-    const eventId: MageEventId = parseInt(eventIdFromPath);
-    const mageEvent = Number.isInteger(eventId)
-      ? await eventRepo.findById(eventId)
-      : null;
-
-    if (mageEvent) {
-      const observationRepository = await createObsRepo(mageEvent.id);
-      req[observationEventScopeKey] = { mageEvent, observationRepository };
-      next();
-      return;
-    }
-
-    res.status(404).json(`event not found: ${eventIdFromPath}`);
-  };
-}
-
-function ensureLocationEventScope(
-  eventRepo: MageEventRepository
-): express.RequestHandler {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> => {
-    const eventIdFromPath = req.params[locationEventScopeKey];
-    const eventId: MageEventId = parseInt(eventIdFromPath);
-    const mageEvent = Number.isInteger(eventId)
-      ? await eventRepo.findById(eventId)
-      : null;
-    if (mageEvent) {
-      req[locationEventScopeKey] = { mageEvent };
+      req[eventScopeKey] = { mageEvent };
       next();
       return;
     }
@@ -1611,14 +1564,7 @@ function ensureLocationEventScope(
 
 declare module 'express' {
   interface Request {
-    [exportEventScopeKey]?: {
-      mageEvent: MageEvent;
-    };
-    [observationEventScopeKey]?: {
-      mageEvent: MageEvent;
-      observationRepository: EventScopedObservationRepository;
-    };
-    [locationEventScopeKey]?: {
+    [eventScopeKey]?: {
       mageEvent: MageEvent;
     };
   }

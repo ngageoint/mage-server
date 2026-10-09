@@ -4,7 +4,6 @@ import { parseISO8601 } from '../../utilities/dates'
 import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
 import {
   AttachmentStore,
-  EventScopedObservationRepository,
   FindObservationsSort,
   FindObservationsSortField,
   ObservationFieldFilter,
@@ -36,7 +35,7 @@ export interface ObservationWebAppRequestFactory {
 }
 
 export interface EnsureEventScope {
-  (eventId: MageEventId): Promise<null | { mageEvent: MageEvent, observationRepository: EventScopedObservationRepository }>
+  (eventId: MageEventId): Promise<null | { mageEvent: MageEvent }>
 }
 
 export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: AttachmentStore, createAppRequest: ObservationWebAppRequestFactory): express.Router {
