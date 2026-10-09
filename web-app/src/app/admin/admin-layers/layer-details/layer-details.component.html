@@ -286,7 +286,7 @@
           <div class="events-content">
             @if (eventsPage.totalCount > 0 && !loadingEvents) {
               <mat-nav-list>
-                @for (event of layerEvents(); track event.id) {
+                @for (event of eventsPage.items; track event.id) {
                   <mat-list-item [routerLink]="['../events', event.id]">
                     <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
                     <span matListItemTitle>{{ event.name }}</span>
@@ -329,6 +329,7 @@
 
           <mat-paginator
             [length]="eventsPage.totalCount || 0"
+            [pageIndex]="eventsPageIndex"
             [pageSize]="eventsPageSize"
             [pageSizeOptions]="pageSizeOptions"
             (page)="onEventsPageChange($event)"

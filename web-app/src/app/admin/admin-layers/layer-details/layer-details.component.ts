@@ -33,7 +33,7 @@ import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import { LayerPreviewComponent } from '../layer-preview/layer-preview.component';
 import { MageEvent } from 'mage-web-app/entities/event/entities.event';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { layerIconName } from '../../../entities/layer/entities.layer';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { RouteReuse } from '../../../route-reuse.strategy';
@@ -99,7 +99,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   readonly layerId: string | null = this.route.snapshot.paramMap.get('layerId');
 
-  private destroyed = false;
+  private processingStatusTimer?: ReturnType<typeof setTimeout>;
 
   private _breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Layers',
@@ -126,7 +126,6 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   eventsPageSize = 5;
   readonly eventsPage = signal<PagedResult<MageEvent>>({ items: [], totalCount: 0 });
   eventSearchTerm = '';
-  readonly layerEvents = signal<MageEvent[]>([]);
   pageSizeOptions = [5, 10, 25];
 
   readonly upload = signal<UploadItem>({});
@@ -163,7 +162,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.destroyed = true;
+    clearTimeout(this.processingStatusTimer);
   }
 
   private loadLayer(layerId: string): void {
@@ -178,7 +177,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
           this.breadcrumbs = [this.breadcrumbs[0], { title: layer.name || 'Layer Details' }];
 
           if (layer.state !== 'available') {
-            setTimeout(() => this.checkLayerProcessingStatus(), 1000);
+            this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), 1000);
           }
 
           this.updateUrlLayers();
@@ -251,7 +250,6 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
             pageIndex: this.eventsPageIndex
           });
 
-          this.layerEvents.set(layerEvents);
           this.loadingEvents.set(false);
         },
         error: (error) => {
@@ -287,21 +285,20 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
         type: 'events',
         icon: 'event',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return new Observable((observer) => {
-            const searchOptions: any = {
-              page,
-              page_size: pageSize,
-              excludeLayerId: String(layer.id)
-            };
+          const searchOptions: any = {
+            page,
+            page_size: pageSize,
+            excludeLayerId: String(layer.id)
+          };
 
-            if (searchTerm) {
-              searchOptions.term = searchTerm;
-            }
+          if (searchTerm) {
+            searchOptions.term = searchTerm;
+          }
 
-            this.eventsService.getEvents(searchOptions)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({
-              next: (response) => {
+          return this.eventsService.getEvents(searchOptions)
+            .pipe(
+              takeUntilDestroyed(this.destroyRef),
+              map((response) => {
                 let filteredEvents = response.items || [];
 
                 const myPerms: string[] = this.myself?.role?.permissions || [];
@@ -315,17 +312,14 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
                   });
                 }
 
-                observer.next({
+                return {
                   items: filteredEvents,
                   totalCount: response.totalCount || filteredEvents.length,
                   pageSize,
                   pageIndex: page
-                });
-                observer.complete();
-              },
-              error: (error) => observer.error(error)
-            });
-          });
+                };
+              })
+            );
         },
         columns: [
           {
@@ -584,25 +578,21 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   confirmCreateLayer(): void {
     this.snackBar.open('Creating layer...', undefined, { duration: 2000 });
-    setTimeout(() => this.checkLayerProcessingStatus(), 1500);
+    this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), 1500);
   }
 
   private checkLayerProcessingStatus(): void {
-    if (this.destroyed) return;
-
     const layerId = this.layerId;
     if (!layerId) return;
 
     this.layersService.getLayerById(layerId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((layer) => {
-        if (this.destroyed) return;
-
         this.layer.set(layer);
         this.updateUrlLayers();
 
         if (layer.state !== 'available') {
-          setTimeout(() => this.checkLayerProcessingStatus(), 5000);
+          this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), 5000);
         }
       });
   }
