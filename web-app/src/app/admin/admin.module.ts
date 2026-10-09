@@ -28,7 +28,6 @@ import { InputMaskModule } from '@ngneat/input-mask';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin-shell/admin.component';
 import { AdminBreadcrumbModule } from './admin-breadcrumb/admin-breadcrumb.module';
-import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AdminEventsModule } from './admin-event/admin-events.module';
 import { AdminLayersModule } from './admin-layers/admin-layers.module';
@@ -73,7 +72,6 @@ import { PluginModule } from './admin-plugins/plugins.module';
     InputMaskModule,
     AdminBreadcrumbModule,
     AdminRoutingModule,
-    AdminDashboardModule,
     AdminUsersModule,
     AdminEventsModule,
     AdminLayersModule,
