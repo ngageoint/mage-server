@@ -54,8 +54,6 @@ import { SearchComponent } from '../map/controls/search.component';
 import { LayersComponent } from '../map/layers/layers.component'
 import { LayersControlComponent } from '../map/controls/layers-control.component';
 import { MapComponent } from '../map/map.component';
-import { LayerHeaderComponent } from '../map/layers/layer-header.component';
-import { LayerContentComponent } from '../map/layers/layer-content.component';
 import { ColorPickerModule } from '../color-picker/color-picker.module';
 import { ExportComponent } from '../export/export.component';
 import { ExportCreateComponent } from '../export/export-create/export-create.component';
@@ -216,9 +214,6 @@ class AngularModule { }
     FeedItemMapPopupComponent,
     FeedListComponent,
     HomeComponent,
-    LayerContentComponent,
-    LayerHeaderComponent,
-    LayersComponent,
     LayersControlComponent,
     LocationComponent,
     MapComponent,
@@ -264,6 +259,7 @@ class AngularModule { }
     ColorPickerModule,
     DatetimePickerComponent,
     EventMemberFilterComponent,
+    LayersComponent,
     LocationFilterDialogComponent,
     ObservationFieldFilterComponent,
     ObservationFilterDialogComponent,

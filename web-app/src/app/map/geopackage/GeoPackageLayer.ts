@@ -48,13 +48,8 @@ export class GeoPackageRasterLayer extends TileLayer {
     return url + Util.getParamString(params);
   }
 
-  setStyle(style: SimpleStyle): void {
-    if (style) {
-      this.style = { ...this.style, ...style };
-    } else {
-      this.style = {};
-    }
-
+  setStyle(style: SimpleStyle | null): void {
+    this.style = style || {};
     this.redraw();
   }
 }

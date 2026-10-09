@@ -1,62 +1,71 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
 import { MapLayerService, SimpleStyle } from './layer.service';
+import { RenderedMapLayer } from '../entities.map-layer';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { trigger, style, transition, animate } from '@angular/animations';
+import { ColorPickerModule } from 'src/app/color-picker/color-picker.module';
+
+const DEFAULT_STYLE: SimpleStyle = {
+  stroke: '#000000FF',
+  fill: '#00000011',
+  width: 2
+};
 
 @Component({
     selector: 'layer-content',
     templateUrl: './layer-content.component.html',
     styleUrls: ['./layer-content.component.scss'],
-    animations: [
-        trigger('visibility', [
-            transition(':enter', [
-                style({ height: 0, opacity: 0 }),
-                animate('225ms', style({ height: '*', opacity: 1 }))
-            ]),
-            transition(':leave', [animate('225ms', style({ height: 0, opacity: 0 }))])
-        ])
-    ],
-    standalone: false
+    standalone: true,
+    imports: [
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        MatSliderModule,
+        ColorPickerModule
+    ]
 })
 export class LayerContentComponent {
-  @Input() layer: any;
-  @Input() style: SimpleStyle;
+  private layerService: MapLayerService = inject(MapLayerService);
 
-  @ViewChild('color') color: ElementRef;
+  layer = input.required<RenderedMapLayer>();
 
-  showColorPicker = false;
-  stroke = '#000000';
+  canOverrideStyle = computed(() => {
+    const layer = this.layer();
+    return layer.type === 'GeoPackage' && layer.renderAs === 'feature';
+  });
 
-  constructor(private layerService: MapLayerService) {}
+  opacity = signal(100);
+  override = signal(false);
+  style = signal<SimpleStyle>(DEFAULT_STYLE);
 
-  toggleStyle(): void {
-    if (this.style) {
-      this.style = null;
-    } else {
-      this.style = {
-        stroke: '#000000FF',
-        fill: '#00000011',
-        width: 1
-      };
-    }
-
-    this.layerService.style(this.layer, this.style);
+  overrideChanged(override: boolean): void {
+    this.override.set(override);
+    this.layerService.style(this.layer(), override ? this.style() : null);
   }
 
   opacityChanged(value: number): void {
-    this.layerService.opacity(this.layer, value / 100);
+    this.opacity.set(value);
+    this.layerService.opacity(this.layer(), value / 100);
   }
 
   colorChanged(event: ColorEvent, key: string): void {
-    this.layerService.style(this.layer, {
-      [key]: event.color
-    });
+    this.styleChanged({ [key]: event.color });
   }
 
-  widthChanged(width: any): void {
-    this.layerService.style(this.layer, {
-      width: width
-    });
+  widthChanged(width: number | null): void {
+    if (width !== null) {
+      this.styleChanged({ width: width });
+    }
+  }
+
+  private styleChanged(style: SimpleStyle): void {
+    this.style.update(current => ({ ...current, ...style }));
+    this.layerService.style(this.layer(), this.style());
   }
 
   formatOpacity(opacity: number): string {
