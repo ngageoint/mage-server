@@ -23,14 +23,14 @@ import { RouteReuse } from '../../../route-reuse.strategy';
 export class PluginHostComponent implements OnInit {
   static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
 
-  private readonly route = inject(ActivatedRoute);
-  private readonly pluginService = inject(PluginService);
-  private readonly breadcrumbService = inject(AdminBreadcrumbService);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly pluginService: PluginService = inject(PluginService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
 
   @ViewChild('host', { read: ViewContainerRef, static: true })
   host!: ViewContainerRef;
 
-  readonly pluginId: string | null = this.route.snapshot.paramMap.get('pluginId');
+  readonly pluginId: string = this.route.snapshot.paramMap.get('pluginId');
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -47,28 +47,21 @@ export class PluginHostComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
 
-    const pluginId = this.pluginId;
-    if (!pluginId) {
-      this.error.set('No plugin id provided.');
-      this.loading.set(false);
-      return;
-    }
-
     try {
       const plugins = await this.pluginService.availablePlugins();
-      const plugin = plugins[pluginId];
+      const plugin = plugins[this.pluginId];
 
       if (!plugin?.MAGE_WEB_HOOKS) {
-        throw new Error(`Plugin not found: ${pluginId}`);
+        throw new Error(`Plugin not found: ${this.pluginId}`);
       }
 
-      const moduleRef = await this.pluginService.loadPluginModule(pluginId);
+      const moduleRef = await this.pluginService.loadPluginModule(this.pluginId);
 
       const hooks: any = plugin.MAGE_WEB_HOOKS;
       const tab = hooks.adminTab;
 
       this.breadcrumbs = [{
-        title: tab?.title ?? pluginId,
+        title: tab?.title ?? this.pluginId,
         icon: tab?.icon?.icon ?? 'extension'
       }];
 
@@ -111,7 +104,7 @@ export class PluginHostComponent implements OnInit {
               .sort();
 
             throw new Error(
-              `Plugin "${pluginId}" does not expose a renderable entry component. ` +
+              `Plugin "${this.pluginId}" does not expose a renderable entry component. ` +
                 `Exports: [${exportedKeys.join(', ')}], ` +
                 `MAGE_WEB_HOOKS: [${hookKeys.join(', ')}], ` +
                 `adminTab: ${JSON.stringify(hooks.adminTab)}, ` +
@@ -123,7 +116,7 @@ export class PluginHostComponent implements OnInit {
 
       if (!entry) {
         throw new Error(
-          `Plugin "${pluginId}" did not provide an entry component.`
+          `Plugin "${this.pluginId}" did not provide an entry component.`
         );
       }
 
