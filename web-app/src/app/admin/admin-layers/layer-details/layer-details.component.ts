@@ -177,7 +177,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
           this.breadcrumbs = [this.breadcrumbs[0], { title: layer.name || 'Layer Details' }];
 
           if (layer.state !== 'available') {
-            this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), 1000);
+            this.scheduleProcessingStatus(1000);
           }
 
           this.updateUrlLayers();
@@ -297,7 +297,6 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
           return this.eventsService.getEvents(searchOptions)
             .pipe(
-              takeUntilDestroyed(this.destroyRef),
               map((response) => {
                 let filteredEvents = response.items || [];
 
@@ -578,7 +577,12 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   confirmCreateLayer(): void {
     this.snackBar.open('Creating layer...', undefined, { duration: 2000 });
-    this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), 1500);
+    this.scheduleProcessingStatus(1500);
+  }
+
+  private scheduleProcessingStatus(delay: number): void {
+    clearTimeout(this.processingStatusTimer);
+    this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), delay);
   }
 
   private checkLayerProcessingStatus(): void {
@@ -592,7 +596,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
         this.updateUrlLayers();
 
         if (layer.state !== 'available') {
-          this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), 5000);
+          this.scheduleProcessingStatus(5000);
         }
       });
   }
