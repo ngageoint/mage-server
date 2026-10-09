@@ -9,7 +9,7 @@
       <div class="search-grid">
         <div class="search-section">
           <h3 class="section-title">Mobile</h3>
-          <mat-radio-group name="mobileSearchType" [ngModel]="mobileSearchType()" (ngModelChange)="mobileSearchType.set($event)" class="radio-group">
+          <mat-radio-group name="mobileSearchType" [(ngModel)]="mobileSearchType" class="radio-group">
             @for (opt of mobileSearchOptions; track opt) {
               <mat-radio-button [value]="opt">{{ opt }}</mat-radio-button>
             }
