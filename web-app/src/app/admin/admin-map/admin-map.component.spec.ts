@@ -77,7 +77,7 @@ describe('AdminMapComponent', () => {
   });
 
   it('should show web nominatim url input when web search type is NOMINATIM', async () => {
-    component.webSearchType = 'NOMINATIM';
+    component.webSearchType.set('NOMINATIM');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
