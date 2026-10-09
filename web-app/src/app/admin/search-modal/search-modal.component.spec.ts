@@ -69,7 +69,6 @@ describe('SearchModalComponent', () => {
         it('should initialize with correct data', () => {
             expect(component.data).toEqual(mockSearchData);
             expect(component.columns).toEqual(mockSearchData.columns);
-            expect(component.displayedColumns).toEqual(['name', 'email']);
             expect(component.selectedItem).toBeNull();
         });
 

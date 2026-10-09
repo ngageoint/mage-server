@@ -5,7 +5,7 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  ViewChild,
+  viewChild,
   inject,
   signal
 } from '@angular/core';
@@ -48,14 +48,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   readonly breadcrumbService = inject(AdminBreadcrumbService);
 
-  @ViewChild('adminMainContent')
-  adminMainContent?: ElementRef<HTMLElement>;
-
-  @ViewChild(MatSidenav)
-  sidenav?: MatSidenav;
+  readonly adminMainContent = viewChild<ElementRef<HTMLElement>>('adminMainContent');
+  readonly sidenav = viewChild(MatSidenav);
 
   readonly isMobile = signal(false);
-
   readonly stateName = signal('');
 
   pluginActive = false;
@@ -83,11 +79,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.stateName.set(e.urlAfterRedirects);
 
         if (this.isMobile()) {
-          this.sidenav?.close();
+          this.sidenav()?.close();
         }
 
         requestAnimationFrame(() => {
-          this.adminMainContent?.nativeElement.scrollTo({
+          this.adminMainContent()?.nativeElement.scrollTo({
             top: 0,
             left: 0,
             behavior: 'auto'
@@ -115,15 +111,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((result) => {
         this.isMobile.set(result.matches);
         if (result.matches) {
-          this.sidenav?.close();
+          this.sidenav()?.close();
         } else {
-          this.sidenav?.open();
+          this.sidenav()?.open();
         }
       });
 
     this.sidenavService.toggle$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.sidenav?.toggle());
+      .subscribe(() => this.sidenav()?.toggle());
   }
 
   ngOnDestroy(): void {

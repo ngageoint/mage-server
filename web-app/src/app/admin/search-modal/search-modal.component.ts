@@ -57,7 +57,6 @@ export class SearchModalComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
 
     readonly items = signal<any[]>([]);
-    displayedColumns: string[] = [];
     columns: SearchModalColumn[] = [];
 
     loading = false;
@@ -78,7 +77,6 @@ export class SearchModalComponent implements OnInit {
         }
 
         this.columns = this.data.columns;
-        this.displayedColumns = this.data.columns.map(col => col.key);
     }
 
     /**
