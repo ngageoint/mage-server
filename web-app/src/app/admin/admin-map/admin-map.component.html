@@ -17,7 +17,7 @@
           @if (mobileSearchType() === 'NOMINATIM') {
             <mat-form-field appearance="fill">
               <mat-label>Nominatim URL</mat-label>
-              <input matInput name="mobileNominatimUrl" [ngModel]="mobileNominatimUrl()" (ngModelChange)="mobileNominatimUrl.set($event)" #mobileUrl="ngModel"
+              <input matInput name="mobileNominatimUrl" [(ngModel)]="mobileNominatimUrl" #mobileUrl="ngModel"
                 required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
               @if (mobileUrl.hasError('required')) {
                 <mat-error>URL is required</mat-error>
@@ -31,7 +31,7 @@
 
         <div class="search-section">
           <h3 class="section-title">Web</h3>
-          <mat-radio-group name="webSearchType" [ngModel]="webSearchType()" (ngModelChange)="webSearchType.set($event)" class="radio-group">
+          <mat-radio-group name="webSearchType" [(ngModel)]="webSearchType" class="radio-group">
             @for (opt of webSearchOptions; track opt) {
               <mat-radio-button [value]="opt">{{ opt }}</mat-radio-button>
             }
@@ -39,7 +39,7 @@
           @if (webSearchType() === 'NOMINATIM') {
             <mat-form-field appearance="fill">
               <mat-label>Nominatim URL</mat-label>
-              <input matInput name="webNominatimUrl" [ngModel]="webNominatimUrl()" (ngModelChange)="webNominatimUrl.set($event)" #webUrl="ngModel"
+              <input matInput name="webNominatimUrl" [(ngModel)]="webNominatimUrl" #webUrl="ngModel"
                 required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
               @if (webUrl.hasError('required')) {
                 <mat-error>URL is required</mat-error>
