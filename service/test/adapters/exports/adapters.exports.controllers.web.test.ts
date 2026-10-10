@@ -6,8 +6,8 @@ import supertest from 'supertest'
 import uniqid from 'uniqid'
 import express from 'express'
 import mongoose from 'mongoose'
-import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
-import { CreateExportRequest, GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
+import { ExportAppLayer, ExportRoutes, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
+import { CreateExportRequest, ExportRequest, GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
 import { Export, ExportStatus } from '../../../lib/entities/exports/entities.exports'
 import { ExportExpanded } from '../../../lib/entities/exports/entities.exports'
 import { Readable } from 'stream'
@@ -249,11 +249,11 @@ describe('exports web controller', function() {
       lastUpdated: new Date()
     }
 
-    let createRequestFactory: SubstituteOf<{ createRequest: ExportWebAppRequestFactory }>
+    let createRequestFactory: SubstituteOf<{ createRequest: WebAppRequestFactory<ExportRequest> }>
     let postClient: supertest.SuperTest<supertest.Test>
 
     beforeEach(function() {
-      createRequestFactory = Sub.for<{ createRequest: ExportWebAppRequestFactory }>()
+      createRequestFactory = Sub.for<{ createRequest: WebAppRequestFactory<ExportRequest> }>()
       const endpoint = express()
       endpoint.use(express.json())
       endpoint.use((req, res, next) => {

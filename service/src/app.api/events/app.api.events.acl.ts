@@ -14,7 +14,7 @@ export interface EventAclEntry {
 export type EventAclError = PermissionDeniedError | EntityNotFoundError | InvalidInputError
 
 export interface EventAclRequestContext<Principal = unknown> extends AppRequestContext<Principal> {
-  event: MageEvent
+  mageEvent: MageEvent
 }
 
 export interface EventAclRequest<Principal = unknown> extends AppRequest<Principal, EventAclRequestContext<Principal>> {}

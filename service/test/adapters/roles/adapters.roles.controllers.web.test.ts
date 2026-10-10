@@ -8,8 +8,8 @@ import { entityNotFound, permissionDenied } from '../../../lib/app.api/app.api.e
 import {
   RoleAppLayer,
   RoleRoutes,
-  RoleWebAppRequestFactory,
 } from '../../../lib/adapters/roles/adapters.roles.controllers.web'
+import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
 import { RoleRequest } from '../../../lib/app.api/roles/app.api.roles'
 import { Role } from '../../../lib/entities/authorization/entities.authorization'
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
@@ -19,9 +19,9 @@ const jsonMimeType = /^application\/json/
 
 const principal = { id: 'user1', username: 'testuser' } as unknown as UserWithRole
 
-type AppRequestFactoryHandle = { createAppRequest: RoleWebAppRequestFactory }
+type AppRequestFactoryHandle = { createAppRequest: WebAppRequestFactory<RoleRequest> }
 
-const stubAppRequestFactory: RoleWebAppRequestFactory = <P extends object>(_req: express.Request, params?: P): P & RoleRequest => {
+const stubAppRequestFactory: WebAppRequestFactory<RoleRequest> =<P extends object>(_req: express.Request, params?: P): P & RoleRequest => {
   return {
     context: {
       requestToken: Symbol(),

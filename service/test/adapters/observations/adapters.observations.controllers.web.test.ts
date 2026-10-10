@@ -8,7 +8,8 @@ import _ from 'lodash'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
-import { jsonForAttachment, jsonForObservation, ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
+import { jsonForAttachment, jsonForObservation, ObservationAppLayer, ObservationRoutes } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
+import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
 import { AttachmentStore, FormEntry, Observation, ObservationAttrs, ObservationFeatureProperties, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { ExoAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
@@ -24,7 +25,7 @@ const testUser = 'lummytin'
 
 describe('observations web controller', function () {
 
-  let createAppRequest: ObservationWebAppRequestFactory
+  let createAppRequest: WebAppRequestFactory<ObservationRequest>
   let app: SubstituteOf<ObservationAppLayer>
   let webApp: express.Application
   let client: supertest.SuperTest<supertest.Test>

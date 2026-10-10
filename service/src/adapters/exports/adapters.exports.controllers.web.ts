@@ -75,11 +75,7 @@ export function MyExportRoutes(appLayer: ExportAppLayer, createAppRequest: WebAp
   return routes
 }
 
-export interface ExportWebAppRequestFactory {
-  <Params extends object>(req: express.Request, params?: Params): Params & Omit<ExportRequest, 'params'>
-}
-
-export function ExportRoutes(appLayer: ExportAppLayer, createAppRequest: ExportWebAppRequestFactory): express.Router {
+export function ExportRoutes(appLayer: ExportAppLayer, createAppRequest: WebAppRequestFactory<ExportRequest>): express.Router {
 
   const routes = express.Router()
 

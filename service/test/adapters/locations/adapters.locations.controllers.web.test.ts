@@ -8,8 +8,8 @@ import { permissionDenied, infrastructureError } from '../../../lib/app.api/app.
 import {
   UserLocationAppLayer,
   UserLocationRoutes,
-  UserLocationWebAppRequestFactory,
 } from '../../../lib/adapters/locations/adapters.locations.controllers.web'
+import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
 import {
   UserLocationRequest,
   ExoUserLocation,
@@ -23,9 +23,9 @@ const jsonMimeType = /^application\/json/
 
 const principal = { id: 'user1', username: 'testuser' } as unknown as UserWithRole
 
-type AppRequestFactoryHandle = { createAppRequest: UserLocationWebAppRequestFactory }
+type AppRequestFactoryHandle = { createAppRequest: WebAppRequestFactory<UserLocationRequest> }
 
-const stubAppRequestFactory: UserLocationWebAppRequestFactory = <P extends object>(_req: express.Request, params?: P): P & UserLocationRequest => {
+const stubAppRequestFactory: WebAppRequestFactory<UserLocationRequest> =<P extends object>(_req: express.Request, params?: P): P & UserLocationRequest => {
   return {
     context: {
       requestToken: Symbol(),

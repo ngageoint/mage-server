@@ -116,10 +116,7 @@ import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugi
 import path from 'path';
 import { MageEventDocument } from './models/event';
 import { Locale, parseAcceptLanguageHeader } from './entities/entities.i18n'
-import {
-  ObservationRoutes,
-  ObservationWebAppRequestFactory
-} from './adapters/observations/adapters.observations.controllers.web';
+import { ObservationRoutes } from './adapters/observations/adapters.observations.controllers.web';
 import { AnonymousUser, UserWithRole } from './permissions/permissions.role-based.base';
 import {
   AttachmentStore,
@@ -167,25 +164,24 @@ import { TeamsAppLayer, TeamsRoutes } from './adapters/teams/adapters.teams.cont
 import { TeamRepository } from './entities/teams/entities.teams'
 import { RoleBasedTeamsPermissionService } from './permissions/permissions.teams'
 import { SearchTeams } from './app.impl/teams/app.impl.teams'
-import * as exportsApi from './app.api/exports/app.api.exports';
 import * as exportsImpl from './app.impl/exports/app.impl.exports';
 import { ExportModel, MongooseExportsRepository } from './adapters/exports/adapters.exports.db.mongoose';
 import { ExportFormat, ExportsRepository, ExportStore } from './entities/exports/entities.exports';
 import { RoleBasedExportsPermissionService } from './permissions/permissions.exports';
-import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
+import { ExportAppLayer, ExportRoutes, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
 import { MongooseUserLocationRepository, UserLocationModel } from './adapters/locations/adapters.locations.db.mongoose';
 import { MongooseRecentUserLocationsRepository, RecentUserLocationModel, RecentUserLocationsModel } from './adapters/locations/adapters.locations.recent.db.mongoose';
 import { RecentUserLocationsRepository, UserLocationRepository } from './entities/locations/entities.locations';
 import * as locationsApi from './app.api/locations/app.api.locations';
 import * as locationsImpl from './app.impl/locations/app.impl.locations';
 import { UserLocationPermissionServiceImpl } from './permissions/permissions.locations';
-import { UserLocationRoutes, UserLocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
+import { UserLocationRoutes } from './adapters/locations/adapters.locations.controllers.web';
 import { MongooseRoleRepository, RoleModel } from './adapters/roles/adapters.roles.db.mongoose';
 import { RoleRepository } from './entities/authorization/entities.authorization';
 import * as rolesApi from './app.api/roles/app.api.roles';
 import * as rolesImpl from './app.impl/roles/app.impl.roles';
 import { RolePermissionServiceImpl } from './permissions/permissions.roles';
-import { RoleRoutes, RoleWebAppRequestFactory } from './adapters/roles/adapters.roles.controllers.web';
+import { RoleRoutes } from './adapters/roles/adapters.roles.controllers.web';
 import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
 import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
 import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
@@ -1268,6 +1264,10 @@ interface MageEventRequestContext extends AppRequestContext<UserWithRole> {
   event: MageEventDocument | MageEvent | undefined;
 }
 
+interface EventScopedRequestContext extends AppRequestContext<UserWithRole> {
+  mageEvent: MageEvent;
+}
+
 const eventScopeKey = 'eventScopeKey' as const;
 
 async function initWebLayer(
@@ -1283,7 +1283,7 @@ async function initWebLayer(
   const webController = webLayer.app;
   const webAuth = webLayer.auth;
 
-  const appRequestFactory: WebAppRequestFactory = <Params>(
+  const appRequestFactory: WebAppRequestFactory<AppRequest<UserWithRole, MageEventRequestContext>> = <Params>(
     req: express.Request,
     params: Params
   ): AppRequest<UserWithRole, MageEventRequestContext> & Params => {
@@ -1292,6 +1292,19 @@ async function initWebLayer(
       context: {
         ...baseAppRequestContext(req),
         event: (req as any).event || (req as any).eventEntity
+      }
+    };
+  };
+
+  const eventScopedRequestFactory: WebAppRequestFactory<AppRequest<UserWithRole, EventScopedRequestContext>> = <Params>(
+    req: express.Request,
+    params: Params
+  ): AppRequest<UserWithRole, EventScopedRequestContext> & Params => {
+    return {
+      ...params,
+      context: {
+        ...baseAppRequestContext(req),
+        mageEvent: req[eventScopeKey]!.mageEvent
       }
     };
   };
@@ -1347,19 +1360,19 @@ async function initWebLayer(
   const searchIndexRoutes = SearchIndexRoutes(app.searchIndex, appRequestFactory);
   webController.use('/api/search-index', [bearerAuthentication, searchIndexRoutes]);
 
-  const observationRequestFactory: ObservationWebAppRequestFactory = <
-    Params extends object | undefined
-  >(
+  const observationRequestFactory: WebAppRequestFactory<observationsApi.ObservationRequest> = <Params extends object = {}>(
     req: express.Request,
-    params: Params
+    params?: Params
   ) => {
-    const context: observationsApi.ObservationRequestContext = {
-      ...baseAppRequestContext(req),
-      mageEvent: req[eventScopeKey]!.mageEvent,
-      userId: (req.user as any).id,
-      deviceId: (req as any).provisionedDeviceId
-    };
-    return { ...params, context };
+    const { context } = eventScopedRequestFactory(req);
+    return {
+      ...params,
+      context: {
+        ...context,
+        userId: (req.user as any).id,
+        deviceId: (req as any).provisionedDeviceId
+      }
+    } as observationsApi.ObservationRequest & Params;
   };
 
   const observationsRoutes = ObservationRoutes(
@@ -1380,35 +1393,14 @@ async function initWebLayer(
   );
   webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
 
-  const eventAclRequestFactory: WebAppRequestFactory<eventAclApi.EventAclRequest> = <Params extends object = {}>(
-    req: express.Request,
-    params?: Params
-  ) => {
-    return {
-      ...params,
-      context: { ...baseAppRequestContext(req), event: req.eventEntity! }
-    } as eventAclApi.EventAclRequest & Params;
-  };
-  const eventAclRoutes = EventAclRoutes(
-    { ...app.events, eventRepo: repos.events.eventRepo },
-    eventAclRequestFactory
-  );
-  webController.use('/api/events', [bearerAuthentication, eventAclRoutes]);
+  const eventAclRoutes = EventAclRoutes(app.events, eventScopedRequestFactory);
+  webController.use(`/api/events/:${eventScopeKey}/acl`, [
+    bearerAuthentication,
+    ensureEventScope(repos.events.eventRepo),
+    eventAclRoutes
+  ]);
 
-  const exportRequestFactory: ExportWebAppRequestFactory = <
-    Params extends object | undefined
-  >(
-    req: express.Request,
-    params: Params
-  ) => {
-    const context: exportsApi.CreateExportRequestContext = {
-      ...baseAppRequestContext(req),
-      mageEvent: req[eventScopeKey]!.mageEvent
-    };
-
-    return { ...params, context };
-  };
-  const exportRoutes = ExportRoutes(app.exports, exportRequestFactory);
+  const exportRoutes = ExportRoutes(app.exports, eventScopedRequestFactory);
   webController.use(`/api/events/:${eventScopeKey}/exports`, [
     bearerAuthentication,
     ensureEventScope(repos.events.eventRepo),
@@ -1418,20 +1410,7 @@ async function initWebLayer(
   const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
   webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
 
-  const locationRequestFactory: UserLocationWebAppRequestFactory = <
-    Params extends object | undefined
-  >(
-    req: express.Request,
-    params: Params
-  ) => {
-    const context: locationsApi.UserLocationRequestContext = {
-      ...baseAppRequestContext(req),
-      mageEvent: req[eventScopeKey]!.mageEvent
-    };
-
-    return { ...params, context };
-  };
-  const userLocationRoutes = UserLocationRoutes(app.locations, locationRequestFactory);
+  const userLocationRoutes = UserLocationRoutes(app.locations, eventScopedRequestFactory);
   webController.use(`/api/events/:${eventScopeKey}/locations`, [
     bearerAuthentication,
     ensureEventScope(repos.events.eventRepo),
@@ -1441,16 +1420,7 @@ async function initWebLayer(
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
   webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
 
-  const roleRequestFactory: RoleWebAppRequestFactory = <Params extends object>(
-    req: express.Request,
-    params?: Params
-  ) => {
-    return {
-      ...params,
-      context: baseAppRequestContext(req)
-    } as Params & rolesApi.RoleRequest;
-  };
-  const roleRoutes = RoleRoutes(app.roles, roleRequestFactory);
+  const roleRoutes = RoleRoutes(app.roles, appRequestFactory);
   webController.use('/api/roles', [bearerAuthentication, roleRoutes]);
 
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);

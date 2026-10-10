@@ -1,5 +1,5 @@
 import express from 'express'
-import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { CreateRole, DeleteRole, ReadRole, ReadRoles, RoleRequest, UpdateRole } from '../../app.api/roles/app.api.roles'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
@@ -20,11 +20,7 @@ export interface RoleAppLayer {
   deleteRole: DeleteRole
 }
 
-export interface RoleWebAppRequestFactory {
-  <Params extends object>(req: express.Request, params?: Params): Params & RoleRequest<UserWithRole>
-}
-
-export function RoleRoutes(app: RoleAppLayer, createAppRequest: RoleWebAppRequestFactory): express.Router {
+export function RoleRoutes(app: RoleAppLayer, createAppRequest: WebAppRequestFactory<RoleRequest<UserWithRole>>): express.Router {
 
   const routes = express.Router().use(express.json())
 

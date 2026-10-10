@@ -44,15 +44,15 @@ describe('event acl use case interactions', function() {
         requestToken: Symbol(),
         requestingPrincipal: () => principal,
         locale() { return null },
-        event
+        mageEvent: event
       },
       ...params
     }
   }
 
   // Configure each of these once per test; substitutes cannot re-configure a call
-  const allowUpdate = () => permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
-  const denyUpdate = () => permissionService.ensureEventUpdatePermission(Arg.all())
+  const allowUpdate = () => permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+  const denyUpdate = () => permissionService.authorizeEventAccess(Arg.all())
     .resolves(permissionDenied('UPDATE_EVENT', 'someone', String(event.id)))
   const usersFound = (users: Record<string, User | null>) => userRepo.findAllByIds(Arg.all()).resolves(users)
 
