@@ -12,7 +12,7 @@ import { AnyPermission, MageEventPermission } from '../entities/authorization/en
 import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
-import { EventAccessType, MageEvent } from '../entities/events/entities.events'
+import { EventAccessType } from '../entities/events/entities.events'
 import { userRoleHasPermission } from '../permissions/permissions.role-based.base'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
@@ -24,7 +24,6 @@ const log = logger.child({ component: 'events' })
 declare module 'express-serve-static-core' {
   export interface Request {
     event?: EventModel.MageEventModelInstance
-    eventEntity?: MageEvent
     access?: { user: express.Request['user'], permission: EventAccessType }
     parameters?: EventQueryParams
     form?: FormJson

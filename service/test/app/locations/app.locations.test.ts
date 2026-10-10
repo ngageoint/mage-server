@@ -5,6 +5,7 @@ import EventEmitter from 'events'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { ErrPermissionDenied, permissionDenied } from '../../../lib/app.api/app.api.errors'
 import * as api from '../../../lib/app.api/locations/app.api.locations'
+import { EventRequestContext } from '../../../lib/app.api/events/app.api.events'
 import * as impl from '../../../lib/app.impl/locations/app.impl.locations'
 import {
   UserLocationRepository,
@@ -25,7 +26,7 @@ const principal = { id: userId, username: 'testuser' } as unknown as UserWithRol
 
 const mageEvent = { id: eventId } as MageEvent
 
-function createContext(): api.UserLocationRequestContext {
+function createContext(): EventRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),
     requestingPrincipal: () => principal,

@@ -1,7 +1,7 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
-import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, Condition, copyObservationAttrs, EventScopedObservationRepository, FindObservationsSort, FindObservationsStreamSpec, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
-import { MageEvent } from '../../entities/events/entities.events'
+import { AppRequest, AppResponse } from '../app.api.global'
+import { EventRequestContext } from '../events/app.api.events'
+import { Attachment, AttachmentId, Condition, copyObservationAttrs, FindObservationsSort, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
 import { TeamId } from '../../entities/teams/entities.teams'
@@ -9,8 +9,7 @@ import { PageOf, PagingParameters } from '../../entities/entities.global'
 
 
 
-export interface ObservationRequestContext<Principal = unknown> extends AppRequestContext<Principal> {
-  mageEvent: MageEvent
+export interface ObservationRequestContext<Principal = unknown> extends EventRequestContext<Principal> {
   /**
    * TODO: This is obviously redundant with respect to `requestingPrincipal()`,
    * but that is in a transitional phase because that returns a Mongoose
@@ -19,7 +18,6 @@ export interface ObservationRequestContext<Principal = unknown> extends AppReque
    */
   userId: UserId
   deviceId: string
-  observationRepository: EventScopedObservationRepository
 }
 export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> { }
 

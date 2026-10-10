@@ -6,8 +6,9 @@ import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import _ from 'lodash'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
-import { EventAccessType, EventRole, MageEvent, MageEventRepository } from '../../../lib/entities/events/entities.events'
-import { EventAclEntry, EventAclRequest, RemoveEventAclUserRequest, SetEventAclRoleRequest } from '../../../lib/app.api/events/app.api.events.acl'
+import { EventAccessType, EventRole, MageEvent } from '../../../lib/entities/events/entities.events'
+import { EventAclEntry, RemoveEventAclUserRequest, SetEventAclRoleRequest } from '../../../lib/app.api/events/app.api.events.acl'
+import { EventRequest } from '../../../lib/app.api/events/app.api.events'
 import { EventAclApp, EventAclRoutes } from '../../../lib/adapters/events/adapters.events.acl.controllers.web'
 import { entityNotFound, invalidInput, permissionDenied } from '../../../lib/app.api/app.api.errors'
 
@@ -17,21 +18,20 @@ const testUser = 'lummytin'
 
 describe('event acl web controller', function () {
 
-  const createAppRequest: WebAppRequestFactory<EventAclRequest> = <P>(webReq: express.Request, params?: P): EventAclRequest & P => {
+  const createAppRequest: WebAppRequestFactory<EventRequest> = <P>(webReq: express.Request, params?: P): EventRequest & P => {
     return {
       context: {
         requestToken: Symbol(),
         requestingPrincipal(): typeof testUser {
           return testUser
         },
-        event: (webReq as any).eventEntity
+        mageEvent: event
       },
       ...(params || {})
-    } as EventAclRequest & P
+    } as EventRequest & P
   }
-  const forEvent = (req: EventAclRequest) => req.context.event.id === event.id
+  const forEvent = (req: EventRequest) => req.context.mageEvent.id === event.id
   let app: express.Application
-  let eventRepo: SubstituteOf<MageEventRepository>
   let eventAclApp: SubstituteOf<EventAclApp>
   let client: supertest.SuperTest<supertest.Test>
   let event: MageEvent
@@ -54,12 +54,9 @@ describe('event acl web controller', function () {
       style: {},
       acl: {}
     })
-    eventRepo = Sub.for<MageEventRepository>()
-    eventRepo.findById(event.id).resolves(event)
     eventAclApp = Sub.for<EventAclApp>()
-    eventAclApp.eventRepo.returns!(eventRepo)
     app = express()
-    app.use(rootPath, EventAclRoutes(eventAclApp, createAppRequest))
+    app.use(`${rootPath}/:eventId/acl`, EventAclRoutes(eventAclApp, createAppRequest))
     client = supertest(app)
   })
 
@@ -83,16 +80,6 @@ describe('event acl web controller', function () {
       const res = await client.get(`${rootPath}/${event.id}/acl`)
 
       expect(res.status).to.equal(403)
-    })
-
-    it('returns 404 when the event does not exist', async function () {
-
-      eventRepo.findById(event.id + 1).resolves(null)
-
-      const res = await client.get(`${rootPath}/${event.id + 1}/acl`)
-
-      expect(res.status).to.equal(404)
-      eventAclApp.didNotReceive().listEventAcl(Arg.all())
     })
   })
 

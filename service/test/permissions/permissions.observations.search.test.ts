@@ -1,7 +1,8 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import uniqid from 'uniqid'
-import { Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
+import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
+import { EventAccessType, MageEventAttrs } from '../../lib/entities/events/entities.events'
 import { SearchIndexPermissionsServiceImpl } from '../../lib/permissions/permissions.observations.search'
 import { EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { permissionDenied, MageError, ErrPermissionDenied } from '../../lib/app.api/app.api.errors'
@@ -58,21 +59,23 @@ describe('search index permissions service', function() {
 
   describe('ensureSearchIndexEventPermission', function() {
 
-    it('delegates to the event permission service', async function() {
+    const event = { id: 1 } as MageEventAttrs
+
+    it('checks update permission on the given event', async function() {
 
       const expected = permissionDenied(MageEventPermission.UPDATE_EVENT, uniqid())
-      eventPermissions.ensureEventUpdatePermission(context).resolves(expected)
+      eventPermissions.authorizeEventAccess(Arg.is(x => x === event), Arg.any(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update).resolves(expected)
 
-      const denied = await permissions.ensureSearchIndexEventPermission(context)
+      const denied = await permissions.ensureSearchIndexEventPermission(context, event)
 
       expect(denied).to.equal(expected)
     })
 
     it('grants access when the event permission service grants access', async function() {
 
-      eventPermissions.ensureEventUpdatePermission(context).resolves(null)
+      eventPermissions.authorizeEventAccess(Arg.is(x => x === event), Arg.any(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update).resolves(null)
 
-      const denied = await permissions.ensureSearchIndexEventPermission(context)
+      const denied = await permissions.ensureSearchIndexEventPermission(context, event)
 
       expect(denied).to.be.null
     })

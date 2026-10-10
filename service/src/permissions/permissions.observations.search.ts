@@ -2,6 +2,7 @@ import { PermissionDeniedError } from '../app.api/app.api.errors'
 import { AppRequestContext } from '../app.api/app.api.global'
 import { SearchIndexPermissionService } from '../app.api/observations/app.api.observations.search'
 import { MageEventPermission } from '../entities/authorization/entities.permissions'
+import { EventAccessType, MageEventAttrs } from '../entities/events/entities.events'
 import { EventPermissionServiceImpl } from './permissions.events'
 import { ensureContextUserHasPermission, UserWithRole } from './permissions.role-based.base'
 
@@ -13,7 +14,7 @@ export class SearchIndexPermissionsServiceImpl implements SearchIndexPermissionS
     return ensureContextUserHasPermission(context, MageEventPermission.UPDATE_EVENT)
   }
 
-  async ensureSearchIndexEventPermission(context: AppRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
-    return this.eventPermissions.ensureEventUpdatePermission(context)
+  async ensureSearchIndexEventPermission(context: AppRequestContext<UserWithRole>, event: MageEventAttrs): Promise<PermissionDeniedError | null> {
+    return this.eventPermissions.authorizeEventAccess(event, context.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
   }
 }

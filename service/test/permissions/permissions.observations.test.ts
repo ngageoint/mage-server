@@ -2,7 +2,7 @@ import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import { ObservationPermissionsServiceImpl } from '../../lib/permissions/permissions.observations'
 import { ObservationRequestContext } from '../../lib/app.api/observations/app.api.observations'
 import { copyMageEventAttrs, EventAccessType, MageEvent } from '../../lib/entities/events/entities.events'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, Observation, ObservationAttrs } from '../../lib/entities/observations/entities.observations'
+import { Attachment, copyObservationAttrs, Observation, ObservationAttrs } from '../../lib/entities/observations/entities.observations'
 import { EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { UserWithRole } from '../../lib/permissions/permissions.role-based.base'
 import { expect } from 'chai'
@@ -16,7 +16,6 @@ describe('observation permissions service', function() {
   let permissions: ObservationPermissionsServiceImpl
   let eventPermissions: SubstituteOf<EventPermissionServiceImpl>
   let mageEvent: MageEvent
-  let obsRepo: SubstituteOf<EventScopedObservationRepository>
   let user: UserWithRole
   let context: ObservationRequestContext<UserWithRole>
 
@@ -33,7 +32,6 @@ describe('observation permissions service', function() {
       acl: {},
       style: {}
     })
-    obsRepo = Sub.for<EventScopedObservationRepository>()
     user = {
       id: uniqid(),
       roleId: {
@@ -46,7 +44,6 @@ describe('observation permissions service', function() {
       mageEvent,
       userId: uniqid(),
       deviceId: uniqid(),
-      observationRepository: obsRepo,
       requestToken: Symbol(),
       requestingPrincipal() { return user },
       locale() { return null }

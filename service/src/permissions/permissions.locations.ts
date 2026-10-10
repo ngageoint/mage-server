@@ -1,15 +1,16 @@
 import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.errors'
-import { UserLocationPermissionService, UserLocationRequestContext } from '../app.api/locations/app.api.locations'
+import { UserLocationPermissionService } from '../app.api/locations/app.api.locations'
+import { EventRequestContext } from '../app.api/events/app.api.events'
 import { LocationPermission } from '../entities/authorization/entities.permissions'
 import { EventAccessType } from '../entities/events/entities.events'
 import { EventPermissionServiceImpl } from './permissions.events'
-import { ensureContextUserHasPermission, userRoleHasPermission } from './permissions.role-based.base'
+import { ensureContextUserHasPermission, userRoleHasPermission, UserWithRole } from './permissions.role-based.base'
 
 export class UserLocationPermissionServiceImpl implements UserLocationPermissionService {
 
   constructor(private eventPermissions: EventPermissionServiceImpl) {}
 
-  async ensureCreateLocationPermission(context: UserLocationRequestContext): Promise<null | PermissionDeniedError> {
+  async ensureCreateLocationPermission(context: EventRequestContext<UserWithRole>): Promise<null | PermissionDeniedError> {
     const denied = ensureContextUserHasPermission(context, LocationPermission.CREATE_LOCATION)
     if (denied) {
       return denied
@@ -19,7 +20,7 @@ export class UserLocationPermissionServiceImpl implements UserLocationPermission
     return isParticipant ? null : permissionDenied(LocationPermission.CREATE_LOCATION, user.id)
   }
 
-  async ensureReadLocationPermission(context: UserLocationRequestContext): Promise<null | PermissionDeniedError> {
+  async ensureReadLocationPermission(context: EventRequestContext<UserWithRole>): Promise<null | PermissionDeniedError> {
     const user = context.requestingPrincipal()
     if (userRoleHasPermission(user, LocationPermission.READ_LOCATION_ALL)) {
       return null

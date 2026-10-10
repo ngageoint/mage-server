@@ -1,10 +1,9 @@
 import express from 'express'
 import moment from 'moment'
-import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { parseISO8601 } from '../../utilities/dates'
-import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { UserLocationRepository } from '../../entities/locations/entities.locations'
-import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, UserLocationRequest, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { EventRequest } from '../../app.api/events/app.api.events'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 
@@ -14,15 +13,7 @@ export interface UserLocationAppLayer {
   saveUserLocations: SaveUserLocations
 }
 
-export interface UserLocationWebAppRequestFactory {
-  <Params extends object>(req: express.Request, params?: Params): Params & UserLocationRequest<UserWithRole>
-}
-
-export interface EnsureEventScope {
-  (eventId: MageEventId): Promise<null | { mageEvent: MageEvent, locationRepository: UserLocationRepository }>
-}
-
-export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: UserLocationWebAppRequestFactory): express.Router {
+export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: WebAppRequestFactory<EventRequest<UserWithRole>>): express.Router {
 
   const routes = express.Router().use(express.json())
 
