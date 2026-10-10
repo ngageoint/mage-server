@@ -1,7 +1,7 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppResponse } from '../app.api.global'
 import { EventRequestContext } from '../events/app.api.events'
-import { Attachment, AttachmentId, Condition, copyObservationAttrs, FindObservationsSort, FindObservationsStreamSpec, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, Condition, copyObservationAttrs, FindObservationsSort, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
 import { TeamId } from '../../entities/teams/entities.teams'
