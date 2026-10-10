@@ -2,9 +2,10 @@
 import express from 'express'
 import {
   CreateExport, CreateExportRequest, DeleteExport, DeleteExportRequest,
-  ExportCreateParams, ExportRequest, GetExportContent, GetExportContentRequest, GetExports, GetExportsRequest
+  ExportCreateParams, GetExportContent, GetExportContentRequest, GetExports, GetExportsRequest
 } from '../../app.api/exports/app.api.exports'
 import { parseConditionFilter } from '../../app.api/observations/app.api.observations'
+import { EventRequest } from '../../app.api/events/app.api.events'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { Export, EXPORT_FORMATS, ExportFormat } from '../../entities/exports/entities.exports'
 import { ObservationFieldFilter } from '../../entities/observations/entities.observations'
@@ -75,7 +76,7 @@ export function MyExportRoutes(appLayer: ExportAppLayer, createAppRequest: WebAp
   return routes
 }
 
-export function ExportRoutes(appLayer: ExportAppLayer, createAppRequest: WebAppRequestFactory<ExportRequest>): express.Router {
+export function ExportRoutes(appLayer: ExportAppLayer, createAppRequest: WebAppRequestFactory<EventRequest<UserWithRole>>): express.Router {
 
   const routes = express.Router()
 

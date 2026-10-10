@@ -1,12 +1,12 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import uniqid from 'uniqid'
-import { AppRequestContext } from '../../lib/app.api/app.api.global'
 import { FeedServiceId, FeedId } from '../../lib/entities/feeds/entities.feeds'
 import { ErrPermissionDenied, permissionDenied } from '../../lib/app.api/app.api.errors'
-import { EventFeedsPermissionService, EventRequestContext, EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
+import { EventFeedsPermissionService, EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
-import { MageEventRepository, MageEventAttrs, EventAccessType } from '../../lib/entities/events/entities.events'
+import { MageEvent, MageEventRepository, MageEventAttrs, EventAccessType } from '../../lib/entities/events/entities.events'
+import { EventRequestContext } from '../../lib/app.api/events/app.api.events'
 // for some reason vs code marks an error if using @lib/models/user, even though tsc builds fine
 // nobody seems to care though - https://github.com/microsoft/TypeScript/issues/39709
 import { MongooseMageEventRepository } from '../../lib/adapters/events/adapters.events.db.mongoose'
@@ -19,74 +19,11 @@ import { UserWithRole } from '../../src/permissions/permissions.role-based.base'
 describe('event permissions service', function() {
 
   let eventRepo: SubstituteOf<MongooseMageEventRepository>
-  let mockEventPermissions: SubstituteOf<EventPermissionServiceImpl>
   let eventPermissions: EventPermissionServiceImpl
-  let user: SubstituteOf<UserWithRole>
-  let event: SubstituteOf<MageEventAttrs>
-  let context: EventRequestContext
 
   beforeEach(function() {
     eventRepo = Sub.for<MongooseMageEventRepository>()
-    mockEventPermissions = Sub.for<EventPermissionServiceImpl>()
     eventPermissions = new EventPermissionServiceImpl(eventRepo)
-    user = Sub.for<UserWithRole>()
-    event = Sub.for<MageEventAttrs>()
-    context = {
-      requestToken: Symbol(),
-      requestingPrincipal() {
-        return user
-      },
-      locale() { return null },
-      event
-    }
-  })
-
-  describe('enforcing permissions with context event', function() {
-
-    it('ensures event read permission', async function() {
-
-      mockEventPermissions.ensureEventReadPermission(Arg.all()).mimicks(eventPermissions.ensureEventReadPermission.bind(mockEventPermissions))
-      const permissionError = permissionDenied(uniqid(), uniqid(), uniqid())
-      mockEventPermissions.authorizeEventAccess(Arg.all()).resolves(permissionError)
-
-      const denied = await mockEventPermissions.ensureEventReadPermission(context)
-      expect(denied?.code).to.equal(ErrPermissionDenied)
-      expect(denied?.data).to.deep.include({
-        subject: permissionError.data.subject,
-        permission: permissionError.data.permission,
-        object: permissionError.data.object
-      })
-      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
-    })
-
-    it('ensures event update permission', async function() {
-
-      mockEventPermissions.ensureEventUpdatePermission(Arg.all()).mimicks(eventPermissions.ensureEventUpdatePermission.bind(mockEventPermissions))
-      const permissionError = permissionDenied(uniqid(), uniqid(), uniqid())
-      mockEventPermissions.authorizeEventAccess(Arg.all()).resolves(permissionError)
-
-      const denied = await mockEventPermissions.ensureEventUpdatePermission(context)
-      expect(denied?.code).to.equal(ErrPermissionDenied)
-      expect(denied?.data).to.deep.include({
-        subject: permissionError.data.subject,
-        permission: permissionError.data.permission,
-        object: permissionError.data.object
-      })
-      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
-    })
-
-    it('denies if the context has no event', async function() {
-
-      const noEventContext: AppRequestContext = {
-        requestToken: Symbol(),
-        requestingPrincipal() { return user },
-        locale() { return null }
-      }
-      let denied = await eventPermissions.ensureEventReadPermission(noEventContext)
-      expect(denied?.code).to.equal(ErrPermissionDenied)
-      denied = await eventPermissions.ensureEventUpdatePermission(noEventContext)
-      expect(denied?.code).to.equal(ErrPermissionDenied)
-    })
   })
 
   describe('checking user event participation', function() {
@@ -158,15 +95,15 @@ describe('event feeds permission service', function() {
     const feedIds: FeedId[] = [ uniqid(), uniqid() ]
     const user = Sub.for<UserWithRole>()
     user.username.returns!('participant')
-    const event = Sub.for<MageEventAttrs>()
-    event.id.returns!(3579)
-    event.feedIds.returns!(feedIds)
-    let context: EventRequestContext = {
+    const eventFor = (id: number) => new MageEvent({ id, name: `Event ${id}`, feedIds, forms: [], layerIds: [], acl: {}, style: {} })
+    const contextFor = (mageEvent: MageEvent): EventRequestContext<UserWithRole> => ({
       requestToken: Symbol(),
       requestingPrincipal() { return user },
       locale() { return null },
-      event
-    }
+      mageEvent
+    })
+    const event = eventFor(3579)
+    const context = contextFor(event)
 
     let denied = await permissions.ensureListServiceTypesPermissionFor(context)
     expect(denied?.code).to.equal(ErrPermissionDenied)
@@ -181,22 +118,17 @@ describe('event feeds permission service', function() {
     denied = await permissions.ensureListAllFeedsPermissionFor(context)
     expect(denied?.code).to.equal(ErrPermissionDenied)
 
-    eventPermissions.ensureEventReadPermission(Arg.is(x => x === context)).resolves(null)
+    eventPermissions.authorizeEventAccess(Arg.is(x => x === event), Arg.any(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read).resolves(null)
     denied = await permissions.ensureFetchFeedContentPermissionFor(context, feedIds[0])
     expect(denied).to.be.null
 
-    const context2 = { ...context }
-    eventPermissions.ensureEventReadPermission(Arg.is(x => x === context2)).resolves(null)
-    denied = await permissions.ensureFetchFeedContentPermissionFor(context2, feedIds[1])
-    expect(denied).to.be.null
-
-    const feedNotInEvent = uniqid()
-    const context3 = { ...context }
-    eventPermissions.ensureEventReadPermission(Arg.is(x => x === context3)).resolves(permissionDenied('event_read', user.username, String(event.id)))
-    denied = await permissions.ensureFetchFeedContentPermissionFor(context3, feedNotInEvent)
+    const deniedEvent = eventFor(3580)
+    eventPermissions.authorizeEventAccess(Arg.is(x => x === deniedEvent), Arg.any(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
+      .resolves(permissionDenied('event_read', user.username, String(deniedEvent.id)))
+    denied = await permissions.ensureFetchFeedContentPermissionFor(contextFor(deniedEvent), feedIds[0])
     expect(denied?.code).to.equal(ErrPermissionDenied)
     expect(denied?.data.permission).to.equal('event_read')
     expect(denied?.data.subject).to.equal(user.username)
-    expect(denied?.data.object).to.equal(String(event.id))
+    expect(denied?.data.object).to.equal(String(deniedEvent.id))
   })
 })

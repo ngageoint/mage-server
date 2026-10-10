@@ -7,7 +7,8 @@ import _ from 'lodash'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
 import { EventAccessType, EventRole, MageEvent } from '../../../lib/entities/events/entities.events'
-import { EventAclEntry, EventAclRequest, RemoveEventAclUserRequest, SetEventAclRoleRequest } from '../../../lib/app.api/events/app.api.events.acl'
+import { EventAclEntry, RemoveEventAclUserRequest, SetEventAclRoleRequest } from '../../../lib/app.api/events/app.api.events.acl'
+import { EventRequest } from '../../../lib/app.api/events/app.api.events'
 import { EventAclApp, EventAclRoutes } from '../../../lib/adapters/events/adapters.events.acl.controllers.web'
 import { entityNotFound, invalidInput, permissionDenied } from '../../../lib/app.api/app.api.errors'
 
@@ -17,7 +18,7 @@ const testUser = 'lummytin'
 
 describe('event acl web controller', function () {
 
-  const createAppRequest: WebAppRequestFactory<EventAclRequest> = <P>(webReq: express.Request, params?: P): EventAclRequest & P => {
+  const createAppRequest: WebAppRequestFactory<EventRequest> = <P>(webReq: express.Request, params?: P): EventRequest & P => {
     return {
       context: {
         requestToken: Symbol(),
@@ -27,9 +28,9 @@ describe('event acl web controller', function () {
         mageEvent: event
       },
       ...(params || {})
-    } as EventAclRequest & P
+    } as EventRequest & P
   }
-  const forEvent = (req: EventAclRequest) => req.context.mageEvent.id === event.id
+  const forEvent = (req: EventRequest) => req.context.mageEvent.id === event.id
   let app: express.Application
   let eventAclApp: SubstituteOf<EventAclApp>
   let client: supertest.SuperTest<supertest.Test>

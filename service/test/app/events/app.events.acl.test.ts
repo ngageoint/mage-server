@@ -4,6 +4,7 @@ import { Acl, EventAccessType, EventRole, EventRolePermissions, MageEvent } from
 import { EventAclRepository } from '../../../lib/entities/events/entities.events.acl'
 import { User, UserRepository } from '../../../lib/entities/users/entities.users'
 import * as api from '../../../lib/app.api/events/app.api.events.acl'
+import { EventRequest } from '../../../lib/app.api/events/app.api.events'
 import { ListEventAcl, RemoveEventAclUser, SetEventAclRole } from '../../../lib/app.impl/events/app.impl.events.acl'
 import { ErrEntityNotFound, ErrInvalidInput, ErrPermissionDenied, permissionDenied } from '../../../lib/app.api/app.api.errors'
 import { EventPermissionServiceImpl } from '../../../lib/permissions/permissions.events'
@@ -38,7 +39,7 @@ describe('event acl use case interactions', function() {
   let permissionService: SubstituteOf<EventPermissionServiceImpl>
   let event: MageEvent
 
-  const requestBy = <P extends object>(principal: UserWithRole, params: P): api.EventAclRequest<UserWithRole> & P => {
+  const requestBy = <P extends object>(principal: UserWithRole, params: P): EventRequest<UserWithRole> & P => {
     return {
       context: {
         requestToken: Symbol(),

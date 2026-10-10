@@ -1,4 +1,4 @@
-import { MageEvent } from '../../entities/events/entities.events'
+import { EventRequest } from '../events/app.api.events'
 import {
   Export, ExportExpanded,
   ExportLocationFilter,
@@ -28,12 +28,6 @@ export interface GetExportContentRequest<Principal = UserWithRole> extends AppRe
   exportId: string
 }
 
-export interface CreateExportRequestContext<Principal = UserWithRole> extends AppRequestContext<Principal> {
-  mageEvent: MageEvent
-}
-
-export interface ExportRequest<Principal = UserWithRole> extends AppRequest<Principal, CreateExportRequestContext<Principal>> {}
-
 export type ExportCreateParams = {
   format: ExportFormat
   filter: {
@@ -42,7 +36,7 @@ export type ExportCreateParams = {
   }
 }
 
-export type CreateExportRequest<Principal = UserWithRole> = AppRequest<Principal, CreateExportRequestContext<Principal>> & ExportCreateParams;
+export type CreateExportRequest<Principal = UserWithRole> = EventRequest<Principal> & ExportCreateParams;
 
 export interface CreateExport {
   (req: CreateExportRequest): Promise<AppResponse<Export, PermissionDeniedError | InvalidInputError >>

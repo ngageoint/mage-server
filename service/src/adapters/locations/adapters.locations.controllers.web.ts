@@ -2,7 +2,8 @@ import express from 'express'
 import moment from 'moment'
 import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { parseISO8601 } from '../../utilities/dates'
-import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, UserLocationRequest, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { EventRequest } from '../../app.api/events/app.api.events'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 
@@ -12,7 +13,7 @@ export interface UserLocationAppLayer {
   saveUserLocations: SaveUserLocations
 }
 
-export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: WebAppRequestFactory<UserLocationRequest<UserWithRole>>): express.Router {
+export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: WebAppRequestFactory<EventRequest<UserWithRole>>): express.Router {
 
   const routes = express.Router().use(express.json())
 

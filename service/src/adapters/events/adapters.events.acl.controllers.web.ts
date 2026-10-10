@@ -1,5 +1,6 @@
 import express from 'express'
-import { EventAclRequest, ListEventAcl, ListEventAclRequest, RemoveEventAclUser, RemoveEventAclUserRequest, SetEventAclRole, SetEventAclRoleRequest } from '../../app.api/events/app.api.events.acl'
+import { ListEventAcl, ListEventAclRequest, RemoveEventAclUser, RemoveEventAclUserRequest, SetEventAclRole, SetEventAclRoleRequest } from '../../app.api/events/app.api.events.acl'
+import { EventRequest } from '../../app.api/events/app.api.events'
 import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 
 export type EventAclApp = {
@@ -8,7 +9,7 @@ export type EventAclApp = {
   removeEventAclUser: RemoveEventAclUser
 }
 
-export function EventAclRoutes(eventAcl: EventAclApp, createAppRequest: WebAppRequestFactory<EventAclRequest>): express.Router {
+export function EventAclRoutes(eventAcl: EventAclApp, createAppRequest: WebAppRequestFactory<EventRequest>): express.Router {
 
   const routes = express.Router()
   routes.use(express.json())

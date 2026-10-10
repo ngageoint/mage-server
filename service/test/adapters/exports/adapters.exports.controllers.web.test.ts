@@ -7,7 +7,8 @@ import uniqid from 'uniqid'
 import express from 'express'
 import mongoose from 'mongoose'
 import { ExportAppLayer, ExportRoutes, MyExportRoutes } from '../../../lib/adapters/exports/adapters.exports.controllers.web'
-import { CreateExportRequest, ExportRequest, GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
+import { CreateExportRequest, GetExportsRequest } from '../../../lib/app.api/exports/app.api.exports'
+import { EventRequest } from '../../../lib/app.api/events/app.api.events'
 import { Export, ExportStatus } from '../../../lib/entities/exports/entities.exports'
 import { ExportExpanded } from '../../../lib/entities/exports/entities.exports'
 import { Readable } from 'stream'
@@ -249,11 +250,11 @@ describe('exports web controller', function() {
       lastUpdated: new Date()
     }
 
-    let createRequestFactory: SubstituteOf<{ createRequest: WebAppRequestFactory<ExportRequest> }>
+    let createRequestFactory: SubstituteOf<{ createRequest: WebAppRequestFactory<EventRequest<UserWithRole>> }>
     let postClient: supertest.SuperTest<supertest.Test>
 
     beforeEach(function() {
-      createRequestFactory = Sub.for<{ createRequest: WebAppRequestFactory<ExportRequest> }>()
+      createRequestFactory = Sub.for<{ createRequest: WebAppRequestFactory<EventRequest<UserWithRole>> }>()
       const endpoint = express()
       endpoint.use(express.json())
       endpoint.use((req, res, next) => {

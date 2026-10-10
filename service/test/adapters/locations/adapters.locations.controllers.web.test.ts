@@ -11,10 +11,10 @@ import {
 } from '../../../lib/adapters/locations/adapters.locations.controllers.web'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
 import {
-  UserLocationRequest,
   ExoUserLocation,
   ExoRecentUserLocations,
 } from '../../../lib/app.api/locations/app.api.locations'
+import { EventRequest } from '../../../lib/app.api/events/app.api.events'
 import { pageOf } from '../../../lib/entities/entities.global'
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
 
@@ -23,9 +23,9 @@ const jsonMimeType = /^application\/json/
 
 const principal = { id: 'user1', username: 'testuser' } as unknown as UserWithRole
 
-type AppRequestFactoryHandle = { createAppRequest: WebAppRequestFactory<UserLocationRequest> }
+type AppRequestFactoryHandle = { createAppRequest: WebAppRequestFactory<EventRequest<UserWithRole>> }
 
-const stubAppRequestFactory: WebAppRequestFactory<UserLocationRequest> =<P extends object>(_req: express.Request, params?: P): P & UserLocationRequest => {
+const stubAppRequestFactory: WebAppRequestFactory<EventRequest<UserWithRole>> =<P extends object>(_req: express.Request, params?: P): P & EventRequest<UserWithRole> => {
   return {
     context: {
       requestToken: Symbol(),

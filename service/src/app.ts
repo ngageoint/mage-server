@@ -114,7 +114,6 @@ import { UserPreferenceRepository } from './entities/users/entities.users';
 import { MongoosePreferenceRepository, UserPreferenceModel } from './adapters/preferences/adapters.preferences.db.mongoose';
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose';
 import path from 'path';
-import { MageEventDocument } from './models/event';
 import { Locale, parseAcceptLanguageHeader } from './entities/entities.i18n'
 import { ObservationRoutes } from './adapters/observations/adapters.observations.controllers.web';
 import { AnonymousUser, UserWithRole } from './permissions/permissions.role-based.base';
@@ -1029,7 +1028,6 @@ async function initEventsAppLayer(
     ),
     listEventFeeds: eventsImpl.ListEventFeeds(
       eventPermissions.defaultEventPermissionsService,
-      repos.events.eventRepo,
       repos.feeds.feedRepo
     ),
     removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(
@@ -1260,14 +1258,6 @@ async function initSettingsAppLayer(
   };
 }
 
-interface MageEventRequestContext extends AppRequestContext<UserWithRole> {
-  event: MageEventDocument | MageEvent | undefined;
-}
-
-interface EventScopedRequestContext extends AppRequestContext<UserWithRole> {
-  mageEvent: MageEvent;
-}
-
 const eventScopeKey = 'eventScopeKey' as const;
 
 async function initWebLayer(
@@ -1283,23 +1273,20 @@ async function initWebLayer(
   const webController = webLayer.app;
   const webAuth = webLayer.auth;
 
-  const appRequestFactory: WebAppRequestFactory<AppRequest<UserWithRole, MageEventRequestContext>> = <Params>(
+  const appRequestFactory: WebAppRequestFactory<AppRequest<UserWithRole>> = <Params>(
     req: express.Request,
     params: Params
-  ): AppRequest<UserWithRole, MageEventRequestContext> & Params => {
+  ): AppRequest<UserWithRole> & Params => {
     return {
       ...params,
-      context: {
-        ...baseAppRequestContext(req),
-        event: (req as any).event || (req as any).eventEntity
-      }
+      context: baseAppRequestContext(req)
     };
   };
 
-  const eventScopedRequestFactory: WebAppRequestFactory<AppRequest<UserWithRole, EventScopedRequestContext>> = <Params>(
+  const eventScopedRequestFactory: WebAppRequestFactory<eventsApi.EventRequest<UserWithRole>> = <Params>(
     req: express.Request,
     params: Params
-  ): AppRequest<UserWithRole, EventScopedRequestContext> & Params => {
+  ): eventsApi.EventRequest<UserWithRole> & Params => {
     return {
       ...params,
       context: {
@@ -1387,11 +1374,12 @@ async function initWebLayer(
     observationsRoutes
   ]);
 
-  const eventFeedsRoutes = EventFeedsRoutes(
-    { ...app.events, eventRepo: repos.events.eventRepo },
-    appRequestFactory
-  );
-  webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
+  const eventFeedsRoutes = EventFeedsRoutes(app.events, eventScopedRequestFactory);
+  webController.use(`/api/events/:${eventScopeKey}/feeds`, [
+    bearerAuthentication,
+    ensureEventScope(repos.events.eventRepo),
+    eventFeedsRoutes
+  ]);
 
   const eventAclRoutes = EventAclRoutes(app.events, eventScopedRequestFactory);
   webController.use(`/api/events/:${eventScopeKey}/acl`, [

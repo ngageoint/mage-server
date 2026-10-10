@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
-import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { MageEvent } from '../../entities/events/entities.events'
+import { AppResponse } from '../app.api.global'
+import { EventRequest, EventRequestContext } from '../events/app.api.events'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { User, UserId } from '../../entities/users/entities.users'
 import { TeamId } from '../../entities/teams/entities.teams'
@@ -24,13 +24,7 @@ export type RecentUserLocationQueryParams = {
   populate?: boolean
 } & CommonUserLocationQueryParams
 
-export interface UserLocationRequestContext<Principal = UserWithRole> extends AppRequestContext<Principal> {
-  mageEvent: MageEvent
-}
-
-export interface UserLocationRequest<Principal = UserWithRole> extends AppRequest<Principal, UserLocationRequestContext<Principal>> {}
-
-export interface ReadUserLocationsRequest extends UserLocationRequest {
+export interface ReadUserLocationsRequest extends EventRequest<UserWithRole> {
   params: UserLocationQueryParams
 }
 
@@ -38,7 +32,7 @@ export interface ReadUserLocations {
   (req: ReadUserLocationsRequest): Promise<AppResponse<PageOf<ExoUserLocation>, PermissionDeniedError | InvalidInputError | InfrastructureError>>
 }
 
-export interface ReadLocationsGroupedByUserRequest extends UserLocationRequest {
+export interface ReadLocationsGroupedByUserRequest extends EventRequest<UserWithRole> {
   params: RecentUserLocationQueryParams
 }
 
@@ -46,12 +40,12 @@ export interface ReadLocationsGroupedByUser {
   (req: ReadLocationsGroupedByUserRequest): Promise<AppResponse<ExoRecentUserLocations[], PermissionDeniedError | InvalidInputError | InfrastructureError>>
 }
 
-export interface SaveUserLocationsRequest extends UserLocationRequest {}
+export interface SaveUserLocationsRequest extends EventRequest<UserWithRole> {}
 
 export interface SaveUserLocations {
   (req: SaveUserLocationsRequest): Promise<AppResponse<ExoUserLocation[], PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }
-export interface SaveUserLocationsRequest extends UserLocationRequest {
+export interface SaveUserLocationsRequest extends EventRequest<UserWithRole> {
   locations: ExoUserLocation[]
 }
 
@@ -78,8 +72,8 @@ export type ExoRecentUserLocations = {
 }
 
 export interface UserLocationPermissionService {
-  ensureCreateLocationPermission(context: UserLocationRequestContext): Promise<null | PermissionDeniedError>
-  ensureReadLocationPermission(context: UserLocationRequestContext): Promise<null | PermissionDeniedError>
+  ensureCreateLocationPermission(context: EventRequestContext<UserWithRole>): Promise<null | PermissionDeniedError>
+  ensureReadLocationPermission(context: EventRequestContext<UserWithRole>): Promise<null | PermissionDeniedError>
 }
 
 export function ExoUserLocationFor(from: UserLocation): ExoUserLocation {

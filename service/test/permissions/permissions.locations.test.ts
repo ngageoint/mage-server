@@ -7,7 +7,7 @@ import { LocationPermission } from '../../lib/entities/authorization/entities.pe
 import { ErrPermissionDenied, MageError, PermissionDeniedError } from '../../lib/app.api/app.api.errors'
 import uniqid from 'uniqid'
 import { UserLocationPermissionServiceImpl } from '../../lib/permissions/permissions.locations'
-import { UserLocationRequestContext } from '../../lib/app.api/locations/app.api.locations'
+import { EventRequestContext } from '../../lib/app.api/events/app.api.events'
 
 describe('location permissions service', function() {
 
@@ -15,7 +15,7 @@ describe('location permissions service', function() {
   let eventPermissions: SubstituteOf<EventPermissionServiceImpl>
   let mageEvent: MageEvent
   let user: UserWithRole
-  let context: UserLocationRequestContext<UserWithRole>
+  let context: EventRequestContext<UserWithRole>
 
   beforeEach(function() {
     eventPermissions = Sub.for<EventPermissionServiceImpl>()
