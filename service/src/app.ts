@@ -38,7 +38,7 @@ import { SearchIndexPermissionsServiceImpl } from './permissions/permissions.obs
 import { MongooseObservationSearchRepository, ObservationSearchModel } from './adapters/observations/adapters.observations.search.db.mongoose';
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds';
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
-import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
+import { ensureEventScope, eventScopeKey, WebAppRequestFactory } from './adapters/adapters.controllers.web';
 import { AppRequest, AppRequestContext, logPermissionDenials } from './app.api/app.api.global';
 import SimpleIdFactory from './adapters/adapters.simple_id_factory';
 import {
@@ -50,11 +50,7 @@ import {
   MageEventModel,
   MongooseMageEventRepository
 } from './adapters/events/adapters.events.db.mongoose';
-import {
-  MageEvent,
-  MageEventId,
-  MageEventRepository
-} from './entities/events/entities.events';
+import { MageEventRepository } from './entities/events/entities.events';
 import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web';
 import { EventAclRoutes } from './adapters/events/adapters.events.acl.controllers.web';
 import { MongooseEventAclRepository } from './adapters/events/adapters.events.acl.db.mongoose';
@@ -1258,8 +1254,6 @@ async function initSettingsAppLayer(
   };
 }
 
-const eventScopeKey = 'eventScopeKey' as const;
-
 async function initWebLayer(
   repos: Repositories,
   app: AppLayer,
@@ -1495,35 +1489,5 @@ function baseAppRequestContext(req: express.Request): AppRequestContext<UserWith
         languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
       })
     }
-  }
-}
-
-function ensureEventScope(
-  eventRepo: MageEventRepository
-): express.RequestHandler {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> => {
-    const eventIdFromPath = req.params[eventScopeKey];
-    const eventId: MageEventId = parseInt(eventIdFromPath);
-    const mageEvent = Number.isInteger(eventId)
-      ? await eventRepo.findById(eventId)
-      : null;
-    if (mageEvent) {
-      req[eventScopeKey] = { mageEvent };
-      next();
-      return;
-    }
-    res.status(404).json(`event not found: ${eventIdFromPath}`);
-  };
-}
-
-declare module 'express' {
-  interface Request {
-    [eventScopeKey]?: {
-      mageEvent: MageEvent;
-    };
   }
 }
