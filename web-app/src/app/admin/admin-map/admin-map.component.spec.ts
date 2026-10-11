@@ -48,9 +48,10 @@ describe('AdminMapComponent', () => {
     mockMapSettingsService.updateMapSettings.and.returnValue(of({} as any));
 
     await TestBed.configureTestingModule({
-    declarations: [AdminMapComponent, TestHostComponent],
+    declarations: [TestHostComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [MatInputModule,
+    imports: [AdminMapComponent,
+        MatInputModule,
         MatSnackBarModule,
         MatRadioModule,
         MatFormFieldModule,
@@ -76,7 +77,7 @@ describe('AdminMapComponent', () => {
   });
 
   it('should show web nominatim url input when web search type is NOMINATIM', async () => {
-    component.webSearchType = 'NOMINATIM';
+    component.webSearchType.set('NOMINATIM');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();

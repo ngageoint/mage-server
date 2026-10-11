@@ -10,29 +10,45 @@
         <div class="search-section">
           <h3 class="section-title">Mobile</h3>
           <mat-radio-group name="mobileSearchType" [(ngModel)]="mobileSearchType" class="radio-group">
-            <mat-radio-button *ngFor="let opt of mobileSearchOptions" [value]="opt">{{ opt }}</mat-radio-button>
+            @for (opt of mobileSearchOptions; track opt) {
+              <mat-radio-button [value]="opt">{{ opt }}</mat-radio-button>
+            }
           </mat-radio-group>
-          <mat-form-field *ngIf="mobileSearchType === 'NOMINATIM'" appearance="fill">
-            <mat-label>Nominatim URL</mat-label>
-            <input matInput name="mobileNominatimUrl" [(ngModel)]="mobileNominatimUrl" #mobileUrl="ngModel"
-              required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
-            <mat-error *ngIf="mobileUrl.hasError('required')">URL is required</mat-error>
-            <mat-error *ngIf="mobileUrl.hasError('pattern')">Must be a valid URL starting with http:// or https://</mat-error>
-          </mat-form-field>
+          @if (mobileSearchType() === 'NOMINATIM') {
+            <mat-form-field appearance="fill">
+              <mat-label>Nominatim URL</mat-label>
+              <input matInput name="mobileNominatimUrl" [(ngModel)]="mobileNominatimUrl" #mobileUrl="ngModel"
+                required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
+              @if (mobileUrl.hasError('required')) {
+                <mat-error>URL is required</mat-error>
+              }
+              @if (mobileUrl.hasError('pattern')) {
+                <mat-error>Must be a valid URL starting with http:// or https://</mat-error>
+              }
+            </mat-form-field>
+          }
         </div>
 
         <div class="search-section">
           <h3 class="section-title">Web</h3>
           <mat-radio-group name="webSearchType" [(ngModel)]="webSearchType" class="radio-group">
-            <mat-radio-button *ngFor="let opt of webSearchOptions" [value]="opt">{{ opt }}</mat-radio-button>
+            @for (opt of webSearchOptions; track opt) {
+              <mat-radio-button [value]="opt">{{ opt }}</mat-radio-button>
+            }
           </mat-radio-group>
-          <mat-form-field *ngIf="webSearchType === 'NOMINATIM'" appearance="fill">
-            <mat-label>Nominatim URL</mat-label>
-            <input matInput name="webNominatimUrl" [(ngModel)]="webNominatimUrl" #webUrl="ngModel"
-              required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
-            <mat-error *ngIf="webUrl.hasError('required')">URL is required</mat-error>
-            <mat-error *ngIf="webUrl.hasError('pattern')">Must be a valid URL starting with http:// or https://</mat-error>
-          </mat-form-field>
+          @if (webSearchType() === 'NOMINATIM') {
+            <mat-form-field appearance="fill">
+              <mat-label>Nominatim URL</mat-label>
+              <input matInput name="webNominatimUrl" [(ngModel)]="webNominatimUrl" #webUrl="ngModel"
+                required pattern="https?://.+" placeholder="https://nominatim.openstreetmap.org" />
+              @if (webUrl.hasError('required')) {
+                <mat-error>URL is required</mat-error>
+              }
+              @if (webUrl.hasError('pattern')) {
+                <mat-error>Must be a valid URL starting with http:// or https://</mat-error>
+              }
+            </mat-form-field>
+          }
         </div>
       </div>
       </form>
