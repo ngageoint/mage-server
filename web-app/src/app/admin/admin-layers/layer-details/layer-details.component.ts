@@ -1,9 +1,9 @@
-import { Component, ElementRef, OnInit, OnDestroy, TemplateRef, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, OnDestroy, TemplateRef, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent } from '@angular/material/paginator';
 import { HttpClient } from '@angular/common/http';
 
 import { FormsModule } from '@angular/forms';
@@ -33,9 +33,10 @@ import { DeleteLayerComponent } from '../delete-layer/delete-layer.component';
 import { CreateLayerDialogComponent } from '../create-layer/create-layer.component';
 import { LayerPreviewComponent } from '../layer-preview/layer-preview.component';
 import { MageEvent } from 'mage-web-app/entities/event/entities.event';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { layerIconName } from '../../../entities/layer/entities.layer';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { RouteReuse } from '../../../route-reuse.strategy';
 
 interface UrlLayer {
   table: string;
@@ -66,7 +67,6 @@ interface PagedResult<T> {
     selector: 'mage-layer-details',
     templateUrl: './layer-details.component.html',
     styleUrls: ['./layer-details.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
         RouterModule,
@@ -84,6 +84,23 @@ interface PagedResult<T> {
     ]
 })
 export class LayerDetailsComponent implements OnInit, OnDestroy {
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
+
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly layersService: LayersService = inject(LayersService);
+  private readonly eventsService: AdminEventsService = inject(AdminEventsService);
+  private readonly dialog: MatDialog = inject(MatDialog);
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  readonly layerId: string | null = this.route.snapshot.paramMap.get('layerId');
+
+  private processingStatusTimer?: ReturnType<typeof setTimeout>;
+
   private _breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Layers',
     icon: 'map',
@@ -99,24 +116,21 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
 
   breadcrumbActions = viewChild.required<TemplateRef<unknown>>('breadcrumbActions');
 
-  layer?: Layer;
-  layerEvents: MageEvent[] = [];
-  nonLayerEvents: MageEvent[] = [];
-  urlLayers: UrlLayer[] = [];
-  loading = true;
-  error: string | null = null;
+  readonly layer = signal<Layer | undefined>(undefined);
+  readonly urlLayers = signal<UrlLayer[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
-  loadingEvents = true;
+  readonly loadingEvents = signal(true);
   eventsPageIndex = 0;
   eventsPageSize = 5;
-  eventsPage: PagedResult<MageEvent> = { items: [], totalCount: 0 };
+  readonly eventsPage = signal<PagedResult<MageEvent>>({ items: [], totalCount: 0 });
   eventSearchTerm = '';
-  eventsDataSource = new MatTableDataSource<MageEvent>();
   pageSizeOptions = [5, 10, 25];
 
-  upload: UploadItem = {};
-  completedUploads: UploadStatus[] = [];
-  isUploading = false;
+  readonly upload = signal<UploadItem>({});
+  readonly completedUploads = signal<UploadStatus[]>([]);
+  readonly isUploading = signal(false);
 
   fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
@@ -132,124 +146,118 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
     return this.sessionService.user;
   }
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private layersService: LayersService,
-    private eventsService: AdminEventsService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private http: HttpClient,
-    private sessionService: SessionService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
-
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions());
 
-    const layerId = this.route.snapshot.paramMap.get('layerId');
-    if (!layerId) {
+    if (!this.layerId) {
       console.error('No layerId found in route params');
-      this.error = 'No layer id provided.';
-      this.loading = false;
+      this.error.set('No layer id provided.');
+      this.loading.set(false);
       return;
     }
 
-    this.loadLayer(layerId);
+    this.loadLayer(this.layerId);
   }
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
+    clearTimeout(this.processingStatusTimer);
   }
 
   private loadLayer(layerId: string): void {
-    this.loading = true;
-    this.layersService.getLayerById(layerId).subscribe({
-      next: (layer) => {
-        this.layer = layer;
-        this.loading = false;
+    this.loading.set(true);
+    this.layersService.getLayerById(layerId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (layer) => {
+          this.layer.set(layer);
+          this.loading.set(false);
 
-        this.breadcrumbs = [this.breadcrumbs[0], { title: layer.name || 'Layer Details' }];
+          this.breadcrumbs = [this.breadcrumbs[0], { title: layer.name || 'Layer Details' }];
 
-        if (this.layer.state !== 'available') {
-          setTimeout(() => this.checkLayerProcessingStatus(), 1000);
+          if (layer.state !== 'available') {
+            this.scheduleProcessingStatus(1000);
+          }
+
+          this.updateUrlLayers();
+          this.getEventsPage();
+        },
+        error: (error) => {
+          console.error('Error loading layer:', error);
+          this.loading.set(false);
+          const message = error?.message || 'Failed to load layer';
+          this.error.set(message);
+          this.snackBar.open('Error loading layer: ' + message, 'Close', {
+            duration: 5000
+          });
         }
-
-        this.updateUrlLayers();
-        this.getEventsPage();
-      },
-      error: (error) => {
-        console.error('Error loading layer:', error);
-        this.loading = false;
-        this.error = error?.message || 'Failed to load layer';
-        this.snackBar.open('Error loading layer: ' + this.error, 'Close', {
-          duration: 5000
-        });
-      }
-    });
+      });
   }
 
   private updateUrlLayers(): void {
-    if (!this.layer) {
-      this.urlLayers = [];
+    const layer = this.layer();
+    if (!layer) {
+      this.urlLayers.set([]);
       return;
     }
 
     const token = this.sessionService.getToken();
     const mapping: UrlLayer[] = [];
 
-    if (this.layer.tables) {
-      this.layer.tables.forEach((table) => {
+    if (layer.tables) {
+      layer.tables.forEach((table) => {
         mapping.push({
           table: table.name,
-          url: `/api/layers/${this.layer!.id}/${table.name}/{z}/{x}/{y}.png?access_token=${token}`
+          url: `/api/layers/${layer.id}/${table.name}/{z}/{x}/{y}.png?access_token=${token}`
         });
       });
     }
 
-    this.urlLayers = mapping;
+    this.urlLayers.set(mapping);
   }
 
   /** Loads paginated events for the current layer using server-side pagination. */
   getEventsPage(): void {
-    if (!this.layer?.id) {
-      this.loadingEvents = false;
+    const layer = this.layer();
+    if (!layer?.id) {
+      this.loadingEvents.set(false);
       return;
     }
 
-    this.loadingEvents = true;
+    this.loadingEvents.set(true);
 
     const searchOptions: any = {
       page: this.eventsPageIndex,
       page_size: this.eventsPageSize,
-      layerId: String(this.layer.id)
+      layerId: String(layer.id)
     };
 
     if (this.eventSearchTerm) {
       searchOptions.term = this.eventSearchTerm;
     }
 
-    this.eventsService.getEvents(searchOptions).subscribe({
-      next: (response) => {
-        const layerEvents = response.items || [];
+    this.eventsService.getEvents(searchOptions)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const layerEvents = response.items || [];
 
-        this.eventsPage = {
-          items: layerEvents,
-          totalCount: response.totalCount || layerEvents.length,
-          pageSize: this.eventsPageSize,
-          pageIndex: this.eventsPageIndex
-        };
+          this.eventsPage.set({
+            items: layerEvents,
+            totalCount: response.totalCount || layerEvents.length,
+            pageSize: this.eventsPageSize,
+            pageIndex: this.eventsPageIndex
+          });
 
-        this.eventsDataSource.data = layerEvents;
-        this.loadingEvents = false;
-      },
-      error: (error) => {
-        console.error('Error loading events:', error);
-        this.loadingEvents = false;
-        this.snackBar.open('Error loading events', 'Close', { duration: 5000 });
-      }
-    });
+          this.loadingEvents.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading events:', error);
+          this.loadingEvents.set(false);
+          this.snackBar.open('Error loading events', 'Close', { duration: 5000 });
+        }
+      });
   }
 
   onEventSearchChange(searchTerm?: string): void {
@@ -265,7 +273,8 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   addEventToLayer(): void {
-    if (!this.layer?.id) return;
+    const layer = this.layer();
+    if (!layer?.id) return;
 
     const dialogRef = this.dialog.open(SearchModalComponent, {
       width: '600px',
@@ -276,19 +285,19 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
         type: 'events',
         icon: 'event',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return new Observable((observer) => {
-            const searchOptions: any = {
-              page,
-              page_size: pageSize,
-              excludeLayerId: String(this.layer!.id)
-            };
+          const searchOptions: any = {
+            page,
+            page_size: pageSize,
+            excludeLayerId: String(layer.id)
+          };
 
-            if (searchTerm) {
-              searchOptions.term = searchTerm;
-            }
+          if (searchTerm) {
+            searchOptions.term = searchTerm;
+          }
 
-            this.eventsService.getEvents(searchOptions).subscribe({
-              next: (response) => {
+          return this.eventsService.getEvents(searchOptions)
+            .pipe(
+              map((response) => {
                 let filteredEvents = response.items || [];
 
                 const myPerms: string[] = this.myself?.role?.permissions || [];
@@ -302,17 +311,14 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
                   });
                 }
 
-                observer.next({
+                return {
                   items: filteredEvents,
                   totalCount: response.totalCount || filteredEvents.length,
                   pageSize,
                   pageIndex: page
-                });
-                observer.complete();
-              },
-              error: (error) => observer.error(error)
-            });
-          });
+                };
+              })
+            );
         },
         columns: [
           {
@@ -331,11 +337,15 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
       } as SearchModalData
     });
 
-    dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
-      if (result?.selectedItem && this.layer?.id) {
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result: SearchModalResult) => {
+      if (result?.selectedItem && layer.id) {
         const selectedEvent = result.selectedItem;
 
-        this.eventsService.addLayerToEvent(String(selectedEvent.id), { id: this.layer.id }).subscribe({
+        this.eventsService.addLayerToEvent(String(selectedEvent.id), { id: layer.id })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
           next: () => {
             this.getEventsPage();
             this.snackBar.open(`Layer added to event: ${selectedEvent.name}`, undefined, { duration: 2000 });
@@ -350,18 +360,25 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   removeEventFromLayer(event: MageEvent, mouseEvent?: MouseEvent): void {
-    if (!this.layer?.id) return;
+    const layer = this.layer();
+    if (!layer?.id) return;
     mouseEvent?.stopPropagation();
 
-    const layerId = this.layer.id;
+    const layerId = layer.id;
 
-    this.eventsService.removeLayerFromEvent(event.id.toString(), layerId).subscribe({
+    this.eventsService.removeLayerFromEvent(event.id.toString(), layerId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: () => {
         this.getEventsPage();
 
         const snackBarRef = this.snackBar.open(`Removed ${event.name} from layer`, 'Undo', { duration: 5000 });
-        snackBarRef.onAction().subscribe(() => {
-          this.eventsService.addLayerToEvent(event.id.toString(), { id: layerId }).subscribe({
+        snackBarRef.onAction()
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+          this.eventsService.addLayerToEvent(event.id.toString(), { id: layerId })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
             next: () => this.getEventsPage(),
             error: (error) => {
               console.error('Error restoring event:', error);
@@ -378,32 +395,39 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   editLayerDetails(): void {
-    if (!this.layer) return;
+    const layer = this.layer();
+    if (!layer) return;
 
     const dialogRef = this.dialog.open(CreateLayerDialogComponent, {
       width: '600px',
-      data: { layer: this.layer }
+      data: { layer }
     });
 
-    dialogRef.afterClosed().subscribe((updatedLayer?: Layer) => {
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updatedLayer?: Layer) => {
       if (!updatedLayer) return;
 
-      this.layer = { ...this.layer!, ...updatedLayer };
-      this.breadcrumbs = [this.breadcrumbs[0], { title: this.layer.name || 'Layer Details' }];
+      const nextLayer = { ...layer, ...updatedLayer };
+      this.layer.set(nextLayer);
+      this.breadcrumbs = [this.breadcrumbs[0], { title: nextLayer.name || 'Layer Details' }];
       this.updateUrlLayers();
       this.snackBar.open('Layer updated successfully', undefined, { duration: 2000 });
     });
   }
 
   deleteLayer(): void {
-    if (!this.layer) return;
+    const layer = this.layer();
+    if (!layer) return;
 
     const dialogRef = this.dialog.open(DeleteLayerComponent, {
       width: '600px',
-      data: { layer: this.layer }
+      data: { layer }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
       if (result) {
         this.snackBar.open('Layer deleted successfully', 'Close', { duration: 3000 });
 
@@ -413,7 +437,7 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   isLayerFileBased(): boolean {
-    return !!this.layer?.file;
+    return !!this.layer()?.file;
   }
 
   layerIcon(layer: Layer): string {
@@ -421,14 +445,15 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   downloadLayer(): void {
-    if (!this.layer?.id || !this.layer.file) return;
+    const layer = this.layer();
+    if (!layer?.id || !layer.file) return;
 
     const accessToken = this.sessionService.getToken();
-    const downloadURL = `/api/layers/${this.layer.id}/file?access_token=${accessToken}`;
+    const downloadURL = `/api/layers/${layer.id}/file?access_token=${accessToken}`;
 
     const a = document.createElement('a');
     a.href = downloadURL;
-    a.download = this.layer.file.name;
+    a.download = layer.file.name;
     a.style.display = 'none';
 
     document.body.appendChild(a);
@@ -445,26 +470,27 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
       const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
       if (!validExtensions.includes(fileExtension)) {
-        this.upload.error = `Invalid file type. Please upload a KML, KMZ, or ZIP file.`;
-        this.snackBar.open(this.upload.error, 'Close', { duration: 5000 });
+        const error = `Invalid file type. Please upload a KML, KMZ, or ZIP file.`;
+        this.upload.update((u) => ({ ...u, error }));
+        this.snackBar.open(error, 'Close', { duration: 5000 });
         return;
       }
 
       const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
-        this.upload.error = `File size exceeds 50MB limit.`;
-        this.snackBar.open(this.upload.error, 'Close', { duration: 5000 });
+        const error = `File size exceeds 50MB limit.`;
+        this.upload.update((u) => ({ ...u, error }));
+        this.snackBar.open(error, 'Close', { duration: 5000 });
         return;
       }
 
-      this.upload.file = file;
-      this.upload.error = undefined;
+      this.upload.update((u) => ({ ...u, file, error: undefined }));
       this.confirmUpload();
     }
   }
 
   clearUpload(): void {
-    this.upload = {};
+    this.upload.set({});
     const fileInput = this.fileInputRef();
     if (fileInput) {
       fileInput.nativeElement.value = '';
@@ -472,43 +498,44 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   confirmUpload(): void {
-    if (!this.layer) return;
+    const layer = this.layer();
+    if (!layer) return;
 
-    const file = this.upload.file;
+    const file = this.upload().file;
     if (!file) {
       this.snackBar.open('Please select a file to upload', 'Close', { duration: 3000 });
       return;
     }
 
-    if (this.layer.type !== 'Feature') {
+    if (layer.type !== 'Feature') {
       this.snackBar.open(
-        `Cannot upload to layer of type "${this.layer.type}". Only Feature (Static) layers support file uploads.`,
+        `Cannot upload to layer of type "${layer.type}". Only Feature (Static) layers support file uploads.`,
         'Close',
         { duration: 5000 }
       );
       return;
     }
 
-    this.isUploading = true;
-    this.upload.uploading = true;
-    this.upload.error = undefined;
+    this.isUploading.set(true);
+    this.upload.update((u) => ({ ...u, uploading: true, error: undefined }));
 
-    this.uploadFile(file).subscribe({
+    this.uploadFile(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (response) => {
-        this.isUploading = false;
+        this.isUploading.set(false);
 
         const fileInfo = response.files && response.files[0];
         const featuresCreated = fileInfo ? fileInfo.features : 0;
 
-        this.completedUploads = [...this.completedUploads, { name: file.name, features: featuresCreated }];
+        this.completedUploads.update((uploads) => [...uploads, { name: file.name, features: featuresCreated }]);
         this.snackBar.open(`Successfully uploaded ${file.name}`, 'Close', { duration: 3000 });
-        this.layer = { ...(this.layer as any), _timestamp: Date.now() };
+        this.layer.update((l) => ({ ...(l as any), _timestamp: Date.now() }));
 
         this.clearUpload();
       },
       error: (error) => {
-        this.isUploading = false;
-        this.upload.uploading = false;
+        this.isUploading.set(false);
 
         let errorMessage = 'Upload failed';
         if (typeof error.error === 'string' && error.error.trim()) {
@@ -525,8 +552,8 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
           errorMessage = `${error.status}: ${errorMessage}`;
         }
 
-        this.upload.error = `${file.name}: ${errorMessage}`;
-        this.completedUploads = [...this.completedUploads, { name: file.name, error: errorMessage }];
+        this.upload.update((u) => ({ ...u, uploading: false, error: `${file.name}: ${errorMessage}` }));
+        this.completedUploads.update((uploads) => [...uploads, { name: file.name, error: errorMessage }]);
 
         this.snackBar.open(`Failed to upload ${file.name}: ${errorMessage}`, 'Close', { duration: 8000 });
       }
@@ -534,7 +561,8 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
   }
 
   private uploadFile(file: File): Observable<any> {
-    if (!this.layer?.id) {
+    const layer = this.layer();
+    if (!layer?.id) {
       return new Observable((observer) => {
         observer.error(new Error('No layer loaded'));
       });
@@ -543,26 +571,33 @@ export class LayerDetailsComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     formData.append('file', file);
 
-    const uploadUrl = `/api/layers/${this.layer.id}/kml`;
+    const uploadUrl = `/api/layers/${layer.id}/kml`;
     return this.http.post<any>(uploadUrl, formData);
   }
 
   confirmCreateLayer(): void {
     this.snackBar.open('Creating layer...', undefined, { duration: 2000 });
-    setTimeout(() => this.checkLayerProcessingStatus(), 1500);
+    this.scheduleProcessingStatus(1500);
+  }
+
+  private scheduleProcessingStatus(delay: number): void {
+    clearTimeout(this.processingStatusTimer);
+    this.processingStatusTimer = setTimeout(() => this.checkLayerProcessingStatus(), delay);
   }
 
   private checkLayerProcessingStatus(): void {
-    const layerId = this.route.snapshot.paramMap.get('layerId');
+    const layerId = this.layerId;
     if (!layerId) return;
 
-    this.layersService.getLayerById(layerId).subscribe((layer) => {
-      this.layer = layer;
-      this.updateUrlLayers();
+    this.layersService.getLayerById(layerId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((layer) => {
+        this.layer.set(layer);
+        this.updateUrlLayers();
 
-      if (this.layer.state !== 'available') {
-        setTimeout(() => this.checkLayerProcessingStatus(), 5000);
-      }
-    });
+        if (layer.state !== 'available') {
+          this.scheduleProcessingStatus(5000);
+        }
+      });
   }
 }

@@ -140,7 +140,7 @@ describe('LayerDetailsComponent', () => {
 
   it('should load layer on init', () => {
     expect(mockLayersService.getLayerById).toHaveBeenCalledWith('1');
-    expect(component.layer).toBeDefined();
+    expect(component.layer()).toBeDefined();
   });
 
   it('should set permissions based on user role', () => {
@@ -153,8 +153,8 @@ describe('LayerDetailsComponent', () => {
       TestBed.resetTestingModule();
       await createWithRouteParams({}, false);
 
-      expect(component.loading).toBe(false);
-      expect(component.error).toBe('No layer id provided.');
+      expect(component.loading()).toBe(false);
+      expect(component.error()).toBe('No layer id provided.');
     });
   });
 
@@ -175,7 +175,7 @@ describe('LayerDetailsComponent', () => {
 
       (component as any).loadLayer('999');
 
-      expect(component.error).toBe('Layer not found');
+      expect(component.error()).toBe('Layer not found');
       expect(snackBarSpy).toHaveBeenCalledWith(
         'Error loading layer: ' + 'Layer not found',
         'Close',
@@ -211,40 +211,40 @@ describe('LayerDetailsComponent', () => {
 
   describe('updateUrlLayers', () => {
     it('should create URL mappings for layer tables', () => {
-      component.layer = {
+      component.layer.set({
         id: 1,
         name: 'Test Layer',
         type: 'Feature',
         tables: [{ name: 'table1' }, { name: 'table2' }]
-      } as any;
+      } as any);
 
       (component as any).updateUrlLayers();
 
-      expect(component.urlLayers.length).toBe(2);
-      expect(component.urlLayers[0].table).toBe('table1');
-      expect(component.urlLayers[0].url).toContain(
+      expect(component.urlLayers().length).toBe(2);
+      expect(component.urlLayers()[0].table).toBe('table1');
+      expect(component.urlLayers()[0].url).toContain(
         '/api/layers/1/table1/{z}/{x}/{y}.png'
       );
-      expect(component.urlLayers[0].url).toContain('access_token=test-token');
-      expect(component.urlLayers[1].table).toBe('table2');
+      expect(component.urlLayers()[0].url).toContain('access_token=test-token');
+      expect(component.urlLayers()[1].table).toBe('table2');
     });
 
     it('should handle layers without tables', () => {
-      component.layer = {
+      component.layer.set({
         id: 1,
         name: 'Test Layer',
         type: 'Feature'
-      } as any;
+      } as any);
 
       (component as any).updateUrlLayers();
 
-      expect(component.urlLayers.length).toBe(0);
+      expect(component.urlLayers().length).toBe(0);
     });
   });
 
   describe('getEventsPage', () => {
     it('should load events with pagination parameters', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       component.eventsPageIndex = 2;
       component.eventsPageSize = 10;
 
@@ -258,7 +258,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should include search term in request', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       component.eventSearchTerm = 'search test';
 
       component.getEventsPage();
@@ -269,13 +269,13 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should handle empty layer', () => {
-      component.layer = undefined;
+      component.layer.set(undefined);
       (mockEventsService.getEvents as jasmine.Spy).calls.reset();
 
       component.getEventsPage();
 
       expect(mockEventsService.getEvents).not.toHaveBeenCalled();
-      expect(component.loadingEvents).toBe(false);
+      expect(component.loadingEvents()).toBe(false);
     });
 
     it('should handle error loading events', () => {
@@ -286,7 +286,7 @@ describe('LayerDetailsComponent', () => {
       );
 
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
-      component.layer = { id: 1, name: 'Test', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test', type: 'Feature' } as any);
 
       component.getEventsPage();
 
@@ -295,7 +295,7 @@ describe('LayerDetailsComponent', () => {
         'Close',
         { duration: 5000 }
       );
-      expect(component.loadingEvents).toBe(false);
+      expect(component.loadingEvents()).toBe(false);
     });
   });
 
@@ -336,7 +336,7 @@ describe('LayerDetailsComponent', () => {
 
   describe('addEventToLayer', () => {
     it('should add layer to selected event', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const selectedEvent = { id: 456, name: 'Selected Event' };
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
       spyOn(component, 'getEventsPage');
@@ -359,7 +359,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should handle error adding layer to event', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const selectedEvent = { id: 456, name: 'Selected Event' };
 
       (mockEventsService.addLayerToEvent as jasmine.Spy).and.returnValue(
@@ -386,7 +386,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should not proceed if layer is missing', () => {
-      component.layer = undefined;
+      component.layer.set(undefined);
       const dialogSpy = spyOn((component as any).dialog, 'open');
 
       component.addEventToLayer();
@@ -397,7 +397,7 @@ describe('LayerDetailsComponent', () => {
 
   describe('removeEventFromLayer', () => {
     it('should remove layer from event', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const testEvent = { id: 789, name: 'Test Event' } as any;
       const snackBarSpy = spyOn((component as any).snackBar, 'open').and.returnValue({
         onAction: () => of(undefined)
@@ -421,7 +421,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should restore the event when undo is clicked', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const testEvent = { id: 789, name: 'Test Event' } as any;
       spyOn((component as any).snackBar, 'open').and.returnValue({
         onAction: () => of(undefined)
@@ -434,7 +434,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should stop event propagation when mouse event provided', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const testEvent = { id: 789, name: 'Test Event' } as any;
       const mouseEvent = jasmine.createSpyObj('MouseEvent', [
         'stopPropagation'
@@ -446,7 +446,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should handle error removing layer from event', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const testEvent = { id: 789, name: 'Test Event' } as any;
 
       (mockEventsService.removeLayerFromEvent as jasmine.Spy).and.returnValue(
@@ -471,7 +471,7 @@ describe('LayerDetailsComponent', () => {
 
   describe('editLayerDetails', () => {
     it('should do nothing without a layer', () => {
-      component.layer = undefined;
+      component.layer.set(undefined);
       const dialogSpy = spyOn((component as any).dialog, 'open');
 
       component.editLayerDetails();
@@ -480,7 +480,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should open the create/edit layer dialog with the current layer', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
 
       const dialogSpy = spyOn(
         (component as any).dialog,
@@ -493,12 +493,12 @@ describe('LayerDetailsComponent', () => {
 
       expect(dialogSpy).toHaveBeenCalledWith(
         jasmine.any(Function),
-        jasmine.objectContaining({ data: { layer: component.layer } })
+        jasmine.objectContaining({ data: { layer: component.layer() } })
       );
     });
 
     it('should apply the updated layer when the dialog closes with a result', () => {
-      component.layer = { id: 1, name: 'Old Name', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Old Name', type: 'Feature' } as any);
 
       const updatedLayer = { id: 1, name: 'New Name', type: 'Feature' };
       spyOn((component as any).dialog, 'open').and.returnValue({
@@ -509,7 +509,7 @@ describe('LayerDetailsComponent', () => {
 
       component.editLayerDetails();
 
-      expect(component.layer?.name).toBe('New Name');
+      expect(component.layer()?.name).toBe('New Name');
       expect(component.breadcrumbs[1].title).toBe('New Name');
       expect(snackBarSpy).toHaveBeenCalledWith(
         'Layer updated successfully',
@@ -520,7 +520,7 @@ describe('LayerDetailsComponent', () => {
 
     it('should leave the layer unchanged when the dialog closes without a result', () => {
       const original = { id: 1, name: 'Old Name', type: 'Feature' } as any;
-      component.layer = original;
+      component.layer.set(original);
 
       spyOn((component as any).dialog, 'open').and.returnValue({
         afterClosed: () => of(undefined)
@@ -528,13 +528,13 @@ describe('LayerDetailsComponent', () => {
 
       component.editLayerDetails();
 
-      expect(component.layer).toBe(original);
+      expect(component.layer()).toBe(original);
     });
   });
 
   describe('deleteLayer', () => {
     it('should open delete confirmation dialog', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
       const dialogSpy = spyOn(
         (component as any).dialog,
         'open'
@@ -548,7 +548,7 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should navigate to layers list when delete confirmed', () => {
-      component.layer = { id: 1, name: 'Test Layer', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test Layer', type: 'Feature' } as any);
 
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
       spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
@@ -574,24 +574,24 @@ describe('LayerDetailsComponent', () => {
 
   describe('isLayerFileBased', () => {
     it('should return true for file-based layers', () => {
-      component.layer = {
+      component.layer.set({
         id: 1,
         name: 'Test',
         type: 'Feature',
         file: { name: 'test.kml' }
-      } as any;
+      } as any);
 
       expect(component.isLayerFileBased()).toBe(true);
     });
 
     it('should return false for non-file-based layers', () => {
-      component.layer = { id: 1, name: 'Test', type: 'Feature' } as any;
+      component.layer.set({ id: 1, name: 'Test', type: 'Feature' } as any);
 
       expect(component.isLayerFileBased()).toBe(false);
     });
 
     it('should return false when layer is missing', () => {
-      component.layer = undefined;
+      component.layer.set(undefined);
 
       expect(component.isLayerFileBased()).toBe(false);
     });
@@ -599,12 +599,12 @@ describe('LayerDetailsComponent', () => {
 
   describe('downloadLayer', () => {
     it('should create download link with correct URL', () => {
-      component.layer = {
+      component.layer.set({
         id: 1,
         name: 'Test',
         type: 'Feature',
         file: { name: 'test.kml' }
-      } as any;
+      } as any);
 
       const createElementSpy = spyOn(
         document,
@@ -632,8 +632,8 @@ describe('LayerDetailsComponent', () => {
 
       component.onFileSelected(event);
 
-      expect(component.upload.file).toBe(file);
-      expect(component.upload.error).toBeUndefined();
+      expect(component.upload().file).toBe(file);
+      expect(component.upload().error).toBeUndefined();
     });
 
     it('should accept valid KMZ file', () => {
@@ -644,8 +644,8 @@ describe('LayerDetailsComponent', () => {
 
       component.onFileSelected(event);
 
-      expect(component.upload.file).toBe(file);
-      expect(component.upload.error).toBeUndefined();
+      expect(component.upload().file).toBe(file);
+      expect(component.upload().error).toBeUndefined();
     });
 
     it('should reject invalid file type', () => {
@@ -655,15 +655,15 @@ describe('LayerDetailsComponent', () => {
 
       component.onFileSelected(event);
 
-      expect(component.upload.error).toContain('Invalid file type');
+      expect(component.upload().error).toContain('Invalid file type');
       expect(snackBarSpy).toHaveBeenCalled();
     });
   });
 
   describe('confirmUpload', () => {
     it('should show error when no file selected', () => {
-      component.upload = {};
-      component.layer = { id: 1, name: 'Test', type: 'Feature' } as any;
+      component.upload.set({});
+      component.layer.set({ id: 1, name: 'Test', type: 'Feature' } as any);
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
 
       component.confirmUpload();
@@ -676,8 +676,8 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should reject upload for non-Feature layers', () => {
-      component.layer = { id: 1, name: 'Test', type: 'GeoPackage' } as any;
-      component.upload = { file: new File(['content'], 'test.kml') };
+      component.layer.set({ id: 1, name: 'Test', type: 'GeoPackage' } as any);
+      component.upload.set({ file: new File(['content'], 'test.kml') });
       const snackBarSpy = spyOn((component as any).snackBar, 'open');
 
       component.confirmUpload();
@@ -690,15 +690,15 @@ describe('LayerDetailsComponent', () => {
     });
 
     it('should upload selected file and reset upload on success', () => {
-      component.layer = {
+      component.layer.set({
         id: 1,
         name: 'Test',
         type: 'Feature',
         state: 'available'
-      } as any;
+      } as any);
 
       const file = new File(['content'], 'test.kml');
-      component.upload = { file };
+      component.upload.set({ file });
 
       const uploadFileSpy = spyOn<any>(component, 'uploadFile').and.returnValue(
         of({ files: [{ name: 'test.kml', features: 10 }] })
@@ -707,18 +707,18 @@ describe('LayerDetailsComponent', () => {
       component.confirmUpload();
 
       expect(uploadFileSpy).toHaveBeenCalledWith(file);
-      expect(component.isUploading).toBe(false);
-      expect(component.upload).toEqual({});
+      expect(component.isUploading()).toBe(false);
+      expect(component.upload()).toEqual({});
     });
   });
 
   describe('clearUpload', () => {
     it('should reset the upload', () => {
-      component.upload = { file: new File(['content'], 'test.kml') };
+      component.upload.set({ file: new File(['content'], 'test.kml') });
 
       component.clearUpload();
 
-      expect(component.upload).toEqual({});
+      expect(component.upload()).toEqual({});
     });
   });
 
@@ -799,7 +799,7 @@ describe('LayerDetailsComponent', () => {
       (component as any).checkLayerProcessingStatus();
       tick(0);
 
-      expect(component.layer?.state).toBe('available');
+      expect(component.layer()?.state).toBe('available');
 
       discardPeriodicTasks();
     }));
