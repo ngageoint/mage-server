@@ -1,44 +1,32 @@
-let mongoose = require('mongoose');
+const mongoose = require('mongoose');
+const { CounterModel, MongooseSequenceRepository } = require('../adapters/counters/adapters.counters.db.mongoose');
 
-// Creates a new Mongoose Schema object
-let Schema = mongoose.Schema;
+/**
+ * The Counter schema now lives in adapters/counters/adapters.counters.db.mongoose.ts.
+ * Register it against the default connection the same way the old
+ * self-registering schema did, so legacy code that looks the model up
+ * directly by name keeps working.
+ */
+const counterModel = CounterModel(mongoose.connection);
 
-// Collection to hold counters/sequences for ids
-let CounterSchema = new Schema({
-  _id: { type: String, required: true },
-  sequence: { type: Number, required: true }
-},{
-  versionKey: false
-});
+/**
+ * app.ts's initRepositories() overrides this with a MongooseSequenceRepository
+ */
+let sequenceRepo = new MongooseSequenceRepository(counterModel);
 
-// Creates the Model for the Attachments Schema
-let Counter = mongoose.model('Counter', CounterSchema);
+/**
+ * This module is a thin bridge that keeps the legacy promise-based API
+ * working for the handful of callers (migrations, api/layer.js) that have
+ * not been migrated to the new SequenceRepository interface directly.
+ */
+exports.initialize = function (repos) {
+  sequenceRepo = repos.sequenceRepo;
+};
 
-function range(start, end) {
-  let values = [];
-  for (var i = start; i <= end; i++) {
-    values.push(i);
-  }
+exports.getNext = function (collection) {
+  return sequenceRepo.nextValue(collection);
+};
 
-  return values;
-}
-
-function getNext(collection) {
-  return getGroup(collection, 1).then(function(ids) {
-    return Promise.resolve(ids[0]);
-  });
-}
-
-function getGroup(collection, amount) {
-  const query = {_id: collection};
-  const update = {$inc: {sequence: amount}};
-  const options = {upsert: true, new: true};
-
-  return Counter.findOneAndUpdate(query, update, options).exec().then(function(counter) {
-    const ids = range(counter.sequence, counter.sequence + amount);
-    return Promise.resolve(ids);
-  });
-}
-
-exports.getNext = getNext;
-exports.getGroup = getGroup;
+exports.getGroup = function (collection, amount) {
+  return sequenceRepo.nextValues(collection, amount);
+};
