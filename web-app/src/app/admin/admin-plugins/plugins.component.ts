@@ -1,43 +1,26 @@
-import { Component, OnInit } from '@angular/core';
-import { PluginService, PluginsById } from '../plugin/plugin.service';
-
-export interface AdminPluginListItem {
-  id: string;
-  title: string;
-  icon?: { path: string } | { matIconName: string } | null;
-}
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { PluginService } from '../plugin/plugin.service';
 
 @Component({
     selector: 'mage-plugins',
     templateUrl: './plugins.component.html',
     styleUrls: ['./plugins.component.scss'],
-    standalone: false
+    imports: [RouterModule]
 })
 export class PluginsComponent implements OnInit {
-  plugins: AdminPluginListItem[] = [];
-  loading = true;
-  error: string | null = null;
+  private readonly pluginService = inject(PluginService);
 
-  constructor(private pluginService: PluginService) {}
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     try {
-      const pluginsById: PluginsById = await this.pluginService.availablePlugins();
-
-      this.plugins = Object.entries(pluginsById)
-        .map(([id, bundle]) => {
-          const tab = bundle.MAGE_WEB_HOOKS?.adminTab;
-          return {
-            id,
-            title: tab?.title ?? id,
-            icon: tab?.icon ?? null
-          } as AdminPluginListItem;
-        })
-        .sort((a, b) => a.title.localeCompare(b.title));
+      await this.pluginService.availablePlugins();
     } catch (e) {
-      this.error = 'Failed to load plugins.';
+      this.error.set('Failed to load plugins.');
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }
