@@ -56,6 +56,10 @@ describe('ChangePasswordComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should render the template without errors', () => {
+    expect(() => fixture.detectChanges()).not.toThrow();
+  });
+
   it('should require both password fields', () => {
     component.updatePassword();
 
