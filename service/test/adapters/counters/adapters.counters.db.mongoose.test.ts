@@ -60,14 +60,4 @@ describe('MongooseSequenceRepository', function() {
     })
   })
 
-  describe('nextValues', function() {
-
-    it('increments the sequence by the requested amount', async function() {
-      const first = await repo.nextValues('layer', 5)
-      const second = await repo.nextValue('layer')
-
-      expect(first).to.deep.equal([5, 6, 7, 8, 9, 10])
-      expect(second).to.equal(6)
-    })
-  })
 })

@@ -32,29 +32,16 @@ export function CounterModel(conn: mongoose.Connection, collection?: string): Co
   return (conn.models[CounterModelName] as CounterModel) || conn.model<CounterDocument, CounterModel>(CounterModelName, CounterSchema, collection)
 }
 
-function range(start: number, end: number): number[] {
-  const values: number[] = []
-  for (let i = start; i <= end; i++) {
-    values.push(i)
-  }
-  return values
-}
-
 export class MongooseSequenceRepository implements SequenceRepository {
 
   constructor(private readonly model: CounterModel) {}
 
-  async nextValues(sequenceName: string, amount: number): Promise<number[]> {
+  async nextValue(sequenceName: string): Promise<number> {
     const counter = await this.model.findOneAndUpdate(
       { _id: sequenceName },
-      { $inc: { sequence: amount } },
+      { $inc: { sequence: 1 } },
       { upsert: true, returnDocument: 'after' }
     ).exec()
-    return range(counter!.sequence, counter!.sequence + amount)
-  }
-
-  async nextValue(sequenceName: string): Promise<number> {
-    const ids = await this.nextValues(sequenceName, 1)
-    return ids[0]
+    return counter!.sequence
   }
 }

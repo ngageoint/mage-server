@@ -5,6 +5,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import {
   MongooseFeatureRepository,
   FeatureModel,
+  createFeatureCollection,
+  dropFeatureCollection,
 } from '../../../lib/adapters/features/adapters.features.db.mongoose'
 
 describe('MongooseFeatureRepository', function() {
@@ -82,6 +84,21 @@ describe('MongooseFeatureRepository', function() {
 
       expect(json.id).to.exist
       expect(json).to.not.have.property('_id')
+    })
+  })
+
+  describe('createFeatureCollection / dropFeatureCollection', function() {
+
+    it('creates a real collection that can then be dropped', async function() {
+      await createFeatureCollection(conn, 'test_create_drop_collection')
+
+      const names = (await conn.db!.listCollections().toArray()).map(c => c.name)
+      expect(names).to.include('test_create_drop_collection')
+
+      await dropFeatureCollection(conn, 'test_create_drop_collection')
+
+      const namesAfterDrop = (await conn.db!.listCollections().toArray()).map(c => c.name)
+      expect(namesAfterDrop).to.not.include('test_create_drop_collection')
     })
   })
 })

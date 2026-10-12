@@ -33,9 +33,4 @@ describe('counter model legacy bridge', function() {
     expect(formValue).to.equal(1)
   })
 
-  it('getGroup delegates to the repository', async function() {
-    const group = await counterModule.getGroup('bridge-group', 3)
-
-    expect(group).to.deep.equal([3, 4, 5, 6])
-  })
 })

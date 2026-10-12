@@ -16,8 +16,8 @@ let sequenceRepo = new MongooseSequenceRepository(counterModel);
 
 /**
  * This module is a thin bridge that keeps the legacy promise-based API
- * working for the handful of callers (migrations, api/layer.js) that have
- * not been migrated to the new SequenceRepository interface directly.
+ * working for the migrations that call getNext() directly and have not
+ * been migrated to the new SequenceRepository interface.
  */
 exports.initialize = function (repos) {
   sequenceRepo = repos.sequenceRepo;
@@ -25,8 +25,4 @@ exports.initialize = function (repos) {
 
 exports.getNext = function (collection) {
   return sequenceRepo.nextValue(collection);
-};
-
-exports.getGroup = function (collection, amount) {
-  return sequenceRepo.nextValues(collection, amount);
 };

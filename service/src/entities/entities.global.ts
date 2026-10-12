@@ -10,7 +10,6 @@ export interface EntityIdFactory<T = string> {
  */
 export interface SequenceRepository {
   nextValue(sequenceName: string): Promise<number>
-  nextValues(sequenceName: string, amount: number): Promise<number[]>
 }
 
 export const PendingEntityId = Symbol('PendingEntityId')

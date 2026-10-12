@@ -41,6 +41,14 @@ export function FeatureModel(conn: mongoose.Connection, collectionName: string):
   return (conn.models[collectionName] as FeatureModel) || conn.model<FeatureDocument, FeatureModel>(collectionName, FeatureSchema, collectionName)
 }
 
+export async function createFeatureCollection(conn: mongoose.Connection, name: string): Promise<void> {
+  await conn.db!.createCollection(name)
+}
+
+export async function dropFeatureCollection(conn: mongoose.Connection, name: string): Promise<void> {
+  await conn.db!.dropCollection(name)
+}
+
 export interface FeatureRepository {
   findAll(): Promise<mongoose.HydratedDocument<FeatureDocument>[]>
   createMany(features: Partial<FeatureDocument>[]): Promise<mongoose.HydratedDocument<FeatureDocument>[]>

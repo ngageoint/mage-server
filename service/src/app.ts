@@ -185,6 +185,7 @@ import { MongooseRoleRepository, RoleModel } from './adapters/roles/adapters.rol
 import { RoleRepository } from './entities/authorization/entities.authorization';
 import { MongooseSequenceRepository, CounterModel } from './adapters/counters/adapters.counters.db.mongoose';
 import { SequenceRepository } from './entities/entities.global';
+import { MongooseLayerRepository, LayerModel, LayerRepository, RemoveLayerFromEvents } from './adapters/layers/adapters.layers.db.mongoose';
 import * as rolesApi from './app.api/roles/app.api.roles';
 import * as rolesImpl from './app.impl/roles/app.impl.roles';
 import { RolePermissionServiceImpl } from './permissions/permissions.roles';
@@ -463,6 +464,9 @@ type DatabaseLayer = {
   counters: {
     counter: CounterModel
   }
+  layers: {
+    layer: LayerModel
+  }
   settings: {
     setting: SettingsModel
   }
@@ -620,6 +624,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
     counters: {
       counter: CounterModel(conn)
     },
+    layers: {
+      layer: LayerModel(conn)
+    },
     settings: {
       setting: settingModel
     },
@@ -670,6 +677,9 @@ type Repositories = {
   };
   counters: {
     sequenceRepo: SequenceRepository
+  };
+  layers: {
+    layerRepo: LayerRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -751,6 +761,15 @@ async function initRepositories(
   const sequenceRepo = new MongooseSequenceRepository(models.counters.counter);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('./models/counter').initialize({ sequenceRepo });
+  // TODO: replace with an EventRepository write method once Event is migrated
+  // to this architecture. for now this delegates to the legacy models/event.js #removeLayerFromEvents.
+  const removeLayerFromEvents: RemoveLayerFromEvents = (layerId) => new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('./models/event').removeLayerFromEvents({ _id: layerId }, (err: any) => err ? reject(err) : resolve());
+  });
+  const layerRepo = new MongooseLayerRepository(models.layers.layer, sequenceRepo, removeLayerFromEvents);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/layer').initialize({ layerRepo });
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -808,6 +827,9 @@ async function initRepositories(
     },
     counters: {
       sequenceRepo
+    },
+    layers: {
+      layerRepo
     },
     teams: {
       teamRepo
