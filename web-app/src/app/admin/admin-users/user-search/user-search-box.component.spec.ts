@@ -5,11 +5,7 @@ import {
   tick,
   discardPeriodicTasks
 } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { UserSearchBoxComponent } from './user-search-box.component';
@@ -45,14 +41,7 @@ describe('UserSearchBoxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatAutocompleteModule,
-        NoopAnimationsModule
-      ],
-      declarations: [UserSearchBoxComponent],
+      imports: [UserSearchBoxComponent, NoopAnimationsModule],
       providers: [{ provide: UserPagingService, useValue: mockUserPaging }]
     }).compileComponents();
 
@@ -84,15 +73,15 @@ describe('UserSearchBoxComponent', () => {
       'al'
     );
 
-    expect(component.searchResults.length).toBe(2);
-    expect(component.searchResults[0].displayName).toBe('Alice Adams');
+    expect(component.searchResults().length).toBe(2);
+    expect(component.searchResults()[0].displayName).toBe('Alice Adams');
 
     // If component uses any periodic timer internally, clear it
     discardPeriodicTasks();
   }));
 
   it('should clear results when input is empty', fakeAsync(() => {
-    component.searchResults = [...mockUsers];
+    component.searchResults.set([...mockUsers]);
 
     component.onUserInput('');
 
@@ -101,7 +90,7 @@ describe('UserSearchBoxComponent', () => {
     tick(0);
     fixture.detectChanges();
 
-    expect(component.searchResults.length).toBe(0);
+    expect(component.searchResults().length).toBe(0);
     expect(mockUserPaging.search).not.toHaveBeenCalled();
 
     discardPeriodicTasks();
@@ -110,24 +99,24 @@ describe('UserSearchBoxComponent', () => {
   it('should emit selected user and clear results', () => {
     const emitSpy = spyOn(component.userSelected, 'emit');
 
-    component.searchResults = [...mockUsers];
+    component.searchResults.set([...mockUsers]);
     component.onOptionSelected(mockUsers[1]);
 
     expect(emitSpy).toHaveBeenCalledWith(mockUsers[1]);
-    expect(component.searchResults.length).toBe(0);
+    expect(component.searchResults().length).toBe(0);
   });
 
   it('should emit null when cleared', () => {
     const emitSpy = spyOn(component.userSelected, 'emit');
 
     component.inputValue = 'something';
-    component.searchResults = [...mockUsers];
+    component.searchResults.set([...mockUsers]);
 
     component.clear();
 
     expect(emitSpy).toHaveBeenCalledWith(null);
     expect(component.inputValue).toBe('');
-    expect(component.searchResults.length).toBe(0);
+    expect(component.searchResults().length).toBe(0);
   });
 
   it('should cap results at 10', fakeAsync(() => {
@@ -143,7 +132,7 @@ describe('UserSearchBoxComponent', () => {
     tick(DEBOUNCE_MS);
     fixture.detectChanges();
 
-    expect(component.searchResults.length).toBe(10);
+    expect(component.searchResults().length).toBe(10);
 
     discardPeriodicTasks();
   }));

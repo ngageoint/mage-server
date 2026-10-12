@@ -65,8 +65,6 @@ import { RouterModule } from '@angular/router';
     UserDetailsViewComponent,
     UserDetailsEditComponent,
     BulkUserComponent,
-  ],
-  declarations: [
     UserDetailsComponent,
     ChangePasswordComponent,
     CreateUserModalComponent,
