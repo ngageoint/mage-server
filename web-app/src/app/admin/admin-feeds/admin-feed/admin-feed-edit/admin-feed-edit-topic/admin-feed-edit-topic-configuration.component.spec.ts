@@ -10,11 +10,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AdminFeedEditTopicConfigurationComponent } from './admin-feed-edit-topic-configuration.component';
+import { JsonSchemaFormWithServiceComponent } from '../../../../json-schema/json-schema.component';
 
 @Component({
     selector: 'mage-json-schema-form',
-    template: ` <input [value]="data?.derp ?? ''" (input)="onInput($event)" /> `,
-    standalone: false
+    template: ` <input [value]="data?.derp ?? ''" (input)="onInput($event)" /> `
 })
 class MockJsonSchemaFormWithServiceComponent {
   @Input() framework: any;
@@ -60,13 +60,14 @@ describe('TopicConfigurationComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MatExpansionModule, NoopAnimationsModule],
-      declarations: [
-        TestHostComponent,
-        AdminFeedEditTopicConfigurationComponent,
-        MockJsonSchemaFormWithServiceComponent
-      ]
+      imports: [MatExpansionModule, NoopAnimationsModule, AdminFeedEditTopicConfigurationComponent],
+      declarations: [TestHostComponent]
     }).compileComponents();
+
+    TestBed.overrideComponent(AdminFeedEditTopicConfigurationComponent, {
+      remove: { imports: [JsonSchemaFormWithServiceComponent] },
+      add: { imports: [MockJsonSchemaFormWithServiceComponent] }
+    });
   }));
 
   beforeEach(() => {

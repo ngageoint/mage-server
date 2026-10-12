@@ -1,19 +1,51 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SlicePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
 import { Service } from '@ngageoint/mage.web-core-lib/feed';
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { AdminBreadcrumb } from '../../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { FeedEditState, FeedMetaData } from './feed-edit.model';
 import { FeedEditService } from './feed-edit.service';
+import { AdminServiceEditComponent } from '../../admin-service/admin-service-edit/admin-service-edit.component';
+import { AdminFeedEditTopicComponent } from './admin-feed-edit-topic/admin-feed-edit-topic.component';
+import { AdminFeedEditTopicConfigurationComponent } from './admin-feed-edit-topic/admin-feed-edit-topic-configuration.component';
+import { AdminFeedEditItemPropertiesComponent } from './admin-feed-edit-item-properties/admin-feed-edit-item-properties.component';
+import { AdminFeedEditConfigurationComponent } from './admin-feed-edit-configuration.component';
+import { FeedItemSummaryModule } from '../../../../feed/feed-item/feed-item-summary/feed-item-summary.module';
 
 @Component({
     selector: 'app-feed-edit',
     templateUrl: './admin-feed-edit.component.html',
     styleUrls: ['./admin-feed-edit.component.scss'],
     providers: [FeedEditService],
-    standalone: false
+    imports: [
+        SlicePipe,
+        MatExpansionModule,
+        MatCardModule,
+        MatListModule,
+        MatIconModule,
+        FeedIconModule,
+        AdminServiceEditComponent,
+        AdminFeedEditTopicComponent,
+        AdminFeedEditTopicConfigurationComponent,
+        AdminFeedEditItemPropertiesComponent,
+        AdminFeedEditConfigurationComponent,
+        FeedItemSummaryModule
+    ]
 })
 export class AdminFeedEditComponent implements OnInit {
+  private readonly feedEdit = inject(FeedEditService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly breadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef = inject(DestroyRef);
+
   private _breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Feeds',
     icon: 'rss_feed',
@@ -28,9 +60,8 @@ export class AdminFeedEditComponent implements OnInit {
   }
 
   step = 0;
-  hasFeedDeletePermission = false;
 
-  editState: FeedEditState = {
+  readonly editState = signal<FeedEditState>({
     originalFeed: null,
     availableServices: [],
     selectedService: null,
@@ -40,16 +71,11 @@ export class AdminFeedEditComponent implements OnInit {
     itemPropertiesSchema: null,
     feedMetaData: null,
     preview: null
-  };
+  });
 
   private feedId: string | null = null;
 
-  constructor(
-    private feedEdit: FeedEditService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {
+  constructor() {
     this.feedId = this.route.snapshot.paramMap.get('feedId');
 
     if (this.feedId) {
@@ -63,30 +89,28 @@ export class AdminFeedEditComponent implements OnInit {
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
 
-    this.feedEdit.state$.subscribe((x) => {
-      const nextOriginalFeed = x.originalFeed;
+    this.feedEdit.state$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((x) => {
+        const nextOriginalFeed = x.originalFeed;
 
-      if (nextOriginalFeed && !this.editState.originalFeed) {
-        this.breadcrumbs[1] = {
-          title: nextOriginalFeed.title,
-          route: ['/admin/feeds', nextOriginalFeed.id]
-        };
-        this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-        this.step = 1;
-      }
+        if (nextOriginalFeed && !this.editState().originalFeed) {
+          this.breadcrumbs[1] = {
+            title: nextOriginalFeed.title,
+            route: ['/admin/feeds', nextOriginalFeed.id]
+          };
+          this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
+          this.step = 1;
+        }
 
-      this.editState = x;
-    });
+        this.editState.set(x);
+      });
 
     if (this.feedId) {
       this.feedEdit.editFeed(this.feedId);
     } else {
       this.feedEdit.newFeed();
     }
-  }
-
-  noServicesExist(): void {
-    this.setStep(0);
   }
 
   serviceCreationCancelled(): void {
@@ -96,14 +120,6 @@ export class AdminFeedEditComponent implements OnInit {
   serviceCreated(service: Service): void {
     this.feedEdit.serviceCreated(service);
     this.setStep(0);
-  }
-
-  itemPropertiesSchemaToTitleMap(value: any): any {
-    if (!value?.schema) return;
-    return {
-      name: value.schema.title,
-      value: value.key
-    };
   }
 
   onServiceSelected(serviceId: string): void {
@@ -142,9 +158,11 @@ export class AdminFeedEditComponent implements OnInit {
       this.feedEdit.feedMetaDataChanged(metaData);
     }
 
-    this.feedEdit.saveFeed().subscribe((feed) => {
-      this.router.navigate(['/admin/feeds', feed.id]);
-    });
+    this.feedEdit.saveFeed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((feed) => {
+        this.router.navigate(['/admin/feeds', feed.id]);
+      });
   }
 
   setStep(index: number): void {
@@ -153,9 +171,5 @@ export class AdminFeedEditComponent implements OnInit {
 
   nextStep(): void {
     this.step++;
-  }
-
-  prevStep(): void {
-    this.step--;
   }
 }

@@ -18,7 +18,6 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { BehaviorSubject, of } from 'rxjs'
 import { AdminBreadcrumbModule } from '../../../../../app/admin/admin-breadcrumb/admin-breadcrumb.module';
 import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
-import { FeedItemSummaryComponent } from '../../../../../app/feed/feed-item/feed-item-summary/feed-item-summary.component';
 import { ServiceType, FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { JsonSchemaWidgetAutocompleteComponent } from '../../../json-schema/json-schema-widget/json-schema-widget-autocomplete.component';
 import { JsonSchemaModule } from '../../../json-schema/json-schema.module';
@@ -100,15 +99,6 @@ describe('FeedEditComponent', () => {
     mockFeedService.fetchServices.and.returnValue(of([]))
 
     TestBed.configureTestingModule({
-    declarations: [
-        AdminFeedEditComponent,
-        AdminServiceEditComponent,
-        AdminFeedEditTopicComponent,
-        AdminFeedEditTopicConfigurationComponent,
-        AdminFeedEditConfigurationComponent,
-        AdminFeedEditItemPropertiesComponent,
-        FeedItemSummaryComponent
-    ],
     imports: [MatAutocompleteModule,
         JsonSchemaWidgetAutocompleteComponent,
         MatDividerModule,
@@ -130,7 +120,13 @@ describe('FeedEditComponent', () => {
         MageCommonModule,
         StaticIconModule,
         FeedIconModule,
-        AdminBreadcrumbModule],
+        AdminBreadcrumbModule,
+        AdminFeedEditComponent,
+        AdminServiceEditComponent,
+        AdminFeedEditTopicComponent,
+        AdminFeedEditTopicConfigurationComponent,
+        AdminFeedEditConfigurationComponent,
+        AdminFeedEditItemPropertiesComponent],
     providers: [
         { provide: FeedService, useValue: mockFeedService },
         {

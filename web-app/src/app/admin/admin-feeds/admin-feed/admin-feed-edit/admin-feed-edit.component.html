@@ -1,19 +1,25 @@
+@let editState = this.editState();
+
 <div class="feed-edit-page">
-  <div class="header" *ngIf="editState.originalFeed">
-    <feed-icon class="icon" [icon]="editState.originalFeed?.icon" [size]="40" [active]="true"></feed-icon>
-    <span class="header__title">{{ editState.originalFeed.title }}</span>
-  </div>
+  @if (editState.originalFeed) {
+    <div class="header">
+      <feed-icon class="icon" [icon]="editState.originalFeed?.icon" [size]="40" [active]="true"></feed-icon>
+      <span class="header__title">{{ editState.originalFeed.title }}</span>
+    </div>
+  }
 
   <div class="page-content">
     <mat-accordion [multi]="editState.originalFeed">
-      <app-create-service *ngIf="!editState.originalFeed" [expanded]="step === -1" (opened)="setStep(-1)"
-        (cancelled)="serviceCreationCancelled()" (serviceCreated)="serviceCreated($event)">
-      </app-create-service>
-      <app-choose-service-topic *ngIf="!editState.originalFeed"
-        [services]="editState.availableServices" [topics]="editState.availableTopics"
-        [selectedService]="editState.selectedService" [selectedTopic]="editState.selectedTopic" [expanded]="step === 0"
-        (opened)="setStep(0)" (serviceSelected)="onServiceSelected($event)" (topicSelected)="onTopicSelected($event)">
-      </app-choose-service-topic>
+      @if (!editState.originalFeed) {
+        <app-create-service [expanded]="step === -1" (opened)="setStep(-1)"
+          (cancelled)="serviceCreationCancelled()" (serviceCreated)="serviceCreated($event)">
+        </app-create-service>
+        <app-choose-service-topic
+          [services]="editState.availableServices" [topics]="editState.availableTopics"
+          [selectedService]="editState.selectedService" [selectedTopic]="editState.selectedTopic" [expanded]="step === 0"
+          (opened)="setStep(0)" (serviceSelected)="onServiceSelected($event)" (topicSelected)="onTopicSelected($event)">
+        </app-choose-service-topic>
+      }
       <app-topic-configuration [expanded]="step === 1" [showPrevious]="!editState.originalFeed" (opened)="setStep(1)" (cancelled)="setStep(0)"
         [fetchParametersSchema]="editState.selectedTopic?.paramsSchema"
         [initialFetchParameters]="editState.originalFeed?.constantParams"
@@ -41,21 +47,22 @@
         <mat-card-title>Feed Item Preview</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div *ngIf="editState.preview; else elseBlockPreview">
+        @if (editState.preview) {
           <div class="preview--list">
             <mat-nav-list>
-              <div *ngFor="let feature of editState.preview?.content?.items?.features | slice:0:10">
-                <feed-item-summary [item]="feature" [feed]="editState.preview.feed"></feed-item-summary>
-              </div>
+              @for (feature of (editState.preview?.content?.items?.features | slice:0:10); track $index) {
+                <div>
+                  <feed-item-summary [item]="feature" [feed]="editState.preview.feed"></feed-item-summary>
+                </div>
+              }
             </mat-nav-list>
           </div>
-        </div>
-        <ng-template #elseBlockPreview>
+        } @else {
           <div class="preview--empty">
             <mat-icon fontSet="material-symbols-outlined" class="preview__img--empty">list</mat-icon>
             <span class="preview__span--empty">No preview available</span>
           </div>
-        </ng-template>
+        }
       </mat-card-content>
     </mat-card>
   </div>

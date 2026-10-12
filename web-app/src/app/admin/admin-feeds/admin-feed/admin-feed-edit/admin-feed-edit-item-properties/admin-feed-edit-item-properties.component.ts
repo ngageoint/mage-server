@@ -1,5 +1,10 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ReactiveFormsModule, UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatIconModule } from '@angular/material/icon'
 import * as _ from 'lodash'
 import { debounceTime, filter } from 'rxjs/operators'
 
@@ -40,9 +45,10 @@ export type SchemaFormValue = KeyedPropertySchemaFormValue[]
     selector: 'app-feed-item-properties-configuration',
     templateUrl: './admin-feed-edit-item-properties.component.html',
     styleUrls: ['./admin-feed-edit-item-properties.component.scss'],
-    standalone: false
+    imports: [ReactiveFormsModule, MatExpansionModule, MatFormFieldModule, MatInputModule, MatIconModule]
 })
 export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
+  private readonly destroyRef = inject(DestroyRef);
 
   @Input() expanded: boolean = false;
   @Input() topicSchema: any = null;
@@ -61,7 +67,8 @@ export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
     this.schemaForm.valueChanges
       .pipe(
         filter(() => this.schemaChangesEnabled),
-        debounceTime(500)
+        debounceTime(500),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((x: SchemaFormValue) => {
         this.applyFormValueToSchema()
@@ -97,8 +104,6 @@ export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
     if (type === 'boolean') return 'True or false'
     return 'Text'
   }
-
-  closed(): void { }
 
   prevStep(): void {
     this.cancelled.emit();

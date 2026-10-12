@@ -1,19 +1,40 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatIconModule } from '@angular/material/icon'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatAutocompleteModule } from '@angular/material/autocomplete'
+import { MatButtonModule } from '@angular/material/button'
 import { debounceTime, map } from 'rxjs/operators'
 import { FeedTopic, MapStyle } from '@ngageoint/mage.web-core-lib/feed'
-import { StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
+import { StaticIconModule, StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
 import { FeedMetaData, feedMetaDataLean, FeedMetaDataNullable } from './feed-edit.model'
-import { IconReference } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
+import { FeedIconModule, IconReference } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { SessionService } from 'mage-web-app/http/session.service';
 
 @Component({
     selector: 'app-feed-configuration',
     templateUrl: './admin-feed-edit-configuration.component.html',
     styleUrls: ['./admin-feed-edit-configuration.component.scss'],
-    standalone: false
+    imports: [
+        ReactiveFormsModule,
+        MatExpansionModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCheckboxModule,
+        MatAutocompleteModule,
+        MatButtonModule,
+        StaticIconModule,
+        FeedIconModule
+    ]
 })
 export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
+  private readonly sessionService = inject(SessionService);
+  private readonly destroyRef = inject(DestroyRef);
 
   @Input() topic: FeedTopic | null;
   @Input() itemPropertiesSchema: any;
@@ -26,7 +47,6 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   @Output() opened = new EventEmitter();
 
   feedIconContent: IconReference
-  mapIconContent: string | null
 
   feedMetaDataForm: UntypedFormGroup = new UntypedFormGroup({
     title: new UntypedFormControl(),
@@ -44,8 +64,6 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   itemSchemaPropertyTitles: { key: string, title: string }[] = [];
   readonly changeDebounceInterval = 500
 
-  constructor(private sessionService: SessionService) { }
-
   get accessToken(): string | null {
     return this.sessionService.getToken();
   }
@@ -53,7 +71,8 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.feedMetaDataForm.valueChanges.pipe(
       debounceTime(this.changeDebounceInterval),
-      map(metaDataFromFormValue)
+      map(metaDataFromFormValue),
+      takeUntilDestroyed(this.destroyRef)
     )
     .subscribe(metaDataFromForm => {
       this.feedMetaData = metaDataFromForm
