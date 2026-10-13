@@ -1,12 +1,12 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.7.1-beta.2",
+  "version": "6.7.1-beta.3",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@ngageoint/mage.service",
-      "version": "6.7.1-beta.2",
+      "version": "6.7.1-beta.3",
       "dependencies": {
         "@ngageoint/geopackage": "^4.2.10",
         "@ngageoint/mongodb-migrations": "^2.0.0",
