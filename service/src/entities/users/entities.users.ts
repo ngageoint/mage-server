@@ -16,8 +16,17 @@ export interface User {
   lastUpdated: Date
   email?: string
   phones: Phone[]
+  /**
+   * The user icon is the icon that represents the user's location on a map view.
+   */
   icon?: UserIcon
   roleId: string
+  /**
+   * TODO: Invert this relationship key to keep the user account entity clean and
+   * separate from the authentication/identity provider protocol.  That will also
+   * allow the potential for multiple identity providers to map to one Mage account,
+   * and facilitate migrating accounts from one identity provider to another.
+   */
   authenticationId: string
   avatar?: Avatar
   // TODO: the rest of the properties
@@ -38,6 +47,10 @@ export interface Phone {
  * A user's icon is what appears on the map to mark the user's location.
  */
 export interface UserIcon {
+  /**
+   * TODO: This might be irrelevant after the icon is actually saved and could be
+   * a candidate to remove from the model.
+   */
   type: UserIconType
   text: string
   color: string
@@ -55,6 +68,8 @@ export enum UserIconType {
 /**
  * A user's avatar is the profile picture that represents the user in list
  * views and such.
+ * TODO: This can potentially be removed from the core user entity.  This
+ * information is
  */
 export interface Avatar {
   contentType?: string,
@@ -65,6 +80,7 @@ export interface Avatar {
 export interface UserRepository {
   findById(id: UserId): Promise<User | null>
   findAllByIds(ids: UserId[]): Promise<{ [id: string]: User | null }>
+
   find<MappedResult>(which?: UserFindParameters, mapping?: (user: User) => MappedResult): Promise<PageOf<MappedResult>>
 }
 

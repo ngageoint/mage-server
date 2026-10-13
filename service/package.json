@@ -79,7 +79,8 @@
     "wkx": "0.5.0",
     "wms-capabilities": "0.6.0",
     "xmlbuilder2": "4.0.3",
-    "yaml": "2.8.3"
+    "yaml": "2.8.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@fluffy-spoon/substitute": "1.208.0",

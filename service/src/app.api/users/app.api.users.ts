@@ -1,8 +1,27 @@
 import { AppResponse, AppRequest, AppRequestContext } from '../app.api.global'
-import { PermissionDeniedError } from '../app.api.errors'
+import { InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { User } from '../../entities/users/entities.users'
 
+
+export type LocalUserProxyEnrollment = Pick<User, 'username' | 'displayName' | 'email' | 'roleId'> & {
+  password: string
+  phone?: string | undefined
+}
+
+export interface EnrollLocalUserByProxyRequest extends AppRequest {
+  enrollment: LocalUserProxyEnrollment
+}
+
+/**
+ * This operation represents the use case in which an admin creates a Mage account
+ * on behalf of another user.  The account will implicitly be a "local" Mage
+ * identity provider account, with a password hash stored in the Mage database,
+ * as opposed to an externally managed IDP account like Google or login.gov.
+ */
+export interface EnrollLocalUserByProxy {
+  (req: EnrollLocalUserByProxyRequest): AppResponse<ExoUserAccount, PermissionDeniedError | InvalidInputError>
+}
 
 export interface UserSearchRequest extends AppRequest {
   userSearch: PagingParameters & {
@@ -17,6 +36,9 @@ export type UserSearchResult = Pick<User, 'id' | 'username' | 'displayName' | 'e
    * A reduction of all the phone numbers to a single string
    */
   allPhones?: string | null | undefined
+  /**
+   * TODO: move to web layer
+   */
   avatarUrl?: string | null | undefined
 }
 
@@ -28,7 +50,10 @@ export interface UsersPermissionService {
   ensureReadUsersPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 
-export type ExoUser = Omit<User, 'avatar'> & {
+export type ExoUserAccount = Omit<User, 'avatar'> & {
+  /**
+   * TODO: move to web layer
+   */
   avatarUrl?: string
 }
 
@@ -49,6 +74,9 @@ export function searchResultFor(from: User): UserSearchResult {
   };
 }
 
+/**
+ * TODO: move to web layer to compute actual base url
+ */
 function avatarUrlForUser(user: User): string | undefined {
   if (user.avatar?.relativePath) {
     return `/api/users/${user.id}/avatar`

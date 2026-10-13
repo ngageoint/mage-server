@@ -180,59 +180,6 @@ module.exports = function(app, security) {
     next();
   }
 
-  // Create a new user (ADMIN)
-  // If authentication for admin fails go to next route and
-  // create user as non-admin, roles will be empty
-  app.post(
-    '/api/users',
-    isAuthenticated('bearer'),
-    access.authorize('CREATE_USER'),
-    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
-    handleUserContentUploadError,
-    validateUsername,
-    validateAccount,
-    parseIconUpload,
-    function(req, res, next) {
-      const roleId = req.param('roleId');
-      if (!roleId) return res.status(400).send('roleId is a required field');
-
-      const user = {
-        username: req.username,
-        roleId: roleId,
-        active: true, // Authorized to update users, activate account by default
-        displayName: req.account.displayName,
-        email: req.account.email,
-        phones: req.account.phones,
-        authentication: {
-          type: 'local',
-          password: req.account.password,
-          authenticationConfiguration: {
-            name: 'local'
-          }
-        }
-      };
-
-      const files = req.files || {};
-      const [avatar] = files.avatar || [];
-      const [icon] = files.icon || [];
-      new api.User()
-        .create(user, { avatar, icon })
-        .then(newUser => {
-          log.info('user account created', {
-            user: newUser.username,
-            displayName: newUser.displayName,
-            role: newUser.roleId && newUser.roleId.name ? newUser.roleId.name : String(newUser.roleId),
-            createdBy: req.user.username,
-            createdTime: new Date().toISOString()
-          });
-
-          newUser = userTransformer.transform(newUser, { path: req.getRoot() });
-          res.json(newUser);
-        })
-        .catch(err => next(err));
-    }
-  );
-
   // Create a new user
   // Anyone can create a new user, but the new user will not be active
   app.post('/api/users/signups', validateUsername, function(req, res, next) {
