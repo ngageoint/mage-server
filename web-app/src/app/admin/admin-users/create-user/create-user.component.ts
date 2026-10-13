@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { Role } from '../user';
 import { ApiService } from '../../../api/api.service';
 import { UserService } from '../../../user/user.service';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,6 +19,7 @@ import {
 import { emailValidator } from '../../../email/email';
 
 import { PasswordStrength } from 'src/app/entities/password/password';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'create-user-modal',
@@ -117,7 +118,7 @@ export class CreateUserModalComponent implements OnInit {
         next: (createdUser) => {
           this.dialogRef.close(createdUser);
         },
-        error: (response: any) => {
+        error: (response: HttpErrorResponse) => {
           this.saving.set(false);
           if (response.status === 409) {
             this.signup.get('username')?.setErrors({ exists: true });
@@ -135,7 +136,7 @@ export class CreateUserModalComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  getPasswordErrorMessages(errors: any): string[] {
+  getPasswordErrorMessages(errors: ValidationErrors): string[] {
     return errors?.['required'] ? ['Password is required'] : [];
   }
 }
