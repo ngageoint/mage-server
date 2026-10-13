@@ -64,3 +64,27 @@ describe('layer model legacy bridge', function() {
     expect(await layerModule.getById(id)).to.be.null
   })
 })
+
+describe('layer model default (no initialize() call)', function() {
+
+  let freshLayerModule: any
+
+  before(function() {
+    delete require.cache[require.resolve('../../lib/models/layer')]
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    freshLayerModule = require('../../lib/models/layer')
+  })
+
+  afterEach(async function() {
+    const model = LayerModel(mongoose.connection)
+    await model.deleteMany({ name: /^default-bridge-/ })
+  })
+
+  it('remove() does not throw without an explicit initialize() call', async function() {
+    const id = await freshLayerModule.nextLayerId()
+    const created = await freshLayerModule.create(id, { name: 'default-bridge-remove-' + id, type: 'Imagery', state: 'available' })
+    await freshLayerModule.remove(created)
+
+    expect(await freshLayerModule.getById(id)).to.be.null
+  })
+})

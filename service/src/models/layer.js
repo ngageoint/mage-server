@@ -5,7 +5,17 @@ const { MongooseSequenceRepository, CounterModel } = require('../adapters/counte
 
 const layerModel = LayerModel(mongoose.connection);
 
-let layerRepo = new MongooseLayerRepository(layerModel, new MongooseSequenceRepository(CounterModel(mongoose.connection)));
+function defaultRemoveLayerFromEvents(layerId) {
+  return new Promise((resolve, reject) => {
+    require('./event').removeLayerFromEvents({ _id: layerId }, (err) => err ? reject(err) : resolve());
+  });
+}
+
+let layerRepo = new MongooseLayerRepository(
+  layerModel,
+  new MongooseSequenceRepository(CounterModel(mongoose.connection)),
+  defaultRemoveLayerFromEvents
+);
 
 /**
  * This module is a thin bridge that keeps the legacy API working for
