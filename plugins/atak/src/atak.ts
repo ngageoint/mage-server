@@ -18,40 +18,54 @@ export class AtakServiceType implements FeedServiceType {
   readonly title: string = 'ATAK / TAK Server'
   readonly summary: string = 'Cursor-on-Target (CoT) events from TAK Server'
   readonly configSchema: JSONSchema4 = {
-    type: 'string',
-    title: 'URL',
-    description: "Base URL of the TAK Server"
+    type: 'object',
+    title: 'TAK Server',
+    properties: {
+      baseUrl: { type: 'string', title: 'Base URL', description: 'Base URL of the TAK Server' },
+      username: { type: 'string', title: 'Username' },
+      password: { type: 'string', title: 'Password' }
+    },
+    required: ['baseUrl']
   }
 
   constructor(readonly transport: AtakTransport) { }
 
   async validateServiceConfig(config: Json): Promise<null | InvalidServiceConfigError> {
-    if (typeof config !== 'string') {
-      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'config must be a url string')
+    if (typeof config !== 'object' || config === null || Array.isArray(config)) {
+      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'config must be an object')
+    }
+    const { baseUrl } = config as unknown as AtakServiceConfig
+    if (typeof baseUrl !== 'string') {
+      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'config.baseUrl must be a url string')
     }
     try {
-      new URL(config)
+      new URL(baseUrl)
     }
     catch (err) {
-      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'invalid service url')
+      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'invalid service url')
     }
     return null
   }
 
-  /**
-   * No-op for now because configSchema is just a bare URL. Once auth is
-   * confirmed against a real TAK Server (see mage-notes/TRACKING.md,
-   * 2026-09-28), configSchema will likely grow to include credentials, and
-   * this will need to actually redact them before a config is ever
-   * displayed back to an admin.
-   */
   redactServiceConfig(config: JsonObject): JsonObject {
-    return config
+    const { password, ...rest } = config as unknown as AtakServiceConfig
+    return password ? { ...rest, password: '●●●●●●●●' } : rest
   }
 
   async createConnection(config: Json): Promise<FeedServiceConnection> {
-    return new AtakConnection(topics, config as string, this.transport)
+    return new AtakConnection(topics, config as unknown as AtakServiceConfig, this.transport)
   }
+}
+
+export interface AtakServiceConfig {
+  baseUrl: string
+  username?: string
+  password?: string
+}
+
+export interface AtakAuth {
+  username: string
+  password: string
 }
 
 const topics: Map<string, AtakTopicModule> = new Map<FeedTopicId, AtakTopicModule>([
@@ -60,7 +74,13 @@ const topics: Map<string, AtakTopicModule> = new Map<FeedTopicId, AtakTopicModul
 
 export class AtakConnection implements FeedServiceConnection {
 
-  constructor(readonly topics: Map<FeedTopicId, AtakTopicModule>, readonly baseUrl: string, readonly transport: AtakTransport) {}
+  readonly baseUrl: string
+  readonly auth?: AtakAuth
+
+  constructor(readonly topics: Map<FeedTopicId, AtakTopicModule>, config: AtakServiceConfig, readonly transport: AtakTransport) {
+    this.baseUrl = config.baseUrl
+    this.auth = config.username && config.password ? { username: config.username, password: config.password } : undefined
+  }
 
   async fetchServiceInfo(): Promise<FeedServiceInfo> {
     return {
@@ -79,7 +99,7 @@ export class AtakConnection implements FeedServiceConnection {
       throw new Error(`unknown topic: ${topic}`)
     }
     const req = topicModule.createContentRequest(params)
-    const res = await this.transport.send(req, new URL(this.baseUrl))
+    const res = await this.transport.send(req, new URL(this.baseUrl), this.auth)
     return topicModule.transformResponse(res, req)
   }
 }
@@ -96,7 +116,7 @@ export interface AtakResponse {
 }
 
 export interface AtakTransport {
-  send(req: AtakRequest, baseUrl: URL): Promise<AtakResponse>
+  send(req: AtakRequest, baseUrl: URL, auth?: AtakAuth): Promise<AtakResponse>
 }
 
 export interface AtakTopicModule {

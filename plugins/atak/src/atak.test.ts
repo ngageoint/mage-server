@@ -23,29 +23,46 @@ describe('atak service type', function () {
     atak = new ATAK.AtakServiceType(transport as any);
   });
 
-  it('validates the service config is a string', async function () {
+  it('validates the service config has a baseUrl', async function () {
     let err = await atak.validateServiceConfig({ url: 'invalid' } as any);
     expect(err).toBeInstanceOf(FeedsError);
     expect(err?.code).toEqual(ErrInvalidServiceConfig);
 
-    err = await atak.validateServiceConfig('http://test.org');
+    err = await atak.validateServiceConfig({ baseUrl: 'http://test.org' });
     expect(err).toBeNull();
   });
 
-  it('validates the service config is a url', async function () {
-    const err = await atak.validateServiceConfig('not/a/url');
+  it('rejects a config missing baseUrl', async function () {
+    const err = await atak.validateServiceConfig({} as any);
     expect(err).toBeInstanceOf(FeedsError);
     expect(err?.code).toEqual(ErrInvalidServiceConfig);
   });
 
-  it('creates a service connection with a url string and transport', async function () {
+  it('validates the service config is a url', async function () {
+    const err = await atak.validateServiceConfig({ baseUrl: 'not/a/url' });
+    expect(err).toBeInstanceOf(FeedsError);
+    expect(err?.code).toEqual(ErrInvalidServiceConfig);
+  });
+
+  it('creates a service connection with a config object and transport', async function () {
     const conn = (await atak.createConnection(
-      'http://test.tak'
+      { baseUrl: 'http://test.tak' }
     )) as ATAK.AtakConnection;
 
     expect(conn).toBeInstanceOf(ATAK.AtakConnection);
     expect(conn.baseUrl).toEqual('http://test.tak');
     expect(conn.transport).toBe(atak.transport);
+  });
+
+  it('redacts the password when present', function () {
+    const redacted = atak.redactServiceConfig({ baseUrl: 'http://test.tak', username: 'bob', password: 'secret' });
+    expect(redacted.password).toEqual('●●●●●●●●');
+    expect(redacted.baseUrl).toEqual('http://test.tak');
+  });
+
+  it('leaves config unchanged when there is no password', function () {
+    const redacted = atak.redactServiceConfig({ baseUrl: 'http://test.tak' });
+    expect(redacted).toEqual({ baseUrl: 'http://test.tak' });
   });
 });
 
@@ -78,7 +95,7 @@ describe('atak connection', function () {
     const url = 'https://test.tak';
     const conn = new ATAK.AtakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
-      url,
+      { baseUrl: url },
       transport as any
     );
     const topics = await conn.fetchAvailableTopics();
@@ -90,7 +107,7 @@ describe('atak connection', function () {
   it('fetches topic content with the topic request', async function () {
     const conn = new ATAK.AtakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
-      'http://test.fetch',
+      { baseUrl: 'http://test.fetch' },
       transport as any
     );
 
@@ -125,16 +142,49 @@ describe('atak connection', function () {
     expect(transport.send).toHaveBeenCalledTimes(1);
     expect(transport.send).toHaveBeenCalledWith(
       contentReq,
-      new URL(conn.baseUrl)
+      new URL(conn.baseUrl),
+      undefined
     );
     expect(topicModules[0].createContentRequest as any).toHaveBeenCalledWith(undefined);
     expect(topicModules[0].transformResponse as any).toHaveBeenCalledWith(contentRes, contentReq);
   });
 
+  it('passes auth through to the transport when credentials are configured', async function () {
+    const conn = new ATAK.AtakConnection(
+      new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
+      { baseUrl: 'http://test.fetch', username: 'bob', password: 'secret' },
+      transport as any
+    );
+
+    topicModules[0].createContentRequest = jest.fn((): ATAK.AtakRequest => ({ method: 'get', path: '/Marti/api/cot' }));
+    topicModules[0].transformResponse = jest.fn((): FeedTopicContent => ({
+      topic: topicModules[0].topicDescriptor.id,
+      items: { type: 'FeatureCollection', features: [] } as any
+    }));
+    transport.send.mockImplementationOnce(async (): Promise<ATAK.AtakResponse> => ({ status: 200, body: [] }));
+
+    await conn.fetchTopicContent(topicModules[0].topicDescriptor.id);
+
+    expect(transport.send).toHaveBeenCalledWith(
+      expect.anything(),
+      new URL(conn.baseUrl),
+      { username: 'bob', password: 'secret' }
+    );
+  });
+
+  it('does not set auth when username or password is missing', function () {
+    const conn = new ATAK.AtakConnection(
+      new Map(),
+      { baseUrl: 'http://test.tak', username: 'bob' },
+      transport as any
+    );
+    expect(conn.auth).toBeUndefined();
+  });
+
   it('throws for an unknown topic', async function () {
     const conn = new ATAK.AtakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
-      'http://test.fetch',
+      { baseUrl: 'http://test.fetch' },
       transport as any
     );
 

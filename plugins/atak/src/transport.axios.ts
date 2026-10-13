@@ -1,14 +1,17 @@
 import axios from 'axios'
 import { URL } from 'url'
-import { AtakTransport, AtakRequest, AtakResponse } from './atak'
+import { AtakTransport, AtakRequest, AtakResponse, AtakAuth } from './atak'
 
 export class AxiosAtakTransport implements AtakTransport {
 
-  async send(req: AtakRequest, baseUrl: URL): Promise<AtakResponse> {
+  async send(req: AtakRequest, baseUrl: URL, auth?: AtakAuth): Promise<AtakResponse> {
 
     const fullUrl = new URL(req.path, baseUrl)
     if (req.method === 'get') {
-      const res = await axios.get(fullUrl.toString(), { params: req.queryParams })
+      const res = await axios.get(fullUrl.toString(), {
+        params: req.queryParams,
+        ...(auth ? { auth } : {})
+      })
       return {
         status: res.status,
         body: res.data
