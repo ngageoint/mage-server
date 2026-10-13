@@ -4,6 +4,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 import { UserDetailsComponent } from './user-details.component';
+import { UserDetailsViewComponent } from './user-details-view/user-details-view.component';
 import { UserService } from '../../../user/user.service';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { RouteReuse } from '../../../route-reuse.strategy';
@@ -33,13 +34,17 @@ describe('UserDetailsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [UserDetailsComponent],
+      imports: [UserDetailsComponent],
       providers: [
         { provide: ActivatedRoute, useValue: activatedRoute },
         { provide: UserService, useValue: mockUserService }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
+
+    TestBed.overrideComponent(UserDetailsComponent, {
+      remove: { imports: [UserDetailsViewComponent] }
+    });
 
     fixture = TestBed.createComponent(UserDetailsComponent);
     component = fixture.componentInstance;
@@ -59,16 +64,6 @@ describe('UserDetailsComponent', () => {
     expect(component.user()).toEqual(mockUser);
     expect(component.error()).toBeNull();
   }));
-
-  it('should set an error and not load when the userId param is missing', () => {
-    (mockUserService.getUser as jasmine.Spy).calls.reset();
-    activatedRoute.snapshot.paramMap = convertToParamMap({});
-
-    component.ngOnInit();
-
-    expect(component.error()).toBe('Missing userId route param');
-    expect(mockUserService.getUser as jasmine.Spy).not.toHaveBeenCalled();
-  });
 
   it('should get a new component instead of being reused when the user id changes', () => {
     expect(UserDetailsComponent.routeReuse).toBe(RouteReuse.RecreateOnParamChange);
@@ -147,15 +142,5 @@ describe('UserDetailsComponent', () => {
 
     expect(component.isEditingUser).toBeFalse();
     expect(component.user()).toEqual(mockUser);
-  });
-
-  it('should clean up destroy$ on destroy', () => {
-    const nextSpy = spyOn((component as any).destroy$, 'next');
-    const completeSpy = spyOn((component as any).destroy$, 'complete');
-
-    component.ngOnDestroy();
-
-    expect(nextSpy).toHaveBeenCalled();
-    expect(completeSpy).toHaveBeenCalled();
   });
 });

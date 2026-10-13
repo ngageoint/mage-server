@@ -39,8 +39,7 @@ describe('ChangePasswordComponent', () => {
     (mockUserService.updateUserPassword as jasmine.Spy).and.returnValue(of(null));
 
     await TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule],
-      declarations: [ChangePasswordComponent],
+      imports: [ReactiveFormsModule, ChangePasswordComponent],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { user: mockUser } },
@@ -55,6 +54,10 @@ describe('ChangePasswordComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should render the template without errors', () => {
+    expect(() => fixture.detectChanges()).not.toThrow();
   });
 
   it('should require both password fields', () => {
@@ -89,7 +92,7 @@ describe('ChangePasswordComponent', () => {
       { duration: 5000 }
     );
     expect(mockDialogRef.close).toHaveBeenCalled();
-    expect(component.saving).toBeFalse();
+    expect(component.saving()).toBeFalse();
   });
 
   it('should set an error and stop saving when the request fails', () => {
@@ -102,8 +105,8 @@ describe('ChangePasswordComponent', () => {
 
     component.updatePassword();
 
-    expect(component.error).toBe('boom');
-    expect(component.saving).toBeFalse();
+    expect(component.error()).toBe('boom');
+    expect(component.saving()).toBeFalse();
     expect(mockDialogRef.close).not.toHaveBeenCalled();
   });
 

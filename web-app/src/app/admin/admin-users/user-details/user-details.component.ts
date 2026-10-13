@@ -1,54 +1,49 @@
-import { Component, OnInit, OnDestroy, computed, effect, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 
 import { UserService } from '../../../user/user.service';
 import { User } from '../user';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { RouteReuse } from '../../../route-reuse.strategy';
+import { UserDetailsViewComponent } from './user-details-view/user-details-view.component';
+import { UserDetailsEditComponent } from './user-details-edit/user-details-edit.component';
 
 @Component({
     selector: 'mage-user-details',
     templateUrl: './user-details.component.html',
     styleUrls: ['./user-details.component.scss'],
-    standalone: false
+    imports: [MatIconModule, UserDetailsEditComponent, UserDetailsViewComponent]
 })
-/**
- * Admin component for viewing and managing a user's details, teams, events, devices, logins, and credentials.
- */
 export class UserDetailsComponent implements OnInit, OnDestroy {
   static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
+
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly userService: UserService = inject(UserService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  readonly userId: string = this.route.snapshot.paramMap.get('userId');
 
   readonly user = signal<User | undefined>(undefined);
   readonly error = signal<string | null>(null);
   isEditingUser = false;
-
-  private destroy$ = new Subject<void>();
 
   readonly breadcrumbs = computed<AdminBreadcrumb[]>(() => [
     { title: 'Users', icon: 'person', route: ['/admin/users'] },
     { title: this.user()?.displayName || 'Unknown User' }
   ]);
 
-  constructor(
-    private route: ActivatedRoute,
-    private userService: UserService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {
+  constructor() {
     effect(() => this.breadcrumbService.setBreadcrumbs(this.breadcrumbs()));
   }
 
   ngOnInit(): void {
-    const userId = this.route.snapshot.paramMap.get('userId');
-    if (!userId) {
-      this.error.set('Missing userId route param');
-      return;
-    }
-
     this.userService
-      .getUser(userId)
-      .pipe(takeUntil(this.destroy$))
+      .getUser(this.userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (user) => {
           this.user.set(user);
@@ -61,8 +56,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   toggleEditUser(): void {
