@@ -43,7 +43,13 @@ export class PluginUrlScheme implements UrlScheme {
     if (typeof contentPath !== 'string') {
       return contentPath
     }
-    const stats = await fsx.stat(contentPath)
+    let stats: fs.Stats
+    try {
+      stats = await fsx.stat(contentPath)
+    }
+    catch (err) {
+      return new UrlResolutionError(url, 'no content found')
+    }
     if (stats.isFile()) {
       return fs.createReadStream(contentPath)
     }
