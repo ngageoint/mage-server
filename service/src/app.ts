@@ -186,6 +186,11 @@ import { RoleRepository } from './entities/authorization/entities.authorization'
 import { MongooseSequenceRepository, CounterModel } from './adapters/counters/adapters.counters.db.mongoose';
 import { SequenceRepository } from './entities/entities.global';
 import { MongooseLayerRepository, LayerModel, LayerRepository, RemoveLayerFromEvents } from './adapters/layers/adapters.layers.db.mongoose';
+import { MongooseLoginRepository, LoginModel } from './adapters/logins/adapters.logins.db.mongoose';
+import { LoginRepository } from './entities/logins/entities.logins';
+import * as loginsApi from './app.api/logins/app.api.logins';
+import * as loginsImpl from './app.impl/logins/app.impl.logins';
+import { LoginRoutes, LoginWebAppRequestFactory } from './adapters/logins/adapters.logins.controllers.web';
 import * as rolesApi from './app.api/roles/app.api.roles';
 import * as rolesImpl from './app.impl/roles/app.impl.roles';
 import { RolePermissionServiceImpl } from './permissions/permissions.roles';
@@ -467,6 +472,9 @@ type DatabaseLayer = {
   layers: {
     layer: LayerModel
   }
+  logins: {
+    login: LoginModel
+  }
   settings: {
     setting: SettingsModel
   }
@@ -520,6 +528,9 @@ type AppLayer = {
     createRole: rolesApi.CreateRole
     updateRole: rolesApi.UpdateRole
     deleteRole: rolesApi.DeleteRole
+  }
+  logins: {
+    readLogins: loginsApi.ReadLogins
   }
   icons: StaticIconsAppLayer
   users: UsersAppLayer
@@ -627,6 +638,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
     layers: {
       layer: LayerModel(conn)
     },
+    logins: {
+      login: LoginModel(conn)
+    },
     settings: {
       setting: settingModel
     },
@@ -680,6 +694,9 @@ type Repositories = {
   };
   layers: {
     layerRepo: LayerRepository
+  };
+  logins: {
+    loginRepo: LoginRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -770,6 +787,9 @@ async function initRepositories(
   const layerRepo = new MongooseLayerRepository(models.layers.layer, sequenceRepo, removeLayerFromEvents);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('./models/layer').initialize({ layerRepo });
+  const loginRepo = new MongooseLoginRepository(models.logins.login);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/login').initialize({ loginRepo });
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
@@ -831,6 +851,9 @@ async function initRepositories(
     layers: {
       layerRepo
     },
+    logins: {
+      loginRepo
+    },
     teams: {
       teamRepo
     },
@@ -846,6 +869,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }))
   const locations = await initLocationsAppLayer(repos)
   const roles = await initRolesAppLayer(repos)
+  const logins = await initLoginsAppLayer(repos)
   const observations = await initObservationsAppLayer(repos, attachmentHooks)
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
@@ -861,6 +885,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
     exports,
     locations,
     roles,
+    logins,
     observations,
     feeds,
     icons,
@@ -940,6 +965,14 @@ async function initRolesAppLayer(repos: Repositories): Promise<AppLayer['roles']
     createRole: rolesImpl.CreateRole(rolePermissionService, repos.roles.roleRepo),
     updateRole: rolesImpl.UpdateRole(rolePermissionService, repos.roles.roleRepo),
     deleteRole: rolesImpl.DeleteRole(rolePermissionService, repos.roles.roleRepo, removeRoleFromUsers)
+  };
+}
+
+async function initLoginsAppLayer(repos: Repositories): Promise<AppLayer['logins']> {
+  const usersPermissionService = new RoleBasedUsersPermissionService();
+
+  return {
+    readLogins: loginsImpl.ReadLogins(usersPermissionService, repos.logins.loginRepo)
   };
 }
 
@@ -1490,6 +1523,18 @@ async function initWebLayer(
   };
   const roleRoutes = RoleRoutes(app.roles, roleRequestFactory);
   webController.use('/api/roles', [bearerAuthentication, roleRoutes]);
+
+  const loginRequestFactory: LoginWebAppRequestFactory = <Params extends object>(
+    req: express.Request,
+    params?: Params
+  ) => {
+    return {
+      ...params,
+      context: baseAppRequestContext(req)
+    } as Params & loginsApi.LoginRequest;
+  };
+  const loginRoutes = LoginRoutes(app.logins, loginRequestFactory);
+  webController.use('/api/logins', [bearerAuthentication, loginRoutes]);
 
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 
