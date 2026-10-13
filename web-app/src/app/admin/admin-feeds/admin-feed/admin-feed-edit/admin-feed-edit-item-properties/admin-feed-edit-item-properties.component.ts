@@ -5,6 +5,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { MatIconModule } from '@angular/material/icon'
+import { MatButtonModule } from '@angular/material/button'
 import * as _ from 'lodash'
 import { debounceTime, filter } from 'rxjs/operators'
 
@@ -45,7 +46,7 @@ export type SchemaFormValue = KeyedPropertySchemaFormValue[]
     selector: 'app-feed-item-properties-configuration',
     templateUrl: './admin-feed-edit-item-properties.component.html',
     styleUrls: ['./admin-feed-edit-item-properties.component.scss'],
-    imports: [ReactiveFormsModule, MatExpansionModule, MatFormFieldModule, MatInputModule, MatIconModule]
+    imports: [ReactiveFormsModule, MatExpansionModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule]
 })
 export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
