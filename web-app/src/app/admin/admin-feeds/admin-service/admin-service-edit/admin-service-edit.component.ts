@@ -26,8 +26,8 @@ import { JsonSchemaFormWithServiceComponent } from '../../../json-schema/json-sc
     ]
 })
 export class AdminServiceEditComponent implements OnInit {
-  private readonly feedService = inject(FeedService);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly feedService: FeedService = inject(FeedService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   @Input() expanded = false;
   @Output() serviceCreated = new EventEmitter<Service>();
