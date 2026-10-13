@@ -33,8 +33,8 @@ import { SessionService } from 'mage-web-app/http/session.service';
     ]
 })
 export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
-  private readonly sessionService = inject(SessionService);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   @Input() topic: FeedTopic | null;
   @Input() itemPropertiesSchema: any;

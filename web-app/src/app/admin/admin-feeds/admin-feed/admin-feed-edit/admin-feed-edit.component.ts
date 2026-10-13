@@ -40,11 +40,11 @@ import { FeedItemSummaryModule } from '../../../../feed/feed-item/feed-item-summ
     ]
 })
 export class AdminFeedEditComponent implements OnInit {
-  private readonly feedEdit = inject(FeedEditService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly breadcrumbService = inject(AdminBreadcrumbService);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly feedEdit: FeedEditService = inject(FeedEditService);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   private _breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Feeds',

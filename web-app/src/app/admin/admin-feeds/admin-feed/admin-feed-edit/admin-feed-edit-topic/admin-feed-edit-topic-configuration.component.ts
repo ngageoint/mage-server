@@ -22,7 +22,7 @@ import { JsonSchemaFormWithServiceComponent } from '../../../../json-schema/json
     imports: [MatExpansionModule, MatButtonModule, JsonSchemaFormWithServiceComponent]
 })
 export class AdminFeedEditTopicConfigurationComponent {
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   @Input() fetchParametersSchema: any
   @Input() initialFetchParameters: any

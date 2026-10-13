@@ -48,7 +48,7 @@ export type SchemaFormValue = KeyedPropertySchemaFormValue[]
     imports: [ReactiveFormsModule, MatExpansionModule, MatFormFieldModule, MatInputModule, MatIconModule]
 })
 export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   @Input() expanded: boolean = false;
   @Input() topicSchema: any = null;
