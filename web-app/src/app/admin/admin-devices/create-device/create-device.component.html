@@ -14,6 +14,8 @@
       <input matInput formControlName="uid" placeholder="ex: 01:02:03:04:05:06:07" />
       @if (deviceForm.controls.uid.hasError('required')) {
         <mat-error>ID is required</mat-error>
+      } @else if (deviceForm.controls.uid.hasError('duplicate')) {
+        <mat-error>ID already exists</mat-error>
       }
     </mat-form-field>
 
@@ -36,6 +38,6 @@
 
   <mat-dialog-actions align="end">
     <button matButton type="button" (click)="cancel()">Cancel</button>
-    <button matButton="filled" type="submit" [disabled]="deviceForm.invalid">{{ isEditMode ? 'Save' : 'Create Device' }}</button>
+    <button matButton="filled" type="submit" [disabled]="deviceForm.invalid || deviceForm.pending">{{ isEditMode ? 'Save' : 'Create Device' }}</button>
   </mat-dialog-actions>
 </form>

@@ -11,6 +11,7 @@ import { AdminDeviceService } from '../../services/admin-device.service';
 import { deviceIconName } from '../../../entities/device/device';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { NgClass } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -22,12 +23,13 @@ import { LoginsComponent } from '../../admin-logins/admin-logins.component';
     templateUrl: './device-details.component.html',
     styleUrls: ['./device-details.component.scss'],
     imports: [
-      NgClass,
-      MatIconModule,
-      MatCardModule,
-      MatDividerModule,
-      MatTooltipModule,
-      LoginsComponent
+        NgClass,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatDividerModule,
+        MatTooltipModule,
+        LoginsComponent
     ]
 })
 export class DeviceDetailsComponent implements OnInit, OnDestroy {
@@ -83,14 +85,16 @@ export class DeviceDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadDevice(deviceId: string): void {
-    this.deviceService.getDeviceById(deviceId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (device: Device) => {
-        this.applyDevice(device);
-      },
-      error: () => {
-        this.error.set('Failed to load device');
-      }
-    });
+    this.deviceService.getDeviceById(deviceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (device: Device) => {
+          this.applyDevice(device);
+        },
+        error: () => {
+          this.error.set('Failed to load device');
+        }
+      });
   }
 
   private applyDevice(device: Device): void {
@@ -107,56 +111,65 @@ export class DeviceDetailsComponent implements OnInit, OnDestroy {
   }
 
   private reloadDevice(): void {
-    if (!this.device()?.id) return;
+    const deviceId = this.device()?.id;
+    if (!deviceId) return;
 
-    const deviceId = this.device()!.id;
-    this.deviceService.getDeviceById(deviceId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (d: Device) => {
-        this.applyDevice(d);
-      },
-      error: () => {
-        this.error.set('Failed to reload device');
-      }
-    });
+    this.deviceService.getDeviceById(deviceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (d: Device) => {
+          this.applyDevice(d);
+        },
+        error: () => {
+          this.error.set('Failed to reload device');
+        }
+      });
   }
 
   editDeviceDetails(): void {
-    if (!this.device()) return;
+    const device = this.device();
+    if (!device) return;
 
     const dialogRef = this.dialog.open(CreateDeviceDialogComponent, {
       width: '600px',
-      data: { device: this.device() }
+      data: { device }
     });
 
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((updatedDevice?: Device) => {
-      if (!updatedDevice) return;
-      this.applyDevice(updatedDevice);
-    });
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updatedDevice?: Device) => {
+        if (!updatedDevice) return;
+        this.applyDevice(updatedDevice);
+      });
   }
 
   get registerToggleLabel(): string {
-    if (!this.device()) return '';
-    return this.device()!.registered ? 'Deactivate Device' : 'Activate Device';
+    const device = this.device();
+    if (!device) return '';
+    return device.registered ? 'Deactivate Device' : 'Activate Device';
   }
 
   get registerToggleIcon(): string {
-    if (!this.device()) return '';
-    return this.device()!.registered ? 'block' : 'check_circle';
+    const device = this.device();
+    if (!device) return '';
+    return device.registered ? 'block' : 'check_circle';
   }
 
   get registerToggleHelpText(): string {
-    if (!this.device()) return '';
-    return this.device()!.registered
+    const device = this.device();
+    if (!device) return '';
+    return device.registered
       ? 'Deactivating will deny device from accessing MAGE data. All device information will be retained.'
       : 'Activating will allow device to access MAGE data. The device can be deactivated at any time.';
   }
 
   toggleRegistration(): void {
-    if (!this.device()) return;
+    const device = this.device();
+    if (!device) return;
 
-    this.device()!.registered
-      ? this.unregisterDevice(this.device()!)
-      : this.registerDevice(this.device()!);
+    device.registered
+      ? this.unregisterDevice(device)
+      : this.registerDevice(device);
   }
 
   registerDevice(device: Device): void {
@@ -165,18 +178,20 @@ export class DeviceDetailsComponent implements OnInit, OnDestroy {
     this.saving.set(true);
     this.error.set(null);
 
-    this.deviceService.updateDevice(device.id, { registered: true }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (updated) => {
-        if (updated) this.applyDevice(updated);
+    this.deviceService.updateDevice(device.id, { registered: true })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          if (updated) this.applyDevice(updated);
 
-        this.saving.set(false);
-        this.reloadDevice();
-      },
-      error: (err) => {
-        this.error.set(err?.error?.message || 'Failed to register device');
-        this.saving.set(false);
-      }
-    });
+          this.saving.set(false);
+          this.reloadDevice();
+        },
+        error: (err) => {
+          this.error.set(err?.error?.message || 'Failed to register device');
+          this.saving.set(false);
+        }
+      });
   }
 
   unregisterDevice(device: Device): void {
@@ -185,51 +200,59 @@ export class DeviceDetailsComponent implements OnInit, OnDestroy {
     this.saving.set(true);
     this.error.set(null);
 
-    this.deviceService.updateDevice(device.id, { registered: false }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (updated) => {
-        if (updated) this.applyDevice(updated);
+    this.deviceService.updateDevice(device.id, { registered: false })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          if (updated) this.applyDevice(updated);
 
-        this.saving.set(false);
-        this.reloadDevice();
-      },
-      error: (err) => {
-        this.error.set(err?.error?.message || 'Failed to unregister device');
-        this.saving.set(false);
-      }
-    });
+          this.saving.set(false);
+          this.reloadDevice();
+        },
+        error: (err) => {
+          this.error.set(err?.error?.message || 'Failed to unregister device');
+          this.saving.set(false);
+        }
+      });
   }
 
   confirmDeleteDevice(): void {
-    if (!this.device()) return;
+    const device = this.device();
+    if (!device) return;
 
     const dialogRef = this.dialog.open(DeleteDeviceComponent, {
       width: '600px',
-      data: { device: this.device() }
+      data: { device }
     });
 
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((result?: { confirmed?: boolean }) => {
-      if (result?.confirmed) {
-        this.deleteDevice();
-      }
-    });
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result?: { confirmed?: boolean }) => {
+        if (result?.confirmed) {
+          this.deleteDevice();
+        }
+      });
   }
 
   private deleteDevice(): void {
-    if (!this.device()?.id || this.saving()) return;
+    const deviceId = this.device()?.id;
+    if (!deviceId || this.saving()) return;
 
     this.saving.set(true);
     this.error.set(null);
 
-    this.deviceService.deleteDevice(this.device()!.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.router.navigate(['/admin/devices']);
-      },
-      error: () => {
-        this.error.set('Failed to delete device');
-        this.saving.set(false);
-      }
-    });
+    this.deviceService.deleteDevice(deviceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.router.navigate(['/admin/devices']);
+        },
+        error: () => {
+          this.error.set('Failed to delete device');
+          this.saving.set(false);
+        }
+      });
   }
 
   iconClass(device: Device): string {
