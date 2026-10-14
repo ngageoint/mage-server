@@ -46,6 +46,55 @@
   gap: 8px;
 }
 
+.geojson-popup {
+  padding: 16px;
+  min-width: 220px;
+}
+
+.geojson-popup h6 {
+  margin: 0 0 14px;
+  font: var(--mat-sys-title-medium);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.geojson-popup__summary {
+  margin: 0;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.geojson-popup table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.geojson-popup table td {
+  display: block;
+  padding: 0;
+}
+
+.geojson-popup table tr + tr td.title {
+  padding-top: 12px;
+}
+
+.geojson-popup table td.title {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mat-sys-on-surface-variant) 65%, var(--mat-sys-on-surface) 35%);
+}
+
+.geojson-popup table td.text {
+  padding-top: 2px;
+  font: var(--mat-sys-body-medium);
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--mat-sys-on-surface) 75%, var(--mat-sys-on-surface-variant) 25%);
+  word-break: break-word;
+}
+
 .observation-edit-marker__tooltip {
   display: flex;
   flex-direction: column;
