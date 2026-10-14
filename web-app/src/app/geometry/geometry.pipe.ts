@@ -7,6 +7,7 @@ import { LocalStorageService } from '../http/local-storage.service'
 
 @Pipe({
     name: 'geometry',
+    pure: false,
     standalone: false
 })
 export class GeometryPipe implements PipeTransform {
