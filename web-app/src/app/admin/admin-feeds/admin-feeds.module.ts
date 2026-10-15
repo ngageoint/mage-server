@@ -33,7 +33,6 @@ import { AdminServiceEditComponent } from './admin-service/admin-service-edit/ad
 import { AdminFeedEditItemPropertiesComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-item-properties/admin-feed-edit-item-properties.component';
 import { AdminFeedEditTopicComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-topic/admin-feed-edit-topic.component';
 import { AdminFeedEditConfigurationComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-configuration.component';
-import { AdminServiceComponent } from './admin-service/admin-service.component';
 import { AdminFeedEditTopicConfigurationComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-topic/admin-feed-edit-topic-configuration.component';
 import { JsonSchemaModule } from '../json-schema/json-schema.module';
 import { FeedItemSummaryModule } from '../../feed/feed-item/feed-item-summary/feed-item-summary.module';
@@ -42,18 +41,14 @@ import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [
+  imports: [
+    AdminFeedsComponent,
     AdminFeedEditComponent,
     AdminServiceEditComponent,
     AdminFeedEditItemPropertiesComponent,
     AdminFeedEditTopicComponent,
     AdminFeedEditConfigurationComponent,
     AdminFeedEditTopicConfigurationComponent,
-    AdminFeedEditTopicComponent,
-    AdminServiceComponent,
-  ],
-  imports: [
-    AdminFeedsComponent,
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
@@ -72,7 +67,6 @@ import { RouterModule } from '@angular/router';
     MatRadioModule,
     MatCheckboxModule,
     MatInputModule,
-    MatAutocompleteModule,
     MatSelectModule,
     MatSliderModule,
     MatExpansionModule,

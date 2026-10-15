@@ -9,7 +9,7 @@
 </ng-template>
 
 <div class="layers-page">
-  <mat-card appearance="elevated" class="layers-card">
+  <mat-card appearance="raised" class="layers-card">
     <div class="filter-row">
       <mat-chip-listbox [(ngModel)]="typeFilter" (change)="onTypeFilterChange($event.value)">
         <mat-chip-option value="all">All</mat-chip-option>
@@ -31,7 +31,7 @@
       </mat-form-field>
     </div>
 
-    @if (filteredLayers?.length) {
+    @if (filteredLayers().length) {
       <mat-nav-list>
         @for (layer of getPaginatedLayers(); track layer.id) {
           <mat-list-item [routerLink]="layerRoute(layer)">
@@ -55,7 +55,7 @@
     }
 
     <mat-paginator
-      [length]="totalLayers"
+      [length]="totalLayers()"
       [pageSize]="itemsPerPage"
       [pageIndex]="page"
       [pageSizeOptions]="pageSizeOptions"

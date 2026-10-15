@@ -1,7 +1,11 @@
 <div class="plugins-page">
-  <div *ngIf="loading" class="plugins-loading">Loading plugins…</div>
+  @if (loading()) {
+    <div class="plugins-loading">Loading plugins…</div>
+  }
 
-  <div *ngIf="error" class="plugins-error">{{ error }}</div>
+  @if (error()) {
+    <div class="plugins-error">{{ error() }}</div>
+  }
 
   <router-outlet></router-outlet>
 </div>

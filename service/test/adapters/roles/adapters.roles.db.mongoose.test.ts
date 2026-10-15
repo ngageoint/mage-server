@@ -26,8 +26,9 @@ describe('MongooseRoleRepository', function() {
   let roleModel: ReturnType<typeof RoleModel>
   let repo: MongooseRoleRepository
 
-  beforeEach(function() {
+  beforeEach(async function() {
     roleModel = RoleModel(conn, 'test_roles')
+    await roleModel.init()
     repo = new MongooseRoleRepository(roleModel)
   })
 

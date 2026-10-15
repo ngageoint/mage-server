@@ -4,7 +4,7 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import { MatDialog as MatDialog, MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { MatPaginatorModule as MatPaginatorModule, PageEvent as PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
@@ -60,7 +60,7 @@ describe('DeviceDashboardComponent', () => {
   let component: DeviceDashboardComponent;
   let fixture: ComponentFixture<DeviceDashboardComponent>;
   let deviceServiceSpy: jasmine.SpyObj<AdminDeviceService>;
-  let sessionServiceSpy: Partial<SessionService> & any;
+  let sessionServiceSpy: { hasPermission: jasmine.Spy };
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let toastSpy: jasmine.SpyObj<AdminToastService>;
 
@@ -71,9 +71,7 @@ describe('DeviceDashboardComponent', () => {
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
-    sessionServiceSpy = {
-      user$: of({ role: { permissions: ['CREATE_DEVICE'] } })
-    };
+    sessionServiceSpy = { hasPermission: jasmine.createSpy('hasPermission').and.returnValue(true) };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -113,6 +111,7 @@ describe('DeviceDashboardComponent', () => {
     tick();
 
     expect(component.hasDeviceCreatePermission).toBeTrue();
+    expect(sessionServiceSpy.hasPermission).toHaveBeenCalledWith('CREATE_DEVICE');
   }));
 
   it('should fetch devices and apply filters', fakeAsync(() => {
@@ -124,8 +123,8 @@ describe('DeviceDashboardComponent', () => {
     expect(deviceServiceSpy.getDevices).toHaveBeenCalledWith(
       component.searchOptions
     );
-    expect(component.filteredDevices.length).toBe(2);
-    expect(component.totalDevices).toBe(2);
+    expect(component.filteredDevices().length).toBe(2);
+    expect(component.totalDevices()).toBe(2);
   }));
 
   it('should trigger server-side search when search term changes', fakeAsync(() => {
@@ -139,15 +138,15 @@ describe('DeviceDashboardComponent', () => {
     deviceServiceSpy.getDevices.and.returnValue(of(filteredResponse));
 
     component.onSearchTermChanged('lily');
-    tick();
+    tick(300);
 
     expect(component.searchOptions.term).toBe('lily');
     expect(deviceServiceSpy.getDevices).toHaveBeenCalledWith(
       component.searchOptions
     );
-    expect(component.filteredDevices.length).toBe(1);
+    expect(component.filteredDevices().length).toBe(1);
 
-    const [first] = component.filteredDevices;
+    const [first] = component.filteredDevices();
     expect(first.user?.displayName || '').toBe('Lily Hoshikawa');
   }));
 
@@ -158,11 +157,40 @@ describe('DeviceDashboardComponent', () => {
     component.deviceSearch = 'something';
 
     component.onSearchCleared();
-    tick();
+    tick(300);
 
     expect(component.deviceSearch).toBe('');
     expect(component.searchOptions.term).toBeUndefined();
     expect(deviceServiceSpy.getDevices).toHaveBeenCalled();
+  }));
+
+  it('should debounce search input into a single request', fakeAsync(() => {
+    deviceServiceSpy.getDevices.and.returnValue(of(mockDevicesResponse));
+
+    component.onSearchTermChanged('l');
+    tick(100);
+    component.onSearchTermChanged('li');
+    tick(100);
+    component.onSearchTermChanged('lily');
+    tick(300);
+
+    expect(deviceServiceSpy.getDevices).toHaveBeenCalledTimes(1);
+    expect(component.searchOptions.term).toBe('lily');
+  }));
+
+  it('should ignore a stale response when a newer request is made', fakeAsync(() => {
+    const first = new Subject<DevicesResponse>();
+    const second = new Subject<DevicesResponse>();
+    deviceServiceSpy.getDevices.and.returnValues(first, second);
+
+    component.refreshDevices();
+    component.refreshDevices();
+
+    second.next({ totalCount: 1, items: { devices: [mockDevices[1]] } });
+    first.next(mockDevicesResponse);
+    tick();
+
+    expect(component.filteredDevices()).toEqual([mockDevices[1]]);
   }));
 
   it('should handle page change', fakeAsync(() => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, input, output } from '@angular/core';
 import { Strategy, AdminChoice } from '../../../admin-authentication/admin-settings.model';
 import { MaxLock } from './account-lock.model';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,6 @@ import { MatInputModule } from '@angular/material/input';
     selector: 'account-lock',
     templateUrl: 'account-lock.component.html',
     styleUrls: ['./account-lock.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
         MatFormFieldModule,
@@ -20,16 +19,16 @@ import { MatInputModule } from '@angular/material/input';
     ]
 })
 export class AccountLockComponent implements OnInit {
-    @Input() strategy: Strategy;
-    @Output() strategyDirty = new EventEmitter<boolean>();
+    readonly strategy = input.required<Strategy>();
+    readonly strategyDirty = output<boolean>();
 
     readonly accountLockChoices: AdminChoice[] = [{
         title: 'Off',
-        description: 'Do not lock MAGE user accounts.',
+        description: 'Do not lock Mage user accounts.',
         value: false
     }, {
         title: 'On',
-        description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
+        description: 'Lock Mage user accounts for defined time \n after defined number of invalid login attempts.',
         value: true
     }];
     // no signal - set once
@@ -38,26 +37,27 @@ export class AccountLockComponent implements OnInit {
     };
     readonly maxLockChoices: AdminChoice[] = [{
         title: 'Off',
-        description: 'Do not disable MAGE user accounts.',
+        description: 'Do not disable Mage user accounts.',
         value: false
     }, {
         title: 'On',
-        description: 'Disable MAGE user accounts after account has been locked defined number of times.',
+        description: 'Disable Mage user accounts after account has been locked defined number of times.',
         value: true
     }];
 
     ngOnInit(): void {
-        if (this.strategy.type === 'local') {
-            this.maxLock.enabled = this.strategy.settings.accountLock && this.strategy.settings.accountLock.max !== undefined;
+        const strategy = this.strategy();
+        if (strategy.type === 'local') {
+            this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
 
             if (!this.maxLock.enabled) {
-                delete this.strategy.settings.accountLock.max;
+                delete strategy.settings.accountLock.max;
             }
         }
     }
 
     setDirty(isDirty: boolean): void {
-        this.strategy.isDirty = isDirty;
+        this.strategy().isDirty = isDirty;
         this.strategyDirty.emit(isDirty);
     }
 }

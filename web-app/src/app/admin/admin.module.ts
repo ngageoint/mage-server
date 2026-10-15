@@ -28,22 +28,18 @@ import { InputMaskModule } from '@ngneat/input-mask';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin-shell/admin.component';
 import { AdminBreadcrumbModule } from './admin-breadcrumb/admin-breadcrumb.module';
-import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
-import { AdminTeamsModule } from './admin-teams/admin-teams.module';
 import { AdminEventsModule } from './admin-event/admin-events.module';
 import { AdminLayersModule } from './admin-layers/admin-layers.module';
 import { AdminDevicesModule } from './admin-devices/admin-devices.module';
 import { AdminFeedsModule } from './admin-feeds/admin-feeds.module';
 import { AdminEventFormModule } from './admin-event/admin-event-form/admin-event-form.module';
-import { AdminMapModule } from './admin-map/admin-map.module';
 import { ColorPickerModule } from '../color-picker/color-picker.module';
 
 import { SearchModalComponent } from './search-modal/search-modal.component';
 import { AdminGuard } from './services/admin-guard.service';
 import { AdminNavigationComponent } from './admin-navigation/admin-navigation.component';
 import { AdminNavbarComponent } from './admin-shell/admin-navbar/admin-navbar.component';
-import { PluginModule } from './admin-plugins/plugins.module';
 
 @NgModule({
   imports: [
@@ -74,23 +70,17 @@ import { PluginModule } from './admin-plugins/plugins.module';
     InputMaskModule,
     AdminBreadcrumbModule,
     AdminRoutingModule,
-    AdminDashboardModule,
     AdminUsersModule,
-    AdminTeamsModule,
     AdminEventsModule,
     AdminLayersModule,
     AdminDevicesModule,
     AdminFeedsModule,
     AdminEventFormModule,
-    AdminMapModule,
     ColorPickerModule,
-    PluginModule,
     AdminNavbarComponent,
-    AdminNavigationComponent
-  ],
-  declarations: [
-    SearchModalComponent,
-    AdminComponent
+    AdminNavigationComponent,
+    AdminComponent,
+    SearchModalComponent
   ],
   exports: [AdminComponent],
   providers: [AdminGuard]

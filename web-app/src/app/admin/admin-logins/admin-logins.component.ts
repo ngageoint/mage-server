@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatListModule } from '@angular/material/list';
@@ -22,15 +21,14 @@ import { User } from '../admin-users/user';
 import { Device, platformLabel as getDevicePlatformLabel, deviceIconName } from '../../entities/device/device';
 import { LoginFilter, LoginPage, Login } from '../../entities/login/login';
 
-import { DeviceService } from '../admin-devices/device.service';
-import { UserPagingService } from '../services/user-paging.service';
+import { DeviceService, DeviceStateAndData } from '../admin-devices/device.service';
+import { UserPagingService, UsersStateAndData } from '../services/user-paging.service';
 import { LoginService } from './login.service';
 
 @Component({
     selector: 'mage-logins',
     templateUrl: './admin-logins.component.html',
     styleUrls: ['./admin-logins.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
         MatIconModule,
@@ -39,7 +37,6 @@ import { LoginService } from './login.service';
         MatButtonModule,
         MatCardModule,
         MatDatepickerModule,
-        MatMomentDateModule,
         MatNativeDateModule,
         MatAutocompleteModule,
         MatListModule,
@@ -47,28 +44,26 @@ import { LoginService } from './login.service';
     ]
 })
 export class LoginsComponent implements OnInit {
-  @Input() userId?: string;
-  @Input() deviceId?: string;
+  readonly userId = input<string>();
+  readonly deviceId = input<string>();
 
-  private destroyRef = inject(DestroyRef);
-  private loginService = inject(LoginService);
-  private userPagingService = inject(UserPagingService);
-  private deviceService = inject(DeviceService);
-  private router = inject(Router);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly loginService: LoginService = inject(LoginService);
+  private readonly userPagingService: UserPagingService = inject(UserPagingService);
+  private readonly deviceService: DeviceService = inject(DeviceService);
+  private readonly router: Router = inject(Router);
 
   login = {
-    startDateOpened: false,
-    endDateOpened: false,
     startDate: null as Date | null,
     endDate: null as Date | null
   };
 
-  loginPage: LoginPage | null = null;
+  readonly loginPage = signal<LoginPage | null>(null);
   loginResultsLimit = 10;
-  loginPageIndex = 0;
+  readonly loginPageIndex = signal(0);
 
-  loginSearchResults: User[] = [];
-  loginDeviceSearchResults: Device[] = [];
+  readonly loginSearchResults = signal<User[]>([]);
+  readonly loginDeviceSearchResults = signal<Device[]>([]);
 
   filter: LoginFilter = {};
 
@@ -78,16 +73,18 @@ export class LoginsComponent implements OnInit {
   deviceText = '';
   userText = '';
 
-  private userStateAndData: any = null;
-  private deviceStateAndData: any = null;
+  private userStateAndData: UsersStateAndData | null = null;
+  private deviceStateAndData: DeviceStateAndData | null = null;
 
   ngOnInit(): void {
-    if (this.userId) {
-      this.filter.user = { id: this.userId };
+    const userId = this.userId();
+    if (userId) {
+      this.filter.user = { id: userId };
     }
 
-    if (this.deviceId) {
-      this.filter.device = { id: this.deviceId };
+    const deviceId = this.deviceId();
+    if (deviceId) {
+      this.filter.device = { id: deviceId };
     }
 
     this.initUserSourceIfNeeded();
@@ -95,24 +92,25 @@ export class LoginsComponent implements OnInit {
     this.loadInitialLogins();
   }
 
-  private isValidPageLink(link: any): link is string {
+  private isValidPageLink(link: string | null | undefined): link is string {
     return typeof link === 'string' && link.trim().length > 0;
   }
 
   get hasNext(): boolean {
-    if (!this.isValidPageLink(this.loginPage?.next)) return false;
-    if (!this.loginPage?.logins?.length) return false;
+    const loginPage = this.loginPage();
+    if (!this.isValidPageLink(loginPage?.next)) return false;
+    if (!loginPage?.logins?.length) return false;
     return true;
   }
 
-  private normalizePageLinks(page: any): void {
+  private normalizePageLinks(page: LoginPage): void {
     if (!page) return;
     page.prev = this.isValidPageLink(page.prev) ? page.prev : null;
     page.next = this.isValidPageLink(page.next) ? page.next : null;
   }
 
   private initUserSourceIfNeeded(): void {
-    if (this.userId) return;
+    if (this.userId()) return;
 
     this.userStateAndData = this.userPagingService.constructDefault();
 
@@ -122,12 +120,12 @@ export class LoginsComponent implements OnInit {
         const initial = this.userPagingService.users(
           this.userStateAndData['all']
         );
-        this.loginSearchResults = initial || [];
+        this.loginSearchResults.set(initial || []);
       });
   }
 
   private initDeviceSourceIfNeeded(): void {
-    if (this.deviceId) return;
+    if (this.deviceId()) return;
 
     this.deviceStateAndData = this.deviceService.constructDefault();
 
@@ -137,7 +135,7 @@ export class LoginsComponent implements OnInit {
         const initial = this.deviceService.devices(
           this.deviceStateAndData['all']
         );
-        this.loginDeviceSearchResults = initial || [];
+        this.loginDeviceSearchResults.set(initial || []);
       });
   }
 
@@ -147,22 +145,22 @@ export class LoginsComponent implements OnInit {
       this.filterLogins();
       return;
     }
-    this.loginPageIndex = event.pageIndex;
+    this.loginPageIndex.set(event.pageIndex);
     if (event.pageIndex > (event.previousPageIndex ?? 0)) {
-      this.pageLogin(this.loginPage?.next);
+      this.pageLogin(this.loginPage()?.next);
     } else {
-      this.pageLogin(this.loginPage?.prev);
+      this.pageLogin(this.loginPage()?.prev);
     }
   }
 
   loadInitialLogins(): void {
-    this.loginPageIndex = 0;
+    this.loginPageIndex.set(0);
     this.loginService.query({ filter: this.filter, limit: this.loginResultsLimit })
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of(null)))
-      .subscribe((loginPage: any) => {
+      .subscribe((loginPage) => {
         if (!loginPage) return;
         this.normalizePageLinks(loginPage);
-        this.loginPage = loginPage;
+        this.loginPage.set(loginPage);
       });
   }
 
@@ -171,31 +169,32 @@ export class LoginsComponent implements OnInit {
 
     this.loginService.query({ url, filter: this.filter, limit: this.loginResultsLimit })
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of(null)))
-      .subscribe((nextPage: any) => {
+      .subscribe((nextPage) => {
         if (!nextPage) return;
 
         this.normalizePageLinks(nextPage);
 
         if (!nextPage?.logins?.length) {
-          if (this.loginPage) {
-            this.loginPage.next = null;
-          }
+          this.loginPage.update((page) => page && { ...page, next: null });
+          this.loginPageIndex.update((index) => Math.max(0, index - 1));
           return;
         }
 
-        this.loginPage = nextPage;
+        this.loginPage.set(nextPage);
       });
   }
 
   filterLogins(): void {
-    this.filter.user = this.userId
-      ? { id: this.userId }
+    const userId = this.userId();
+    this.filter.user = userId
+      ? { id: userId }
       : this.user
         ? { id: this.user.id }
         : null;
 
-    this.filter.device = this.deviceId
-      ? { id: this.deviceId }
+    const deviceId = this.deviceId();
+    this.filter.device = deviceId
+      ? { id: deviceId }
       : this.device?.id
         ? { id: this.device.id }
         : null;
@@ -209,7 +208,7 @@ export class LoginsComponent implements OnInit {
   }
 
   onUserSearchChange(term: string): void {
-    if (this.userId) return;
+    if (this.userId()) return;
 
     this.userText = term;
     this.user = null;
@@ -218,7 +217,7 @@ export class LoginsComponent implements OnInit {
     this.userPagingService.search(this.userStateAndData['all'], searchTerm)
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of([] as User[])))
       .subscribe((users: User[]) => {
-        this.loginSearchResults = (users || []).slice(0, 10);
+        this.loginSearchResults.set((users || []).slice(0, 10));
       });
 
     if (!term) {
@@ -227,7 +226,7 @@ export class LoginsComponent implements OnInit {
   }
 
   onDeviceSearchChange(term: string): void {
-    if (this.deviceId) return;
+    if (this.deviceId()) return;
 
     this.deviceText = term;
     this.device = null;
@@ -239,7 +238,7 @@ export class LoginsComponent implements OnInit {
     )
     .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of([] as Device[])))
     .subscribe((devices: Device[]) => {
-      this.loginDeviceSearchResults = devices || [];
+      this.loginDeviceSearchResults.set(devices || []);
     });
 
     if (!term) {
@@ -250,15 +249,15 @@ export class LoginsComponent implements OnInit {
   selectUser(u: User): void {
     this.user = u;
     this.userText = this.displayUser(u);
-    this.loginSearchResults = [];
+    this.loginSearchResults.set([]);
     this.filterLogins();
   }
 
   selectDevice(d: Device): void {
-    if (this.deviceId) return;
+    if (this.deviceId()) return;
     this.device = d;
     this.deviceText = String(d?.uid ?? '');
-    this.loginDeviceSearchResults = [];
+    this.loginDeviceSearchResults.set([]);
     this.filterLogins();
   }
 

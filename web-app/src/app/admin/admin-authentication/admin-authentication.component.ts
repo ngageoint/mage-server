@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, OnDestroy, TemplateRef, ViewChild, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -9,11 +10,11 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
 import { Strategy } from '../admin-authentication/admin-settings.model';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { AdminAuthenticationSettingsComponent } from './admin-authentication-settings.component';
-import { lastValueFrom, Subject, takeUntil } from 'rxjs';
+import { forkJoin, lastValueFrom } from 'rxjs';
 import { AuthenticationConfigurationService } from '../services/admin-authentication-configuration.service';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { AdminEventsService } from '../services/admin-events.service';
@@ -27,7 +28,6 @@ export interface CanComponentDeactivate {
     selector: 'admin-authentication',
     templateUrl: 'admin-authentication.component.html',
     styleUrls: ['./admin-authentication.component.scss'],
-    standalone: true,
     imports: [
         RouterModule,
         MatButtonModule,
@@ -41,80 +41,58 @@ export interface CanComponentDeactivate {
 export class AdminAuthenticationComponent
   implements OnInit, OnDestroy, CanComponentDeactivate
 {
+  private readonly dialog: MatDialog = inject(MatDialog);
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly teamsService: TeamService = inject(TeamService);
+  private readonly eventsService: AdminEventsService = inject(AdminEventsService);
+  private readonly authenticationConfigurationService: AuthenticationConfigurationService = inject(AuthenticationConfigurationService);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
   readonly breadcrumbs: AdminBreadcrumb[] = [{ title: 'Authentication', icon: 'lock' }];
 
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
 
-  teams: Team[] = [];
-  events: any[] = [];
+  readonly teams = signal<Team[]>([]);
+  readonly events = signal<any[]>([]);
 
-  isDirty = signal(false);
+  readonly isDirty = signal(false);
 
-  strategies: Strategy[] = [];
+  readonly strategies = signal<Strategy[]>([]);
 
-  hasAuthConfigEditPermission = signal(false);
-
-  private destroy$ = new Subject<void>();
-
-  constructor(
-    private dialog: MatDialog,
-    private readonly snackBar: MatSnackBar,
-    private teamsService: TeamService,
-    private eventsService: AdminEventsService,
-    private authenticationConfigurationService: AuthenticationConfigurationService,
-    private sessionService: SessionService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  get hasAuthConfigEditPermission(): boolean {
+    return this.sessionService.hasPermission('UPDATE_AUTH_CONFIG');
+  }
 
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
-    this.sessionService.user$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((user) => {
-        this.hasAuthConfigEditPermission.set(
-          user?.role?.permissions?.includes('UPDATE_AUTH_CONFIG') || false
-        );
+    forkJoin({
+      configs: this.authenticationConfigurationService.getAllConfigurations({
+        includeDisabled: true
+      }),
+      // TODO: this used to get all teams - need a team search/select component instead
+      teams: this.teamsService.search({ pageSize: 9999, pageIndex: 0 }),
+      events: this.eventsService.getEvents({
+        state: 'all',
+        populate: false
+      } as any)
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ configs, teams, events }) => this.loadInitialData(configs, teams, events),
+        error: (err) => console.error(err)
       });
-
-    this.loadInitialData().catch((err) => {
-      console.log(err);
-    });
   }
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
-  private async loadInitialData(): Promise<void> {
-    const configsPromise = lastValueFrom(
-      this.authenticationConfigurationService.getAllConfigurations({
-        includeDisabled: true
-      })
-    );
-
-    const teamsPromise = lastValueFrom(
-      // TODO: this used to get all teams - need a team search/select component instead
-      this.teamsService.search({ pageSize: 9999, pageIndex: 0 })
-    );
-
-    const eventsPromise = lastValueFrom(
-      this.eventsService.getEvents({
-        state: 'all',
-        populate: false
-      } as any)
-    );
-
-    const [configs, teamsResult, eventsResult] = await Promise.all([
-      configsPromise,
-      teamsPromise,
-      eventsPromise
-    ]);
-
+  private loadInitialData(configs: any, teamsResult: any, eventsResult: any): void {
     const teamsArray = Array.isArray(teamsResult)
       ? teamsResult
       : teamsResult?.items || [];
@@ -123,10 +101,10 @@ export class AdminAuthenticationComponent
       ? eventsResult
       : eventsResult?.items || [];
 
-    this.teams = (teamsArray || []).filter(
+    this.teams.set(teamsArray.filter(
       (team: any) => team.teamEventId === undefined
-    );
-    this.events = eventsArray || [];
+    ));
+    this.events.set(eventsArray);
 
     const unsortedStrategies: Strategy[] =
       (configs as any)?.data || (configs as any) || [];
@@ -134,21 +112,24 @@ export class AdminAuthenticationComponent
   }
 
   private processUnsortedStrategies(unsortedStrategies: Strategy[]): void {
-    this.strategies = (unsortedStrategies || [])
+    const strategies = (unsortedStrategies || [])
       .slice()
       .sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
 
-    this.strategies.forEach((strategy) => {
+    const events = this.events();
+    const teams = this.teams();
+
+    strategies.forEach((strategy) => {
       if (strategy.settings?.newUserEvents) {
         strategy.settings.newUserEvents =
           strategy.settings.newUserEvents.filter((id: any) =>
-            this.events.some((event) => event.id === id)
+            events.some((event) => event.id === id)
           );
       }
 
       if (strategy.settings?.newUserTeams) {
         strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(
-          (id: any) => this.teams.some((team) => team.id === id)
+          (id: any) => teams.some((team) => team.id === id)
         );
       }
 
@@ -156,6 +137,8 @@ export class AdminAuthenticationComponent
         strategy.icon = 'data:image/png;base64,' + strategy.icon;
       }
     });
+
+    this.strategies.set(strategies);
   }
 
   onAuthenticationSaved(status: boolean): void {
@@ -188,7 +171,7 @@ export class AdminAuthenticationComponent
 
   async save(): Promise<void> {
     try {
-      const dirty = this.strategies.filter((s) => (s as any).isDirty);
+      const dirty = this.strategies().filter((s) => s.isDirty);
       await Promise.all(
         dirty.map((strategy) =>
           lastValueFrom(
@@ -207,7 +190,7 @@ export class AdminAuthenticationComponent
       this.processUnsortedStrategies(strategies);
       this.onAuthenticationSaved(true);
     } catch (err) {
-      console.log(err);
+      console.error(err);
 
       try {
         const refreshed = await lastValueFrom(
@@ -219,7 +202,7 @@ export class AdminAuthenticationComponent
           (refreshed as any)?.data || (refreshed as any) || [];
         this.processUnsortedStrategies(strategies);
       } catch (err2) {
-        console.log(err2);
+        console.error(err2);
       }
 
       this.onAuthenticationSaved(false);
@@ -258,7 +241,7 @@ export class AdminAuthenticationComponent
   }
 
   onAuthenticationToggled(strategy: Strategy): void {
-    (strategy as any).isDirty = true;
+    strategy.isDirty = true;
     this.isDirty.set(true);
   }
 

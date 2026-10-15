@@ -1,11 +1,9 @@
 <ng-template #breadcrumbActions>
-  @if (user && hasUserDeletePermission) {
+  @if (hasUserDeletePermission) {
     <div class="nav-actions">
-      @if (hasUserEditPermission) {
-        <button matButton="outlined" class="delete-user-button" (click)="confirmDeleteUser()">
-          <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
-        </button>
-      }
+      <button matButton="outlined" class="delete-user-button" (click)="confirmDeleteUser()">
+        <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+      </button>
     </div>
   }
 </ng-template>
@@ -17,8 +15,7 @@
         <div class="media-content">
           @if (user.avatarUrl) {
             <img [src]="userAvatarImgUrl" width="64" height="64" class="avatar-image">
-          }
-          @if (!user.avatarUrl) {
+          } @else {
             <div class="avatar-placeholder">
               <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
             </div>
@@ -43,8 +40,7 @@
         <div class="media-content">
           @if (user.iconUrl) {
             <img [src]="userIconImgUrl" width="64" height="64" class="map-icon-thumb">
-          }
-          @if (!user.iconUrl) {
+          } @else {
             <div class="icon-placeholder">No icon</div>
           }
         </div>
@@ -78,8 +74,7 @@
             <span class="detail-value">
               {{ user.authentication.authenticationConfiguration.title }}
             </span>
-          }
-          @if (!user.authentication?.authenticationConfiguration) {
+          } @else {
             <span class="detail-value warning-text">
               Authentication strategy no longer exists
             </span>
@@ -122,130 +117,122 @@
     </mat-card>
 
     <div class="teams-events-row">
-    <mat-card appearance="outlined" class="list-card">
-      <mat-card-header>
-        <mat-card-title>Teams</mat-card-title>
-      </mat-card-header>
+      <mat-card appearance="outlined" class="list-card">
+        <mat-card-header>
+          <mat-card-title>Teams</mat-card-title>
+        </mat-card-header>
 
-      <div class="toolbar">
-        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-          <mat-label>Search teams</mat-label>
-          <input matInput [(ngModel)]="teamSearchTerm" (ngModelChange)="onTeamSearchChange($event)" autocomplete="off">
-          @if (teamSearchTerm) {
-            <button matSuffix matIconButton (click)="onTeamSearchChange()" aria-label="Clear">
-              <mat-icon>close</mat-icon>
-            </button>
-          }
-        </mat-form-field>
-      </div>
-
-      <div class="list-content">
-        @if (totalUserTeams > 0 && !loadingTeams) {
-          <mat-nav-list>
-            @for (team of teamsDataSource.data; track team.id) {
-              <mat-list-item [routerLink]="['../../teams', team.id]">
-                <mat-icon matListItemIcon fontSet="material-symbols-outlined">groups</mat-icon>
-                <span matListItemTitle>{{ team.name }}</span>
-                @if (team.description) {
-                  <span matListItemLine>{{ team.description }}</span>
-                }
-              </mat-list-item>
-            }
-          </mat-nav-list>
-        }
-
-        @if (totalUserTeams === 0 && !loadingTeams) {
-          <div class="empty-state">
-            <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+        <div class="toolbar">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+            <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+            <mat-label>Search teams</mat-label>
+            <input matInput [(ngModel)]="teamSearchTerm" (ngModelChange)="onTeamSearchChange($event)" autocomplete="off">
             @if (teamSearchTerm) {
-              <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams that match your search</div>
-            } @else {
-              <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams</div>
+              <button matSuffix matIconButton (click)="onTeamSearchChange()" aria-label="Clear">
+                <mat-icon>close</mat-icon>
+              </button>
             }
-          </div>
-        }
+          </mat-form-field>
+        </div>
 
-        @if (loadingTeams) {
-          <div class="loading-overlay">
-            <mat-spinner diameter="32"></mat-spinner>
-          </div>
-        }
-      </div>
-
-      <mat-paginator
-        [length]="totalUserTeams"
-        [pageSize]="userTeamsPageSize"
-        [pageIndex]="userTeamsPageIndex"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="onUserTeamsPageChange($event)"
-      ></mat-paginator>
-    </mat-card>
-
-    <mat-card appearance="outlined" class="list-card">
-      <mat-card-header>
-        <mat-card-title>Events</mat-card-title>
-      </mat-card-header>
-
-      <div class="toolbar">
-        <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
-          <mat-label>Search events</mat-label>
-          <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
-          @if (eventSearchTerm) {
-            <button matSuffix matIconButton (click)="onEventSearchChange()" aria-label="Clear">
-              <mat-icon>close</mat-icon>
-            </button>
+        <div class="list-content">
+          @if (loadingTeams()) {
+            <div class="loading-overlay">
+              <mat-spinner diameter="32"></mat-spinner>
+            </div>
+          } @else if (totalUserTeams() > 0) {
+            <mat-nav-list>
+              @for (team of userTeams(); track team.id) {
+                <mat-list-item [routerLink]="['../../teams', team.id]">
+                  <mat-icon matListItemIcon fontSet="material-symbols-outlined">groups</mat-icon>
+                  <span matListItemTitle>{{ team.name }}</span>
+                  @if (team.description) {
+                    <span matListItemLine>{{ team.description }}</span>
+                  }
+                </mat-list-item>
+              }
+            </mat-nav-list>
+          } @else {
+            <div class="empty-state">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">groups</mat-icon>
+              @if (teamSearchTerm) {
+                <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams that match your search</div>
+              } @else {
+                <div class="empty-state-text">{{ user.displayName }} is not assigned to any teams</div>
+              }
+            </div>
           }
-        </mat-form-field>
-      </div>
+        </div>
 
-      <div class="list-content">
-        @if (totalUserEvents > 0 && !loadingEvents) {
-          <mat-nav-list>
-            @for (event of eventsDataSource.data; track event.id) {
-              <mat-list-item [routerLink]="['../../events', event.id]">
-                <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
-                <span matListItemTitle>{{ event.name }}</span>
-                @if (event.description) {
-                  <span matListItemLine>{{ event.description }}</span>
-                }
-                @if (accessTeamNames(event).length) {
-                  <span matListItemLine class="team-access">Via teams: {{ accessTeamNames(event).join(', ') }}</span>
-                }
-              </mat-list-item>
-            }
-          </mat-nav-list>
-        }
+        <mat-paginator
+          [length]="totalUserTeams()"
+          [pageSize]="userTeamsPageSize"
+          [pageIndex]="userTeamsPageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onUserTeamsPageChange($event)"
+        ></mat-paginator>
+      </mat-card>
 
-        @if (totalUserEvents === 0 && !loadingEvents) {
-          <div class="empty-state">
-            <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+      <mat-card appearance="outlined" class="list-card">
+        <mat-card-header>
+          <mat-card-title>Events</mat-card-title>
+        </mat-card-header>
+
+        <div class="toolbar">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+            <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+            <mat-label>Search events</mat-label>
+            <input matInput [(ngModel)]="eventSearchTerm" (ngModelChange)="onEventSearchChange($event)" autocomplete="off">
             @if (eventSearchTerm) {
-              <div class="empty-state-text">{{ user.displayName }} is not assigned to any events that match your search</div>
-            } @else {
-              <div class="empty-state-text">{{ user.displayName }} is not assigned to any events</div>
+              <button matSuffix matIconButton (click)="onEventSearchChange()" aria-label="Clear">
+                <mat-icon>close</mat-icon>
+              </button>
             }
-          </div>
-        }
+          </mat-form-field>
+        </div>
 
-        @if (loadingEvents) {
-          <div class="loading-overlay">
-            <mat-spinner diameter="32"></mat-spinner>
-          </div>
-        }
-      </div>
+        <div class="list-content">
+          @if (loadingEvents()) {
+            <div class="loading-overlay">
+              <mat-spinner diameter="32"></mat-spinner>
+            </div>
+          } @else if (totalUserEvents() > 0) {
+            <mat-nav-list>
+              @for (event of userEvents(); track event.id) {
+                <mat-list-item [routerLink]="['../../events', event.id]">
+                  <mat-icon matListItemIcon fontSet="material-symbols-outlined">calendar_month</mat-icon>
+                  <span matListItemTitle>{{ event.name }}</span>
+                  @if (event.description) {
+                    <span matListItemLine>{{ event.description }}</span>
+                  }
+                  @if (accessTeamNames(event).length) {
+                    <span matListItemLine class="team-access">Via teams: {{ accessTeamNames(event).join(', ') }}</span>
+                  }
+                </mat-list-item>
+              }
+            </mat-nav-list>
+          } @else {
+            <div class="empty-state">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">event_busy</mat-icon>
+              @if (eventSearchTerm) {
+                <div class="empty-state-text">{{ user.displayName }} is not assigned to any events that match your search</div>
+              } @else {
+                <div class="empty-state-text">{{ user.displayName }} is not assigned to any events</div>
+              }
+            </div>
+          }
+        </div>
 
-      <mat-paginator
-        [length]="totalUserEvents"
-        [pageSize]="userEventsPageSize"
-        [pageIndex]="userEventsPageIndex"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="onUserEventsPageChange($event)"
-      ></mat-paginator>
-    </mat-card>
+        <mat-paginator
+          [length]="totalUserEvents()"
+          [pageSize]="userEventsPageSize"
+          [pageIndex]="userEventsPageIndex"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onUserEventsPageChange($event)"
+        ></mat-paginator>
+      </mat-card>
     </div>
 
-    <mage-logins [userId]="user?.id"></mage-logins>
+    <mage-logins [userId]="user.id"></mage-logins>
   </div>
 }

@@ -8,25 +8,10 @@ import { CUSTOM_ELEMENTS_SCHEMA, EventEmitter } from '@angular/core';
 import { of } from 'rxjs';
 
 import { AdminDashboardComponent } from './admin-dashboard';
-import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
+import { LoginsComponent } from '../admin-logins/admin-logins.component';
 
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatListModule } from '@angular/material/list';
-import { MatBadgeModule } from '@angular/material/badge';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatTableModule } from '@angular/material/table';
 
 import { RouterTestingModule } from '@angular/router/testing';
 import { UserService } from '../../user/user.service';
@@ -283,24 +268,9 @@ describe('AdminDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AdminDashboardComponent],
       imports: [
-        CommonModule,
-        FormsModule,
-        MatToolbarModule,
+        AdminDashboardComponent,
         MatIconTestingModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatCardModule,
-        MatListModule,
-        MatBadgeModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatAutocompleteModule,
-        MatNativeDateModule,
-        MatTableModule,
-        AdminBreadcrumbModule,
         BrowserAnimationsModule,
         RouterTestingModule
       ],
@@ -311,7 +281,14 @@ describe('AdminDashboardComponent', () => {
         { provide: UserPagingService, useValue: mockUserPagingService }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
+    })
+      .overrideComponent(AdminDashboardComponent, {
+        remove: { imports: [LoginsComponent] }
+      })
+      .overrideComponent(AdminDashboardComponent, {
+        set: { schemas: [CUSTOM_ELEMENTS_SCHEMA] }
+      })
+      .compileComponents();
 
     (mockUserPagingService.constructDefault as jasmine.Spy).calls.reset();
     (mockUserPagingService.refresh as jasmine.Spy).calls.reset();
@@ -336,9 +313,9 @@ describe('AdminDashboardComponent', () => {
     expect(mockUserPagingService.refresh).toHaveBeenCalled();
     expect(mockDeviceService.getDashboardDevicePage).toHaveBeenCalled();
 
-    expect(component.inactiveUsers).toEqual(TEST_USERS.slice(0, 5));
-    expect(component.unregisteredDevices).toEqual(TEST_DEVICES.slice(0, 5));
-    expect(component.deviceTotalCount).toBe(TEST_DEVICES.length);
+    expect(component.inactiveUsers()).toEqual(TEST_USERS.slice(0, 5));
+    expect(component.unregisteredDevices()).toEqual(TEST_DEVICES.slice(0, 5));
+    expect(component.deviceTotalCount()).toBe(TEST_DEVICES.length);
   }));
 
   it('should activate user and emit event', fakeAsync(() => {
@@ -395,7 +372,7 @@ describe('AdminDashboardComponent', () => {
       userStateAndData.inactive,
       'Lily Hoshikawa'
     );
-    expect(component.inactiveUsers).toEqual([TEST_USERS[0]]);
+    expect(component.inactiveUsers()).toEqual([TEST_USERS[0]]);
   }));
 
   it('should search devices', fakeAsync(() => {
@@ -412,8 +389,8 @@ describe('AdminDashboardComponent', () => {
       includePagination: true,
       term: 'iOS Device'
     });
-    expect(component.unregisteredDevices).toEqual([TEST_DEVICES[1]]);
-    expect(component.deviceTotalCount).toBe(1);
+    expect(component.unregisteredDevices()).toEqual([TEST_DEVICES[1]]);
+    expect(component.deviceTotalCount()).toBe(1);
   }));
 
   it('should handle previous and next user pages', fakeAsync(() => {
@@ -425,16 +402,16 @@ describe('AdminDashboardComponent', () => {
     component.next();
     tick();
 
-    expect(component.userPageIndex).toBe(1);
-    expect(component.inactiveUsers).toEqual([TEST_USERS[5]]);
+    expect(component.userPageIndex()).toBe(1);
+    expect(component.inactiveUsers()).toEqual([TEST_USERS[5]]);
     expect(component.hasNext()).toBeFalse();
     expect(component.hasPrevious()).toBeTrue();
 
     component.previous();
     tick();
 
-    expect(component.userPageIndex).toBe(0);
-    expect(component.inactiveUsers).toEqual(TEST_USERS.slice(0, 5));
+    expect(component.userPageIndex()).toBe(0);
+    expect(component.inactiveUsers()).toEqual(TEST_USERS.slice(0, 5));
   }));
 
   it('should handle previous and next device pages', fakeAsync(() => {
@@ -446,16 +423,16 @@ describe('AdminDashboardComponent', () => {
     component.nextDevice();
     tick();
 
-    expect(component.deviceStart).toBe(5);
-    expect(component.unregisteredDevices).toEqual([TEST_DEVICES[5]]);
+    expect(component.deviceStart()).toBe(5);
+    expect(component.unregisteredDevices()).toEqual([TEST_DEVICES[5]]);
     expect(component.hasNextDevice()).toBeFalse();
     expect(component.hasPreviousDevice()).toBeTrue();
 
     component.previousDevice();
     tick();
 
-    expect(component.deviceStart).toBe(0);
-    expect(component.unregisteredDevices).toEqual(TEST_DEVICES.slice(0, 5));
+    expect(component.deviceStart()).toBe(0);
+    expect(component.unregisteredDevices()).toEqual(TEST_DEVICES.slice(0, 5));
   }));
 
   it('should not navigate to a user without an id', () => {

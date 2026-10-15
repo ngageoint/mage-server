@@ -1,21 +1,19 @@
 <ng-template #breadcrumbActions>
-  @if (feed) {
+  @if (feed() && hasFeedDeletePermission) {
     <div class="nav-actions">
-      @if (hasFeedDeletePermission) {
-        <button matButton="outlined" type="button" class="delete-feed-button" (click)="deleteFeed()">
-          <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
-        </button>
-      }
+      <button matButton="outlined" type="button" class="delete-feed-button" (click)="deleteFeed()">
+        <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>Delete
+      </button>
     </div>
   }
 </ng-template>
 
-@if (feedLoaded | async) {
+@if (feed(); as feed) {
   <div class="feed-page">
     <mat-card appearance="outlined" class="details-card">
       <div class="feed-header">
         <div class="feed-icon-placeholder">
-          <feed-icon [icon]="feed.icon" [size]="40" [active]="true"></feed-icon>
+          <feed-icon [icon]="feed.icon" [size]="40"></feed-icon>
         </div>
         <div class="feed-info">
           <span class="feed-name">{{ feed.title }}</span>
@@ -28,23 +26,23 @@
       <div class="detail-grid">
         <div class="detail-row">
           <span class="detail-label">Primary Property</span>
-          <span class="detail-value">{{ feed?.itemPrimaryProperty || '—' }}</span>
+          <span class="detail-value">{{ feed.itemPrimaryProperty || '—' }}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Secondary Property</span>
-          <span class="detail-value">{{ feed?.itemSecondaryProperty || '—' }}</span>
+          <span class="detail-value">{{ feed.itemSecondaryProperty || '—' }}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Update Frequency</span>
-          <span class="detail-value">{{ feed?.updateFrequencySeconds || '—' }}</span>
+          <span class="detail-value">{{ feed.updateFrequencySeconds || '—' }}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Service</span>
-          <span class="detail-value">{{ service?.title || '—' }}</span>
+          <span class="detail-value">{{ service()?.title || '—' }}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Service Summary</span>
-          <span class="detail-value">{{ service?.summary || '—' }}</span>
+          <span class="detail-value">{{ service()?.summary || '—' }}</span>
         </div>
       </div>
 
@@ -52,7 +50,7 @@
         <mat-divider class="section-divider"></mat-divider>
 
         <div class="feed-actions">
-          <button matButton="outlined" type="button" [routerLink]="['../../feeds', feed?.id, 'edit']">
+          <button matButton="outlined" type="button" [routerLink]="['../../feeds', feed.id, 'edit']">
             <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>Edit Feed
           </button>
         </div>
@@ -77,9 +75,9 @@
             <div class="loading-overlay">
               <mat-spinner diameter="32"></mat-spinner>
             </div>
-          } @else if (feedEvents.length > 0) {
+          } @else if (feedEvents().length > 0) {
             <mat-nav-list>
-              @for (event of feedEvents; track event.id) {
+              @for (event of feedEvents(); track event.id) {
                 <mat-list-item [routerLink]="['../../events', event.id]">
                   <mat-icon matListItemIcon fontSet="material-symbols-outlined">event</mat-icon>
                   <span matListItemTitle>{{ event.name }}</span>
@@ -103,9 +101,9 @@
         </div>
 
         <mat-paginator
-          [length]="totalFeedEvents"
+          [length]="totalFeedEvents()"
           [pageSize]="eventsPerPage"
-          [pageIndex]="eventsPage"
+          [pageIndex]="eventsPage()"
           (page)="onEventsPageChange($event)"
         ></mat-paginator>
       </mat-card>

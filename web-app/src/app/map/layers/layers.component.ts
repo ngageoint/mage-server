@@ -1,10 +1,13 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Feed } from '@ngageoint/mage.web-core-lib/feed';
+import { Component, input, output } from '@angular/core';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { RenderedMapLayer } from '../entities.map-layer';
+import { LayerHeaderComponent } from './layer-header.component';
+import { LayerContentComponent } from './layer-content.component';
 
 export interface ReorderEvent {
-  type: string;
-  layers: [any];
+  group: 'mage' | 'feed' | 'feature' | 'tile';
+  layers: RenderedMapLayer[];
   currentIndex: number;
   previousIndex: number;
 }
@@ -13,33 +16,32 @@ export interface ReorderEvent {
     selector: 'map-layers-panel',
     templateUrl: './layers.component.html',
     styleUrls: ['./layers.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        DragDropModule,
+        MatExpansionModule,
+        LayerHeaderComponent,
+        LayerContentComponent
+    ]
 })
 export class LayersComponent {
-  @Input() mageLayers: [any];
-  @Input() feedLayers: [Feed];
-  @Input() baseLayers: [any];
-  @Input() tileOverlays: [any];
-  @Input() featureOverlays: [any];
-  @Input() gridOverlays: [any];
+  mageLayers = input<RenderedMapLayer[]>([]);
+  feedLayers = input<RenderedMapLayer[]>([]);
+  baseLayers = input<RenderedMapLayer[]>([]);
+  tileOverlays = input<RenderedMapLayer[]>([]);
+  featureOverlays = input<RenderedMapLayer[]>([]);
+  gridOverlays = input<RenderedMapLayer[]>([]);
 
-  @Output() onReorder = new EventEmitter<ReorderEvent>();
+  onReorder = output<ReorderEvent>();
 
-  collapsed = true;
-
-  reorderLayers(event: CdkDragDrop<string[]>, type: string, layers: [any]): void {
+  reorderLayers(event: CdkDragDrop<RenderedMapLayer[]>, group: ReorderEvent['group'], layers: RenderedMapLayer[]): void {
     if (event.currentIndex === event.previousIndex) return;
 
     this.onReorder.emit({
-      type: type,
+      group: group,
       layers: layers,
       currentIndex: event.currentIndex,
       previousIndex: event.previousIndex
     });
-  }
-
-  preventHeaderToggle(event: any, panel: any): void {
-    event.stopPropagation();
-    panel.toggle();
   }
 }

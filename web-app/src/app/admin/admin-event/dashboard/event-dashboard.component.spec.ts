@@ -128,15 +128,15 @@ describe('EventDashboardComponent', () => {
     expect(eventServiceSpy.getEvents).toHaveBeenCalledWith(
       component.searchOptions
     );
-    expect(component.filteredEvents.length).toBe(2);
-    expect(component.totalEvents).toBe(2);
+    expect(component.filteredEvents().length).toBe(2);
+    expect(component.totalEvents()).toBe(2);
   }));
 
   it('should send search term to server when searching', fakeAsync(() => {
     eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse as any));
 
     component.onSearchTermChanged('event a');
-    tick();
+    tick(300);
 
     expect(component.eventSearch).toBe('event a');
     expect(component.searchOptions.term).toBe('event a');
@@ -153,7 +153,7 @@ describe('EventDashboardComponent', () => {
     component.searchOptions = { ...component.searchOptions, term: 'something' };
 
     component.onSearchCleared();
-    tick();
+    tick(300);
 
     expect(component.eventSearch).toBe('');
     expect(component.searchOptions.term).toBe('');
@@ -161,27 +161,18 @@ describe('EventDashboardComponent', () => {
     expect(eventServiceSpy.getEvents).toHaveBeenCalled();
   }));
 
-  it('should reset filters and refresh events', fakeAsync(() => {
+  it('should debounce search input into a single request', fakeAsync(() => {
     eventServiceSpy.getEvents.and.returnValue(of(mockEventsResponse as any));
 
-    component.eventSearch = 'abc';
-    component.eventStatusFilter = 'active';
-    component.searchOptions = {
-      ...component.searchOptions,
-      page: 3,
-      state: 'active',
-      term: 'abc'
-    };
+    component.onSearchTermChanged('e');
+    tick(100);
+    component.onSearchTermChanged('ev');
+    tick(100);
+    component.onSearchTermChanged('event');
+    tick(300);
 
-    component.reset();
-    tick();
-
-    expect(component.eventSearch).toBe('');
-    expect(component.eventStatusFilter).toBe('all');
-    expect(component.searchOptions.page).toBe(0);
-    expect(component.searchOptions.state).toBe('all');
-    expect(component.searchOptions.term).toBe('');
-    expect(eventServiceSpy.getEvents).toHaveBeenCalled();
+    expect(eventServiceSpy.getEvents).toHaveBeenCalledTimes(1);
+    expect(component.searchOptions.term).toBe('event');
   }));
 
   it('should handle page change', fakeAsync(() => {
@@ -239,22 +230,4 @@ describe('EventDashboardComponent', () => {
     expect(eventServiceSpy.getEvents).not.toHaveBeenCalled();
     expect(routerSpy.navigate).not.toHaveBeenCalled();
   }));
-
-  it('should handle window resize updating numChars and tooltip width', () => {
-    spyOnProperty(window, 'innerWidth', 'get').and.returnValue(1000);
-
-    component.onResize();
-
-    expect(component.numChars).toBe(Math.ceil(1000 / 8.5));
-    expect(component.toolTipWidth).toBe('750px');
-  });
-
-  it('trackByEventId returns id when present', () => {
-    expect(component.trackByEventId(0, { id: 5 } as any)).toBe(5);
-  });
-
-  it('trackByEventId returns event when id is missing', () => {
-    const obj = { name: 'no-id' } as any;
-    expect(component.trackByEventId(0, obj)).toBe(obj);
-  });
 });

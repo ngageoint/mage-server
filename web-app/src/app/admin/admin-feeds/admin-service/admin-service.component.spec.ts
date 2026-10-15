@@ -12,6 +12,8 @@ import { of } from 'rxjs';
 import { AdminServiceComponent } from './admin-service.component';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
+import { RouteReuse } from '../../../route-reuse.strategy';
 
 describe('AdminServiceComponent', () => {
   let component: AdminServiceComponent;
@@ -85,7 +87,7 @@ describe('AdminServiceComponent', () => {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
-      declarations: [AdminServiceComponent],
+      imports: [AdminServiceComponent],
       providers: [
         { provide: FeedService, useValue: feedService },
         { provide: SessionService, useValue: sessionService },
@@ -103,36 +105,9 @@ describe('AdminServiceComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should do nothing if serviceId is missing', fakeAsync(() => {
-    const routeNoId = {
-      snapshot: {
-        paramMap: {
-          get: (_: string) => null
-        }
-      }
-    };
-
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      declarations: [AdminServiceComponent],
-      providers: [
-        { provide: FeedService, useValue: feedService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: MatDialog, useValue: dialog },
-        { provide: ActivatedRoute, useValue: routeNoId }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
-    }).compileComponents();
-
-    const f = TestBed.createComponent(AdminServiceComponent);
-    const c = f.componentInstance;
-
-    c.ngOnInit();
-    tick();
-
-    expect(feedService.fetchService).not.toHaveBeenCalled();
-    expect(feedService.fetchServiceFeeds).not.toHaveBeenCalled();
-  }));
+  it('should get a new component instead of being reused when the service id changes', () => {
+    expect(AdminServiceComponent.routeReuse).toBe(RouteReuse.RecreateOnParamChange);
+  });
 
   it('should set permissions from myself$', fakeAsync(() => {
     setPermissions(['FEEDS_CREATE_SERVICE']);
@@ -170,8 +145,8 @@ describe('AdminServiceComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.service.id).toBe('serviceid1234');
-    expect(component.feeds.length).toBe(2);
+    expect(component.service()?.id).toBe('serviceid1234');
+    expect(component.feeds().length).toBe(2);
 
     expect(component.breadcrumbs.length).toBe(2);
     expect(component.breadcrumbs[1].title).toBe('Service title');
@@ -182,6 +157,22 @@ describe('AdminServiceComponent', () => {
       })
     );
     expect((component.breadcrumbs[1] as any).route).toBeUndefined();
+  }));
+
+  it('should pass a new breadcrumbs array so the breadcrumb signal updates', fakeAsync(() => {
+    const breadcrumbService = TestBed.inject(AdminBreadcrumbService);
+    const setBreadcrumbs = spyOn(breadcrumbService, 'setBreadcrumbs').and.callThrough();
+
+    feedService.fetchService.and.returnValue(of(service));
+    feedService.fetchServiceFeeds.and.returnValue(of(feeds as any));
+    feedService.fetchServiceType.and.returnValue(of(serviceTypeObject));
+
+    component.ngOnInit();
+    tick();
+
+    expect(setBreadcrumbs).toHaveBeenCalledTimes(2);
+    expect(setBreadcrumbs.calls.argsFor(1)[0]).not.toBe(setBreadcrumbs.calls.argsFor(0)[0]);
+    expect(breadcrumbService.breadcrumbs()[1].title).toBe('Service title');
   }));
 
   it('should wrap non-object serviceType configSchema and service.config', fakeAsync(() => {
@@ -198,13 +189,13 @@ describe('AdminServiceComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.serviceType.configSchema.type).toBe('object');
-    expect(component.serviceType.configSchema.properties).toBeDefined();
-    expect(component.serviceType.configSchema.properties.wrapped).toEqual(
+    expect(component.serviceType()?.configSchema.type).toBe('object');
+    expect(component.serviceType()?.configSchema.properties).toBeDefined();
+    expect(component.serviceType()?.configSchema.properties.wrapped).toEqual(
       serviceTypeNonObject.configSchema
     );
 
-    expect((component.service as any).config).toEqual({
+    expect((component.service() as any).config).toEqual({
       wrapped: 'https://example.com'
     });
 
@@ -224,13 +215,13 @@ describe('AdminServiceComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.serviceType.configSchema).toEqual(
+    expect(component.serviceType()?.configSchema).toEqual(
       serviceTypeObject.configSchema
     );
     expect(
-      component.serviceType.configSchema.properties?.wrapped
+      component.serviceType()?.configSchema.properties?.wrapped
     ).toBeUndefined();
-    expect((component.service as any).config).toEqual({
+    expect((component.service() as any).config).toEqual({
       url: 'https://example.com'
     });
   }));

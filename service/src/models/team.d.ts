@@ -36,7 +36,5 @@ export function deleteTeam(team: any, callback: any): void;
 export function addUser(team: any, user: any, callback: any): void;
 export function removeUser(team: any, user: any, callback: any): void;
 export function updateUserInAcl(teamId: any, userId: any, role: any, callback: any): any;
-export function updateUserInAclForEventTeam(eventId: any, userId: any, role: any, callback: any): void;
 export function removeUserFromAcl(teamId: any, userId: any, callback: any): void;
-export function removeUserFromAclForEventTeam(eventId: any, userId: any, callback: any): void;
 export function removeUserFromAllAcls(user: any, callback: any): void;

@@ -4,7 +4,7 @@
   </mat-card-header>
 
   <div class="filter-section">
-    @if (!userId) {
+    @if (!userId()) {
       <mat-form-field>
         <mat-label>User</mat-label>
         <input matInput [(ngModel)]="userText" (ngModelChange)="onUserSearchChange($event)"
@@ -15,7 +15,7 @@
           </button>
         }
         <mat-autocomplete #userAuto (optionSelected)="selectUser($event.option.value)">
-          @for (u of loginSearchResults; track u.id) {
+          @for (u of loginSearchResults(); track u.id) {
             <mat-option [value]="u">
               {{ u.displayName }}
             </mat-option>
@@ -24,7 +24,7 @@
       </mat-form-field>
     }
 
-    @if (!deviceId) {
+    @if (!deviceId()) {
       <mat-form-field>
         <mat-label>Device</mat-label>
         <input matInput [(ngModel)]="deviceText" (ngModelChange)="onDeviceSearchChange($event)"
@@ -35,7 +35,7 @@
           </button>
         }
         <mat-autocomplete #deviceAuto (optionSelected)="selectDevice($event.option.value)">
-          @for (d of loginDeviceSearchResults; track d.uid) {
+          @for (d of loginDeviceSearchResults(); track d.uid) {
             <mat-option [value]="d">
               {{ d?.uid || d?.userAgent || 'Unknown Device' }}
             </mat-option>
@@ -61,7 +61,7 @@
 
   <div class="list-content">
     <mat-list>
-      @for (login of loginPage?.logins || []; track login.id) {
+      @for (login of loginPage()?.logins || []; track login.id) {
         <mat-list-item>
           <mat-icon matListItemIcon fontSet="material-symbols-outlined">{{ iconName(login.device) }}</mat-icon>
           <span matListItemTitle>
@@ -93,7 +93,7 @@
         </mat-list-item>
       }
 
-      @if (!loginPage || loginPage.logins.length === 0) {
+      @if (!loginPage()?.logins?.length) {
         <div class="empty-state">
           <mat-icon>login</mat-icon>
           <span class="empty-desc">No login history found</span>
@@ -103,9 +103,9 @@
   </div>
 
   <mat-paginator
-    [length]="(loginPageIndex + (hasNext ? 2 : 1)) * +loginResultsLimit"
+    [length]="(loginPageIndex() + (hasNext ? 2 : 1)) * +loginResultsLimit"
     [pageSize]="+loginResultsLimit"
-    [pageIndex]="loginPageIndex"
+    [pageIndex]="loginPageIndex()"
     [pageSizeOptions]="[10, 25, 50, 100]"
     (page)="onLoginPage($event)">
   </mat-paginator>

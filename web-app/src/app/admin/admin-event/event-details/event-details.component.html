@@ -11,7 +11,7 @@
 @if (event(); as event) {
 <div class="event-page">
   <mat-card appearance="outlined" class="details-card">
-    <div class="event-header">
+    <div class="event-header" [class.event-header--actions]="hasUpdatePermission()">
       <div class="media-content">
         <div class="event-icon-placeholder">
           <mat-icon fontSet="material-symbols-outlined">event</mat-icon>
@@ -25,19 +25,11 @@
             {{ event.complete ? 'Inactive' : 'Active' }}
           </span>
         </div>
+        @if (event.description) {
+          <span class="event-description">{{ event.description }}</span>
+        }
       </div>
     </div>
-
-    @if (event.description) {
-      <div class="detail-row">
-        <span class="detail-label">Description</span>
-        <span class="detail-value">{{ event.description }}</span>
-      </div>
-    }
-
-    @if (hasUpdatePermission() && event.description) {
-      <mat-divider class="section-divider"></mat-divider>
-    }
 
     @if (hasUpdatePermission()) {
       <div class="event-actions">
@@ -71,6 +63,7 @@
           </div>
         }
       </mat-card-header>
+      <p class="card-description">Members can view the event and submit observations.</p>
 
       <div class="toolbar">
         <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
@@ -90,53 +83,19 @@
         @if (membersPage().totalCount > 0 && !loadingMembers()) {
           <mat-nav-list>
             @for (user of membersPage().items; track user.id) {
-              @let role = getUserRole(user);
               <mat-list-item [routerLink]="['../../users', user.id]">
                 <mat-icon matListItemIcon fontSet="material-symbols-outlined">person</mat-icon>
                 <span matListItemTitle>{{ user.displayName }}</span>
                 <span matListItemLine>{{ user.username }}</span>
-                <span matListItemMeta>
-                  <span class="member-meta">
-                    @if (hasUpdatePermission()) {
-                      <button type="button" class="role-badge-trigger user-role-badge role-{{ role.toLowerCase() }}"
-                        [matMenuTriggerFor]="roleMenu" (click)="$event.stopPropagation()">
-                        {{ role }}
-                        <mat-icon class="role-badge-chevron" fontSet="material-symbols-outlined">arrow_drop_down</mat-icon>
-                      </button>
-                    } @else {
-                      <span class="user-role-badge role-{{ role.toLowerCase() }}">{{ role }}</span>
-                    }
-
-                    <mat-menu #roleMenu="matMenu">
-                      <button mat-menu-item (click)="updateUserRole(user, 'GUEST')">
-                        @if (role === 'GUEST') {
-                          <mat-icon fontSet="material-symbols-outlined">check</mat-icon>
-                        }
-                        Guest
-                      </button>
-                      <button mat-menu-item (click)="updateUserRole(user, 'MANAGER')">
-                        @if (role === 'MANAGER') {
-                          <mat-icon fontSet="material-symbols-outlined">check</mat-icon>
-                        }
-                        Manager
-                      </button>
-                      <button mat-menu-item (click)="updateUserRole(user, 'OWNER')">
-                        @if (role === 'OWNER') {
-                          <mat-icon fontSet="material-symbols-outlined">check</mat-icon>
-                        }
-                        Owner
-                      </button>
-                    </mat-menu>
-
-                    @if (hasUpdatePermission()) {
-                      <button matIconButton
-                        (click)="$event.preventDefault(); $event.stopPropagation(); removeMember($event, user)"
-                        (mousedown)="$event.stopPropagation()" aria-label="Remove Member">
-                        <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
-                      </button>
-                    }
+                @if (hasUpdatePermission()) {
+                  <span matListItemMeta>
+                    <button matIconButton
+                      (click)="$event.preventDefault(); $event.stopPropagation(); removeMember($event, user)"
+                      (mousedown)="$event.stopPropagation()" aria-label="Remove Member">
+                      <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+                    </button>
                   </span>
-                </span>
+                }
               </mat-list-item>
             }
           </mat-nav-list>
@@ -175,6 +134,7 @@
           </div>
         }
       </mat-card-header>
+      <p class="card-description">Every member of these teams can view the event and submit observations.</p>
 
       <div class="toolbar">
         <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
@@ -306,6 +266,104 @@
     </mat-card>
   </div>
 
+  @if (hasUpdatePermission()) {
+    <div class="lists-section lists-section--single">
+      <mat-card appearance="outlined" class="list-card">
+        <mat-card-header class="card-header">
+          <mat-card-title>Access</mat-card-title>
+          <div class="card-actions">
+            <button matButton="outlined" type="button" (click)="addUserToAcl()">
+              <mat-icon fontSet="material-symbols-outlined">person_add</mat-icon>Add User
+            </button>
+          </div>
+        </mat-card-header>
+        <p class="card-description">Who can view, edit, or delete this event, separate from membership.</p>
+
+        <div class="toolbar">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic" class="search-field">
+            <mat-icon matPrefix fontSet="material-symbols-outlined">search</mat-icon>
+            <mat-label>Search access</mat-label>
+            <input matInput [ngModel]="accessSearchTerm()" (ngModelChange)="onAccessSearchChange($event)" autocomplete="off">
+            @if (accessSearchTerm()) {
+              <button matSuffix matIconButton (click)="onAccessSearchChange()" aria-label="Clear">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="list-content">
+          @if (accessPage().totalCount > 0 && !loadingAcl()) {
+            <mat-nav-list>
+              @for (entry of accessPage().items; track entry.user.id) {
+                @let lockReason = accessLockReason(entry);
+                <mat-list-item [routerLink]="['../../users', entry.user.id]">
+                  <mat-icon matListItemIcon fontSet="material-symbols-outlined">person</mat-icon>
+                  <span matListItemTitle>{{ entry.user.displayName }}</span>
+                  <span matListItemLine>{{ entry.user.username }}</span>
+                  <span matListItemMeta>
+                    <span class="member-meta">
+                      @if (lockReason) {
+                        <span class="user-role-badge role-{{ entry.role.toLowerCase() }}" [matTooltip]="lockReason">
+                          {{ entry.role }}
+                          <mat-icon class="role-badge-icon role-badge-lock" fontSet="material-symbols-outlined">lock</mat-icon>
+                        </span>
+                      } @else {
+                        <button type="button" class="role-badge-trigger user-role-badge role-{{ entry.role.toLowerCase() }}"
+                          [matMenuTriggerFor]="roleMenu" (click)="$event.stopPropagation()">
+                          {{ entry.role }}
+                          <mat-icon class="role-badge-icon" fontSet="material-symbols-outlined">arrow_drop_down</mat-icon>
+                        </button>
+                        <mat-menu #roleMenu="matMenu">
+                          @for (option of assignableRoles(); track option.role) {
+                            <button mat-menu-item (click)="setAclRole(entry, option.role)">
+                              <mat-icon fontSet="material-symbols-outlined">{{ entry.role === option.role ? 'check' : '' }}</mat-icon>
+                              <span class="role-option">
+                                <span>{{ option.title }}</span>
+                                <span class="role-option-description">{{ option.description }}</span>
+                              </span>
+                            </button>
+                          }
+                        </mat-menu>
+                      }
+
+                      <button matIconButton [class.locked-action]="lockReason !== null" [attr.aria-disabled]="lockReason !== null"
+                        [matTooltip]="lockReason || ''"
+                        (click)="$event.preventDefault(); removeAclUser($event, entry)"
+                        (mousedown)="$event.stopPropagation()" aria-label="Remove Access">
+                        <mat-icon class="delete-icon" fontSet="material-symbols-outlined">remove_circle_outline</mat-icon>
+                      </button>
+                    </span>
+                  </span>
+                </mat-list-item>
+              }
+            </mat-nav-list>
+          }
+
+          @if (accessPage().totalCount === 0 && !loadingAcl()) {
+            <div class="empty-state">
+              <mat-icon fontSet="material-symbols-outlined" class="empty-state-icon">lock</mat-icon>
+              @if (accessSearchTerm()) {
+                <div class="empty-state-text">No users match your search</div>
+              } @else {
+                <div class="empty-state-text">No users have access to {{ event.name }}</div>
+              }
+            </div>
+          }
+
+          @if (loadingAcl()) {
+            <div class="loading-overlay">
+              <mat-spinner diameter="32"></mat-spinner>
+            </div>
+          }
+        </div>
+
+        <mat-paginator [length]="accessPage().totalCount" [pageSize]="accessPageSize()" [pageSizeOptions]="pageSizeOptions"
+          (page)="onAccessPageChange($event)"></mat-paginator>
+      </mat-card>
+    </div>
+  }
+
   <mat-card appearance="outlined" class="forms-card">
     <mat-card-header class="card-header">
       <mat-card-title>Forms</mat-card-title>
@@ -364,46 +422,41 @@
   @if (nonArchivedForms().length > 0) {
     <form #restrictions="ngForm">
       <mat-card appearance="outlined" class="restrictions-card">
-        <mat-card-header>
-          <mat-card-title>Total Form Entries</mat-card-title>
-          <mat-card-subtitle>Set the minimum and maximum total number of forms allowed in a single observation.</mat-card-subtitle>
+        <mat-card-header class="card-header">
+          <mat-card-title>Form Restrictions</mat-card-title>
         </mat-card-header>
-        <mat-card-content>
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Min Forms Per Observation</mat-label>
-            <input matInput type="number" name="minObservationForms" [(ngModel)]="event.minObservationForms"
-              placeholder="No Minimum" />
-            <mat-hint>Minimum number of forms that must be present in an observation for this event</mat-hint>
-          </mat-form-field>
 
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Max Forms Per Observation</mat-label>
-            <input matInput type="number" name="maxObservationForms" [(ngModel)]="event.maxObservationForms"
-              placeholder="No Maximum" />
-            <mat-hint>Limit the total number of forms that can be added to an observation for this event</mat-hint>
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
+        <div class="restrictions-content">
+          <h3 class="restrictions-section-title">Total form entries</h3>
+          <p class="restrictions-section-description">Set the minimum and maximum total number of forms allowed in a single observation.</p>
+          <div class="form-restriction-controls">
+            <mat-form-field appearance="fill" subscriptSizing="dynamic">
+              <mat-label>Min</mat-label>
+              <input matInput type="number" min="0" name="minObservationForms" [(ngModel)]="event.minObservationForms" />
+            </mat-form-field>
+            <mat-form-field appearance="fill" subscriptSizing="dynamic">
+              <mat-label>Max</mat-label>
+              <input matInput type="number" min="0" name="maxObservationForms" [(ngModel)]="event.maxObservationForms" />
+            </mat-form-field>
+          </div>
 
-      <mat-card appearance="outlined" class="restrictions-card">
-        <mat-card-header>
-          <mat-card-title>Individual Form Entries</mat-card-title>
-          <mat-card-subtitle>Set the minimum and maximum number of times each form can appear in an observation.</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
+          <mat-divider class="restrictions-divider"></mat-divider>
+
+          <h3 class="restrictions-section-title">Individual form entries</h3>
+          <p class="restrictions-section-description">Set the minimum and maximum number of times each form can appear in an observation.</p>
           <div class="form-restrictions-list">
             @for (form of nonArchivedForms(); track form.id) {
               <div class="form-restriction-row">
                 <div class="form-restriction-content">
                   <span class="form-restriction-name">{{ form.name }}</span>
                   <div class="form-restriction-controls">
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-form-field appearance="fill" subscriptSizing="dynamic">
                       <mat-label>Min</mat-label>
-                      <input matInput type="number" [(ngModel)]="form.min" [name]="'form_' + form.id + '_min'" />
+                      <input matInput type="number" min="0" [(ngModel)]="form.min" [name]="'form_' + form.id + '_min'" />
                     </mat-form-field>
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-form-field appearance="fill" subscriptSizing="dynamic">
                       <mat-label>Max</mat-label>
-                      <input matInput type="number" [(ngModel)]="form.max" [name]="'form_' + form.id + '_max'" />
+                      <input matInput type="number" min="0" [(ngModel)]="form.max" [name]="'form_' + form.id + '_max'" />
                     </mat-form-field>
                   </div>
                 </div>
@@ -413,33 +466,33 @@
               }
             }
           </div>
-        </mat-card-content>
-      </mat-card>
 
-      @if (restrictionsError(); as restrictionsError) {
-        <div class="error-alert">
-          <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
-          <div>
-            <strong>Form Restriction Error</strong>
-            @if (restrictionsError.message) {
-              <p>{{ restrictionsError.message }}</p>
-            }
-            @if (restrictionsError.errors) {
-              <ul>
-                @for (error of restrictionsError.errors | keyvalue; track error.key) {
-                  <li>{{ error.value.message }}</li>
+          @if (restrictionsError(); as restrictionsError) {
+            <div class="error-alert">
+              <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+              <div>
+                <strong>Form Restriction Error</strong>
+                @if (restrictionsError.message) {
+                  <p>{{ restrictionsError.message }}</p>
                 }
-              </ul>
-            }
+                @if (restrictionsError.errors) {
+                  <ul>
+                    @for (error of restrictionsError.errors | keyvalue; track error.key) {
+                      <li>{{ error.value.message }}</li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="section-save-actions">
+            <button matButton="filled" type="button" (click)="saveFormRestrictions()" [disabled]="!restrictions.dirty || restrictions.invalid">
+              Save Restrictions
+            </button>
           </div>
         </div>
-      }
-
-      <div class="section-save-actions">
-        <button matButton="filled" type="button" (click)="saveFormRestrictions()" [disabled]="!restrictions.dirty">
-          Save Restrictions
-        </button>
-      </div>
+      </mat-card>
     </form>
   }
 </div>

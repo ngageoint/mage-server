@@ -91,7 +91,7 @@ describe('LayerDashboardComponent', () => {
         includeUnavailable: true
       });
       expect(component.layers.length).toBe(3);
-      expect(component.filteredLayers.length).toBe(3);
+      expect(component.filteredLayers().length).toBe(3);
     });
 
     it('should set permissions to false when user has no permissions', () => {
@@ -131,7 +131,7 @@ describe('LayerDashboardComponent', () => {
 
       expect(mockLayersService.getLayers).toHaveBeenCalled();
       expect(component.layers).toEqual(newLayers);
-      expect(component.filteredLayers).toEqual(newLayers);
+      expect(component.filteredLayers()).toEqual(newLayers);
     });
 
     it('should handle error when fetching layers', () => {
@@ -158,8 +158,8 @@ describe('LayerDashboardComponent', () => {
       component.layerSearch = 'imagery';
       component.onSearchTermChanged(component.layerSearch);
 
-      expect(component.filteredLayers.length).toBe(1);
-      expect(component.filteredLayers[0].name).toBe('Test Imagery Layer');
+      expect(component.filteredLayers().length).toBe(1);
+      expect(component.filteredLayers()[0].name).toBe('Test Imagery Layer');
       expect(component.page).toBe(0);
     });
 
@@ -167,44 +167,44 @@ describe('LayerDashboardComponent', () => {
       component.layerSearch = 'feature description';
       component.onSearchTermChanged(component.layerSearch);
 
-      expect(component.filteredLayers.length).toBe(1);
-      expect(component.filteredLayers[0].type).toBe('Feature');
+      expect(component.filteredLayers().length).toBe(1);
+      expect(component.filteredLayers()[0].type).toBe('Feature');
     });
 
     it('should filter layers by search term in URL', () => {
       component.layerSearch = 'example.com/imagery';
       component.onSearchTermChanged(component.layerSearch);
 
-      expect(component.filteredLayers.length).toBe(1);
-      expect(component.filteredLayers[0].id).toBe(1);
+      expect(component.filteredLayers().length).toBe(1);
+      expect(component.filteredLayers()[0].id).toBe(1);
     });
 
     it('should be case-insensitive when searching', () => {
       component.layerSearch = 'IMAGERY';
       component.onSearchTermChanged(component.layerSearch);
 
-      expect(component.filteredLayers.length).toBe(1);
+      expect(component.filteredLayers().length).toBe(1);
     });
 
     it('should return all layers when search is empty', () => {
       component.layerSearch = '';
       component.onSearchTermChanged(component.layerSearch);
 
-      expect(component.filteredLayers.length).toBe(3);
+      expect(component.filteredLayers().length).toBe(3);
     });
 
     it('should filter by type - online (Imagery)', () => {
       component.onTypeFilterChange('online');
 
-      expect(component.filteredLayers.length).toBe(1);
-      expect(component.filteredLayers[0].type).toBe('Imagery');
+      expect(component.filteredLayers().length).toBe(1);
+      expect(component.filteredLayers()[0].type).toBe('Imagery');
     });
 
     it('should filter by type - offline (non-Imagery)', () => {
       component.onTypeFilterChange('offline');
 
-      expect(component.filteredLayers.length).toBe(2);
-      expect(component.filteredLayers.every((l) => l.type !== 'Imagery')).toBe(
+      expect(component.filteredLayers().length).toBe(2);
+      expect(component.filteredLayers().every((l) => l.type !== 'Imagery')).toBe(
         true
       );
     });
@@ -212,15 +212,15 @@ describe('LayerDashboardComponent', () => {
     it('should show all layers when filter is "all"', () => {
       component.onTypeFilterChange('all');
 
-      expect(component.filteredLayers.length).toBe(3);
+      expect(component.filteredLayers().length).toBe(3);
     });
 
     it('should combine search and type filters', () => {
       component.layerSearch = 'test';
       component.onTypeFilterChange('online');
 
-      expect(component.filteredLayers.length).toBe(1);
-      expect(component.filteredLayers[0].type).toBe('Imagery');
+      expect(component.filteredLayers().length).toBe(1);
+      expect(component.filteredLayers()[0].type).toBe('Imagery');
     });
   });
 
@@ -265,12 +265,12 @@ describe('LayerDashboardComponent', () => {
 
     it('should update total layers count', () => {
       fixture.detectChanges();
-      expect(component.totalLayers).toBe(3);
+      expect(component.totalLayers()).toBe(3);
 
       component.layerSearch = 'imagery';
       component.onSearchTermChanged(component.layerSearch);
 
-      expect(component.totalLayers).toBe(1);
+      expect(component.totalLayers()).toBe(1);
     });
   });
 
@@ -371,7 +371,7 @@ describe('LayerDashboardComponent', () => {
   describe('initial state', () => {
     it('should have correct default values', () => {
       expect(component.layers).toEqual([]);
-      expect(component.filteredLayers).toEqual([]);
+      expect(component.filteredLayers()).toEqual([]);
       expect(component.layerSearch).toBe('');
       expect(component.page).toBe(0);
       expect(component.itemsPerPage).toBe(10);

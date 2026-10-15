@@ -43,7 +43,7 @@
         <mat-form-field appearance="fill">
           <mat-label>Choose a type</mat-label>
           <mat-select [formControl]="nameCtrl" id="type" required>
-            @for (typeChoice of TYPE_CHOICES; track typeChoice.name) {
+            @for (typeChoice of typeChoices(); track typeChoice.name) {
               <mat-option [value]="typeChoice.name">
                 {{ typeChoice.title }}
               </mat-option>
@@ -72,25 +72,25 @@
             @case ('openidconnect') {
               <admin-authentication-oidc
                 [strategy]="strategy"
-                (ngModelChange)="onSettingsChanged()"
+                (strategyDirty)="onSettingsChanged()"
               ></admin-authentication-oidc>
             }
             @case ('oauth') {
               <admin-authentication-oauth2
                 [strategy]="strategy"
-                (ngModelChange)="onSettingsChanged()"
+                (strategyDirty)="onSettingsChanged()"
               ></admin-authentication-oauth2>
             }
             @case ('ldap') {
               <admin-authentication-ldap
                 [strategy]="strategy"
-                (ngModelChange)="onSettingsChanged()"
+                (strategyDirty)="onSettingsChanged()"
               ></admin-authentication-ldap>
             }
             @case ('saml') {
               <admin-authentication-saml
                 [strategy]="strategy"
-                (ngModelChange)="onSettingsChanged()"
+                (strategyDirty)="onSettingsChanged()"
               ></admin-authentication-saml>
             }
             @default {

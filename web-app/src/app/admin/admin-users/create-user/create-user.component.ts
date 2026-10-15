@@ -1,9 +1,16 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Role } from '../user';
 import { ApiService } from '../../../api/api.service';
 import { UserService } from '../../../user/user.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import {
   confirmPasswordValidator,
@@ -12,29 +19,40 @@ import {
 import { emailValidator } from '../../../email/email';
 
 import { PasswordStrength } from 'src/app/entities/password/password';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'create-user-modal',
     templateUrl: './create-user.component.html',
     styleUrls: ['./create-user.component.scss'],
-    standalone: false
+    imports: [
+        ReactiveFormsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatIconModule,
+        MatButtonModule,
+        MatSelectModule,
+        MatProgressBarModule
+    ]
 })
 export class CreateUserModalComponent implements OnInit {
-  readonly dialogRef = inject(MatDialogRef<CreateUserModalComponent>);
+  private readonly dialogRef = inject(MatDialogRef<CreateUserModalComponent>);
   private readonly apiService = inject(ApiService);
   private readonly userService = inject(UserService);
-  private readonly data: { roles: Role[] } = inject(MAT_DIALOG_DATA);
+  private readonly destroyRef = inject(DestroyRef);
 
-  roles: Role[] = [];
-  saving = signal(false);
-  serverError = signal('');
+  readonly roles: Role[] = inject<{ roles: Role[] }>(MAT_DIALOG_DATA)?.roles ?? [];
+
+  readonly saving = signal(false);
+  readonly serverError = signal('');
 
   showPassword = false;
   showConfirmPassword = false;
 
-  passwordErrorMessages: string[] = [];
-  passwordStrength?: PasswordStrength;
-  passwordHelpText?: string;
+  readonly passwordErrorMessages = signal<string[]>([]);
+  readonly passwordStrength = signal<PasswordStrength | undefined>(undefined);
+  readonly passwordHelpText = signal<string | undefined>(undefined);
 
   signup = new FormGroup({
     displayName: new FormControl('', [Validators.required]),
@@ -46,25 +64,25 @@ export class CreateUserModalComponent implements OnInit {
     passwordconfirm: new FormControl('', [Validators.required])
   });
 
-  constructor() {
-    this.roles = this.data?.roles ?? [];
-  }
-
   ngOnInit(): void {
-    this.apiService.getApi().subscribe((api: any) => {
-      this.passwordHelpText = api.authenticationStrategies?.local?.passwordHelpText;
-    });
+    this.apiService.getApi()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((api: any) => {
+        this.passwordHelpText.set(api.authenticationStrategies?.local?.passwordHelpText);
+      });
 
     const passwordControl = this.signup.get('password');
     const confirmControl = this.signup.get('passwordconfirm');
     const username = this.signup.get('username')?.value;
 
-    passwordControl?.valueChanges.subscribe((value) => {
-      this.passwordStrength = evaluatePasswordStrength(value, username);
-      this.passwordErrorMessages = [];
-      passwordControl.updateValueAndValidity({ emitEvent: false });
-      confirmControl?.updateValueAndValidity();
-    });
+    passwordControl?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => {
+        this.passwordStrength.set(evaluatePasswordStrength(value, username));
+        this.passwordErrorMessages.set([]);
+        passwordControl.updateValueAndValidity({ emitEvent: false });
+        confirmControl?.updateValueAndValidity();
+      });
 
     confirmControl?.setValidators([
       Validators.required,
@@ -74,7 +92,7 @@ export class CreateUserModalComponent implements OnInit {
   }
 
   saveUser(): void {
-    if (this.signup.invalid || this.passwordErrorMessages.length > 0) {
+    if (this.signup.invalid || this.passwordErrorMessages().length > 0) {
       this.signup.markAllAsTouched();
       return;
     }
@@ -94,29 +112,31 @@ export class CreateUserModalComponent implements OnInit {
       iconMetadata: null
     };
 
-    this.userService.createUser(user).subscribe({
-      next: (createdUser) => {
-        this.dialogRef.close(createdUser);
-      },
-      error: (response: any) => {
-        this.saving.set(false);
-        if (response.status === 409) {
-          this.signup.get('username')?.setErrors({ exists: true });
-        } else if (response.status === 400) {
-          this.passwordErrorMessages = [response.error];
-          this.signup.get('password')?.setErrors({ policy: true });
-        } else {
-          this.serverError.set('Failed to create user. Please try again.');
+    this.userService.createUser(user)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (createdUser) => {
+          this.dialogRef.close(createdUser);
+        },
+        error: (response: HttpErrorResponse) => {
+          this.saving.set(false);
+          if (response.status === 409) {
+            this.signup.get('username')?.setErrors({ exists: true });
+          } else if (response.status === 400) {
+            this.passwordErrorMessages.set([response.error]);
+            this.signup.get('password')?.setErrors({ policy: true });
+          } else {
+            this.serverError.set('Failed to create user. Please try again.');
+          }
         }
-      }
-    });
+      });
   }
 
   cancelModal(): void {
     this.dialogRef.close();
   }
 
-  getPasswordErrorMessages(errors: any): string[] {
+  getPasswordErrorMessages(errors: ValidationErrors): string[] {
     return errors?.['required'] ? ['Password is required'] : [];
   }
 }

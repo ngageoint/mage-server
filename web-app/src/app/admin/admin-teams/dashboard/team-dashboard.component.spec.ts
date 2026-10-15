@@ -105,16 +105,17 @@ describe('TeamDashboardComponent', () => {
       pageIndex: 0,
       omitEventTeams: true,
     });
-    expect(component.teams).toEqual(mockTeams);
-    expect(component.totalTeams).toBe(mockTeams.length);
-    expect(component.teams).toEqual(mockTeams);
+    expect(component.teams()).toEqual(mockTeams);
+    expect(component.totalTeams()).toBe(mockTeams.length);
+    expect(component.teams()).toEqual(mockTeams);
   });
 
-  it('should reset page index when searching', () => {
+  it('should reset page index when searching', fakeAsync(() => {
     fixture.detectChanges();
     component.pageIndex = 2;
 
     component.onSearchTermChanged('test');
+    tick(300);
 
     expect(component.pageIndex).toBe(0);
     expect(mockTeamsService.search).toHaveBeenCalledWith({
@@ -123,7 +124,19 @@ describe('TeamDashboardComponent', () => {
       pageIndex: 0,
       omitEventTeams: true,
     });
-  });
+  }));
+
+  it('should debounce search input into a single request', fakeAsync(() => {
+    component.onSearchTermChanged('t');
+    tick(100);
+    component.onSearchTermChanged('te');
+    tick(100);
+    component.onSearchTermChanged('test');
+    tick(300);
+
+    expect(mockTeamsService.search).toHaveBeenCalledTimes(1);
+    expect(mockTeamsService.search).toHaveBeenCalledWith(jasmine.objectContaining({ term: 'test' }));
+  }));
 
   it('should handle page changes', () => {
     const pageEvent: PageEvent = {
@@ -144,11 +157,12 @@ describe('TeamDashboardComponent', () => {
     });
   });
 
-  it('should reset search and pagination', () => {
+  it('should reset search and pagination', fakeAsync(() => {
     component.searchTerm = 'test';
     component.pageIndex = 2;
 
     component.onSearchCleared();
+    tick(300);
 
     expect(component.searchTerm).toBe('');
     expect(component.pageIndex).toBe(0);
@@ -158,7 +172,7 @@ describe('TeamDashboardComponent', () => {
       pageIndex: 0,
       omitEventTeams: true,
     });
-  });
+  }));
 
   it('should open new team dialog', () => {
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
@@ -227,9 +241,9 @@ describe('TeamDashboardComponent', () => {
 
     fixture.detectChanges();
 
-    expect(component.teams).toEqual([]);
-    expect(component.totalTeams).toBe(0);
-    expect(component.teams).toEqual([]);
+    expect(component.teams()).toEqual([]);
+    expect(component.totalTeams()).toBe(0);
+    expect(component.teams()).toEqual([]);
   });
 
   it('should cleanup subscriptions on destroy', () => {

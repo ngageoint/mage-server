@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
-import { EMPTY, Subject } from 'rxjs';
-import { catchError, takeUntil } from 'rxjs/operators';
+import { EMPTY, Observable, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchAll, takeUntil, tap } from 'rxjs/operators';
 
 import { UserPagingService } from '../../services/user-paging.service';
 import { User } from '@ngageoint/mage.web-core-lib/user';
@@ -22,7 +22,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { UserAvatarModule } from 'src/app/user/user-avatar/user-avatar.module';
@@ -38,7 +37,6 @@ type UserFilter = {
     selector: 'admin-users',
     templateUrl: './user-dashboard.component.html',
     styleUrls: ['./user-dashboard.component.scss'],
-    standalone: true,
     imports: [
       MatCardModule,
       MatChipsModule,
@@ -54,11 +52,11 @@ type UserFilter = {
     ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
-  dataSource: User[] = [];
+  readonly dataSource = signal<User[]>([]);
 
   userSearch = '';
 
-  totalUsers = 0;
+  readonly totalUsers = signal(0);
   pageSize = 10;
   pageIndex = 0;
   pageSizeOptions = [5, 10, 25, 50];
@@ -80,6 +78,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   userStatusFilter: 'all' | 'active' | 'inactive' | 'disabled' = 'all';
 
   private destroy$ = new Subject<void>();
+  private readonly load$ = new Subject<Observable<{ users: User[]; total: number }>>();
+  private readonly searchTerm$ = new Subject<string>();
 
   constructor(
     private dialog: MatDialog,
@@ -91,6 +91,20 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private breadcrumbService: AdminBreadcrumbService
   ) {
     this.stateAndData = this.userPagingService.constructDefault();
+
+    this.load$
+      .pipe(switchAll(), takeUntil(this.destroy$))
+      .subscribe(({ users, total }) => {
+        this.dataSource.set(users);
+        this.totalUsers.set(total);
+      });
+
+    this.searchTerm$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.pageIndex = 0;
+        this.search();
+      });
   }
 
   ngOnInit(): void {
@@ -179,46 +193,47 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.applyFilterToState(this.pageIndex);
     const state = this.stateAndData['all'];
 
-    this.userPagingService
-      .refresh(this.stateAndData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        const users = this.userPagingService.users(state) || [];
-        this.dataSource = users;
-        this.totalUsers = state.pageInfo?.totalCount || 0;
-        onDone?.();
-      });
+    this.load$.next(
+      this.userPagingService.refresh(this.stateAndData).pipe(
+        map(() => ({
+          users: this.userPagingService.users(state) || [],
+          total: state.pageInfo?.totalCount || 0
+        })),
+        tap(() => onDone?.()),
+        catchError((err) => {
+          console.error(err);
+          return EMPTY;
+        })
+      )
+    );
   }
 
   onSearchTermChanged(term: string): void {
     this.userSearch = term || '';
-    this.pageIndex = 0;
-    this.search();
+    this.searchTerm$.next(this.userSearch);
   }
 
   onSearchCleared(): void {
     this.userSearch = '';
-    this.refreshUsers();
+    this.searchTerm$.next('');
   }
 
   search(): void {
     this.applyFilterToState(0);
     const state = this.stateAndData['all'];
 
-    this.userPagingService
-      .search(state, this.userSearch)
-      .pipe(
-        takeUntil(this.destroy$),
+    this.load$.next(
+      this.userPagingService.search(state, this.userSearch).pipe(
+        map((users) => {
+          const list = users || [];
+          return { users: list, total: state.pageInfo?.totalCount || list.length };
+        }),
         catchError((err) => {
           console.error(err);
           return EMPTY;
         })
       )
-      .subscribe((users) => {
-        const list = users || [];
-        this.dataSource = list;
-        this.totalUsers = state.pageInfo?.totalCount || list.length;
-      });
+    );
   }
 
   onPageChange(event: PageEvent): void {

@@ -1,23 +1,13 @@
 
 .header {
   margin: 16px 0;
-  font: 400 16px/24px Roboto, "Helvetica Neue", sans-serif;
+  font: var(--mat-sys-title-medium);
   color: var(--mat-sys-primary);
 }
 
 .map-layers {
   margin-top: 32px;
   padding: 0 16px 16px;
-  background: FCFCFC;
-}
-
-.base-layers {
-  display: flex;
-  flex-direction: column;
-}
-
-.base-layer {
-  margin: 8px 16px;
 }
 
 .cdk-drag-preview {
@@ -36,26 +26,10 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.layer-list.cdk-drop-list-dragging .layer-item:not(.cdk-drag-placeholder) {
+.layer-list.cdk-drop-list-dragging mat-expansion-panel:not(.cdk-drag-placeholder) {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-layer-item {
-  display: block;
-}
-
-.layer {
-  margin: 8px 16px;
-}
-
-mat-expansion-panel-header {
-  padding: 0;
-}
-
-:host ::ng-deep.mat-expansion-panel-header[cdkdraghandle] {
+mat-expansion-panel-header.cdk-drag-handle {
   cursor: move;
-}
-
-:host ::ng-deep.mat-expansion-panel-body {
-  padding: 0 16px 16px;
 }

@@ -6,37 +6,48 @@
       <mat-label>Field Type</mat-label>
       <mat-select [(ngModel)]="field.type" name="fieldType" [disabled]="isEditMode"
         (selectionChange)="onFieldTypeChange($event.value)">
-        <mat-option *ngFor="let type of data.fieldTypes" [value]="type.name">
+        @for (type of data.fieldTypes; track type.name) {
+        <mat-option [value]="type.name">
           {{ type.title }}
         </mat-option>
+        }
       </mat-select>
-      <mat-hint *ngIf="field.type === 'userDropdown'">
+      @if (field.type === 'userDropdown') {
+      <mat-hint>
         The 'User Select' type is a dynamic list of all users that are part of the event. As such you cannot
         add/remove choices, users will be automatically populated.
       </mat-hint>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Field Title</mat-label>
       <input matInput type="text" [(ngModel)]="field.title" placeholder="Enter field title" name="fieldTitle"
         required>
-      <mat-error *ngIf="field.title && isFieldNameDuplicate()">
+      @if (field.title && isFieldNameDuplicate()) {
+      <mat-error>
         A field with this name already exists. Please choose a different title.
       </mat-error>
+      }
     </mat-form-field>
 
-    <div *ngIf="field.type === 'dropdown' && !data.isMemberField" class="checkbox-section">
+    @if (field.type === 'dropdown' && !data.isMemberField) {
+    <div class="checkbox-section">
       <mat-checkbox [(ngModel)]="field.multiselect" name="fieldMultiselect">Allow Multiple Selections</mat-checkbox>
       <p class="field-hint">Allow users to select multiple options from the list.</p>
     </div>
+    }
 
-    <div *ngIf="field.type === 'userDropdown'" class="checkbox-section">
+    @if (field.type === 'userDropdown') {
+    <div class="checkbox-section">
       <mat-checkbox [(ngModel)]="field.multiselect" name="fieldMultiselectUser">Allow Multiple
         Selections</mat-checkbox>
       <p class="field-hint">Allow users to select multiple users from the list.</p>
     </div>
+    }
 
-    <div *ngIf="field.type === 'attachment'">
+    @if (field.type === 'attachment') {
+    <div>
       <mat-form-field appearance="fill">
         <mat-label>Minimum Attachments</mat-label>
         <input matInput type="number" [(ngModel)]="field.min" placeholder="No Attachment Minimum" name="fieldMin">
@@ -53,19 +64,25 @@
           Limit which types of attachments users can upload. If none are selected, all file types will be allowed.
         </p>
         <div class="checkbox-group">
-          <mat-checkbox *ngFor="let type of data.attachmentAllowedTypes" [checked]="isAttachmentTypeSelected(type.name)"
+          @for (type of data.attachmentAllowedTypes; track type.name) {
+          <mat-checkbox [checked]="isAttachmentTypeSelected(type.name)"
             (change)="toggleAttachmentType(type.name, $any($event).checked)">
             {{ type.title }}
           </mat-checkbox>
+          }
         </div>
-        <div class="warning-alert" *ngIf="hasNoAttachmentTypes()">
+        @if (hasNoAttachmentTypes()) {
+        <div class="warning-alert">
           <mat-icon>warning</mat-icon>
           <span>Warning: If no types are selected, users will be able to upload any file type.</span>
         </div>
+        }
       </div>
     </div>
+    }
 
-    <div *ngIf="field.type === 'numberfield'">
+    @if (field.type === 'numberfield') {
+    <div>
       <mat-form-field appearance="fill">
         <mat-label>Minimum Value</mat-label>
         <input matInput type="number" [(ngModel)]="field.min" placeholder="No Minimum" name="fieldMin">
@@ -82,38 +99,54 @@
           placeholder="No Default" name="fieldValue">
       </mat-form-field>
     </div>
+    }
 
-    <mat-form-field appearance="fill" *ngIf="field.type === 'textfield' || field.type === 'email'">
+    @if (field.type === 'textfield' || field.type === 'email') {
+    <mat-form-field appearance="fill">
       <mat-label>Default Value</mat-label>
       <input matInput type="text" [(ngModel)]="field.value" placeholder="No Default" name="fieldValue">
     </mat-form-field>
+    }
 
-    <mat-form-field appearance="fill" *ngIf="field.type === 'textarea'">
+    @if (field.type === 'textarea') {
+    <mat-form-field appearance="fill">
       <mat-label>Default Value</mat-label>
       <textarea matInput rows="3" [(ngModel)]="field.value" placeholder="No Default" name="fieldValue"></textarea>
     </mat-form-field>
+    }
 
-    <div *ngIf="field.type === 'checkbox'" class="checkbox-section">
+    @if (field.type === 'checkbox') {
+    <div class="checkbox-section">
       <mat-checkbox [(ngModel)]="field.value" name="fieldValue">Default Value</mat-checkbox>
     </div>
+    }
 
-    <div *ngIf="showAddOptions() && !data.isMemberField" class="config-block">
+    @if (showAddOptions() && !data.isMemberField) {
+    <div class="config-block">
       <strong>Field Options</strong>
-      <div class="options-list" *ngIf="field.choices && field.choices.length > 0">
-        <div class="option-item" *ngFor="let option of field.choices; let i = index">
-          <button matIconButton type="button" *ngIf="i > 0" (click)="moveOptionUp(option)" title="Move up">
+      @if (field.choices && field.choices.length > 0) {
+      <div class="options-list">
+        @for (option of field.choices; track option.id; let i = $index) {
+        <div class="option-item">
+          @if (i > 0) {
+          <button matIconButton type="button" (click)="moveOptionUp(option)" title="Move up">
             <mat-icon>arrow_upward</mat-icon>
           </button>
-          <button matIconButton type="button" *ngIf="i < field.choices.length - 1" (click)="moveOptionDown(option)"
+          }
+          @if (i < field.choices.length - 1) {
+          <button matIconButton type="button" (click)="moveOptionDown(option)"
             title="Move down">
             <mat-icon>arrow_downward</mat-icon>
           </button>
+          }
           <span class="option-title">{{ option.title }}</span>
           <button matIconButton type="button" (click)="deleteOption(option)" title="Delete option">
             <mat-icon>delete</mat-icon>
           </button>
         </div>
+        }
       </div>
+      }
       <div class="add-option-row">
         <mat-form-field appearance="fill">
           <mat-label>New option title</mat-label>
@@ -125,38 +158,49 @@
         </button>
       </div>
     </div>
+    }
 
-    <mat-form-field appearance="fill" *ngIf="field.type === 'dropdown' && !data.isMemberField">
+    @if (field.type === 'dropdown' && !data.isMemberField) {
+    <mat-form-field appearance="fill">
       <mat-label>Recent Choices Limit</mat-label>
       <input matInput type="number" [(ngModel)]="field.maxRecent" name="maxRecent" min="0">
       <mat-hint>Shown first in the list. Leave blank or 0 to disable.</mat-hint>
     </mat-form-field>
+    }
 
-    <mat-form-field appearance="fill"
-      *ngIf="field.type === 'dropdown' && !field.multiselect && !data.isMemberField">
+    @if (field.type === 'dropdown' && !field.multiselect && !data.isMemberField) {
+    <mat-form-field appearance="fill">
       <mat-label>Default Value</mat-label>
       <mat-select [(ngModel)]="field.value" name="fieldDefaultValue">
         <mat-option [value]="null">No Default</mat-option>
-        <mat-option *ngFor="let choice of field.choices" [value]="choice.title">
+        @for (choice of field.choices; track choice.id) {
+        <mat-option [value]="choice.title">
           {{ choice.title }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
+    }
 
-    <div *ngIf="field.type === 'dropdown' && field.multiselect && !data.isMemberField" class="config-block">
+    @if (field.type === 'dropdown' && field.multiselect && !data.isMemberField) {
+    <div class="config-block">
       <strong>Default Values</strong>
       <div class="checkbox-group">
-        <mat-checkbox *ngFor="let choice of field.choices" [checked]="field.value && field.value.includes(choice.title)"
+        @for (choice of field.choices; track choice.id) {
+        <mat-checkbox [checked]="field.value && field.value.includes(choice.title)"
           (change)="toggleDefaultValue(choice.title, $any($event).checked)">
           {{ choice.title }}
         </mat-checkbox>
+        }
       </div>
     </div>
+    }
 
-    <div class="checkbox-section"
-      *ngIf="field.name !== 'timestamp' && field.name !== 'geometry' && field.type !== 'attachment'">
+    @if (field.name !== 'timestamp' && field.name !== 'geometry' && field.type !== 'attachment') {
+    <div class="checkbox-section">
       <mat-checkbox [(ngModel)]="field.required" name="fieldRequired">Required Field</mat-checkbox>
     </div>
+    }
   </div>
 </mat-dialog-content>
 

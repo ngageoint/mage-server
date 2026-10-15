@@ -69,8 +69,6 @@ mat-card.details-card {
   font-size: var(--mat-sys-label-small-size);
   font-weight: 400;
   color: var(--mat-sys-on-surface-variant);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .detail-value {
@@ -186,6 +184,6 @@ mat-card.details-card {
 }
 
 .remove-icon-button {
-  color: var(--mat-sys-error) !important;
-  border-color: var(--mat-sys-error) !important;
+  --mat-button-outlined-label-text-color: var(--mat-sys-error);
+  --mat-button-outlined-outline-color: var(--mat-sys-error);
 }

@@ -1,5 +1,15 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, input, output, viewChild, ElementRef, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { JsonPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
 import * as L from 'leaflet';
 
 export interface ImageryLayerConfig {
@@ -14,46 +24,62 @@ export interface ImageryLayerConfig {
     selector: 'mage-imagery-layer-settings',
     templateUrl: './imagery-layer-settings.component.html',
     styleUrls: ['./imagery-layer-settings.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        JsonPipe,
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRadioModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatExpansionModule,
+        MatSlideToggleModule,
+        MatButtonModule
+    ]
 })
 export class ImageryLayerSettingsComponent implements OnChanges {
-    @Input() config: ImageryLayerConfig = {
+    config = input<ImageryLayerConfig>({
         url: '',
         format: 'XYZ',
         wmsVersion: '1.3.0',
         wmsTransparent: true,
         wmsStyles: ''
-    };
+    });
 
-    @Input() existingWmsLayers?: string;
-    @Output() configChange = new EventEmitter<ImageryLayerConfig>();
-    @Output() wmsLayersSelected = new EventEmitter<string>();
+    existingWmsLayers = input<string>();
+    configChange = output<ImageryLayerConfig>();
+    wmsLayersSelected = output<string>();
 
-    wmsCapabilities: any = null;
-    wmsError: string = '';
-    wmsLayers: any[] = [];
-    wmsOtherLayers: any[] = [];
-    selectedWmsLayers: { [key: string]: boolean } = {};
-    isLoadingWms: boolean = false;
+    wmsCapabilities = signal<any>(null);
+    wmsError = signal('');
+    wmsLayers = signal<any[]>([]);
+    wmsOtherLayers = signal<any[]>([]);
+    selectedWmsLayers = signal<{ [key: string]: boolean }>({});
+    isLoadingWms = signal(false);
     previewMap: L.Map | null = null;
     previewMapLayer: L.Layer | null = null;
     wmsLayerSearchQuery: string = '';
 
-    @ViewChild('previewMapContainer') previewMapContainer: ElementRef;
+    previewMapContainer = viewChild<ElementRef>('previewMapContainer');
 
     constructor(private http: HttpClient) { }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['existingWmsLayers'] && this.existingWmsLayers) {
-            const layers = this.existingWmsLayers.split(',');
-            layers.forEach(layerName => {
-                this.selectedWmsLayers[layerName.trim()] = true;
+        if (changes['existingWmsLayers'] && this.existingWmsLayers()) {
+            const layers = this.existingWmsLayers()!.split(',');
+            this.selectedWmsLayers.update(current => {
+                const updated = { ...current };
+                layers.forEach(layerName => {
+                    updated[layerName.trim()] = true;
+                });
+                return updated;
             });
         }
     }
 
     onConfigChange(): void {
-        this.configChange.emit(this.config);
+        this.configChange.emit(this.config());
 
         if (this.previewMap) {
             this.updatePreviewMap();
@@ -61,7 +87,7 @@ export class ImageryLayerSettingsComponent implements OnChanges {
     }
 
     onFormatChange(): void {
-        if (this.config.format === 'WMS' && this.config.url) {
+        if (this.config().format === 'WMS' && this.config().url) {
             this.fetchWmsCapabilities();
         } else {
             this.resetWmsData();
@@ -70,57 +96,65 @@ export class ImageryLayerSettingsComponent implements OnChanges {
     }
 
     private resetWmsData(): void {
-        this.wmsCapabilities = null;
-        this.wmsError = '';
-        this.wmsLayers = [];
-        this.wmsOtherLayers = [];
-        this.selectedWmsLayers = {};
+        this.wmsCapabilities.set(null);
+        this.wmsError.set('');
+        this.wmsLayers.set([]);
+        this.wmsOtherLayers.set([]);
+        this.selectedWmsLayers.set({});
     }
 
     /**
      * Fetches WMS GetCapabilities document from the server
      */
     fetchWmsCapabilities(): void {
-        if (!this.config.url) {
-            this.wmsError = 'Please enter a WMS URL first';
+        if (!this.config().url) {
+            this.wmsError.set('Please enter a WMS URL first');
             return;
         }
 
-        this.isLoadingWms = true;
-        this.wmsError = '';
-        this.wmsCapabilities = null;
-        this.wmsLayers = [];
-        this.wmsOtherLayers = [];
-        this.selectedWmsLayers = {};
+        this.isLoadingWms.set(true);
+        this.wmsError.set('');
+        this.wmsCapabilities.set(null);
+        this.wmsLayers.set([]);
+        this.wmsOtherLayers.set([]);
+        this.selectedWmsLayers.set({});
 
-        const baseUrl = this.config.url.split('?')[0];
+        const baseUrl = this.config().url.split('?')[0];
         this.http.post<any>('/api/layers/wms/getcapabilities', { url: baseUrl }).subscribe({
             next: (response) => {
-                this.isLoadingWms = false;
+                this.isLoadingWms.set(false);
                 if (response?.Capability) {
-                    this.wmsCapabilities = response;
-                    this.parseWmsLayers(response.Capability.Layer, this.wmsLayers, this.wmsOtherLayers);
-                    this.config.wmsVersion = response.version || '1.3.0';
+                    this.wmsCapabilities.set(response);
 
-                    if (this.existingWmsLayers) {
-                        const layers = this.existingWmsLayers.split(',');
-                        layers.forEach(layerName => {
+                    const layers: any[] = [];
+                    const otherLayers: any[] = [];
+                    this.parseWmsLayers(response.Capability.Layer, layers, otherLayers);
+                    this.wmsLayers.set(layers);
+                    this.wmsOtherLayers.set(otherLayers);
+
+                    this.config().wmsVersion = response.version || '1.3.0';
+
+                    if (this.existingWmsLayers()) {
+                        const existingLayers = this.existingWmsLayers()!.split(',');
+                        const selected: { [key: string]: boolean } = {};
+                        existingLayers.forEach(layerName => {
                             const trimmedName = layerName.trim();
-                            if (this.wmsLayers.find(l => l.Name === trimmedName)) {
-                                this.selectedWmsLayers[trimmedName] = true;
+                            if (layers.find(l => l.Name === trimmedName)) {
+                                selected[trimmedName] = true;
                             }
                         });
+                        this.selectedWmsLayers.set(selected);
                     }
 
-                    if (this.wmsLayers.length === 0 && this.wmsOtherLayers.length === 0) {
-                        this.wmsError = 'No layers found in WMS Capabilities document.';
+                    if (layers.length === 0 && otherLayers.length === 0) {
+                        this.wmsError.set('No layers found in WMS Capabilities document.');
                     }
                 } else {
-                    this.wmsError = 'Invalid response received from WMS Server, please check your URL and try again.';
+                    this.wmsError.set('Invalid response received from WMS Server, please check your URL and try again.');
                 }
             },
             error: (error) => {
-                this.isLoadingWms = false;
+                this.isLoadingWms.set(false);
                 let errorMessage = 'Failed to load WMS Capabilities document.';
 
                 if (error.error) {
@@ -131,7 +165,7 @@ export class ImageryLayerSettingsComponent implements OnChanges {
                     }
                 }
 
-                this.wmsError = errorMessage;
+                this.wmsError.set(errorMessage);
             }
         });
     }
@@ -203,9 +237,10 @@ export class ImageryLayerSettingsComponent implements OnChanges {
      * Initializes the Leaflet preview map
      */
     private initializePreviewMap(): void {
-        if (!this.previewMapContainer || this.previewMap) return;
+        const container = this.previewMapContainer();
+        if (!container || this.previewMap) return;
 
-        this.previewMap = L.map(this.previewMapContainer.nativeElement, {
+        this.previewMap = L.map(container.nativeElement, {
             center: [0, 0],
             zoom: 3,
             minZoom: 0,
@@ -235,8 +270,8 @@ export class ImageryLayerSettingsComponent implements OnChanges {
                 this.previewMapLayer = null;
             }
 
-            const url = this.config.url;
-            const format = this.config.format;
+            const url = this.config().url;
+            const format = this.config().format;
 
             if (!url || !format) return;
 
@@ -252,18 +287,18 @@ export class ImageryLayerSettingsComponent implements OnChanges {
 
                 const wmsOptions: any = {
                     layers: selectedLayers,
-                    version: this.config.wmsVersion || '1.3.0',
-                    format: this.config.wmsTransparent ? 'image/png' : 'image/jpeg',
-                    transparent: this.config.wmsTransparent
+                    version: this.config().wmsVersion || '1.3.0',
+                    format: this.config().wmsTransparent ? 'image/png' : 'image/jpeg',
+                    transparent: this.config().wmsTransparent
                 };
 
-                if (this.config.wmsStyles) {
-                    wmsOptions.styles = this.config.wmsStyles;
+                if (this.config().wmsStyles) {
+                    wmsOptions.styles = this.config().wmsStyles;
                 }
 
                 this.previewMapLayer = L.tileLayer.wms(url, wmsOptions).addTo(this.previewMap);
 
-                const firstSelectedLayer = this.wmsLayers.find(l => this.selectedWmsLayers[l.Name]);
+                const firstSelectedLayer = this.wmsLayers().find(l => this.selectedWmsLayers()[l.Name]);
                 if (firstSelectedLayer?.EX_GeographicBoundingBox) {
                     const extent = firstSelectedLayer.EX_GeographicBoundingBox;
                     const bounds = L.latLngBounds(
@@ -288,12 +323,13 @@ export class ImageryLayerSettingsComponent implements OnChanges {
      * Filters WMS layers based on search query
      */
     filteredWmsLayers(): any[] {
+        const layers = this.wmsLayers();
         if (!this.wmsLayerSearchQuery || this.wmsLayerSearchQuery.trim() === '') {
-            return this.wmsLayers;
+            return layers;
         }
 
         const query = this.wmsLayerSearchQuery.toLowerCase();
-        return this.wmsLayers.filter(layer =>
+        return layers.filter(layer =>
             layer.Title?.toLowerCase().includes(query) ||
             layer.Name?.toLowerCase().includes(query) ||
             layer.Abstract?.toLowerCase().includes(query)
@@ -304,12 +340,13 @@ export class ImageryLayerSettingsComponent implements OnChanges {
      * Filters unavailable WMS layers based on search query
      */
     filteredWmsOtherLayers(): any[] {
+        const otherLayers = this.wmsOtherLayers();
         if (!this.wmsLayerSearchQuery || this.wmsLayerSearchQuery.trim() === '') {
-            return this.wmsOtherLayers;
+            return otherLayers;
         }
 
         const query = this.wmsLayerSearchQuery.toLowerCase();
-        return this.wmsOtherLayers.filter(layer =>
+        return otherLayers.filter(layer =>
             layer.Title?.toLowerCase().includes(query) ||
             layer.Name?.toLowerCase().includes(query) ||
             layer.Abstract?.toLowerCase().includes(query)
@@ -320,8 +357,9 @@ export class ImageryLayerSettingsComponent implements OnChanges {
      * Gets selected WMS layer names as comma-separated string
      */
     getSelectedWmsLayers(): string {
-        return Object.keys(this.selectedWmsLayers)
-            .filter(name => this.selectedWmsLayers[name])
+        const selected = this.selectedWmsLayers();
+        return Object.keys(selected)
+            .filter(name => selected[name])
             .join(',');
     }
 }

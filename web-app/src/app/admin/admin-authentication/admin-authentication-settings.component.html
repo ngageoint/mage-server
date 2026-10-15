@@ -1,6 +1,4 @@
-@if (!strategy) {
-  <div class="p-4">Loading authentication settings…</div>
-} @else if (strategy.settings; as settings) {
+@if (strategy().settings; as settings) {
   <p class="field-label">New User Accounts Require Admin Approval</p>
   <mat-form-field appearance="fill">
     <mat-select
@@ -13,7 +11,7 @@
       }
     </mat-select>
     <mat-hint align="end">
-      If disabled, new user accounts do <b>NOT</b> require admin approval to access MAGE.
+      If disabled, new user accounts do <b>NOT</b> require admin approval to access Mage.
     </mat-hint>
   </mat-form-field>
 
@@ -21,7 +19,7 @@
     <p class="field-label">New Users Default Event(s)</p>
     <mat-form-field appearance="fill">
       <mat-select [(ngModel)]="settings.newUserEvents" multiple (selectionChange)="setDirty(true)">
-        @for (event of events; track event.id) {
+        @for (event of events(); track event.id) {
           <mat-option [value]="event.id">{{ event.name }}</mat-option>
         }
       </mat-select>
@@ -33,8 +31,8 @@
     <p class="field-label">New Users Default Team(s)</p>
     <mat-form-field appearance="fill">
       <mat-select [(ngModel)]="settings.newUserTeams" multiple (selectionChange)="setDirty(true)">
-        @for (team of teams; track team.name) {
-          <mat-option [value]="team.name">{{ team.name }}</mat-option>
+        @for (team of teams(); track team.id) {
+          <mat-option [value]="team.id">{{ team.name }}</mat-option>
         }
       </mat-select>
       <mat-hint align="end">
@@ -55,44 +53,38 @@
       }
     </mat-select>
     <mat-hint align="end">
-      If disabled, new devices do <b>NOT</b> require admin approval to access MAGE.
+      If disabled, new devices do <b>NOT</b> require admin approval to access Mage.
     </mat-hint>
   </mat-form-field>
 
-  @switch (strategy.type) {
+  @switch (strategy().type) {
     @case ('local') {
       <admin-authentication-local
-        [strategy]="strategy"
+        [strategy]="strategy()"
         (strategyDirty)="onStrategyDirty($event)">
       </admin-authentication-local>
     }
     @case ('openidconnect') {
       <admin-authentication-oidc
-        [strategy]="strategy"
+        [strategy]="strategy()"
         (strategyDirty)="onStrategyDirty($event)">
       </admin-authentication-oidc>
     }
     @case ('oauth') {
       <admin-authentication-oauth2
-        [strategy]="strategy"
-        (strategyDirty)="onStrategyDirty($event)">
-      </admin-authentication-oauth2>
-    }
-    @case ('oauth2') {
-      <admin-authentication-oauth2
-        [strategy]="strategy"
+        [strategy]="strategy()"
         (strategyDirty)="onStrategyDirty($event)">
       </admin-authentication-oauth2>
     }
     @case ('ldap') {
       <admin-authentication-ldap
-        [strategy]="strategy"
+        [strategy]="strategy()"
         (strategyDirty)="onStrategyDirty($event)">
       </admin-authentication-ldap>
     }
     @case ('saml') {
       <admin-authentication-saml
-        [strategy]="strategy"
+        [strategy]="strategy()"
         (strategyDirty)="onStrategyDirty($event)">
       </admin-authentication-saml>
     }

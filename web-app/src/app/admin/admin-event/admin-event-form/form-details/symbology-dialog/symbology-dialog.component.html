@@ -1,5 +1,13 @@
 <h2 mat-dialog-title>
-  Map Symbology<span *ngIf="data.primary"> — {{ data.primary }}<span *ngIf="data.variant"> / {{ data.variant }}</span></span>
+  Map Symbology
+  @if (data.primary) {
+    <span>
+      — {{ data.primary }}
+      @if (data.variant) {
+        <span> / {{ data.variant }}</span>
+      }
+    </span>
+  }
 </h2>
 
 <mat-dialog-content>
@@ -8,12 +16,16 @@
     <div class="icon-section">
       <div class="section-label">Point Icon</div>
       <div class="icon-upload">
-        <div class="icon-preview" *ngIf="iconPreview">
-          <img [src]="iconPreview" alt="Icon preview" />
+        @if (iconPreview()) {
+        <div class="icon-preview">
+          <img [src]="iconPreview()" alt="Icon preview" />
         </div>
-        <div class="icon-preview placeholder" *ngIf="!iconPreview">
+        }
+        @if (!iconPreview()) {
+        <div class="icon-preview placeholder">
           <mat-icon fontSet="material-symbols-outlined">place</mat-icon>
         </div>
+        }
         <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput style="display: none" />
         <button matButton="outlined" type="button" (click)="fileInput.click()">
           <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>

@@ -48,6 +48,7 @@
 }
 
 mat-sidenav {
+  --mat-sidenav-container-background-color: var(--mat-sys-surface-container-low);
   min-width: 350px;
   max-width: 400px;
 }

@@ -1,11 +1,11 @@
 <admin-navbar></admin-navbar>
 <mat-sidenav-container class="admin-container">
-  <mat-sidenav [mode]="isMobile ? 'over' : 'side'" opened [autoFocus]="false" class="admin-sidenav">
+  <mat-sidenav [mode]="isMobile() ? 'over' : 'side'" opened [autoFocus]="false" class="admin-sidenav">
     <admin-navigation
-      [stateName]="stateName"
-      [inactiveUsers]="inactiveUsers"
-      [unregisteredDevices]="unregisteredDevices"
-      [pluginTabs]="pluginTabs"
+      [stateName]="stateName()"
+      [inactiveUsers]="inactiveUsers()"
+      [unregisteredDevices]="unregisteredDevices()"
+      [pluginTabs]="pluginTabs()"
       (pluginActiveChange)="pluginActiveChanged($event)"
     ></admin-navigation>
   </mat-sidenav>

@@ -12,7 +12,7 @@ describe('FieldDialogComponent', () => {
     dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
 
     TestBed.configureTestingModule({
-      declarations: [FieldDialogComponent],
+      imports: [FieldDialogComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
