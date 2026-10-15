@@ -16,9 +16,9 @@
     </div>
 
     <div *ngIf="label" class="media-chip">
-      <mat-chip-listbox>
-        <mat-chip-option>{{label}}</mat-chip-option>
-      </mat-chip-listbox>
+      <mat-chip-set>
+        <mat-chip>{{label}}</mat-chip>
+      </mat-chip-set>
     </div>
 
     <div *ngIf="canEdit" class="attachment__delete">
@@ -30,7 +30,7 @@
 </div>
 
 <div *ngIf="!attachment.url">
-  <ng-container *ngTemplateOutlet="pending"></ng-container>
+  <ng-container *ngTemplateOutlet="isFailed() ? failed : pending"></ng-container>
 </div>
 
 <ng-template #image>
@@ -57,7 +57,24 @@
   </div>
 
   <div *ngIf="canEdit" class="attachment__delete">
-    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.actions === actions.DELETE">
+    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #failed>
+  <div class="media media-unknown" [class.media-unknown--clickable]="expandable" [class.media-unknown--expanded]="messageExpanded" (click)="toggleFailureMessage()">
+    <mat-icon class="media__icon">error_outline</mat-icon>
+    <div class="media-unknown__title">Upload Failed</div>
+    <div class="media-unknown__subhead">{{attachment.name | filename:12}}</div>
+    <div *ngIf="expandable" class="media-unknown__hint-wrapper" [class.media-unknown__hint-wrapper--expanded]="messageExpanded">
+      <div class="media-unknown__hint">{{ messageExpanded ? attachment.processingMessage : 'Click for more details' }}</div>
+    </div>
+  </div>
+
+  <div *ngIf="canEdit || edit" class="attachment__delete">
+    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

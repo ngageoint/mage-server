@@ -1,0 +1,328 @@
+import { animate, style, transition, trigger } from '@angular/animations';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatTabGroup as MatTabGroup } from '@angular/material/tabs';
+import moment from 'moment';
+import { FeedAction, SidebarService } from './sidebar.service';
+import { FeedTab } from './sidebar-tab.component';
+import { MapService } from '../map/map.service';
+import { UserService } from '../user/user.service';
+import { FilterService } from '../filter/filter.service';
+import { EventService } from '../event/event.service';
+import { ContactDialogComponent } from '../contact/contact-dialog.component';
+import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { SessionService } from 'mage-web-app/http/session.service';
+import { ExportService } from '../export/export.service';
+import { Export } from '../export/entities.export';
+
+@Component({
+    selector: 'sidebar',
+    templateUrl: './sidebar.component.html',
+    styleUrls: ['./sidebar.component.scss'],
+    animations: [
+        trigger('slide', [
+            transition(':enter', [
+                style({ transform: 'translateX(100%)' }),
+                animate('150ms', style({ transform: 'translateX(0%)' })),
+            ]),
+            transition(':leave', [
+                animate('250ms', style({ transform: 'translateX(100%)' }))
+            ])
+        ])
+    ],
+    standalone: false
+})
+export class SidebarComponent implements OnInit, OnChanges {
+  @Input() event: any
+  @Input() observationLocation: any
+  @Input() observationsChanged: any
+
+  @Output() toggle = new EventEmitter<any>()
+
+  @ViewChild('tabGroup') tabGroup: MatTabGroup
+  @ViewChild('permissionDialog') permissionDialog: TemplateRef<any>
+
+  defaultTabs = [{
+    id: 'observations',
+    title: 'Observations',
+    icon: { name: 'place' }
+  }, {
+    id: 'people',
+    title: 'People',
+    icon: { name: 'people' }
+  }]
+  tabs = this.defaultTabs.slice()
+
+  exportTab: FeedTab = {
+    id: 'export',
+    title: 'Export',
+    icon: { name: 'archive' }
+  }
+
+  currentTab: any
+
+  feedItem: any
+
+  edit = false
+  editForm: any
+  newObservation: any
+
+  firstObservationChange = true
+  observationBadge: number = null
+
+  viewObservation: any
+  editObservation: any
+
+  viewUser: any
+
+  viewExport: any
+
+  contactOpen: any;
+  info = {};
+  statusTitle = 'Cannot Create Observation';
+  statusMessage = 'You are not part of this event.';
+
+  constructor(
+    public dialog: MatDialog,
+    private feedService: FeedService,
+    private sidebarService: SidebarService,
+    private mapService: MapService,
+    private sessionService: SessionService,
+    private filterService: FilterService,
+    private eventService: EventService,
+    private exportService: ExportService) { }
+
+  ngOnInit(): void {
+    this.currentTab = this.tabs[0]
+
+    this.exportService.exports$.subscribe({
+      next: (exports: Export[]) => {
+        this.exportTab.count = exports.length
+      }
+    })
+    this.exportService.fetchExports().subscribe()
+
+    this.eventService.addObservationsChangedListener(this)
+    this.feedService.feeds$.subscribe(feeds => this.onFeedsChanged(feeds));
+    this.sidebarService.item$.subscribe(event => this.onFeedItemEvent(event));
+
+    this.sidebarService.viewUser$.subscribe(event => {
+      this.viewUser = event.user
+      this.newObservation = null
+      this.editObservation = null
+      this.viewObservation = null
+      this.feedItem = null
+      this.viewExport = null
+
+      this.toggle.emit({
+        hidden: false
+      })
+    })
+
+    this.sidebarService.viewObservation$.subscribe(event => {
+      this.viewObservation = event.observation;
+      this.newObservation = null
+      this.editObservation = null
+      this.viewUser = null
+      this.feedItem = null
+      this.viewExport = null
+
+      this.toggle.emit({
+        hidden: false
+      })
+    })
+
+    this.sidebarService.editObservation$.subscribe(event => {
+      this.edit = true;
+
+      const observation = event.observation;
+      const formMap = this.eventService.getForms(observation).reduce((map, form) => {
+        map[form.id] = form
+        return map
+      }, {})
+
+      const form = {
+        geometryField: {
+          title: 'Location',
+          type: 'geometry',
+          name: 'geometry',
+          value: observation.geometry,
+          required: true
+        },
+        timestampField: {
+          title: '',
+          type: 'date',
+          name: 'timestamp',
+          value: moment(observation.properties.timestamp).toDate(),
+          required: true
+        },
+        forms: []
+      }
+
+      observation.properties.forms.forEach(propertyForm => {
+        const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
+        form.forms.push(observationForm)
+      })
+
+      this.editForm = form
+      this.editObservation = observation
+    })
+
+    this.sidebarService.viewExport$.subscribe($event => {
+      this.viewExport = $event.item
+    })
+  }
+
+  ngOnDestroy(): void {
+    this.eventService.removeObservationsChangedListener(this)
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.event && changes.event.currentValue) {
+      this.newObservation = null
+      this.editObservation = null
+      this.viewObservation = null
+      this.viewUser = null
+      this.feedItem = null
+      this.viewExport = null
+      this.observationBadge = null
+    }
+
+    if (changes.observationLocation && changes.observationLocation.currentValue) {
+      // Don't allow new observation if observation create is in progress
+      if (this.newObservation) return
+
+      this.createNewObservation(changes.observationLocation.currentValue)
+    }
+  }
+
+  onTabSwitched(tab): void {
+    this.currentTab = tab;
+
+    this.newObservation = null;
+    this.editObservation = null;
+    this.viewObservation = null;
+    this.viewUser = null;
+    this.feedItem = null;
+    this.viewExport = null;
+  }
+
+  onObservationsChanged(changed): void {
+    if (!this.firstObservationChange && this.currentTab.id !== 'observations') {
+      if (changed.added && changed.added.length) this.observationBadge += changed.added.length
+      if (changed.updated && changed.updated.length) this.observationBadge += changed.updated.length
+    }
+
+    this.firstObservationChange = false
+  }
+
+  createNewObservation(location: any): void {
+    const event = this.filterService.getEvent()
+    if (!this.eventService.isUserInEvent(this.sessionService.user, event)) {
+      this.dialog.open(ContactDialogComponent, {
+        width: '500px',
+        data: {
+          info: {
+            statusTitle: this.statusTitle,
+            statusMessage: this.statusMessage,
+            id: this.sessionService.user.username
+          }
+        }
+      })
+
+      return
+    }
+
+    const observation = {
+      id: 'new',
+      eventId: event.id,
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [location.latLng.lng, location.latLng.lat]
+      },
+      properties: {
+        timestamp: new Date(),
+        forms: []
+      }
+    }
+
+    this.eventService.getFormsForEvent(event, { archived: false }).forEach(form => {
+      for (let i = 0; i < form.min || 0; i++) {
+        observation.properties.forms.push({ formId: form.id })
+      }
+
+      if (form.default && !form.min) {
+        observation.properties.forms.push({ formId: form.id })
+      }
+    })
+
+    this.newObservation = observation
+  }
+
+  cancelNewObservation(): void {
+    delete this.newObservation
+  }
+
+  onUserViewClose(): void {
+    this.mapService.deselectFeatureInLayer(this.viewUser, 'people');
+    this.viewUser = null;
+  }
+
+  onObservationViewClose(): void {
+    this.mapService.deselectFeatureInLayer(this.viewObservation, 'observations');
+    this.viewObservation = null;
+  }
+
+  onObservationEditClose(observation?: any): void {
+    this.newObservation = null;
+    this.editObservation = null;
+
+    if (observation && this.viewObservation && this.viewObservation.id === observation.id) {
+      this.viewObservation = observation
+    }
+  }
+
+  onObservationDelete(event): void {
+    this.newObservation = null;
+    this.editObservation = null;
+    this.viewObservation = null;
+    this.mapService.removeFeatureFromLayer(event.observation, 'observations');
+  }
+
+  onExportViewClose(): void {
+    this.viewExport = null;
+  }
+
+  tabChanged(event: number): void {
+    if (event === 0) {
+      this.observationBadge = null
+    }
+  }
+
+  onContactClose(): void {
+    this.contactOpen = { opened: false };
+  }
+
+  onFeedsChanged(feeds): void {
+    this.tabs = this.defaultTabs.concat(feeds.map(feed => {
+      return {
+        id: `feed-${feed.id}`,
+        title: feed.title,
+        feed: feed,
+        icon: feed.icon
+      }
+    }))
+  }
+
+  onFeedItemEvent(event): void {
+    if (event.action == FeedAction.Select) {
+      this.feedItem = {
+        feed: event.feed,
+        item: event.item
+      };
+    } else {
+      this.feedItem = null;
+    }
+  }
+}

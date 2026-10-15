@@ -1,6 +1,6 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { Component } from '@angular/core'
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { ComponentFixture, TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing'
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { By } from '@angular/platform-browser'
 import { of } from 'rxjs'
@@ -75,7 +75,7 @@ describe('StaticIconFormFieldComponent', () => {
     expect(target.iconRef).toEqual(icon)
   })
 
-  it('fetches the icon by reference when ref changes', () => {
+  it('fetches the icon by reference when ref changes', fakeAsync(() => {
 
     const icon: StaticIcon = {
       id: 'icon1',
@@ -86,8 +86,12 @@ describe('StaticIconFormFieldComponent', () => {
     iconService.fetchIconByReference.withArgs(iconRef).and.returnValue(of(icon))
     host.form.setValue({ icon: iconRef })
 
-    expect(target.icon).toEqual(icon)
+    fixture.detectChanges()
+    tick()
+
+    expect(target.iconRef).toEqual(iconRef)
+    expect(target.iconContentPath).toEqual('/icons/icon1')
     expect(iconService.fetchIconByReference).toHaveBeenCalledTimes(1)
     expect(iconService.fetchIconByReference).toHaveBeenCalledWith(iconRef)
-  })
+  }))
 })

@@ -1,6 +1,7 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
+import { FormPreference } from 'core-lib-src/user'
 
 @Component({
     selector: 'observation-edit-form',
@@ -26,6 +27,7 @@ import { UntypedFormGroup } from '@angular/forms'
 })
 export class ObservationEditFormComponent {
   @Input() formGroup: UntypedFormGroup
+  @Input() formPreferences: FormPreference
   @Input() definition: any
   @Input() geometryStyle: any
   @Input() attachmentUrl: string

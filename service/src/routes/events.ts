@@ -3,8 +3,9 @@ const userTransformer = require('../transformers/user')
 
 import async from 'async'
 import util from 'util'
-import fileType from 'file-type'
-import EventModel, { FormDocument, MageEventDocument } from '../models/event'
+import { filetypeinfo } from 'magic-bytes.js'
+import mimetypes from 'mime-types'
+import EventModel, { FormDocument, FormSubdocumentModelInstance, MageEventDocument } from '../models/event'
 import express from 'express'
 import access from '../access'
 import { AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
@@ -12,6 +13,7 @@ import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
 import { EventAccessType, MageEvent } from '../entities/events/entities.events'
+import { userRoleHasPermission } from '../permissions/permissions.role-based.base'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
 import { LineStyle, PagingParameters } from '../entities/entities.global'
@@ -21,7 +23,7 @@ const log = logger.child({ component: 'events' })
 
 declare module 'express-serve-static-core' {
   export interface Request {
-    event?: EventModel.MageEventDocument
+    event?: EventModel.MageEventModelInstance
     eventEntity?: MageEvent
     access?: { user: express.Request['user'], permission: EventAccessType }
     parameters?: EventQueryParams
@@ -31,7 +33,7 @@ declare module 'express-serve-static-core' {
 }
 
 function determineReadAccess(req: express.Request, res: express.Response, next: express.NextFunction): void {
-  if (!access.userHasPermission(req.user, MageEventPermission.READ_EVENT_ALL)) {
+  if (!userRoleHasPermission(req.user, MageEventPermission.READ_EVENT_ALL)) {
     req.access = { user: req.user, permission: EventAccessType.Read };
   }
   next();
@@ -368,7 +370,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     parseForm,
     function (req, res, next) {
       const form = req.form;
-      new api.Event(req.event).addForm(form, function (err: any, form: FormDocument) {
+      new api.Event(req.event).addForm(form, function (err: any, form: FormSubdocumentModelInstance) {
         if (err) return next(err);
 
         async.parallel([
@@ -466,14 +468,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
           return next();
         }
         async.map(icons, function (icon: any, done: any) {
-          fs.readFile(icon.path, async (err, data) => {
+          fs.readFile(icon.path, (err, data) => {
             if (err) {
               return done(err);
             }
             let base64;
-            const metadata = await fileType.fromBuffer(data);
-            if (metadata) {
-              base64 = util.format('data:%s;base64,%s', metadata.mime, data.toString('base64'));
+            const mediaType = filetypeinfo(data).find(x => x.mime)?.mime;
+            if (mediaType) {
+              base64 = util.format('data:%s;base64,%s', mediaType, data.toString('base64'));
             }
 
             done(null, {
@@ -524,20 +526,24 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         }
         res.format({
           'image/*': function () {
+            const iconContentType = mimetypes.lookup(icon.path);
+            if (iconContentType) {
+              res.type(iconContentType);
+            }
             res.sendFile(icon.path);
           },
           'application/json': function () {
-            fs.readFile(icon.path, async (err: any, data) => {
+            fs.readFile(icon.path, (err: any, data) => {
               if (err) {
                 return next(err);
               }
-              const dataType = await fileType.fromBuffer(data)
+              const mediaType = filetypeinfo(data).find(x => x.mime)?.mime
               res.json({
                 eventId: icon.eventId,
                 formId: icon.formId,
                 primary: icon.primary,
                 variant: icon.variant,
-                icon: util.format('data:%s;base64,%s', dataType?.mime, data.toString('base64'))
+                icon: util.format('data:%s;base64,%s', mediaType, data.toString('base64'))
               });
             });
           }
@@ -684,7 +690,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         searchTerm: req.query.term,
         pageSize: parseInt(String(req.query.page_size)) || 2,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+        includeTotalCount: typeof req.query.total === 'string' ? 'true' === String(req.query.total).toLowerCase() : undefined
       }
 
       EventModel.getMembers(parseInt(req.params.id), options).then(page => {

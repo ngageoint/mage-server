@@ -4,8 +4,7 @@
 
 import express from 'express'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
-import { RoleDocument } from '../models/role'
-import { UserDocument } from '../models/user'
+import { RoleModelInstance } from '../models/role'
 
 export = Object.freeze({
 
@@ -23,7 +22,7 @@ export = Object.freeze({
       if (!req.user) {
         return next()
       }
-      const role = req.user.roleId as RoleDocument
+      const role = req.user.roleId as RoleModelInstance
       if (!role) {
         return res.sendStatus(403)
       }
@@ -34,13 +33,5 @@ export = Object.freeze({
       }
       next()
     }
-  },
-
-  userHasPermission(user: UserDocument, permission: AnyPermission) {
-    if (!user || !user.roleId) {
-      return false
-    }
-    const role = user.roleId as RoleDocument
-    return role.permissions.indexOf(permission) !== -1
   }
 })

@@ -7,7 +7,7 @@ import { PreFetchedUserRoleFeedsPermissionService } from '../../lib/permissions/
 import { AppRequestContext } from '../../lib/app.api/app.api.global'
 import { MageError, ErrPermissionDenied } from '../../lib/app.api/app.api.errors'
 import { AnyPermission, FeedsPermission } from '../../lib/entities/authorization/entities.permissions'
-import { RoleDocument } from '../../src/models/role'
+import { RoleModelInstance } from '../../src/models/role'
 import { UserWithRole } from '../../lib/permissions/permissions.role-based.base'
 
 describe('feeds permission service', function() {
@@ -16,7 +16,7 @@ describe('feeds permission service', function() {
 
   function contextWithPermissions(...perms: AnyPermission[]): AppRequestContext<UserWithRole> {
     const user = Sub.for<UserWithRole>()
-    const role = Sub.for<RoleDocument>()
+    const role = Sub.for<RoleModelInstance>()
     user.username.returns!(uniqid())
     user.roleId.returns!(role)
     role.permissions.returns!(perms)

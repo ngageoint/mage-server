@@ -50,12 +50,13 @@ mat-toolbar {
   position: sticky;
   top: 0;
   z-index: 10;
+  max-height: 240px;
 }
 
 .edit-banner-container {
   margin: 16px;
-  display: flex;
-  flex-direction: row;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .edit-banner-content {

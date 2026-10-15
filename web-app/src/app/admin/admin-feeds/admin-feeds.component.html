@@ -40,7 +40,7 @@
               *ngFor="let feed of feeds | slice: feedPage * itemsPerPage : (feedPage + 1) * itemsPerPage"
               [routerLink]="['../feeds', feed.id]"
             >
-              <mat-icon matListItemIcon>rss_feed</mat-icon>
+              <feed-icon matListItemIcon class="feed__icon" [icon]="feed.icon"></feed-icon>
               <span matListItemTitle>{{ feed.title }}</span>
               <span matListItemLine>{{ feed.summary }}</span>
               <span matListItemMeta *ngIf="hasFeedDeletePermission">

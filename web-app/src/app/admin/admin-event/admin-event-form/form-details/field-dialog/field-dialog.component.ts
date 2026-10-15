@@ -20,6 +20,7 @@ export interface FieldResult {
     value?: any;
     min?: number;
     max?: number;
+    maxRecent?: number;
     allowedAttachmentTypes?: string[];
 }
 

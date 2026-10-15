@@ -1,0 +1,42 @@
+<div matRipple class="item">
+  <div class="item-content">
+    <div class="item-status">
+      <mat-spinner *ngIf="item.status === exportStatus.Running" diameter="20"></mat-spinner>
+      <mat-icon *ngIf="item.status === exportStatus.Completed" class="item-status__complete">check</mat-icon>
+      <mat-icon *ngIf="item.status === exportStatus.Failed" class="item-status__failed">error_outlined</mat-icon>
+    </div>
+    <div class="item-info">
+      <div class="overline">{{item.exportType}}</div>
+      <div class="headline"> {{item.options?.event?.name}} </div>
+      <div *ngIf="item.status === exportStatus.Completed">
+        <div *ngIf="summaryStart && summaryEnd">
+          <div class="text">{{summaryStart | moment}} - {{summaryEnd | moment}}</div>
+        </div>
+        <div class="text" *ngIf="item.options?.filter?.exportObservations || item.options?.filter?.exportLocations">
+          <span *ngIf="item.summary?.observations?.count !== undefined" [ngPlural]="item.summary?.observations?.count || 0">
+            <ng-template ngPluralCase="=1">
+              <span>{{item.summary?.observations?.count}} Observation</span>
+            </ng-template>
+            <ng-template ngPluralCase="other">
+              <span>{{item.summary?.observations?.count || 0}} Observations</span>
+            </ng-template>
+          </span>
+          <span *ngIf="item.summary?.observations?.count !== undefined || item.summary?.locations?.count !== undefined"> and </span>
+          <span *ngIf="item.summary?.locations?.count !== undefined" [ngPlural]="item.summary?.locations?.count || 0">
+            <ng-template ngPluralCase="=1">
+              <span>{{item.summary?.locations?.count}} Location</span>
+            </ng-template>
+            <ng-template ngPluralCase="other">
+              <span>{{item.summary?.locations?.count || 0}} Locations</span>
+            </ng-template>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="item-actions">
+      <a matIconButton *ngIf="item.status === exportStatus.Completed" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()" href="{{item.url}}?access_token={{token}}">
+        <mat-icon class="material-icons-outlined">download</mat-icon>
+      </a>
+    </div>
+  </div>
+</div>

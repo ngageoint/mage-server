@@ -145,6 +145,7 @@ describe('event feeds web controller', function () {
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         },
         {
           id: uniqid(),
@@ -153,6 +154,7 @@ describe('event feeds web controller', function () {
           title: 'Feed 2',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
       ]
       event.feedIds.concat(eventFeeds[0].id, eventFeeds[1].id)
@@ -188,6 +190,7 @@ describe('event feeds web controller', function () {
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         },
         {
           id: uniqid(),
@@ -196,6 +199,7 @@ describe('event feeds web controller', function () {
           title: 'Feed 2',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
+          showOnMapByDefault: true,
         }
       ]
       event.feedIds.concat(eventFeeds[0].id, eventFeeds[1].id)

@@ -2,9 +2,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent } from '@angular/material/paginator';
 import { ObservationStatusService } from './observation-status.service';
 import { ConfigurationService } from '../configuration/configuration.service';
-import { MageEventSummary, SftpObservationRecord } from '../entities/entities.format';
+import { EventObservationSummary, MageEventSummary, SftpObservationRecord } from '../entities/entities.format';
 
 const ALL_STATUSES = ['SUCCESS', 'FAILED', 'PENDING', 'SKIPPED']
 
@@ -24,12 +25,48 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
   filteredRecords: SftpObservationRecord[] = []
   counts: Record<string, number> = { SUCCESS: 0, FAILED: 0, PENDING: 0, SKIPPED: 0 }
 
+  recordsPageSize = 10
+  recordsPageIndex = 0
+  pagedRecords: SftpObservationRecord[] = []
+
   activeFilters: Set<string> = new Set()
   readonly statuses = ALL_STATUSES
   readonly displayedColumns = ['status', 'observationId', 'lastModified', 'syncedAt', 'action']
 
   isLoading = false
   syncingIds = new Set<string>()
+
+  isSummaryLoading = false
+  eventSummaries: EventObservationSummary[] = []
+  showAllEvents = false
+
+  pageSize = 10
+  pageIndex = 0
+  pagedAllEvents: EventObservationSummary[] = []
+
+  get problemEvents(): EventObservationSummary[] {
+    return this.eventSummaries
+      .filter(s => s.counts['FAILED'] > 0 || s.stuckPendingCount > 0)
+      .sort((a, b) => (b.counts['FAILED'] - a.counts['FAILED']) || (b.stuckPendingCount - a.stuckPendingCount))
+  }
+
+  rowSeverity(row: EventObservationSummary): 'healthy' | 'pending' | 'failed' {
+    if (row.counts['FAILED'] > 0) return 'failed'
+    if (row.stuckPendingCount > 0) return 'pending'
+    return 'healthy'
+  }
+
+  rowIcon(row: EventObservationSummary): string {
+    switch (this.rowSeverity(row)) {
+      case 'failed': return 'error'
+      case 'pending': return 'warning'
+      default: return 'check_circle'
+    }
+  }
+
+  private get allEventsSorted(): EventObservationSummary[] {
+    return [...this.eventSummaries].sort((a, b) => a.eventName.localeCompare(b.eventName))
+  }
 
   constructor(
     private statusService: ObservationStatusService,
@@ -41,6 +78,33 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
     this.configService.getEvents().pipe(takeUntil(this.destroy$)).subscribe(events => {
       this.events = events
     })
+    this.loadSummary()
+  }
+
+  loadSummary(): void {
+    this.isSummaryLoading = true
+    this.statusService.getObservationStatusSummary().pipe(takeUntil(this.destroy$)).subscribe(summaries => {
+      this.eventSummaries = summaries
+      this.pageIndex = 0
+      this.updatePagedAllEvents()
+      this.isSummaryLoading = false
+    })
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex
+    this.pageSize = event.pageSize
+    this.updatePagedAllEvents()
+  }
+
+  private updatePagedAllEvents(): void {
+    const start = this.pageIndex * this.pageSize
+    this.pagedAllEvents = this.allEventsSorted.slice(start, start + this.pageSize)
+  }
+
+  selectEventFromSummary(eventId: number): void {
+    this.selectedEventId = eventId
+    this.onEventChange()
   }
 
   ngOnDestroy(): void {
@@ -68,6 +132,7 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
 
   refresh(): void {
     this.loadStatuses()
+    this.loadSummary()
   }
 
   syncOne(record: SftpObservationRecord): void {
@@ -79,6 +144,7 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
         this.syncingIds.delete(record.observationId)
         this.snackBar.open('Observation queued for sync', undefined, { duration: 3000 })
         this.loadStatuses()
+        this.loadSummary()
       })
   }
 
@@ -94,9 +160,6 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
     return this.syncingIds.has(record.observationId)
   }
 
-  truncateId(id: string): string {
-    return id.length > 8 ? id.slice(0, 8) + '…' : id
-  }
 
   private loadStatuses(): void {
     if (!this.selectedEventId) return
@@ -117,6 +180,19 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
     } else {
       this.filteredRecords = this.allRecords.filter(r => this.activeFilters.has(r.status))
     }
+    this.recordsPageIndex = 0
+    this.updatePagedRecords()
+  }
+
+  onRecordsPageChange(event: PageEvent): void {
+    this.recordsPageIndex = event.pageIndex
+    this.recordsPageSize = event.pageSize
+    this.updatePagedRecords()
+  }
+
+  private updatePagedRecords(): void {
+    const start = this.recordsPageIndex * this.recordsPageSize
+    this.pagedRecords = this.filteredRecords.slice(start, start + this.recordsPageSize)
   }
 
   private syncByStatus(status: string): void {
@@ -126,8 +202,10 @@ export class ObservationStatusComponent implements OnInit, OnDestroy {
     this.statusService.requeueObservations(this.selectedEventId, ids)
       .pipe(takeUntil(this.destroy$))
       .subscribe(result => {
-        this.snackBar.open(`${result.queued} observation(s) queued for sync`, undefined, { duration: 3000 })
+        const noun = result.queued === 1 ? 'observation' : 'observations'
+        this.snackBar.open(`${result.queued} ${noun} queued for sync`, undefined, { duration: 3000 })
         this.loadStatuses()
+        this.loadSummary()
       })
   }
 }

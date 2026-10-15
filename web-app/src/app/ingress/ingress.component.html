@@ -1,4 +1,4 @@
-<div class="container" @disableOnEnter>
+<div class="container" [class.compact]="!landing" @disableOnEnter>
   <div class="state" *ngIf="ingress.state === IngressState.Signin" @slide>
     <authentication [landing]="landing" [api]="api" (authenticated)="onAuthenticated($event)" (signup)="onSignup()" (created)="onCreated($event)"></authentication>
   </div>

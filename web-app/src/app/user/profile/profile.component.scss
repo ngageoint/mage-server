@@ -124,8 +124,19 @@ mat-form-field {
 .error {
   display: flex;
   align-items: center;
-  gap: 16px;
-  color: var(--mat-sys-error);
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font: var(--mat-sys-body-medium);
+
+  mat-icon {
+    font-size: var(--mat-sys-body-large-size);
+    width: var(--mat-sys-body-large-size);
+    height: var(--mat-sys-body-large-size);
+    flex-shrink: 0;
+  }
 }
 
 .info-hint {
@@ -145,10 +156,6 @@ mat-form-field {
     height: var(--mat-sys-body-large-size);
     flex-shrink: 0;
   }
-}
-
-.error__text {
-  flex: 1;
 }
 
 .mask {

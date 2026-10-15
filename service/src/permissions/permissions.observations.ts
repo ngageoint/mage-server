@@ -1,11 +1,10 @@
-import access from '../access'
 import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.errors'
 import { ObservationPermissionService, ObservationRequestContext } from '../app.api/observations/app.api.observations'
 import { ObservationPermission } from '../entities/authorization/entities.permissions'
 import { EventAccessType } from '../entities/events/entities.events'
 import { AttachmentId, Observation } from '../entities/observations/entities.observations'
 import { EventPermissionServiceImpl } from './permissions.events'
-import { ensureContextUserHasPermission, UserWithRole } from './permissions.role-based.base'
+import { ensureContextUserHasPermission, userRoleHasPermission, UserWithRole } from './permissions.role-based.base'
 
 export class ObservationPermissionsServiceImpl implements ObservationPermissionService {
 
@@ -23,10 +22,10 @@ export class ObservationPermissionsServiceImpl implements ObservationPermissionS
 
   async ensureUpdateObservationPermission(context: ObservationRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     const user = context.requestingPrincipal()
-    if (access.userHasPermission(user, ObservationPermission.UPDATE_OBSERVATION_ALL)) {
+    if (userRoleHasPermission(user, ObservationPermission.UPDATE_OBSERVATION_ALL)) {
       return null
     }
-    if (access.userHasPermission(user, ObservationPermission.UPDATE_OBSERVATION_EVENT)) {
+    if (userRoleHasPermission(user, ObservationPermission.UPDATE_OBSERVATION_EVENT)) {
       if (await this.eventPermissions.userHasEventPermission(context.mageEvent, user.id, EventAccessType.Read)) {
         return null
       }
@@ -36,10 +35,10 @@ export class ObservationPermissionsServiceImpl implements ObservationPermissionS
 
   async ensureReadObservationPermission(context: ObservationRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     const user = context.requestingPrincipal()
-    if (access.userHasPermission(user, ObservationPermission.READ_OBSERVATION_ALL)) {
+    if (userRoleHasPermission(user, ObservationPermission.READ_OBSERVATION_ALL)) {
       return null
     }
-    if (access.userHasPermission(user, ObservationPermission.READ_OBSERVATION_EVENT)) {
+    if (userRoleHasPermission(user, ObservationPermission.READ_OBSERVATION_EVENT)) {
       // Make sure I am part of this event
       if (await this.eventPermissions.userHasEventPermission(context.mageEvent, user.id, EventAccessType.Read)) {
         return null

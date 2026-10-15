@@ -29,6 +29,7 @@ describe('feedMetaDataLean', () => {
       itemTemporalProperty: 'temporal',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       itemPropertiesSchema: {
         properties: {
           primary: {},
@@ -53,8 +54,10 @@ describe('feedMetaDataLean', () => {
       itemTemporalProperty: 'temporal',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       updateFrequencySeconds: 10000,
-      icon: { sourceUrl: 'hurr://durr/derp.png' }
+      icon: { sourceUrl: 'hurr://durr/derp.png' },
+      mapStyle: {}
     });
   });
 
@@ -71,6 +74,7 @@ describe('feedMetaDataLean', () => {
       itemTemporalProperty: 'temporal',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       itemPropertiesSchema: {
         properties: {
           primary: {},
@@ -98,8 +102,10 @@ describe('feedMetaDataLean', () => {
       itemTemporalProperty: 'temporal',
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       updateFrequencySeconds: 10000,
-      icon: { id: 'icon1' }
+      icon: { id: 'icon1' },
+      mapStyle: {}
     });
   });
 
@@ -112,8 +118,10 @@ describe('feedMetaDataLean', () => {
       itemTemporalProperty: null,
       itemsHaveIdentity: null,
       itemsHaveSpatialDimension: null,
+      showOnMapByDefault: null,
       updateFrequencySeconds: null,
-      icon: null
+      icon: null,
+      mapStyle: null
     };
     const lean = feedMetaDataLean(nullSource);
 
@@ -129,8 +137,10 @@ describe('feedMetaDataLean', () => {
       itemTemporalProperty: undefined,
       itemsHaveIdentity: undefined,
       itemsHaveSpatialDimension: undefined,
+      showOnMapByDefault: undefined,
       updateFrequencySeconds: undefined,
-      icon: undefined
+      icon: undefined,
+      mapStyle: undefined
     };
     const lean = feedMetaDataLean(undefinedSource);
 
@@ -157,7 +167,8 @@ describe('feedMetaDataLean', () => {
   it('does not strip false booleans', () => {
     const source: Record<FeedMetaDataBooleanKeys, false> = {
       itemsHaveIdentity: false,
-      itemsHaveSpatialDimension: false
+      itemsHaveSpatialDimension: false,
+      showOnMapByDefault: false,
     };
     const lean = feedMetaDataLean(source);
 
@@ -190,6 +201,7 @@ describe('feedPostFromEditState', () => {
       },
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       mapStyle: {
         icon: {
           sourceUrl: 'icon1'
@@ -212,7 +224,9 @@ describe('feedPostFromEditState', () => {
       itemTemporalProperty: 'feedTime',
       itemsHaveIdentity: false,
       itemsHaveSpatialDimension: false,
-      updateFrequencySeconds: 4000
+      showOnMapByDefault: false,
+      updateFrequencySeconds: 4000,
+      mapStyle: { icon: { id: 'icon6' } }
     };
 
     const state: FeedEditState = {
@@ -274,6 +288,7 @@ describe('feedPostFromEditState', () => {
       },
       itemsHaveIdentity: true,
       itemsHaveSpatialDimension: true,
+      showOnMapByDefault: true,
       mapStyle: {
         icon: {
           sourceUrl: 'icon1'

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { EMPTY, Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
@@ -9,8 +10,6 @@ import { User } from '@ngageoint/mage.web-core-lib/user';
 import { CreateUserModalComponent } from '../create-user/create-user.component';
 import { Role } from '../user';
 import { BulkUserComponent } from '../bulk-user/bulk-user.component';
-import { AdminTeamsService } from '../../services/admin-teams-service';
-import { Team } from '../../admin-teams/team';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { UserService } from '../../../user/user.service';
@@ -58,12 +57,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  loadingUsers = false;
-
   constructor(
     private dialog: MatDialog,
     private userService: UserService,
-    private teamService: AdminTeamsService,
+    private teamService: TeamService,
     private sessionService: SessionService,
     private userPagingService: UserPagingService,
     private toastService: AdminToastService,
@@ -97,11 +94,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   private fetchTeams(): void {
+    /*
+    TODO: make a team select component that the bulk import component
+    can use instead of eagerly loading all the teams here just in
+    case the user clicks the bulk import button.
+     */
     this.teamService
-      .getTeams({
-        limit: 9999,
-        sort: { name: 1 },
-        omit_event_teams: true
+      .search({
+        pageSize: 9999,
+        pageIndex: 0,
+        omitEventTeams: true
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe((results: any) => {
@@ -116,7 +118,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       page: this.pageIndex
     };
 
-    if (this.userStatusFilter === 'all') return filterObject;
+    if (this.userStatusFilter === 'all') {
+      return filterObject;
+    }
 
     if (this.userStatusFilter === 'disabled') {
       filterObject.active = true;
@@ -211,7 +215,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe((createdUser) => {
-        if (!createdUser) return;
+        if (!createdUser) {
+          return;
+        }
         this.refreshUsers(() => {
           this.toastService.show(
             'User created successfully',

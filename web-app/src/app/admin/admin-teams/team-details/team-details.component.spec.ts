@@ -6,10 +6,10 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { TeamDetailsComponent } from './team-details.component';
-import { AdminTeamsService } from '../../services/admin-teams-service';
+import { TeamMemberRole, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { AdminEventsService } from '../../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
-import { Team } from '../team';
+import { Team } from 'core-lib-src/team';
 import { User as CoreUser } from '@ngageoint/mage.web-core-lib/user';
 import { DeleteTeamComponent } from '../delete-team/delete-team.component';
 import { SearchModalComponent } from '../../search-modal/search-modal.component';
@@ -24,18 +24,21 @@ describe('TeamDetailsComponent', () => {
   let mockRouter: jasmine.SpyObj<Router>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockSessionService: { user: any; hasPermission: jasmine.Spy };
-  let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
+  let mockTeamsService: jasmine.SpyObj<TeamService>;
   let mockEventsService: jasmine.SpyObj<AdminEventsService>;
 
   const mockTeam: Team = {
     id: 'team123' as any,
     name: 'Test Team',
     description: 'Test Description',
-    teamEventId: 'event123',
-    users: ['user1', 'user2'] as any,
+    teamEventId: 123,
+    userIds: ['user1', 'user2'] as any,
     acl: {
-      user123: { permissions: ['update', 'delete'] }
-    } as any
+      user123: {
+        role: TeamMemberRole.OWNER,
+        permissions: ['update', 'delete']
+      }
+    }
   };
 
   const mockMyselfWithGlobalPerms: any = {
@@ -77,7 +80,7 @@ describe('TeamDetailsComponent', () => {
         (permission: string) => (mockSessionService.user?.role?.permissions || []).includes(permission)
       )
     };
-    mockTeamsService = jasmine.createSpyObj<AdminTeamsService>(
+    mockTeamsService = jasmine.createSpyObj<TeamService>(
       'AdminTeamsService',
       [
         'getTeamById',
@@ -110,7 +113,7 @@ describe('TeamDetailsComponent', () => {
         { provide: Router, useValue: mockRouter },
         { provide: MatDialog, useValue: mockDialog },
         { provide: SessionService, useValue: mockSessionService },
-        { provide: AdminTeamsService, useValue: mockTeamsService },
+        { provide: TeamService, useValue: mockTeamsService },
         { provide: AdminEventsService, useValue: mockEventsService }
       ]
     })
@@ -182,10 +185,10 @@ describe('TeamDetailsComponent', () => {
       component.getMembers();
 
       expect(mockTeamsService.getMembers).toHaveBeenCalledWith({
-        id: mockTeam.id,
+        teamId: mockTeam.id,
         term: component.memberSearchTerm,
-        page: component.membersPageIndex,
-        page_size: component.membersPageSize
+        pageIndex: component.membersPageIndex,
+        pageSize: component.membersPageSize
       });
       expect(component.loadingMembers).toBeFalse();
       expect(component.membersDataSource.data).toEqual([mockMember]);

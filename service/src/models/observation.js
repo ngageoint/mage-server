@@ -41,7 +41,13 @@ const AttachmentSchema = new Schema({
   width: { type: Number, required: false },
   height: { type: Number, required: false },
   oriented: { type: Boolean, required: true, default: false },
-  thumbnails: [ThumbnailSchema]
+  thumbnails: [ThumbnailSchema],
+  processingStatus: { type: String, enum: ['pending', 'success', 'rejected', 'error'], required: false },
+  processingMessage: { type: String, required: false },
+  processingHook: { type: String, required: false },
+  stagedContentId: { type: String, required: false },
+  processingRetryCount: { type: Number, required: false, default: 0 }
+
 }, {
   strict: false
 });
@@ -80,6 +86,7 @@ ObservationSchema.index({ 'attachments.lastModified': 1 });
 ObservationSchema.index({ 'attachments.oriented': 1 });
 ObservationSchema.index({ 'attachments.contentType': 1 });
 ObservationSchema.index({ 'attachments.thumbnails.minDimension': 1 });
+ObservationSchema.index({ 'attachments.processingStatus': 1 });
 
 function transformAttachment(attachment, observation) {
   attachment.id = attachment._id;

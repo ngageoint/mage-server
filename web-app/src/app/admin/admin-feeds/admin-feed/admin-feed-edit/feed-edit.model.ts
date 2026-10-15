@@ -1,5 +1,5 @@
 import { StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
-import { Feed, FeedExpanded, FeedPost, FeedPreview, FeedTopic, Service } from '@ngageoint/mage.web-core-lib/feed'
+import { Feed, FeedExpanded, FeedPost, FeedPreview, FeedTopic, MapStyle, Service } from '@ngageoint/mage.web-core-lib/feed'
 
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K }[keyof T];
 type OptionalKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never }[keyof T];
@@ -8,14 +8,12 @@ type PickOptional<T> = Pick<T, OptionalKeys<T>>;
 type Nullable<T> = { [P in keyof T]: T[P] | null };
 type NullableOptional<T> = PickRequired<T> & Nullable<PickOptional<T>>;
 
-/**
- * TODO: account for mapStyle
- */
 type FeedMetaDataKeys =
   | 'title'
   | 'summary'
   | 'itemsHaveIdentity'
   | 'itemsHaveSpatialDimension'
+  | 'showOnMapByDefault'
   | 'itemPrimaryProperty'
   | 'itemSecondaryProperty'
   | 'itemTemporalProperty'
@@ -23,7 +21,9 @@ type FeedMetaDataKeys =
 
 export type FeedMetaData = Partial<Pick<Feed, FeedMetaDataKeys>> & {
   icon?: StaticIconReference
+  mapStyle?: MapStyle
 }
+
 export type FeedMetaDataNullable = Required<NullableOptional<FeedMetaData>>
 
 /**
@@ -37,13 +37,13 @@ export const feedMetaDataLean = <T extends FeedMetaDataNullable | FeedMetaData>(
   source.summary && (metaData.summary = source.summary)
   typeof source.itemsHaveIdentity === 'boolean' && (metaData.itemsHaveIdentity = source.itemsHaveIdentity)
   typeof source.itemsHaveSpatialDimension === 'boolean' && (metaData.itemsHaveSpatialDimension = source.itemsHaveSpatialDimension)
+  typeof source.showOnMapByDefault === 'boolean' && (metaData.showOnMapByDefault = source.showOnMapByDefault)
   source.itemPrimaryProperty && (metaData.itemPrimaryProperty = source.itemPrimaryProperty)
   source.itemSecondaryProperty && (metaData.itemSecondaryProperty = source.itemSecondaryProperty)
   source.itemTemporalProperty && (metaData.itemTemporalProperty = source.itemTemporalProperty)
   typeof source.updateFrequencySeconds === 'number' && (metaData.updateFrequencySeconds = source.updateFrequencySeconds)
-  // TODO: icon
   source.icon && (metaData.icon = source.icon)
-  // TODO: mapStyle
+  source.mapStyle && (metaData.mapStyle = source.mapStyle)
   return metaData
 }
 

@@ -1,9 +1,7 @@
-const log = require('winston');
-
 exports.id = 'move-local-auth-from-settings';
 
 exports.up = async function (done) {
-    log.info('Moving local authentication from settings to authenticationconfigurations');
+    this.log('Moving local authentication from settings to authenticationconfigurations');
 
     const settings = this.db.collection('settings');
     const result = await settings.findOneAndDelete({ type: 'security' })
@@ -46,7 +44,7 @@ exports.up = async function (done) {
         };
         authDbObject.settings[key] = localSettings[key];
     }
-    log.debug('Strategy ' + 'local' + ' DB object:' + JSON.stringify(authDbObject));
+    this.log('Strategy ' + 'local' + ' DB object:' + JSON.stringify(authDbObject));
     const authenticationconfigurations = await this.db.collection('authenticationconfigurations');
     await authenticationconfigurations.insertOne(authDbObject);
     done();

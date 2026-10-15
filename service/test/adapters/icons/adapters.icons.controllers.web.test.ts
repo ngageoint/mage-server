@@ -7,12 +7,13 @@ import { SubstituteOf, Substitute as Sub, Arg } from '@fluffy-spoon/substitute'
 import supertest from 'supertest'
 import uniqid from 'uniqid'
 import express from 'express'
-import { StaticIcon } from '../../../lib/entities/icons/entities.icons'
+import { LocalStaticIconStub, StaticIcon } from '../../../lib/entities/icons/entities.icons'
 import { GetStaticIconContentRequest, GetStaticIconRequest, ListStaticIconsRequest, StaticIconWithContent } from '../../../lib/app.api/icons/app.api.icons'
 import _ from 'lodash'
 import { entityNotFound, EntityNotFoundError } from '../../../lib/app.api/app.api.errors'
 import { PageOf } from '../../../lib/entities/entities.global'
 import { Readable } from 'stream'
+import { BufferWriteable } from '../../utils'
 
 
 
@@ -40,7 +41,8 @@ describe('icons web controller', function() {
         requestingPrincipal() {
           return validPrincipal
         }
-      }
+     },
+      ...(p || {} as any)
     }
   }
 
@@ -305,7 +307,7 @@ describe('icons web controller', function() {
       it('fetches a single icon by source url', async function() {
 
         const id = uniqid()
-        const icon: StaticIcon = {
+        const icon: StaticIcon & { sourceUrl: URL } = {
           id,
           sourceUrl: new URL('test://icons/icon1.png'),
           registeredTimestamp: Date.now()
@@ -327,7 +329,7 @@ describe('icons web controller', function() {
       it('decodes the source url parameter', async function() {
 
         const id = uniqid()
-        const icon: StaticIcon = {
+        const icon: StaticIcon & { sourceUrl: URL } = {
           id,
           sourceUrl: new URL('test://icons?type=png&tags=[test,decode]'),
           registeredTimestamp: Date.now()
@@ -493,10 +495,117 @@ describe('icons web controller', function() {
     })
   })
 
-  xdescribe('POST /', function() {
+
+  describe('POST /', function() {
+    let iconBytes: Buffer
+    let iconFileName: string
+    let iconInfo: LocalStaticIconStub
+    let icon: StaticIcon
+    let iconContent: Readable
+    let uploaded: BufferWriteable
+    const mediaType = 'image/test-type'
+
+    beforeEach(function() {
+      iconBytes = Buffer.from('1234567890')
+      iconFileName = uniqid('icon-', '.png')
+      iconContent = Readable.from(iconBytes)
+      iconInfo = {
+        title: 'StaticIcon',
+        mediaType,
+        fileName: iconFileName
+      }
+      icon = {
+        id: uniqid(),
+        registeredTimestamp: Date.now()
+      }
+      uploaded = new BufferWriteable()
+    })
+
 
     it('should register an icon', async function() {
-      expect.fail('todo')
+      appReqFactory.createRequest(Arg.all()).mimicks((_req, params) => createAppRequest(params))
+      appLayer.createIcon(Arg.all()).mimicks(async appReq => {
+        appReq.iconContent.pipe(uploaded)
+        return AppResponse.success(icon)
+      })
+
+      const res = await client.post(root)
+        .attach('icon', iconBytes, { filename: iconFileName, contentType: mediaType })
+        .accept('application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal(icon)
+      expect(uploaded.bytes.toString()).to.equal(iconBytes.toString())
+      appLayer.received(1).createIcon(Arg.is(actualReq => {
+        expect(actualReq.iconInfo).to.deep.equal(iconInfo)
+        return true
+      }))
+    })
+
+    it('should fail to register an icon with incorrect form field name', async function() {
+      appReqFactory.createRequest(Arg.all()).mimicks((_req, params) => createAppRequest(params))
+
+      appLayer.createIcon(Arg.any()).mimicks(async appReq => {
+        appReq.iconContent.pipe(uploaded)
+        return AppResponse.success(icon)
+      })
+
+      const res = await client.post(`${root}`)
+        .attach('unknown', iconBytes, { filename: iconFileName, contentType: mediaType })
+        .accept('application/json')
+
+      expect(res.status).to.equal(400)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal({
+        message: "request must contain only one file part named 'icon'"
+      })
+      expect(uploaded.bytes.toString()).to.equal('')
+      appLayer.didNotReceive().createIcon(Arg.all())
+    })
+
+    it('should fail to register an icon with missing required field', async function() {
+      appReqFactory.createRequest(Arg.all()).mimicks((_req, params) => createAppRequest(params))
+
+      appLayer.createIcon(Arg.any()).mimicks(async appReq => {
+        appReq.iconContent.pipe(uploaded)
+        return AppResponse.success(icon)
+      })
+
+      const res = await client.post(`${root}`).accept('application/json')
+
+      expect(res.status).to.equal(400)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal({
+        message: "Missing Content-Type"
+      })
+      expect(uploaded.bytes.toString()).to.equal('')
+      appLayer.didNotReceive().createIcon(Arg.all())
+    })
+
+        it('should fail to register an icon with extra form fields', async function() {
+      appReqFactory.createRequest(Arg.all()).mimicks((_req, params) => createAppRequest(params))
+
+      appLayer.createIcon(Arg.any()).mimicks(async appReq => {
+        appReq.iconContent.pipe(uploaded)
+        return AppResponse.success(icon)
+      })
+
+      const res = await client.post(`${root}`)
+        .attach('icon', iconBytes, { filename: iconFileName, contentType: mediaType })
+        .field('extra field', 'extra value')
+        .accept('application/json')
+
+      expect(res.status).to.equal(400)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal({
+        message: "request must contain only one file part named 'icon'"
+      })
+      expect(uploaded.bytes.toString()).to.equal(iconBytes.toString())
+      appLayer.received(1).createIcon(Arg.is(actualReq => {
+        expect(actualReq.iconInfo).to.deep.equal(iconInfo)
+        return true
+      }))
     })
   })
 })

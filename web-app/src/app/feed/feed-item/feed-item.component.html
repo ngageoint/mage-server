@@ -16,8 +16,7 @@
       </div>
 
       <div class="card-avatar">
-        <mat-icon *ngIf="!feed.icon">place</mat-icon>
-        <mage-static-icon-img *ngIf="feed.icon" [iconRef]="feed.icon"></mage-static-icon-img>
+        <feed-icon [icon]="feed.icon" [active]="true"></feed-icon>
       </div>
     </div>
 

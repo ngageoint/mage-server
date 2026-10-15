@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ExportComponent } from './export.component';
-import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { ExportComponent, ViewState } from './export.component';
 
 describe('ExportComponent', () => {
 
@@ -9,8 +12,13 @@ describe('ExportComponent', () => {
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            imports: [MatDialogModule],
-            declarations: [ExportComponent]
+            declarations: [ExportComponent],
+            providers: [
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+                provideNoopAnimations()
+            ],
+            schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();
     }));
 
@@ -22,5 +30,16 @@ describe('ExportComponent', () => {
 
     it('should create', () => {
         expect(component).toBeDefined();
+    });
+
+    it('should switch to create view', () => {
+        component.onCreate();
+        expect(component.state.view).toEqual(ViewState.Create);
+    });
+
+    it('should switch back to list view', () => {
+        component.onCreate();
+        component.onCreateClose();
+        expect(component.state.view).toEqual(ViewState.List);
     });
 });

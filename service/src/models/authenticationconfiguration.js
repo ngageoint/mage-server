@@ -38,17 +38,20 @@ function DbAuthenticationConfigurationToObject(config, ret, options) {
 
   if (options.whitelist) {
     if (config.type === 'local') {
-      return;
+      const policy = config.settings?.passwordPolicy;
+      if (policy?.customizeHelpText && policy?.helpText) {
+        ret.passwordHelpText = policy.helpText;
+      }
     }
 
     Object.keys(ret).forEach(key => {
-      if (!whitelist.includes(key)) {
+      if (!whitelist.includes(key) && key !== 'passwordHelpText') {
         delete ret[key];
       }
     });
   }
 
-  if (options.blacklist) {
+  if (options.blacklist && ret.settings) {
     Object.keys(ret.settings).forEach(key => {
       if (blacklist.includes(key.toLowerCase())) {
         ret.settings[key] = secureMask;

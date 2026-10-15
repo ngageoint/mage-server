@@ -38,7 +38,7 @@ describe('icons use case interactions', function() {
     let createIcon: api.CreateLocalStaticIcon
 
     beforeEach(function() {
-      createIcon = impl.CreateStaticIcon(permissions)
+      createIcon = impl.CreateStaticIcon(permissions, iconRepo)
     })
 
     it('checks permission for creating an icon', async function() {
@@ -132,7 +132,7 @@ describe('icons use case interactions', function() {
 
     it('gets an icon by source url', async function() {
 
-      const icon: StaticIcon = {
+      const icon: StaticIcon & { sourceUrl: URL } = {
         id: uniqid(),
         sourceUrl: new URL('test://get/me'),
         registeredTimestamp: Date.now()
@@ -150,7 +150,7 @@ describe('icons use case interactions', function() {
 
     it('gets an icon by source url string', async function() {
 
-      const icon: StaticIcon = {
+      const icon: StaticIcon & { sourceUrl: URL } = {
         id: uniqid(),
         sourceUrl: new URL('test://get/me'),
         registeredTimestamp: Date.now()

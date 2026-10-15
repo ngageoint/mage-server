@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
-import { FeedPanelService } from '../../feed-panel/feed-panel.service';
+import { SidebarService } from '../../sidebar/sidebar.service';
 import moment from 'moment';
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
@@ -57,7 +57,7 @@ export class ObservationViewComponent implements OnChanges {
     private mapService: MapService,
     private eventService: EventService,
     private sessionService: SessionService,
-    private feedPanelService: FeedPanelService
+    private sidebarService: SidebarService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -121,7 +121,7 @@ export class ObservationViewComponent implements OnChanges {
 
   onOptions(): void {
     this.bottomSheet.open(ObservationOptionsComponent, {
-      panelClass: 'feed-panel',
+      panelClass: 'sidebar',
       autoFocus: false
     }).afterDismissed().subscribe((option: ObservationOption) => {
       switch(option) {
@@ -137,7 +137,7 @@ export class ObservationViewComponent implements OnChanges {
 
   editObservation(): void {
     this.onObservationLocationClick();
-    this.feedPanelService.edit(this.observation)
+    this.sidebarService.edit(this.observation)
   }
 
   downloadObservation(): void {

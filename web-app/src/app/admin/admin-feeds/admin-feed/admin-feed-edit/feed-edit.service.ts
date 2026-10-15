@@ -1,9 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@angular/core'
 import * as _ from 'lodash'
-import { BehaviorSubject, Observable, PartialObserver, throwError } from 'rxjs'
-import { tap } from 'rxjs/operators'
+import { BehaviorSubject, forkJoin, Observable, PartialObserver, throwError } from 'rxjs'
+import { defaultIfEmpty, map, switchMap, tap } from 'rxjs/operators'
 import { FeedExpanded, FeedTopic, Service, FeedPreviewOptions, FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { FeedEditState, FeedMetaData, feedMetaDataLean, feedPostFromEditState, freshEditState } from './feed-edit.model'
+import { StaticIcon, StaticIconService } from '@ngageoint/mage.web-core-lib/static-icon'
 
 
 export type FeedEditStateObservers = {
@@ -35,12 +36,15 @@ export class FeedEditService {
     return this.stateSubject.value
   }
 
-  constructor(@Inject(forwardRef(() => FeedService)) private feedService: FeedService) {}
+  constructor(
+    @Inject(forwardRef(() => FeedService)) private feedService: FeedService,
+    private staticIconService: StaticIconService
+  ) {}
 
   editFeed(feedId: string): void {
     this.resetState()
     this.feedService.fetchFeed(feedId).subscribe({
-      next: (feed) => {
+      next: (feed: FeedExpanded) => {
         const service = feed.service as Service
         const topic = feed.topic as FeedTopic
         const feedCopy = _.cloneDeep(feed)
@@ -178,13 +182,39 @@ export class FeedEditService {
       return throwError(new Error('no topic selected'))
     }
     const post = feedPostFromEditState(this.currentState)
-    const resetOnSuccess = tap((x: FeedExpanded) => {
-      this.resetState()
-    })
-    if (originalFeed) {
-      return this.feedService.updateFeed({ ...post, id: originalFeed.id }).pipe(resetOnSuccess)
+    const resetOnSuccess = tap((_x: FeedExpanded) => this.resetState())
+
+    const iconUpload = (file: File, iconMap: (icon: StaticIcon) => void): Observable<any> => {
+      return this.staticIconService.uploadIcon(file).pipe(
+        map((icon: StaticIcon) => iconMap(icon))
+      )
     }
-    return this.feedService.createFeed(service.id, topic.id, post).pipe(resetOnSuccess)
+
+    const iconUploads: Observable<void>[] = []
+    if (post.icon?.file) {
+      iconUploads.push(iconUpload(post.icon.file, (icon: StaticIcon) => {
+        post.icon = { id: icon.id }
+      }))
+    }
+
+    if (post.mapStyle?.icon?.file) {
+      iconUploads.push(iconUpload(post.mapStyle.icon.file, (icon: StaticIcon) => {
+        post.mapStyle.icon = { id: icon.id }
+      }))
+    }
+
+    return forkJoin(iconUploads)
+      .pipe(defaultIfEmpty(null))
+      .pipe(
+        switchMap(() => {
+          if (originalFeed) {
+            return  this.feedService.updateFeed({ ...post, id: originalFeed.id })
+          } else {
+            return this.feedService.createFeed(service.id, topic.id, post)
+          }
+        }),
+        resetOnSuccess
+      )
   }
 
   private resetState(): void {

@@ -130,10 +130,10 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       this.updateCoordinates()
     }
     if (this.feature?.geometry?.coordinates) {
-      this.dmsForm.enable()
+      this.dmsForm.enable({emitEvent: false})
     }
     else {
-      this.dmsForm.disable()
+      this.dmsForm.disable({emitEvent: false})
     }
   }
 

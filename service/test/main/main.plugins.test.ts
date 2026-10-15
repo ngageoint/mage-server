@@ -2,13 +2,15 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import express, { Router } from 'express'
+import { EventEmitter } from 'events'
 import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import * as plugins from '../../lib/main.impl/main.impl.plugins'
 import { InitPluginHook, InjectionToken } from '../../lib/plugins.api'
 import { WebRoutesHooks } from '../../lib/plugins.api/plugins.api.web'
-import { AddPluginWebRoutes } from '../../lib/main.impl/main.impl.plugins'
+import { AddPluginWebRoutes, AddPluginAttachmentHooks } from '../../lib/main.impl/main.impl.plugins'
 import { AppRequestContext } from '../../lib/app.api/app.api.global'
 import { UserExpanded } from '../../lib/entities/users/entities.users'
+import { AttachmentHook } from '../../lib/plugins.api/plugins.api.attachments'
 
 interface Service1 {}
 interface Service2 {}
@@ -19,6 +21,7 @@ class Service2Impl implements Service2 {}
 const serviceMap = new Map([[ Service1Token, new Service1Impl() ], [ Service2Token, new Service2Impl() ]])
 const injectService: plugins.InjectableServices = (token: any) => serviceMap.get(token) as any
 const initPluginRoutes: AddPluginWebRoutes = (pluginId: string, initPluginRoutes: WebRoutesHooks) => void(0)
+const collectAttachmentHooks: AddPluginAttachmentHooks = (pluginId: string, hooks) => void(0)
 
 interface InjectServiceHandle {
   injectService: typeof injectService
@@ -28,14 +31,20 @@ interface InitPluginRoutesHandle {
   initPluginRoutes: typeof initPluginRoutes
 }
 
+interface CollectAttachmentHooksHandle {
+  collectAttachmentHooks: typeof collectAttachmentHooks
+}
+
 describe('loading plugins', function() {
 
   let mockInjectService: SubstituteOf<InjectServiceHandle>
   let mockInitPluginRoutes: SubstituteOf<InitPluginRoutesHandle>
+  let mockCollectAttachmentHooks: SubstituteOf<CollectAttachmentHooksHandle>
 
   beforeEach(function() {
     mockInjectService = Sub.for<InjectServiceHandle>()
     mockInitPluginRoutes = Sub.for<InitPluginRoutesHandle>()
+    mockCollectAttachmentHooks = Sub.for<CollectAttachmentHooksHandle>()
   })
 
   it('runs the init hook with requested injected serivces', async function() {
@@ -57,7 +66,7 @@ describe('loading plugins', function() {
       }
     }
     initPlugin.inject = injectRequest
-    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, collectAttachmentHooks, new EventEmitter())
 
     expect(injected).to.have.property('service1').instanceOf(Service1Impl)
     expect(injected).to.have.property('service2').instanceOf(Service2Impl)
@@ -90,9 +99,54 @@ describe('loading plugins', function() {
     }
     initPlugin.inject = injectRequest
     mockInitPluginRoutes.initPluginRoutes(Arg.all()).mimicks(initPluginRoutes)
-    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, mockInitPluginRoutes.initPluginRoutes)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, mockInitPluginRoutes.initPluginRoutes, collectAttachmentHooks, new EventEmitter())
 
     mockInitPluginRoutes.received(1).initPluginRoutes(Arg.all())
     mockInitPluginRoutes.received(1).initPluginRoutes(pluginId, hook)
+  })
+
+  it('collects attachment hooks for plugin when provided', async function() {
+
+    const pluginId = '@testing/test3'
+    const injectRequest = {}
+    const exampleHook: AttachmentHook = async (attachment, stagedFilePath) => ({ outcome: 'pass' })
+    const hook = {
+      attachmentHooks: [ exampleHook ]
+    }
+
+    const initPlugin: InitPluginHook<typeof injectRequest> = {
+      inject: {
+
+      },
+      init: async (services) => {
+        return hook
+      }
+    }
+    initPlugin.inject = injectRequest
+    mockCollectAttachmentHooks.collectAttachmentHooks(Arg.all()).mimicks(collectAttachmentHooks)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, mockCollectAttachmentHooks.collectAttachmentHooks, new EventEmitter())
+
+    mockCollectAttachmentHooks.received(1).collectAttachmentHooks(Arg.all())
+    mockCollectAttachmentHooks.received(1).collectAttachmentHooks(pluginId, hook.attachmentHooks)
+  })
+
+  it('does not collect attachment hooks when plugin provides none', async function() {
+
+    const pluginId = '@testing/test4'
+    const injectRequest = {}
+
+    const initPlugin: InitPluginHook<typeof injectRequest> = {
+      inject: {
+
+      },
+      init: async (services) => {
+        return {}
+      }
+    }
+    initPlugin.inject = injectRequest
+    mockCollectAttachmentHooks.collectAttachmentHooks(Arg.all()).mimicks(collectAttachmentHooks)
+    await plugins.integratePluginHooks(pluginId, initPlugin, injectService, initPluginRoutes, mockCollectAttachmentHooks.collectAttachmentHooks, new EventEmitter())
+
+    mockCollectAttachmentHooks.didNotReceive().collectAttachmentHooks(Arg.all())
   })
 })

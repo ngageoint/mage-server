@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import { loadFeedsHooks } from './plugin_hooks/main.impl.plugin_hooks.feeds'
 import { loadIconsHooks } from './plugin_hooks/main.impl.plugin_hooks.icons'
 import { loadMageEventsHoooks } from './plugin_hooks/main.impl.plugin_hooks.events'
@@ -6,8 +7,10 @@ import { FeedServiceTypeRepositoryToken, FeedsPluginHooks } from '../plugins.api
 import { IconPluginHooks, StaticIconRepositoryToken } from '../plugins.api/plugins.api.icons'
 import { MageEventsPluginHooks } from '../plugins.api/plugins.api.events'
 import { WebRoutesHooks } from '../plugins.api/plugins.api.web'
+import { AttachmentHook, AttachmentProcessingPluginHooks } from '../plugins.api/plugins.api.attachments'
+import { loadAttachmentHooks } from './plugin_hooks/main.impl.plugin_hooks.attachments'
 
-export type PluginHooks = MageEventsPluginHooks & FeedsPluginHooks & IconPluginHooks & WebRoutesHooks
+export type PluginHooks = MageEventsPluginHooks & FeedsPluginHooks & IconPluginHooks & WebRoutesHooks & AttachmentProcessingPluginHooks
 
 export interface InjectableServices {
   <Service>(token: InjectionToken<Service>): Service
@@ -15,11 +18,16 @@ export interface InjectableServices {
 
 export type AddPluginWebRoutes = (pluginId: string, webRoutes: WebRoutesHooks) => void
 
+// Export definition for AttachmentHooks
+export type AddPluginAttachmentHooks = (pluginId: string, hooks: AttachmentHook[]) => void
+
 export async function integratePluginHooks(
   pluginId: string,
   plugin: InitPluginHook<any>,
   injectService: InjectableServices,
   addWebRoutesFromPlugin: AddPluginWebRoutes,
+  collectAttachmentHooks: AddPluginAttachmentHooks,
+  domainEvents: EventEmitter,
 ): Promise<void> {
   let injection: Injection<any> | null = null
   let hooks: PluginHooks
@@ -33,9 +41,10 @@ export async function integratePluginHooks(
   else {
     hooks = await plugin.init()
   }
-  await loadMageEventsHoooks(pluginId, hooks)
+  await loadMageEventsHoooks(pluginId, hooks, domainEvents)
   await loadIconsHooks(pluginId, hooks, injectService(StaticIconRepositoryToken))
   await loadFeedsHooks(pluginId, hooks, injectService(FeedServiceTypeRepositoryToken))
+  await loadAttachmentHooks(pluginId, hooks, collectAttachmentHooks)
   if (hooks.webRoutes) {
     await addWebRoutesFromPlugin(pluginId, hooks)
   }

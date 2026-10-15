@@ -119,6 +119,7 @@ export function FeedsRoutes(appLayer: FeedsAppLayer, createAppRequest: WebAppReq
         variableParamsSchema: bodyFeed.variableParamsSchema,
         itemsHaveIdentity: bodyFeed.itemsHaveIdentity,
         itemsHaveSpatialDimension: bodyFeed.itemsHaveSpatialDimension,
+        showOnMapByDefault: bodyFeed.showOnMapByDefault,
         itemTemporalProperty: bodyFeed.itemTemporalProperty,
         itemPrimaryProperty: bodyFeed.itemPrimaryProperty,
         itemSecondaryProperty: bodyFeed.itemSecondaryProperty,

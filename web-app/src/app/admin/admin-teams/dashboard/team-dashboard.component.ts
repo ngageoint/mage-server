@@ -1,10 +1,9 @@
 import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
-import { Team } from '../team';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
@@ -22,7 +21,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
     standalone: false
 })
 export class TeamDashboardComponent implements OnInit, OnDestroy {
-  teamSearch = '';
+  searchTerm = '';
   teams: Team[] = [];
   totalTeams = 0;
   pageSize = 10;
@@ -42,7 +41,7 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private modal: MatDialog,
-    private teamService: AdminTeamsService,
+    private teamService: TeamService,
     private sessionService: SessionService,
     private toastService: AdminToastService,
     private breadcrumbService: AdminBreadcrumbService
@@ -54,7 +53,6 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
-
     this.fetchTeams();
   }
 
@@ -72,18 +70,16 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    */
   fetchTeams(): void {
     this.teamService
-      .getTeams({
-        term: this.teamSearch,
-        sort: { name: 1 },
-        limit: this.pageSize,
-        omit_event_teams: true,
-        start: String(this.pageIndex * this.pageSize)
+      .search({
+        term: this.searchTerm,
+        pageSize: this.pageSize,
+        pageIndex: this.pageIndex,
+        omitEventTeams: true,
       })
-      .subscribe((results) => {
-        if (results?.length > 0) {
-          const teams = results[0];
-          this.teams = teams.items;
-          this.totalTeams = teams.totalCount;
+      .subscribe((page) => {
+        this.teams = page.items;
+        if (typeof page.totalCount === 'number') {
+          this.totalTeams = page.totalCount
         }
       });
   }
@@ -105,7 +101,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * @param term - The new search term entered by the user
    */
   onSearchTermChanged(term: string): void {
-    this.teamSearch = term;
+    this.searchTerm = term;
+    this.totalTeams = 0;
     this.pageIndex = 0; // Reset to first page when searching
     this.fetchTeams();
   }
@@ -114,7 +111,8 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * Resets the search term, pagination to the first page, and refetches all teams
    */
   onSearchCleared(): void {
-    this.teamSearch = '';
+    this.searchTerm = '';
+    this.totalTeams = 0;
     this.pageIndex = 0;
     this.fetchTeams();
   }
@@ -124,8 +122,9 @@ export class TeamDashboardComponent implements OnInit, OnDestroy {
    * If a new team is created, refetches the teams list to include the new team.
    */
   createTeam(): void {
-    if (!this.hasTeamCreatePermission) return;
-
+    if (!this.hasTeamCreatePermission) {
+      return;
+    }
     this.modal.open(CreateTeamDialogComponent, {
       width: '40vw',
       maxWidth: '40vw',

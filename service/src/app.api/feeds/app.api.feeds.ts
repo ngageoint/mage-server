@@ -145,29 +145,14 @@ export interface FeedServiceTypeDescriptor extends Descriptor<'FeedServiceType'>
   configSchema: JsonObject | null
 }
 
-export function FeedServiceTypeDescriptor(from: FeedServiceType): FeedServiceTypeDescriptor {
+export function feedServiceTypeDescriptorFor(serviceType: FeedServiceType): FeedServiceTypeDescriptor {
   return {
     descriptorOf: 'FeedServiceType',
-    id: from.id as string,
-    pluginServiceTypeId: from.pluginServiceTypeId,
-    title: from.title,
-    summary: from.summary,
-    configSchema: from.configSchema as JsonObject | null
-  }
-}
-
-export interface FeedServiceDescriptor extends Descriptor<'FeedService'>, Pick<FeedService, 'id' | 'serviceType' | 'title' | 'summary' | 'config'> {
-  serviceType: string
-}
-
-export function FeedServiceDescriptor(from: FeedService): FeedServiceDescriptor {
-  return {
-    descriptorOf: 'FeedService',
-    id: from.id,
-    serviceType: from.serviceType as string,
-    title: from.title,
-    summary: from.summary,
-    config: from.config
+    id: serviceType.id as string,
+    pluginServiceTypeId: serviceType.pluginServiceTypeId,
+    title: serviceType.title,
+    summary: serviceType.summary,
+    configSchema: serviceType.configSchema as JsonObject | null
   }
 }
 

@@ -1,8 +1,8 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 70vh;
-  min-height: 400px;
+  min-height: 320px;
+  max-height: 90vh;
 }
 
 mat-dialog-content {
@@ -12,38 +12,9 @@ mat-dialog-content {
   min-height: 0;
 }
 
-::ng-deep .mat-mdc-dialog-content ingress {
+ingress {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-}
-
-// flex:1 gives .container a height from ingress's flex layout so
-// .state's position:absolute top:0/bottom:0 can resolve correctly.
-// overflow:hidden clips the translateX slide animation to dialog bounds.
-::ng-deep .mat-mdc-dialog-content ingress .container {
-  flex: 1;
-  height: auto !important;
-  overflow: hidden;
-}
-
-// Keep .state as position:absolute so entering/leaving states overlay
-// during slide animation instead of stacking (which causes the jump).
-// align-items:stretch makes children fill the full height.
-::ng-deep .mat-mdc-dialog-content ingress .state {
-  align-items: stretch;
-}
-
-// Component host elements (disclaimer, authorization, etc.) must be
-// flex containers so their children can use flex:1 for height.
-::ng-deep .mat-mdc-dialog-content ingress .state > * {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-::ng-deep .mat-mdc-dialog-content ingress .container.compact .disclaimer {
-  flex: 1;
   min-height: 0;
 }

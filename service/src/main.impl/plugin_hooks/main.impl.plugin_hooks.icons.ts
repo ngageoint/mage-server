@@ -24,6 +24,6 @@ export async function loadIconsHooks(moduleName: string, hooks: Partial<IconPlug
       title: pluginIcon.title,
       summary: pluginIcon.summary,
     }
-    return repo.findOrImportBySourceUrl(iconInfo)
+    return repo.findOrImportBySourceUrl(sourceUrl, iconInfo)
   }))
 }

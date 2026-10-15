@@ -1,9 +1,11 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, TemplateRef, ViewChild, DestroyRef, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
-import { Subject, forkJoin, takeUntil, Observable } from 'rxjs';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
+import { forkJoin, Observable } from 'rxjs';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -13,8 +15,6 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { User as MageUser } from '@ngageoint/mage.web-core-lib/user';
-import { Team } from '../../admin-teams/team';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -48,24 +48,23 @@ interface PagedResult<T> {
     standalone: false
 })
 export class EventDetailsComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
 
   @ViewChild('restrictions', { static: false }) restrictionsForm?: NgForm;
 
   event: ExtendedEvent | null = null;
   eventTeam: Team | null = null;
 
-  private _breadcrumbs: AdminBreadcrumb[] = [{
+  #breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Events',
     icon: 'event',
     route: ['/admin/events']
   }];
   set breadcrumbs(value: AdminBreadcrumb[]) {
-    this._breadcrumbs = value;
+    this.#breadcrumbs = value;
     this.breadcrumbService.setBreadcrumbs(value);
   }
   get breadcrumbs(): AdminBreadcrumb[] {
-    return this._breadcrumbs;
+    return this.#breadcrumbs;
   }
 
   @ViewChild('breadcrumbActions', { static: true })
@@ -76,7 +75,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   hasDeletePermission = false;
 
   showArchivedForms = false;
-  formCreateOpen = false;
   previewForm: any = null;
   restrictionsError: any = null;
   formsAnimationState = 0;
@@ -87,7 +85,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   membersPage: PagedResult<MageUser> = { items: [], totalCount: 0 };
   memberSearchTerm = '';
   membersDataSource = new MatTableDataSource<MageUser>();
-  membersDisplayedColumns = ['content'];
   pageSizeOptions = [5, 10, 25];
 
   loadingTeams = true;
@@ -96,7 +93,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   teamsPage: PagedResult<Team> = { items: [], totalCount: 0 };
   teamSearchTerm = '';
   teamsDataSource = new MatTableDataSource<Team>();
-  teamsDisplayedColumns = ['content'];
 
   loadingLayers = true;
   layersPageIndex = 0;
@@ -105,11 +101,13 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   layerSearchTerm = '';
   eventLayers: Layer[] = [];
   layersDataSource = new MatTableDataSource<Layer>();
-  layersDisplayedColumns = ['content'];
+
+  #destroyRef = inject(DestroyRef)
+  #takeUntilDestroyed = <T>() => takeUntilDestroyed<T>(this.#destroyRef)
 
   constructor(
     private eventsService: AdminEventsService,
-    private teamsService: AdminTeamsService,
+    private teamService: TeamService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
@@ -137,7 +135,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         total: false
       })
     })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: ({ event, teams }) => {
           this.event = event;
@@ -164,13 +162,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   getMembersPage(): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     this.eventsService
       .getMembers(String(this.event.id), {
         page: this.membersPageIndex,
@@ -178,7 +175,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         term: this.memberSearchTerm,
         total: true
       })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (page) => {
           this.loadingMembers = false;
@@ -207,16 +204,16 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     const eventTeamId = String(this.eventTeam.id);
 
-    this.teamsService
+    this.teamService
       .removeMember(eventTeamId, String(user.id))
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => {
           this.getMembersPage();
 
           const snackBarRef = this.snackBar.open(`Removed ${user.displayName} from team`, 'Undo', { duration: 5000 });
           snackBarRef.onAction().subscribe(() => {
-            this.teamsService.addUserToTeam(eventTeamId, user).subscribe({
+            this.teamService.addUserToTeam(eventTeamId, user).subscribe({
               next: () => this.getMembersPage(),
               error: (error) => {
                 console.error('Error restoring member:', error);
@@ -235,8 +232,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   getTeamsPage(): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     this.eventsService
       .getTeamsInEvent(String(this.event.id), {
         page: this.teamsPageIndex,
@@ -245,7 +243,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         total: true,
         omit_event_teams: true
       })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (page) => {
           this.loadingTeams = false;
@@ -267,13 +265,15 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   removeTeam($event: MouseEvent, team: Team): void {
     $event.stopPropagation();
 
-    if (!this.event?.id) return;
+    if (!this.event?.id) {
+      return;
+    }
 
     const eventId = String(this.event.id);
 
     this.eventsService
       .removeEventFromTeam(eventId, String(team.id))
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => {
           this.getTeamsPage();
@@ -299,11 +299,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   loadLayers(): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     this.eventsService
       .getLayersForEvent(String(this.event.id))
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (layers) => {
           this.loadingLayers = false;
@@ -351,12 +352,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
   addLayer($event: MouseEvent, layer: Layer): void {
     $event.stopPropagation();
-
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     this.eventsService
       .addLayerToEvent(String(this.event.id), { id: layer.id })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => this.loadLayers(),
         error: (error) => console.error('Error adding layer:', error)
@@ -366,13 +367,15 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   removeLayer($event: MouseEvent, layer: Layer): void {
     $event.stopPropagation();
 
-    if (!this.event?.id) return;
+    if (!this.event?.id) {
+      return;
+    }
 
     const eventId = String(this.event.id);
 
     this.eventsService
       .removeLayerFromEvent(eventId, layer.id)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: () => {
           this.loadLayers();
@@ -397,10 +400,10 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   saveFormRestrictions(): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     this.restrictionsError = null;
-
     const forms = Array.isArray(this.event.forms) ? this.event.forms : [];
     const eventUpdate: any = {
       minObservationForms: this.event.minObservationForms,
@@ -414,14 +417,14 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     this.eventsService
       .updateEvent(String(this.event.id), eventUpdate)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updatedEvent: any) => {
-          if (!this.event) return;
-
+          if (!this.event) {
+            return;
+          }
           this.event.minObservationForms = updatedEvent.minObservationForms;
           this.event.maxObservationForms = updatedEvent.maxObservationForms;
-
           updatedEvent.forms?.forEach((updatedForm: any) => {
             const localForm = this.event?.forms?.find((f: any) => f.id === updatedForm.id);
             if (localForm) {
@@ -429,7 +432,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
               localForm.max = updatedForm.max;
             }
           });
-
           this.restrictionsForm?.form.markAsPristine();
         },
         error: (error) => {
@@ -442,8 +444,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   uploadForm(): void {
-    if (!this.event) return;
-
+    if (!this.event) {
+      return;
+    }
     const dialogRef = this.dialog.open(UploadFormDialogComponent, {
       width: '600px',
       maxWidth: '50vw',
@@ -458,21 +461,23 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   onFormsReordered(event: CdkDragDrop<any[]>): void {
-    if (!this.event?.forms) return;
+    if (!this.event?.forms) {
+      return;
+    }
     const forms = [...this.event.forms];
     moveItemInArray(forms, event.previousIndex, event.currentIndex);
     this.updateFormsOrder(forms);
   }
 
   private updateFormsOrder(forms: any[]): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     this.event.forms = forms;
     this.formsAnimationState++;
-
     this.eventsService
       .updateEvent(String(this.event.id), { forms })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updatedEvent) => {
           this.event = updatedEvent as any;
@@ -480,8 +485,8 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error updating forms order:', error);
           this.eventsService
-            .getEventById(String(this.event!.id))
-            .pipe(takeUntil(this.destroy$))
+            .getEventById(String(this.event.id))
+            .pipe(this.#takeUntilDestroyed())
             .subscribe({
               next: (event) => {
                 this.event = event as any;
@@ -510,8 +515,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   getUserRole(user: MageUser): string {
-    if (!this.eventTeam?.acl) return 'GUEST';
-
+    if (!this.eventTeam?.acl) {
+      return 'GUEST';
+    }
     const key = String(user.id);
     return this.eventTeam.acl[key]?.role || 'GUEST';
   }
@@ -522,11 +528,12 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   updateUserRole(user: MageUser, newRole: string): void {
-    if (!this.eventTeam?.id || !newRole) return;
-
-    this.teamsService
+    if (!this.eventTeam?.id || !newRole) {
+      return;
+    }
+    this.teamService
       .updateUserRole(String(this.eventTeam.id), String(user.id), newRole)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updatedTeam: Team) => {
           this.eventTeam = updatedTeam;
@@ -537,29 +544,31 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   editEventDetails(): void {
-    if (!this.event) return;
-
+    if (!this.event) {
+      return;
+    }
     const dialogRef = this.dialog.open(CreateEventDialogComponent, {
       width: '600px',
       data: { event: this.event }
     });
 
     dialogRef.afterClosed().subscribe((updatedEvent: ExtendedEvent | undefined) => {
-      if (!updatedEvent) return;
-
+      if (!updatedEvent) {
+        return;
+      }
       this.event = updatedEvent;
       this.breadcrumbs = [{ title: 'Events', icon: 'event', route: ['/admin/events'] }, { title: this.event?.name || 'Event' }];
     });
   }
 
   completeEvent(mageEvent: ExtendedEvent): void {
-    if (!mageEvent?.id) return;
-
+    if (!mageEvent?.id) {
+      return;
+    }
     const updatedEvent = { ...mageEvent, complete: true };
-
     this.eventsService
       .updateEvent(String(mageEvent.id), updatedEvent)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updated) => (this.event = updated as any),
         error: (error) => console.error('Error completing event:', error)
@@ -567,13 +576,13 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   activateEvent(mageEvent: ExtendedEvent): void {
-    if (!mageEvent?.id) return;
-
+    if (!mageEvent?.id) {
+      return;
+    }
     const updatedEvent = { ...mageEvent, complete: false };
-
     this.eventsService
       .updateEvent(String(mageEvent.id), updatedEvent)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.#takeUntilDestroyed())
       .subscribe({
         next: (updated) => (this.event = updated as any),
         error: (error) => console.error('Error activating event:', error)
@@ -581,8 +590,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   deleteEvent(): void {
-    if (!this.event) return;
-
+    if (!this.event) {
+      return;
+    }
     const dialogRef = this.dialog.open(DeleteEventComponent, {
       width: '600px',
       data: { event: this.event }
@@ -678,7 +688,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result: SearchModalResult) => {
       if (result?.selectedItem && this.eventTeam?.id) {
-        this.teamsService.addUserToTeam(String(this.eventTeam.id), result.selectedItem).subscribe({
+        this.teamService.addUserToTeam(String(this.eventTeam.id), result.selectedItem).subscribe({
           next: () => this.getMembersPage(),
           error: (error) => console.error('Error adding member:', error)
         });
@@ -687,8 +697,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   addTeamToEvent(): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     const dialogRef = this.dialog.open(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
@@ -734,8 +745,9 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
   }
 
   addLayerToEvent(): void {
-    if (!this.event?.id) return;
-
+    if (!this.event?.id) {
+      return;
+    }
     const dialogRef = this.dialog.open(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',

@@ -10,9 +10,60 @@
       margin-bottom: 0.5em;
     }
 
-    .icon-field mage-static-icon-form-field {
-      display: block;
+    .checkbox-group-spacer {
+      margin-bottom: 1.5em;
     }
+}
+
+.icon {
+  padding: 8px 0;
+  margin-bottom: 16px;
+
+  > .mat-hint {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .mat-caption {
+    font-size: 75%;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.icon__preview-group {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.icon__preview-label {
+  margin-bottom: 4px;
+}
+
+.icon__layout {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+.icon__preview {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon__preview-text {
+  line-height: 10px;
+}
+
+.icon__preview--icon {
+  display: block;
+  width: 24px;
+  height: 24px;
 }
 
 .configuration-hint {
@@ -24,6 +75,7 @@
   background-color: var(--mat-sys-secondary-container);
   border-radius: 8px;
   font-size: var(--mat-sys-body-small-size);
+  line-height: var(--mat-sys-body-small-line-height);
   color: var(--mat-sys-on-secondary-container);
 
   mat-icon {

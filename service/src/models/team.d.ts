@@ -1,4 +1,18 @@
-export { Team as TeamModel };
+import mongoose from 'mongoose'
+import User from './user'
+import { UserDocument } from "../adapters/users/adapters.users.db.mongoose";
+
+export interface TeamDocument {
+  _id: mongoose.Types.ObjectId
+  id: string
+  name: string
+  description: string
+  teamEventId: number
+  userIds: [mongoose.Types.ObjectId | UserDocument],
+  acl: object
+}
+
+export declare const Model: mongoose.Model<TeamDocument>
 export function userHasAclPermission(team: any, userId: any, permission: any): any;
 export function getTeamById(id: any, options: any, callback: any): void;
 export function getMembers(teamId: any, options: any): Promise<{
@@ -26,6 +40,3 @@ export function updateUserInAclForEventTeam(eventId: any, userId: any, role: any
 export function removeUserFromAcl(teamId: any, userId: any, callback: any): void;
 export function removeUserFromAclForEventTeam(eventId: any, userId: any, callback: any): void;
 export function removeUserFromAllAcls(user: any, callback: any): void;
-declare var Team: mongoose.Model<mongoose.Document>;
-import mongoose = require("mongoose");
-import User from './user'

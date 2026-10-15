@@ -45,11 +45,11 @@ mat-nav-list .mdc-list-item--with-leading-icon.mdc-list-item--with-trailing-meta
   justify-content: center;
 }
 
-.feed-panel {
+.sidebar {
   --mat-bottom-sheet-container-background-color: white;
 }
 
-.feed-panel .mat-bottom-sheet-container {
+.sidebar .mat-bottom-sheet-container {
   position: absolute !important;
   left: 0;
   bottom: 0;

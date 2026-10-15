@@ -121,7 +121,7 @@ export class IngressComponent implements OnChanges {
       [IngressState.Signin]: 'Sign in to Mage',
       [IngressState.Signup]: 'Create Account',
       [IngressState.Authorization]: 'Access Code',
-      [IngressState.Disclaimer]: 'Terms & Conditions',
+      [IngressState.Disclaimer]: this.api?.disclaimer?.title || 'Terms & Conditions',
       [IngressState.ActiveAccount]: 'Account Created',
       [IngressState.InactiveAccount]: 'Account Pending',
       [IngressState.DisabledAccount]: 'Account Disabled',

@@ -1,0 +1,118 @@
+<div class="item" [@.disabled]="disableAnimation">
+  <mat-toolbar>
+    <mat-toolbar-row class="toolbar">
+      <button matIconButton (click)="onClose()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span>Export</span>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <mat-card class="card">
+    <mat-card-content>
+      <mat-chip-set class="chips">
+        <mat-chip>{{item.exportType}}</mat-chip>
+        <mat-chip *ngIf="item.status === exportStatus.Completed" class="chip__complete">
+          <mat-icon matChipAvatar>check</mat-icon>
+          Complete
+        </mat-chip>
+        <mat-chip *ngIf="item.status === exportStatus.Running" class="chip__running">
+          <span matChipAvatar><mat-spinner diameter="16"></mat-spinner></span>
+          <span>Running</span>
+        </mat-chip>
+        <mat-chip *ngIf="item.status === exportStatus.Failed" class="chip__failed">
+          <mat-icon matChipAvatar>error_outline</mat-icon>
+          Failed
+        </mat-chip>
+      </mat-chip-set>
+      <mat-card-title-group>
+        <mat-card-title>{{item.options?.event?.name}}</mat-card-title>
+        <mat-card-subtitle *ngIf="item.status === exportStatus.Completed">
+          <div *ngIf="summaryStart && summaryEnd">
+            <div class="text">{{summaryStart | moment}} - {{summaryEnd | moment}}</div>
+          </div>
+          <div class="text" *ngIf="item.options?.filter?.exportObservations || item.options?.filter?.exportLocations">
+            <span *ngIf="item.summary?.observations?.count !== undefined" [ngPlural]="item.summary?.observations?.count || 0">
+              <ng-template ngPluralCase="=1">
+                <span>{{item.summary?.observations?.count}} Observation</span>
+              </ng-template>
+              <ng-template ngPluralCase="other">
+                <span>{{item.summary?.observations?.count || 0}} Observations</span>
+              </ng-template>
+            </span>
+            <span *ngIf="item.summary?.observations?.count !== undefined || item.summary?.locations?.count !== undefined"> and </span>
+            <span *ngIf="item.summary?.locations?.count !== undefined" [ngPlural]="item.summary?.locations?.count || 0">
+              <ng-template ngPluralCase="=1">
+                <span>{{item.summary?.locations?.count}} Location</span>
+              </ng-template>
+              <ng-template ngPluralCase="other">
+                <span>{{item.summary?.locations?.count || 0}} Locations</span>
+              </ng-template>
+            </span>
+          </div>
+        </mat-card-subtitle>
+      </mat-card-title-group>
+      <div class="title mat-body-2">Whats Included</div>
+      <div class="export-options">
+        <div class="export-options__category">
+          <mat-checkbox [checked]="item.options?.filter?.exportObservations" disabled>Observations</mat-checkbox>
+          <mat-checkbox [checked]="item.options?.filter?.includeAttachments" class="export-options__subcategory" disabled>Attachments</mat-checkbox>
+        </div>
+
+        <div class="export-options__category">
+          <mat-checkbox [checked]="item.options?.filter?.exportLocations" disabled>Locations</mat-checkbox>
+        </div>
+      </div>
+
+      <div class="title mat-body-2">Form Fields</div>
+      <div>
+        <mat-accordion multi>
+          <mat-expansion-panel *ngFor="let formProjection of formProjections">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                {{formProjection.form.name}}
+              </mat-panel-title>
+              <mat-panel-description *ngIf="allFieldsSelected(formProjection)">
+                All Fields
+                <mat-icon class="material-symbols-outlined expansion-header-icon">check_box</mat-icon>
+              </mat-panel-description>
+              <mat-panel-description *ngIf="someFieldsSelected(formProjection)">
+                {{formProjection.selectedCount}}/{{formProjection.fieldProjections.length}} Fields
+                <mat-icon class="material-symbols-outlined expansion-header-icon">indeterminate_check_box</mat-icon>
+              </mat-panel-description>
+              <mat-panel-description *ngIf="noFieldsSelected(formProjection)">
+                No Fields
+                <mat-icon class="expansion-header-icon">check_box_outline_blank</mat-icon>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <div *ngFor="let fieldProjection of formProjection.fieldProjections" class="form__field">
+              <mat-checkbox *ngIf="!fieldProjection.field.archived" disabled [checked]="fieldProjection.selected">
+                {{fieldProjection.field.title}}
+              </mat-checkbox>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button matButton (click)="deleteExport(item)">
+        Delete
+      </button>
+      <a matButton *ngIf="item.status === exportStatus.Completed" href="{{item.url}}?access_token={{token}}">
+        Download
+      </a>
+    </mat-card-actions>
+  </mat-card>
+</div>
+
+<ng-template #deleteDialog>
+  <h2 matDialogTitle>Delete Export</h2>
+  <mat-dialog-content class="mat-typography">
+    <p>Are you sure you want to delete this export? This action cannot be undone.</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton matDialogClose>Cancel</button>
+    <button matButton matDialogClose="delete" cdkFocusInitial>Delete Export</button>
+  </mat-dialog-actions>
+</ng-template>

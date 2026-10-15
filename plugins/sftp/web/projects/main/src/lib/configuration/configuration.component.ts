@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule, ConnectionTestResult, PluginStatus, EventFilterMode, MageEventSummary } from '../entities/entities.format';
-import { ConfigurationService } from './configuration.service';
-import { Subject, interval, takeUntil } from 'rxjs';
+import { ArchiveFormat, CompletionAction, SFTPPluginConfig, TriggerRule, ConnectionTestResult, EventFilterMode, MageEventSummary } from '../entities/entities.format';
+import { ConfigurationService, errorMessage } from './configuration.service';
+import { Subject } from 'rxjs';
 import { ResetConfirmDialogComponent } from './reset-confirm-dialog.component';
 
 @Component({
@@ -15,6 +15,11 @@ import { ResetConfirmDialogComponent } from './reset-confirm-dialog.component';
 export class ConfigurationComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
+
+  readonly eventsSelectedPluralMap: { [key: string]: string } = {
+    '=1': '1 event selected',
+    'other': '# events selected'
+  }
 
   formats: ArchiveFormat[] = [
     ArchiveFormat.GeoJSON
@@ -76,9 +81,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
   private originalConfiguration: string = ''
 
-  status: PluginStatus = {
-    connected: false
-  }
   isSaving = false
   isTesting = false
   lastTestResult: ConnectionTestResult | null = null
@@ -103,16 +105,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadConfiguration()
-    this.loadStatus()
     this.loadEvents()
-
-    interval(30000)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        if (this.configuration.enabled) {
-          this.loadStatus()
-        }
-      })
   }
 
   ngOnDestroy(): void {
@@ -129,8 +122,11 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         }
         this.configuration = configuration
         this.originalConfiguration = JSON.stringify(configuration)
+        if (this.configuration.enabled && this.configuration.sftpClient.host) {
+          this.checkConnection()
+        }
       },
-      error: (error) => {
+      error: () => {
         this.loadError = 'Failed to load configuration'
         this.snackBar.open('Failed to load SFTP configuration', 'Dismiss', {
           duration: 5000,
@@ -140,13 +136,16 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     })
   }
 
-  private loadStatus(): void {
-    this.service.getStatus().subscribe({
-      next: (status) => {
-        this.status = status
+  private checkConnection(): void {
+    this.service.testConnection({ sftpClient: this.configuration.sftpClient }).subscribe({
+      next: (result) => {
+        this.lastTestResult = result
       },
       error: (error) => {
-        console.error('Failed to load status:', error)
+        this.lastTestResult = {
+          success: false,
+          message: errorMessage(error, 'Connection test failed')
+        }
       }
     })
   }
@@ -178,30 +177,21 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
   save(): void {
     this.isSaving = true
     this.service.updateConfiguration(this.configuration).subscribe({
-      next: (response) => {
+      next: (configuration) => {
         this.isSaving = false
-        if (response.success) {
-          this.snackBar.open('Configuration saved successfully', 'Dismiss', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          })
-          if (response.configuration) {
-            this.configuration = response.configuration
-            this.originalConfiguration = JSON.stringify(response.configuration)
-          } else {
-            this.originalConfiguration = JSON.stringify(this.configuration)
-          }
-          this.loadStatus()
-        } else {
-          this.snackBar.open(response.message || 'Failed to save configuration', 'Dismiss', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          })
+        this.snackBar.open('Configuration saved successfully', 'Dismiss', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        })
+        this.configuration = configuration
+        this.originalConfiguration = JSON.stringify(configuration)
+        if (this.configuration.enabled && this.configuration.sftpClient.host) {
+          this.checkConnection()
         }
       },
       error: (error) => {
         this.isSaving = false
-        this.snackBar.open(error.message || 'Failed to save configuration', 'Dismiss', {
+        this.snackBar.open(errorMessage(error, 'Failed to save configuration'), 'Dismiss', {
           duration: 5000,
           panelClass: ['error-snackbar']
         })
@@ -234,7 +224,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         this.isTesting = false
         this.lastTestResult = {
           success: false,
-          message: error.message || 'Connection test failed'
+          message: errorMessage(error, 'Connection test failed')
         }
         this.snackBar.open(this.lastTestResult.message, 'Dismiss', {
           duration: 8000,
@@ -256,26 +246,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     this.isSavingKey = true
     this.service.savePrivateKey(this.privateKeyText).subscribe({
-      next: (result) => {
+      next: () => {
         this.isSavingKey = false
-        if (result.success) {
-          this.hasPrivateKey = true
-          this.showKeyInput = false
-          this.privateKeyText = ''
-          this.snackBar.open('Private key saved successfully', 'Dismiss', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          })
-        } else {
-          this.snackBar.open(result.message || 'Failed to save private key', 'Dismiss', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          })
-        }
+        this.hasPrivateKey = true
+        this.showKeyInput = false
+        this.privateKeyText = ''
+        this.snackBar.open('Private key saved successfully', 'Dismiss', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        })
       },
       error: (error) => {
         this.isSavingKey = false
-        this.snackBar.open(error.message || 'Failed to save private key', 'Dismiss', {
+        this.snackBar.open(errorMessage(error, 'Failed to save private key'), 'Dismiss', {
           duration: 5000,
           panelClass: ['error-snackbar']
         })
@@ -293,30 +276,20 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
       this.isResetting = true
       this.service.resetConfiguration().subscribe({
-        next: (response) => {
+        next: (configuration) => {
           this.isResetting = false
-          if (response.success) {
-            if (response.configuration) {
-              this.hasPrivateKey = !!(response.configuration as any).hasPrivateKey
-              this.configuration = response.configuration
-              this.originalConfiguration = JSON.stringify(response.configuration)
-            }
-            this.lastTestResult = null
-            this.loadStatus()
-            this.snackBar.open('Plugin has been reset to default settings', 'Dismiss', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            })
-          } else {
-            this.snackBar.open(response.message || 'Failed to reset plugin', 'Dismiss', {
-              duration: 5000,
-              panelClass: ['error-snackbar']
-            })
-          }
+          this.hasPrivateKey = Boolean((configuration as any).hasPrivateKey)
+          this.configuration = configuration
+          this.originalConfiguration = JSON.stringify(configuration)
+          this.lastTestResult = null
+          this.snackBar.open('Plugin has been reset to default settings', 'Dismiss', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          })
         },
         error: (error) => {
           this.isResetting = false
-          this.snackBar.open(error.message || 'Failed to reset plugin', 'Dismiss', {
+          this.snackBar.open(errorMessage(error, 'Failed to reset plugin'), 'Dismiss', {
             duration: 5000,
             panelClass: ['error-snackbar']
           })

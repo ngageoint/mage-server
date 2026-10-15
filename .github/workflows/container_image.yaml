@@ -1,0 +1,181 @@
+name: Mage Container Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-packages:
+        description: |
+          Indicate whether to build the image with packages built from source locally, or with packages published in
+          the NPM registry.
+        type: choice
+        options:
+          - local
+          - published
+        default: local
+      image-tag:
+        description: |
+          Supply a tag to push the image to the ghcr.io registry.  Without a tag, the workflow will not push,
+          but only build the image.  If the workflow runs from the develop branch, the image will  implicitly 
+          receive the 'dev' tag.  Examples: `6.7.0-beta.1` or `feature-123`.
+        type: string
+        required: false
+      image-name:
+        description: |
+          Set the base name of the image, i.e., the last component of the image repository path preceding the tag.
+          The default is 'mage', which produces the full image path 'ghcr.io/nagegeoint/mage-server/mage'.
+        type: string
+        default: mage
+      version-core:
+        description: |
+          The version of the published core packages, @ngageoint/mage.service and @ngageoint/mage.web-app, 
+          to install in the image
+        type: string
+        required: false
+      version-arcgis-plugin:
+        description: |
+          The version of the published ArcGIS plugin packages to install in the image
+        type: string
+        required: false
+      version-clamav-plugin:
+        description: |
+          The version of the published ClamAV plugin package to install in the image
+        type: string
+        required: false
+      version-image-plugin:
+        description: |
+          The version of the published image plugin package to install in the image
+        type: string
+        required: false
+      version-msi-plugin:
+        description: |
+          The version of the published MSI plugin package to install in the image
+        type: string
+        required: false
+      version-sftp-plugin:
+        description: |
+          The version of the published SFTP plugin packages to install in the image
+        type: string
+        required: false
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  image-info:
+    runs-on: ubuntu-latest
+    outputs:
+      repo: ${{ steps.image-info.outputs.repo }}
+      tag: ${{ steps.image-info.outputs.tag }}
+      url: ${{ steps.image-info.outputs.url }}
+      version: ${{ steps.image-info.outputs.version }}
+      dockerfile: ${{ steps.image-info.outputs.dockerfile }}
+    steps:
+      - name: install node.js
+        uses: actions/setup-node@v7
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: image-info
+        id: image-info
+        run: |
+          image_tag="local"
+          [[ ${{ github.ref }} = 'refs/heads/develop' ]] && image_tag="dev"
+          [[ -n "${{ inputs.image-tag }}" ]] && image_tag="${{ inputs.image-tag }}"
+          image_repo="ghcr.io/${{ github.repository }}/${{ inputs.image-name }}"
+          image_url="${image_repo}:${image_tag}"
+          image_dockerfile="Dockerfile"
+          image_version=$(jq -r .version < ./service/package.json)
+          if [[ "${{ inputs.image-packages }}" = "published" ]]
+          then
+            image_dockerfile="Dockerfile.published"
+            image_version=$(npm info @ngageoint/mage.service@${{ inputs.version-core || 'latest' }} version)
+          fi
+          echo "using image url ${image_url}"
+          echo "repo=${image_repo}" >> $GITHUB_OUTPUT
+          echo "tag=${image_tag}" >> $GITHUB_OUTPUT
+          echo "url=${image_url}" >> $GITHUB_OUTPUT
+          echo "version=${image_version}" >> $GITHUB_OUTPUT
+          echo "dockerfile=./${image_dockerfile}" >> $GITHUB_OUTPUT
+
+  build-push:
+    needs: image-info
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      output: image
+      platforms: linux/amd64,linux/arm64
+      file: ${{ needs.image-info.outputs.dockerfile }}
+      push: ${{ needs.image-info.outputs.tag != 'local' }}
+      meta-images: ${{ needs.image-info.outputs.repo }}
+      meta-tags: |
+        type=raw,value=${{ needs.image-info.outputs.tag }}
+      meta-annotations: |
+        org.opencontainers.image.revision=${{ github.sha }}
+        org.opencontainers.image.version=${{ needs.image-info.outputs.version }}
+      build-args: |
+        CORE_VERSION=${{ inputs.version-core || 'latest' }}
+        ARCGIS_VERSION=${{ inputs.version-arcgis-plugin || 'latest' }}
+        CLAMAV_VERSION=${{ inputs.version-clamav-plugin || 'latest' }}
+        IMAGE_VERSION=${{ inputs.version-image-plugin || 'latest' }}
+        MSI_VERSION=${{ inputs.version-msi-plugin || 'latest' }}
+        SFTP_VERSION=${{ inputs.version-sftp-plugin || 'latest' }}
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+  extract-package-lock:
+    runs-on: ubuntu-latest
+    needs:
+      - image-info
+      - build-push
+    steps:
+      - name: Docker login ghcr.io
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract package-lock
+        run: |
+          docker create --name mage-files ${{ needs.image-info.outputs.url }}
+          docker cp mage-files:/mage/instance/package-lock.json ./mage-instance.package-lock.json
+          docker rm mage-files
+      - name: Upload package-lock
+        uses: actions/upload-artifact@v7
+        with:
+          path: mage-instance.package-lock.json
+          name: mage-instance.package-lock.json
+
+  trivy-scan:
+    needs:
+      - image-info
+      - build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker login ghcr.io
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          scan-type: 'image'
+          image-ref: '${{ needs.image-info.outputs.url }}'
+          ignore-unfixed: true
+          format: 'table'
+          output: 'trivy-image-report.txt'
+          exit-code: '0'
+          version: 'v0.69.3'
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v7
+        with:
+          name: trivy-container-security-report
+          path: trivy-image-report.txt
+          retention-days: 7

@@ -4,20 +4,16 @@
     <span>{{loadError}}</span>
   </div>
 
-  <div *ngIf="configuration.enabled" class="status-banner" [class.connected]="status.connected"
-    [class.disconnected]="!status.connected">
-    <mat-icon>{{status.connected ? 'cloud_done' : 'cloud_off'}}</mat-icon>
+  <div *ngIf="lastTestResult" class="status-banner"
+    [class.connected]="lastTestResult.success" [class.disconnected]="!lastTestResult.success">
+    <mat-icon>{{lastTestResult.success ? 'check' : 'cloud_off'}}</mat-icon>
     <div class="status-info">
-      <span class="status-text">
-        {{status.connected ? 'Connected to SFTP server' : 'Not connected to SFTP server'}}
-      </span>
-      <span *ngIf="status.lastError" class="status-error">{{status.lastError}}</span>
-      <span *ngIf="status.lastSync" class="status-detail">Last sync: {{status.lastSync | date:'medium'}}</span>
+      <span class="status-text">{{lastTestResult.message}}</span>
     </div>
   </div>
 
   <div class="configuration">
-    <div class="card">
+    <mat-card class="card">
       <div class="card__header">
         <div class="card__header__title">SFTP Plugin Configuration</div>
       </div>
@@ -119,14 +115,14 @@
             </div>
           </div>
           <mat-hint class="hint" *ngIf="configuration.events.length > 0">
-            {{configuration.events.length}} event(s) selected
+            {{configuration.events.length | i18nPlural: eventsSelectedPluralMap}}
           </mat-hint>
         </div>
       </div>
-    </div>
+    </mat-card>
   </div>
   <div class="configuration">
-    <div class="card">
+    <mat-card class="card">
       <div class="card__header">
         <div class="card__header__title">SFTP Client Options</div>
       </div>
@@ -195,12 +191,6 @@
           </div>
         </div>
 
-        <div *ngIf="lastTestResult" class="test-result" [class.success]="lastTestResult.success"
-          [class.error]="!lastTestResult.success">
-          <mat-icon>{{lastTestResult.success ? 'check_circle' : 'error'}}</mat-icon>
-          <span>{{lastTestResult.message}}</span>
-        </div>
-
         <div class="form-field-container">
           <button mat-stroked-button color="primary" (click)="testConnection()"
             [disabled]="isTesting || !configuration.sftpClient.host">
@@ -210,7 +200,7 @@
           </button>
         </div>
       </div>
-    </div>
+    </mat-card>
   </div>
 
   <div class="bottom-actions">

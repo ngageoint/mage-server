@@ -72,6 +72,14 @@
   --mat-badge-text-color: var(--mat-sys-on-tertiary);
 }
 
+.nav-label--truncate {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .nav-plugin-icon {
   width: 24px;
   height: 24px;

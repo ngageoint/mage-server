@@ -7,11 +7,11 @@ import {
 } from '@angular/core/testing';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { of } from 'rxjs';
 
 import { TeamDashboardComponent } from './team-dashboard.component';
-import { AdminTeamsService } from '../../services/admin-teams-service';
-import { Team } from '../team';
 import { CreateTeamDialogComponent } from '../create-team/create-team.component';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -20,7 +20,7 @@ import { AdminToastService } from '../../services/admin-toast.service';
 describe('TeamDashboardComponent', () => {
   let component: TeamDashboardComponent;
   let fixture: ComponentFixture<TeamDashboardComponent>;
-  let mockTeamsService: jasmine.SpyObj<AdminTeamsService>;
+  let mockTeamsService: jasmine.SpyObj<TeamService>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockSessionService: any;
   let toastSpy: jasmine.SpyObj<AdminToastService>;
@@ -30,38 +30,38 @@ describe('TeamDashboardComponent', () => {
       id: '1',
       name: 'Team Alpha',
       description: 'First team description',
-      teamEventId: '507f1f77bcf86cd799439011',
-      users: [] as any,
-      acl: {} as any
+      teamEventId: 10,
+      userIds: [],
+      acl: {}
     },
     {
       id: '2',
       name: 'Team Beta',
       description:
         'Second team description with much longer text that might wrap',
-      teamEventId: '507f191e810c19729de860ea',
-      users: [] as any,
-      acl: {} as any
+      teamEventId: 20,
+      userIds: [],
+      acl: {}
     },
     {
       id: '3',
       name: 'Team Gamma',
       description: 'Third team',
-      teamEventId: '507f1f77bcf86cd799439012',
-      users: [] as any,
-      acl: {} as any
+      teamEventId: 30,
+      userIds: [],
+      acl: {}
     }
   ];
 
-  const mockTeamsResponse = [
-    {
-      items: mockTeams,
-      totalCount: mockTeams.length
-    }
-  ];
+  const mockTeamsResponse: PageOf<Team> = {
+    items: mockTeams,
+    totalCount: mockTeams.length,
+    pageIndex: 0,
+    pageSize: 10
+  }
 
   beforeEach(waitForAsync(() => {
-    mockTeamsService = jasmine.createSpyObj('AdminTeamsService', ['getTeams']);
+    mockTeamsService = jasmine.createSpyObj('AdminTeamsService', ['search']);
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
     toastSpy = jasmine.createSpyObj('AdminToastService', ['show']);
 
@@ -73,7 +73,7 @@ describe('TeamDashboardComponent', () => {
       declarations: [TeamDashboardComponent],
       imports: [NoopAnimationsModule],
       providers: [
-        { provide: AdminTeamsService, useValue: mockTeamsService },
+        { provide: TeamService, useValue: mockTeamsService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: SessionService, useValue: mockSessionService },
         { provide: AdminToastService, useValue: toastSpy }
@@ -84,7 +84,7 @@ describe('TeamDashboardComponent', () => {
   }));
 
   beforeEach(() => {
-    mockTeamsService.getTeams.and.returnValue(of(mockTeamsResponse));
+    mockTeamsService.search.and.returnValue(of(mockTeamsResponse));
 
     fixture = TestBed.createComponent(TeamDashboardComponent);
     component = fixture.componentInstance;
@@ -92,7 +92,7 @@ describe('TeamDashboardComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    expect(component.teamSearch).toBe('');
+    expect(component.searchTerm).toBe('');
     expect(component.pageSize).toBe(10);
     expect(component.pageIndex).toBe(0);
   });
@@ -100,12 +100,11 @@ describe('TeamDashboardComponent', () => {
   it('should fetch teams on init', () => {
     fixture.detectChanges();
 
-    expect(mockTeamsService.getTeams).toHaveBeenCalledWith({
+    expect(mockTeamsService.search).toHaveBeenCalledWith({
       term: '',
-      sort: { name: 1 },
-      limit: 10,
-      omit_event_teams: true,
-      start: '0'
+      pageSize: 10,
+      pageIndex: 0,
+      omitEventTeams: true,
     });
     expect(component.teams).toEqual(mockTeams);
     expect(component.totalTeams).toBe(mockTeams.length);
@@ -119,12 +118,11 @@ describe('TeamDashboardComponent', () => {
     component.onSearchTermChanged('test');
 
     expect(component.pageIndex).toBe(0);
-    expect(mockTeamsService.getTeams).toHaveBeenCalledWith({
+    expect(mockTeamsService.search).toHaveBeenCalledWith({
       term: 'test',
-      sort: { name: 1 },
-      limit: 10,
-      omit_event_teams: true,
-      start: '0'
+      pageSize: 10,
+      pageIndex: 0,
+      omitEventTeams: true,
     });
   });
 
@@ -139,29 +137,27 @@ describe('TeamDashboardComponent', () => {
 
     expect(component.pageSize).toBe(25);
     expect(component.pageIndex).toBe(1);
-    expect(mockTeamsService.getTeams).toHaveBeenCalledWith({
+    expect(mockTeamsService.search).toHaveBeenCalledWith({
       term: '',
-      sort: { name: 1 },
-      limit: 25,
-      omit_event_teams: true,
-      start: '25'
+      pageSize: 25,
+      pageIndex: 1,
+      omitEventTeams: true,
     });
   });
 
   it('should reset search and pagination', () => {
-    component.teamSearch = 'test';
+    component.searchTerm = 'test';
     component.pageIndex = 2;
 
     component.onSearchCleared();
 
-    expect(component.teamSearch).toBe('');
+    expect(component.searchTerm).toBe('');
     expect(component.pageIndex).toBe(0);
-    expect(mockTeamsService.getTeams).toHaveBeenCalledWith({
+    expect(mockTeamsService.search).toHaveBeenCalledWith({
       term: '',
-      sort: { name: 1 },
-      limit: 10,
-      omit_event_teams: true,
-      start: '0'
+      pageSize: 10,
+      pageIndex: 0,
+      omitEventTeams: true,
     });
   });
 
@@ -179,9 +175,9 @@ describe('TeamDashboardComponent', () => {
       data: { team: {} }
     });
   });
-  
+
   it('should refresh teams after creating new team', fakeAsync(() => {
-    mockTeamsService.getTeams.calls.reset();
+    mockTeamsService.search.calls.reset();
     toastSpy.show.calls.reset();
 
     const createdTeam = {
@@ -210,11 +206,11 @@ describe('TeamDashboardComponent', () => {
       'Go to Team'
     );
 
-    expect(mockTeamsService.getTeams).toHaveBeenCalled();
+    expect(mockTeamsService.search).toHaveBeenCalled();
   }));
 
   it('should not refresh teams if dialog is cancelled', fakeAsync(() => {
-    mockTeamsService.getTeams.calls.reset();
+    mockTeamsService.search.calls.reset();
 
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
     dialogRefSpy.afterClosed.and.returnValue(of(null));
@@ -224,11 +220,11 @@ describe('TeamDashboardComponent', () => {
     tick();
 
     expect(toastSpy.show).not.toHaveBeenCalled();
-    expect(mockTeamsService.getTeams).not.toHaveBeenCalled();
+    expect(mockTeamsService.search).not.toHaveBeenCalled();
   }));
 
   it('should handle empty teams response by leaving defaults unchanged', () => {
-    mockTeamsService.getTeams.and.returnValue(of([]));
+    mockTeamsService.search.and.returnValue(of({ pageSize: 10, pageIndex: 0, totalCount: 0, items: []}));
 
     fixture.detectChanges();
 

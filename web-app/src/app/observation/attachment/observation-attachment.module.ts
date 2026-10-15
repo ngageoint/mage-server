@@ -8,10 +8,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FilenamePipe } from '../../filename/filename.pipe';
 import { AttachmentComponent } from './attachment.component';
+import { AttachmentCarouselComponent } from './attachment-carousel.component';
 import { AttachUploadComponent } from './attachment-upload/attachment-upload.component';
 
 @NgModule({
-  declarations: [AttachmentComponent, AttachUploadComponent, FilenamePipe],
+  declarations: [AttachmentComponent, AttachmentCarouselComponent, AttachUploadComponent, FilenamePipe],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -21,6 +22,6 @@ import { AttachUploadComponent } from './attachment-upload/attachment-upload.com
     MatProgressBarModule,
     MatProgressSpinnerModule,
   ],
-  exports: [AttachmentComponent, AttachUploadComponent, FilenamePipe]
+  exports: [AttachmentComponent, AttachmentCarouselComponent, AttachUploadComponent, FilenamePipe]
 })
 export class ObservationAttachmentModule {}

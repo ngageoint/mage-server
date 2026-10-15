@@ -5,6 +5,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
+import { TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { UserDashboardComponent } from './user-dashboard.component';
 import { BulkUserComponent } from '../bulk-user/bulk-user.component';
 import {
@@ -13,7 +14,6 @@ import {
 } from '@angular/material/dialog';
 import { RouterTestingModule } from '@angular/router/testing';
 import { UserPagingService } from '../../services/user-paging.service';
-import { AdminTeamsService } from '../../services/admin-teams-service';
 import { of, throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -95,7 +95,7 @@ describe('UserDashboardComponent', () => {
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let userServiceSpy: jasmine.SpyObj<UserService>;
   let pagingServiceSpy: jasmine.SpyObj<UserPagingService>;
-  let teamsServiceSpy: jasmine.SpyObj<AdminTeamsService>;
+  let teamsServiceSpy: jasmine.SpyObj<TeamService>;
   let toastSpy: jasmine.SpyObj<AdminToastService>;
   let sessionServiceSpy: { hasPermission: jasmine.Spy };
 
@@ -136,11 +136,11 @@ describe('UserDashboardComponent', () => {
     pagingServiceSpy.users.and.callFake(() => testUsers as any);
     pagingServiceSpy.search.and.returnValue(of(testUsers as any));
 
-    teamsServiceSpy = jasmine.createSpyObj<AdminTeamsService>(
+    teamsServiceSpy = jasmine.createSpyObj<TeamService>(
       'AdminTeamsService',
-      ['getTeams', 'addUserToTeam']
+      ['search', 'addUserToTeam']
     );
-    teamsServiceSpy.getTeams.and.returnValue(of({ items: [] } as any));
+    teamsServiceSpy.search.and.returnValue(of({ items: [] } as any));
     teamsServiceSpy.addUserToTeam.and.returnValue(of({} as any));
 
     spyOn(window, 'addEventListener').and.stub();
@@ -171,7 +171,7 @@ describe('UserDashboardComponent', () => {
         { provide: UserService, useValue: userServiceSpy },
         { provide: SessionService, useValue: sessionServiceSpy },
         { provide: UserPagingService, useValue: pagingServiceSpy },
-        { provide: AdminTeamsService, useValue: teamsServiceSpy },
+        { provide: TeamService, useValue: teamsServiceSpy },
         { provide: AdminToastService, useValue: toastSpy }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -202,7 +202,7 @@ describe('UserDashboardComponent', () => {
 
   it('should fetch teams on init', fakeAsync(() => {
     tick();
-    expect(teamsServiceSpy.getTeams).toHaveBeenCalled();
+    expect(teamsServiceSpy.search).toHaveBeenCalled();
     expect(component.teams).toEqual([]);
   }));
 
@@ -224,7 +224,7 @@ describe('UserDashboardComponent', () => {
     expect(pagingServiceSpy.search).toHaveBeenCalled();
     expect(component.dataSource.length).toBe(3);
   }));
-  
+
   it('should log error when search fails', fakeAsync(() => {
     const consoleSpy = spyOn(console, 'error').and.stub();
 

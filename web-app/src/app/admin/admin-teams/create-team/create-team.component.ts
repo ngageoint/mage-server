@@ -1,8 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
-import { AdminTeamsService } from '../../services/admin-teams-service';
-import { Team } from '../team';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 
 @Component({
     selector: 'mage-admin-team-create',
@@ -13,7 +12,7 @@ import { Team } from '../team';
 export class CreateTeamDialogComponent {
   private dialogRef = inject(MatDialogRef<CreateTeamDialogComponent>);
   private formBuilder = inject(FormBuilder);
-  private teamsService = inject(AdminTeamsService);
+  private teamsService = inject(TeamService);
   private data = inject<{ team?: Partial<Team> }>(MAT_DIALOG_DATA, { optional: true });
 
   isEditMode = !!this.data?.team?.id;
@@ -27,12 +26,14 @@ export class CreateTeamDialogComponent {
   });
 
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      return;
+    }
     this.saving.set(true);
     this.serverError.set('');
 
     const request = this.isEditMode
-      ? this.teamsService.editTeam(String(this.data!.team!.id), this.form.value)
+      ? this.teamsService.editTeam(this.data?.team?.id, this.form.value)
       : this.teamsService.createTeam(this.form.value);
 
     request.subscribe({

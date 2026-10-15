@@ -1,16 +1,24 @@
 
 import { URL } from 'url'
 import express from 'express'
-import { ErrEntityNotFound } from '../../app.api/app.api.errors'
-import { GetStaticIcon, GetStaticIconContent, GetStaticIconContentRequest, GetStaticIconRequest, ListStaticIcons, ListStaticIconsRequest } from '../../app.api/icons/app.api.icons'
+import { ErrEntityNotFound, invalidInput } from '../../app.api/app.api.errors'
+import { CreateLocalStaticIcon, CreateLocalStaticIconRequest, GetStaticIcon, GetStaticIconContent, GetStaticIconContentRequest, GetStaticIconRequest, ListStaticIcons, ListStaticIconsRequest } from '../../app.api/icons/app.api.icons'
 import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { PagingParameters } from '../../entities/entities.global'
-import { StaticIcon } from '../../entities/icons/entities.icons'
+import { LocalStaticIconStub, StaticIcon } from '../../entities/icons/entities.icons'
+import busboy, { FileInfo } from 'busboy'
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    iconUpload: busboy.Busboy | null
+  }
+}
 
 export interface StaticIconsAppLayer {
   getIcon: GetStaticIcon
   listIcons: ListStaticIcons
   getIconContent: GetStaticIconContent
+  createIcon: CreateLocalStaticIcon
 }
 
 function addContentPathToIcon(req: express.Request, icon: StaticIcon): StaticIcon & { contentPath: string } {
@@ -116,6 +124,89 @@ export function StaticIconRoutes(appLayer: StaticIconsAppLayer, createAppRequest
         next(appRes.error)
       }
     )
+    .post(
+      (req, res, next) => {
+        /*
+        encapsulate the busboy init in a middleware so the request can
+        fail-fast when busboy throws a validation error
+        */
+        try {
+          req.iconUpload = busboy({
+            headers: req.headers,
+            limits: { files: 1, fields: 0 }
+          })
+        } catch (err) {
+          console.error('error initializing icon upload\n', req.params, '\nheaders:\n', req.headers, '\n', err)
+          return res.status(400).json({ message: err instanceof Error ? err.message : String(err) })
+        }
+        next()
+      },
+      async (req, res, next) => {
+        const afterUploadStreamEvent = 'afterUploadStream'
+        const sendInvalidRequestStructure = () => next(invalidInput("request must contain only one file part named 'icon'"))
+        const afterUploadStream = (finishResponse: () => void) => {
+          if (req.iconUpload?.listenerCount(afterUploadStreamEvent)) {
+            return
+          }
+          if (req.iconUpload?.writable) {
+            return void(req.iconUpload.on(afterUploadStreamEvent, finishResponse))
+          }
+          finishResponse()
+        }
+        req.pipe(req.iconUpload!
+          .on('file', async (fieldName, stream, info: FileInfo) => {
+            if (fieldName !== 'icon') {
+              // per busboy docs, drain the file stream and move on
+              console.error(`unexpected file entry '${fieldName}' uploading icon`)
+              stream.resume()
+              return afterUploadStream(sendInvalidRequestStructure)
+            }
+
+            const iconInfo: LocalStaticIconStub = {
+              title: 'StaticIcon',
+              mediaType: info.mimeType,
+              fileName: info.filename
+            }
+
+            const appReq: CreateLocalStaticIconRequest = createAppRequest(req, { iconContent: stream, iconInfo: iconInfo })
+            const appRes = await appLayer.createIcon(appReq)
+            if (appRes.success) {
+              console.info(`successfully stored static icon ${appRes.success.id}`)
+              return void(afterUploadStream(() => {
+                res.json({...appRes.success})
+              }))
+            }
+            if (appRes.error) {
+              afterUploadStream(() => next(appRes.error))
+            } else {
+              afterUploadStream(sendInvalidRequestStructure)
+            }
+            /*
+            per busboy docs, drain the stream and ignore the contents; necessary
+            for the busboy stream to terminate properly
+            */
+            stream.resume()
+          })
+          .on('field', (fieldName, content, info) => {
+            console.error(`unexpected field ${fieldName} uploading icon`)
+            afterUploadStream(sendInvalidRequestStructure)
+          })
+          .on('filesLimit', () => {
+            console.error(`too many file parts in upload request for icon`)
+            afterUploadStream(sendInvalidRequestStructure)
+          })
+          .on('fieldsLimit', () => {
+            console.error(`too many field parts in upload request for icon`)
+            afterUploadStream(sendInvalidRequestStructure)
+          })
+          .on('close', () => {
+            req.iconUpload?.emit(afterUploadStreamEvent)
+            req.iconUpload?.removeAllListeners()
+          })
+        )
+      }
+    )
+
 
   routes.use(compatibilityMageAppErrorHandler)
 

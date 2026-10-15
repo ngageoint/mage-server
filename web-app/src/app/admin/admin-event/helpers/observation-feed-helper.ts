@@ -27,6 +27,7 @@ export interface Field {
     value?: any;
     min?: number;
     max?: number;
+    maxRecent?: number;
     allowedAttachmentTypes?: string[];
 }
 

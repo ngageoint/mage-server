@@ -1,0 +1,112 @@
+<div class="export">
+  <div class="export-content">
+    <mat-toolbar>
+      <span>Export Data</span>
+    </mat-toolbar>
+
+    <div class="export-info">
+      <div>
+        <mat-form-field appearance="fill">
+          <mat-label>Event</mat-label>
+          <input type="text" matInput [formControl]="eventControl" [matAutocomplete]="autoEvent">
+          <mat-autocomplete #autoEvent="matAutocomplete" [displayWith]="onDisplayEvent" (optionSelected)="onEventSelected($event)">
+            <mat-option *ngFor="let event of filteredEvents | async" [value]="event">
+              <div class="event-option-text">{{event.name}}</div>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div>
+        <div class="mat-body-2">What to Export</div>
+        <div class="export-choices">
+          <mat-checkbox [(ngModel)]="exportObservations" (change)="exportObservationsChanged($event)">Observations</mat-checkbox>
+          <div class="export-options">
+            <mat-checkbox [(ngModel)]="includeAttachments">Include attachments</mat-checkbox>
+            <mat-checkbox [(ngModel)]="exportFavorites">Export only your favorite observations</mat-checkbox>
+            <mat-checkbox [(ngModel)]="exportImportant">Export only observations flagged important</mat-checkbox>
+          </div>
+
+          <mat-checkbox [(ngModel)]="exportLocations">Locations</mat-checkbox>
+        </div>
+      </div>
+
+      <div>
+        <div class="mat-body-2 export-title">Export Format</div>
+        <div class="export-format">
+          <mat-chip-listbox [(ngModel)]="exportFormat" [hideSingleSelectionIndicator]="true">
+            <mat-chip-option *ngFor="let format of exportFormats" [value]="format.value" (click)="exportFormat = format.value">
+              {{format.text}}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </div>
+
+      <div>
+        <div class="mat-body-2">Time Range</div>
+        <mat-form-field class="time-field" appearance="outline">
+          <mat-select [(ngModel)]="exportTime">
+            <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}} </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <div *ngIf="exportTime === 'custom'">
+          <datetime-picker title="Start" required="true" [datetime]="defaultStartDate"
+            (dateTimeChange)="onStartDate($event)"></datetime-picker>
+          <datetime-picker title="End" required="true" [datetime]="defaultEndDate" (dateTimeChange)="onEndDate($event)">
+          </datetime-picker>
+        </div>
+      </div>
+
+      <div>
+        <div class="mat-body-2 export-title">Form Fields To Include</div>
+        <div class="export-format">
+          <mat-accordion multi>
+            <mat-expansion-panel *ngFor="let formProjection of formProjections">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  {{formProjection.form.name}}
+                </mat-panel-title>
+                <mat-panel-description *ngIf="allFieldsSelected(formProjection)">
+                  All Fields
+                  <mat-icon class="material-symbols-outlined expansion-header-icon">check_box</mat-icon>
+                </mat-panel-description>
+                <mat-panel-description *ngIf="someFieldsSelected(formProjection)">
+                  {{formProjection.selectedCount}}/{{formProjection.fieldProjections.length}} Fields
+                  <mat-icon class="material-symbols-outlined expansion-header-icon">indeterminate_check_box</mat-icon>
+                </mat-panel-description>
+                <mat-panel-description *ngIf="noFieldsSelected(formProjection)">
+                  No Fields
+                  <mat-icon class="expansion-header-icon">check_box_outline_blank</mat-icon>
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <span>
+                <mat-checkbox
+                  [(ngModel)]="formProjection.selected"
+                  [indeterminate]="someFieldsSelected(formProjection)"
+                  (change)="selectedAllFields(formProjection, $event.checked)">
+                  {{formProjection.form.name}}
+                </mat-checkbox>
+              </span>
+              <div *ngFor="let fieldProjection of formProjection.fieldProjections" class="form__field">
+                <mat-checkbox *ngIf="!fieldProjection.field.archived" [(ngModel)]="fieldProjection.selected" (change)="fieldSelected(formProjection)">
+                  {{fieldProjection.field.title}}
+                </mat-checkbox>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <mat-divider></mat-divider>
+    <div class="export-actions">
+      <button matButton (click)="cancel()">Cancel</button>
+      <button matButton (click)="exportData()" cdkFocusInitial>Export</button>
+    </div>
+  </div>
+</div>

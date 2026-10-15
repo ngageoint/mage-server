@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { Attachment, AttachmentProcessingStatus } from '../../filter/filter.types'
 
 @Component({
     selector: 'observation-attachment',
@@ -9,15 +10,21 @@ import { SessionService } from 'mage-web-app/http/session.service';
     standalone: false
 })
 export class AttachmentComponent implements OnInit {
-  @Input() attachment: any
+  @Input() attachment: Attachment
   @Input() clickable: boolean
   @Input() edit: boolean
   @Input() label: string | boolean
+
+  // The list card's carousel sets this false - a click there should only ever navigate to the
+  // observation, same as clicking anywhere else on the card, not expand a failure message in
+  // place (that's reserved for the detail/edit views where there's room for it to grow into).
+  @Input() expandable = true
 
   @Output() delete = new EventEmitter<void>()
 
   canEdit: boolean
   token: string
+  messageExpanded = false
 
   mimeTypes = {
     'png': 'image',
@@ -52,5 +59,14 @@ export class AttachmentComponent implements OnInit {
       const mimeType = this.mimeTypes[extension]
       return mimeType ? mimeType : ''
     }
+  }
+
+  isFailed(): boolean {
+    return this.attachment.processingStatus === AttachmentProcessingStatus.Rejected || this.attachment.processingStatus === AttachmentProcessingStatus.Error
+  }
+
+  toggleFailureMessage(): void {
+    if (!this.expandable) return
+    this.messageExpanded = !this.messageExpanded
   }
 }

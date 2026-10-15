@@ -3,7 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule as MatListModule } from '@angular/material/list';
 import { MomentModule } from 'src/app/moment/moment.module';
 import { FeedItemMapPopupComponent } from './feed-item-map-popup.component';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
+import { SidebarService } from 'src/app/sidebar/sidebar.service';
 
 
 describe('FeedItemMapPopupComponent', () => {
@@ -19,7 +19,7 @@ describe('FeedItemMapPopupComponent', () => {
       ],
       declarations: [FeedItemMapPopupComponent],
       providers: [
-        { provide: FeedPanelService, useValue: { selectFeedItem: () => {} } }
+        { provide: SidebarService, useValue: { selectFeedItem: () => {} } }
       ]
     })
     .compileComponents();

@@ -1,10 +1,12 @@
 {
   "name": "@ngageoint/mage.sftp.workspace",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "build": "npm-run-all build:main",
     "build:main": "ng build --project=main",
+    "build:showcase": "ng build --project=showcase",
+    "start:showcase": "ng serve --project=showcase",
     "test": "ng test --project=main",
     "test-headless": "ng test --watch=false --browsers=ChromeHeadless --project=main",
     "clean": "rm -rf dist"

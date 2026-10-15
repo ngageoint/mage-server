@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Feature } from 'geojson';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
+import { SidebarService } from 'src/app/sidebar/sidebar.service';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 
 @Component({
@@ -18,7 +18,7 @@ export class FeedItemMapPopupComponent implements OnInit {
   primary: string;
   secondary: string;
 
-  constructor(private feedPanelService: FeedPanelService) { }
+  constructor(private sidebarService: SidebarService) { }
 
   ngOnInit(): void {
     if (!this.item || !this.item.properties) return;
@@ -40,7 +40,7 @@ export class FeedItemMapPopupComponent implements OnInit {
   }
 
   onInfo(): void {
-    this.feedPanelService.selectFeedItem(this.feed, this.item);
+    this.sidebarService.selectFeedItem(this.feed, this.item);
   }
 
 }

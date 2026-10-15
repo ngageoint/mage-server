@@ -37,6 +37,12 @@ export function SftpObservationModel(connection: mongoose.Connection, collection
   return connection.model<SftpDocument>(SftpObservationModelName, SftpObservationsSchema, collectionName)
 }
 
+export interface SftpObservationEventSummary {
+  eventId: MageEventId
+  counts: Record<SftpStatus, number>
+  stuckPendingCount: number
+}
+
 export interface SftpObservationRepository {
   findAll(eventId: MageEventId): Promise<SftpAttrs[]>
   findAllByStatus(eventId: MageEventId, status: SftpStatus[]): Promise<SftpAttrs[]>
@@ -46,6 +52,7 @@ export interface SftpObservationRepository {
   isSyncedAtLastModified(eventId: MageEventId, observationId: ObservationId, lastModified: Date): Promise<boolean>
   postStatus(eventId: MageEventId, observationId: ObservationId, status: SftpStatus, lastObservationModified?: Date): Promise<SftpAttrs | null>
   markManySkipped(eventId: MageEventId, observationIds: ObservationId[]): Promise<void>
+  getSummaryByEvent(stalePendingBefore: Date): Promise<SftpObservationEventSummary[]>
 }
 
 export class MongooseSftpObservationRepository implements SftpObservationRepository {
@@ -116,6 +123,40 @@ export class MongooseSftpObservationRepository implements SftpObservationReposit
       }
     }))
     await this.model.bulkWrite(ops)
+  }
+
+  async getSummaryByEvent(stalePendingBefore: Date): Promise<SftpObservationEventSummary[]> {
+    const results = await this.model.aggregate([
+      {
+        $group: {
+          _id: '$eventId',
+          [SftpStatus.SUCCESS]: { $sum: { $cond: [{ $eq: ['$status', SftpStatus.SUCCESS] }, 1, 0] } },
+          [SftpStatus.FAILED]: { $sum: { $cond: [{ $eq: ['$status', SftpStatus.FAILED] }, 1, 0] } },
+          [SftpStatus.PENDING]: { $sum: { $cond: [{ $eq: ['$status', SftpStatus.PENDING] }, 1, 0] } },
+          [SftpStatus.SKIPPED]: { $sum: { $cond: [{ $eq: ['$status', SftpStatus.SKIPPED] }, 1, 0] } },
+          stuckPendingCount: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$status', SftpStatus.PENDING] }, { $lt: ['$updatedAt', stalePendingBefore] }] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ])
+
+    return results.map(r => ({
+      eventId: r._id,
+      counts: {
+        [SftpStatus.SUCCESS]: r[SftpStatus.SUCCESS] ?? 0,
+        [SftpStatus.FAILED]: r[SftpStatus.FAILED] ?? 0,
+        [SftpStatus.PENDING]: r[SftpStatus.PENDING] ?? 0,
+        [SftpStatus.SKIPPED]: r[SftpStatus.SKIPPED] ?? 0
+      },
+      stuckPendingCount: r.stuckPendingCount ?? 0
+    }))
   }
 
 }

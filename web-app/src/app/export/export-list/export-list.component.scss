@@ -1,0 +1,22 @@
+mat-toolbar {
+  background-color: white;
+}
+
+.export {
+  height: 100%;
+}
+
+.export__form {
+  padding-bottom: 64px;
+}
+
+.export__item {
+  cursor: pointer;
+}
+
+.export__button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin: 0 16px 16px 0;
+}

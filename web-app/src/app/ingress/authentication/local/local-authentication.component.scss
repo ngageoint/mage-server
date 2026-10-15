@@ -38,14 +38,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 100px;
-    margin-top: 32px;
+    column-gap: 32px;
+    row-gap: 8px;
+    margin-top: 16px;
     flex-wrap: wrap;
     text-align: center;
 
     div {
       display: flex;
-      gap: 15px;
+      gap: 8px;
     }
   }
 

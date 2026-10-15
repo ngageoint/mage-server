@@ -4,9 +4,9 @@ import * as Papa from 'papaparse';
 import { EMPTY, Subject, from, lastValueFrom } from 'rxjs';
 import { catchError, finalize, mergeMap, tap } from 'rxjs/operators';
 import { Role, User } from '../user';
-import { Team } from '../../admin-teams/team';
+import { Team } from '@ngageoint/mage.web-core-lib/team';
 import { UserService } from '../../../user/user.service';
-import { AdminTeamsService } from '../../services/admin-teams-service';
+import { TeamService } from '@ngageoint/mage.web-core-lib/team';
 
 export type BulkPhase = 'configure' | 'importing' | 'done';
 
@@ -20,7 +20,7 @@ export class BulkUserComponent implements OnInit, OnDestroy {
   readonly dialogRef: MatDialogRef<BulkUserComponent> = inject(MatDialogRef);
   private readonly dialogData: { roles?: Role[]; teams?: Team[] } = inject(MAT_DIALOG_DATA);
   private readonly userService = inject(UserService);
-  private readonly teamService = inject(AdminTeamsService);
+  private readonly teamService = inject(TeamService);
 
   roles: Role[] = [];
   teams: Team[] = [];
@@ -41,7 +41,7 @@ export class BulkUserComponent implements OnInit, OnDestroy {
   unmappedFields = computed(() =>
     this.requiredFields
       .filter(key => !(key in this.columnMap()))
-      .map(key => this.columnOptions.find(o => o.value === key)!)
+      .map(key => this.columnOptions.find(o => o.value === key))
   );
   successCount = computed(() => {
     const { completed, failed } = this.bulkProgress();
@@ -49,7 +49,9 @@ export class BulkUserComponent implements OnInit, OnDestroy {
   });
   successPercent = computed(() => {
     const { completed, failed, total } = this.bulkProgress();
-    if (total === 0) return 0;
+    if (total === 0) {
+      return 0;
+    }
     return ((completed - failed) / total) * 100;
   });
 
@@ -89,7 +91,9 @@ export class BulkUserComponent implements OnInit, OnDestroy {
 
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input?.files?.length) return;
+    if (!input?.files?.length) {
+      return;
+    }
     const file = input.files[0];
     this.filename.set(file.name);
     this.parseFile(file);
@@ -122,8 +126,12 @@ export class BulkUserComponent implements OnInit, OnDestroy {
       for (const key of Object.keys(next)) {
         if (next[key] === columnIndex) { delete next[key]; break; }
       }
-      if (fieldValue !== null && fieldValue in next) delete next[fieldValue];
-      if (fieldValue !== null) next[fieldValue] = columnIndex;
+      if (fieldValue !== null && fieldValue in next) {
+        delete next[fieldValue];
+      }
+      if (fieldValue !== null) {
+        next[fieldValue] = columnIndex;
+      }
       return next;
     });
   }
@@ -141,7 +149,7 @@ export class BulkUserComponent implements OnInit, OnDestroy {
       this.isFinalizing.set(true);
       await Promise.all(
         createdUsers.map(u =>
-          lastValueFrom(this.teamService.addUserToTeam(String(this.selectedTeam!.id), u))
+          lastValueFrom(this.teamService.addUserToTeam(String(this.selectedTeam.id), u))
         )
       );
     }
@@ -206,7 +214,9 @@ export class BulkUserComponent implements OnInit, OnDestroy {
     (Papa as any).parse(file, {
       complete: (results: { data: string[][] }) => {
         const nonEmptyRows = results.data.filter((row: string[]) => Array.isArray(row) && row.length > 0);
-        if (!nonEmptyRows.length) return;
+        if (!nonEmptyRows.length) {
+          return;
+        }
 
         const [headerRow, ...dataRows] = nonEmptyRows;
         this.columns.set(headerRow.map((col: string) => String(col ?? '').trim()));
@@ -214,8 +224,8 @@ export class BulkUserComponent implements OnInit, OnDestroy {
         this.users.set(dataRows.map((row: string[]) => {
           const u: Record<string, unknown> = {};
           this.columns().forEach((col: string, i: number) => { u[col] = (row[i] ?? '').toString().trim(); });
-          u['team'] = this.selectedTeam ?? null;
-          u['role'] = this.selectedRole ?? null;
+          u.team = this.selectedTeam ?? null;
+          u.role = this.selectedRole ?? null;
           return u as unknown as User;
         }));
 
@@ -232,7 +242,9 @@ export class BulkUserComponent implements OnInit, OnDestroy {
         col.toLowerCase() === opt.title.toLowerCase() ||
         col.toLowerCase() === opt.value.toLowerCase()
       );
-      if (idx !== -1) map[opt.value] = idx;
+      if (idx !== -1) {
+        map[opt.value] = idx;
+      }
     });
     this.columnMap.set(map);
   }
@@ -242,7 +254,9 @@ export class BulkUserComponent implements OnInit, OnDestroy {
     const map = this.columnMap();
     const get = (row: Record<string, unknown>, field: string): string => {
       const idx = map[field];
-      if (idx === undefined) return '';
+      if (idx === undefined) {
+        return '';
+      }
       return ((row[cols[idx]] ?? '') as string).toString().trim();
     };
 

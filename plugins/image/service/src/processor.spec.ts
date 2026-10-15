@@ -379,9 +379,9 @@ describe('processing interval', () => {
       expect(imageService.scaleToDimension).toHaveBeenCalledWith(120, jasmine.anything(), jasmine.anything())
       expect(imageService.scaleToDimension).toHaveBeenCalledWith(240, jasmine.anything(), jasmine.anything())
       expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledTimes(3)
-      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(60)?.stagedContent, 60, att.id, sameAsObservationWithoutDates(obsStaged))
-      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(120)?.stagedContent, 120, att.id, sameAsObservationWithoutDates(obsStaged))
-      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(240)?.stagedContent, 240, att.id, sameAsObservationWithoutDates(obsStaged))
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(60)!.stagedContent, 60, att.id, sameAsObservationWithoutDates(obsStaged))
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(120)!.stagedContent, 120, att.id, sameAsObservationWithoutDates(obsStaged))
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(240)!.stagedContent, 240, att.id, sameAsObservationWithoutDates(obsStaged))
       expect(attachmentStore.saveContent).not.toHaveBeenCalled()
       expect(obsRepo.patchAttachment).not.toHaveBeenCalled()
       expect(obsRepo.save).not.toHaveBeenCalled()
@@ -945,6 +945,15 @@ class BufferAttachmentStore implements AttachmentStore {
     this.pendingContent.set(id, Buffer.alloc(0))
     return pending
   }
+  async stagedContentPath(stagedContentId: StagedAttachmentContentId): Promise<string | AttachmentStoreError> {
+    if (!this.pendingContent.has(stagedContentId as string)) {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, `pending content not found: ${stagedContentId}`)
+    }
+    return stagedContentId as string
+  }
+  async deleteStagedContent(stagedContentId: StagedAttachmentContentId): Promise<void | AttachmentStoreError> {
+    this.pendingContent.delete(stagedContentId as string)
+  }
   async saveContent(content: NodeJS.ReadableStream | StagedAttachmentContent, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | AttachmentContentPatchAttrs | null> {
     if (typeof content !== 'string') {
       return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')
@@ -962,7 +971,7 @@ class BufferAttachmentStore implements AttachmentStore {
     this.attachmentContent.set(key, pendingBytes)
     return { contentLocator: key, size: pendingBytes.length }
   }
-  async saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | ThumbnailContentPatchAttrs | null> {
+  async saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContent, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | ThumbnailContentPatchAttrs | null> {
     if (typeof content !== 'string') {
       return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')
     }

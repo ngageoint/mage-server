@@ -14,14 +14,12 @@ import { zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
-import { PasswordPolicy, SignupEvent } from '../@types/signup';
+import { SignupEvent } from '../@types/signup';
 import { PasswordStrength } from '../../../entities/password/password';
 
 import {
-  createPasswordPolicyValidator,
   confirmPasswordValidator,
-  evaluatePasswordStrength,
-  getPasswordTooltip
+  evaluatePasswordStrength
 } from 'mage-web-app/password/password';
 import { emailValidator } from 'mage-web-app/email/email';
 
@@ -34,7 +32,6 @@ import { emailValidator } from 'mage-web-app/email/email';
 export class SignupComponent {
   @Output() complete = new EventEmitter<SignupEvent>();
 
-  passwordPolicy!: PasswordPolicy;
   showPassword = false;
   showConfirmPassword = false;
   passwordErrorMessages: string[] = [];
@@ -50,6 +47,7 @@ export class SignupComponent {
   });
 
   passwordStrength?: PasswordStrength;
+  passwordHelpText?: string;
   loadingCaptcha = false;
   captcha: { uri?: string; token?: string } = {};
 
@@ -74,42 +72,25 @@ export class SignupComponent {
       .getApi()
       .pipe(takeUntil(this.destroy$))
       .subscribe((api: any) => {
-        this.passwordPolicy =
-          api.authenticationStrategies.local.settings.passwordPolicy;
+        this.passwordHelpText = api.authenticationStrategies?.local?.passwordHelpText;
+      });
 
-        const usernameGetter = () => this.signup.controls.username.value ?? '';
+    this.signup.setControl(
+      'passwordconfirm',
+      new FormControl<string>('', {
+        validators: [
+          Validators.required,
+          confirmPasswordValidator(
+            () => this.signup.controls.password.value ?? ''
+          )
+        ]
+      })
+    );
 
-        this.signup.setControl(
-          'password',
-          new FormControl<string>('', {
-            validators: [
-              Validators.required,
-              createPasswordPolicyValidator(
-                this.passwordPolicy,
-                (errs) => (this.passwordErrorMessages = errs),
-                usernameGetter()
-              )
-            ]
-          })
-        );
-
-        this.signup.setControl(
-          'passwordconfirm',
-          new FormControl<string>('', {
-            validators: [
-              Validators.required,
-              confirmPasswordValidator(
-                () => this.signup.controls.password.value ?? ''
-              )
-            ]
-          })
-        );
-
-        this.signup.controls.password.valueChanges
-          .pipe(takeUntil(this.destroy$))
-          .subscribe((value) => {
-            this.onPasswordChanged(value ?? '');
-          });
+    this.signup.controls.password.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        this.onPasswordChanged(value ?? '');
       });
   }
 
@@ -121,10 +102,8 @@ export class SignupComponent {
   onPasswordChanged(password: string) {
     const username = this.signup.controls.username.value ?? '';
     this.passwordStrength = evaluatePasswordStrength(password, username);
-  }
-
-  get passwordTooltipText(): string {
-    return this.passwordPolicy ? getPasswordTooltip(this.passwordPolicy) : '';
+    this.passwordErrorMessages = [];
+    this.signup.controls.password.updateValueAndValidity({ emitEvent: false });
   }
 
   getCaptcha(): void {
@@ -186,6 +165,9 @@ export class SignupComponent {
             } else if (response.status === 409) {
               this.captcha = {};
               this.signup.controls.username.setErrors({ exists: true });
+            } else if (response.status === 400) {
+              this.passwordErrorMessages = [response.error];
+              this.signup.controls.password.setErrors({ policy: true });
             }
           }
         });
@@ -193,7 +175,6 @@ export class SignupComponent {
   }
 
   getPasswordErrorMessages(errors: any): string[] {
-    if (errors?.['required']) return ['Password is required'];
-    return this.passwordErrorMessages;
+    return errors?.['required'] ? ['Password is required'] : [];
   }
 }

@@ -1,7 +1,5 @@
 'use strict';
 
-const log = require('winston');
-
 exports.id = 'link-auth-to-auth-config';
 
 async function link(authenticationCollection, authenticationConfigurationsCollection) {
@@ -19,21 +17,21 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
         if (authenticationConfiguration) {
             authentication.authenticationConfigurationId = authenticationConfiguration._id;
 
-            log.info('Linking authentication ' + authentication._id + ' to authentication configuration ' + authenticationConfiguration._id);
+            this.log('Linking authentication ' + authentication._id + ' to authentication configuration ' + authenticationConfiguration._id);
             await authenticationCollection.updateOne({ _id: authentication._id }, authentication);
         } else {
-            log.info('Authentication strategy is not configured for ' + authentication._id);
+            this.log('Authentication strategy is not configured for ' + authentication._id);
         }
     }
 
     // Close the cursor, this is the same as reseting the query
     cursor.close(function (err) {
-        if (err) log.warn("Failed closing authentications cursor", err);
+        if (err) this.log("Failed closing authentications cursor", err);
     });
 }
 
 exports.up = async function (done) {
-    log.info('Linking authentications to their authentication configuration');
+    this.log('Linking authentications to their authentication configuration');
 
     const authenticationCollection = await this.db.collection('authentications');
     const authenticationConfigurationsCollection = await this.db.collection('authenticationconfigurations')

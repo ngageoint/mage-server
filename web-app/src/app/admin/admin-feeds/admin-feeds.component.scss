@@ -54,6 +54,20 @@ mat-paginator {
   flex-shrink: 0;
 }
 
+.feed__icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  ::ng-deep mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 24px;
+  }
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

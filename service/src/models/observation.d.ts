@@ -2,7 +2,7 @@ import { Geometry } from 'geojson'
 import mongoose from 'mongoose'
 import { MageEventAttrs, MageEventId } from '../entities/events/entities.events'
 import { Attachment, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
-import { MageEventDocument } from './event'
+import { MageEventDocument, MageEventModelInstance } from './event'
 
 export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'important' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
   userId?: mongoose.Types.ObjectId
@@ -12,9 +12,9 @@ export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<Obser
   states: ObservationStateDocument[]
   attachments: AttachmentDocument[]
   properties: ObservationDocumentProperties
-  toJSON(options?: ObservationJsonOptions): ObservationDocumentJson
 }
-export interface ObservationModel extends mongoose.Model<ObservationDocument> { }
+export type ObservationModel = mongoose.Model<ObservationDocument>
+export type ObservationModelInstance = mongoose.HydratedDocument<ObservationDocument, { toJSON: (options?: ObservationJsonOptions) => ObservationDocumentJson }>
 export type ObservationDocumentJson = Omit<ObservationAttrs, 'id' | 'eventId' | 'attachments' | 'states'> & {
   id: mongoose.Types.ObjectId
   eventId?: number
@@ -48,39 +48,34 @@ export type ObservationDocumentProperties = Omit<ObservationFeatureProperties, '
 export type ObservationDocumentFormEntry = FormEntry & {
   _id: mongoose.Types.ObjectId
 }
-export type ObservationDocumnetFormEntryJson = Omit<FormEntry, 'id'> & {
-  id: ObservationDocumentFormEntry['_id']
-}
 
-export type AttachmentDocAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'contentLocator' | 'thumbnails'> & {
+export type AttachmentDocument = Omit<Attachment, 'id' | 'observationFormId' | 'contentLocator' | 'thumbnails'> & {
   _id: mongoose.Types.ObjectId
   observationFormId: mongoose.Types.ObjectId
   relativePath?: string
-  thumbnails: ThumbnailDocAttrs[]
-}
-export type AttachmentDocument = mongoose.Document & Omit<AttachmentDocAttrs, 'thumbnails'> & {
   thumbnails: ThumbnailDocument[]
 }
+
 export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'contentLocator' | 'thumbnails'> & {
   id: AttachmentDocument['_id']
   relativePath?: string
   url?: string
 }
 
-export type ThumbnailDocAttrs = Omit<Thumbnail, 'id' | 'contentLocator'> & {
+export type ThumbnailDocument = Omit<Thumbnail, 'id' | 'contentLocator'> & {
   _id: mongoose.Types.ObjectId
   relativePath?: string
 }
-export type ThumbnailDocument = mongoose.Document & ThumbnailDocAttrs
 
 export type ObservationDocumentImportantFlag = Omit<ObservationImportantFlag, 'userId'> & {
   userId?: mongoose.Types.ObjectId
 }
 
-export type ObservationStateDocument = Omit<mongoose.Document & ObservationState, 'id' | 'userId'> & {
+export type ObservationStateDocument = Omit<ObservationState, 'id' | 'userId'> & {
   id: ObservationState['id']
   userId?: mongoose.Types.ObjectId
 }
+
 export type ObservationStateDocumentJson = Omit<ObservationState, 'id'> & {
   id: ObservationStateDocument['_id']
   url: string
@@ -90,7 +85,7 @@ export const ObservationIdSchema: mongoose.Schema
 export type ObservationIdDocument = mongoose.Document
 export const ObservationId: mongoose.Model<ObservationIdDocument>
 
-export function observationModel(event: Partial<MageEventDocument> & Pick<MageEventDocument, 'collectionName'>): ObservationModel
+export function observationModel(event: Partial<MageEventModelInstance> & Pick<MageEventDocument, 'collectionName'>): ObservationModel
 
 export interface ObservationReadOptions {
   filter?: {
@@ -114,7 +109,7 @@ export interface ObservationReadOptions {
 export type ObservationReadStreamOptions = Omit<ObservationReadOptions, 'stream'> & {
   stream: true
 }
-export function getObservations(event: MageEventDocument, options: ObservationReadOptions, callback: (err: any, results: ObservationDocument[]) => any): void
-export function getObservations(event: MageEventDocument, options: ObservationReadStreamOptions): mongoose.QueryCursor<ObservationDocument>
 
-export function updateObservation(event: MageEventDocument, observationId: ObservationId, update: any, callback: (err: any | null, obseration: ObservationDocument) => any): void
+export function getObservations(event: MageEventModelInstance, options: ObservationReadOptions, callback: (err: any, results: ObservationDocument[]) => any): void
+export function getObservations(event: MageEventModelInstance, options: ObservationReadStreamOptions): mongoose.QueryCursor<ObservationDocument>
+export function updateObservation(event: MageEventModelInstance, observationId: ObservationId, update: any, callback: (err: any | null, observation: ObservationModelInstance) => any): void

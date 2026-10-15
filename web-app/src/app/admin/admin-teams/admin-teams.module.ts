@@ -13,6 +13,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TeamService } from '@ngageoint/mage.web-core-lib/team'
 
 import { TeamDashboardComponent } from './dashboard/team-dashboard.component';
 import { CreateTeamDialogComponent } from './create-team/create-team.component';
@@ -21,7 +22,6 @@ import { TeamDetailsComponent } from './team-details/team-details.component';
 import { DeleteTeamComponent } from './delete-team/delete-team.component';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
-import { AdminTeamsService } from '../services/admin-teams-service';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
@@ -52,7 +52,7 @@ import { RouterModule } from '@angular/router';
         RouterModule
     ],
     providers: [
-        AdminTeamsService,
+        TeamService,
         AdminEventsService
     ],
 })

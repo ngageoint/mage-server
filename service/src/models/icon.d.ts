@@ -22,3 +22,8 @@ export declare class IconDocument extends mongoose.Document implements IconAttrs
 }
 
 export declare function getAll(options: { eventId?: number, formId?: number }, callback: (err: any | null, icons?: IconDocument[]) => any): void
+
+export declare function getIcon(options: { primary?: string, variant?: string, eventId?: number, formId?: number},
+                                callback: (err: any | null, icon?: IconDocument) => any): void
+
+export declare const Model: mongoose.Model<IconDocument>

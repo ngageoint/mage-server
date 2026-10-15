@@ -1,0 +1,54 @@
+.tabs {
+  height: 100%;
+  background-color: white;
+}
+
+mat-divider {
+  margin: 8px 0;
+}
+
+.tabs__icon {
+  margin-right: 8px;
+}
+
+:host ::ng-deep.mat-tab-body-wrapper {
+  flex-grow: 1;
+}
+
+.component__view {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  bottom: 0;
+  z-index: 3;
+  background-color: var(--mat-sys-surface-container);
+}
+
+.permission__actions {
+  justify-content: flex-end;
+}
+
+observation-feed {
+  display: block;
+  height: 100%;
+}
+
+user-feed {
+  display: block;
+  height: 100%;
+}
+
+.feeds-nav {
+  position: absolute;
+  background-color: white;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  width: 3rem;
+  height: 100%;
+  z-index: 10;
+}
+
+.feeds-content {
+  position: relative;
+  margin-left: 3rem;
+  width: 100%;
+}

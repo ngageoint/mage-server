@@ -1,12 +1,11 @@
 import mongoose from 'mongoose'
-import { RoleJson, RoleDocument } from './role'
+import { RoleJson } from './role'
 import { UserIcon, Avatar, Phone } from '../entities/users/entities.users'
 import { Authentication } from '../entities/authentication/entities.authentication'
 
 
-export interface UserDocument extends mongoose.Document {
+export interface UserDocument {
   _id: mongoose.Types.ObjectId
-  id: string
   username: string
   displayName: string
   email?: string
@@ -15,18 +14,17 @@ export interface UserDocument extends mongoose.Document {
   icon: UserIcon
   active: boolean
   enabled: boolean
-  roleId: mongoose.Types.ObjectId | RoleDocument
-  authenticationId: mongoose.Types.ObjectId | mongoose.Document
+  roleId: mongoose.Types.ObjectId
+  authenticationId: mongoose.Types.ObjectId
   status?: string
   recentEventIds: number[]
   createdAt: Date
   lastUpdated: Date
-  toJSON(): UserJson
 }
 
 
 // TODO: this probably needs an update now with new authentication changes
-export type UserJson = Omit<UserDocument, '_id' | 'avatar' | 'roleId' | 'authenticationId' | keyof mongoose.Document>
+export type UserJson = Omit<UserDocument, '_id' | 'avatar' | 'roleId' | 'authenticationId'>
   & {
     id: mongoose.Types.ObjectId,
     icon: Omit<UserIcon, 'relativePath'>,
@@ -36,28 +34,30 @@ export type UserJson = Omit<UserDocument, '_id' | 'avatar' | 'roleId' | 'authent
   & (AuthenticationPopulated | AuthenticationReferenced)
 
 export declare const Model: mongoose.Model<UserDocument>
+export type UserModelInstance = mongoose.HydratedDocument<UserDocument>
+export declare const Schema: mongoose.Schema<UserDocument>
 
-export function getUserById(id: mongoose.Types.ObjectId): Promise<UserDocument | null>
-export function getUserById(id: mongoose.Types.ObjectId, callback: (err: null | any, result: UserDocument | null) => any): void
+export function getUserById(id: mongoose.Types.ObjectId): Promise<UserModelInstance | null>
+export function getUserById(id: mongoose.Types.ObjectId, callback: (err: null | any, result: UserModelInstance | null) => any): void
 
 type RoleReferenced = {
   roleId: string,
-  role: never
+  role?: never
 }
 
 type RolePopulated = {
-  roleId: never,
+  roleId?: never,
   role: RoleJson
 }
 
 type AuthenticationPopulated = {
-  authenticationId: never,
+  authenticationId?: never,
   authentication: Authentication
 }
 
 type AuthenticationReferenced = {
   authenticationId: string,
-  authentication: never
+  authentication?: never
 }
 
 

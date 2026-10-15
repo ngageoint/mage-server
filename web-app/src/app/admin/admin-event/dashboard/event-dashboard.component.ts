@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, HostListener, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
+import { PageOf } from '@ngageoint/mage.web-core-lib/paging'
 
 import {
   SearchOptions,
-  EventsResponse,
   AdminEventsService
 } from '../../services/admin-events.service';
 
@@ -22,7 +22,7 @@ import { SessionService } from 'mage-web-app/http/session.service';
     standalone: false
 })
 export class EventDashboardComponent implements OnInit, OnDestroy {
-  events: EventsResponse | null = null;
+  events: PageOf<Event> | null = null;
   filteredEvents: Event[] = [];
 
   numChars = 180;
@@ -129,7 +129,7 @@ export class EventDashboardComponent implements OnInit, OnDestroy {
 
   createEvent(): void {
     const dialogRef = this.modal.open(CreateEventDialogComponent, {
-      width: "600px",
+      width: '600px',
       data: { team: {} }
     });
 

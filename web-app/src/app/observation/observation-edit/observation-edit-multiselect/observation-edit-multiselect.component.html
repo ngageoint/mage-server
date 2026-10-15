@@ -24,19 +24,46 @@
   </mat-chip-grid>
 
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-    <mat-option
-      *ngFor="let choice of filteredChoices | async"
-      [value]="choice.title"
-    >
-      <span
-        [ngClass]="{
-          'select__choice--disabled':
-            control.value && control.value.includes(choice.title)
-        }"
-      >
-        {{ choice.title }}
-      </span>
-    </mat-option>
+    <ng-container *ngIf="recentChoices$ | async as recentChoices">
+      <mat-optgroup [label]="'Recents'" *ngIf="recentChoices.length !== 0">
+        <mat-option *ngFor="let choice of recentChoices" [value]="choice.title">
+          <span
+            [ngClass]="{
+              'select__choice--disabled':
+                control.value && control.value.includes(choice.title)
+            }"
+          >
+            {{ choice.title }}
+          </span>
+        </mat-option>
+      </mat-optgroup>
+      <ng-container *ngIf="filteredChoices$ | async as filteredChoices">
+        <mat-optgroup [label]="'All'" *ngIf="recentChoices.length !== 0; else noRecents">
+          <mat-option *ngFor="let choice of filteredChoices" [value]="choice.title">
+            <span
+              [ngClass]="{
+                'select__choice--disabled':
+                  control.value && control.value.includes(choice.title)
+              }"
+            >
+              {{ choice.title }}
+            </span>
+          </mat-option>
+        </mat-optgroup>
+        <ng-template #noRecents>
+          <mat-option *ngFor="let choice of filteredChoices" [value]="choice.title">
+            <span
+              [ngClass]="{
+                'select__choice--disabled':
+                  control.value && control.value.includes(choice.title)
+              }"
+            >
+              {{ choice.title }}
+            </span>
+          </mat-option>
+        </ng-template>
+      </ng-container>
+    </ng-container>
   </mat-autocomplete>
 
   <mat-error *ngIf="formGroup.get(definition.name)?.invalid">

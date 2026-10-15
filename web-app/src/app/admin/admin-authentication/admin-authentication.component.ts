@@ -8,7 +8,7 @@ import { AuthenticationDeleteComponent } from './admin-authentication-delete/adm
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { lastValueFrom, Subject, takeUntil } from 'rxjs';
 import { AuthenticationConfigurationService } from '../services/admin-authentication-configuration.service';
-import { AdminTeamsService } from '../services/admin-teams-service';
+import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { AdminEventsService } from '../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -30,7 +30,7 @@ export class AdminAuthenticationComponent
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
 
-  teams: any[] = [];
+  teams: Team[] = [];
   events: any[] = [];
 
   isDirty = false;
@@ -44,7 +44,7 @@ export class AdminAuthenticationComponent
   constructor(
     private dialog: MatDialog,
     private readonly snackBar: MatSnackBar,
-    private teamsService: AdminTeamsService,
+    private teamsService: TeamService,
     private eventsService: AdminEventsService,
     private authenticationConfigurationService: AuthenticationConfigurationService,
     private sessionService: SessionService,
@@ -81,10 +81,8 @@ export class AdminAuthenticationComponent
     );
 
     const teamsPromise = lastValueFrom(
-      this.teamsService.getTeams({
-        state: 'all',
-        populate: false
-      } as any)
+      // TODO: this used to get all teams - need a team search/select component instead
+      this.teamsService.search({ pageSize: 9999, pageIndex: 0 })
     );
 
     const eventsPromise = lastValueFrom(
@@ -242,7 +240,7 @@ export class AdminAuthenticationComponent
         }
       });
   }
-  
+
   onAuthenticationToggled(strategy: Strategy): void {
     (strategy as any).isDirty = true;
     this.isDirty = true;
