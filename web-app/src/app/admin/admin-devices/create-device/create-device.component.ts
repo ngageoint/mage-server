@@ -21,6 +21,8 @@ import { Device } from '../../../entities/device/device';
 import { User } from '../../admin-users/user';
 import { UserSearchBoxComponent } from '../../admin-users/user-search/user-search-box.component';
 
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 @Component({
     selector: 'mage-admin-device-create',
     templateUrl: './create-device.component.html',
@@ -61,7 +63,14 @@ export class CreateDeviceDialogComponent {
 
       return of(uid).pipe(
         debounceTime(300),
-        switchMap((value) => this.deviceService.getAllDevices({ uid: value })),
+        switchMap((value) => {
+          const filter: any = { limit: 5 };
+          filter.or = {
+            uid: `^${escapeRegExp(value)}$`
+          };
+
+          return this.deviceService.getAllDevices(filter);
+        }),
         map(({ devices }) => {
           const taken = devices.some((d) => d.uid?.toLowerCase() === uid && d.id !== this.data.device?.id);
           return taken ? { duplicate: true } : null;
