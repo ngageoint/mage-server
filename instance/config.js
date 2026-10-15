@@ -39,6 +39,7 @@ module.exports = {
     },
     plugins: {
       servicePlugins: [
+        '@ngageoint/mage.image.service',
         '@ngageoint/mage.arcgis.service',
         '@ngageoint/mage.sftp.service',
         '@ngageoint/mage.nga-msi'
