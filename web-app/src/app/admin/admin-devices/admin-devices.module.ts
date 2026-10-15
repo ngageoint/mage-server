@@ -31,10 +31,6 @@ import { DeviceDetailsComponent } from './device-details/device-details.componen
 import { LoginsComponent } from '../admin-logins/admin-logins.component';
 
 @NgModule({
-    declarations: [
-        DeviceDetailsComponent,
-        CreateDeviceDialogComponent,
-    ],
     imports: [
         CommonModule,
         FormsModule,
@@ -66,7 +62,9 @@ import { LoginsComponent } from '../admin-logins/admin-logins.component';
         DragDropModule,
         AdminUsersModule,
         LoginsComponent,
-        DeviceDashboardComponent
+        DeviceDashboardComponent,
+        DeviceDetailsComponent,
+        CreateDeviceDialogComponent
     ],
     exports: [
         DeviceDashboardComponent,
