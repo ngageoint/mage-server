@@ -1,5 +1,5 @@
 import plugin from './index'
-import { AtakServiceType } from './atak'
+import { TakGovServiceType, TakOpenServiceType } from './atak'
 import { FeedsPluginHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.feeds'
 
 describe('atak mage plugin hooks', function() {
@@ -12,12 +12,13 @@ describe('atak mage plugin hooks', function() {
 
   describe('feeds hook', function() {
 
-    it('provides the service type', async function() {
+    it('provides both the Gov TAK and OpenTAK service types', async function() {
 
       const serviceTypes = await hooks.feeds.loadServiceTypes()
 
-      expect(serviceTypes).toHaveLength(1)
-      expect(serviceTypes[0]).toBeInstanceOf(AtakServiceType)
+      expect(serviceTypes).toHaveLength(2)
+      expect(serviceTypes[0]).toBeInstanceOf(TakGovServiceType)
+      expect(serviceTypes[1]).toBeInstanceOf(TakOpenServiceType)
     })
   })
 })

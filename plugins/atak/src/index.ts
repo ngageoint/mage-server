@@ -13,7 +13,8 @@ const hooks: InitPluginHook = {
       feeds: {
         async loadServiceTypes(): Promise<FeedServiceType[]> {
           return [
-            new ATAK.AtakServiceType(transport)
+            new ATAK.TakGovServiceType(transport),
+            new ATAK.TakOpenServiceType(transport)
           ]
         }
       }
