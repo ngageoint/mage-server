@@ -21,29 +21,27 @@ describe('cot-events transformResponse', () => {
     warnSpy.mockRestore()
   })
 
-  it('converts a response of valid CoT event strings into features', () => {
-    const res: AtakResponse = { status: 200, body: [ validCotXml('ALPHA-1-1'), validCotXml('ALPHA-1-2') ] }
+  it('converts a response of a single valid CoT event string into a feature', () => {
+    const res: AtakResponse = { status: 200, body: validCotXml('ALPHA-1-1') }
 
     const content = transformResponse(res, req)
 
     expect(content.topic).toBe(topicDescriptor.id)
-    expect(content.items.features).toHaveLength(2)
+    expect(content.items.features).toHaveLength(1)
     expect(content.items.features[0].id).toBe('ALPHA-1-1')
-    expect(content.items.features[1].id).toBe('ALPHA-1-2')
     expect(warnSpy).not.toHaveBeenCalled()
   })
 
-  it('skips unparseable events and logs a warning, but keeps the valid ones', () => {
-    const res: AtakResponse = { status: 200, body: [ validCotXml('ALPHA-1-1'), '<event uid="broken"', 42 ] }
+  it('skips an unparseable event and logs a warning', () => {
+    const res: AtakResponse = { status: 200, body: '<event uid="broken"' }
 
     const content = transformResponse(res, req)
 
-    expect(content.items.features).toHaveLength(1)
-    expect(content.items.features[0].id).toBe('ALPHA-1-1')
-    expect(warnSpy).toHaveBeenCalledTimes(2)
+    expect(content.items.features).toHaveLength(0)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('returns an empty FeatureCollection when the response body is not an array', () => {
+  it('returns an empty FeatureCollection when the response body is not a string', () => {
     const res: AtakResponse = { status: 200, body: { unexpected: 'shape' } }
 
     const content = transformResponse(res, req)
@@ -51,8 +49,8 @@ describe('cot-events transformResponse', () => {
     expect(content.items).toEqual({ type: 'FeatureCollection', features: [] })
   })
 
-  it('returns an empty FeatureCollection for an empty array', () => {
-    const res: AtakResponse = { status: 200, body: [] }
+  it('returns an empty FeatureCollection for an empty string', () => {
+    const res: AtakResponse = { status: 200, body: '' }
 
     const content = transformResponse(res, req)
 
