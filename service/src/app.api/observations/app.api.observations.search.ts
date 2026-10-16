@@ -19,7 +19,7 @@ export interface SearchIndexEvent {
 
 export interface SearchIndexPermissionService {
   ensureSearchIndexAllPermission(context: AppRequestContext): Promise<PermissionDeniedError | null>
-  ensureSearchIndexEventPermission(context: AppRequestContext): Promise<PermissionDeniedError | null>
+  ensureSearchIndexEventPermission(context: AppRequestContext, event: MageEventAttrs): Promise<PermissionDeniedError | null>
 }
 
 export interface IndexEventObservations {

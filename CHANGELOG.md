@@ -9,6 +9,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ### Service
 #### Features
 #### Bug Fixes
+* Re-indexing a single event's observation search (`POST /api/search-index/events/:eventId`) no longer always fails with 403, even for admins; an unknown event now returns 404
 #### Security
 
 ### Web App
