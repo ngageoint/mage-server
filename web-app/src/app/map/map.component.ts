@@ -267,7 +267,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       if (bounds.isValid()) {
         this.map.fitBounds(bounds)
       }
-    } else if (layer.type === 'GeoPackage' && layer.bbox) {
+    } else if (layer.type === 'GeoPackage' && layer.bbox?.length === 4) {
       this.map.fitBounds([
         [layer.bbox[1], layer.bbox[0]],
         [layer.bbox[3], layer.bbox[2]]

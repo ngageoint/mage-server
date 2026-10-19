@@ -28,7 +28,7 @@ export class LayerHeaderComponent {
 
   hasBounds(): boolean {
     const layer = this.layer();
-    return 'getBounds' in layer.layer || (layer.type === 'GeoPackage' && Boolean(layer.bbox));
+    return 'getBounds' in layer.layer || (layer.type === 'GeoPackage' && layer.bbox?.length === 4);
   }
 
   checkChanged(event: MatCheckboxChange): void {
