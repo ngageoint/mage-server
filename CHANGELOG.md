@@ -8,7 +8,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ### Service
 #### Features
-* Authentication configurations have an optional `buttonText` field, exposed in the public `/api` strategies, for the full sign-in button label
+* Authentication configurations have an optional `buttonText` field, exposed in the public `/api` strategies, for the full sign-in button label; `apiVersion` is now 6.8.0
 #### Bug Fixes
 #### Security
 
