@@ -1,17 +1,15 @@
 import express from 'express'
-import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { parseISO8601 } from '../../utilities/dates'
-import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
 import {
   AttachmentStore,
-  EventScopedObservationRepository,
   FindObservationsSort,
   FindObservationsSortField,
   ObservationFieldFilter,
   ObservationState,
   ObservationStateName
 } from '../../entities/observations/entities.observations'
-import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
@@ -31,15 +29,7 @@ export interface ObservationAppLayer {
   readAttachmentContent: ReadAttachmentContent
 }
 
-export interface ObservationWebAppRequestFactory {
-  <Params extends object>(req: express.Request, params?: Params): Params & ObservationRequest<unknown>
-}
-
-export interface EnsureEventScope {
-  (eventId: MageEventId): Promise<null | { mageEvent: MageEvent, observationRepository: EventScopedObservationRepository }>
-}
-
-export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: AttachmentStore, createAppRequest: ObservationWebAppRequestFactory): express.Router {
+export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: AttachmentStore, createAppRequest: WebAppRequestFactory<ObservationRequest>): express.Router {
 
   const routes = express.Router().use(express.json())
 

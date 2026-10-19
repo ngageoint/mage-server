@@ -2,7 +2,7 @@ import { EventAclEntry, ListEventAcl, ListEventAclRequest, RemoveEventAclUser, R
 import { entityNotFound, invalidInput, permissionDenied, PermissionDeniedError } from '../../app.api/app.api.errors'
 import { AppRequestContext, AppResponse } from '../../app.api/app.api.global'
 import { MageEventPermission } from '../../entities/authorization/entities.permissions'
-import { Acl, EventRole, MageEvent } from '../../entities/events/entities.events'
+import { Acl, EventAccessType, EventRole, MageEvent } from '../../entities/events/entities.events'
 import { EventAclRepository } from '../../entities/events/entities.events.acl'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 import { EventPermissionServiceImpl } from '../../permissions/permissions.events'
@@ -10,8 +10,8 @@ import { userRoleHasPermission, UserWithRole } from '../../permissions/permissio
 
 export function ListEventAcl(permissionService: EventPermissionServiceImpl, userRepo: UserRepository): ListEventAcl {
   return async function(req: ListEventAclRequest): ReturnType<ListEventAcl> {
-    const event = req.context.event
-    const denied = await permissionService.ensureEventUpdatePermission(req.context)
+    const event = req.context.mageEvent
+    const denied = await ensureEventUpdatePermission(permissionService, event, req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
@@ -24,8 +24,8 @@ export function SetEventAclRole(permissionService: EventPermissionServiceImpl, a
     if (!Object.values(EventRole).includes(req.role)) {
       return AppResponse.error(invalidInput('invalid event role', [ req.role, 'role' ]))
     }
-    const event = req.context.event
-    const denied = await permissionService.ensureEventUpdatePermission(req.context)
+    const event = req.context.mageEvent
+    const denied = await ensureEventUpdatePermission(permissionService, event, req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
@@ -52,8 +52,8 @@ export function SetEventAclRole(permissionService: EventPermissionServiceImpl, a
 
 export function RemoveEventAclUser(permissionService: EventPermissionServiceImpl, aclRepo: EventAclRepository, userRepo: UserRepository): RemoveEventAclUser {
   return async function(req: RemoveEventAclUserRequest): ReturnType<RemoveEventAclUser> {
-    const event = req.context.event
-    const denied = await permissionService.ensureEventUpdatePermission(req.context)
+    const event = req.context.mageEvent
+    const denied = await ensureEventUpdatePermission(permissionService, event, req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
@@ -75,6 +75,11 @@ export function RemoveEventAclUser(permissionService: EventPermissionServiceImpl
     }
     return AppResponse.success(await aclEntries(acl, userRepo))
   }
+}
+
+function ensureEventUpdatePermission(permissionService: EventPermissionServiceImpl, event: MageEvent, context: AppRequestContext): Promise<PermissionDeniedError | null> {
+  const principal = context.requestingPrincipal() as UserWithRole
+  return permissionService.authorizeEventAccess(event, principal, MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
 }
 
 function ensureCanManageOwners(event: MageEvent, context: AppRequestContext): PermissionDeniedError | null {

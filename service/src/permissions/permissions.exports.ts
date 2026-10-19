@@ -1,6 +1,7 @@
 import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.errors'
 import { AppRequestContext } from '../app.api/app.api.global'
-import { CreateExportRequestContext, ExportAppLayerPermissionService } from '../app.api/exports/app.api.exports'
+import { ExportAppLayerPermissionService } from '../app.api/exports/app.api.exports'
+import { EventRequestContext } from '../app.api/events/app.api.events'
 import { EventAccessType } from '../entities/events/entities.events'
 import { EventPermissionServiceImpl } from './permissions.events'
 import { UserWithRole } from './permissions.role-based.base'
@@ -9,7 +10,7 @@ export class RoleBasedExportsPermissionService implements ExportAppLayerPermissi
 
   constructor(private eventPermissions: EventPermissionServiceImpl) {}
 
-  async ensureCreateExportPermission(context: CreateExportRequestContext): Promise<PermissionDeniedError | null> {
+  async ensureCreateExportPermission(context: EventRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     const user = context.requestingPrincipal()
 
     // Ensure user is part of this event
