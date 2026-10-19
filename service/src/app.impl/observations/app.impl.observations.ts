@@ -7,7 +7,7 @@ import * as api from '../../app.api/observations/app.api.observations'
 import { Logger, NoopLogger } from '../../entities/entities.logging'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FindObservationsSpec, FindObservationsStreamSpec, FindObservationsWhere, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationFieldFilter, ObservationId, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationSavedDomainEvent, ObservationSearchRepository, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, UsersExpandedObservationAttrs, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, EventScopedObservationRepository, FindObservationsSpec, FindObservationsWhere, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationFieldFilter, ObservationId, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationSavedDomainEvent, ObservationSearchRepository, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, UsersExpandedObservationAttrs, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { AddRecentFormFieldChoiceEntry, UserId, UserPreferenceRepository, UserRepository } from '../../entities/users/entities.users'
 import { TeamRepository } from '../../entities/teams/entities.teams'
 import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
@@ -17,6 +17,7 @@ const pipeline = util.promisify(stream.pipeline)
 
 export function ReadObservations(
   permissionService: api.ObservationPermissionService,
+  obsRepoFactory: ObservationRepositoryForEvent,
   teamRepo: TeamRepository,
   observationSearchRepo: ObservationSearchRepository,
 ): api.ReadObservations {
@@ -53,7 +54,8 @@ export function ReadObservations(
         populateUserNames: search.populateUserNames === true,
       }
 
-      const result = await req.context.observationRepository.find(findSpec,
+      const repo = await obsRepoFactory(req.context.mageEvent.id)
+      const result = await repo.find(findSpec,
         (obs: ObservationAttrs | UsersExpandedObservationAttrs) => {
           const expanded = obs as UsersExpandedObservationAttrs
           return mapper(api.exoObservationFor(obs, expanded.user, expanded.important?.user))
@@ -87,21 +89,21 @@ async function findSearchIds(
   }
 }
 
-export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
+export function AllocateObservationId(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent): api.AllocateObservationId {
   return async function allocateObservationId(req: api.AllocateObservationIdRequest): ReturnType<api.AllocateObservationId> {
     const denied = await permissionService.ensureCreateObservationPermission(req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
-    const repo = req.context.observationRepository
+    const repo = await obsRepoFactory(req.context.mageEvent.id)
     const id = await repo.allocateObservationId()
     return AppResponse.success(id)
   }
 }
 
-export function SaveObservation(permissionService: api.ObservationPermissionService, userRepo: UserRepository, log: Logger = NoopLogger): api.SaveObservation {
+export function SaveObservation(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, userRepo: UserRepository, log: Logger = NoopLogger): api.SaveObservation {
   return async function saveObservation(req: api.SaveObservationRequest): ReturnType<api.SaveObservation> {
-    const repo = req.context.observationRepository
+    const repo = await obsRepoFactory(req.context.mageEvent.id)
     const mod = req.observation
     const existingObservation = await repo.findById(mod.id)
     const denied = existingObservation ?
@@ -110,7 +112,7 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
     if (denied) {
       return AppResponse.error(denied)
     }
-    const obs = await prepareObservationMod(mod, existingObservation, req.context)
+    const obs = await prepareObservationMod(mod, existingObservation, req.context, repo)
     if (obs instanceof MageError) {
       return AppResponse.error(obs)
     }
@@ -134,9 +136,9 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   }
 }
 
-export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore, attachmentHooks: AttachmentHook[]): api.StoreAttachmentContent {
+export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, attachmentStore: AttachmentStore, attachmentHooks: AttachmentHook[]): api.StoreAttachmentContent {
   return async function storeAttachmentContent(req: api.StoreAttachmentContentRequest): ReturnType<api.StoreAttachmentContent> {
-    const obsRepo = req.context.observationRepository
+    const obsRepo = await obsRepoFactory(req.context.mageEvent.id)
     const obsBefore = await obsRepo.findById(req.observationId)
     if (!obsBefore) {
       return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
@@ -213,13 +215,13 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
   }
 }
 
-export function ReadAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore): api.ReadAttachmentContent {
+export function ReadAttachmentContent(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, attachmentStore: AttachmentStore): api.ReadAttachmentContent {
   return async function readAttachmentContent(req: api.ReadAttachmentContentRequest): ReturnType<api.ReadAttachmentContent> {
     const denied = await permissionService.ensureReadObservationPermission(req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
-    const repo = req.context.observationRepository
+    const repo = await obsRepoFactory(req.context.mageEvent.id)
     const obs = await repo.findById(req.observationId)
     if (!obs) {
       return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
@@ -334,9 +336,8 @@ export function registerRecordRecentFormFieldChoicesHandler(domainEvents: EventE
  * an `isPending` property.  That should be reasonable to implement, but no
  * time now, as usual.
  */
-async function prepareObservationMod(mod: api.ExoObservationMod, observationToUpdate: Observation | null, context: api.ObservationRequestContext): Promise<Observation | InvalidInputError> {
+async function prepareObservationMod(mod: api.ExoObservationMod, observationToUpdate: Observation | null, context: api.ObservationRequestContext, repo: EventScopedObservationRepository): Promise<Observation | InvalidInputError> {
   const event = context.mageEvent
-  const repo = context.observationRepository
   const modAttrs = baseObservationAttrsForMod(mod, observationToUpdate, context)
   // first get new form entry ids so new attachments have a proper id to reference
   const [removedFormEntries, newFormEntries] = mod.properties.forms.reduce(([removed, added], entryMod) => {

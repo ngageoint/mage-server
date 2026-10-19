@@ -1,19 +1,15 @@
 import { MageEventModelInstance } from '../models/event'
-import { AppRequestContext } from '../app.api/app.api.global'
 import { PermissionDeniedError, permissionDenied } from '../app.api/app.api.errors'
 import { FeedId } from '../entities/feeds/entities.feeds'
 import { allPermissions, AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
 import { FeedsPermissionService } from '../app.api/feeds/app.api.feeds'
+import { EventRequestContext } from '../app.api/events/app.api.events'
 import { MageEventAttrs, MageEventRepository, EventAccessType, rolesWithPermission } from '../entities/events/entities.events'
 import EventModel from '../models/event'
 import { UserId } from '../entities/users/entities.users'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
 import { TeamId } from '../entities/teams/entities.teams'
 import { userRoleHasPermission, UserWithRole } from './permissions.role-based.base'
-
-export interface EventRequestContext extends AppRequestContext<UserWithRole> {
-  readonly event: MageEventAttrs | MageEventModelInstance
-}
 
 type TeamMembership = {
   id: TeamId
@@ -30,22 +26,6 @@ type TeamMembership = {
 export class EventPermissionServiceImpl {
 
   constructor(readonly eventRepo: MongooseMageEventRepository) {}
-
-  async ensureEventUpdatePermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
-    const eventContext = context as EventRequestContext
-    if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
-    }
-    return permissionDenied(MageEventPermission.UPDATE_EVENT, String(context.requestingPrincipal()))
-  }
-
-  async ensureEventReadPermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
-    const eventContext = context as EventRequestContext
-    if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
-    }
-    return permissionDenied(MageEventPermission.READ_EVENT_USER, String(context.requestingPrincipal()))
-  }
 
   /**
    * Check for the given app-level permission on the role of the given user.
@@ -103,25 +83,25 @@ export class EventFeedsPermissionService implements FeedsPermissionService {
 
   constructor(readonly eventRepo: MageEventRepository, readonly eventPermissions: EventPermissionServiceImpl) {}
 
-  async ensureFetchFeedContentPermissionFor(context: EventRequestContext, feed: FeedId): Promise<PermissionDeniedError | null> {
-    return await this.eventPermissions.ensureEventReadPermission(context)
+  async ensureFetchFeedContentPermissionFor(context: EventRequestContext<UserWithRole>, feed: FeedId): Promise<PermissionDeniedError | null> {
+    return await this.eventPermissions.authorizeEventAccess(context.mageEvent, context.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
   }
-  async ensureListServiceTypesPermissionFor(context: EventRequestContext): Promise<PermissionDeniedError | null> {
+  async ensureListServiceTypesPermissionFor(context: EventRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     return permissionDenied(allPermissions.FEEDS_LIST_SERVICE_TYPES, context.requestingPrincipal().username)
   }
-  async ensureCreateServicePermissionFor(context: EventRequestContext): Promise<PermissionDeniedError | null> {
+  async ensureCreateServicePermissionFor(context: EventRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     return permissionDenied(allPermissions.FEEDS_CREATE_SERVICE, context.requestingPrincipal().username)
   }
-  async ensureListServicesPermissionFor(context: EventRequestContext): Promise<PermissionDeniedError | null> {
+  async ensureListServicesPermissionFor(context: EventRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     return permissionDenied(allPermissions.FEEDS_LIST_SERVICES, context.requestingPrincipal().username)
   }
-  async ensureListTopicsPermissionFor(context: EventRequestContext, service: string): Promise<PermissionDeniedError | null> {
+  async ensureListTopicsPermissionFor(context: EventRequestContext<UserWithRole>, service: string): Promise<PermissionDeniedError | null> {
     return permissionDenied(allPermissions.FEEDS_LIST_TOPICS, context.requestingPrincipal().username)
   }
-  async ensureCreateFeedPermissionFor(context: EventRequestContext, service: string): Promise<PermissionDeniedError | null> {
+  async ensureCreateFeedPermissionFor(context: EventRequestContext<UserWithRole>, service: string): Promise<PermissionDeniedError | null> {
     return permissionDenied(allPermissions.FEEDS_CREATE_FEED, context.requestingPrincipal().username)
   }
-  async ensureListAllFeedsPermissionFor(context: EventRequestContext): Promise<PermissionDeniedError | null> {
+  async ensureListAllFeedsPermissionFor(context: EventRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
     return permissionDenied(allPermissions.FEEDS_LIST_ALL, context.requestingPrincipal().username)
   }
 }

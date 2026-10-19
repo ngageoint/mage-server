@@ -76,14 +76,14 @@ export function SearchIndexEvent(
   indexEventObservations: api.IndexEventObservations
 ): api.SearchIndexEvent {
   return async function searchIndexEvent(req: api.SearchIndexEventRequest): ReturnType<api.SearchIndexEvent> {
-    const denied = await permissionService.ensureSearchIndexEventPermission(req.context)
-    if (denied) {
-      return AppResponse.error(denied)
-    }
-
     const event = await eventRepository.findById(req.eventId)
     if (!event) {
       return AppResponse.error(entityNotFound(req.eventId, 'Event'))
+    }
+
+    const denied = await permissionService.ensureSearchIndexEventPermission(req.context, event)
+    if (denied) {
+      return AppResponse.error(denied)
     }
 
     // Reset any stale 'running' status left by a previous crash so claimIndexing can proceed
