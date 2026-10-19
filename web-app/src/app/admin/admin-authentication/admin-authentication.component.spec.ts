@@ -69,4 +69,44 @@ describe('AdminAuthenticationComponent', () => {
     const alpha = component.strategies().find((strategy) => strategy.title === 'Alpha')!;
     expect(alpha.icon).toBe('data:image/png;base64,abc123');
   });
+
+  it('should fill in the default button text for third-party strategies saved without it', async () => {
+    const component = (await render()).componentInstance;
+
+    const zulu = component.strategies().find((strategy) => strategy.title === 'Zulu')!;
+    expect(zulu.buttonText).toBe('Sign in with Zulu');
+    expect(zulu.isDirty).toBeFalsy();
+
+    const alpha = component.strategies().find((strategy) => strategy.title === 'Alpha')!;
+    expect(alpha.buttonText).toBeUndefined();
+  });
+
+  it('should not save a strategy with blank button text', async () => {
+    const component = (await render()).componentInstance;
+    const service = TestBed.inject(AuthenticationConfigurationService) as any;
+    service.updateConfiguration = jasmine.createSpy('updateConfiguration');
+
+    const zulu = component.strategies().find((strategy) => strategy.title === 'Zulu')!;
+    zulu.buttonText = ' ';
+    zulu.isDirty = true;
+    await component.save();
+
+    expect(service.updateConfiguration).not.toHaveBeenCalled();
+    expect(TestBed.inject(MatSnackBar).open).toHaveBeenCalledWith('Button text is required for Zulu', undefined, { duration: 2000 });
+  });
+
+  it('should not save a strategy with an invalid button color', async () => {
+    const component = (await render()).componentInstance;
+    const service = TestBed.inject(AuthenticationConfigurationService) as any;
+    service.updateConfiguration = jasmine.createSpy('updateConfiguration');
+
+    const zulu = component.strategies().find((strategy) => strategy.title === 'Zulu')!;
+    zulu.textColor = '#FFFFFF';
+    zulu.buttonColor = 'blue-ish';
+    zulu.isDirty = true;
+    await component.save();
+
+    expect(service.updateConfiguration).not.toHaveBeenCalled();
+    expect(TestBed.inject(MatSnackBar).open).toHaveBeenCalledWith('Button colors must be hex colors like #005CBB for Zulu', undefined, { duration: 2000 });
+  });
 });

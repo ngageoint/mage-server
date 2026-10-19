@@ -3939,6 +3939,9 @@ components:
           type: string
         buttonColor:
           type: string
+        buttonText:
+          type: string
+          description: Full sign in button label. When empty, clients show "Sign in with" followed by the title.
         icon:
           type: string
           format: byte

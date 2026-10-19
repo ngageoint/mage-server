@@ -8,11 +8,15 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ### Service
 #### Features
+* Authentication configurations have an optional `buttonText` field, exposed in the public `/api` strategies, for the full sign-in button label
 #### Bug Fixes
 #### Security
 
 ### Web App
 #### Features
+* Admins can set the full text of a third-party sign-in button (e.g. "Continue to sign in"); it defaults to `Sign in with <title>`
+* The admin Authentication page has a Login Button section for editing an existing third-party authentication's button text, colors, and icon, with a preview that is the actual sign-in button
+* Button colors can be typed as hex as well as picked, and an uploaded button icon can be removed
 #### Bug Fixes
 
 ### Plugins

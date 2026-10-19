@@ -16,7 +16,8 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AuthenticationConfigurationService } from '../../services/admin-authentication-configuration.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { Strategy, loginButtonError } from '../../admin-authentication/admin-settings.model';
+import { authenticationButtonText } from '../../../api/api.entity';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
@@ -117,7 +118,11 @@ export class AuthenticationCreateComponent implements OnInit {
     this.titleCtrl.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((v) => {
+        const previousDefault = authenticationButtonText(this.strategy.title);
         this.strategy.title = v ?? '';
+        if (!this.strategy.buttonText?.trim() || this.strategy.buttonText === previousDefault) {
+          this.strategy.buttonText = authenticationButtonText(this.strategy.title);
+        }
       });
 
     this.nameCtrl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((v) => {
@@ -212,8 +217,12 @@ export class AuthenticationCreateComponent implements OnInit {
     this.settingsCtrl.updateValueAndValidity({ emitEvent: false });
 
     return (
-      this.titleCtrl.valid && this.nameCtrl.valid && this.hasRequiredSettings()
+      this.titleCtrl.valid && this.nameCtrl.valid && this.hasRequiredSettings() && this.isLoginButtonValid()
     );
+  }
+
+  isLoginButtonValid(): boolean {
+    return !loginButtonError(this.strategy);
   }
 
   private hasRequiredSettings(): boolean {
