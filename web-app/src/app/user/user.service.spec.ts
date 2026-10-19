@@ -25,6 +25,34 @@ describe('User Service Tests', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('idpSignin', () => {
+    it('emits the sign in result posted back from the sign in window', () => {
+      const service: UserService = TestBed.inject(UserService);
+      spyOn(window, 'open').and.returnValue(null);
+
+      let result: any;
+      service.idpSignin('openidconnect').subscribe(response => result = response);
+      window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, data: { token: 'token' } }));
+
+      expect(result).toEqual({ token: 'token' });
+    });
+
+    it('ignores messages from other origins and keeps waiting for the sign in result', () => {
+      const service: UserService = TestBed.inject(UserService);
+      spyOn(window, 'open').and.returnValue(null);
+
+      let result: any;
+      service.idpSignin('openidconnect').subscribe(response => result = response);
+      window.dispatchEvent(new MessageEvent('message', { origin: 'https://extension.example.com', data: { other: true } }));
+
+      expect(result).toBeUndefined();
+
+      window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, data: { token: 'token' } }));
+
+      expect(result).toEqual({ token: 'token' });
+    });
+  });
+
   describe('getEventPreferences', () => {
     it('gets preferences for the given event', () => {
       const service: UserService = TestBed.inject(UserService);
