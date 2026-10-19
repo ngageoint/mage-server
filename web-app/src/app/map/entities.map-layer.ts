@@ -22,11 +22,13 @@ export type RasterLayer = {
   | { format: 'WMS', wms: { layers: string, version: string, format: string, transparent: boolean, styles?: string } }
 )
 
+export type MapLayerGroup = 'base' | 'tile' | 'grid' | 'feature' | 'feed' | 'mage'
+
 export interface VectorLayer {
   type: 'vector'
   id: string
   name: string
-  group: string
+  group: Extract<MapLayerGroup, 'feature' | 'feed' | 'mage'>
   selectedByDefault?: boolean
   hidden?: boolean
   cluster?: boolean
@@ -76,7 +78,6 @@ export type RenderedMapLayer = (
 ) & {
   layer: { options: { pane: string } }
   selected?: boolean
-  zIndex?: number
 }
 
 export type RenderedRasterLayer = Extract<RenderedMapLayer, { type: 'Imagery' }>
