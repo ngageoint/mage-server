@@ -44,6 +44,19 @@ describe('atak service type', function () {
     expect(err?.code).toEqual(ErrInvalidServiceConfig);
   });
 
+  it('accepts a config with a valid port', async function () {
+    const err = await atak.validateServiceConfig({ baseUrl: 'http://test.org', port: 8089 });
+    expect(err).toBeNull();
+  });
+
+  it('rejects a config with an invalid port', async function () {
+    for (const port of [0, -1, 65536, 1.5, '8089']) {
+      const err = await atak.validateServiceConfig({ baseUrl: 'http://test.org', port } as any);
+      expect(err).toBeInstanceOf(FeedsError);
+      expect(err?.code).toEqual(ErrInvalidServiceConfig);
+    }
+  });
+
   it('creates a service connection with a config object and transport', async function () {
     const conn = (await atak.createConnection(
       { baseUrl: 'http://test.tak' }
@@ -149,6 +162,49 @@ describe('atak connection', function () {
     expect(topicModules[0].transformResponse as any).toHaveBeenCalledWith(contentRes, contentReq);
   });
 
+  it('calls fetchContent directly when the topic module provides it, bypassing createContentRequest/transformResponse', async function () {
+    const conn = new ATAK.AtakConnection(
+      new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
+      { baseUrl: 'http://test.fetch' },
+      transport as any
+    );
+
+    const topicContent: FeedTopicContent = {
+      topic: topicModules[0].topicDescriptor.id,
+      items: { type: 'FeatureCollection', features: [] } as any
+    };
+
+    topicModules[0].createContentRequest = jest.fn() as any;
+    topicModules[0].transformResponse = jest.fn() as any;
+    topicModules[0].fetchContent = jest.fn(async () => topicContent);
+
+    const content = await conn.fetchTopicContent(topicModules[0].topicDescriptor.id, { some: 'param' });
+
+    expect(content).toEqual(topicContent);
+    expect(topicModules[0].fetchContent as any).toHaveBeenCalledWith(
+      transport,
+      new URL(conn.baseUrl),
+      conn.auth,
+      { some: 'param' }
+    );
+    expect(topicModules[0].createContentRequest as any).not.toHaveBeenCalled();
+    expect(topicModules[0].transformResponse as any).not.toHaveBeenCalled();
+    expect(transport.send).not.toHaveBeenCalled();
+  });
+
+  it('throws when a topic module defines neither fetchContent nor createContentRequest/transformResponse', async function () {
+    const conn = new ATAK.AtakConnection(
+      new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
+      { baseUrl: 'http://test.fetch' },
+      transport as any
+    );
+
+    topicModules[0].createContentRequest = undefined;
+    topicModules[0].transformResponse = undefined;
+
+    await expect(conn.fetchTopicContent(topicModules[0].topicDescriptor.id)).rejects.toThrow('defines neither');
+  });
+
   it('passes auth through to the transport when credentials are configured', async function () {
     const conn = new ATAK.AtakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
@@ -179,6 +235,15 @@ describe('atak connection', function () {
       transport as any
     );
     expect(conn.auth).toBeUndefined();
+  });
+
+  it('merges the configured port into baseUrl', function () {
+    const conn = new ATAK.AtakConnection(
+      new Map(),
+      { baseUrl: 'http://test.tak', port: 8089 },
+      transport as any
+    );
+    expect(conn.baseUrl).toEqual('http://test.tak:8089/');
   });
 
   it('throws for an unknown topic', async function () {

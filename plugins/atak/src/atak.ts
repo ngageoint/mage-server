@@ -25,6 +25,7 @@ export class TakServerServiceType implements FeedServiceType {
     title: 'TAK Server',
     properties: {
       baseUrl: { type: 'string', title: 'Base URL', description: 'GovTAK or OpenTAK Server' },
+      port: { type: 'integer', title: 'Port', description: 'Port for TAK Server' },
       username: { type: 'string', title: 'Username', description: 'Server username' },
       password: { type: 'string', title: 'Password', description: 'Server password' }
     },
@@ -37,7 +38,7 @@ export class TakServerServiceType implements FeedServiceType {
     if (typeof config !== 'object' || config === null || Array.isArray(config)) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'config must be an object')
     }
-    const { baseUrl } = config as unknown as AtakServiceConfig
+    const { baseUrl, port } = config as unknown as AtakServiceConfig
     if (typeof baseUrl !== 'string') {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'config.baseUrl must be a url string')
     }
@@ -46,6 +47,9 @@ export class TakServerServiceType implements FeedServiceType {
     }
     catch (err) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'invalid service url')
+    }
+    if (port !== undefined && (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535)) {
+      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['port'], config }, 'config.port must be an integer between 1 and 65535')
     }
     return null
   }
@@ -62,6 +66,7 @@ export class TakServerServiceType implements FeedServiceType {
 
 export interface AtakServiceConfig {
   baseUrl: string
+  port?: number
   username?: string
   password?: string
 }
@@ -78,10 +83,20 @@ const topics: Map<string, AtakTopicModule> = new Map<FeedTopicId, AtakTopicModul
 export class AtakConnection implements FeedServiceConnection {
 
   readonly baseUrl: string
+  readonly url: URL
   readonly auth?: AtakAuth
 
   constructor(readonly topics: Map<FeedTopicId, AtakTopicModule>, config: AtakServiceConfig, readonly transport: AtakTransport) {
-    this.baseUrl = config.baseUrl
+    if (config.port) {
+      const url = new URL(config.baseUrl)
+      url.port = String(config.port)
+      this.baseUrl = url.toString()
+      this.url = url
+    }
+    else {
+      this.baseUrl = config.baseUrl
+      this.url = new URL(config.baseUrl)
+    }
     this.auth = config.username && config.password ? { username: config.username, password: config.password } : undefined
   }
 
@@ -101,9 +116,15 @@ export class AtakConnection implements FeedServiceConnection {
     if (!topicModule) {
       throw new Error(`unknown topic: ${topic}`)
     }
-    const req = topicModule.createContentRequest(params)
-    const res = await this.transport.send(req, new URL(this.baseUrl), this.auth)
-    return topicModule.transformResponse(res, req)
+    if (topicModule.fetchContent) {
+      return await topicModule.fetchContent(this.transport, this.url, this.auth, params)
+    }
+    if (topicModule.createContentRequest && topicModule.transformResponse) {
+      const req = topicModule.createContentRequest(params)
+      const res = await this.transport.send(req, this.url, this.auth)
+      return topicModule.transformResponse(res, req)
+    }
+    throw new Error(`topic module for ${topic} defines neither fetchContent nor createContentRequest/transformResponse`)
   }
 }
 
@@ -124,6 +145,7 @@ export interface AtakTransport {
 
 export interface AtakTopicModule {
   topicDescriptor: FeedTopic
-  createContentRequest(params?: JsonObject): AtakRequest
-  transformResponse(res: AtakResponse, req: AtakRequest): FeedTopicContent
+  createContentRequest?(params?: JsonObject): AtakRequest
+  transformResponse?(res: AtakResponse, req: AtakRequest): FeedTopicContent
+  fetchContent?(transport: AtakTransport, baseUrl: URL, auth: AtakAuth | undefined, params?: JsonObject): Promise<FeedTopicContent>
 }
