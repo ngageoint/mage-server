@@ -1,33 +1,49 @@
-import { Component, EventEmitter, Input, Output, OnDestroy } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { User } from '../user';
 import { UserPagingService } from '../../services/user-paging.service';
 import { Subject, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @Component({
     selector: 'user-search-box',
     templateUrl: './user-search-box.component.html',
     styleUrls: ['./user-search-box.component.scss'],
-    standalone: false
+    imports: [
+      FormsModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatIconModule,
+      MatButtonModule,
+      MatAutocompleteModule
+    ]
 })
-export class UserSearchBoxComponent implements OnDestroy {
+export class UserSearchBoxComponent {
+  private readonly userPagingService = inject(UserPagingService);
+  private readonly destroyRef = inject(DestroyRef);
+
   @Input() placeholder: string = 'Search users...';
   @Output() userSelected = new EventEmitter<User | null>();
 
   inputValue: User | string = '';
-  searchResults: User[] = [];
+  readonly searchResults = signal<User[]>([]);
   userState: string = 'all';
 
   private userStateAndData: any;
-  private destroy$ = new Subject<void>();
   private input$ = new Subject<string>();
 
-  constructor(private userPagingService: UserPagingService) {
+  constructor() {
     this.userStateAndData = this.userPagingService.constructDefault();
 
     this.input$
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         debounceTime(200),
         distinctUntilChanged(),
         switchMap((term) => {
@@ -39,13 +55,8 @@ export class UserSearchBoxComponent implements OnDestroy {
         })
       )
       .subscribe((users: User[]) => {
-        this.searchResults = (users || []).slice(0, 10);
+        this.searchResults.set((users || []).slice(0, 10));
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   displayUser = (value: User | string | null): string => {
@@ -57,7 +68,7 @@ export class UserSearchBoxComponent implements OnDestroy {
   onUserInput(value: User | string): void {
     if (typeof value !== 'string') return;
     if (!value) {
-      this.searchResults = [];
+      this.searchResults.set([]);
       this.userSelected.emit(null);
       return;
     }
@@ -65,13 +76,13 @@ export class UserSearchBoxComponent implements OnDestroy {
   }
 
   onOptionSelected(user: User): void {
-    this.searchResults = [];
+    this.searchResults.set([]);
     this.userSelected.emit(user);
   }
 
   clear(): void {
     this.inputValue = '';
-    this.searchResults = [];
+    this.searchResults.set([]);
     this.userSelected.emit(null);
   }
 }

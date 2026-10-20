@@ -12,31 +12,29 @@
     other information might be relevant when choosing those items.
   -->
   <div>
-    <mat-form-field appearance="fill" class="full-width" *ngIf="services?.length">
-      <mat-label>Select A Service</mat-label>
-      <mat-select class="service-select" [(ngModel)]="selectedService" (selectionChange)="onServiceSelected()" [required]>
-        <!-- <mat-option>
-          <ngx-mat-select-search placeholderLabel="Select A Service"
-            noEntriesFoundLabel=""></ngx-mat-select-search>
-        </mat-option> -->
-        <mat-option *ngFor="let service of services" [value]="service">
-          {{service.title}}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    @if (services?.length) {
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Select A Service</mat-label>
+        <mat-select class="service-select" [(ngModel)]="selectedService" (selectionChange)="onServiceSelected()" [required]>
+          @for (service of services; track service.id) {
+            <mat-option [value]="service">
+              {{service.title}}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
   </div>
 
   <div>
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Select A Topic</mat-label>
       <mat-select class="topic-select" [(ngModel)]="selectedTopic" (selectionChange)="onTopicSelected()" [required]>
-        <!-- <mat-option>
-          <ngx-mat-select-search placeholderLabel="Select A Topic"
-            noEntriesFoundLabel=""></ngx-mat-select-search>
-        </mat-option> -->
-        <mat-option *ngFor="let topic of topics" [value]="topic">
-          {{topic.title}}
-        </mat-option>
+        @for (topic of topics; track topic.id) {
+          <mat-option [value]="topic">
+            {{topic.title}}
+          </mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>

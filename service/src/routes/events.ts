@@ -3,7 +3,7 @@ const userTransformer = require('../transformers/user')
 
 import async from 'async'
 import util from 'util'
-import fileType from 'file-type'
+import { filetypeinfo } from 'magic-bytes.js'
 import mimetypes from 'mime-types'
 import EventModel, { FormDocument, FormSubdocumentModelInstance, MageEventDocument } from '../models/event'
 import express from 'express'
@@ -12,7 +12,7 @@ import { AnyPermission, MageEventPermission } from '../entities/authorization/en
 import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
-import { EventAccessType, MageEvent } from '../entities/events/entities.events'
+import { EventAccessType } from '../entities/events/entities.events'
 import { userRoleHasPermission } from '../permissions/permissions.role-based.base'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
@@ -24,7 +24,6 @@ const log = logger.child({ component: 'events' })
 declare module 'express-serve-static-core' {
   export interface Request {
     event?: EventModel.MageEventModelInstance
-    eventEntity?: MageEvent
     access?: { user: express.Request['user'], permission: EventAccessType }
     parameters?: EventQueryParams
     form?: FormJson
@@ -468,14 +467,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
           return next();
         }
         async.map(icons, function (icon: any, done: any) {
-          fs.readFile(icon.path, async (err, data) => {
+          fs.readFile(icon.path, (err, data) => {
             if (err) {
               return done(err);
             }
             let base64;
-            const metadata = await fileType.fromBuffer(data);
-            if (metadata) {
-              base64 = util.format('data:%s;base64,%s', metadata.mime, data.toString('base64'));
+            const mediaType = filetypeinfo(data).find(x => x.mime)?.mime;
+            if (mediaType) {
+              base64 = util.format('data:%s;base64,%s', mediaType, data.toString('base64'));
             }
 
             done(null, {
@@ -533,17 +532,17 @@ function EventRoutes(app: express.Application, security: { authentication: authe
             res.sendFile(icon.path);
           },
           'application/json': function () {
-            fs.readFile(icon.path, async (err: any, data) => {
+            fs.readFile(icon.path, (err: any, data) => {
               if (err) {
                 return next(err);
               }
-              const dataType = await fileType.fromBuffer(data)
+              const mediaType = filetypeinfo(data).find(x => x.mime)?.mime
               res.json({
                 eventId: icon.eventId,
                 formId: icon.formId,
                 primary: icon.primary,
                 variant: icon.variant,
-                icon: util.format('data:%s;base64,%s', dataType?.mime, data.toString('base64'))
+                icon: util.format('data:%s;base64,%s', mediaType, data.toString('base64'))
               });
             });
           }

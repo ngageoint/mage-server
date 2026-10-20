@@ -79,6 +79,17 @@ describe('plugin url scheme', function() {
     expect(String(err.sourceUrl)).to.equal(String(url))
   })
 
+  it('resolves content to an error instead of throwing when the file does not exist', async function() {
+
+    const pluginName = '@adapters.url_schemes.plugin.test/plugin1'
+    const scheme = new PluginUrlScheme([ pluginName ], [ testNodeModules ])
+    const url = new URL(`mage-plugin:///${pluginName}/assets/does_not_exist.txt`)
+    const content = await scheme.resolveContent(url)
+
+    expect(content).to.be.instanceOf(UrlResolutionError)
+    expect(String((content as UrlResolutionError).sourceUrl)).to.equal(String(url))
+  })
+
   xit('test module that defines exports in package.json', function() {
     expect.fail('todo: see https://nodejs.org/dist/latest-v14.x/docs/api/packages.html#packages_package_entry_points')
   })

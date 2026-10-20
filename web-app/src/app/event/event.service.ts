@@ -554,6 +554,7 @@ export class EventService {
     const observationFilter = this.filterService.getObservationFilter();
 
     const params: ObservationsRequestOptions = {
+      populate: true,
       ...this.buildObservationFilterParams(observationFilter)
     };
 

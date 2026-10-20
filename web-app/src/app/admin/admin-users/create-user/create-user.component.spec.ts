@@ -5,22 +5,14 @@ import {
   tick
 } from '@angular/core/testing';
 import { CreateUserModalComponent } from './create-user.component';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import {
-  MatDialogModule as MatDialogModule,
   MatDialogRef as MatDialogRef,
   MAT_DIALOG_DATA as MAT_DIALOG_DATA
 } from '@angular/material/dialog';
 import { ApiService } from '../../../api/api.service';
 import { Role } from '../user';
 import { of, throwError } from 'rxjs';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule as MatInputModule } from '@angular/material/input';
-import { MatSelectModule as MatSelectModule } from '@angular/material/select';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule as MatTooltipModule } from '@angular/material/tooltip';
-import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 import { UserService } from '../../../user/user.service';
 
 describe('CreateUserModalComponent', () => {
@@ -53,19 +45,7 @@ describe('CreateUserModalComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      declarations: [CreateUserModalComponent],
-      imports: [
-        ReactiveFormsModule,
-        FormsModule,
-        MatDialogModule,
-        NoopAnimationsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressBarModule
-      ],
+      imports: [CreateUserModalComponent, NoopAnimationsModule],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: { roles: mockRoles } },
         { provide: MatDialogRef, useValue: dialogRefSpy },
@@ -90,7 +70,7 @@ describe('CreateUserModalComponent', () => {
     tick();
 
     expect(apiServiceSpy.getApi).toHaveBeenCalled();
-    expect(component.passwordHelpText).toBe(
+    expect(component.passwordHelpText()).toBe(
       'Password must be at least 8 characters.'
     );
 
@@ -109,7 +89,7 @@ describe('CreateUserModalComponent', () => {
     fixture.detectChanges();
     tick();
 
-    expect(component.passwordHelpText).toBeUndefined();
+    expect(component.passwordHelpText()).toBeUndefined();
   }));
 
   it('should validate required fields in form', fakeAsync(() => {
@@ -140,12 +120,12 @@ describe('CreateUserModalComponent', () => {
     const passwordControl = component.signup.get('password');
     expect(passwordControl).toBeTruthy();
 
-    const before = component.passwordStrength;
+    const before = component.passwordStrength();
     passwordControl?.setValue('GoodPass1!');
     tick();
 
-    expect(component.passwordStrength).toBeTruthy();
-    expect(component.passwordStrength).not.toBe(before);
+    expect(component.passwordStrength()).toBeTruthy();
+    expect(component.passwordStrength()).not.toBe(before);
   }));
 
   it('should handle form submission when valid', fakeAsync(() => {
@@ -162,7 +142,7 @@ describe('CreateUserModalComponent', () => {
       selectedRole: mockRoles[0].id
     });
 
-    component.passwordErrorMessages = [];
+    component.passwordErrorMessages.set([]);
     component.signup.updateValueAndValidity();
 
     component.saveUser();
@@ -187,7 +167,7 @@ describe('CreateUserModalComponent', () => {
     fixture.detectChanges();
     tick();
     (dialogRefSpy.close as jasmine.Spy).calls.reset();
-    component.passwordErrorMessages = [];
+    component.passwordErrorMessages.set([]);
 
     component.saveUser();
 
@@ -209,7 +189,7 @@ describe('CreateUserModalComponent', () => {
       selectedRole: mockRoles[0].id
     });
 
-    component.passwordErrorMessages = ['x'];
+    component.passwordErrorMessages.set(['x']);
     component.signup.updateValueAndValidity();
 
     component.saveUser();
@@ -235,14 +215,14 @@ describe('CreateUserModalComponent', () => {
       selectedRole: mockRoles[0].id
     });
 
-    component.passwordErrorMessages = [];
+    component.passwordErrorMessages.set([]);
     component.signup.updateValueAndValidity();
 
     component.saveUser();
 
     expect(dialogRefSpy.close).not.toHaveBeenCalled();
     expect(component.saving()).toBeFalse();
-    expect(component.passwordErrorMessages).toEqual(['Password is too weak']);
+    expect(component.passwordErrorMessages()).toEqual(['Password is too weak']);
     expect(
       component.signup.get('password')?.errors?.['policy']
     ).toBeTrue();
@@ -266,7 +246,7 @@ describe('CreateUserModalComponent', () => {
       selectedRole: mockRoles[0].id
     });
 
-    component.passwordErrorMessages = [];
+    component.passwordErrorMessages.set([]);
     component.signup.updateValueAndValidity();
 
     component.saveUser();

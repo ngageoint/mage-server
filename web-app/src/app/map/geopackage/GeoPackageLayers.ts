@@ -130,13 +130,13 @@ export default class GeoPackageLayers {
   private popupHtml(feature: ClosestFeature): string {
     let html = '<div class="geojson-popup"><h6>' + feature.gp_table + '</h6>';
     if (feature.coverage) {
-      html += 'There are ' + feature.feature_count + ' features in this area.';
+      html += '<p class="geojson-popup__summary">There are ' + feature.feature_count + ' features in this area.</p>';
     } else {
       html += '<table>';
       for (const key in feature.properties) {
         if (feature.properties.hasOwnProperty(key) && feature.properties[key] !== Object(feature.properties[key])) {
           html +=
-            '<tr><td class="title" style="padding-right: 8px;">' +
+            '<tr><td class="title">' +
             key +
             '</td><td class="text">' +
             feature.properties[key] +

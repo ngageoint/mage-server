@@ -41,16 +41,14 @@ import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [
+  imports: [
+    AdminFeedsComponent,
     AdminFeedEditComponent,
     AdminServiceEditComponent,
     AdminFeedEditItemPropertiesComponent,
     AdminFeedEditTopicComponent,
     AdminFeedEditConfigurationComponent,
     AdminFeedEditTopicConfigurationComponent,
-  ],
-  imports: [
-    AdminFeedsComponent,
     FormsModule,
     ReactiveFormsModule,
     CommonModule,

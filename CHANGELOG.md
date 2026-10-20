@@ -10,6 +10,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 #### Features
 * Authentication configurations have an optional `buttonText` field, exposed in the public `/api` strategies, for the full sign-in button label; `apiVersion` is now 6.8.0
 #### Bug Fixes
+* Re-indexing a single event's observation search (`POST /api/search-index/events/:eventId`) no longer always fails with 403, even for admins; an unknown event now returns 404
 #### Security
 
 ### Web App
@@ -30,7 +31,9 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * New optional ClamAV plugin: staged attachment uploads are scanned for viruses/malware against a running `clamd` daemon before being made available; infected or unscannable attachments are rejected instead of exposed. Enabled by adding `@ngageoint/mage.clamav.service` to `servicePlugins`/`MAGE_PLUGINS`, with `clamd` host/port configurable via `MAGE_CLAMAV_HOST`/`MAGE_CLAMAV_PORT`
 * Admins can set whether a feed shows on the map by default
 * Dynamic feed and map icons
+* Audit logging now also records observation creation, account signup requests, and data exports
 #### Bug Fixes
+* Attachment uploads no longer fail when the uploaded file's name differs from the name on the attachment record
 * OAuth/SAML/OIDC sign-in no longer hangs on a stuck popup or in-app browser when authentication fails; errors are now logged server-side and the popup/mobile flow always closes or redirects cleanly
 * Inactive, disabled, or misconfigured-strategy accounts signing in via OAuth/SAML/OIDC now consistently report account status instead of silently failing
 * Bearer-authenticated requests no longer silently depend on `express-session`, fixing intermittent 400s loading `/ui_plugins` assets
@@ -61,6 +64,10 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Observation edit error banner height is now capped and scrollable
 
 ### Plugins
+#### ArcGIS
+* Released 1.0.1; see the [ArcGIS plugin changelog](plugins/arcgis/CHANGELOG.md)
+#### Image
+* Upgraded `sharp` to 0.35.5, fixing high-severity vulnerabilities in its bundled libvips, libheif, and librsvg libraries
 #### nga-msi
 * Added the World Port Index feed
 * Removed the deprecated ASAM topic, icon, and related tests/docs

@@ -5,10 +5,10 @@ import supertest from 'supertest'
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import uniqid from 'uniqid'
 import _ from 'lodash'
-import { AppResponse, AppRequest } from '../../../lib/app.api/app.api.global'
+import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
-import { EventAccessType, EventRole, MageEvent, MageEventAttrs, MageEventRepository } from '../../../lib/entities/events/entities.events'
-import { AddFeedToEventRequest, ListEventFeedsRequest, UserFeed, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
+import { EventAccessType, EventRole, MageEvent, MageEventAttrs } from '../../../lib/entities/events/entities.events'
+import { AddFeedToEventRequest, EventRequest, UserFeed, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
 import { FeedId, FeedContent } from '../../../lib/entities/feeds/entities.feeds'
 import { FetchFeedContentRequest } from '../../../lib/app.api/feeds/app.api.feeds'
 import { EventFeedsApp, EventFeedsRoutes } from '../../../lib/adapters/events/adapters.events.controllers.web'
@@ -20,20 +20,20 @@ const testUser = 'lummytin'
 
 describe('event feeds web controller', function () {
 
-  let createAppRequest: WebAppRequestFactory = <P>(webReq: express.Request, params?: P): AppRequest<typeof testUser> & P => {
+  let createAppRequest: WebAppRequestFactory<EventRequest> = <P>(webReq: express.Request, params?: P): EventRequest & P => {
     return {
       context: {
         requestToken: Symbol(),
         requestingPrincipal(): typeof testUser {
           return testUser
-        }
+        },
+        mageEvent: event
       },
       ...(params || {})
-    } as AppRequest<typeof testUser> & P
+    } as EventRequest & P
   }
   let eventFeedsRoutes: express.Router
   let app: express.Application
-  let eventRepo: SubstituteOf<MageEventRepository>
   let eventFeedsApp: SubstituteOf<EventFeedsApp>
   let client: supertest.SuperTest<supertest.Test>
   let event: MageEvent
@@ -57,13 +57,10 @@ describe('event feeds web controller', function () {
         }
       }
     })
-    eventRepo = Sub.for<MageEventRepository>()
-    eventRepo.findById(eventId).resolves(event)
     eventFeedsApp = Sub.for<EventFeedsApp>()
-    eventFeedsApp.eventRepo.returns!(eventRepo)
     eventFeedsRoutes = EventFeedsRoutes(eventFeedsApp, createAppRequest)
     app = express()
-    app.use(rootPath, eventFeedsRoutes)
+    app.use(`${rootPath}/:eventId/feeds`, eventFeedsRoutes)
     client = supertest(app)
   })
 
@@ -74,7 +71,6 @@ describe('event feeds web controller', function () {
       const feedId = uniqid()
       event.feedIds.push(feedId)
       const requestParams: Partial<AddFeedToEventRequest> = {
-        event: event.id,
         feed: feedId
       }
       eventFeedsApp.addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
@@ -90,20 +86,6 @@ describe('event feeds web controller', function () {
       eventFeedsApp.received(1).addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
     })
 
-    it('fails with 404 if the event does not exist', async function () {
-      const feedId = uniqid()
-      const badEventId = 1234567890;
-
-      eventRepo.findById(badEventId).resolves(null);
-
-      const res = await client
-        .post(`${rootPath}/${badEventId}/feeds`)
-        .type('json')
-        .send(JSON.stringify(feedId))
-
-      expect(res.status).to.equal(404)
-    })
-
     it('fails with 400 if the feed does not exist', async function () {
       const res = await client
         .post(`${rootPath}/${event.id}/feeds`)
@@ -117,7 +99,6 @@ describe('event feeds web controller', function () {
       const feedId = uniqid()
       event.feedIds.push(feedId)
       const requestParams: Partial<AddFeedToEventRequest> = {
-        event: event.id,
         feed: feedId
       }
       eventFeedsApp.addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
@@ -158,27 +139,14 @@ describe('event feeds web controller', function () {
         }
       ]
       event.feedIds.concat(eventFeeds[0].id, eventFeeds[1].id)
-      const reqParams: Partial<ListEventFeedsRequest> = {
-        event: event.id
-      }
-      eventFeedsApp.listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
+      eventFeedsApp.listEventFeeds(Arg.any())
         .resolves(AppResponse.success<UserFeed[], unknown>(eventFeeds))
       const res = await client.get(`${rootPath}/${event.id}/feeds`)
 
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMimeType)
       expect(res.body).to.deep.equal(eventFeeds)
-      eventFeedsApp.received(1).listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
-    })
-
-    it('fails with 404 if the event does not exist', async function () {
-      const badEventId = 1234567890;
-
-      eventRepo.findById(badEventId).resolves(null);
-
-      const res = await client.get(`${rootPath}/${badEventId}/feeds`)
-
-      expect(res.status).to.equal(404)
+      eventFeedsApp.received(1).listEventFeeds(Arg.any())
     })
 
     it('fails with 403 without permission', async function () {
@@ -203,15 +171,12 @@ describe('event feeds web controller', function () {
         }
       ]
       event.feedIds.concat(eventFeeds[0].id, eventFeeds[1].id)
-      const reqParams: Partial<ListEventFeedsRequest> = {
-        event: event.id
-      }
-      eventFeedsApp.listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
+      eventFeedsApp.listEventFeeds(Arg.any())
         .resolves(AppResponse.error(permissionDenied('READ_EVENT_USER', testUser)))
       const res = await client.get(`${rootPath}/${event.id}/feeds`)
 
       expect(res.status).to.equal(403)
-      eventFeedsApp.received(1).listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
+      eventFeedsApp.received(1).listEventFeeds(Arg.any())
     })
   })
 
@@ -221,7 +186,6 @@ describe('event feeds web controller', function () {
 
       const feedId = uniqid()
       const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
-        event: event.id,
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
@@ -238,7 +202,6 @@ describe('event feeds web controller', function () {
 
       const feedId = uniqid()
       const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
-        event: event.id,
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
@@ -249,23 +212,10 @@ describe('event feeds web controller', function () {
       eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
 
-    it('fails with 404 if the event does not exist', async function () {
-
-      const feedId = uniqid()
-      const badEventId = 1234567890;
-
-      eventRepo.findById(badEventId).resolves(null);
-
-      const res = await client.delete(`${rootPath}/${badEventId}/feeds/${feedId}`)
-
-      expect(res.status).to.equal(404)
-    })
-
     it('fails with 403 without permission', async function () {
 
       const feedId = uniqid()
       const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
-        event: event.id,
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))

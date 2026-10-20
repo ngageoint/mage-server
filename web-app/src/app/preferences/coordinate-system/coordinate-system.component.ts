@@ -37,7 +37,7 @@ export class CoordinateSystemComponent implements OnInit {
   }
 
   updateCoordinateSystem(change: MatSelectChange) {
-    this.localStorageService.setTimeFormat(change.value.coordinateSystem);
+    this.localStorageService.setCoordinateSystemView(change.value.coordinateSystem);
   }
 
   public compareOption = function (option: CoordinateSystemOption, value: CoordinateSystemOption): boolean {

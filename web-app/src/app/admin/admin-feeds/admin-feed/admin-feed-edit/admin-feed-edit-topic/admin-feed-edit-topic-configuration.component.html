@@ -4,14 +4,18 @@
       Set The Topic Query Parameters
     </mat-panel-title>
   </mat-expansion-panel-header>
-  <div class="topic-params" *ngIf="fetchParametersSchema">
-    <mage-json-schema-form framework="material-design" [options]="formOptions"
-      [schema]="fetchParametersSchema" [data]="initialFetchParameters"
-      (onChanges)="onFetchParametersChanged($event)">
-    </mage-json-schema-form>
-  </div>
+  @if (fetchParametersSchema) {
+    <div class="topic-params">
+      <mage-json-schema-form framework="material-design" [options]="formOptions"
+        [schema]="fetchParametersSchema" [data]="initialFetchParameters"
+        (onChanges)="onFetchParametersChanged($event)">
+      </mage-json-schema-form>
+    </div>
+  }
   <mat-action-row>
-    <button *ngIf="showPrevious" matButton (click)="cancel()">Previous</button>
+    @if (showPrevious) {
+      <button matButton (click)="cancel()">Previous</button>
+    }
     <button matButton (click)="finish()">Next</button>
   </mat-action-row>
 </mat-expansion-panel>

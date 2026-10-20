@@ -224,27 +224,31 @@ describe('observation search indexing', function() {
 
     it('fails without permission', async function() {
 
-      permissions.ensureSearchIndexEventPermission(Arg.any()).resolves(permissionDenied('search index event', 'test1'))
+      const event = new MageEvent(eventAttrsStub({ id: 1 }))
+      eventRepo.findById(1).resolves(event)
+      permissions.ensureSearchIndexEventPermission(Arg.all()).resolves(permissionDenied('search index event', 'test1'))
       const res = await searchIndexEvent({ context: contextStub(), eventId: 1 })
 
       expect(res.success).to.be.null
       expect(res.error?.code).to.equal(ErrPermissionDenied)
+      permissions.received(1).ensureSearchIndexEventPermission(Arg.any(), event)
+      expect(indexed).to.be.empty
     })
 
     it('fails when the event does not exist', async function() {
 
-      permissions.ensureSearchIndexEventPermission(Arg.any()).resolves(null)
       eventRepo.findById(1).resolves(null)
       const res = await searchIndexEvent({ context: contextStub(), eventId: 1 })
 
       expect(res.success).to.be.null
       expect(res.error?.code).to.equal(ErrEntityNotFound)
+      permissions.didNotReceive().ensureSearchIndexEventPermission(Arg.all())
     })
 
     it('kicks off indexing for the event', async function() {
 
       const event = new MageEvent(eventAttrsStub({ id: 1 }))
-      permissions.ensureSearchIndexEventPermission(Arg.any()).resolves(null)
+      permissions.ensureSearchIndexEventPermission(Arg.all()).resolves(null)
       eventRepo.findById(1).resolves(event)
 
       const res = await searchIndexEvent({ context: contextStub(), eventId: 1 })
@@ -258,7 +262,7 @@ describe('observation search indexing', function() {
     it('resets a stale running status before indexing so a crashed run does not get stuck forever', async function() {
 
       const event = new MageEvent(eventAttrsStub({ id: 1, observationSearchStatus: 'running' }))
-      permissions.ensureSearchIndexEventPermission(Arg.any()).resolves(null)
+      permissions.ensureSearchIndexEventPermission(Arg.all()).resolves(null)
       eventRepo.findById(1).resolves(event)
 
       const res = await searchIndexEvent({ context: contextStub(), eventId: 1 })
@@ -272,7 +276,7 @@ describe('observation search indexing', function() {
     it('does not reset status when the event is not stuck running', async function() {
 
       const event = new MageEvent(eventAttrsStub({ id: 1, observationSearchStatus: 'indexed' }))
-      permissions.ensureSearchIndexEventPermission(Arg.any()).resolves(null)
+      permissions.ensureSearchIndexEventPermission(Arg.all()).resolves(null)
       eventRepo.findById(1).resolves(event)
 
       await searchIndexEvent({ context: contextStub(), eventId: 1 })
