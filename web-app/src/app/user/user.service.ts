@@ -54,12 +54,11 @@ export class UserService {
     window.open(url, '_blank');
 
     function onMessage(event: any) {
-      window.removeEventListener('message', onMessage, false);
-
       if (event.origin !== window.location.origin) {
         return;
       }
 
+      window.removeEventListener('message', onMessage, false);
       subject.next(event.data);
       subject.complete();
     }

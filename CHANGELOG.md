@@ -19,6 +19,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * The admin Authentication page has a Login Button section for editing an existing third-party authentication's button text, colors, and icon, with a preview that is the actual sign-in button
 * Button colors can be typed as hex as well as picked, and an uploaded button icon can be removed
 #### Bug Fixes
+* Third-party sign-in no longer misses its result when another page or browser extension posts a message while the sign-in window is open
 
 ### Plugins
 
