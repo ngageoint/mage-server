@@ -59,7 +59,7 @@ export class AdminFeedEditComponent implements OnInit {
     return this._breadcrumbs;
   }
 
-  step = 0;
+  step = -1;
 
   readonly editState = signal<FeedEditState>({
     originalFeed: null,
