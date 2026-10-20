@@ -1,39 +1,14 @@
 <div class="slide" [ngClass]="background"></div>
 
-<div>
-  <div class="title-container">
-    <div class="title">Mage</div>
-  </div>
+<div class="markers" aria-hidden="true">
+  <svg class="trails" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <polyline class="trail" points="1,40 4,37 7,38 10,33 12,30 14,26" />
+    <polyline class="trail" points="99,90 96,85 93,82 90,76 87,72 84,68" />
+  </svg>
 
-  <div class="features">
-    <div class="feature">
-      <div class="feature-icon">
-        <i class="material-icons-outlined">photo_camera</i>
-      </div>
-      <div class="feature-description">
-        <div class="feature-title">Share what you see</div>
-        <div class="feature-subtitle">Attach photos, videos, and voice to your observations from the field
-        </div>
-      </div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">
-        <i class="material-icons-outlined">place</i>
-      </div>
-      <div class="feature-description">
-        <div class="feature-title">Location, location, location</div>
-        <div class="feature-subtitle">See your observations and your team's locations on the map</div>
-      </div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">
-        <i class="material-icons-outlined">signal_cellular_alt</i>
-      </div>
-      <div class="feature-description">
-        <div class="feature-title">No connection, no problem</div>
-        <div class="feature-subtitle">Keep collecting observations even when you have no service</div>
-      </div>
-    </div>
-  </div>
-
+  <span class="marker marker--person material-icons" style="left: 14%; top: 26%">person</span>
+  <span class="marker marker--person material-icons" style="left: 84%; top: 68%">person</span>
+  <span class="marker marker--observation" style="left: 82%; top: 28%"><span class="marker__icon material-icons">photo_camera</span></span>
+  <span class="marker marker--observation" style="left: 24%; top: 84%"><span class="marker__icon material-icons">flag</span></span>
+  <span class="marker marker--observation" style="left: 18%; top: 62%"><span class="marker__icon material-icons">warning</span></span>
 </div>

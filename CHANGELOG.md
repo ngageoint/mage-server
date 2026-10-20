@@ -18,6 +18,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Admins can set the full text of a third-party sign-in button (e.g. "Continue to sign in"); it defaults to `Sign in with <title>`
 * The admin Authentication page has a Login Button section for editing an existing third-party authentication's button text, colors, and icon, with a preview that is the actual sign-in button
 * Button colors can be typed as hex as well as picked, and an uploaded button icon can be removed
+* Redesigned sign-in page: a centered card over a still map with decorative people, trails, and observations, a new folded-map Mage logo, a "Need help signing in?" link to the admin contact info, the mobile app badges, and the server version
 #### Bug Fixes
 
 ### Plugins

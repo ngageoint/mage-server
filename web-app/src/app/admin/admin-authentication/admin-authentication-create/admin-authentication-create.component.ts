@@ -164,7 +164,7 @@ export class AuthenticationCreateComponent implements OnInit {
       profile: {}
     };
 
-    this.strategy.buttonColor = '#1E88E5';
+    this.strategy.buttonColor = '#0060A8';
     this.strategy.textColor = '#FFFFFF';
 
     switch (this.strategy.name) {
@@ -252,7 +252,7 @@ export class AuthenticationCreateComponent implements OnInit {
       type: '',
       title: '',
       textColor: '#FFFFFF',
-      buttonColor: '#1E88E5',
+      buttonColor: '#0060A8',
       icon: null,
       settings: {
         usersReqAdmin: { enabled: true },

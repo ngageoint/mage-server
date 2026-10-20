@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 })
 export class LandingComponent {
   api: Api
+  contactEmailLink: string | undefined
+  contactPhoneLink: string | undefined
 
   constructor(
     apiService: ApiService,
@@ -18,6 +20,10 @@ export class LandingComponent {
   ) {
     apiService.getApi().subscribe((api: Api) => {
       this.api = api
+
+      const { email, phone } = api.contactInfo ?? {}
+      this.contactEmailLink = email ? `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent('Mage sign-in help')}` : undefined
+      this.contactPhoneLink = phone ? `tel:${phone}` : undefined
     })
   }
 

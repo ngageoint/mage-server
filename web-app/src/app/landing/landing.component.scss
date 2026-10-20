@@ -1,42 +1,125 @@
+// The map fills the page and the sign-in card floats centered above it
 .landing {
-  display: flex;
-  flex-direction: row;
-}
-
-.section {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.info {
-  height: 100vh;
-  overflow: hidden;
-  color: #fff;
-  background-color: rgba(16, 69, 130, .5);
-}
-
-.ingress-container {
-  overflow-y: scroll;
-  background-color: #fff;
-}
-
-.ingress {
-  width: 75%;
-  height: 100vh;
-  min-width: 285px;
-  max-width: 600px;
   position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
-@media (max-width: 1100px) or (max-height: 460px) {
-  .ingress-container {
-    width: 100%;
+.map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background-color: rgba(16, 69, 130, .35);
+}
+
+.scroller {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 16px;
+  box-sizing: border-box;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: auto;
+  padding: clamp(32px, 8vw, 40px) clamp(24px, 8vw, 40px) clamp(16px, 5vw, 24px);
+  box-sizing: border-box;
+  border-radius: var(--mat-sys-corner-extra-large);
+  background-color: var(--mat-sys-surface);
+  box-shadow: var(--mat-sys-level3);
+}
+
+.card__signin {
+  overflow-x: hidden;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.help {
+  text-align: center;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+
+  a {
+    color: var(--mat-sys-primary);
+  }
+}
+
+.apps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.apps__title {
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.apps__badges {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.apps__badge {
+  display: block;
+  height: 40px;
+}
+
+.version {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+@media (max-width: 600px) {
+  .map {
+    display: none;
   }
 
-  .info {
-    display: none;
+  .scroller {
+    padding: 0;
+  }
+
+  .card {
+    flex: 1 0 auto;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    > * {
+      width: 100%;
+      max-width: 400px;
+      margin-inline: auto;
+    }
+  }
+  .card__signin {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 }

@@ -19,16 +19,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   color: var(--mat-sys-primary);
 }
 
-.welcome__title {
-  margin-bottom: 16px;
-  font: var(--mat-sys-display-medium);
+.welcome__logo {
+  height: 64px;
+  margin-bottom: 12px;
 }
 
-.welcome__message {
-  font: var(--mat-sys-title-large);
+.welcome__title {
+  font: var(--mat-sys-display-small);
+  letter-spacing: -0.5px;
 }
 
 .or {

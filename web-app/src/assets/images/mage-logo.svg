@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 8 46 48" role="img" aria-label="Mage">
+  <defs>
+    <!-- The route is cut out of the map, so whatever is behind the logo shows through -->
+    <mask id="route">
+      <rect x="9" y="8" width="46" height="48" fill="#fff"/>
+      <path d="M18 43V24L32 36 46 23V42" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="46" cy="42" r="4" fill="#000"/>
+    </mask>
+  </defs>
+  <g mask="url(#route)">
+    <path fill="#0060a8" d="M9 14 24 8V50L9 56Z"/>
+    <path fill="#4d90c2" d="M24 8 40 14V56L24 50Z"/>
+    <path fill="#0060a8" d="M40 14 55 8V50L40 56Z"/>
+  </g>
+</svg>
