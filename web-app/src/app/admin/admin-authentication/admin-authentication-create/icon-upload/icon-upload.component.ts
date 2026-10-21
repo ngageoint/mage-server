@@ -5,7 +5,6 @@ import { Strategy } from '../../admin-settings.model';
 @Component({
     selector: 'icon-upload',
     templateUrl: './icon-upload.component.html',
-    styleUrls: ['./icon-upload.component.scss'],
     imports: [MatButtonModule]
 })
 export class IconUploadComponent {
@@ -25,5 +24,8 @@ export class IconUploadComponent {
 
       reader.readAsDataURL(file);
     }
+
+    // Allow re-picking the same file after Remove
+    e.target.value = '';
   }
 }

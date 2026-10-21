@@ -1120,7 +1120,7 @@ function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
   return {
     getIcon: GetStaticIcon(permissions, repos.icons.staticIconRepo),
     getIconContent: GetStaticIconContent(permissions, repos.icons.staticIconRepo),
-    listIcons: ListStaticIcons(permissions),
+    listIcons: ListStaticIcons(permissions, repos.icons.staticIconRepo),
     createIcon: CreateStaticIcon(permissions, repos.icons.staticIconRepo)
   };
 }

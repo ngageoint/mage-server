@@ -9,6 +9,7 @@ import { AdminAuthenticationOidcComponent } from './admin-authentication-oidc/ad
 import { AdminAuthenticationOAuth2Component } from './admin-authentication-oauth2/admin-authentication-oauth2.component';
 import { AdminAuthenticationLDAPComponent } from './admin-authentication-ldap/admin-authentication-ldap.component';
 import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml/admin-authentication-saml.component';
+import { ButtonPreviewComponent } from './admin-authentication-create/button-preview/button-preview.component';
 
 @Component({
   selector: 'admin-authentication-settings',
@@ -22,7 +23,8 @@ import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml/ad
     AdminAuthenticationOidcComponent,
     AdminAuthenticationOAuth2Component,
     AdminAuthenticationLDAPComponent,
-    AdminAuthenticationSAMLComponent
+    AdminAuthenticationSAMLComponent,
+    ButtonPreviewComponent
   ]
 })
 export class AdminAuthenticationSettingsComponent {
