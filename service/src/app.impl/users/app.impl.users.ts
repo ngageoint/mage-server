@@ -1,10 +1,15 @@
-import * as api from '../../app.api/users/app.api.users';
-import { UserRepository } from '../../entities/users/entities.users';
-import { withPermission, KnownErrorsOf } from '../../app.api/app.api.global';
-import { PageOf } from '../../entities/entities.global';
+import * as api from '../../app.api/users/app.api.users'
+import { UserRepository } from '../../entities/users/entities.users'
+import { withPermission, KnownErrorsOf } from '../../app.api/app.api.global'
+import { PageOf } from '../../entities/entities.global'
 
-export function SearchUsers(userRepo: UserRepository,permissions: api.UsersPermissionService
-): api.SearchUsers {
+export function createEnrollLocalUserByProxyOperation(userRepo: UserRepository, permissions: api.UsersPermissionService): api.EnrollLocalUserByProxy {
+  return async function enrollUserByProxy(req: api.EnrollLocalUserByProxyRequest): ReturnType<api.EnrollLocalUserByProxy> {
+    throw new Error('unimplemented')
+  }
+}
+
+export function createSearchUsersOperation(userRepo: UserRepository, permissions: api.UsersPermissionService): api.SearchUsers {
   return async function searchUsers(req: api.UserSearchRequest): ReturnType<api.SearchUsers> {
     return await withPermission<PageOf<api.UserSearchResult>,KnownErrorsOf<api.SearchUsers>>(
       permissions.ensureReadUsersPermission(req.context),

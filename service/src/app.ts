@@ -102,7 +102,7 @@ import {
   UsersAppLayer,
   UsersRoutes
 } from './adapters/users/adapters.users.controllers.web';
-import { SearchUsers } from './app.impl/users/app.impl.users';
+import { createEnrollLocalUserByProxyOperation, createSearchUsersOperation } from './app.impl/users/app.impl.users'
 import { RoleBasedUsersPermissionService, RoleBasedUserPreferencesPermissionService } from './permissions/permissions.users';
 import { UserPreferencesAppLayer, UserPreferencesRoutes } from './adapters/preferences/adapters.preferences.controllers.web';
 import { GetEventPreferences } from './app.impl/preferences/app.impl.preferences';
@@ -983,11 +983,13 @@ async function initExportsAppLayer(
 async function initUsersAppLayer(
   repos: Repositories
 ): Promise<AppLayer['users']> {
-  const usersPermissions = new RoleBasedUsersPermissionService();
-  const searchUsers = SearchUsers(repos.users.userRepo, usersPermissions);
+  const usersPermissions = new RoleBasedUsersPermissionService()
+  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(repos.users.userRepo, usersPermissions)
+  const searchUsers = createSearchUsersOperation(repos.users.userRepo, usersPermissions)
   return {
+    enrollLocalUserByProxy,
     searchUsers
-  };
+  }
 }
 
 function initUserPreferencesAppLayer(repos: Repositories): UserPreferencesAppLayer {

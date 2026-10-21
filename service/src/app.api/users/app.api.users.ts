@@ -20,7 +20,7 @@ export interface EnrollLocalUserByProxyRequest extends AppRequest {
  * as opposed to an externally managed IDP account like Google or login.gov.
  */
 export interface EnrollLocalUserByProxy {
-  (req: EnrollLocalUserByProxyRequest): AppResponse<ExoUserAccount, PermissionDeniedError | InvalidInputError>
+  (req: EnrollLocalUserByProxyRequest): Promise<AppResponse<ExoUserAccount, PermissionDeniedError | InvalidInputError>>
 }
 
 export interface UserSearchRequest extends AppRequest {

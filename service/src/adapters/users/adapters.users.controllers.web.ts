@@ -1,6 +1,6 @@
 import express from 'express'
 import zod from 'zod'
-import { InvalidInputError } from '../../app.api/app.api.errors'
+import { invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import {
   EnrollLocalUserByProxy,
   EnrollLocalUserByProxyRequest,
@@ -8,10 +8,11 @@ import {
   SearchUsers,
   UserSearchRequest
 } from '../../app.api/users/app.api.users'
-import env from '../../environment/env'
-import { WebAppRequestFactory } from '../adapters.controllers.web'
 import { calculatePagingLinks } from '../../entities/entities.global'
+import { UserIcon, UserIconType } from '../../entities/users/entities.users'
+import env from '../../environment/env'
 import { Upload } from '../../upload'
+import { WebAppRequestFactory } from '../adapters.controllers.web'
 import { invalidInputErrorForZodError } from '../adapters.dto.zod'
 
 export interface UsersAppLayer {
@@ -72,33 +73,40 @@ function handleUserContentUploadError(err: any, req: express.Request, res: expre
   next(err)
 }
 
-function parseIconUpload(req, res, next) {
-  let iconMetadata = req.param('iconMetadata') || {};
-  if (typeof iconMetadata === 'string' || iconMetadata instanceof String) {
-    iconMetadata = JSON.parse(iconMetadata);
-  }
+type UploadedIcon = {
+  fields: Pick<UserIcon, 'type' | 'text' | 'color'>
+  file?: Express.Multer.File
+}
 
-  const files = req.files || {};
-  let [icon] = files.icon || [];
-  if (icon) {
+function parseIconUpload(req: express.Request): UploadedIcon | null | InvalidInputError {
+  let iconMetadata: UserIcon = req.body.iconMetadata || {};
+  if (typeof iconMetadata === 'string') {
+    iconMetadata = JSON.parse(iconMetadata)
+  }
+  const files = req.files as Record<string, Express.Multer.File[]>
+  const [iconFile] = files.icon || []
+  if (iconFile) {
     // default type to upload
-    if (!iconMetadata.type) iconMetadata.type = 'upload';
-
-    if (iconMetadata.type !== 'create' && iconMetadata.type !== 'upload') {
-      return res.status(400).send('invalid icon metadata');
+    if (!iconMetadata.type) {
+      iconMetadata.type = UserIconType.Upload
     }
-
-    icon.type = iconMetadata.type;
-    icon.text = iconMetadata.text;
-    icon.color = iconMetadata.color;
-  } else if (iconMetadata.type === 'none') {
-    icon = {
-      type: 'none'
-    };
-    files.icon = [icon];
+    if (iconMetadata.type !== UserIconType.Create && iconMetadata.type !== UserIconType.Upload) {
+      return invalidInput('invalid icon metadata')
+    }
+    return {
+      fields: {
+        type: iconMetadata.type,
+        text: iconMetadata.text,
+        color: iconMetadata.color,
+      },
+      file: iconFile,
+    }
   }
-
-  next();
+  return {
+    fields: {
+      type: UserIconType.None
+    }
+  }
 }
 
 export type UsersRoutesOptions = {
@@ -128,9 +136,7 @@ export function UsersRoutes(
 
   routes.route('/')
     .post(
-      userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
-      handleUserContentUploadError,
-      async (req: express.Request, res: express.Response, next: express.NextFunction): any => {
+      async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<any> => {
         const accountSpec = parseAccountFormFromBody(req.body)
         if (accountSpec instanceof Error) {
           return next(accountSpec)
@@ -145,24 +151,11 @@ export function UsersRoutes(
         }
         const appReq: EnrollLocalUserByProxyRequest = createAppRequest(req, { enrollment })
         const appRes = await app.enrollLocalUserByProxy(appReq)
-        const files = req.files as Record<string, Express.Multer.File[]> || { icon: [] }
-        const [avatar] = files.avatar || []
-        const [icon] = files.icon || []
-        // new api.User()
-        //   .create(user, { avatar, icon })
-        //   .then(newUser => {
-        //     log.info('user account created', {
-        //       user: newUser.username,
-        //       displayName: newUser.displayName,
-        //       role: newUser.roleId && newUser.roleId.name ? newUser.roleId.name : String(newUser.roleId),
-        //       createdBy: req.user.username,
-        //       createdTime: new Date().toISOString()
-        //     });
-        //
-        //     newUser = userTransformer.transform(newUser, { path: req.getRoot() });
-        //     res.json(newUser);
-        //   })
-        //   .catch(err => next(err));
+        if (appRes.error) {
+          return next(appRes.error)
+        }
+        const account = appRes.success
+        return res.json(account)
       }
     )
 

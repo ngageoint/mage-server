@@ -52,8 +52,8 @@ export interface UserIcon {
    * a candidate to remove from the model.
    */
   type: UserIconType
-  text: string
-  color: string
+  text?: string
+  color?: string
   contentType?: string
   size?: number
   relativePath?: string
