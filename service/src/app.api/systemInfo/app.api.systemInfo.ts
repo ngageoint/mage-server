@@ -10,7 +10,7 @@ export type ExoRedactedSystemInfo = Omit<SystemInfo, 'environment'>
 export type ExoSystemInfo = ExoPrivilegedSystemInfo | ExoRedactedSystemInfo
 
 export interface ReadSystemInfoRequest extends AppRequest<UserWithRole | AnonymousUser> {}
-export interface ReadSystemInfoResponse extends AppResponse<ExoSystemInfo, InfrastructureError> {}
+export type ReadSystemInfoResponse = AppResponse<ExoSystemInfo, InfrastructureError>
 
 export interface ReadSystemInfo {
   (req: ReadSystemInfoRequest): Promise<ReadSystemInfoResponse>

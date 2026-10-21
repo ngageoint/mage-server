@@ -61,27 +61,28 @@ export interface Descriptor<T extends string> extends JsonObject {
  */
 export type AnyMageError<KnownErrors> = KnownErrors extends MageError<infer Code, infer Data> ? MageError<Code, Data> : never
 
-export class AppResponse<Success, KnownErrors> {
+export const AppResponse = Object.freeze({
+  success<Success, KnownErrors>(result: Success, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
+    return Object.freeze({ success: result, error: undefined, contentLanguage })
+  },
 
-  static success<Success, KnownErrors>(result: Success, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
-    return new AppResponse<Success, AnyMageError<KnownErrors>>(result, null, contentLanguage)
+  error<KnownErrors>(result: KnownErrors, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<any, KnownErrors> {
+    return Object.freeze({ success: undefined, error: result, contentLanguage })
+  },
+
+  async resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
+    const successOrKnownError = await promise
+    if (successOrKnownError instanceof MageError) {
+      return AppResponse.error(successOrKnownError)
+    }
+    return AppResponse.success(successOrKnownError)
   }
+} as const)
 
-  static error<KnownErrors>(result: KnownErrors, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<any, KnownErrors> {
-    return new AppResponse<any, KnownErrors>(null, result, contentLanguage)
-  }
-
-  static resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
-    return promise.then(
-      successOrKnownError => {
-        if (successOrKnownError instanceof MageError) {
-          return AppResponse.error(successOrKnownError)
-        }
-        return AppResponse.success(successOrKnownError)
-      })
-  }
-
-  private constructor(readonly success: Success | null, readonly error: KnownErrors | null, readonly contentLanguage?: LanguageTag[] | null | undefined) {}
+export type AppResponseSuccess<Success> = { success: Success, error: undefined }
+export type AppResponseError<KnownErrors> = { success: undefined, error: KnownErrors }
+export type AppResponse<Success, KnownErrors> = (AppResponseSuccess<Success> | AppResponseError<KnownErrors>) & {
+  contentLanguage?: LanguageTag[] | null | undefined
 }
 
 /**
