@@ -1,10 +1,14 @@
 import * as api from '../../app.api/users/app.api.users'
 import { UserRepository } from '../../entities/users/entities.users'
-import { withPermission, KnownErrorsOf } from '../../app.api/app.api.global'
+import { withPermission, KnownErrorsOf, AppResponse } from '../../app.api/app.api.global'
 import { PageOf } from '../../entities/entities.global'
 
 export function createEnrollLocalUserByProxyOperation(userRepo: UserRepository, permissions: api.UsersPermissionService): api.EnrollLocalUserByProxy {
   return async function enrollUserByProxy(req: api.EnrollLocalUserByProxyRequest): ReturnType<api.EnrollLocalUserByProxy> {
+    const denied = await permissions.ensureCreateUserPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
     throw new Error('unimplemented')
   }
 }

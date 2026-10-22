@@ -47,6 +47,7 @@ export interface SearchUsers {
 }
 
 export interface UsersPermissionService {
+  ensureCreateUserPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
   ensureReadUsersPermission(context: AppRequestContext): Promise<null | PermissionDeniedError>
 }
 

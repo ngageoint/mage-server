@@ -6,6 +6,9 @@ import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.erro
 import { UserPreferencePermissionService } from '../app.api/preferences/app.api.preferences'
 
 export class RoleBasedUsersPermissionService implements UsersPermissionService {
+  async ensureCreateUserPermission(context: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError> {
+    return ensureContextUserHasPermission(context, UsersPermission.CREATE_USER)
+  }
   async ensureReadUsersPermission(context: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError> {
     return ensureContextUserHasPermission(context, UsersPermission.READ_USER)
   }
