@@ -21,7 +21,7 @@ import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
-import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
+import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerGroup, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
 import { MatDialog as MatDialog } from '@angular/material/dialog'
 import * as _ from 'lodash'
 import moment from 'moment';
@@ -30,6 +30,15 @@ import { ContactDialogComponent } from '../contact/contact-dialog.component'
 import { SessionService } from 'mage-web-app/http/session.service'
 
 Icon.Default.imagePath = '/'
+
+const GROUP_PANE_Z_INDEX: Record<MapLayerGroup, number> = {
+  base: 10000,
+  tile: 25000,
+  grid: 35000,
+  feature: 65000,
+  feed: 75000,
+  mage: 76000
+}
 
 @Component({
     selector: 'map',
@@ -40,13 +49,6 @@ Icon.Default.imagePath = '/'
 })
 export class MapComponent implements OnDestroy, AfterViewInit {
 
-  public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000
-  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-
   @Output() addObservation = new EventEmitter<any>()
 
   @ViewChild('map') mapElement!: ElementRef<any>
@@ -56,31 +58,13 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   private listenerTimeout?: ReturnType<typeof setTimeout>
 
   map!: Map
-  groups: Record<string, { offset: number, layers: RenderedMapLayer[] }> = {
-    'base': {
-      offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'mage': {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'feed': {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'tile': {
-      offset: MapComponent.TILE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'feature': {
-      offset: MapComponent.FEATURE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'grid': {
-      offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
+  groups: Record<MapLayerGroup, RenderedMapLayer[]> = {
+    base: [],
+    tile: [],
+    grid: [],
+    feature: [],
+    feed: [],
+    mage: []
   }
   layers: Record<string, RenderedMapLayer> = {}
   geoPackageLayers: any
@@ -90,7 +74,6 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   locationState = LocationState.Off
   searchMarker: any
   featurePanes: string[] = []
-  BASE_LAYER_PANE = 'baseLayerPane'
 
   toggleSubscription: Subscription
   zoomSubscription: Subscription
@@ -149,10 +132,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     })
 
     // Spread out map panes
-    // To easily adjust zIndex across all types of layers each feature group,
-    // overlay map, etc, will be placed in its own map pane
-    const baseLayerPane = this.map.createPane(this.BASE_LAYER_PANE)
-    baseLayerPane.style.zIndex = `${100 * 100}`
+    Object.entries(GROUP_PANE_Z_INDEX).forEach(([group, zIndex]) => {
+      this.map.createPane(this.groupPaneName(group as MapLayerGroup)).style.zIndex = `${zIndex}`
+    })
 
     const panes = this.map.getPanes()
     panes.tilePane.style.zIndex = `${200 * 100}`
@@ -251,13 +233,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   reorder($event: ReorderEvent): void {
     moveItemInArray($event.layers, $event.previousIndex, $event.currentIndex)
-    const offset = this.groups[$event.group].offset
-
-    $event.layers.forEach((layer, index) => {
-      layer.zIndex = offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1)
-      const pane = this.map.getPanes()[layer.layer.options.pane]
-      pane.style.zIndex = `${layer.zIndex}`
-    })
+    this.restackGroup($event.group)
   }
 
   zoom($event: LayerZoomEvent): void {
@@ -392,11 +368,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo: RasterLayer) {
-    let paneName = this.BASE_LAYER_PANE
-    if (!layerInfo.base) {
-      paneName = `pane-${layerInfo.id}`
-      this.map.createPane(paneName)
-    }
+    const paneName = this.createLayerPane(layerInfo)
 
     let layer: TileLayer | TileLayer.WMS
     if (layerInfo.format === 'WMS') {
@@ -421,8 +393,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGeoPackageLayer(layerInfo: GeoPackageLayer) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+    const pane = this.createLayerPane(layerInfo)
     if (layerInfo.renderAs === 'feature') {
       this.featurePanes.push(pane)
     }
@@ -434,8 +405,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGeoJsonLayer(layerInfo: VectorLayer) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+    const pane = this.createLayerPane(layerInfo)
     this.featurePanes.push(pane)
 
     const withFeatures = { ...layerInfo, featureIdToLayer: {} }
@@ -537,8 +507,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGridLayer(layerInfo: GridOverlay) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+    const pane = this.createLayerPane(layerInfo)
 
     const layer = layerInfo.id === 'gars' ? new GARSLayer({ pane }) : new MGRSLayer({ pane })
     const rendered = { ...layerInfo, layer } as RenderedMapLayer
@@ -556,12 +525,26 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.layerTogged(toggleEvent)
     }
 
-    const groupName = this.getGroup(layerInfo)
-    const group = this.groups[groupName]
-    layerInfo.zIndex = group.offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1)
-    const pane = this.map.getPanes()[layerInfo.layer.options.pane]
-    pane.style.zIndex = `${layerInfo.zIndex}`
-    group.layers.push(layerInfo)
+    const group = this.getGroup(layerInfo)
+    this.groups[group].push(layerInfo)
+    this.restackGroup(group)
+  }
+
+  private groupPaneName(group: MapLayerGroup): string {
+    return `${group}GroupPane`
+  }
+
+  private createLayerPane(layer: MapLayer): string {
+    const pane = `pane-${layer.id}`
+    this.map.createPane(pane, this.map.getPane(this.groupPaneName(this.getGroup(layer))))
+    return pane
+  }
+
+  private restackGroup(group: MapLayerGroup): void {
+    const layers = this.groups[group]
+    layers.forEach((layer, index) => {
+      this.map.getPanes()[layer.layer.options.pane].style.zIndex = `${layers.length - index}`
+    })
   }
 
   onFeaturesChanged({ id, added = [], updated = [], removed = [] }: { id: string, added?: MapFeature[], updated?: MapFeature[], removed?: Pick<MapFeature, 'id'>[] }) {
@@ -662,11 +645,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.map.removeLayer(layerInfo.layer)
       delete this.layers[id]
 
-      Object.values(this.groups).forEach((group) => {
-        group.layers = group.layers.filter(groupLayer => {
-          return layerInfo.layer !== groupLayer.layer;
-        });
-      });
+      const group = this.getGroup(layerInfo)
+      this.groups[group] = this.groups[group].filter(groupLayer => groupLayer !== layerInfo)
     }
   }
 
@@ -773,7 +753,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   baseToggled(layer: RenderedRasterLayer): void {
-    const baseLayers = this.groups['base'].layers
+    const baseLayers = this.groups.base
     const previousBaseLayer = baseLayers.find(baseLayer => baseLayer.selected)
     if (previousBaseLayer) {
       previousBaseLayer.selected = false
@@ -795,7 +775,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  private getGroup(layer: RenderedMapLayer): string {
+  private getGroup(layer: MapLayer): MapLayerGroup {
     switch (layer.type) {
       case 'GeoPackage':
         return layer.renderAs === 'tile' ? 'tile' : 'feature'
