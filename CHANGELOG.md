@@ -14,6 +14,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ### Web App
 #### Features
 #### Bug Fixes
+* The admin user details page lists only the user's teams instead of every team, and the team dashboard and bulk user import no longer include event teams
 
 ### Plugins
 
