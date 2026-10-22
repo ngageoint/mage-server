@@ -22,8 +22,14 @@ describe('parseCotEvent', () => {
       time: '2026-05-11T08:30:00.000Z',
       start: '2026-05-11T08:30:00.000Z',
       stale: '2026-05-11T08:31:00.000Z',
+      callsign: 'ALPHA-1-1',
       point: { lat: 48.3794, lon: 31.1656, hae: 150.0, ce: 10.0, le: 5.0 }
     })
+  })
+
+  it('leaves callsign undefined when there is no contact detail', () => {
+    const xml = `<event uid="x" type="x" time="x" start="x" stale="x"><point lat="1" lon="2" hae="3" ce="4" le="5"/></event>`
+    expect(parseCotEvent(xml)?.callsign).toBeUndefined()
   })
 
   it('returns null for malformed xml', () => {

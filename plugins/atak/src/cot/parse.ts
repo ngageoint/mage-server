@@ -21,6 +21,7 @@ export interface CotEvent {
   time: string
   start: string
   stale: string
+  callsign?: string
   point: CotPoint
 }
 
@@ -64,8 +65,10 @@ export function parseCotEvent(xml: string): CotEvent | null {
     return null
   }
 
+  const callsign = event?.detail?.contact?.callsign
+
   return {
-    uid, type, time, start, stale,
+    uid, type, time, start, stale, callsign,
     point: { lat, lon, hae, ce, le }
   }
 }
