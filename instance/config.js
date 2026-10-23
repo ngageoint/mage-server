@@ -47,7 +47,8 @@ module.exports = {
       ],
       webUIPlugins: [
         '@ngageoint/mage.arcgis.web-app',
-        '@ngageoint/mage.sftp.web'
+        '@ngageoint/mage.sftp.web',
+        '@ngageoint/mage.atak.web'
       ],
     },
   }
