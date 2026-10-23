@@ -1,0 +1,122 @@
+.atak-push-status {
+  padding: 16px;
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .event-select {
+    flex: 1;
+  }
+
+  .refresh-button {
+    // mat-form-field's fill appearance adds an underline strip below the
+    // input that a plain icon button doesn't have, so flex's align-items:
+    // center leaves the button looking low relative to the select's text -
+    // nudge it up to actually line up.
+    margin-bottom: 4px;
+  }
+
+  .empty-state,
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .toggles-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 32px;
+    row-gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .warning-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #b45309;
+    margin-bottom: 4px;
+
+    mat-icon {
+      flex-shrink: 0;
+    }
+  }
+
+  mat-divider {
+    margin: 16px 0;
+  }
+
+  .recently-synced {
+    margin-top: 20px;
+
+    .recently-synced-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.54);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .recently-synced-empty {
+      margin: 0;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 4px;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 0;
+      font-size: 13px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+
+      &:first-child {
+        border-top: none;
+      }
+    }
+
+    .observation-id {
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    .synced-at {
+      color: rgba(0, 0, 0, 0.5);
+      white-space: nowrap;
+    }
+  }
+
+  .status-summary {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 16px;
+    margin: 0;
+
+    dt {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    dd {
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+}

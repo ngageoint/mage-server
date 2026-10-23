@@ -1,0 +1,70 @@
+<div class="atak-push-status">
+  <mat-card appearance="outlined">
+    <mat-card-content>
+
+      <div class="controls">
+        <mat-form-field appearance="fill" class="event-select" subscriptSizing="dynamic">
+          <mat-label>Event</mat-label>
+          <mat-select [(ngModel)]="selectedEventId" (ngModelChange)="onEventChange()">
+            <mat-option *ngFor="let event of events" [value]="event.id">{{ event.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button class="refresh-button" mat-icon-button *ngIf="selectedEventId" (click)="refresh()" matTooltip="Refresh">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+
+      <div class="empty-state" *ngIf="!selectedEventId">
+        <mat-icon>inbox</mat-icon>
+        <p>Select an event to view or change its MAGE &rarr; TAK sharing status</p>
+      </div>
+
+      <ng-container *ngIf="selectedEventId">
+
+        <div class="loading-state" *ngIf="isLoading">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+
+        <ng-container *ngIf="!isLoading && status">
+
+          <div class="toggles-row">
+            <mat-slide-toggle [checked]="status.enabled" [disabled]="isSaving" (change)="onToggle($event.checked)">
+              Share observations to TAK
+            </mat-slide-toggle>
+            <mat-slide-toggle [checked]="status.locationSharingEnabled" [disabled]="isSaving" (change)="onLocationToggle($event.checked)">
+              Share user locations to TAK
+            </mat-slide-toggle>
+          </div>
+
+          <div class="warning-row" *ngIf="(status.enabled || status.locationSharingEnabled) && !status.connectionConfigured">
+            <mat-icon>warning</mat-icon>
+            <span>Sharing is enabled, but this event has no TAK Server feed with a CoT port configured - nothing will be pushed until one is set up.</span>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <dl class="status-summary">
+            <dt>Observations pushed:</dt>
+            <dd>{{ status.pushedCount }}</dd>
+            <dt>Last synced:</dt>
+            <dd>{{ status.lastSyncedAt ? (status.lastSyncedAt | date:'MMM d, HH:mm') : 'Never' }}</dd>
+          </dl>
+
+          <div class="recently-synced">
+            <div class="recently-synced-title">Recently synced</div>
+            <p class="recently-synced-empty" *ngIf="!status.recentlySynced.length">No observations synced yet.</p>
+            <ul *ngIf="status.recentlySynced.length">
+              <li *ngFor="let item of status.recentlySynced">
+                <span class="observation-id">{{ item.observationId }}</span>
+                <span class="synced-at">{{ item.syncedAt | date:'MMM d, HH:mm' }}</span>
+              </li>
+            </ul>
+          </div>
+
+        </ng-container>
+      </ng-container>
+
+    </mat-card-content>
+  </mat-card>
+</div>

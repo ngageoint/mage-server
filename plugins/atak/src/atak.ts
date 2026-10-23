@@ -26,6 +26,7 @@ export class TakServerServiceType implements FeedServiceType {
     properties: {
       baseUrl: { type: 'string', title: 'Base URL', description: 'GovTAK or OpenTAK Server' },
       port: { type: 'integer', title: 'Port', description: 'Port for TAK Server' },
+      cotPort: { type: 'integer', title: 'CoT Port', description: 'TCP port for sending MAGE events to the TAK server' },
       username: { type: 'string', title: 'Username', description: 'Server username' },
       password: { type: 'string', title: 'Password', description: 'Server password' }
     },
@@ -38,7 +39,7 @@ export class TakServerServiceType implements FeedServiceType {
     if (typeof config !== 'object' || config === null || Array.isArray(config)) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'config must be an object')
     }
-    const { baseUrl, port } = config as unknown as AtakServiceConfig
+    const { baseUrl, port, cotPort } = config as unknown as AtakServiceConfig
     if (typeof baseUrl !== 'string') {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'config.baseUrl must be a url string')
     }
@@ -48,8 +49,11 @@ export class TakServerServiceType implements FeedServiceType {
     catch (err) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'invalid service url')
     }
-    if (port !== undefined && (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535)) {
+    if (port !== undefined && !isValidPort(port)) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['port'], config }, 'config.port must be an integer between 1 and 65535')
+    }
+    if (cotPort !== undefined && !isValidPort(cotPort)) {
+      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['cotPort'], config }, 'config.cotPort must be an integer between 1 and 65535')
     }
     return null
   }
@@ -64,9 +68,12 @@ export class TakServerServiceType implements FeedServiceType {
   }
 }
 
+const isValidPort = (port: number): boolean => Number.isInteger(port) && port >= 1 && port <= 65535
+
 export interface AtakServiceConfig {
   baseUrl: string
   port?: number
+  cotPort?: number
   username?: string
   password?: string
 }
