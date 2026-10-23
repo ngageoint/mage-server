@@ -12,7 +12,12 @@ export interface MageEventsPluginHooks {
      * MAGE calls this hook after persisting a valid observation, new or
      * updated.
      *
-     * TODO: make it so
+     * TODO: not yet implemented. Needed for a plugin to react to observation
+     * changes in real time (e.g. an ATAK push-to-TAK feature re-syncing an
+     * already-pushed observation on edit) and likely useful to other plugins
+     * with the same need. Implement the same way as onUserLocations: wire
+     * ObservationDomainEventType.ObservationSaved through
+     * loadMageEventsHoooks in main.impl.plugin_hooks.events.ts.
      */
     // onObservation?: (event: MageEvent, observation: Observation) => any
   }
