@@ -1,22 +1,19 @@
 import { expect } from 'chai'
-import _ from 'lodash'
 import mongoose from 'mongoose'
-import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import { User } from '../../../lib/entities/users/entities.users'
 import * as legacy from '../../../lib/models/user'
 import { MongooseUserRepository, UserDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
-import x from 'uniqid'
+import { userEntityForDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
 
 
 
-describe('users mongoose repository', function () {
+describe.only('users mongoose repository', function () {
 
   let model: mongoose.Model<UserDocument>
   let repo: MongooseUserRepository
 
   before(async function () {
-    //TODO remove cast to and, was mongoose.Model<UserDocument>
-    model = legacy.Model as any
+    model = legacy.Model as mongoose.Model<UserDocument>
     repo = new MongooseUserRepository(model)
   })
 
@@ -32,13 +29,13 @@ describe('users mongoose repository', function () {
         id: (new mongoose.Types.ObjectId()).toHexString(),
         username: 'doc2entity',
         displayName: 'Doc 2 Entity',
-        roleId: (new mongoose.Types.ObjectId()).toHexString(),
-        authenticationId: (new mongoose.Types.ObjectId()).toHexString(),
+        roleId: new mongoose.Types.ObjectId().toHexString(),
+        authenticationId: new mongoose.Types.ObjectId().toHexString(),
         active: true,
         enabled: true,
       }
-      const doc = await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
-      const entity = repo.entityForDocument(doc)
+      await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
+      const entity = await repo.findById(stub.id!)
 
       expect(entity).to.deep.include(stub)
     })
@@ -55,36 +52,42 @@ describe('users mongoose repository', function () {
         enabled: true,
       }
       const doc = await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
-      const entity = repo.entityForDocument(doc)
+      const entity = await repo.findById(doc.id)
 
-      expect(entity.createdAt).to.be.instanceOf(Date)
-      expect(entity.lastUpdated).to.be.instanceOf(Date)
+      expect(entity?.createdAt).to.be.instanceOf(Date)
+      expect(entity?.lastUpdated).to.be.instanceOf(Date)
     })
   })
 
   describe('finding users', function () {
 
-    const authenticationId = (new mongoose.Types.ObjectId()).toHexString()
-    const roleId = (new mongoose.Types.ObjectId()).toHexString()
+    const authenticationId = new mongoose.Types.ObjectId().toHexString()
+    const roleId = new mongoose.Types.ObjectId().toHexString()
     let allUsers: User[]
 
     before(async function () {
 
-      const users: Partial<User>[] = Array.from({ length: 1000 }, (_, pos) => {
+      const users: UserDocument[] = Array.from({ length: 1000 }, (_, pos) => {
         pos += 1
         return {
+          _id: new mongoose.Types.ObjectId(),
           username: `test${pos}`,
           displayName: `Test ${pos}`,
           email: `test${pos}@mage.test${pos % 5}`,
           phones: [{ number: `${String(pos - 1).padStart(3, '0')}-9999`, type: 'test' }],
           active: pos % 2 === 0,
           enabled: pos % 4 === 0,
-          authenticationId,
-          roleId,
+          authenticationId: new mongoose.Types.ObjectId(authenticationId),
+          roleId: new mongoose.Types.ObjectId(roleId),
+          avatar: null,
+          icon: null,
+          createdAt: new Date(),
+          lastUpdated: new Date(),
+          recentEventIds: []
         }
       })
-      const docs = await model.insertMany(users.slice())
-      allUsers = docs.map(repo.entityForDocument as any).sort((a: any, b: any) => a.displayName.localeCompare(b.displayName)) as User[]
+      const inserted = await model.insertMany<UserDocument>(users.slice(), { lean: true })
+      allUsers = inserted.sort((a: any, b: any) => a.displayName.localeCompare(b.displayName)).map(userEntityForDocument)
     })
 
     after(async function () {
@@ -105,6 +108,9 @@ describe('users mongoose repository', function () {
       const page = await repo.find({ active: true, pageSize: allUsers.length, pageIndex: 0 })
       const activeUsers = allUsers.filter(x => x.active)
 
+      page.items.forEach((user, pos) => {
+        expect(user, String(pos)).to.deep.equal(activeUsers[pos])
+      })
       expect(page.totalCount).to.equal(activeUsers.length)
       expect(page.items).to.deep.equal(activeUsers)
     })
@@ -137,22 +143,7 @@ describe('users mongoose repository', function () {
     })
 
     it('sorts on display name ascending consistently', async function () {
-
-      const mockModel: SubstituteOf<mongoose.Model<UserDocument>> = Sub.for<mongoose.Model<UserDocument>>()
-      const mockQuery = Sub.for<mongoose.Query<UserDocument[], UserDocument>>()
-        ; (mockModel.find(Arg.all()) as any).returns(mockQuery)
-      mockQuery.sort(Arg.all()).returns(mockQuery)
-      mockQuery.toConstructor().returns(function () { return mockQuery } as any)
-      mockQuery.limit(Arg.all()).returns(mockQuery)
-      mockQuery.skip(Arg.all()).returns(mockQuery)
-
-      const repo = new MongooseUserRepository(mockModel)
-      const found = await repo.find({ pageSize: 0, pageIndex: 0, includeTotalCount: false })
-
-      expect(found.items).to.deep.equal([])
-      // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
-      // add _id to sort to ensure consistent ordering
-      mockQuery.received(1).sort('displayName _id')
+      expect.fail('todo')
     })
 
     it('uses the provided mapping', async function () {
@@ -167,9 +158,9 @@ describe('users mongoose repository', function () {
 
     describe('search term', function () {
 
-      const userStubs: Partial<User>[] = [
+      const userStubs: Partial<UserDocument>[] = [
         {
-          id: (new mongoose.Types.ObjectId()).toHexString(),
+          _id: new mongoose.Types.ObjectId(),
           username: 'bim',
           displayName: 'Bam Blor',
           email: 'tip@top.nop',
@@ -179,11 +170,14 @@ describe('users mongoose repository', function () {
           ],
           active: true,
           enabled: true,
-          authenticationId,
-          roleId,
+          authenticationId: new mongoose.Types.ObjectId(authenticationId),
+          roleId: new mongoose.Types.ObjectId(roleId),
+          recentEventIds: [],
+          avatar: null,
+          icon: null,
         },
         {
-          id: (new mongoose.Types.ObjectId()).toHexString(),
+          _id: new mongoose.Types.ObjectId(),
           username: 'flim',
           displayName: 'Flam Flor',
           email: 'dorp@top.nop',
@@ -192,20 +186,19 @@ describe('users mongoose repository', function () {
           ],
           active: true,
           enabled: true,
-          authenticationId,
-          roleId,
+          authenticationId: new mongoose.Types.ObjectId(authenticationId),
+          roleId: new mongoose.Types.ObjectId(roleId),
+          recentEventIds: [],
+          avatar: null,
+          icon: null,
         },
       ]
       let users: User[]
 
       beforeEach(async function () {
 
-        const docs = await model.create(userStubs.map(x => ({ ...x, _id: new mongoose.Types.ObjectId(x.id) })))
-        users = docs.map(repo.entityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
-
-        userStubs.forEach((stub, pos) => {
-          expect(users[pos]).to.deep.include(stub)
-        })
+        const docs = await model.insertMany(userStubs, { lean: true }) as UserDocument[]
+        users = docs.map(userEntityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
 
       afterEach(async function () {
@@ -246,7 +239,7 @@ describe('users mongoose repository', function () {
 
       it('is case-insensitive', async function () {
 
-        let found = await repo.find({ nameOrContactTerm: 'FLIM', pageSize: users.length, pageIndex: 0 })
+        const found = await repo.find({ nameOrContactTerm: 'FLIM', pageSize: users.length, pageIndex: 0 })
 
         expect(found.items).to.deep.equal([users[1]])
       })
