@@ -19,7 +19,11 @@ export interface User {
   /**
    * The user icon is the icon that represents the user's location on a map view.
    */
-  icon?: UserIcon
+  icon?: UserIcon | null | undefined
+  /**
+   * The user avatar appears in list views and user profile views.
+   */
+  avatar?: Avatar | null | undefined
   roleId: string
   /**
    * TODO: Invert this relationship key to keep the user account entity clean and
@@ -28,8 +32,11 @@ export interface User {
    * and facilitate migrating accounts from one identity provider to another.
    */
   authenticationId: string
-  avatar?: Avatar
-  // TODO: the rest of the properties
+  /**
+   * A user can set a message to notify others of the user's current status.
+   * TODO: A timestamp on the status message seems useful, and maybe expiration logic.
+   */
+  status?: string | null | undefined
 }
 
 export type UserExpanded = Omit<User, 'roleId' | 'authenticationId'>

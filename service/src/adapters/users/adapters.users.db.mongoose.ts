@@ -1,10 +1,18 @@
-import mongoose from 'mongoose'
-import { User, UserId, UserRepository, UserFindParameters } from '../../entities/users/entities.users'
-import { UserModelInstance } from '../../models/user'
-import { BaseMongooseRepository, pageQuery } from '../base/adapters.base.db.mongoose'
-import { PageOf, pageOf } from '../../entities/entities.global'
-import * as legacy from '../../models/user'
 import _ from 'lodash'
+import mongoose from 'mongoose'
+import { PageOf, pageOf } from '../../entities/entities.global'
+import {
+  Avatar, Phone,
+  User,
+  UserAccountSeed,
+  UserCreateResult,
+  UserFindParameters, UserIcon,
+  UserId,
+  UserRepository
+} from '../../entities/users/entities.users'
+import * as legacy from '../../models/user'
+import { UserModelInstance } from '../../models/user'
+import { pageQuery } from '../base/adapters.base.db.mongoose'
 
 export const UserModelName = 'User'
 
@@ -17,25 +25,63 @@ const idString = (x: { _id: mongoose.Types.ObjectId } | mongoose.Types.ObjectId)
   return id.toHexString()
 }
 
-export class MongooseUserRepository extends BaseMongooseRepository<UserDocument, UserModel, User> implements UserRepository {
+function entityForDocument(doc: UserDocument): User {
+  return {
+    id: idString(doc),
+    username: doc.username,
+    displayName: doc.displayName,
+    active: doc.active,
+    enabled: doc.enabled,
+    createdAt: doc.createdAt,
+    lastUpdated: doc.lastUpdated,
+    ...(doc.email ? { email: doc.email } : {} ),
+    ...(doc.status ? { status: doc.status } : {}),
+    icon: iconEntityForDocument(doc.icon),
+    avatar: avatarEntityForDocument(doc.avatar),
+    phones: doc.phones.map(phoneEntityForDocument),
+    roleId: idString(doc.roleId),
+    authenticationId: idString(doc.authenticationId)
+  }
+}
+
+export { entityForDocument as userEntityForDocument }
+
+function phoneEntityForDocument(doc: Phone): Phone{
+  return { type: doc.type, number: doc.number }
+}
+
+function iconEntityForDocument(doc: UserDocument['icon']): UserIcon | null {
+  const entity = doc ? {
+    ...(doc.type ? { type: doc.type } : {}),
+    ...(doc.color ? { color: doc.color } : {}),
+    ...(doc.text ? { text: doc.text } : {}),
+    ...(doc.size ? { size: doc.size } : {}),
+    ...(doc.color ? { color: doc.color } : {}),
+    ...(doc.contentType ? { content: doc.contentType } : {}),
+    ...(doc.relativePath ? { relativePath: doc.relativePath } : {}),
+  } : doc
+  return entity && Object.keys(entity).length ? entity as UserIcon : null
+}
+
+function avatarEntityForDocument(doc: UserDocument['avatar']): Avatar | null {
+  const entity = doc ? {
+    ...(doc.relativePath ? { relativePath: doc.relativePath } : {}),
+    ...(typeof doc.size === 'number' ? { size: doc.size } : {}),
+    ...(doc.contentType ? { contentType: doc.contentType } : {})
+  } : doc
+  return entity && Object.keys(entity).length ? entity as Avatar : null
+}
+
+export class MongooseUserRepository implements UserRepository {
+
+  #model: mongoose.Model<UserDocument>
 
   constructor(model: mongoose.Model<UserDocument>) {
-    super(model, {
-      docToEntity: doc => {
-        const json = doc.toJSON()
-        return {
-          ...json,
-          avatar: doc.avatar,
-          id: doc._id.toHexString(),
-          roleId: idString(doc.roleId),
-          authenticationId: idString(doc.authenticationId)
-        }
-      }
-    })
+    this.#model = model
   }
 
-  async create(): Promise<User> {
-    throw new Error('method not allowed')
+  async createUser(account: UserAccountSeed): Promise<UserCreateResult> {
+    throw new Error('unimplemented')
   }
 
   async update(attrs: Partial<User> & { id: UserId }): Promise<User | null> {
@@ -63,24 +109,40 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
     if (typeof enabled === 'boolean') {
       params.enabled = enabled
     }
-    const baseQuery = this.model.find<UserModelInstance>(params).sort('displayName _id')
+    const baseQuery = this.#model.find<UserModelInstance>(params).sort('displayName _id')
     const counted = await pageQuery(baseQuery, which)
     const users: T[] = []
     if (!mapping) {
       mapping = (x: User): T => (x as any as T)
     }
     for await (const userDoc of counted.query.cursor()) {
-      users.push(mapping(this.entityForDocument(userDoc)))
+      users.push(mapping(entityForDocument(userDoc)))
     }
     return pageOf(users, which, counted.totalCount)
   }
 
   async findById(id: UserId): Promise<User | null> {
-    const doc = await this.model.findById(id)
+    const doc = await this.#model.findById(id)
     if (doc) {
-      return this.entityForDocument(doc)
+      return entityForDocument(doc)
     }
-
     return null
+  }
+
+  async findAllByIds(ids: UserId[]): Promise<Record<UserId, User | null>> {
+    if (!ids.length) {
+      return {} as any
+    }
+    const notFound = ids.reduce((notFound, id) => {
+      notFound[id] = null
+      return notFound
+    }, {} as any)
+    const docs = await this.#model.find({ _id: { $in: ids } })
+    const found = {} as Record<UserId, User | null>
+    for (const doc of docs) {
+      found[doc.id] = entityForDocument(doc)
+      delete notFound[doc.id]
+    }
+    return { ...notFound, ...found }
   }
 }
