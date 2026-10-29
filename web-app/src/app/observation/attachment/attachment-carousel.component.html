@@ -1,33 +1,38 @@
 <div class="carousel" #scrollContainer (scroll)="onScroll()">
-  <div class="carousel__slide" *ngFor="let attachment of orderedAttachments">
-    <observation-attachment [attachment]="attachment" [expandable]="false"></observation-attachment>
-  </div>
+  @for (attachment of orderedAttachments; track attachment.id) {
+    <div class="carousel__slide">
+      <observation-attachment [attachment]="attachment" [expandable]="false"></observation-attachment>
+    </div>
+  }
 </div>
 
-<ng-container *ngIf="attachments?.length > 1">
-  <button
-    *ngIf="currentIndex > 0"
-    mat-icon-button
-    class="carousel__arrow carousel__arrow--prev"
-    (click)="goToPrevious($event)"
-    aria-label="Previous attachment">
-    <mat-icon>chevron_left</mat-icon>
-  </button>
+@if (attachments?.length > 1) {
+  @if (currentIndex() > 0) {
+    <button
+      mat-icon-button
+      class="carousel__arrow carousel__arrow--prev"
+      (click)="goToPrevious($event)"
+      aria-label="Previous attachment">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+  }
 
-  <button
-    *ngIf="currentIndex < attachments.length - 1"
-    mat-icon-button
-    class="carousel__arrow carousel__arrow--next"
-    (click)="goToNext($event)"
-    aria-label="Next attachment">
-    <mat-icon>chevron_right</mat-icon>
-  </button>
+  @if (currentIndex() < attachments.length - 1) {
+    <button
+      mat-icon-button
+      class="carousel__arrow carousel__arrow--next"
+      (click)="goToNext($event)"
+      aria-label="Next attachment">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  }
 
   <div class="carousel__dots">
-    <span
-      *ngFor="let attachment of orderedAttachments; let i = index"
-      class="carousel__dot"
-      [class.carousel__dot--active]="i === currentIndex">
-    </span>
+    @for (attachment of orderedAttachments; track attachment.id; let i = $index) {
+      <span
+        class="carousel__dot"
+        [class.carousel__dot--active]="i === currentIndex()">
+      </span>
+    }
   </div>
-</ng-container>
+}

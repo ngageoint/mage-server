@@ -1,90 +1,84 @@
-<div *ngIf="attachment.url">
-  <div [ngSwitch]="contentType()">
-    <div [ngClass]="{'media-delete__mask': attachment.action === actions.DELETE}">
-      <div *ngSwitchCase="'image'">
-        <ng-container *ngTemplateOutlet="image"></ng-container>
+@if (attachment.url) {
+  <div [ngClass]="{'media-delete__mask': attachment.action === actions.DELETE}">
+    @if (contentType() === 'image') {
+      <div class="media">
+        <img class="media__crop" src="{{attachment.url}}?access_token={{token}}&oriented={{attachment.oriented}}&size=394" />
+        @if (clickable) {
+          <a class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+        }
       </div>
-      <div *ngSwitchCase="'video'">
-        <ng-container *ngTemplateOutlet="media"></ng-container>
+    } @else if (contentType() === 'video' || contentType() === 'audio') {
+      <div class="media">
+        <video width="100%" height="100%" [controls]="!canEdit" class="attachment__video">
+          <source src="{{attachment.url}}?access_token={{token}}" type="video/mp4">
+          <div>
+            <div class="media media-unknown">
+              <mat-icon class="media__icon">attach_file</mat-icon>
+              <div>{{attachment.name | filename:12}}</div>
+              @if (clickable) {
+                <a class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+              }
+            </div>
+          </div>
+        </video>
       </div>
-      <div *ngSwitchCase="'audio'">
-        <ng-container *ngTemplateOutlet="media"></ng-container>
+    } @else {
+      <div class="media media-unknown">
+        <mat-icon class="media__icon">attach_file</mat-icon>
+        <div>{{attachment.name | filename:12}}</div>
+        @if (clickable) {
+          <a class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+        }
       </div>
-      <div *ngSwitchDefault>
-        <ng-container *ngTemplateOutlet="fallback"></ng-container>
-      </div>
-    </div>
+    }
+  </div>
 
-    <div *ngIf="label" class="media-chip">
+  @if (label) {
+    <div class="media-chip">
       <mat-chip-set>
         <mat-chip>{{label}}</mat-chip>
       </mat-chip-set>
     </div>
+  }
 
-    <div *ngIf="canEdit" class="attachment__delete">
+  @if (canEdit) {
+    <div class="attachment__delete">
       <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
       </button>
     </div>
+  }
+} @else if (isFailed()) {
+  <div class="media media-unknown" [class.media-unknown--clickable]="expandable" [class.media-unknown--expanded]="messageExpanded" (click)="toggleFailureMessage()">
+    <mat-icon class="media__icon">error_outline</mat-icon>
+    <div class="media-unknown__title">Upload Failed</div>
+    <div class="media-unknown__subhead">{{attachment.name | filename:12}}</div>
+    @if (expandable) {
+      <div class="media-unknown__hint-wrapper" [class.media-unknown__hint-wrapper--expanded]="messageExpanded">
+        <div class="media-unknown__hint">{{ messageExpanded ? attachment.processingMessage : 'Click for more details' }}</div>
+      </div>
+    }
   </div>
-</div>
 
-<div *ngIf="!attachment.url">
-  <ng-container *ngTemplateOutlet="isFailed() ? failed : pending"></ng-container>
-</div>
-
-<ng-template #image>
-  <div class="media">
-    <img class="media__crop" src="{{attachment.url}}?access_token={{token}}&oriented={{attachment.oriented}}&size=394" />
-    <a *ngIf="clickable" class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
-  </div>
-</ng-template>
-
-<ng-template #media>
-  <div class="media">
-    <video width="100%" height="100%" [controls]="!canEdit" class="attachment__video">
-      <source src="{{attachment.url}}?access_token={{token}}" type="video/mp4">
-      <div><ng-container *ngTemplateOutlet="fallback"></ng-container></div>
-    </video>
-  </div>
-</ng-template>
-
-<ng-template #pending>
+  @if (canEdit || edit) {
+    <div class="attachment__delete">
+      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  }
+} @else {
   <div class="media media-unknown">
     <mat-icon class="media__icon">cloud_upload</mat-icon>
     <div>{{attachment.name | filename:12}}</div>
     <div>Upload pending...</div>
   </div>
 
-  <div *ngIf="canEdit" class="attachment__delete">
-    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </div>
-</ng-template>
-
-<ng-template #failed>
-  <div class="media media-unknown" [class.media-unknown--clickable]="expandable" [class.media-unknown--expanded]="messageExpanded" (click)="toggleFailureMessage()">
-    <mat-icon class="media__icon">error_outline</mat-icon>
-    <div class="media-unknown__title">Upload Failed</div>
-    <div class="media-unknown__subhead">{{attachment.name | filename:12}}</div>
-    <div *ngIf="expandable" class="media-unknown__hint-wrapper" [class.media-unknown__hint-wrapper--expanded]="messageExpanded">
-      <div class="media-unknown__hint">{{ messageExpanded ? attachment.processingMessage : 'Click for more details' }}</div>
+  @if (canEdit) {
+    <div class="attachment__delete">
+      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+        <mat-icon>delete</mat-icon>
+      </button>
     </div>
-  </div>
-
-  <div *ngIf="canEdit || edit" class="attachment__delete">
-    <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </div>
-</ng-template>
-
-<ng-template #fallback>
-  <div class="media media-unknown">
-    <mat-icon class="media__icon">attach_file</mat-icon>
-    <div>{{attachment.name | filename:12}}</div>
-    <a *ngIf="clickable" class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
-
-  </div>
-</ng-template>
+  }
+}
