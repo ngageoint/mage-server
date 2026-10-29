@@ -8,6 +8,8 @@ import { createEnrollLocalUserByProxyOperation } from '../../../lib/app.impl/use
 import { UserRepository } from '../../../lib/entities/users/entities.users'
 import { permissionDenied } from '../../../lib/app.api/app.api.errors'
 import { UsersPermission } from '../../../lib/entities/authorization/entities.permissions'
+import { ErrEntityNotUnique } from '../../../lib/app.api/app.api.errors'
+import { DuplicateUsernameError } from '../../../lib/entities/users/entities.users'
 
 describe.only('user account administration', function() {
 
@@ -31,7 +33,7 @@ describe.only('user account administration', function() {
       permissions.ensureCreateUserPermission(context).resolves(permissionDenied(UsersPermission.CREATE_USER, 'skinner'))
       const enroll = createEnrollLocalUserByProxyOperation(userRepo, permissions)
       const enrollResult = await enroll({
-        enrollment: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypattie' },
+        account: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypattie' },
         context
       })
       assert(enrollResult.success === undefined)
@@ -40,7 +42,15 @@ describe.only('user account administration', function() {
     })
 
     it('fails if the user name already exists', async function() {
-      expect.fail('todo')
+      permissions.ensureCreateUserPermission(context).resolves(null)
+      userRepo.createUser(Arg.all()).resolves({ error: new DuplicateUsernameError('anyone') })
+      const enroll = createEnrollLocalUserByProxyOperation(userRepo, permissions)
+      const enrollResult = await enroll({
+        account: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypattie' },
+        context
+      })
+      assert(enrollResult.success === undefined)
+      expect(enrollResult.error.code).to.equal(ErrEntityNotUnique)
     })
   })
 
