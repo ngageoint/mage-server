@@ -1,16 +1,16 @@
 import { AppResponse, AppRequest, AppRequestContext } from '../app.api.global'
-import { InvalidInputError, PermissionDeniedError } from '../app.api.errors'
+import { EntityNotUniqueError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { User } from '../../entities/users/entities.users'
 
 
-export type LocalUserProxyEnrollment = Pick<User, 'username' | 'displayName' | 'email' | 'roleId'> & {
+export type LocalUserProxyEnrollmentAccount = Pick<User, 'username' | 'displayName' | 'email' | 'roleId'> & {
   password: string
   phone?: string | undefined
 }
 
 export interface EnrollLocalUserByProxyRequest extends AppRequest {
-  enrollment: LocalUserProxyEnrollment
+  account: LocalUserProxyEnrollmentAccount
 }
 
 /**
@@ -20,7 +20,7 @@ export interface EnrollLocalUserByProxyRequest extends AppRequest {
  * as opposed to an externally managed IDP account like Google or login.gov.
  */
 export interface EnrollLocalUserByProxy {
-  (req: EnrollLocalUserByProxyRequest): Promise<AppResponse<ExoUserAccount, PermissionDeniedError | InvalidInputError>>
+  (req: EnrollLocalUserByProxyRequest): Promise<AppResponse<ExoUserAccount, PermissionDeniedError | EntityNotUniqueError | InvalidInputError>>
 }
 
 export interface UserSearchRequest extends AppRequest {

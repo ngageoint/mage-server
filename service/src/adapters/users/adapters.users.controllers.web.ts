@@ -4,7 +4,7 @@ import { invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import {
   EnrollLocalUserByProxy,
   EnrollLocalUserByProxyRequest,
-  LocalUserProxyEnrollment,
+  LocalUserProxyEnrollmentAccount,
   SearchUsers,
   UserSearchRequest
 } from '../../app.api/users/app.api.users'
@@ -141,7 +141,7 @@ export function UsersRoutes(
         if (accountSpec instanceof Error) {
           return next(accountSpec)
         }
-        const enrollment: LocalUserProxyEnrollment = {
+        const enrollment: LocalUserProxyEnrollmentAccount = {
           username: accountSpec.username,
           roleId: accountSpec.roleId,
           displayName: accountSpec.displayName || accountSpec.username,
@@ -149,7 +149,7 @@ export function UsersRoutes(
           phone: accountSpec.phone,
           password: accountSpec.password,
         }
-        const appReq: EnrollLocalUserByProxyRequest = createAppRequest(req, { enrollment })
+        const appReq: EnrollLocalUserByProxyRequest = createAppRequest(req, { account: enrollment })
         const appRes = await app.enrollLocalUserByProxy(appReq)
         if (appRes.error) {
           return next(appRes.error)

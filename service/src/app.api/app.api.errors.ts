@@ -2,11 +2,13 @@
 export const ErrPermissionDenied = Symbol.for('MageError.PermissionDenied')
 export const ErrInvalidInput = Symbol.for('MageError.InvalidInput')
 export const ErrEntityNotFound = Symbol.for('MageError.EntityNotFound')
+export const ErrEntityNotUnique = Symbol.for('MageError.EntityNotUnique')
 export const ErrInfrastructure = Symbol.for('MageError.Infrastructure')
 
 export type PermissionDeniedError = MageError<typeof ErrPermissionDenied, PermissionDeniedErrorData>
 export type InvalidInputError = MageError<typeof ErrInvalidInput, KeyPathError[]>
 export type EntityNotFoundError = MageError<typeof ErrEntityNotFound, EntityNotFoundErrorData>
+export type EntityNotUniqueError = MageError<typeof ErrEntityNotUnique, EntityNotUniqueErrorData>
 /**
  * An infrastructure error bubbles up from some adapter layer component, such
  * as a file system service or database driver.  These are typically errors
@@ -35,6 +37,11 @@ export interface EntityNotFoundErrorData {
   readonly entityId: any
 }
 
+export interface EntityNotUniqueErrorData {
+  readonly entityType: string
+  readonly duplicateKey?: Record<string, any>
+}
+
 export function permissionDenied(permission: string, subject: string, object?: string): PermissionDeniedError {
   const message = `${subject} does not have permission ${permission}` + (object ? ` on ${object}` : '')
   return new MageError(ErrPermissionDenied, { permission, subject, object: object || null }, message)
@@ -42,6 +49,11 @@ export function permissionDenied(permission: string, subject: string, object?: s
 
 export function entityNotFound(entityId: any, entityType: string, message?: string): EntityNotFoundError {
   return new MageError(ErrEntityNotFound, { entityId, entityType }, message || `${entityType} not found: ${entityId}`)
+}
+
+export function entityNotUnique(entityType: string, summary?: string, duplicateKey?: Record<string, any>): EntityNotUniqueError {
+  const message = summary || `${entityType} already exists`
+  return new MageError(ErrEntityNotUnique, { entityType, summary, duplicateKey }, message)
 }
 
 export function invalidInput(summary?: string, ...errors: KeyPathError[]): InvalidInputError {
