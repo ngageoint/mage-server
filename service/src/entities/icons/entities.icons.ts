@@ -79,7 +79,7 @@ export enum StaticIconImportFetch {
   Eager = 'StaticIconFetch.eager',
   /**
    * Defer fetching the icon content from the source URL until some process
-   * explictly requests a fetch at some point in the future, such as a client
+   * explicitly requests a fetch at some point in the future, such as a client
    * requests the icon content by its internal ID.
    */
   Lazy = 'StaticIconFetch.lazy',

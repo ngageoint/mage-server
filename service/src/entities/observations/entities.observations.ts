@@ -790,8 +790,8 @@ export type ObservationSearchAttrs = {
 
 /**
  * Provides observation full-text/condition search results for a
- * {@link EventScopedObservationRepository.find | find} or
- * {@link EventScopedObservationRepository.iterate | iterate} query's
+ * {@link EventScopedObservationRepository.find find} or
+ * {@link EventScopedObservationRepository.iterate iterate} query's
  * {@link FindObservationsWhere.fieldFilter}.
  */
 export interface ObservationSearchRepository {
@@ -802,7 +802,7 @@ export interface ObservationSearchRepository {
 
 /**
  * This repository provides persistence operations for `Observation` entities
- * within the scope of one MAGE event.
+ * within the scope of one Mage event.
  */
 export interface EventScopedObservationRepository {
   readonly eventScope: MageEventId

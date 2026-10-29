@@ -39,9 +39,9 @@ export interface FeedServiceType {
 
   validateServiceConfig(config: Json): Promise<null | InvalidServiceConfigError>
   /**
-   * Remove data from the given service coniguration document that is sensitive
+   * Remove data from the given service configuration document that is sensitive
    * or otherwise unsuitable to send over the wire to a service client.
-   * TODO: this might go away in favor of a marking properties on config
+   * TODO: this might go away in favor of marking properties on config
    * instances as secret
    * @param config
    */
