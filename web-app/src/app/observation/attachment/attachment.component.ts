@@ -15,7 +15,7 @@ import { FilenamePipe } from '../../filename/filename.pipe';
     imports: [NgClass, MatButtonModule, MatChipsModule, MatIconModule, FilenamePipe]
 })
 export class AttachmentComponent implements OnInit {
-  private sessionService = inject(SessionService)
+  private readonly sessionService: SessionService = inject(SessionService)
 
   @Input() attachment: Attachment
   @Input() clickable: boolean
