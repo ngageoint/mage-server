@@ -1,15 +1,22 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { Attachment, AttachmentProcessingStatus } from '../../entities/observation/entities.observation'
+import { FilenamePipe } from '../../filename/filename.pipe';
 
 @Component({
     selector: 'observation-attachment',
     templateUrl: './attachment.component.html',
     styleUrls: ['./attachment.component.scss'],
-    standalone: false
+    imports: [NgClass, MatButtonModule, MatChipsModule, MatIconModule, FilenamePipe]
 })
 export class AttachmentComponent implements OnInit {
+  private sessionService = inject(SessionService)
+
   @Input() attachment: Attachment
   @Input() clickable: boolean
   @Input() edit: boolean
@@ -23,7 +30,7 @@ export class AttachmentComponent implements OnInit {
   @Output() delete = new EventEmitter<void>()
 
   canEdit: boolean
-  token: string
+  token: string = this.sessionService.getToken()
   messageExpanded = false
 
   mimeTypes = {
@@ -35,12 +42,6 @@ export class AttachmentComponent implements OnInit {
   }
 
   actions: typeof AttachmentAction = AttachmentAction
-
-  constructor(
-    private sessionService: SessionService
-  ) {
-    this.token = sessionService.getToken()
-  }
 
   ngOnInit(): void {
     this.canEdit = this.sessionService.amAdmin && this.edit
