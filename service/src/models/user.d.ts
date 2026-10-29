@@ -10,8 +10,8 @@ export interface UserDocument {
   displayName: string
   email?: string
   phones: Phone[]
-  avatar: Avatar
-  icon: UserIcon
+  avatar: Partial<Avatar> | null
+  icon: Partial<UserIcon> | null
   active: boolean
   enabled: boolean
   roleId: mongoose.Types.ObjectId
