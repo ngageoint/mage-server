@@ -85,15 +85,23 @@ export interface Avatar {
   relativePath?: string
 }
 
-
-
 export class DuplicateUsernameError extends Error {
 
-  username: string
+  readonly username: string
 
   constructor(username: string) {
     super(`username ${username} already exists`)
     this.username = username
+  }
+}
+
+export class InvalidUserSeedError extends Error {
+
+  readonly seed: any
+
+  constructor(seed: any) {
+    super('user seed must be a valid instance of ' + UserAccountSeed.name)
+    this.seed = seed
   }
 }
 
@@ -146,7 +154,7 @@ export type UserCreateResult =
   }
   | {
     user?: undefined
-    error: DuplicateUsernameError
+    error: DuplicateUsernameError | InvalidUserSeedError
   }
 
 

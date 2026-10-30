@@ -4,6 +4,7 @@ import { User } from '../../../lib/entities/users/entities.users'
 import * as legacy from '../../../lib/models/user'
 import { MongooseUserRepository, UserDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
 import { userEntityForDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
+import { InvalidUserSeedError } from '../../../lib/entities/users/entities.users'
 
 
 describe.only('users mongoose repository', function () {
@@ -60,6 +61,19 @@ describe.only('users mongoose repository', function () {
     })
   })
 
+  describe('creating users', function() {
+
+    it('fails when the seed is not a user seed instance', async function () {
+
+      const created = await repo.createUser({ username: 'fail' } as any)
+      const found = await repo.find({ pageSize: 1, pageIndex: 0 })
+
+      expect(created.error).to.be.instanceOf(InvalidUserSeedError)
+      expect(found.totalCount).to.equal(0)
+      expect(found.items.length).to.equal(0)
+    })
+  })
+
   describe('finding users', function () {
 
     const authenticationId = new mongoose.Types.ObjectId().toHexString()
@@ -95,176 +109,200 @@ describe.only('users mongoose repository', function () {
       await model.deleteMany({})
     })
 
-    it('supports paging', async function () {
+    describe('by id', function() {
 
-      const page = await repo.find({ pageSize: 23, pageIndex: 2, includeTotalCount: true })
+      it('returns the matching user', async function() {
 
-      expect(page.totalCount).to.equal(1000)
-      expect(page.items.length).to.equal(23)
-      expect(page.items).to.deep.equal(allUsers.slice(46, 69))
-    })
+        const found = await repo.findById(allUsers[67].id)
 
-    it('filters by active flag', async function () {
-
-      const page = await repo.find({ active: true, pageSize: allUsers.length, pageIndex: 0 })
-      const activeUsers = allUsers.filter(x => x.active)
-
-      page.items.forEach((user, pos) => {
-        expect(user, String(pos)).to.deep.equal(activeUsers[pos])
-      })
-      expect(page.totalCount).to.equal(activeUsers.length)
-      expect(page.items).to.deep.equal(activeUsers)
-    })
-
-    it('filters by enabled flag', async function () {
-
-      const page = await repo.find({ enabled: true, pageSize: allUsers.length, pageIndex: 0 })
-      const enabledUsers = allUsers.filter(x => x.enabled)
-
-      expect(page.totalCount).to.equal(enabledUsers.length)
-      expect(page.items).to.deep.equal(enabledUsers)
-    })
-
-    it('filters by search term matching username and email', async function () {
-
-      const found = await repo.find({ nameOrContactTerm: 'test2', pageSize: allUsers.length, pageIndex: 0 })
-      const matching = allUsers.filter(x => /Test 5/.test(x.username) || /test2/.test(x.email!))
-
-      expect(found.totalCount).to.equal(matching.length)
-      expect(found.items).to.deep.equal(matching)
-    })
-
-    it('filters by everything', async function () {
-
-      const found = await repo.find({ nameOrContactTerm: 'Test 3', active: true, enabled: false, pageSize: allUsers.length, pageIndex: 0 })
-      const matching = allUsers.filter(x => /Test 3/.test(x.displayName) && x.active && !x.enabled)
-
-      expect(found.totalCount).to.equal(matching.length)
-      expect(found.items).to.deep.equal(matching)
-    })
-
-    it('sorts on display name ascending consistently', async function () {
-      const id1 = new mongoose.Types.ObjectId()
-      const id2 = new mongoose.Types.ObjectId()
-      const user1 = {
-        ...allUsers[0],
-        _id: id2,
-        id: undefined,
-        username: allUsers[0].username + '.id2',
-      }
-      const user2 = {
-        ...allUsers[0],
-        _id: id1,
-        id: undefined,
-        username: allUsers[0].username + '.id1',
-      }
-      const user1Created = userEntityForDocument(await model.create(user1))
-      const user2Created = userEntityForDocument(await model.create(user2))
-
-      for (let remaining = 10; remaining > 0; remaining--) {
-        const found = await repo.find({ pageSize: allUsers.length, pageIndex: 0 })
-        expect(found.items[0], 'item 0').to.deep.equal(allUsers[0])
-        expect(found.items[1], 'item 1').to.deep.equal(user2Created)
-        expect(found.items[2], 'item 2').to.deep.equal(user1Created)
-      }
-    })
-
-    it('uses the provided mapping', async function () {
-
-      const found = await repo.find({ nameOrContactTerm: 'Test 31', pageSize: allUsers.length, pageIndex: 0 }, x => x.username)
-      const matching = allUsers.filter(x => /Test 31/.test(x.displayName)).map(x => x.username)
-
-      expect(found.totalCount).to.equal(matching.length)
-      expect(found.items).to.deep.equal(matching)
-      expect(found.items[0]).to.equal('test31')
-    })
-
-    describe('search term', function () {
-
-      const userStubs: Partial<UserDocument>[] = [
-        {
-          _id: new mongoose.Types.ObjectId(),
-          username: 'bim',
-          displayName: 'Bam Blor',
-          email: 'tip@top.nop',
-          phones: [
-            { type: 'phone1', number: '+01 321-654-0987' },
-            { type: 'phone2', number: '+01 123-654-7890' }
-          ],
-          active: true,
-          enabled: true,
-          authenticationId: new mongoose.Types.ObjectId(authenticationId),
-          roleId: new mongoose.Types.ObjectId(roleId),
-          recentEventIds: [],
-          avatar: null,
-          icon: null,
-        },
-        {
-          _id: new mongoose.Types.ObjectId(),
-          username: 'flim',
-          displayName: 'Flam Flor',
-          email: 'dorp@top.nop',
-          phones: [
-            { type: 'phone1', number: '+01 123-456-7890' }
-          ],
-          active: true,
-          enabled: true,
-          authenticationId: new mongoose.Types.ObjectId(authenticationId),
-          roleId: new mongoose.Types.ObjectId(roleId),
-          recentEventIds: [],
-          avatar: null,
-          icon: null,
-        },
-      ]
-      let users: User[]
-
-      beforeEach(async function () {
-
-        const docs = await model.insertMany(userStubs, { lean: true }) as UserDocument[]
-        users = docs.map(userEntityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
+        expect(found).to.deep.equal(allUsers[67])
       })
 
-      afterEach(async function () {
-        await model.deleteMany({ _id: { $in: users.map(x => x.id) } })
+      it('returns null when no user matches', async function() {
+        expect.fail('todo')
+      })
+    })
+
+    describe('by username', function() {
+
+      it('finds a user by username', async function() {
+        expect.fail('todo')
+      })
+    })
+
+    describe('by bulk search parameters', function() {
+
+      it('supports paging', async function () {
+
+        const page = await repo.find({ pageSize: 23, pageIndex: 2, includeTotalCount: true })
+
+        expect(page.totalCount).to.equal(1000)
+        expect(page.items.length).to.equal(23)
+        expect(page.items).to.deep.equal(allUsers.slice(46, 69))
       })
 
-      it('matches username', async function () {
+      it('filters by active flag', async function () {
 
-        const found = await repo.find({ nameOrContactTerm: 'flim', pageSize: users.length, pageIndex: 0 })
+        const page = await repo.find({ active: true, pageSize: allUsers.length, pageIndex: 0 })
+        const activeUsers = allUsers.filter(x => x.active)
 
-        expect(found.items).to.deep.equal([users[1]])
+        page.items.forEach((user, pos) => {
+          expect(user, String(pos)).to.deep.equal(activeUsers[pos])
+        })
+        expect(page.totalCount).to.equal(activeUsers.length)
+        expect(page.items).to.deep.equal(activeUsers)
       })
 
-      it('matches display name', async function () {
+      it('filters by enabled flag', async function () {
 
-        const found = await repo.find({ nameOrContactTerm: 'lor', pageSize: users.length, pageIndex: 0 })
+        const page = await repo.find({ enabled: true, pageSize: allUsers.length, pageIndex: 0 })
+        const enabledUsers = allUsers.filter(x => x.enabled)
 
-        expect(found.items).to.deep.equal(users)
+        expect(page.totalCount).to.equal(enabledUsers.length)
+        expect(page.items).to.deep.equal(enabledUsers)
       })
 
-      it('matches email', async function () {
+      it('filters by search term matching username and email', async function () {
 
-        const found = await repo.find({ nameOrContactTerm: '@top.nop', pageSize: users.length, pageIndex: 0 })
+        const found = await repo.find({ nameOrContactTerm: 'test2', pageSize: allUsers.length, pageIndex: 0 })
+        const matching = allUsers.filter(x => /Test 5/.test(x.username) || /test2/.test(x.email!))
 
-        expect(found.items).to.deep.equal(users)
+        expect(found.totalCount).to.equal(matching.length)
+        expect(found.items).to.deep.equal(matching)
       })
 
-      it('matches phone numbers', async function () {
+      it('filters by everything', async function () {
 
-        let found = await repo.find({ nameOrContactTerm: '+01 321', pageSize: users.length, pageIndex: 0 })
+        const found = await repo.find({ nameOrContactTerm: 'Test 3', active: true, enabled: false, pageSize: allUsers.length, pageIndex: 0 })
+        const matching = allUsers.filter(x => /Test 3/.test(x.displayName) && x.active && !x.enabled)
 
-        expect(found.items).to.deep.equal([users[0]])
-
-        found = await repo.find({ nameOrContactTerm: '+01 123', pageSize: users.length, pageIndex: 0 })
-
-        expect(found.items).to.deep.equal(users)
+        expect(found.totalCount).to.equal(matching.length)
+        expect(found.items).to.deep.equal(matching)
       })
 
-      it('is case-insensitive', async function () {
+      it('sorts on display name ascending consistently', async function () {
+        const id1 = new mongoose.Types.ObjectId()
+        const id2 = new mongoose.Types.ObjectId()
+        const user1 = {
+          ...allUsers[0],
+          _id: id2,
+          id: undefined,
+          username: allUsers[0].username + '.id2',
+        }
+        const user2 = {
+          ...allUsers[0],
+          _id: id1,
+          id: undefined,
+          username: allUsers[0].username + '.id1',
+        }
+        const user1Created = userEntityForDocument(await model.create(user1))
+        const user2Created = userEntityForDocument(await model.create(user2))
 
-        const found = await repo.find({ nameOrContactTerm: 'FLIM', pageSize: users.length, pageIndex: 0 })
+        for (let remaining = 10; remaining > 0; remaining--) {
+          const found = await repo.find({ pageSize: allUsers.length, pageIndex: 0 })
+          expect(found.items[0], 'item 0').to.deep.equal(allUsers[0])
+          expect(found.items[1], 'item 1').to.deep.equal(user2Created)
+          expect(found.items[2], 'item 2').to.deep.equal(user1Created)
+        }
+      })
 
-        expect(found.items).to.deep.equal([users[1]])
+      it('uses the provided mapping', async function () {
+
+        const found = await repo.find({ nameOrContactTerm: 'Test 31', pageSize: allUsers.length, pageIndex: 0 }, x => x.username)
+        const matching = allUsers.filter(x => /Test 31/.test(x.displayName)).map(x => x.username)
+
+        expect(found.totalCount).to.equal(matching.length)
+        expect(found.items).to.deep.equal(matching)
+        expect(found.items[0]).to.equal('test31')
+      })
+
+      describe('search term', function () {
+
+        const userStubs: Partial<UserDocument>[] = [
+          {
+            _id: new mongoose.Types.ObjectId(),
+            username: 'bim',
+            displayName: 'Bam Blor',
+            email: 'tip@top.nop',
+            phones: [
+              { type: 'phone1', number: '+01 321-654-0987' },
+              { type: 'phone2', number: '+01 123-654-7890' }
+            ],
+            active: true,
+            enabled: true,
+            authenticationId: new mongoose.Types.ObjectId(authenticationId),
+            roleId: new mongoose.Types.ObjectId(roleId),
+            recentEventIds: [],
+            avatar: null,
+            icon: null,
+          },
+          {
+            _id: new mongoose.Types.ObjectId(),
+            username: 'flim',
+            displayName: 'Flam Flor',
+            email: 'dorp@top.nop',
+            phones: [
+              { type: 'phone1', number: '+01 123-456-7890' }
+            ],
+            active: true,
+            enabled: true,
+            authenticationId: new mongoose.Types.ObjectId(authenticationId),
+            roleId: new mongoose.Types.ObjectId(roleId),
+            recentEventIds: [],
+            avatar: null,
+            icon: null,
+          },
+        ]
+        let users: User[]
+
+        beforeEach(async function () {
+
+          const docs = await model.insertMany(userStubs, { lean: true }) as UserDocument[]
+          users = docs.map(userEntityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
+        })
+
+        afterEach(async function () {
+          await model.deleteMany({ _id: { $in: users.map(x => x.id) } })
+        })
+
+        it('matches username', async function () {
+
+          const found = await repo.find({ nameOrContactTerm: 'flim', pageSize: users.length, pageIndex: 0 })
+
+          expect(found.items).to.deep.equal([users[1]])
+        })
+
+        it('matches display name', async function () {
+
+          const found = await repo.find({ nameOrContactTerm: 'lor', pageSize: users.length, pageIndex: 0 })
+
+          expect(found.items).to.deep.equal(users)
+        })
+
+        it('matches email', async function () {
+
+          const found = await repo.find({ nameOrContactTerm: '@top.nop', pageSize: users.length, pageIndex: 0 })
+
+          expect(found.items).to.deep.equal(users)
+        })
+
+        it('matches phone numbers', async function () {
+
+          let found = await repo.find({ nameOrContactTerm: '+01 321', pageSize: users.length, pageIndex: 0 })
+
+          expect(found.items).to.deep.equal([users[0]])
+
+          found = await repo.find({ nameOrContactTerm: '+01 123', pageSize: users.length, pageIndex: 0 })
+
+          expect(found.items).to.deep.equal(users)
+        })
+
+        it('is case-insensitive', async function () {
+
+          const found = await repo.find({ nameOrContactTerm: 'FLIM', pageSize: users.length, pageIndex: 0 })
+
+          expect(found.items).to.deep.equal([users[1]])
+        })
       })
     })
   })
