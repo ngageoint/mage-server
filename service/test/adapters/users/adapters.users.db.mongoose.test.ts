@@ -6,7 +6,6 @@ import { MongooseUserRepository, UserDocument } from '../../../lib/adapters/user
 import { userEntityForDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
 
 
-
 describe.only('users mongoose repository', function () {
 
   let model: mongoose.Model<UserDocument>
@@ -143,7 +142,29 @@ describe.only('users mongoose repository', function () {
     })
 
     it('sorts on display name ascending consistently', async function () {
-      expect.fail('todo')
+      const id1 = new mongoose.Types.ObjectId()
+      const id2 = new mongoose.Types.ObjectId()
+      const user1 = {
+        ...allUsers[0],
+        _id: id2,
+        id: undefined,
+        username: allUsers[0].username + '.id2',
+      }
+      const user2 = {
+        ...allUsers[0],
+        _id: id1,
+        id: undefined,
+        username: allUsers[0].username + '.id1',
+      }
+      const user1Created = userEntityForDocument(await model.create(user1))
+      const user2Created = userEntityForDocument(await model.create(user2))
+
+      for (let remaining = 10; remaining > 0; remaining--) {
+        const found = await repo.find({ pageSize: allUsers.length, pageIndex: 0 })
+        expect(found.items[0], 'item 0').to.deep.equal(allUsers[0])
+        expect(found.items[1], 'item 1').to.deep.equal(user2Created)
+        expect(found.items[2], 'item 2').to.deep.equal(user1Created)
+      }
     })
 
     it('uses the provided mapping', async function () {
