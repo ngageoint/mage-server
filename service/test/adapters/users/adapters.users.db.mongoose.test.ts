@@ -33,10 +33,12 @@ describe.only('users mongoose repository', function () {
         active: true,
         enabled: true,
       }
-      await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
-      const entity = await repo.findById(stub.id!)
+      const doc = await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
+      const entityMapped = userEntityForDocument(doc)
+      const entityFound = await repo.findById(stub.id!)
 
-      expect(entity).to.deep.include(stub)
+      expect(entityFound).to.deep.include(stub)
+      expect(entityMapped).to.deep.equal(entityFound)
     })
 
     it('retains js dates', async function () {
