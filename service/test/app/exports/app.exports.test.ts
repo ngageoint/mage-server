@@ -330,8 +330,7 @@ describe('export use case interactions', function() {
         },
       }
 
-      const stats = new Stats()
-      stats.size = contentSize
+      const stats = { size: contentSize } as Stats
       permissions.ensureCreateExportPermission(req.context).resolves(null)
       repository.createExport.resolves(exp)
       store.writeContent.returns({ relativePath: 'test/path', content })
@@ -427,7 +426,7 @@ describe('export use case interactions', function() {
       permissions.ensureCreateExportPermission(req.context).resolves(null)
       repository.createExport.resolves(exp)
       store.writeContent.returns({ relativePath: 'test/path', content })
-      store.contentStats.resolves(new Stats())
+      store.contentStats.resolves({} as Stats)
       repository.updateExportForUser.resolves(exp)
 
       const exportStub = sinon.stub().resolves({ observations: {}, locations: {} })
@@ -500,7 +499,7 @@ describe('export use case interactions', function() {
       permissions.ensureCreateExportPermission(req.context).resolves(null)
       repository.createExport.resolves(exp)
       store.writeContent.returns({ relativePath: 'test/path', content })
-      store.contentStats.resolves(new Stats())
+      store.contentStats.resolves({} as Stats)
       repository.updateExportForUser.resolves(exp)
       teamRepository.findAllByIds([ 'team1' ]).resolves({
         team1: { id: 'team1', name: 'Team 1', userIds: [ 'user2', 'user3' ], acl: {} } as any
@@ -557,7 +556,7 @@ describe('export use case interactions', function() {
       permissions.ensureCreateExportPermission(req.context).resolves(null)
       repository.createExport.resolves(exp)
       store.writeContent.returns({ relativePath: 'test/path', content })
-      store.contentStats.resolves(new Stats())
+      store.contentStats.resolves({} as Stats)
       repository.updateExportForUser.resolves(exp)
       teamRepository.findAllByIds([ 'emptyTeam' ]).resolves({
         emptyTeam: { id: 'emptyTeam', name: 'Empty Team', userIds: [], acl: {} } as any
@@ -620,8 +619,6 @@ describe('export use case interactions', function() {
         },
       }
 
-      const stats = new Stats()
-      stats.size = contentSize
       permissions.ensureCreateExportPermission(req.context).resolves(null)
       store.writeContent.returns({ relativePath: 'test/path', content })
       store.deleteContent.resolves()
