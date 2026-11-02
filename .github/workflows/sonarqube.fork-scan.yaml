@@ -76,6 +76,10 @@ jobs:
           # full history for accurate blame and new code detection
           fetch-depth: 0
           persist-credentials: false
+          # checkout v7 refuses fork pull request code in workflow_run unless opted in. sonarqube's
+          # documented fork pattern checks out the code with secrets available but never executes it,
+          # which is the case github allows this for, see https://gh.io/securely-using-pull_request_target
+          allow-unsafe-pr-checkout: true
       # symlinks could point the scanner at files outside the checkout, and the scanner must not
       # read settings from the pull request
       - name: sanitize checkout
