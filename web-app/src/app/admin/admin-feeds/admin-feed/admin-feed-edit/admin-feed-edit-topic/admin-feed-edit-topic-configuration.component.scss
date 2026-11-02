@@ -5,3 +5,14 @@
 .topic-params mat-form-field {
   margin-bottom: 1em;
 }
+
+.topic-params label.title {
+  font-weight: 400 !important;
+  font-size: inherit !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+}
+
+.topic-params .checkbox-list {
+  margin-top: 0;
+}
