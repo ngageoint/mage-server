@@ -101,9 +101,7 @@ module.exports = function(app, security) {
         return next(err);
       }
       if (!observation) {
-        return res
-          .status(404)
-          .send(`Observation ID ${observationId} not found`);
+        return res.status(404).send('Observation not found');
       }
       req.observation = observation;
       next();
