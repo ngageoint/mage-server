@@ -87,8 +87,11 @@ export class FieldsListComponent {
         const activeFields = this.getActiveFields();
         moveItemInArray(activeFields, event.previousIndex, event.currentIndex);
 
+        const ids = activeFields.map(f => f.id || 0).sort((a, b) => a - b);
+        const reorderedFields = activeFields.map((field, index) => ({ ...field, id: ids[index] }));
+
         const archivedFields = this.fields.filter(f => f.archived);
-        this.fields = [...activeFields, ...archivedFields];
+        this.fields = [...reorderedFields, ...archivedFields];
         this.fieldsChange.emit(this.fields);
     }
 
@@ -107,7 +110,9 @@ export class FieldsListComponent {
     }
 
     getActiveFields(): Field[] {
-        return this.fields.filter(f => !f.archived);
+        return this.fields
+            .filter(f => !f.archived)
+            .sort((a, b) => (a.id || 0) - (b.id || 0));
     }
 
     showAddOptions(field: Field): boolean {
