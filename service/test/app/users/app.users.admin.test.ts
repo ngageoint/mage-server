@@ -23,7 +23,6 @@ describe.only('user account administration', function() {
     let userRepo: SubstituteOf<UserRepository>
     let permissions: SubstituteOf<UsersPermissionService>
 
-
     beforeEach(function() {
       userRepo = Sub.for<UserRepository>()
       permissions = Sub.for<UsersPermissionService>()
