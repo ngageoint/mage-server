@@ -105,4 +105,70 @@ describe("team read tests", function () {
       .expect(200)
       .end(done);
   });
+
+  it("should read team", function (done) {
+    mockTokenWithPermission('READ_TEAM');
+
+    const teamId = new mongoose.Types.ObjectId();
+    const mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team'
+    });
+    sinon.mock(TeamModel)
+      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .chain('populate').withArgs('userIds')
+      .chain('exec')
+      .resolves(mockTeam);
+
+    request(app)
+      .get('/api/teams/' + teamId.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .end(done);
+  });
+
+  it("should read team without populating users", function (done) {
+    mockTokenWithPermission('READ_TEAM');
+
+    const teamId = new mongoose.Types.ObjectId();
+    const mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team'
+    });
+    sinon.mock(TeamModel)
+      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .chain('exec')
+      .resolves(mockTeam);
+
+    request(app)
+      .get('/api/teams/' + teamId.toString())
+      .query({ populate: 'false' })
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .end(done);
+  });
+
+  it("should not build team query from request query parameters", function (done) {
+    mockTokenWithPermission('READ_TEAM');
+
+    const teamId = new mongoose.Types.ObjectId();
+    const mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team'
+    });
+    sinon.mock(TeamModel)
+      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .chain('populate').withArgs('userIds')
+      .chain('exec')
+      .resolves(mockTeam);
+
+    request(app)
+      .get('/api/teams/' + teamId.toString() + '?access[user][_id]=1&access[permission]=read')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .end(done);
+  });
 });
