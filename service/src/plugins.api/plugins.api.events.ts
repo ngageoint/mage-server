@@ -13,7 +13,7 @@ export interface MageEventsPluginHooks {
      * updated.
      *
      * TODO: not yet implemented. Needed for a plugin to react to observation
-     * changes in real time (e.g. an ATAK push-to-TAK feature re-syncing an
+     * changes in real time (e.g. a TAK push feature re-syncing an
      * already-pushed observation on edit) and likely useful to other plugins
      * with the same need. Implement the same way as onUserLocations: wire
      * ObservationDomainEventType.ObservationSaved through

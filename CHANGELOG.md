@@ -26,7 +26,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 
 ### Plugins
 #### Features
-* ATAK plugin can now push Mage observations and user locations to a TAK Server as CoT events, with independent per-event toggles for each - see `plugins/atak/README.md`
+* TAK plugin can now push Mage observations and user locations to a TAK Server as CoT events, with independent per-event toggles for each - see `plugins/tak/README.md`
 
 ## [6.7.1](https://github.com/ngageoint/mage-server/releases/tag/6.7.1)
 ### Service
