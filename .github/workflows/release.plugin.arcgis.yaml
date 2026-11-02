@@ -86,6 +86,11 @@ jobs:
           dist_tag_switch=""
           dist_tag="${DIST_TAG}"
           [ -z "${dist_tag}" ] && dist_tag="${PRERELEASE_TAG}"
+          if [[ ! "${dist_tag}" =~ ^[A-Za-z0-9._-]*$ ]]
+          then
+            echo "ERROR: dist tag may only contain letters, numbers, '.', '-', and '_'."
+            exit 1
+          fi
           [ -n "${dist_tag}" ] && dist_tag_switch="--tag ${dist_tag}"
           echo "dist_tag_switch=${dist_tag_switch:-""}" >> $GITHUB_ENV
       - name: download service packages
