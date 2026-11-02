@@ -3,9 +3,8 @@ import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
 import mongoose, { Model, PopulatedDoc, Schema } from 'mongoose'
 import { UserDocument } from '../users/adapters.users.db.mongoose'
 import { Device, DeviceId, DeviceReadOptions, DevicesRepository } from '../../entities/devices/entities.devices'
-import { User } from '../../entities/users/entities.users'
 
-export type DeviceDocument = Omit<Device, | 'userId'> & mongoose.Document & {
+export type DeviceDocument = Omit<Device, | 'userId'> & mongoose.Document<mongoose.Types.ObjectId> & {
   userId: PopulatedDoc<UserDocument> | null
 }
 
@@ -33,21 +32,23 @@ export class MongooseDeviceRepository extends BaseMongooseRepository<DeviceDocum
   ) {
     super(model, {
       docToEntity: doc => {
-        let user: User | string | undefined = doc.userId?._id.toHexString()
-        if (doc.populated('userId') && doc.userId) {
-          const userJson = (doc.userId as UserModelInstance).toJSON<UserJson>()
-          user = {
-            ...userJson,
-            id: userJson.id.toHexString(),
-            roleId: userJson.role ? userJson.role.id : userJson.roleId,
-            authenticationId: userJson.authentication ? userJson.authentication.id : userJson.authenticationId
+        const deviceJson = doc.toJSON<Device>()
+        if (doc.userId) {
+          const userId = doc.userId._id.toHexString()
+          if (doc.populated('userId')) {
+            const userJson = (doc.userId as UserModelInstance).toJSON<UserJson>()
+            deviceJson.user = {
+              ...userJson,
+              id: userId,
+              roleId: userJson.role ? userJson.role.id : userJson.roleId,
+              authenticationId: userJson.authentication ? userJson.authentication.id : userJson.authenticationId
+            }
+          }
+          else {
+            doc.user = userId
           }
         }
-
-        return {
-          ...doc.toJSON<Device>(),
-          user
-        }
+        return deviceJson
       }
     })
   }

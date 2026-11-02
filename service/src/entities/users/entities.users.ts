@@ -105,14 +105,14 @@ export class InvalidUserSeedError extends Error {
   }
 }
 
-export type UserAccountSeedSpec = Omit<User, 'id' | 'createdAt' | 'lastUpdated'>
+export type UserAccountSeedSpec = Omit<User, 'id' | 'createdAt' | 'lastUpdated' | 'status'>
 
-const PreparedUserConstructorToken = Symbol()
+const UserAccountSeedConstructorToken = Symbol()
 
 export class UserAccountSeed implements Readonly<UserAccountSeedSpec> {
 
-  static prepare(account: UserAccountSeedSpec): UserAccountSeed {
-    return new UserAccountSeed(account, PreparedUserConstructorToken)
+  static prepare(spec: UserAccountSeedSpec): UserAccountSeed {
+    return new UserAccountSeed(UserAccountSeedConstructorToken, spec)
   }
 
   get username(): string { return this.#seed.username }
@@ -129,7 +129,7 @@ export class UserAccountSeed implements Readonly<UserAccountSeedSpec> {
   #seed: UserAccountSeedSpec
 
   private constructor(...args: unknown[]) {
-    assert(args[0] === PreparedUserConstructorToken, Error('illegal private constructor access'))
+    assert(args[0] === UserAccountSeedConstructorToken, Error('illegal private constructor access'))
     const spec = args[1] as UserAccountSeedSpec
     this.#seed = {
       roleId: spec.roleId,
@@ -145,6 +145,39 @@ export class UserAccountSeed implements Readonly<UserAccountSeedSpec> {
       avatar: spec.avatar ? { ...spec.avatar } : undefined,
     }
   }
+
+  toJSON(): UserAccountSeedSpec {
+    return {
+      username: this.username,
+      displayName: this.displayName,
+      active: this.active,
+      enabled: this.enabled,
+      email: this.email,
+      phones: this.phones.map(copyPhone),
+      ...(this.avatar ? { avatar: { ...this.avatar } }: {}),
+      ...(this.icon ? { icon: copyIcon(this.icon) } : {}),
+      roleId: this.roleId,
+      authenticationId: this.authenticationId,
+    }
+  }
+}
+
+function copyPhone(from: Phone): Phone {
+  return { type: from.type, number: from.number }
+}
+
+function copyIcon(from: UserIcon | null | undefined): UserIcon | null | undefined {
+  if (!from) {
+    return from
+  }
+  return {
+    type: from.type,
+    text: from.text,
+    color: from.color,
+    contentType: from.contentType,
+    size: from.size,
+    relativePath: from.relativePath,
+  }
 }
 
 export type UserCreateResult =
@@ -156,7 +189,6 @@ export type UserCreateResult =
     user?: undefined
     error: DuplicateUsernameError | InvalidUserSeedError
   }
-
 
 export interface UserRepository {
   findById(id: UserId): Promise<User | null>

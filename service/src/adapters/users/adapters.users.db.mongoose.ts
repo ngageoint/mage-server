@@ -1,8 +1,9 @@
 import _ from 'lodash'
 import mongoose from 'mongoose'
+import { MongoServerError } from 'mongodb'
 import { PageOf, pageOf } from '../../entities/entities.global'
 import {
-  Avatar, Phone,
+  Avatar, DuplicateUsernameError, InvalidUserSeedError, Phone,
   User,
   UserAccountSeed,
   UserCreateResult,
@@ -80,8 +81,25 @@ export class MongooseUserRepository implements UserRepository {
     this.#model = model
   }
 
-  async createUser(account: UserAccountSeed): Promise<UserCreateResult> {
-    throw new Error('unimplemented')
+  async createUser(seed: UserAccountSeed): Promise<UserCreateResult> {
+    if (!(seed instanceof UserAccountSeed)) {
+      return { error: new InvalidUserSeedError(seed) }
+    }
+    const seedPojo = seed.toJSON()
+    try {
+      const created = await this.#model.create(seedPojo)
+      return { user: entityForDocument(created) }
+    }
+    catch (err) {
+      const ErrType = MongoServerError
+      if (err instanceof ErrType) {
+        if (err.code === 11000 && err.keyPattern.username) {
+          return { error: new DuplicateUsernameError(seed.username) }
+        }
+      }
+      console.error('error creating user record', seed, err)
+      throw err
+    }
   }
 
   async update(attrs: Partial<User> & { id: UserId }): Promise<User | null> {

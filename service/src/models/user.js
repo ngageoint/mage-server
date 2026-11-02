@@ -69,22 +69,14 @@ UserSchema.virtual('authentication').get(function () {
 
 // Lowercase the username we store, this will allow for case insensitive usernames
 // Validate that username does not already exist
+// TODO: users-next move to entity layer
 UserSchema.pre('save', function (next) {
   const user = this;
   user.username = user.username.toLowerCase();
-  this.model('User').findOne({ username: user.username }).then(
-    possibleDuplicate => {
-      if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
-        const error = new Error('username already exists');
-        error.status = 409;
-        return next(error);
-      }
-      next();
-    },
-    err => next(err)
-  );
+  next()
 });
 
+// TODO: users-next: move to app/entity layer
 UserSchema.pre('save', function (next) {
   const user = this;
   if (user.active === false || user.enabled === false) {

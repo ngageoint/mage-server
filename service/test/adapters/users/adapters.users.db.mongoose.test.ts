@@ -1,10 +1,12 @@
 import { expect } from 'chai'
 import mongoose from 'mongoose'
+import assert from 'node:assert'
 import { User } from '../../../lib/entities/users/entities.users'
 import * as legacy from '../../../lib/models/user'
 import { MongooseUserRepository, UserDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
 import { userEntityForDocument } from '../../../lib/adapters/users/adapters.users.db.mongoose'
 import { InvalidUserSeedError } from '../../../lib/entities/users/entities.users'
+import { UserAccountSeed } from '../../../lib/entities/users/entities.users'
 
 
 describe.only('users mongoose repository', function () {
@@ -63,6 +65,10 @@ describe.only('users mongoose repository', function () {
 
   describe('creating users', function() {
 
+    afterEach(async function () {
+      await model.deleteMany({})
+    })
+
     it('fails when the seed is not a user seed instance', async function () {
 
       const created = await repo.createUser({ username: 'fail' } as any)
@@ -71,6 +77,45 @@ describe.only('users mongoose repository', function () {
       expect(created.error).to.be.instanceOf(InvalidUserSeedError)
       expect(found.totalCount).to.equal(0)
       expect(found.items.length).to.equal(0)
+    })
+
+    it('fails when the username already exists', async function() {
+
+      const firstSeed = UserAccountSeed.prepare({
+        username: 'unique',
+        displayName: 'Uniquely Me',
+        active: true,
+        enabled: true,
+        email: 'unique@never.duplicated',
+        phones: [ { type: 'main', number: '111-111-1111' } ],
+        roleId: new mongoose.Types.ObjectId().toHexString(),
+        authenticationId: new mongoose.Types.ObjectId().toHexString(),
+        avatar: null,
+        icon: null,
+      })
+      const first = await repo.createUser(firstSeed)
+      const duplicateSeed = UserAccountSeed.prepare({
+        username: 'unique',
+        displayName: 'Imposter',
+        active: true,
+        enabled: true,
+        email: 'imposter@never.duplicated',
+        phones: [ { type: 'main', number: '999-111-1111' } ],
+        roleId: new mongoose.Types.ObjectId().toHexString(),
+        authenticationId: new mongoose.Types.ObjectId().toHexString(),
+        avatar: null,
+        icon: null,
+      })
+      const duplicate = await repo.createUser(duplicateSeed)
+      const found = await model.find()
+
+      assert(first.user, 'first user create failed')
+      assert(!first.error)
+      expect(first.user.username).to.equal(firstSeed.username)
+      assert(duplicate.error, 'duplicate user create succeeded')
+      assert(!duplicate.user)
+      expect(found.length).to.equal(1)
+      expect(userEntityForDocument(found[0])).to.deep.equal(first.user)
     })
   })
 
