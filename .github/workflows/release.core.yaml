@@ -75,9 +75,16 @@ jobs:
     needs: [check_release_version]
     uses: ./.github/workflows/build_test.web-app.yaml
 
+  sonarqube_report:
+    needs: [check_release_version]
+    uses: ./.github/workflows/sonarqube.yaml
+    with:
+      version: ${{ inputs.version }}
+    secrets: inherit
+
   create_release:
     name: create release
-    needs: [config, build_and_test-service, build_and_test-web-app]
+    needs: [config, build_and_test-service, build_and_test-web-app, sonarqube_report]
     runs-on: ubuntu-latest
     steps:
       - name: setup node
@@ -94,6 +101,10 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: mage.web-app-artifacts
+      - name: download sonarqube report
+        uses: actions/download-artifact@v8
+        with:
+          name: sonarqube-report
       - name: generate instance package.json
         run: |
           (
@@ -115,6 +126,7 @@ jobs:
           files: |
             package.json
             ngageoint-mage.*.tgz
+            mage-*-sonarqube.json
 
   publish_packages:
     name: publish packages

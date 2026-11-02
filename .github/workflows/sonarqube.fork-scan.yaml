@@ -1,0 +1,109 @@
+name: SonarQube fork pull request scan
+
+# runs the version of this workflow on the default branch, with secrets, after sonarqube.fork-pr.yaml
+# completes for a pull request from a fork.  the pull request code is checked out and scanned, but
+# never installed, built, or run.
+on:
+  workflow_run:
+    workflows:
+      - SonarQube fork pull request
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+env:
+  SONAR_ORGANIZATION: ${{ github.repository_owner }}
+  SONAR_PROJECT: ${{ github.repository_owner }}_${{ github.event.repository.name }}
+
+jobs:
+  sonarqube:
+    name: sonarqube fork pull request scan
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: download pull request info
+        uses: actions/download-artifact@v8
+        with:
+          name: sonarqube-pr-info
+          path: ${{ runner.temp }}/pr-info
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      # the artifact comes from the fork's workflow run, so only trust a pull request number that
+      # GitHub confirms is open from a fork at the commit that run built
+      - name: verify pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          PR_INFO: ${{ runner.temp }}/pr-info
+        run: |
+          number=$(head -c 20 "${PR_INFO}/pr-number.txt" | tr -d '[:space:]')
+          if [[ ! "${number}" =~ ^[0-9]+$ ]]
+          then
+            echo "ERROR: invalid pull request number"
+            exit 1
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${number}" > "${PR_INFO}/pr.json"
+          head_sha=$(jq -r .head.sha "${PR_INFO}/pr.json")
+          head_ref=$(jq -r .head.ref "${PR_INFO}/pr.json")
+          base_ref=$(jq -r .base.ref "${PR_INFO}/pr.json")
+          state=$(jq -r .state "${PR_INFO}/pr.json")
+          head_repo=$(jq -r .head.repo.full_name "${PR_INFO}/pr.json")
+          if [[ "${state}" != "open" || "${head_sha}" != "${HEAD_SHA}" || "${head_repo}" = "${GITHUB_REPOSITORY}" ]]
+          then
+            echo "ERROR: pull request ${number} is not an open fork pull request at ${HEAD_SHA}"
+            exit 1
+          fi
+          if [[ ! "${head_sha}" =~ ^[0-9a-f]{40}$ || ! "${head_ref}" =~ ^[A-Za-z0-9._/-]+$ || ! "${base_ref}" =~ ^[A-Za-z0-9._/-]+$ ]]
+          then
+            echo "ERROR: unexpected pull request values"
+            exit 1
+          fi
+          {
+            echo "number=${number}"
+            echo "head_sha=${head_sha}"
+            echo "head_ref=${head_ref}"
+            echo "base_ref=${base_ref}"
+          } >> "${GITHUB_OUTPUT}"
+      - name: checkout pull request
+        uses: actions/checkout@v7
+        with:
+          ref: refs/pull/${{ steps.pr.outputs.number }}/head
+          # full history for accurate blame and new code detection
+          fetch-depth: 0
+          persist-credentials: false
+      # symlinks could point the scanner at files outside the checkout, and the scanner must not
+      # read settings from the pull request
+      - name: sanitize checkout
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          if [[ $(git rev-parse HEAD) != "${HEAD_SHA}" ]]
+          then
+            echo "ERROR: pull request head moved past ${HEAD_SHA}"
+            exit 1
+          fi
+          find . -type l -not -path './.git/*' -delete
+          find . -name sonar-project.properties -not -path './.git/*' -delete
+          touch "${RUNNER_TEMP}/sonar-project.properties"
+      - name: scan
+        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dproject.settings=${{ runner.temp }}/sonar-project.properties
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT }}
+            -Dsonar.coverage.exclusions=**
+            -Dsonar.pullrequest.key=${{ steps.pr.outputs.number }}
+            -Dsonar.pullrequest.branch=${{ steps.pr.outputs.head_ref }}
+            -Dsonar.pullrequest.base=${{ steps.pr.outputs.base_ref }}
+            -Dsonar.pullrequest.provider=github
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+            -Dsonar.scm.revision=${{ steps.pr.outputs.head_sha }}
