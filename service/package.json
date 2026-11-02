@@ -45,6 +45,7 @@
     "async-lock": "1.4.1",
     "base-64": "1.0.0",
     "better-sqlite3": "^12.11.1",
+    "bson": "^7.3.3",
     "busboy": "1.6.0",
     "captcha-canvas": "3.4.0",
     "commander": "12.0.0",
@@ -61,6 +62,7 @@
     "mgrs": "1.0.0",
     "mime-types": "2.1.35",
     "moment": "2.31.0",
+    "mongodb": "^7.0.0",
     "mongoose": "8.24.1",
     "multer": "2.4.0",
     "passport": "0.7.0",
@@ -98,6 +100,7 @@
     "@types/lodash": "4.17.16",
     "@types/mocha": "7.0.2",
     "@types/multer": "2.1.0",
+    "@types/node": "^24.19.2",
     "@types/passport": "1.0.17",
     "@types/sinon": "9.0.11",
     "@types/sinon-chai": "3.2.12",
@@ -184,6 +187,13 @@
     "mage.service": "bin/mage.service.js"
   },
   "overrides": {
-    "commander": "12.0.0"
+    "commander": "12.0.0",
+    "mongoose": {
+      "mongodb": "^7.0.0",
+      "bson": "^7.0.0"
+    },
+    "mongodb-memory-server-core": {
+      "mongodb": "^7.0.0"
+    }
   }
 }
