@@ -18,7 +18,10 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Admins can set the full text of a third-party sign-in button (e.g. "Continue to sign in"); it defaults to `Sign in with <title>`
 * The admin Authentication page has a Login Button section for editing an existing third-party authentication's button text, colors, and icon, with a preview that is the actual sign-in button
 * Button colors can be typed as hex as well as picked, and an uploaded button icon can be removed
+* Third-party (OAuth/SAML/OIDC) sign-in opens in a small window centered over Mage instead of a new browser tab, and clicking the button again re-focuses an open sign-in window
 #### Bug Fixes
+* Third-party sign-in now tells the user when the browser blocks the sign-in window, instead of silently doing nothing
+* Clicking a third-party sign-in button again while its sign-in window is open no longer handles the sign-in twice, and abandoned sign-in attempts stop listening for a result
 * Third-party sign-in no longer misses its result when another page or browser extension posts a message while the sign-in window is open
 
 ### Plugins

@@ -43,6 +43,10 @@ services:
       - '@ngageoint/mage.arcgis.web-app'
       - --plugin
       - '@ngageoint/mage.clamav.service'
+      - --plugin
+      - '@ngageoint/mage.nga-msi'
+      - --plugin
+      - '@ngageoint/mage.atak'
     volumes:
       - ./docker/mage/resources:/var/lib/mage
       - ./docker/sftp/key/id_rsa:/run/secrets/mage/sftp_key:ro
