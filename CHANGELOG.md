@@ -14,6 +14,7 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ### Web App
 #### Features
 #### Bug Fixes
+* Reordering form fields in the admin form editor now persists the new order to other clients (observation view/edit, exports, mobile), which order fields by `id`; drag and drop again reassigns field ids in the new order
 
 ### Plugins
 
