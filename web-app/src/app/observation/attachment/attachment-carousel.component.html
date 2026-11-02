@@ -6,7 +6,7 @@
   }
 </div>
 
-@if (attachments?.length > 1) {
+@if (attachments().length > 1) {
   @if (currentIndex() > 0) {
     <button
       mat-icon-button
@@ -17,7 +17,7 @@
     </button>
   }
 
-  @if (currentIndex() < attachments.length - 1) {
+  @if (currentIndex() < attachments().length - 1) {
     <button
       mat-icon-button
       class="carousel__arrow carousel__arrow--next"

@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, input, signal, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AttachmentComponent } from './attachment.component';
@@ -11,7 +11,7 @@ import { Attachment, AttachmentProcessingStatus } from '../../entities/observati
   imports: [MatButtonModule, MatIconModule, AttachmentComponent]
 })
 export class AttachmentCarouselComponent {
-  @Input() attachments: Attachment[] = []
+  attachments = input<Attachment[]>([])
 
   @ViewChild('scrollContainer') scrollContainer: ElementRef<HTMLDivElement>
 
@@ -26,8 +26,8 @@ export class AttachmentCarouselComponent {
     const isFailed = (attachment: Attachment) =>
       attachment.processingStatus === AttachmentProcessingStatus.Rejected || attachment.processingStatus === AttachmentProcessingStatus.Error
     return [
-      ...this.attachments.filter(a => !isFailed(a)),
-      ...this.attachments.filter(a => isFailed(a))
+      ...this.attachments().filter(a => !isFailed(a)),
+      ...this.attachments().filter(a => isFailed(a))
     ]
   }
 
@@ -49,7 +49,7 @@ export class AttachmentCarouselComponent {
   private goToSlide(index: number): void {
     const el = this.scrollContainer?.nativeElement
     if (!el) return
-    const clamped = Math.max(0, Math.min(index, this.attachments.length - 1))
+    const clamped = Math.max(0, Math.min(index, this.attachments().length - 1))
     this.currentIndex.set(clamped)
     el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' })
   }
