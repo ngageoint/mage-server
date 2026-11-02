@@ -1,22 +1,22 @@
-@if (attachment.url) {
-  <div [ngClass]="{'media-delete__mask': attachment.action === actions.DELETE}">
+@if (attachment().url) {
+  <div [ngClass]="{'media-delete__mask': attachment().action === actions.DELETE}">
     @if (contentType() === 'image') {
       <div class="media">
-        <img class="media__crop" src="{{attachment.url}}?access_token={{token}}&oriented={{attachment.oriented}}&size=394" />
-        @if (clickable) {
-          <a class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+        <img class="media__crop" src="{{attachment().url}}?access_token={{token}}&oriented={{attachment().oriented}}&size=394" />
+        @if (clickable()) {
+          <a class="media__link" href="{{attachment().url}}?access_token={{token}}" target="_blank"></a>
         }
       </div>
     } @else if (contentType() === 'video' || contentType() === 'audio') {
       <div class="media">
         <video width="100%" height="100%" [controls]="!canEdit" class="attachment__video">
-          <source src="{{attachment.url}}?access_token={{token}}" type="video/mp4">
+          <source src="{{attachment().url}}?access_token={{token}}" type="video/mp4">
           <div>
             <div class="media media-unknown">
               <mat-icon class="media__icon">attach_file</mat-icon>
-              <div>{{attachment.name | filename:12}}</div>
-              @if (clickable) {
-                <a class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+              <div>{{attachment().name | filename:12}}</div>
+              @if (clickable()) {
+                <a class="media__link" href="{{attachment().url}}?access_token={{token}}" target="_blank"></a>
               }
             </div>
           </div>
@@ -25,44 +25,44 @@
     } @else {
       <div class="media media-unknown">
         <mat-icon class="media__icon">attach_file</mat-icon>
-        <div>{{attachment.name | filename:12}}</div>
-        @if (clickable) {
-          <a class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+        <div>{{attachment().name | filename:12}}</div>
+        @if (clickable()) {
+          <a class="media__link" href="{{attachment().url}}?access_token={{token}}" target="_blank"></a>
         }
       </div>
     }
   </div>
 
-  @if (label) {
+  @if (label()) {
     <div class="media-chip">
       <mat-chip-set>
-        <mat-chip>{{label}}</mat-chip>
+        <mat-chip>{{label()}}</mat-chip>
       </mat-chip-set>
     </div>
   }
 
   @if (canEdit) {
     <div class="attachment__delete">
-      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment()?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
       </button>
     </div>
   }
 } @else if (isFailed()) {
-  <div class="media media-unknown" [class.media-unknown--clickable]="expandable" [class.media-unknown--expanded]="messageExpanded" (click)="toggleFailureMessage()">
+  <div class="media media-unknown" [class.media-unknown--clickable]="expandable()" [class.media-unknown--expanded]="messageExpanded" (click)="toggleFailureMessage()">
     <mat-icon class="media__icon">error_outline</mat-icon>
     <div class="media-unknown__title">Upload Failed</div>
-    <div class="media-unknown__subhead">{{attachment.name | filename:12}}</div>
-    @if (expandable) {
+    <div class="media-unknown__subhead">{{attachment().name | filename:12}}</div>
+    @if (expandable()) {
       <div class="media-unknown__hint-wrapper" [class.media-unknown__hint-wrapper--expanded]="messageExpanded">
-        <div class="media-unknown__hint">{{ messageExpanded ? attachment.processingMessage : 'Click for more details' }}</div>
+        <div class="media-unknown__hint">{{ messageExpanded ? attachment().processingMessage : 'Click for more details' }}</div>
       </div>
     }
   </div>
 
-  @if (canEdit || edit) {
+  @if (canEdit || edit()) {
     <div class="attachment__delete">
-      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment()?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
       </button>
     </div>
@@ -70,13 +70,13 @@
 } @else {
   <div class="media media-unknown">
     <mat-icon class="media__icon">cloud_upload</mat-icon>
-    <div>{{attachment.name | filename:12}}</div>
+    <div>{{attachment().name | filename:12}}</div>
     <div>Upload pending...</div>
   </div>
 
   @if (canEdit) {
     <div class="attachment__delete">
-      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
+      <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment()?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
       </button>
     </div>
