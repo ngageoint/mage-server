@@ -1,4 +1,4 @@
-import { Component, inject, input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { GeometryModule } from '../../geometry/geometry.module';
@@ -13,51 +13,34 @@ import { EventService } from '../../event/event.service';
     styleUrls: ['./observation-popup.component.scss'],
     imports: [MatButtonModule, MatIconModule, GeometryModule, MomentModule]
 })
-export class ObservationPopupComponent implements OnInit, OnChanges {
+export class ObservationPopupComponent {
   private readonly sidebarService: SidebarService = inject(SidebarService)
   private readonly mapService: MapService = inject(MapService)
   private readonly eventService: EventService = inject(EventService)
 
   observation = input<any>();
 
-  primaryField: any;
-  secondaryField: any;
+  primaryField = computed(() => this.feedField('primaryFeedField'))
+  secondaryField = computed(() => this.feedField('secondaryFeedField'))
 
-  ngOnInit(): void {
-    this.updateView();
-  }
+  private feedField(key: 'primaryFeedField' | 'secondaryFeedField'): { field: any, value: any } | undefined {
+    const observation = this.observation()
+    if (!observation || observation.properties.forms.length === 0) return undefined
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.updateView();
-  }
+    const firstForm = observation.properties.forms[0]
+    const forms = this.eventService.getForms(observation) || []
+    const observationForm = forms.find(form => {
+      return form.id === firstForm.formId;
+    })
 
-  private updateView(): void {
-    if (!this.observation()) return
-
-    if (this.observation().properties.forms.length > 0) {
-      const firstForm = this.observation().properties.forms[0]
-
-      const forms = this.eventService.getForms(this.observation()) || []
-      const observationForm = forms.find(form => {
-        return form.id === this.observation().properties.forms[0].formId;
-      })
-
-      if (observationForm.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
-        const field = observationForm.fields.find(field => field.name === observationForm.primaryFeedField)
-        this.primaryField = {
-          field: field,
-          value: firstForm[observationForm.primaryFeedField]
-        }
-      }
-
-      if (observationForm.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
-        const field = observationForm.fields.find(field => field.name === observationForm.secondaryFeedField)
-        this.secondaryField = {
-          field: field,
-          value: firstForm[observationForm.secondaryFeedField]
-        }
+    if (observationForm[key] && firstForm[observationForm[key]]) {
+      const field = observationForm.fields.find(field => field.name === observationForm[key])
+      return {
+        field: field,
+        value: firstForm[observationForm[key]]
       }
     }
+    return undefined
   }
 
   onInfo(): void {

@@ -6,33 +6,29 @@
       <span>{{observation()?.properties?.timestamp | moment}}</span>
     </div>
 
-    @if (primaryField?.value) {
+    @if (primaryField()?.value) {
       <div class="item-header-text">
-        <span>
-          @switch (primaryField?.field?.type) {
-            @case ('geometry') {
-              {{primaryField?.value | geometry:5}}
-            }
-            @default {
-              {{primaryField?.value}}
-            }
+        @switch (primaryField()?.field?.type) {
+          @case ('geometry') {
+            {{primaryField()?.value | geometry:5}}
           }
-        </span>
+          @default {
+            {{primaryField()?.value}}
+          }
+        }
       </div>
     }
 
-    @if (secondaryField?.value) {
+    @if (secondaryField()?.value) {
       <div class="item-subhead">
-        <span>
-          @switch (secondaryField?.field?.type) {
-            @case ('geometry') {
-              {{secondaryField?.value | geometry:5}}
-            }
-            @default {
-              {{secondaryField?.value}}
-            }
+        @switch (secondaryField()?.field?.type) {
+          @case ('geometry') {
+            {{secondaryField()?.value | geometry:5}}
           }
-        </span>
+          @default {
+            {{secondaryField()?.value}}
+          }
+        }
       </div>
     }
   </div>
