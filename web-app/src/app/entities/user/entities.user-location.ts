@@ -17,6 +17,8 @@ export type UserWithLocation = {
   user: {
     id: UserId
     displayName: string
+    email?: string
+    phones?: { type: string, number: string }[]
     iconUrl?: string
     avatarUrl?: string
     lastUpdated?: string
