@@ -40,11 +40,15 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: check service
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          [[ $(json version < ./plugins/sftp/service/package.json) = ${{ inputs.version }} ]] || exit 1
+          [[ $(json version < ./plugins/sftp/service/package.json) = "${VERSION}" ]] || exit 1
       - name: check web
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          [[ $(json version < ./plugins/sftp/web/package.json) = ${{ inputs.version }} ]] || exit 1
+          [[ $(json version < ./plugins/sftp/web/package.json) = "${VERSION}" ]] || exit 1
 
   build_and_test-service:
     needs: [ check_release_version ]
@@ -76,10 +80,18 @@ jobs:
           package_path: ./plugins/sftp/service/package.json
       - name: determine dist tag
         id: dist-tag
+        env:
+          DIST_TAG: ${{ inputs.dist_tag }}
+          PRERELEASE_TAG: ${{ steps.package_info.outputs.version-prerelease_tag }}
         run: |
           dist_tag_switch=""
-          dist_tag="${{ inputs.dist_tag }}"
-          [ -z "${dist_tag}" ] && dist_tag="${{ steps.package_info.outputs.version-prerelease_tag }}"
+          dist_tag="${DIST_TAG}"
+          [ -z "${dist_tag}" ] && dist_tag="${PRERELEASE_TAG}"
+          if [[ ! "${dist_tag}" =~ ^[A-Za-z0-9._-]*$ ]]
+          then
+            echo "ERROR: dist tag may only contain letters, numbers, '.', '-', and '_'."
+            exit 1
+          fi
           [ -n "${dist_tag}" ] && dist_tag_switch="--tag ${dist_tag}"
           echo "dist_tag_switch=${dist_tag_switch:-""}" >> $GITHUB_ENV
       - name: download service packages
