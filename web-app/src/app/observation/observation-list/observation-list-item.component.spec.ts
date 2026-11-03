@@ -174,6 +174,7 @@ describe('ObservationListItemComponent', () => {
     };
 
     fixture.detectChanges();
+    fixture.detectChanges();
 
     expect(component.attachments.length).toBe(1);
   });
@@ -196,6 +197,7 @@ describe('ObservationListItemComponent', () => {
       ]
     };
 
+    fixture.detectChanges();
     fixture.detectChanges();
 
     expect(component.attachments.length).toBe(0);
