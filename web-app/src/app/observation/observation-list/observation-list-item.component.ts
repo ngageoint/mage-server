@@ -1,13 +1,30 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, DestroyRef, inject, input, OnChanges, signal, SimpleChanges, ViewChild } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NgClass } from '@angular/common'
+import { FormsModule } from '@angular/forms'
 import moment from 'moment';
-import { MatRipple } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatRipple, MatRippleModule } from '@angular/material/core';
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { animate, style, transition, trigger } from '@angular/animations'
+import { GeometryModule } from '../../geometry/geometry.module'
+import { MomentModule } from '../../moment/moment.module'
+import { AttachmentCarouselComponent } from '../attachment/attachment-carousel.component'
 import { SidebarService } from '../../sidebar/sidebar.service'
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { AttachmentProcessingStatus } from '../../entities/observation/entities.observation';
+
+interface ImportantEditorState {
+  open: boolean
+  description?: string
+}
 
 @Component({
     selector: 'observation-list-item',
@@ -24,12 +41,32 @@ import { AttachmentProcessingStatus } from '../../entities/observation/entities.
             ])
         ])
     ],
-    standalone: false
+    imports: [
+        NgClass,
+        FormsModule,
+        MatButtonModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatRippleModule,
+        MatTooltipModule,
+        GeometryModule,
+        MomentModule,
+        AttachmentCarouselComponent
+    ]
 })
 export class ObservationListItemComponent implements OnChanges {
-  @Input() event: any
-  @Input() form: any
-  @Input() observation: any
+  private readonly mapService: MapService = inject(MapService)
+  private readonly sessionService: SessionService = inject(SessionService)
+  private readonly eventService: EventService = inject(EventService)
+  private readonly sidebarService: SidebarService = inject(SidebarService)
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar)
+  private readonly destroyRef: DestroyRef = inject(DestroyRef)
+
+  event = input<any>()
+  form = input<any>()
+  observation = input<any>()
 
   @ViewChild(MatRipple) ripple: MatRipple
 
@@ -37,13 +74,10 @@ export class ObservationListItemComponent implements OnChanges {
   canEdit = false
   canEditImportant = false
 
-  favorites = 0
-  isUserFavorite = false
+  favorites = signal(0)
+  isUserFavorite = signal(false)
 
-  importantEditor: {
-    open: boolean,
-    description?: string
-  } = { open: false }
+  importantEditor = signal<ImportantEditorState>({ open: false })
 
   // TODO: define some types for these
   observationForm: any
@@ -52,13 +86,6 @@ export class ObservationListItemComponent implements OnChanges {
 
   attachments = []
 
-  constructor(
-    private mapService: MapService,
-    private sessionService: SessionService,
-    private eventService: EventService,
-    private sidebarService: SidebarService,
-    private snackBar: MatSnackBar) { }
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.event?.currentValue || changes.form?.currentValue || changes.observation?.currentValue) {
       this.updateItem()
@@ -66,16 +93,16 @@ export class ObservationListItemComponent implements OnChanges {
 
     if (changes.observation?.currentValue) {
       this.updateFavorites()
-      this.importantEditor.description = this.observation.important ? this.observation.important.description : null
+      this.importantEditor().description = this.observation().important ? this.observation().important.description : null
     }
   }
 
   toggleFavorite(): void {
-    if (this.isUserFavorite) {
-      this.eventService.removeObservationFavorite(this.observation).subscribe({
+    if (this.isUserFavorite()) {
+      this.eventService.removeObservationFavorite(this.observation()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: observation => {
-          this.observation.favoriteUserIds = observation.favoriteUserIds
-          this.isUserFavorite = false
+          this.observation().favoriteUserIds = observation.favoriteUserIds
+          this.isUserFavorite.set(false)
           this.updateFavorites()
         },
         error: () => {
@@ -83,10 +110,10 @@ export class ObservationListItemComponent implements OnChanges {
         }
       })
     } else {
-      this.eventService.addObservationFavorite(this.observation).subscribe({
+      this.eventService.addObservationFavorite(this.observation()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: observation => {
-          this.observation.favoriteUserIds = observation.favoriteUserIds
-          this.isUserFavorite = true
+          this.observation().favoriteUserIds = observation.favoriteUserIds
+          this.isUserFavorite.set(true)
           this.updateFavorites()
         },
         error: () => {
@@ -97,24 +124,23 @@ export class ObservationListItemComponent implements OnChanges {
   }
 
   onFlagAsImportant(): void {
-    this.importantEditor.open = true
+    this.importantEditor().open = true
   }
 
   markAsImportant(): void {
-    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).subscribe(() => {
-      this.importantEditor.open = false
+    this.eventService.markObservationAsImportant(this.observation(), { description: this.importantEditor().description }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.importantEditor.update(e => ({ ...e, open: false }))
     })
   }
 
   clearImportant(): void {
-    this.eventService.clearObservationAsImportant(this.observation).subscribe(() => {
-      this.importantEditor.open = false
-      delete this.importantEditor.description
+    this.eventService.clearObservationAsImportant(this.observation()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.importantEditor.update(({ description, ...rest }) => ({ ...rest, open: false }))
     })
   }
 
   downloadUrl(): string {
-    return `/api/events/${this.observation?.eventId}/observations/${this.observation?.id}.zip?access_token=${this.sessionService.getToken()}`
+    return `/api/events/${this.observation()?.eventId}/observations/${this.observation()?.id}.zip?access_token=${this.sessionService.getToken()}`
   }
 
   onRipple(): void {
@@ -125,24 +151,24 @@ export class ObservationListItemComponent implements OnChanges {
 
   viewObservation(): void {
     this.onObservationLocationClick()
-    this.sidebarService.viewObservation(this.observation)
+    this.sidebarService.viewObservation(this.observation())
   }
 
   onObservationLocationClick(): void {
-    this.mapService.zoomToFeatureInLayer(this.observation, 'observations')
+    this.mapService.zoomToFeatureInLayer(this.observation(), 'observations')
   }
 
   updateItem(): void {
-    if (!this.observation || !this.event) return
+    if (!this.observation() || !this.event()) return
 
-    this.isUserFavorite = this.observation.favoriteUserIds && this.observation.favoriteUserIds.includes(this.sessionService.user.id)
+    this.isUserFavorite.set(this.observation().favoriteUserIds && this.observation().favoriteUserIds.includes(this.sessionService.user.id))
     this.canEdit = this.sessionService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.sessionService.hasPermission('UPDATE_OBSERVATION_ALL')
 
-    const myAccess = this.event.acl[this.sessionService.user.id] || {}
+    const myAccess = this.event().acl[this.sessionService.user.id] || {}
     const aclPermissions = myAccess.permissions || []
     this.canEditImportant = this.sessionService.user.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
 
-    const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce((map, form) => {
+    const formMap = this.eventService.getFormsForEvent(this.event(), {}).reduce((map, form) => {
       map[form.id] = form
       return map
     }, {})
@@ -151,17 +177,17 @@ export class ObservationListItemComponent implements OnChanges {
       geometryField: {
         title: 'Location',
         type: 'geometry',
-        value: this.observation.geometry
+        value: this.observation().geometry
       },
       timestampField: {
         title: '',
         type: 'date',
-        value: moment(this.observation?.properties?.timestamp).toDate()
+        value: moment(this.observation()?.properties?.timestamp).toDate()
       },
       forms: []
     }
 
-    this.observation.properties.forms.forEach(propertyForm => {
+    this.observation().properties.forms.forEach(propertyForm => {
       const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
       this.observationForm.forms.push(observationForm)
     })
@@ -169,8 +195,8 @@ export class ObservationListItemComponent implements OnChanges {
     this.primaryFeedField = {}
     this.secondaryFeedField = {}
 
-    if (this.observation.properties.forms.length > 0) {
-      const firstForm = this.observation.properties.forms[0]
+    if (this.observation().properties.forms.length > 0) {
+      const firstForm = this.observation().properties.forms[0]
       const observationForm = this.observationForm.forms.find(observationForm => {
         return observationForm.id === firstForm.formId
       })
@@ -192,9 +218,9 @@ export class ObservationListItemComponent implements OnChanges {
       }
     }
 
-    this.isUserFavorite = this.observation.favoriteUserIds.includes(this.sessionService.user.id)
+    this.isUserFavorite.set(this.observation().favoriteUserIds.includes(this.sessionService.user.id))
 
-    this.attachments = this.observation.attachments.filter(attachment => {
+    this.attachments = this.observation().attachments.filter(attachment => {
       return this.observationForm.forms.find(observationForm => {
         return observationForm.fields.find(field => {
           return attachment.observationFormId === observationForm.remoteId && attachment.fieldName === field.name
@@ -205,7 +231,7 @@ export class ObservationListItemComponent implements OnChanges {
   }
 
   updateFavorites(): void {
-    this.favorites = this.observation.favoriteUserIds.length
+    this.favorites.set(this.observation().favoriteUserIds.length)
   }
 
   hasFailedAttachment(): boolean {
