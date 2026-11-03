@@ -1,5 +1,6 @@
+import { entityNotUnique } from '../../app.api/app.api.errors'
 import * as api from '../../app.api/users/app.api.users'
-import { UserRepository } from '../../entities/users/entities.users'
+import { DuplicateUsernameError, UserAccountSeed, UserRepository } from '../../entities/users/entities.users'
 import { withPermission, KnownErrorsOf, AppResponse } from '../../app.api/app.api.global'
 import { PageOf } from '../../entities/entities.global'
 
@@ -9,7 +10,28 @@ export function createEnrollLocalUserByProxyOperation(userRepo: UserRepository, 
     if (denied) {
       return AppResponse.error(denied)
     }
-    throw new Error('unimplemented')
+    const { account } = req
+    const seed = UserAccountSeed.prepare({
+      username: account.username,
+      displayName: account.displayName,
+      email: account.email,
+      phones: account.phone ? [{ type: 'Main', number: account.phone }] : [],
+      active: true,
+      enabled: true,
+      icon: null,
+      avatar: null,
+      roleId: account.roleId,
+      authenticationId: 'todo: get local idp',
+    })
+    const created = await userRepo.createUser(seed)
+    if (created.user) {
+      return AppResponse.success(created.user)
+    }
+    if (created.error instanceof DuplicateUsernameError) {
+      return AppResponse.error(entityNotUnique('User', 'username already exists', { username: created.error.username }))
+    }
+    // TODO: better error handling
+    throw created.error
   }
 }
 

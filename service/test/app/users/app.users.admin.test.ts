@@ -51,6 +51,10 @@ describe.only('user account administration', function() {
       assert(enrollResult.success === undefined)
       expect(enrollResult.error.code).to.equal(ErrEntityNotUnique)
     })
+
+    it('creates a local idp account and binding', async function() {
+      expect.fail('todo')
+    })
   })
 
   describe('updating a user account', function() {
