@@ -69,6 +69,29 @@ describe.only('users mongoose repository', function () {
       await model.deleteMany({})
     })
 
+    it('persists the user record', async function() {
+
+      const firstSeed = UserAccountSeed.prepare({
+        username: 'jeffereyl',
+        displayName: 'The Dude',
+        active: true,
+        enabled: true,
+        email: 'jeff@lanes.net',
+        phones: [ { type: 'main', number: '111-111-1111' } ],
+        roleId: new mongoose.Types.ObjectId().toHexString(),
+        authenticationId: new mongoose.Types.ObjectId().toHexString(),
+        avatar: null,
+        icon: null,
+      })
+      const created = await repo.createUser(firstSeed)
+      const found = await model.find()
+
+      assert(!created.error)
+      assert(created.user)
+      expect(found.length).to.equal(1)
+      expect(created.user).to.deep.equal(userEntityForDocument(found[0]))
+    })
+
     it('fails when the seed is not a user seed instance', async function () {
 
       const created = await repo.createUser({ username: 'fail' } as any)
@@ -159,19 +182,28 @@ describe.only('users mongoose repository', function () {
       it('returns the matching user', async function() {
 
         const found = await repo.findById(allUsers[67].id)
-
         expect(found).to.deep.equal(allUsers[67])
       })
 
       it('returns null when no user matches', async function() {
-        expect.fail('todo')
+
+        const found = await repo.findById(new mongoose.Types.ObjectId().toHexString())
+        expect(found).to.be.null
       })
     })
 
     describe('by username', function() {
 
-      it('finds a user by username', async function() {
-        expect.fail('todo')
+      it('returns the matching user', async function() {
+
+        const found = await repo.findByUsername(allUsers[23].username)
+        expect(found).to.deep.equal(allUsers[23])
+      })
+
+      it('returns null when no user matches', async function() {
+
+        const found = await repo.findByUsername('waldo')
+        expect(found).to.be.null
       })
     })
 

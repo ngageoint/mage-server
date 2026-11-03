@@ -193,6 +193,7 @@ export type UserCreateResult =
 export interface UserRepository {
   findById(id: UserId): Promise<User | null>
   findAllByIds(ids: UserId[]): Promise<Record<UserId, User | null>>
+  findByUsername(username: string): Promise<User | null>
   find<MappedResult>(which?: UserFindParameters, mapping?: (user: User) => MappedResult): Promise<PageOf<MappedResult>>
   createUser(account: UserAccountSeed): Promise<UserCreateResult>
 }

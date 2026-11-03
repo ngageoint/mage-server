@@ -163,4 +163,9 @@ export class MongooseUserRepository implements UserRepository {
     }
     return { ...notFound, ...found }
   }
+
+  async findByUsername(username: string): Promise<User | null> {
+    const found = await this.#model.findOne({ username })
+    return found ? entityForDocument(found) : null
+  }
 }
