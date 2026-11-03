@@ -1,8 +1,8 @@
-<div mat-dialog-title>Favorited {{users?.length}} {{users?.length > 1 ? 'times' : 'time'}}</div>
+<div mat-dialog-title>Favorited {{users().length}} {{users().length > 1 ? 'times' : 'time'}}</div>
 
 <div mat-dialog-content>
   <mat-list>
-    <mat-list-item *ngFor="let user of users">
+    <mat-list-item *ngFor="let user of users()">
       <div matListItemAvatar>
         <user-avatar [user]="user"></user-avatar>
       </div>
