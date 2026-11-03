@@ -1,13 +1,20 @@
-import { Component, DestroyRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { I18nPluralPipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { PageEvent } from '@angular/material/paginator';
+import { MatIconModule } from '@angular/material/icon';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import moment from 'moment';
 import { EventService } from '../../event/event.service';
 import { FilterService } from '../../filter/filter.service';
 import { ObservationService } from '../observation.service';
 import { SearchBarComponent } from '../../search-bar/search-bar.component';
 import { ObservationFilterDialogComponent } from '../observation-filter/observation-filter.component';
+import { ObservationListItemComponent } from './observation-list-item.component';
 import { EventObservationFilter } from '../../filter/filter.types';
 
 const filterDefinitions = {
@@ -22,39 +29,47 @@ const filterDefinitions = {
     selector: 'observation-list',
     templateUrl: './observation-list.component.html',
     styleUrls: ['./observation-list.component.scss'],
-    standalone: false
+    imports: [
+      I18nPluralPipe,
+      MatButtonModule,
+      MatIconModule,
+      MatPaginatorModule,
+      MatProgressSpinnerModule,
+      MatToolbarModule,
+      MatTooltipModule,
+      SearchBarComponent,
+      ObservationListItemComponent
+    ]
 })
 export class ObservationListComponent implements OnInit, OnDestroy {
-  loaded = false
-  searchError = false
-  stale = false
+  private readonly dialog: MatDialog = inject(MatDialog)
+  private readonly eventService: EventService = inject(EventService)
+  private readonly filterService: FilterService = inject(FilterService)
+  private readonly observationService: ObservationService = inject(ObservationService)
+  private readonly destroyRef: DestroyRef = inject(DestroyRef)
 
-  observations: any[] = []
-  currentPageIndex = 0
+  readonly loaded = signal(false)
+  readonly searchError = signal(false)
+  readonly stale = signal(false)
+
+  readonly observations = signal<any[]>([])
+  readonly currentPageIndex = signal(0)
   pageSize = 50
-  totalObservations = 0
+  readonly totalObservations = signal(0)
 
   @ViewChild(SearchBarComponent) private searchBar: SearchBarComponent
 
-  event: any
+  readonly event = signal<any>(undefined)
 
-  filterCount = 0
+  readonly filterCount = signal(0)
   filterPluralMapping = {
     '=0': 'No active filters',
     '=1': '1 active filter',
     'other': '# active filters'
   }
-  activeFilters: { icon: string; tooltip: string }[] = []
-  observationCount: number
-  filterTimerange: string
-
-  constructor(
-    private dialog: MatDialog,
-    private eventService: EventService,
-    private filterService: FilterService,
-    private observationService: ObservationService,
-    private destroyRef: DestroyRef
-  ) {}
+  readonly activeFilters = signal<{ icon: string; tooltip: string }[]>([])
+  readonly observationCount = signal<number | undefined>(undefined)
+  readonly filterTimerange = signal('')
 
   ngOnInit(): void {
     this.filterService.event$
@@ -74,10 +89,6 @@ export class ObservationListComponent implements OnInit, OnDestroy {
     this.observationService.clearPagingOptions()
   }
 
-  trackByObservationId(_index: number, observation: any): any {
-    return observation.id
-  }
-
   onSearch(text: string): void {
     const keyword = text?.trim()
     this.filterService.setObservationKeyword(keyword || undefined)
@@ -92,21 +103,22 @@ export class ObservationListComponent implements OnInit, OnDestroy {
   }
 
   onEvent(event: any) {
-    this.event = event
-    this.currentPageIndex = 0
+    this.event.set(event)
+    this.currentPageIndex.set(0)
   }
 
   onObservationPage(page: any) {
     if (page === null) return
-    this.observations = page.data ?? []
-    this.observationCount = page.totalCount
-    this.totalObservations = page.totalCount ?? 0
-    this.currentPageIndex = page.pageIndex ?? 0
-    this.loaded = true
+    const observations = page.data ?? []
+    this.observations.set(observations)
+    this.observationCount.set(page.totalCount)
+    this.totalObservations.set(page.totalCount ?? 0)
+    this.currentPageIndex.set(page.pageIndex ?? 0)
+    this.loaded.set(true)
 
     const hasError = page.error != null
-    this.searchError = hasError && this.observations.length === 0
-    this.stale = hasError && this.observations.length > 0
+    this.searchError.set(hasError && observations.length === 0)
+    this.stale.set(hasError && observations.length > 0)
   }
 
   retrySearch(): void {
@@ -114,17 +126,18 @@ export class ObservationListComponent implements OnInit, OnDestroy {
   }
 
   private onObservationFilter(filter: EventObservationFilter) {
-    this.loaded = false
-    this.searchError = false
-    this.stale = false
-    this.observations = []
-    this.currentPageIndex = 0
+    this.loaded.set(false)
+    this.searchError.set(false)
+    this.stale.set(false)
+    this.observations.set([])
+    this.currentPageIndex.set(0)
     this.observationService.setPagingOptions({ page: 0, page_size: this.pageSize })
     this.searchBar?.setValue(filter?.fieldFilter?.keyword ?? '')
 
-    this.filterTimerange = filter ? this.formatTimeInterval(filter.timeInterval) : ''
-    this.activeFilters = filter ? this.buildActiveFilters(filter) : []
-    this.filterCount = this.activeFilters.length
+    const activeFilters = filter ? this.buildActiveFilters(filter) : []
+    this.filterTimerange.set(filter ? this.formatTimeInterval(filter.timeInterval) : '')
+    this.activeFilters.set(activeFilters)
+    this.filterCount.set(activeFilters.length)
   }
 
   private formatTimeInterval(timeInterval?: EventObservationFilter['timeInterval']): string {
