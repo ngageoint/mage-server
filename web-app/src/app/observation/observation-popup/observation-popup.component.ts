@@ -1,6 +1,9 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { GeometryModule } from '../../geometry/geometry.module';
+import { MomentModule } from '../../moment/moment.module';
 import { SidebarService } from '../../sidebar/sidebar.service';
-import moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 
@@ -8,22 +11,17 @@ import { EventService } from '../../event/event.service';
     selector: 'observation-map-popup',
     templateUrl: './observation-popup.component.html',
     styleUrls: ['./observation-popup.component.scss'],
-    standalone: false
+    imports: [MatButtonModule, MatIconModule, GeometryModule, MomentModule]
 })
 export class ObservationPopupComponent implements OnInit, OnChanges {
-  @Input() observation: any;
+  private readonly sidebarService: SidebarService = inject(SidebarService)
+  private readonly mapService: MapService = inject(MapService)
+  private readonly eventService: EventService = inject(EventService)
 
-  hasContent = false;
-  date: string;
-  primary: string;
+  observation = input<any>();
+
   primaryField: any;
-  secondary: string;
   secondaryField: any;
-
-  constructor(
-    private sidebarService: SidebarService,
-    private mapService: MapService,
-    private eventService: EventService) { }
 
   ngOnInit(): void {
     this.updateView();
@@ -34,14 +32,14 @@ export class ObservationPopupComponent implements OnInit, OnChanges {
   }
 
   private updateView(): void {
-    if (!this.observation) return
+    if (!this.observation()) return
 
-    if (this.observation.properties.forms.length > 0) {
-      const firstForm = this.observation.properties.forms[0]
+    if (this.observation().properties.forms.length > 0) {
+      const firstForm = this.observation().properties.forms[0]
 
-      const forms = this.eventService.getForms(this.observation) || []
+      const forms = this.eventService.getForms(this.observation()) || []
       const observationForm = forms.find(form => {
-        return form.id === this.observation.properties.forms[0].formId;
+        return form.id === this.observation().properties.forms[0].formId;
       })
 
       if (observationForm.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
@@ -60,15 +58,13 @@ export class ObservationPopupComponent implements OnInit, OnChanges {
         }
       }
     }
-
-    this.date = moment(this.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
   }
 
   onInfo(): void {
-    this.sidebarService.viewObservation(this.observation)
+    this.sidebarService.viewObservation(this.observation())
   }
 
   onZoom(): void {
-    this.mapService.zoomToFeatureInLayer(this.observation, 'observations');
+    this.mapService.zoomToFeatureInLayer(this.observation(), 'observations');
   }
 }
