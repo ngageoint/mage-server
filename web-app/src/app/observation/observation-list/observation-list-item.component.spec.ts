@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -115,7 +115,6 @@ describe('ObservationListItemComponent', () => {
         MatSnackBarModule
       ],
       providers: [
-        provideZonelessChangeDetection(),
         {
           provide: MapService,
           useClass: MockMapService
@@ -174,7 +173,6 @@ describe('ObservationListItemComponent', () => {
     };
 
     fixture.detectChanges();
-    fixture.detectChanges();
 
     expect(component.attachments.length).toBe(1);
   });
@@ -197,7 +195,6 @@ describe('ObservationListItemComponent', () => {
       ]
     };
 
-    fixture.detectChanges();
     fixture.detectChanges();
 
     expect(component.attachments.length).toBe(0);
