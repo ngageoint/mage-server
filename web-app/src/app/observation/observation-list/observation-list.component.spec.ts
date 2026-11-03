@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { ObservationListComponent } from './observation-list.component';
@@ -37,6 +38,7 @@ describe('ObservationListComponent', () => {
     TestBed.configureTestingModule({
       imports: [ObservationListComponent],
       providers: [
+        provideZonelessChangeDetection(),
         { provide: MatDialog, useValue: dialog },
         { provide: EventService, useValue: eventService },
         { provide: FilterService, useValue: filterService },
