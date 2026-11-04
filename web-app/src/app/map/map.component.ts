@@ -635,6 +635,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         }
       }
     } else {
+      if (layer instanceof LocationMarker) layer.pulse()
       this.openPopup(layer, { zoomToLocation: true })
     }
   }
@@ -686,7 +687,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.map.once('moveend', function () {
         layer.fire('click')
       })
-      this.map.setView((layer as LocationMarker | ObservationMarker).getLatLng(), 17)
+      this.map.setView((layer as LocationMarker | ObservationMarker).getLatLng(), Math.max(this.map.getZoom(), 17))
     } else {
       layer.fire('click')
     }

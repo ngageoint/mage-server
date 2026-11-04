@@ -77,6 +77,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   editObservation: Observation | null = null
 
   viewUser: UserWithLocation | null = null
+  userReselected = false
 
   viewExport: any
 
@@ -129,6 +130,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.sidebarService.viewUser$.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(event => {
+      if (this.viewUser?.user.id === event.user.user.id) {
+        this.userReselected = true
+      }
       this.viewUser = event.user
       this.newObservation = null
       this.editObservation = null
