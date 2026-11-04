@@ -27,7 +27,7 @@ const makeController = (overrides: {
     isEnabled: jest.fn(),
     setEnabled: jest.fn(),
     findAllEnabled: jest.fn(),
-    isLocationSharingEnabled: jest.fn(async () => locationSharingEnabled),
+    isLocationSharingEnabled: jest.fn(async (_eventId: number) => locationSharingEnabled),
     setLocationSharingEnabled: jest.fn()
   }
   const userRepository = {
@@ -117,6 +117,30 @@ describe('TakLocationPushController', () => {
 
     expect(log.error).toHaveBeenCalled()
     expect(send).toHaveBeenCalledTimes(2)
+  })
+
+  it('looks up sharing status and the TAK connection once per event, not once per location', async () => {
+    const { controller, settingsRepository, resolveSendTarget } = makeController()
+    const event: UserLocationSavedDomainEvent = {
+      locations: [ fakeLocation({ userId: 'user-1' }), fakeLocation({ userId: 'user-2' }), fakeLocation({ userId: 'user-3' }) ]
+    }
+
+    await controller.handleLocationsSaved(event)
+
+    expect(settingsRepository.isLocationSharingEnabled).toHaveBeenCalledTimes(1)
+    expect(resolveSendTarget).toHaveBeenCalledTimes(1)
+  })
+
+  it('pushes locations grouped by event, so one event\'s failure doesn\'t block another\'s', async () => {
+    const { controller, settingsRepository, send } = makeController()
+    settingsRepository.isLocationSharingEnabled.mockImplementation(async (eventId: number) => eventId === 2)
+    const event: UserLocationSavedDomainEvent = {
+      locations: [ fakeLocation({ userId: 'user-1', eventId: 1 }), fakeLocation({ userId: 'user-2', eventId: 2 }) ]
+    }
+
+    await controller.handleLocationsSaved(event)
+
+    expect(send).toHaveBeenCalledTimes(1)
   })
 
   it('never rejects even if the user lookup itself fails', async () => {

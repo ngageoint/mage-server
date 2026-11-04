@@ -3,6 +3,7 @@ import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@n
 import { buildCotEventXml } from '../cot/build'
 import { sendCotEvent } from '../transport.tcp'
 import { TakPushRepository } from '../adapters/tak-push.mongoose'
+import { TakPushIneligibleRepository } from '../adapters/tak-push-ineligible.mongoose'
 import { TakPushSettingsRepository } from '../adapters/tak-push-settings.mongoose'
 import { TakSendTargetResolver } from './resolve-connection'
 
@@ -38,6 +39,7 @@ export class TakPushController {
     private readonly observationRepositoryForEvent: ObservationRepositoryForEvent,
     private readonly settingsRepository: TakPushSettingsRepository,
     private readonly trackingRepository: TakPushRepository,
+    private readonly ineligibleRepository: TakPushIneligibleRepository,
     private readonly log: Pick<Console, 'warn' | 'error'> = console,
     private readonly send: typeof sendCotEvent = sendCotEvent,
     private readonly buildCot: typeof buildCotEventXml = buildCotEventXml
@@ -78,14 +80,16 @@ export class TakPushController {
 
   private async pollOnce(): Promise<void> {
     const enabledSettings = await this.settingsRepository.findAllEnabled()
-    for (const { eventId } of enabledSettings) {
+    // Concurrent, not sequential - one event's TAK server being down
+    // shouldn't make every other event wait out its send timeouts too.
+    await Promise.all(enabledSettings.map(async ({ eventId }) => {
       try {
         await this.pushEventObservations(eventId)
       }
       catch (err) {
         this.log.error(`tak push: failed polling event ${eventId}`, err)
       }
-    }
+    }))
   }
 
   async isEnabled(eventId: MageEventId): Promise<boolean> {
@@ -166,6 +170,10 @@ export class TakPushController {
       if (tracked && tracked.lastSyncedAt >= attrs.lastModified) {
         return
       }
+      const ineligible = await this.ineligibleRepository.findByObservation(eventId, attrs.id)
+      if (ineligible && ineligible.lastCheckedAt >= attrs.lastModified) {
+        return
+      }
       // buildCotEventXml only ever reads id/geometry/formEntries/mageEvent.formFor,
       // so a plain adapter over the raw attrs is enough - no need for the
       // full Observation.evaluate() validation machinery just to get CoT XML
@@ -178,6 +186,7 @@ export class TakPushController {
       } as unknown as Observation
       const built = this.buildCot(observation, mageEvent.name)
       if (!built) {
+        await this.ineligibleRepository.recordIneligible(eventId, attrs.id, new Date())
         return
       }
       await this.send(host, port, built.xml)

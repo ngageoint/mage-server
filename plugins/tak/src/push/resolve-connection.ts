@@ -22,6 +22,10 @@ export type TakConnectionResolver = (eventId: MageEventId) => Promise<ResolvedTa
   // service, or none of those services is a TAK Server - i.e. there's nothing
   // configured to push to, even if sharing is enabled for the event.
   //
+  // Push has no notion of multiple destinations per event - if an event has
+  // more than one TAK Server feed configured, only the first one found is
+  // used, and a warning is logged.
+  //
   // Returns the loaded `MageEvent` alongside the config - callers need it
   // anyway (e.g. to resolve `formFor()` while building CoT XML for each
   // observation), and returning it here means they never have to fetch the
@@ -49,6 +53,7 @@ export type TakConnectionResolver = (eventId: MageEventId) => Promise<ResolvedTa
       .filter((feed): feed is NonNullable<typeof feed> => feed !== null)
       .map(feed => feed.service)
   )
+  const takConfigs: TakServiceConfig[] = []
   for (const serviceId of serviceIds) {
     const service = await feedServiceRepository.findById(serviceId)
     if (!service) {
@@ -56,10 +61,18 @@ export type TakConnectionResolver = (eventId: MageEventId) => Promise<ResolvedTa
     }
     const serviceType = await feedServiceTypeRepository.findById(service.serviceType)
     if (serviceType?.pluginServiceTypeId === TakServerServiceType.SERVICE_TYPE_ID) {
-      return { mageEvent, config: service.config as unknown as TakServiceConfig }
+      takConfigs.push(service.config as unknown as TakServiceConfig)
     }
   }
-  return null
+  if (takConfigs.length === 0) {
+    return null
+  }
+  // Push has no notion of multiple destinations per event - if more than one
+  // TAK Server feed is configured, only the first is used.
+  if (takConfigs.length > 1) {
+    console.warn(`tak push: event ${eventId} has ${takConfigs.length} TAK Server feeds configured, only pushing to the first one`)
+  }
+  return { mageEvent, config: takConfigs[0] }
 }
 
 // Binds the four feed-resolution repositories once at plugin init, so

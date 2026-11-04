@@ -1,9 +1,10 @@
+import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { User, UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users'
 import { UserLocation, UserLocationSavedDomainEvent } from '../entities/user-location'
 import { buildLocationCotEventXml } from '../cot/build-location'
 import { sendCotEvent } from '../transport.tcp'
 import { TakPushSettingsRepository } from '../adapters/tak-push-settings.mongoose'
-import { TakSendTargetResolver } from './resolve-connection'
+import { ResolvedTakSendTarget, TakSendTargetResolver } from './resolve-connection'
 
 // Drives the MAGE user location -> TAK push feature, separate from
 // TakPushController's observation track: real-time (one call per
@@ -33,9 +34,40 @@ export class TakLocationPushController {
       this.log.error('tak push: failed to look up users for location push', err)
       return {}
     })
+
+    // Grouped by event so the per-event lookups below (sharing enabled?,
+    // resolve the TAK connection) happen once per event in this batch, not
+    // once per location - a batch can span multiple events' locations.
+    const locationsByEvent = new Map<MageEventId, UserLocation[]>()
     for (const location of event.locations) {
+      const locations = locationsByEvent.get(location.eventId) ?? []
+      locations.push(location)
+      locationsByEvent.set(location.eventId, locations)
+    }
+
+    for (const [ eventId, locations ] of locationsByEvent) {
       try {
-        await this.pushOneLocation(location, usersById[location.userId]?.displayName)
+        await this.pushEventLocations(eventId, locations, usersById)
+      }
+      catch (err) {
+        this.log.error(`tak push: failed to push locations for event ${eventId}`, err)
+      }
+    }
+  }
+
+  private async pushEventLocations(eventId: MageEventId, locations: UserLocation[], usersById: Record<string, User | null>): Promise<void> {
+    const locationSharingEnabled = await this.settingsRepository.isLocationSharingEnabled(eventId)
+    if (!locationSharingEnabled) {
+      return
+    }
+    const target = await this.resolveSendTarget(eventId)
+    if (!target) {
+      this.log.warn(`tak push: event ${eventId} has location sharing enabled but no TAK Server feed with a CoT port configured`)
+      return
+    }
+    for (const location of locations) {
+      try {
+        await this.pushOneLocation(location, usersById[location.userId]?.displayName, target)
       }
       catch (err) {
         this.log.error(`tak push: failed to push location for user ${location.userId}`, err)
@@ -43,16 +75,7 @@ export class TakLocationPushController {
     }
   }
 
-  private async pushOneLocation(location: UserLocation, displayName: string | undefined): Promise<void> {
-    const locationSharingEnabled = await this.settingsRepository.isLocationSharingEnabled(location.eventId)
-    if (!locationSharingEnabled) {
-      return
-    }
-    const target = await this.resolveSendTarget(location.eventId)
-    if (!target) {
-      this.log.warn(`tak push: event ${location.eventId} has location sharing enabled but no TAK Server feed with a CoT port configured`)
-      return
-    }
+  private async pushOneLocation(location: UserLocation, displayName: string | undefined, target: ResolvedTakSendTarget): Promise<void> {
     const callsign = displayName ?? location.userId
     const built = this.buildLocationCot(location, callsign, target.mageEvent.name)
     await this.send(target.host, target.port, built.xml)

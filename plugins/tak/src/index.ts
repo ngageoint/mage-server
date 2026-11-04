@@ -13,6 +13,7 @@ import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plu
 import * as TAK from './tak'
 import { AxiosTakTransport } from './transport.axios'
 import { TakPushModel, MongooseTakPushRepository } from './adapters/tak-push.mongoose'
+import { TakPushIneligibleModel, MongooseTakPushIneligibleRepository } from './adapters/tak-push-ineligible.mongoose'
 import { TakPushSettingsModel, MongooseTakPushSettingsRepository } from './adapters/tak-push-settings.mongoose'
 import { TakPushController } from './push/controller'
 import { TakLocationPushController } from './push/location-controller'
@@ -62,6 +63,9 @@ const hooks: InitPluginHook<typeof InjectedServices> = {
     const trackingRepository = new MongooseTakPushRepository(
       TakPushModel(dbConnection, `${packageName}/push`)
     )
+    const ineligibleRepository = new MongooseTakPushIneligibleRepository(
+      TakPushIneligibleModel(dbConnection, `${packageName}/push-ineligible`)
+    )
 
     const resolveConnection = createTakConnectionResolver(
       mageEventRepository,
@@ -74,7 +78,8 @@ const hooks: InitPluginHook<typeof InjectedServices> = {
       resolveSendTarget,
       observationRepositoryForEvent,
       settingsRepository,
-      trackingRepository
+      trackingRepository,
+      ineligibleRepository
     )
     // start() guards its own polling loop internally, but this is a
     // fire-and-forget call at plugin boot with nothing else to catch a

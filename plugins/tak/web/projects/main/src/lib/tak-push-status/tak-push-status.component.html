@@ -39,7 +39,7 @@
 
           <div class="warning-row" *ngIf="(status.enabled || status.locationSharingEnabled) && !status.connectionConfigured">
             <mat-icon>warning</mat-icon>
-            <span>Sharing is enabled, but this event has no TAK Server feed with a CoT port configured - nothing will be pushed until one is set up.</span>
+            <span>Sharing is enabled, but this event has no TAK Server feed with a CoT port configured - nothing will be pushed until one is set up. Configure a TAK Server feed for this event under Admin &rarr; Feeds.</span>
           </div>
 
           <mat-divider></mat-divider>

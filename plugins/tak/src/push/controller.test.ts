@@ -10,6 +10,7 @@ const makeController = (overrides: {
   hasConnection?: boolean
   observations?: any[]
   tracked?: Record<string, { lastSyncedAt: Date, callsign?: string }>
+  ineligible?: Record<string, { lastCheckedAt: Date }>
   send?: jest.Mock
   buildCot?: jest.Mock
   enabledEvents?: number[]
@@ -17,6 +18,7 @@ const makeController = (overrides: {
   const hasConnection = overrides.hasConnection ?? true
   const observations = overrides.observations ?? []
   const tracked = overrides.tracked ?? {}
+  const ineligible = overrides.ineligible ?? {}
 
   const fakeEvent = { id: 1, name: 'Test Event', feedIds: hasConnection ? [ 'feed-1' ] : [], formFor: jest.fn(() => ({ primaryFeedField: undefined })) }
 
@@ -57,6 +59,12 @@ const makeController = (overrides: {
       .slice(0, limit)),
     recordPush: jest.fn(async () => ({}))
   }
+  const ineligibleRepository = {
+    findByObservation: jest.fn(async (eventId: number, observationId: string) =>
+      ineligible[observationId] ? { eventId, observationId, lastCheckedAt: ineligible[observationId].lastCheckedAt } : null
+    ),
+    recordIneligible: jest.fn(async (eventId: number, observationId: string, checkedAt: Date) => ({ eventId, observationId, lastCheckedAt: checkedAt }))
+  }
   const log = { warn: jest.fn(), error: jest.fn() }
   const send = overrides.send ?? jest.fn(async () => undefined)
   const buildCot = overrides.buildCot ?? jest.fn((observation: any) => ({ uid: `MAGE-${observation.id}`, xml: `<event uid="MAGE-${observation.id}"/>`, callsign: `Callsign-${observation.id}` }))
@@ -74,12 +82,13 @@ const makeController = (overrides: {
     observationRepositoryForEvent as any,
     settingsRepository as any,
     trackingRepository as any,
+    ineligibleRepository as any,
     log as any,
     send,
     buildCot
   )
 
-  return { controller, mageEventRepository, observationRepositoryForEvent, settingsRepository, trackingRepository, log, send, buildCot }
+  return { controller, mageEventRepository, observationRepositoryForEvent, settingsRepository, trackingRepository, ineligibleRepository, log, send, buildCot }
 }
 
 describe('TakPushController', () => {
@@ -157,15 +166,43 @@ describe('TakPushController', () => {
     expect(send).toHaveBeenCalled()
   })
 
-  it('skips an observation the CoT builder rejects (e.g. non-Point geometry)', async () => {
+  it('skips an observation the CoT builder rejects (e.g. non-Point geometry) and records it as ineligible', async () => {
     const observation = fakeAttrs('obs-1', new Date())
     const buildCot = jest.fn(() => null)
-    const { controller, send, trackingRepository } = makeController({ observations: [ observation ], buildCot })
+    const { controller, send, trackingRepository, ineligibleRepository } = makeController({ observations: [ observation ], buildCot })
 
     await controller.pushEventObservations(1)
 
     expect(send).not.toHaveBeenCalled()
     expect(trackingRepository.recordPush).not.toHaveBeenCalled()
+    expect(ineligibleRepository.recordIneligible).toHaveBeenCalledWith(1, 'obs-1', expect.any(Date))
+  })
+
+  it('does not re-check an observation already recorded as ineligible and unchanged since', async () => {
+    const observation = fakeAttrs('obs-1', new Date('2026-01-01'))
+    const buildCot = jest.fn(() => null)
+    const { controller, buildCot: resolvedBuildCot } = makeController({
+      observations: [ observation ],
+      ineligible: { 'obs-1': { lastCheckedAt: new Date('2026-01-02') } },
+      buildCot
+    })
+
+    await controller.pushEventObservations(1)
+
+    expect(resolvedBuildCot).not.toHaveBeenCalled()
+  })
+
+  it('re-checks an observation previously marked ineligible once it changes again', async () => {
+    const observation = fakeAttrs('obs-1', new Date('2026-01-05'))
+    const { controller, send, buildCot } = makeController({
+      observations: [ observation ],
+      ineligible: { 'obs-1': { lastCheckedAt: new Date('2026-01-01') } }
+    })
+
+    await controller.pushEventObservations(1)
+
+    expect(buildCot).toHaveBeenCalled()
+    expect(send).toHaveBeenCalled()
   })
 
   it('logs and continues past one observation\'s send failure rather than aborting the batch', async () => {
@@ -273,6 +310,27 @@ describe('TakPushController', () => {
 
       await jest.advanceTimersByTimeAsync(5000)
       expect(pushSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('polls enabled events concurrently rather than waiting for each in sequence', async () => {
+      const { controller } = makeController({ enabledEvents: [ 1, 2 ] })
+      const event1Started = jest.fn()
+      const event2Finished = jest.fn()
+      jest.spyOn(controller, 'pushEventObservations').mockImplementation(async (eventId: number) => {
+        if (eventId === 1) {
+          event1Started()
+          return new Promise<void>(() => {}) // simulates a TAK server that never responds
+        }
+        event2Finished()
+      })
+
+      controller.start()
+      await Promise.resolve()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(event1Started).toHaveBeenCalled()
+      expect(event2Finished).toHaveBeenCalled()
     })
 
     it('one event failing does not stop the others in the same poll tick', async () => {

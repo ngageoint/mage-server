@@ -91,6 +91,28 @@ describe('resolveTakConnection', () => {
     expect(result?.config).toEqual({ baseUrl: 'http://tak.example.com', cotPort: 8088 })
   })
 
+  it('uses the first TAK Server feed and warns when an event has more than one configured', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const repos = makeRepos({
+      feedIds: [ 'feed-tak-1', 'feed-tak-2' ],
+      feeds: {
+        'feed-tak-1': { id: 'feed-tak-1', service: 'service-tak-1' },
+        'feed-tak-2': { id: 'feed-tak-2', service: 'service-tak-2' }
+      },
+      services: {
+        'service-tak-1': { id: 'service-tak-1', serviceType: 'registered-tak-type', config: { baseUrl: 'http://tak-1.example.com', cotPort: 8088 } },
+        'service-tak-2': { id: 'service-tak-2', serviceType: 'registered-tak-type', config: { baseUrl: 'http://tak-2.example.com', cotPort: 8088 } }
+      }
+    })
+
+    const result = await resolveTakConnection(1, repos.mageEventRepository as any, repos.feedRepository as any, repos.feedServiceRepository as any, repos.feedServiceTypeRepository as any)
+
+    expect(result?.config).toEqual({ baseUrl: 'http://tak-1.example.com', cotPort: 8088 })
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+
+    warnSpy.mockRestore()
+  })
+
   it('returns null when none of the event\'s feeds are backed by a TAK Server service', async () => {
     const repos = makeRepos({
       services: {
