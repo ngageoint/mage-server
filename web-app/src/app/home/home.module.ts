@@ -105,7 +105,6 @@ import { FeedItemComponent } from '../feed/feed-item/feed-item.component';
 import { FeedItemMapPopupComponent } from '../feed/feed-item/feed-item-map/feed-item-map-popup.component';
 import { FeedItemSummaryModule } from '../feed/feed-item/feed-item-summary/feed-item-summary.module';
 import { SidebarTabComponent } from '../sidebar/sidebar-tab.component';
-import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
@@ -226,7 +225,6 @@ class AngularModule { }
     ObservationFavoritesComponent,
     ObservationListComponent,
     ObservationOptionsComponent,
-    ObservationPopupComponent,
     ObservationViewAttachmentComponent,
     ObservationViewCheckboxComponent,
     ObservationViewComponent,
