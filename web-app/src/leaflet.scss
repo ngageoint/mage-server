@@ -134,3 +134,12 @@
   0%, 80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+.shape-pulse {
+  animation: shape-pulse-stroke 1.2s ease-out infinite, marker-pulse-fade 4s forwards;
+}
+
+@keyframes shape-pulse-stroke {
+  from { stroke-width: 4px; stroke-opacity: 1; }
+  to { stroke-width: 16px; stroke-opacity: 0; }
+}

@@ -74,6 +74,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   observationBadge: number | null = null
 
   viewObservation: Observation | null = null
+  observationReselected = false
   editObservation: Observation | null = null
 
   viewUser: UserWithLocation | null = null
@@ -148,6 +149,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.sidebarService.viewObservation$.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(event => {
+      if (this.viewObservation?.id === event.observation.id) {
+        this.observationReselected = true
+      }
       this.viewObservation = event.observation;
       this.newObservation = null
       this.editObservation = null
