@@ -46,7 +46,9 @@ services:
       - --plugin
       - '@ngageoint/mage.nga-msi'
       - --plugin
-      - '@ngageoint/mage.atak'
+      - '@ngageoint/mage.tak'
+      - --web-plugin
+      - '@ngageoint/mage.tak.web'
     volumes:
       - ./docker/mage/resources:/var/lib/mage
       - ./docker/sftp/key/id_rsa:/run/secrets/mage/sftp_key:ro

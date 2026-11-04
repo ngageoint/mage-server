@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import * as ATAK from './atak';
+import * as TAK from './tak';
 import {
   FeedsError,
   ErrInvalidServiceConfig,
@@ -11,76 +11,76 @@ type TransportMock = {
   send: ReturnType<typeof jest.fn>
 };
 
-describe('atak service type', function () {
+describe('tak service type', function () {
   let transport: TransportMock;
-  let atak: ATAK.TakServerServiceType;
+  let tak: TAK.TakServerServiceType;
 
   beforeEach(function () {
     transport = {
       send: jest.fn()
     };
-    // TakServerServiceType expects an AtakTransport; our mock matches shape.
-    atak = new ATAK.TakServerServiceType(transport as any);
+    // TakServerServiceType expects an TakTransport; our mock matches shape.
+    tak = new TAK.TakServerServiceType(transport as any);
   });
 
   it('validates the service config has a baseUrl', async function () {
-    let err = await atak.validateServiceConfig({ url: 'invalid' } as any);
+    let err = await tak.validateServiceConfig({ url: 'invalid' } as any);
     expect(err).toBeInstanceOf(FeedsError);
     expect(err?.code).toEqual(ErrInvalidServiceConfig);
 
-    err = await atak.validateServiceConfig({ baseUrl: 'http://test.org' });
+    err = await tak.validateServiceConfig({ baseUrl: 'http://test.org' });
     expect(err).toBeNull();
   });
 
   it('rejects a config missing baseUrl', async function () {
-    const err = await atak.validateServiceConfig({} as any);
+    const err = await tak.validateServiceConfig({} as any);
     expect(err).toBeInstanceOf(FeedsError);
     expect(err?.code).toEqual(ErrInvalidServiceConfig);
   });
 
   it('validates the service config is a url', async function () {
-    const err = await atak.validateServiceConfig({ baseUrl: 'not/a/url' });
+    const err = await tak.validateServiceConfig({ baseUrl: 'not/a/url' });
     expect(err).toBeInstanceOf(FeedsError);
     expect(err?.code).toEqual(ErrInvalidServiceConfig);
   });
 
   it('accepts a config with a valid port', async function () {
-    const err = await atak.validateServiceConfig({ baseUrl: 'http://test.org', port: 8089 });
+    const err = await tak.validateServiceConfig({ baseUrl: 'http://test.org', port: 8089 });
     expect(err).toBeNull();
   });
 
   it('rejects a config with an invalid port', async function () {
     for (const port of [0, -1, 65536, 1.5, '8089']) {
-      const err = await atak.validateServiceConfig({ baseUrl: 'http://test.org', port } as any);
+      const err = await tak.validateServiceConfig({ baseUrl: 'http://test.org', port } as any);
       expect(err).toBeInstanceOf(FeedsError);
       expect(err?.code).toEqual(ErrInvalidServiceConfig);
     }
   });
 
   it('creates a service connection with a config object and transport', async function () {
-    const conn = (await atak.createConnection(
+    const conn = (await tak.createConnection(
       { baseUrl: 'http://test.tak' }
-    )) as ATAK.AtakConnection;
+    )) as TAK.TakConnection;
 
-    expect(conn).toBeInstanceOf(ATAK.AtakConnection);
+    expect(conn).toBeInstanceOf(TAK.TakConnection);
     expect(conn.baseUrl).toEqual('http://test.tak');
-    expect(conn.transport).toBe(atak.transport);
+    expect(conn.transport).toBe(tak.transport);
   });
 
   it('redacts the password when present', function () {
-    const redacted = atak.redactServiceConfig({ baseUrl: 'http://test.tak', username: 'bob', password: 'secret' });
+    const redacted = tak.redactServiceConfig({ baseUrl: 'http://test.tak', username: 'bob', password: 'secret' });
     expect(redacted.password).toEqual('●●●●●●●●');
     expect(redacted.baseUrl).toEqual('http://test.tak');
   });
 
   it('leaves config unchanged when there is no password', function () {
-    const redacted = atak.redactServiceConfig({ baseUrl: 'http://test.tak' });
+    const redacted = tak.redactServiceConfig({ baseUrl: 'http://test.tak' });
     expect(redacted).toEqual({ baseUrl: 'http://test.tak' });
   });
 });
 
-describe('atak connection', function () {
-  let topicModules: ATAK.AtakTopicModule[];
+describe('tak connection', function () {
+  let topicModules: TAK.TakTopicModule[];
   let transport: TransportMock;
 
   beforeEach(function () {
@@ -88,7 +88,7 @@ describe('atak connection', function () {
       {
         topicDescriptor: {
           id: 'cot-events',
-          title: 'ATAK CoT Events'
+          title: 'TAK CoT Events'
         },
         createContentRequest() {
           throw new Error();
@@ -106,7 +106,7 @@ describe('atak connection', function () {
 
   it('returns the configured topics', async function () {
     const url = 'https://test.tak';
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
       { baseUrl: url },
       transport as any
@@ -118,18 +118,18 @@ describe('atak connection', function () {
   });
 
   it('fetches topic content with the topic request', async function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
       { baseUrl: 'http://test.fetch' },
       transport as any
     );
 
-    const contentReq: ATAK.AtakRequest = {
+    const contentReq: TAK.TakRequest = {
       method: 'get',
       path: '/Marti/api/cot'
     };
 
-    const contentRes: ATAK.AtakResponse = {
+    const contentRes: TAK.TakResponse = {
       status: 200,
       body: []
     };
@@ -163,7 +163,7 @@ describe('atak connection', function () {
   });
 
   it('calls fetchContent directly when the topic module provides it, bypassing createContentRequest/transformResponse', async function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
       { baseUrl: 'http://test.fetch' },
       transport as any
@@ -193,7 +193,7 @@ describe('atak connection', function () {
   });
 
   it('throws when a topic module defines neither fetchContent nor createContentRequest/transformResponse', async function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
       { baseUrl: 'http://test.fetch' },
       transport as any
@@ -206,18 +206,18 @@ describe('atak connection', function () {
   });
 
   it('passes auth through to the transport when credentials are configured', async function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
       { baseUrl: 'http://test.fetch', username: 'bob', password: 'secret' },
       transport as any
     );
 
-    topicModules[0].createContentRequest = jest.fn((): ATAK.AtakRequest => ({ method: 'get', path: '/Marti/api/cot' }));
+    topicModules[0].createContentRequest = jest.fn((): TAK.TakRequest => ({ method: 'get', path: '/Marti/api/cot' }));
     topicModules[0].transformResponse = jest.fn((): FeedTopicContent => ({
       topic: topicModules[0].topicDescriptor.id,
       items: { type: 'FeatureCollection', features: [] } as any
     }));
-    transport.send.mockImplementationOnce(async (): Promise<ATAK.AtakResponse> => ({ status: 200, body: [] }));
+    transport.send.mockImplementationOnce(async (): Promise<TAK.TakResponse> => ({ status: 200, body: [] }));
 
     await conn.fetchTopicContent(topicModules[0].topicDescriptor.id);
 
@@ -229,7 +229,7 @@ describe('atak connection', function () {
   });
 
   it('does not set auth when username or password is missing', function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(),
       { baseUrl: 'http://test.tak', username: 'bob' },
       transport as any
@@ -238,7 +238,7 @@ describe('atak connection', function () {
   });
 
   it('merges the configured port into baseUrl', function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(),
       { baseUrl: 'http://test.tak', port: 8089 },
       transport as any
@@ -247,7 +247,7 @@ describe('atak connection', function () {
   });
 
   it('throws for an unknown topic', async function () {
-    const conn = new ATAK.AtakConnection(
+    const conn = new TAK.TakConnection(
       new Map(topicModules.map((x) => [x.topicDescriptor.id, x])),
       { baseUrl: 'http://test.fetch' },
       transport as any

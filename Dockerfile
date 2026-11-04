@@ -66,11 +66,17 @@ RUN cd ${MAGE_SERVER}/plugins/nga-msi \
     && cd ${MAGE_PACKAGES} \
     && npm pack ${MAGE_SERVER}/plugins/nga-msi
 
-RUN cd ${MAGE_SERVER}/plugins/atak \
+RUN cd ${MAGE_SERVER}/plugins/tak \
     && npm link ../../service \
     && npm run build \
     && cd ${MAGE_PACKAGES} \
-    && npm pack ${MAGE_SERVER}/plugins/atak
+    && npm pack ${MAGE_SERVER}/plugins/tak
+
+RUN cd ${MAGE_SERVER}/plugins/tak/web \
+    && npm link ../../../web-app/dist/core-lib \
+    && npm run build \
+    && cd ${MAGE_PACKAGES} \
+    && npm pack ${MAGE_SERVER}/plugins/tak/web/dist/main
 
 RUN cd ${MAGE_SERVER}/plugins/clamav/service \
     && npm link ../../../service \
@@ -87,7 +93,7 @@ RUN cd ${MAGE_INSTANCE} \
     ${MAGE_PACKAGES}/ngageoint-mage.arcgis.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.image.*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.nga-msi-*.tgz \
-    ${MAGE_PACKAGES}/ngageoint-mage.atak-*.tgz \
+    ${MAGE_PACKAGES}/ngageoint-mage.tak*.tgz \
     ${MAGE_PACKAGES}/ngageoint-mage.clamav.*.tgz \
     && ln -s ./node_modules/.bin/mage.service
 

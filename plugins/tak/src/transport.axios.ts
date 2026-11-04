@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { URL } from 'url'
-import { AtakTransport, AtakRequest, AtakResponse, AtakAuth } from './atak'
+import { TakTransport, TakRequest, TakResponse, TakAuth } from './tak'
 
-export class AxiosAtakTransport implements AtakTransport {
+export class AxiosTakTransport implements TakTransport {
 
-  async send(req: AtakRequest, baseUrl: URL, auth?: AtakAuth): Promise<AtakResponse> {
+  async send(req: TakRequest, baseUrl: URL, auth?: TakAuth): Promise<TakResponse> {
 
     const fullUrl = new URL(req.path, baseUrl)
     if (req.method === 'get') {
