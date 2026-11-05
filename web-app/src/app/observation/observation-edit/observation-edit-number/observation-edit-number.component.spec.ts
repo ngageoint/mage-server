@@ -35,8 +35,8 @@ describe('ObservationEditNumberComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule],
-      declarations: [ObservationEditNumberComponent, TestHostComponent]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule, ObservationEditNumberComponent],
+      declarations: [TestHostComponent]
     })
     .compileComponents()
   }))
@@ -53,9 +53,9 @@ describe('ObservationEditNumberComponent', () => {
   })
 
   it('should not indicate required', async () => {
-    component.definition.required = false
+    component.definition().required = false
 
-    const control = component.formGroup.get('number')
+    const control = component.formGroup().get('number')
     control.clearValidators()
     control.updateValueAndValidity()
 
@@ -68,9 +68,9 @@ describe('ObservationEditNumberComponent', () => {
   })
 
   it('should indicate required', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('number')
+    const control = component.formGroup().get('number')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
 
@@ -81,9 +81,9 @@ describe('ObservationEditNumberComponent', () => {
   })
 
   it('should show error on invalid and touched', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('number')
+    const control = component.formGroup().get('number')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
     control.markAsTouched()
@@ -97,9 +97,9 @@ describe('ObservationEditNumberComponent', () => {
   })
 
   it('should not show error on invalid if not touched', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('number')
+    const control = component.formGroup().get('number')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
 

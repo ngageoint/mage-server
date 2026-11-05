@@ -38,8 +38,8 @@ describe('ObservationEditRadioComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatRadioModule],
-      declarations: [ObservationEditRadioComponent, TestHostComponent]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatRadioModule, ObservationEditRadioComponent],
+      declarations: [TestHostComponent]
     })
       .compileComponents()
   }))
@@ -56,9 +56,9 @@ describe('ObservationEditRadioComponent', () => {
   })
 
   it('should not indicate required', async () => {
-    component.definition.required = false
+    component.definition().required = false
 
-    const control = component.formGroup.get('radio')
+    const control = component.formGroup().get('radio')
     control.clearValidators()
     control.updateValueAndValidity()
 
@@ -71,9 +71,9 @@ describe('ObservationEditRadioComponent', () => {
   })
 
   it('should indicate required', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('radio')
+    const control = component.formGroup().get('radio')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
 
@@ -84,9 +84,9 @@ describe('ObservationEditRadioComponent', () => {
   })
 
   it('should show error on invalid and touched', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('radio')
+    const control = component.formGroup().get('radio')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
     control.markAsTouched()
@@ -100,9 +100,9 @@ describe('ObservationEditRadioComponent', () => {
   })
 
   it('should not show error on invalid if not touched', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('radio')
+    const control = component.formGroup().get('radio')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
 

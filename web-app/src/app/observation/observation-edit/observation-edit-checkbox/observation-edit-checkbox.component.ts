@@ -1,6 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatCheckboxChange as MatCheckboxChange } from '@angular/material/checkbox';
+import { Component, input, OnInit } from '@angular/core';
+import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 interface CheckboxField {
   title: string,
@@ -13,16 +14,16 @@ interface CheckboxField {
     selector: 'observation-edit-checkbox',
     templateUrl: './observation-edit-checkbox.component.html',
     styleUrls: ['./observation-edit-checkbox.component.scss'],
-    standalone: false
+    imports: [ReactiveFormsModule, MatCheckboxModule, MatFormFieldModule]
 })
 export class ObservationEditCheckboxComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: CheckboxField
+  formGroup = input<UntypedFormGroup>()
+  definition = input<CheckboxField>()
 
   control: UntypedFormControl
 
   ngOnInit(): void {
-    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
+    this.control = this.formGroup()?.get(this.definition()?.name) as UntypedFormControl
   }
 
   checked(event: MatCheckboxChange): void {

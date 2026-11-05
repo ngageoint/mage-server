@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { By } from '@angular/platform-browser';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+
 import { ObservationEditPasswordComponent } from './observation-edit-password.component';
 
 @Component({
@@ -12,8 +17,9 @@ import { ObservationEditPasswordComponent } from './observation-edit-password.co
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
     text: new UntypedFormControl('')
-  });
-  definition = {
+  })
+
+  definition: any = {
     name: 'text',
     title: 'Text Field',
     required: true
@@ -22,7 +28,6 @@ class TestHostComponent {
   @ViewChild(ObservationEditPasswordComponent) component: ObservationEditPasswordComponent
 }
 
-/* TODO tests MUST contain at least 1 test
 describe('ObservationEditPasswordComponent', () => {
   let component: ObservationEditPasswordComponent
   let hostComponent: TestHostComponent
@@ -30,10 +35,11 @@ describe('ObservationEditPasswordComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ObservationEditPasswordComponent, TestHostComponent ]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule, ObservationEditPasswordComponent],
+      declarations: [TestHostComponent]
     })
-    .compileComponents();
-  }));
+    .compileComponents()
+  }))
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestHostComponent)
@@ -42,67 +48,71 @@ describe('ObservationEditPasswordComponent', () => {
     component = hostComponent.component
   })
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy()
+  })
 
-  // it('should not indicate required', async () => {
-  //   component.definition.required = false
+  it('should mask input as a password field', () => {
+    const input = fixture.nativeElement.querySelector('input')
+    expect(input.type).toBe('password')
+  })
 
-  //   const control = component.formGroup.get('text')
-  //   control.clearValidators()
-  //   control.updateValueAndValidity()
+  it('should not indicate required', async () => {
+    component.definition().required = false
 
-  //   fixture.detectChanges()
-  //   await fixture.whenStable()
+    const control = component.formGroup().get('text')
+    control.clearValidators()
+    control.updateValueAndValidity()
 
-  //   expect(control.valid).toBe(true)
-  //   const error = fixture.debugElement.query(By.directive(MatError))
-  //   expect(error).toBeNull()
-  // })
+    fixture.detectChanges()
+    await fixture.whenStable()
 
-  // it('should indicate required', async () => {
-  //   component.definition.required = true
+    expect(control.valid).toBe(true)
+    const error = fixture.debugElement.query(By.directive(MatError))
+    expect(error).toBeNull()
+  })
 
-  //   const control = component.formGroup.get('text')
-  //   control.setValidators(Validators.required)
-  //   control.updateValueAndValidity()
+  it('should indicate required', async () => {
+    component.definition().required = true
 
-  //   fixture.detectChanges()
-  //   await fixture.whenStable()
+    const control = component.formGroup().get('text')
+    control.setValidators(Validators.required)
+    control.updateValueAndValidity()
 
-  //   expect(control.valid).toBe(false)
-  // })
+    fixture.detectChanges()
+    await fixture.whenStable()
 
-  // it('should show error on invalid and touched', async () => {
-  //   component.definition.required = true
+    expect(control.valid).toBe(false)
+  })
 
-  //   const control = component.formGroup.get('text')
-  //   control.setValidators(Validators.required)
-  //   control.updateValueAndValidity()
-  //   control.markAsTouched()
+  it('should show error on invalid and touched', async () => {
+    component.definition().required = true
 
-  //   fixture.detectChanges()
-  //   await fixture.whenStable()
+    const control = component.formGroup().get('text')
+    control.setValidators(Validators.required)
+    control.updateValueAndValidity()
+    control.markAsTouched()
 
-  //   expect(control.valid).toBe(false)
-  //   const error = fixture.debugElement.query(By.directive(MatError))
-  //   expect(error.nativeElement.innerText).toBe('You must enter a value')
-  // })
+    fixture.detectChanges()
+    await fixture.whenStable()
 
-  // it('should not show error on invalid if not touched', async () => {
-  //   component.definition.required = true
+    expect(control.valid).toBe(false)
+    const error = fixture.debugElement.query(By.directive(MatError))
+    expect(error.nativeElement.innerText).toBe('You must enter a value')
+  })
 
-  //   const control = component.formGroup.get('text')
-  //   control.setValidators(Validators.required)
-  //   control.updateValueAndValidity()
+  it('should not show error on invalid if not touched', async () => {
+    component.definition().required = true
 
-  //   fixture.detectChanges()
-  //   await fixture.whenStable()
+    const control = component.formGroup().get('text')
+    control.setValidators(Validators.required)
+    control.updateValueAndValidity()
 
-  //   expect(control.valid).toBe(false)
-  //   const error = fixture.debugElement.query(By.directive(MatError))
-  //   expect(error).toBeNull()
-  // })
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    expect(control.valid).toBe(false)
+    const error = fixture.debugElement.query(By.directive(MatError))
+    expect(error).toBeNull()
+  })
 });
-*/

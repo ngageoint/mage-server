@@ -67,9 +67,10 @@ describe('ObservationEditSelectComponent', () => {
         NgxMatSelectSearchModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
+        MatSelectModule,
+        ObservationEditSelectComponent
       ],
-      declarations: [ObservationEditSelectComponent, TestHostComponent]
+      declarations: [TestHostComponent]
     }).compileComponents();
   }));
 
@@ -85,9 +86,9 @@ describe('ObservationEditSelectComponent', () => {
   });
 
   it('should not indicate required', async () => {
-    component.definition.required = false;
+    component.definition().required = false;
 
-    const control = component.formGroup.get('select');
+    const control = component.formGroup().get('select');
     control.clearValidators();
     control.updateValueAndValidity();
 
@@ -100,9 +101,9 @@ describe('ObservationEditSelectComponent', () => {
   });
 
   it('should indicate required', async () => {
-    component.definition.required = true;
+    component.definition().required = true;
 
-    const control = component.formGroup.get('select');
+    const control = component.formGroup().get('select');
     control.setValidators(Validators.required);
     control.updateValueAndValidity();
 
