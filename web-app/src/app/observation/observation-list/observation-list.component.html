@@ -3,17 +3,25 @@
     <div class="toolbar-text">
       <div class="toolbar-text__title">
         Observations
-        <mat-icon *ngIf="stale" class="stale-icon material-symbols-outlined" matTooltip="Results may be stale, last refresh failed">sync</mat-icon>
+        @if (stale()) {
+          <mat-icon class="stale-icon material-symbols-outlined" matTooltip="Results may be stale, last refresh failed">sync</mat-icon>
+        }
       </div>
       <div class="toolbar-text__subtitle">
-        <span *ngIf="observationCount != null">{{observationCount}} ·</span>{{filterTimerange}}
-        <span *ngIf="activeFilters.length" class="filter-icons">
-          <mat-icon *ngFor="let filter of activeFilters" class="filter-icon" [matTooltip]="filter.tooltip">{{filter.icon}}</mat-icon>
-        </span>
+        @if (observationCount() != null) {
+          <span>{{observationCount()}} ·</span>
+        }{{filterTimerange()}}
+        @if (activeFilters().length) {
+          <span class="filter-icons">
+            @for (filter of activeFilters(); track filter.icon) {
+              <mat-icon class="filter-icon" [matTooltip]="filter.tooltip">{{filter.icon}}</mat-icon>
+            }
+          </span>
+        }
       </div>
     </div>
     <button matIconButton (click)="openFilterDialog()">
-      <mat-icon [class.material-icons-outlined]="!filterCount" [matTooltip]="filterCount | i18nPlural: filterPluralMapping">filter_alt</mat-icon>
+      <mat-icon [class.material-icons-outlined]="!filterCount()" [matTooltip]="filterCount() | i18nPlural: filterPluralMapping">filter_alt</mat-icon>
     </button>
   </mat-toolbar>
 
@@ -22,49 +30,42 @@
   </div>
 
   <div class="page-container">
-    <ng-container *ngIf="searchError; else content">
+    @if (searchError()) {
       <div class="list__empty">
         <span class="material-symbols-outlined icon">error_outline</span>
         <div class="list__empty-headline">Unable to Load Observations</div>
         <div class="list__empty-subheader">Something went wrong while searching. Please try again.</div>
         <button matButton (click)="retrySearch()">Retry</button>
       </div>
-    </ng-container>
-    <ng-template #content>
-      <ng-container *ngIf="loaded; else mask">
-        <ng-container *ngIf="observations.length; else empty">
-          <ng-container *ngFor="let observation of observations; trackBy: trackByObservationId">
-            <div class="feed-observation">
-              <observation-list-item [observation]="observation" [event]="event"></observation-list-item>
-            </div>
-          </ng-container>
-        </ng-container>
-      </ng-container>
-    </ng-template>
+    } @else if (loaded()) {
+      @if (observations().length) {
+        @for (observation of observations(); track observation.id) {
+          <div class="feed-observation">
+            <observation-list-item [observation]="observation" [event]="event()"></observation-list-item>
+          </div>
+        }
+      } @else {
+        <div class="list__empty">
+          <span class="material-symbols-outlined icon">distance</span>
+          <div class="list__empty-headline">No Observations</div>
+          <div class="list__empty-subheader">Try adjusting your filters or search term.</div>
+        </div>
+      }
+    } @else {
+      <div class="list__empty">
+        <mat-progress-spinner mode="indeterminate" diameter="48" strokeWidth="4"></mat-progress-spinner>
+        <div class="list__empty-headline">One moment…</div>
+        <div class="list__empty-subheader">Gathering your observations</div>
+      </div>
+    }
   </div>
 
   <mat-paginator
-    [length]="totalObservations"
+    [length]="totalObservations()"
     [pageSize]="pageSize"
-    [pageIndex]="currentPageIndex"
+    [pageIndex]="currentPageIndex()"
     [pageSizeOptions]="[25, 50, 100]"
     (page)="onPageChange($event)"
     aria-label="Select page">
   </mat-paginator>
 </div>
-
-<ng-template #empty>
-  <div class="list__empty">
-    <span class="material-symbols-outlined icon">distance</span>
-    <div class="list__empty-headline">No Observations</div>
-    <div class="list__empty-subheader">Try adjusting your filters or search term.</div>
-  </div>
-</ng-template>
-
-<ng-template #mask>
-  <div class="list__empty">
-    <mat-progress-spinner mode="indeterminate" diameter="48" strokeWidth="4"></mat-progress-spinner>
-    <div class="list__empty-headline">One moment…</div>
-    <div class="list__empty-subheader">Gathering your observations</div>
-  </div>
-</ng-template>

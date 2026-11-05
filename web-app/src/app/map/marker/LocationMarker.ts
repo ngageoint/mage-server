@@ -1,4 +1,4 @@
-import { Circle, circle, LatLngExpression, CircleMarker, CircleMarkerOptions, LatLng, circleMarker, FeatureGroup, Layer, Marker } from "leaflet";
+import { Circle, circle, LatLngExpression, CircleMarker, CircleMarkerOptions, LatLng, circleMarker, FeatureGroup, Layer, Marker, marker, divIcon } from "leaflet";
 import { fixedWidthMarker } from "./FixedWidthMarker";
 
 export interface LocationMarkerOptions extends CircleMarkerOptions {
@@ -10,6 +10,8 @@ export interface LocationMarkerOptions extends CircleMarkerOptions {
 export class LocationMarker extends FeatureGroup {
   private locationMarker: CircleMarker
   private accuracyCircle: Circle
+  private pane?: string
+  private pulseRing?: Marker
 
   constructor(latLng: LatLngExpression, options?: LocationMarkerOptions) {
     const layers = []
@@ -35,6 +37,7 @@ export class LocationMarker extends FeatureGroup {
 
     super(layers, {})
 
+    this.pane = options?.pane
     this.locationMarker = locationMarker
     this.accuracyCircle = circle(latLng, {
       radius: 0,
@@ -58,6 +61,20 @@ export class LocationMarker extends FeatureGroup {
     this.on('popupclose', () => {
       this.removeLayer(this.accuracyCircle)
     })
+  }
+
+  pulse(): void {
+    if (this.pulseRing) this.removeLayer(this.pulseRing)
+
+    const ring = marker(this.getLatLng(), {
+      icon: divIcon({ className: 'marker-pulse', html: '<div class="marker-pulse__ring"></div>', iconSize: [0, 0] }),
+      interactive: false,
+      keyboard: false,
+      pane: this.pane
+    })
+    this.pulseRing = ring
+    this.addLayer(ring)
+    setTimeout(() => this.removeLayer(ring), 4000)
   }
 
   getLatLng(): LatLng {

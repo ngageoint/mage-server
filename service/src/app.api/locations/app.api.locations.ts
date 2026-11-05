@@ -59,8 +59,9 @@ export type ExoUserLocation = {
   [key: string]: unknown
 }
 
-export type ExoLocationUserLite = Pick<User, 'id' | 'displayName'> & {
+export type ExoLocationUserLite = Pick<User, 'id' | 'displayName' | 'email' | 'phones'> & {
   hasIcon: boolean
+  hasAvatar: boolean
 }
 
 
@@ -91,7 +92,10 @@ export function exoLocationUserFor(from: LocationUserExpanded | undefined): ExoL
   return {
     id: from.id,
     displayName: from.displayName,
-    hasIcon: typeof from.icon?.relativePath === 'string'
+    email: from.email,
+    phones: from.phones,
+    hasIcon: typeof from.icon?.relativePath === 'string',
+    hasAvatar: typeof from.avatar?.relativePath === 'string'
   }
 }
 

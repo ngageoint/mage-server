@@ -109,3 +109,37 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, .4)
 }
 
+
+.marker-pulse {
+  animation: marker-pulse-fade 4s forwards;
+}
+
+.marker-pulse__ring {
+  position: absolute;
+  border-radius: 50%;
+  left: -20px;
+  top: -20px;
+  width: 34px;
+  height: 34px;
+  border: 3px solid #1e88e5;
+  animation: marker-pulse-ring 1.2s ease-out infinite;
+}
+
+@keyframes marker-pulse-ring {
+  from { transform: scale(0.5); opacity: 1; }
+  to { transform: scale(2); opacity: 0; }
+}
+
+@keyframes marker-pulse-fade {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.shape-pulse {
+  animation: shape-pulse-stroke 1.2s ease-out infinite, marker-pulse-fade 4s forwards;
+}
+
+@keyframes shape-pulse-stroke {
+  from { stroke-width: 4px; stroke-opacity: 1; }
+  to { stroke-width: 16px; stroke-opacity: 0; }
+}

@@ -26,6 +26,17 @@ mat-toolbar {
   --mat-card-elevated-container-color: white;
 }
 
+:host(.reselected) .item-content {
+  animation: shake 400ms ease-in-out;
+}
+
+@keyframes shake {
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
 .item-important {
   margin-bottom: 16px;
   padding: 8px 0;

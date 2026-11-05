@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { ObservationListComponent } from './observation-list.component';
@@ -36,14 +35,13 @@ describe('ObservationListComponent', () => {
     observationService = jasmine.createSpyObj('ObservationService', ['setPagingOptions', 'clearPagingOptions']);
 
     TestBed.configureTestingModule({
-      declarations: [ObservationListComponent],
+      imports: [ObservationListComponent],
       providers: [
         { provide: MatDialog, useValue: dialog },
         { provide: EventService, useValue: eventService },
         { provide: FilterService, useValue: filterService },
         { provide: ObservationService, useValue: observationService }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
+      ]
     }).compileComponents();
   }));
 
@@ -59,13 +57,13 @@ describe('ObservationListComponent', () => {
 
   describe('event$', () => {
     it('sets the current event and resets the page index', () => {
-      component.currentPageIndex = 3;
+      component.currentPageIndex.set(3);
       const event = { id: 1, name: 'Test Event' };
 
       eventSubject.next(event);
 
-      expect(component.event).toEqual(event);
-      expect(component.currentPageIndex).toBe(0);
+      expect(component.event()).toEqual(event);
+      expect(component.currentPageIndex()).toBe(0);
     });
   });
 
@@ -79,15 +77,15 @@ describe('ObservationListComponent', () => {
     });
 
     it('resets loaded/searchError/stale while the new page loads', () => {
-      component.loaded = true;
-      component.searchError = true;
-      component.stale = true;
+      component.loaded.set(true);
+      component.searchError.set(true);
+      component.stale.set(true);
 
       observationFilterSubject.next(DEFAULT_OBSERVATION_FILTER);
 
-      expect(component.loaded).toBeFalse();
-      expect(component.searchError).toBeFalse();
-      expect(component.stale).toBeFalse();
+      expect(component.loaded()).toBeFalse();
+      expect(component.searchError()).toBeFalse();
+      expect(component.stale()).toBeFalse();
     });
 
     it('syncs the search bar to the filter keyword', () => {
@@ -104,7 +102,7 @@ describe('ObservationListComponent', () => {
         ...DEFAULT_OBSERVATION_FILTER,
         timeInterval: { choice: { filter: 'all', label: 'All' } }
       });
-      expect(component.filterTimerange).toBe('All time');
+      expect(component.filterTimerange()).toBe('All time');
     });
 
     it('shows the choice label for a named interval', () => {
@@ -112,7 +110,7 @@ describe('ObservationListComponent', () => {
         ...DEFAULT_OBSERVATION_FILTER,
         timeInterval: { choice: { filter: 86400, label: 'Last 24 Hours' } }
       });
-      expect(component.filterTimerange).toBe('Last 24 Hours');
+      expect(component.filterTimerange()).toBe('Last 24 Hours');
     });
 
     it('formats a custom interval as a date range', () => {
@@ -123,8 +121,8 @@ describe('ObservationListComponent', () => {
         timeInterval: { choice: { filter: 'custom', label: 'Custom' }, options: { startDate, endDate } }
       });
 
-      expect(component.filterTimerange).toContain('2024');
-      expect(component.filterTimerange).toContain('–');
+      expect(component.filterTimerange()).toContain('2024');
+      expect(component.filterTimerange()).toContain('–');
     });
 
     it('builds the active filter icon list and count', () => {
@@ -137,60 +135,60 @@ describe('ObservationListComponent', () => {
         fieldFilter: { condition: { formId: 1, field: 'f', operator: '=', value: 'x' } }
       });
 
-      expect(component.activeFilters.length).toBe(5);
-      expect(component.filterCount).toBe(5);
+      expect(component.activeFilters().length).toBe(5);
+      expect(component.filterCount()).toBe(5);
     });
 
     it('reports no active filters for the default filter', () => {
       observationFilterSubject.next(DEFAULT_OBSERVATION_FILTER);
-      expect(component.activeFilters).toEqual([]);
-      expect(component.filterCount).toBe(0);
+      expect(component.activeFilters()).toEqual([]);
+      expect(component.filterCount()).toBe(0);
     });
 
     it('clears the timerange and filters when the filter is null', () => {
       observationFilterSubject.next(DEFAULT_OBSERVATION_FILTER);
       observationFilterSubject.next(null);
 
-      expect(component.filterTimerange).toBe('');
-      expect(component.activeFilters).toEqual([]);
+      expect(component.filterTimerange()).toBe('');
+      expect(component.activeFilters()).toEqual([]);
     });
   });
 
   describe('observationPage$', () => {
     it('ignores a null page', () => {
-      component.loaded = true;
+      component.loaded.set(true);
       observationPageSubject.next(null);
-      expect(component.loaded).toBeTrue();
+      expect(component.loaded()).toBeTrue();
     });
 
     it('populates observations and pagination state from a successful page', () => {
       observationPageSubject.next({ data: [{ id: 'o1' }], totalCount: 1, pageIndex: 0, error: null });
 
-      expect(component.observations).toEqual([{ id: 'o1' }]);
-      expect(component.observationCount).toBe(1);
-      expect(component.totalObservations).toBe(1);
-      expect(component.loaded).toBeTrue();
-      expect(component.searchError).toBeFalse();
-      expect(component.stale).toBeFalse();
+      expect(component.observations()).toEqual([{ id: 'o1' }]);
+      expect(component.observationCount()).toBe(1);
+      expect(component.totalObservations()).toBe(1);
+      expect(component.loaded()).toBeTrue();
+      expect(component.searchError()).toBeFalse();
+      expect(component.stale()).toBeFalse();
     });
 
     it('shows a full-page error when the fetch fails with no prior data', () => {
       observationPageSubject.next({ data: [], totalCount: 0, pageIndex: 0, error: new Error('boom') });
 
-      expect(component.searchError).toBeTrue();
-      expect(component.stale).toBeFalse();
+      expect(component.searchError()).toBeTrue();
+      expect(component.stale()).toBeFalse();
     });
 
     it('shows a stale-data indicator when the fetch fails but prior data remains', () => {
       observationPageSubject.next({ data: [{ id: 'o1' }], totalCount: 1, pageIndex: 0, error: new Error('boom') });
 
-      expect(component.searchError).toBeFalse();
-      expect(component.stale).toBeTrue();
+      expect(component.searchError()).toBeFalse();
+      expect(component.stale()).toBeTrue();
     });
 
     it('defaults to an empty observation list when data is missing', () => {
       observationPageSubject.next({ totalCount: 0, pageIndex: 0, error: null });
-      expect(component.observations).toEqual([]);
+      expect(component.observations()).toEqual([]);
     });
   });
 

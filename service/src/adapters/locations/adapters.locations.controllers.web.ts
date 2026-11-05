@@ -60,8 +60,9 @@ export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: 
   return routes.use(compatibilityMageAppErrorHandler)
 }
 
-export type WebLocationUserLite = Omit<ExoLocationUserLite, 'hasIcon'> & {
+export type WebLocationUserLite = Omit<ExoLocationUserLite, 'hasIcon' | 'hasAvatar'> & {
   iconUrl?: string
+  avatarUrl?: string
 }
 
 export type WebRecentUserLocations = Omit<ExoRecentUserLocations, 'user'> & {
@@ -72,10 +73,11 @@ function jsonForLocationUser(user: ExoLocationUserLite | undefined): WebLocation
   if (!user) {
     return undefined
   }
-  const { hasIcon, ...userJson } = user
+  const { hasIcon, hasAvatar, ...userJson } = user
   return {
     ...userJson,
-    iconUrl: hasIcon ? `/api/users/${user.id}/icon` : undefined
+    iconUrl: hasIcon ? `/api/users/${user.id}/icon` : undefined,
+    avatarUrl: hasAvatar ? `/api/users/${user.id}/avatar` : undefined
   }
 }
 
