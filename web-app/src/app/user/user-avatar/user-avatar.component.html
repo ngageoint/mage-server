@@ -1,2 +1,5 @@
-<img *ngIf="data() || url()" class="avatar" [src]="data() || url()" [width]="avatarWidth()" [height]="avatarHeight()"/>
-<mat-icon *ngIf="!data() && !url()" class="icon" [style.font-size.px]="avatarWidth()" [style.width.px]="avatarWidth()" [style.height.px]="avatarHeight()">account_circle</mat-icon>
+@if (data() || url()) {
+  <img class="avatar" [src]="data() || url()" [width]="avatarWidth()" [height]="avatarHeight()"/>
+} @else {
+  <mat-icon class="icon" [style.font-size.px]="avatarWidth()" [style.width.px]="avatarWidth()" [style.height.px]="avatarHeight()">account_circle</mat-icon>
+}

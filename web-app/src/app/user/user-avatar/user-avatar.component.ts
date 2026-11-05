@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common'
 import { HttpClient } from '@angular/common/http'
 import { Component, inject, input, OnChanges, SimpleChanges, signal } from '@angular/core'
 import { MatIconModule } from '@angular/material/icon'
@@ -8,7 +7,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser'
     selector: 'user-avatar',
     templateUrl: './user-avatar.component.html',
     styleUrls: ['./user-avatar.component.scss'],
-    imports: [CommonModule, MatIconModule]
+    imports: [MatIconModule]
 })
 export class UserAvatarComponent implements OnChanges {
   private readonly httpClient: HttpClient = inject(HttpClient)
