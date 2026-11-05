@@ -169,7 +169,7 @@ describe("observation important tests", function () {
       .send({
         description: 'Some important description'
       })
-      .expect(404)
+      .expect(404, 'Observation not found')
       .end(done);
   });
 

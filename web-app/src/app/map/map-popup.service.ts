@@ -23,7 +23,7 @@ export class MapPopupService {
   public popupObservation(layer: Layer, observation: any): void {
     const componentFactory = this.componentFactoryResolver.resolveComponentFactory(ObservationPopupComponent);
     const component = componentFactory.create(this.injector);
-    component.instance.observation = observation;
+    component.setInput('observation', observation);
     this.applicationRef.attachView(component.hostView);
 
     layer

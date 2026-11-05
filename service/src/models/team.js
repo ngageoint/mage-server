@@ -139,7 +139,7 @@ exports.getTeamById = function (id, options, callback) {
 
   let query = Team.findOne(conditions);
 
-  if (options.populate == null || options.populate == 'true') {
+  if (options.populate !== false) {
     query = query.populate('userIds');
   }
 

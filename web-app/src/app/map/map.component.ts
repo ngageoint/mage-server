@@ -7,12 +7,13 @@ import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service
 import { MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, DomEvent, LocationEvent as LeafletLocationEvent } from "leaflet"
+import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, Polyline, DomEvent, LocationEvent as LeafletLocationEvent } from "leaflet"
 import { OpacityEvent, ZoomEvent as LayerZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
 import { locationMarker, LocationMarker } from './marker/LocationMarker'
 import { observationMarker, ObservationMarker } from './marker/ObservationMarker'
+import { pulseShape } from './marker/ShapePulse'
 import { COUNTRIES as countries } from './layers/static/layers'
 import 'leaflet-editable'
 import 'leaflet.markercluster'
@@ -612,11 +613,13 @@ export class MapComponent implements OnDestroy, AfterViewInit {
           this.map.fitBounds(layer.getBounds(), {
             maxZoom: 17
           })
+          if (layer instanceof Polyline) pulseShape(layer, this.map)
           this.openPopup(layer, {})
         } else {
           // Zoom and center point
           this.map.once('zoomend', () => {
             clusterLayer.zoomToShowLayer(layer, () => {
+              if (layer instanceof ObservationMarker) layer.pulse()
               this.openPopup(layer, { zoomToLocation: false })
             })
           })
@@ -627,14 +630,17 @@ export class MapComponent implements OnDestroy, AfterViewInit {
           this.map.fitBounds(layer.getBounds(), {
             maxZoom: 17
           })
+          if (layer instanceof Polyline) pulseShape(layer, this.map)
           this.openPopup(layer, {})
         } else {
           clusterLayer.zoomToShowLayer(layer, () => {
+            if (layer instanceof ObservationMarker) layer.pulse()
             this.openPopup(layer, { zoomToLocation: false })
           })
         }
       }
     } else {
+      if (layer instanceof LocationMarker) layer.pulse()
       this.openPopup(layer, { zoomToLocation: true })
     }
   }
@@ -686,7 +692,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.map.once('moveend', function () {
         layer.fire('click')
       })
-      this.map.setView((layer as LocationMarker | ObservationMarker).getLatLng(), 17)
+      this.map.setView((layer as LocationMarker | ObservationMarker).getLatLng(), Math.max(this.map.getZoom(), 17))
     } else {
       layer.fire('click')
     }
