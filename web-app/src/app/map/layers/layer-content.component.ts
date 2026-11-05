@@ -1,5 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -19,10 +21,11 @@ const DEFAULT_STYLE: SimpleStyle = {
     selector: 'layer-content',
     templateUrl: './layer-content.component.html',
     styleUrls: ['./layer-content.component.scss'],
-    standalone: true,
     imports: [
         FormsModule,
+        MatButtonModule,
         MatFormFieldModule,
+        MatIconModule,
         MatInputModule,
         MatSlideToggleModule,
         MatSliderModule,
@@ -33,6 +36,11 @@ export class LayerContentComponent {
   private layerService: MapLayerService = inject(MapLayerService);
 
   layer = input.required<RenderedMapLayer>();
+
+  hasBounds = computed(() => {
+    const layer = this.layer();
+    return 'getBounds' in layer.layer || (layer.type === 'GeoPackage' && Boolean(layer.bbox));
+  });
 
   canOverrideStyle = computed(() => {
     const layer = this.layer();
@@ -51,6 +59,10 @@ export class LayerContentComponent {
   opacityChanged(value: number): void {
     this.opacity.set(value);
     this.layerService.opacity(this.layer(), value / 100);
+  }
+
+  zoom(): void {
+    this.layerService.zoom(this.layer());
   }
 
   colorChanged(event: ColorEvent, key: string): void {

@@ -1,87 +1,51 @@
 <div class="map-layers">
   <h3 class="header">Mage</h3>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'mage', mageLayers())">
+  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'mage', mageLayers())">
     @for (layer of mageLayers(); track layer) {
-      <mat-expansion-panel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
+      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
     }
-  </mat-accordion>
+  </div>
 
   <h3 class="header">Base Layers</h3>
-  <mat-accordion class="layer-list" displayMode="flat" multi="true">
+  <div class="layer-list" role="list">
     @for (layer of baseLayers(); track layer) {
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <layer-header [layer]="layer"></layer-header>
-        </mat-expansion-panel-header>
-
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
+      <layer-item [layer]="layer"></layer-item>
     }
-  </mat-accordion>
+  </div>
 
   @if (gridOverlays().length) {
     <h3 class="header">Grid Overlays</h3>
+    <div class="layer-list" role="list">
+      @for (layer of gridOverlays(); track layer) {
+        <layer-item [layer]="layer" multi="true"></layer-item>
+      }
+    </div>
   }
-  <mat-accordion class="layer-list" displayMode="flat" multi="true">
-    @for (layer of gridOverlays(); track layer) {
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
-    }
-  </mat-accordion>
 
   @if (feedLayers().length) {
     <h3 class="header">Feeds</h3>
   }
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'feed', feedLayers())">
+  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feed', feedLayers())">
     @for (layer of feedLayers(); track layer) {
-      <mat-expansion-panel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
+      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
     }
-  </mat-accordion>
+  </div>
 
   @if (featureOverlays().length) {
     <h3 class="header">Feature Overlays</h3>
   }
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', featureOverlays())">
+  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feature', featureOverlays())">
     @for (layer of featureOverlays(); track layer) {
-      <mat-expansion-panel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
+      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
     }
-  </mat-accordion>
+  </div>
 
   @if (tileOverlays().length) {
     <h3 class="header">Tile Overlays</h3>
   }
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'tile', tileOverlays())">
+  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'tile', tileOverlays())">
     @for (layer of tileOverlays(); track layer) {
-      <mat-expansion-panel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
+      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
     }
-  </mat-accordion>
+  </div>
 </div>

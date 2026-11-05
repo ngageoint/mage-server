@@ -24,6 +24,7 @@ import {
   PlacenameSearchService
 } from '../search/search.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { of } from 'rxjs';
 import {
   MobileSearchType,
@@ -47,7 +48,8 @@ describe('SearchComponent', () => {
         MatInputModule,
         MatListModule,
         MatProgressSpinnerModule,
-        MatSnackBarModule],
+        MatSnackBarModule,
+        MatTooltipModule],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));

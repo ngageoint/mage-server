@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  margin: 0 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+}
+
+layer-header {
+  flex: 1;
+}
+
+.drag-handle {
+  flex-shrink: 0;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: grab;
+}
+
+.toggle {
+  flex-shrink: 0;
+}
+
+.toggle__icon {
+  transition: transform 200ms ease-out;
+}
+
+.toggle__icon--expanded {
+  transform: rotate(180deg);
+}
+
+.settings {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.settings--expanded {
+  grid-template-rows: 1fr;
+}
+
+.settings__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings__content {
+  display: block;
+  margin: 0 8px 8px;
+  padding: 12px;
+  border-radius: var(--mat-sys-corner-medium);
+  background: var(--mat-sys-surface-container);
+}
