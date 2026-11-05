@@ -12,12 +12,12 @@ import { AttachmentComponent } from '../../attachment/attachment.component';
 export class ObservationViewAttachmentComponent {
   form = input<any>()
   field = input<any>()
-  allAttachments = input<any[]>([], { alias: 'attachments' })
+  attachments = input<any[]>([])
 
-  attachments = computed(() => {
+  filteredAttachments = computed(() => {
     const form = this.form()
     const field = this.field()
-    return this.allAttachments().filter(attachment => {
+    return this.attachments().filter(attachment => {
       return attachment.observationFormId === form?.remoteId &&
         attachment.fieldName === field?.name
     })
