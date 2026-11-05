@@ -84,7 +84,7 @@ describe('Map Service Tests', () => {
     let listener: jasmine.SpyObj<any>;
 
     function mapObservation(id: string, lastModified: string) {
-      return { id, type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, lastModified, properties: {} };
+      return { id, type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { lastModified }, style: { iconUrl: '' } };
     }
 
     beforeEach(() => {
@@ -237,7 +237,7 @@ describe('Map Service Tests', () => {
     let listener: jasmine.SpyObj<any>;
 
     function mapObservation(id: string, lastModified: string) {
-      return { id, type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, lastModified, properties: {} };
+      return { id, type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { lastModified }, style: { iconUrl: '' } };
     }
 
     beforeEach(() => {

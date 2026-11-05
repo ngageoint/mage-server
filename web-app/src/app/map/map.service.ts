@@ -163,7 +163,7 @@ export class MapService {
       const currById = _.keyBy(curr, 'id')
 
       const added = curr.filter((o: any) => !prevById[o.id])
-      const updated = curr.filter((o: any) => prevById[o.id] && (prevById[o.id] as any).lastModified !== o.lastModified)
+      const updated = curr.filter((o: any) => prevById[o.id] && (prevById[o.id] as any).properties.lastModified !== o.properties.lastModified)
       const removed = prev.filter((o: any) => !currById[o.id])
 
       added.forEach((o: any) => { this.observationsById[o.id] = o })

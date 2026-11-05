@@ -465,6 +465,7 @@ type AppLayer = {
     removeEventAclUser: eventAclApi.RemoveEventAclUser
   }
   observations: {
+    readObservation: observationsApi.ReadObservation
     readObservations: observationsApi.ReadObservations
     allocateObservationId: observationsApi.AllocateObservationId
     saveObservation: observationsApi.SaveObservation
@@ -1083,6 +1084,11 @@ async function initObservationsAppLayer(
   );
 
   return {
+    readObservation: observationsImpl.ReadObservation(
+      obsPermissionsService,
+      repos.observations.obsRepoFactory,
+      repos.users.userRepo
+    ),
     readObservations: observationsImpl.ReadObservations(
       obsPermissionsService,
       repos.observations.obsRepoFactory,

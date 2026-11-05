@@ -1,6 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GeometryModule } from '../../geometry/geometry.module';
 import { MomentModule } from '../../moment/moment.module';
 import { SidebarService } from '../../sidebar/sidebar.service';
@@ -11,7 +12,7 @@ import { EventService } from '../../event/event.service';
     selector: 'observation-map-popup',
     templateUrl: './observation-popup.component.html',
     styleUrls: ['./observation-popup.component.scss'],
-    imports: [MatButtonModule, MatIconModule, GeometryModule, MomentModule]
+    imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, GeometryModule, MomentModule]
 })
 export class ObservationPopupComponent {
   private readonly sidebarService: SidebarService = inject(SidebarService)
@@ -19,6 +20,7 @@ export class ObservationPopupComponent {
   private readonly eventService: EventService = inject(EventService)
 
   observation = input<any>();
+  failed = input(false);
 
   primaryField = computed(() => this.feedField('primaryFeedField'))
   secondaryField = computed(() => this.feedField('secondaryFeedField'))

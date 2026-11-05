@@ -27,8 +27,9 @@ export function ReadObservations(
       return AppResponse.error(denied)
     }
     try {
-      const mapper = req.mapping || ((x: api.ExoObservation) => x)
+      const mapper = req.mapping || ((x: api.ExoObservation | api.ExoObservationMapView) => x)
       const search = req.search
+      const event = req.context.mageEvent
 
       const userIsAnyOf = await resolveUserIsAnyOf(teamRepo, search.userIsAnyOf, search.teamIsAnyOf)
 
@@ -52,11 +53,15 @@ export function ReadObservations(
         orderBy: search.orderBy,
         paging: search.paging,
         populateUserNames: search.populateUserNames === true,
+        view: search.view,
       }
 
-      const repo = await obsRepoFactory(req.context.mageEvent.id)
+      const repo = await obsRepoFactory(event.id)
       const result = await repo.find(findSpec,
         (obs: ObservationAttrs | UsersExpandedObservationAttrs) => {
+          if (search.view === 'map') {
+            return mapper(api.exoObservationMapViewFor(obs, event))
+          }
           const expanded = obs as UsersExpandedObservationAttrs
           return mapper(api.exoObservationFor(obs, expanded.user, expanded.important?.user))
         }
@@ -98,6 +103,30 @@ export function AllocateObservationId(permissionService: api.ObservationPermissi
     const repo = await obsRepoFactory(req.context.mageEvent.id)
     const id = await repo.allocateObservationId()
     return AppResponse.success(id)
+  }
+}
+
+export function ReadObservation(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, userRepo: UserRepository): api.ReadObservation {
+  return async function readObservation<T>(req: api.ReadObservationRequest<T>) {
+    const denied = await permissionService.ensureReadObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    try {
+      const mapper = req.mapping || ((x: api.ExoObservation) => x as T)
+      const repo = await obsRepoFactory(req.context.mageEvent.id)
+      const observation = await repo.findById(req.observationId)
+      if (!observation) {
+        return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
+      }
+      const userIds = { creator: observation.userId, importantFlagger: observation.important?.userId }
+      const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
+      const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
+      const exoObs = api.exoObservationFor(observation, usersFound[userIds.creator || ''] ?? undefined, usersFound[userIds.importantFlagger || ''] ?? undefined)
+      return AppResponse.success(mapper(exoObs))
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
   }
 }
 

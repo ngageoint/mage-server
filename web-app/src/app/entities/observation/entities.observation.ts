@@ -1,6 +1,7 @@
 import { User } from "@ngageoint/mage.web-core-lib/user"
 import { AttachmentAction } from "../../observation/observation-edit/observation-edit-attachment/observation-edit-attachment-action"
 import { EventId } from "../event/entities.event"
+import { MapFeatureStyle } from "../map/entities.map"
 
 export type ObservationId = string
 
@@ -16,13 +17,14 @@ export type FormProperties = {
   [name: string]: any
 }
 
-export type ObservationStyle = {
-  color?: string
-  fillColor?: string
-  fillOpacity?: number
-  opacity?: number
-  weight?: number
-  iconUrl: string
+export type ObservationMapFeature = GeoJSON.Feature<GeoJSON.Geometry, {
+  eventId: EventId
+  lastModified: string
+  state?: ObservationStateName
+  accuracy?: number
+}> & {
+  id: ObservationId
+  style: MapFeatureStyle
 }
 
 export type Observation = {
@@ -37,7 +39,7 @@ export type Observation = {
   deviceId?: string
   createdAt: Date
   lastModified: string
-  style: ObservationStyle
+  style: MapFeatureStyle
   favoriteUserIds: string[]
   properties: {
     forms: FormProperties[]
