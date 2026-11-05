@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MapClipComponent } from './clip.component';
 
 @NgModule({
-  declarations: [MapClipComponent],
-  imports: [CommonModule],
+  imports: [CommonModule, MapClipComponent],
   exports: [MapClipComponent]
 })
 export class MapClipModule {}

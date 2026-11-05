@@ -3,34 +3,34 @@
     <div class="form-header">
       <div class="form-header-summary">
         <div class="form-header-title">
-          <mat-icon class="form-header-title__icon" [style.color]="form.color">description</mat-icon>
-          <div class="form-header-title__text">{{form?.name}}</div>
+          <mat-icon class="form-header-title__icon" [style.color]="form()?.color">description</mat-icon>
+          <div class="form-header-title__text">{{form()?.name}}</div>
         </div>
-        <div *ngIf="primaryField?.value" class="form-header-summary__primary">
-          <span [ngSwitch]="primaryField?.type">
-            <span *ngSwitchCase="'geometry'">{{primaryField?.value | geometry:5}}</span>
-            <span *ngSwitchDefault>{{primaryField?.value}}</span>
+        <div *ngIf="primaryField()?.value" class="form-header-summary__primary">
+          <span [ngSwitch]="primaryField()?.type">
+            <span *ngSwitchCase="'geometry'">{{primaryField()?.value | geometry:5}}</span>
+            <span *ngSwitchDefault>{{primaryField()?.value}}</span>
           </span>
         </div>
-        <div *ngIf="secondaryField?.value" class="form-header-summary__secondary">
-          <span [ngSwitch]="secondaryField?.type">
-            <span *ngSwitchCase="'geometry'">{{secondaryField?.value | geometry:5}}</span>
-            <span *ngSwitchDefault>{{secondaryField?.value}}</span>
+        <div *ngIf="secondaryField()?.value" class="form-header-summary__secondary">
+          <span [ngSwitch]="secondaryField()?.type">
+            <span *ngSwitchCase="'geometry'">{{secondaryField()?.value | geometry:5}}</span>
+            <span *ngSwitchDefault>{{secondaryField()?.value}}</span>
           </span>
         </div>
       </div>
 
       <div class="form-header-actions">
-        <button matIconButton (click)="expand = !expand" *ngIf="hasContent()">
-          <mat-icon [@rotate]="expand">expand_more</mat-icon>
+        <button matIconButton (click)="toggleExpand()" *ngIf="hasContent()">
+          <mat-icon [@rotate]="isExpanded()">expand_more</mat-icon>
         </button>
       </div>
     </div>
 
-    <div *ngIf="expand" @expand class="form-content">
-      <div *ngFor="let field of nonArchivedFields(form.fields)">
+    <div *ngIf="isExpanded()" @expand class="form-content">
+      <div *ngFor="let field of nonArchivedFields(form()?.fields)">
         <div [ngSwitch]="field.type" class="field">
-          <observation-view-attachment *ngSwitchCase="'attachment'" [form]="form" [field]="field" [attachments]="attachments"></observation-view-attachment>
+          <observation-view-attachment *ngSwitchCase="'attachment'" [form]="form()" [field]="field" [attachments]="attachments()"></observation-view-attachment>
           <observation-view-geometry *ngSwitchCase="'geometry'" [field]="field"></observation-view-geometry>
           <observation-view-date *ngSwitchCase="'date'" [field]="field"></observation-view-date>
           <observation-view-checkbox *ngSwitchCase="'checkbox'" [field]="field"></observation-view-checkbox>

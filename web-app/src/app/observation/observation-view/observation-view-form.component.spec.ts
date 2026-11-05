@@ -1,11 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatSelectModule as MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
 import { ObservationViewFormComponent } from './observation-view-form.component';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
     selector: `host-component`,
@@ -33,14 +28,8 @@ describe('ObservationViewFormComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [
-        MatSelectModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatCardModule,
-        MatCheckboxModule
-      ],
-      declarations: [ObservationViewFormComponent, TestHostComponent]
+      declarations: [TestHostComponent],
+      imports: [ObservationViewFormComponent]
     }).compileComponents();
   }));
 
