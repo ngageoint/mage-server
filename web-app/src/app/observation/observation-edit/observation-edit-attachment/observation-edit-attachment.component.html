@@ -1,35 +1,31 @@
 <div class="attachment-field">
   <div class="attachment-field__header">
     <div class="attachment-field__label">
-      {{ definition.title }}{{ definition.min > 0 ? ' *' : '' }}
+      {{ definition()?.title }}{{ definition()?.min > 0 ? ' *' : '' }}
     </div>
   </div>
 
   <div class="attachment-field__body">
-    <ng-container *ngIf="allAttachments().length; else empty">
+    @if (allAttachments().length) {
       <div class="edit-attachments__grid">
-        <div class="edit-attachments__item" *ngFor="
-            let attachment of allAttachments();
-            trackBy: trackByAttachment;
-            first as isFirst
-          " [class.edit-attachments__item--full]="
-            isFirst && allAttachments().length % 2 === 1
-          ">
-          <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" edit="true"
-            (delete)="deleteAttachment(attachment)"></observation-attachment>
-
-          <attachment-upload *ngIf="attachment.file" [url]="url" [attachment]="attachment"
-            (remove)="removeAttachment($event)"></attachment-upload>
-        </div>
+        @for (attachment of allAttachments(); track attachment.id; let isFirst = $first) {
+          <div class="edit-attachments__item" [class.edit-attachments__item--full]="isFirst && allAttachments().length % 2 === 1">
+            @if (!attachment.file) {
+              <observation-attachment [attachment]="attachment" edit="true"
+                (delete)="deleteAttachment(attachment)"></observation-attachment>
+            } @else {
+              <attachment-upload [url]="url()" [attachment]="attachment"
+                (remove)="removeAttachment($event)"></attachment-upload>
+            }
+          </div>
+        }
       </div>
-    </ng-container>
-
-    <ng-template #empty>
+    } @else {
       <div class="no-attachments">
         <mat-icon class="no-attachments__icon">insert_drive_file</mat-icon>
         <div class="no-attachments__text">No Attachments</div>
       </div>
-    </ng-template>
+    }
   </div>
 
   <div class="attachment-actions">

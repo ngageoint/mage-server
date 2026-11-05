@@ -1,5 +1,9 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, input, OnInit, signal } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { AttachmentComponent } from '../../attachment/attachment.component';
+import { AttachUploadComponent } from '../../attachment/attachment-upload/attachment-upload.component';
 import { AttachmentAction } from './observation-edit-attachment-action';
 
 interface AttachmentField {
@@ -14,33 +18,35 @@ interface AttachmentField {
     selector: 'observation-edit-attachment',
     templateUrl: './observation-edit-attachment.component.html',
     styleUrls: ['./observation-edit-attachment.component.scss'],
-    standalone: false
-})
+    imports: [MatButtonModule, MatIconModule, AttachmentComponent, AttachUploadComponent]
+  })
 export class ObservationEditAttachmentComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: AttachmentField
-  @Input() url: string
-  @Input() attachments: any[]
+  formGroup = input<UntypedFormGroup>()
+  definition = input<AttachmentField>()
+  url = input<string>()
+  attachments = input<any[]>()
+
+  currentAttachments = signal<any[]>([])
 
   control: UntypedFormControl
   uploadId = 0
   uploadAttachments = false
 
-  constructor(private changeDetector: ChangeDetectorRef) { }
-
-  ngOnInit(): void {
-    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
+  constructor(private changeDetector: ChangeDetectorRef) {
+    effect(() => {
+      this.currentAttachments.set(this.attachments() ?? [])
+    })
   }
 
-  trackByAttachment(index: number, attachment: any): any {
-    return attachment.id
+  ngOnInit(): void {
+    this.control = this.formGroup()?.get(this.definition()?.name) as UntypedFormControl
   }
 
   allAttachments(): any[] {
-    const observationFormId = this.formGroup.get('id')?.value
-    const attachments = (this.attachments || []).filter(attachment => {
+    const observationFormId = this.formGroup()?.get('id')?.value
+    const attachments = this.currentAttachments().filter(attachment => {
       return attachment.observationFormId === observationFormId &&
-        attachment.fieldName === this.definition.name
+        attachment.fieldName === this.definition()?.name
     });
 
     return this.control.value ? attachments.concat(this.control.value) : attachments
@@ -53,7 +59,7 @@ export class ObservationEditAttachmentComponent implements OnInit {
       const id = this.uploadId++;
       attachments.push({
         id: id,
-        formId: this.formGroup.get('formId').value,
+        formId: this.formGroup()?.get('formId').value,
         name: file.name,
         size: file.size,
         contentType: file.type,
@@ -68,7 +74,7 @@ export class ObservationEditAttachmentComponent implements OnInit {
   }
 
   deleteAttachment(attachmentToDelete): void {
-    this.attachments = this.attachments.filter(attachment => attachment.id !== attachmentToDelete.id)
+    this.currentAttachments.update(attachments => attachments.filter(attachment => attachment.id !== attachmentToDelete.id))
     attachmentToDelete.action = AttachmentAction.DELETE
 
     const value = this.control.value || []

@@ -49,8 +49,8 @@ describe('ObservationEditMultiselectComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule],
-      declarations: [ObservationEditMultiselectComponent, TestHostComponent],
+      imports: [FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule, ObservationEditMultiselectComponent],
+      declarations: [TestHostComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
       .compileComponents()
@@ -69,9 +69,9 @@ describe('ObservationEditMultiselectComponent', () => {
   })
 
   it('should not indicate required', async () => {
-    component.definition.required = false
+    component.definition().required = false
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     control.clearValidators()
     control.updateValueAndValidity()
 
@@ -84,9 +84,9 @@ describe('ObservationEditMultiselectComponent', () => {
   })
 
   it('should indicate required', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
 
@@ -105,7 +105,7 @@ describe('ObservationEditMultiselectComponent', () => {
 
     component.selected(event)
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     expect(control.value).toEqual(['red'])
   })
 
@@ -164,7 +164,7 @@ describe('ObservationEditMultiselectComponent', () => {
     }
     component.add(event)
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     expect(control.value).toEqual(['red'])
   })
 
@@ -177,7 +177,7 @@ describe('ObservationEditMultiselectComponent', () => {
     component.add(event)
 
     // expect(component.field.value).toBeUndefined()
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     expect(control.value).toBeNull()
   })
 
@@ -190,7 +190,7 @@ describe('ObservationEditMultiselectComponent', () => {
     component.add(event)
     component.add(event)
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     expect(control.value).toEqual(['red'])
   })
 
@@ -203,7 +203,7 @@ describe('ObservationEditMultiselectComponent', () => {
     component.add(event)
     component.remove('red')
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     expect(control.value).toBeNull()
   })
 
@@ -216,14 +216,14 @@ describe('ObservationEditMultiselectComponent', () => {
     component.add(event)
     component.remove('blue')
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     expect(control.value).toEqual(['red'])
   })
 
   it('should show error on invalid and touched', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
     control.markAsTouched()
@@ -237,9 +237,9 @@ describe('ObservationEditMultiselectComponent', () => {
   })
 
   it('should not show error on invalid if not touched', async () => {
-    component.definition.required = true
+    component.definition().required = true
 
-    const control = component.formGroup.get('select')
+    const control = component.formGroup().get('select')
     control.setValidators(Validators.required)
     control.updateValueAndValidity()
 

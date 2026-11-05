@@ -1,5 +1,7 @@
-import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { Component, input } from '@angular/core';
+import { ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface TextareaField {
   title: string,
@@ -11,9 +13,9 @@ interface TextareaField {
     selector: 'observation-edit-textarea',
     templateUrl: './observation-edit-textarea.component.html',
     styleUrls: ['./observation-edit-textarea.component.scss'],
-    standalone: false
+    imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule]
 })
 export class ObservationEditTextareaComponent {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: TextareaField
+  formGroup = input<UntypedFormGroup>()
+  definition = input<TextareaField>()
 }

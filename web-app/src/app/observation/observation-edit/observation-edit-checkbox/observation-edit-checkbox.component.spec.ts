@@ -52,9 +52,10 @@ describe('ObservationEditCheckboxComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        ObservationEditCheckboxComponent
       ],
-      declarations: [ObservationEditCheckboxComponent, TestHostComponent]
+      declarations: [TestHostComponent]
     }).compileComponents();
   }));
 
@@ -71,7 +72,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should not indicate required', () => {
-    component.definition.required = false;
+    component.definition().required = false;
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
@@ -80,7 +81,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should indicate required', () => {
-    component.definition.required = true;
+    component.definition().required = true;
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
@@ -88,7 +89,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should be not checked', async () => {
-    component.definition.value = false;
+    component.definition().value = false;
     fixture.detectChanges();
 
     await fixture.whenStable();
@@ -105,7 +106,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should be checked', async () => {
-    component.definition.value = true;
+    component.definition().value = true;
     fixture.detectChanges();
 
     await fixture.whenStable();
@@ -122,7 +123,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should show error on invalid and touched', async () => {
-    const control = hostComponent.formGroup.get(component.definition.name);
+    const control = hostComponent.formGroup.get(component.definition().name);
     control?.setValue(false);
     control?.markAsTouched();
     control?.setErrors({ required: true });
@@ -138,7 +139,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should not show error on invalid if not touched', async () => {
-    const control = hostComponent.formGroup.get(component.definition.name);
+    const control = hostComponent.formGroup.get(component.definition().name);
     control?.setValue(false);
     control?.setErrors({ required: true });
     control?.markAsUntouched();
