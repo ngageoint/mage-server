@@ -523,10 +523,6 @@ export class MapComponent implements OnDestroy, AfterViewInit {
           layer = observationMarker(latlng, options)
         }
 
-        if (layerInfo.renderHooks.onLayer) {
-          layerInfo.renderHooks.onLayer(layer, feature)
-        }
-
         return layer
       },
       style: function (feature: any) {

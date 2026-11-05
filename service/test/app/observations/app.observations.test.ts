@@ -22,6 +22,7 @@ import * as api from '../../../lib/app.api/observations/app.api.observations'
 import {
   AllocateObservationId,
   ReadAttachmentContent,
+  ReadObservation,
   registerDeleteRemovedAttachmentsHandler,
   SaveObservation,
   StoreAttachmentContent
@@ -607,6 +608,203 @@ describe('observations use case interactions', function() {
 
       expect(res.success).to.be.null
       expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrInfrastructure)
+    })
+
+    describe('map view', function() {
+
+      beforeEach(function() {
+        const eventAttrs = copyMageEventAttrs(mageEvent)
+        eventAttrs.forms = [
+          {
+            id: 135,
+            name: 'Form 1',
+            archived: false,
+            color: '#123456',
+            primaryField: 'type',
+            variantField: 'color',
+            fields: [
+              { id: 1, name: 'type', required: false, title: 'Type', type: FormFieldType.Text },
+              { id: 2, name: 'color', required: false, title: 'Color', type: FormFieldType.Text },
+              { id: 3, name: 'notes', required: false, title: 'Notes', type: FormFieldType.Text },
+            ],
+            userFields: [],
+            style: {
+              stroke: '#000000',
+              Vehicle: {
+                stroke: '#111111',
+                Red: { stroke: '#ff0000', strokeWidth: 3 }
+              }
+            }
+          }
+        ]
+        mageEvent = new MageEvent(eventAttrs)
+        context.mageEvent = mageEvent
+      })
+
+      it('passes the view to the repository', async function() {
+
+        permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+        obsRepo.find(Arg.any(), Arg.any()).resolves({ type: 'all', observations: [] })
+        await readObservations({ context, search: { view: 'map' } })
+
+        obsRepo.received(1).find(Arg.is((spec: any) => spec.view === 'map'), Arg.any())
+      })
+
+      it('returns the geometry and map properties with the style resolved from the first form entry', async function() {
+
+        const state: ObservationState = { id: uniqid(), name: ObservationStateName.Active, userId: uniqid() }
+        const observation: ObservationAttrs = {
+          ...minimalObservationAttrs(),
+          eventId: mageEvent.id,
+          userId: uniqid(),
+          states: [ state ],
+          properties: {
+            timestamp: new Date(),
+            accuracy: 12,
+            forms: [
+              { id: 'entry1', formId: 135, type: 'Vehicle', color: 'Red', notes: 'not for the map' },
+              { id: 'entry2', formId: 135, type: 'Boat', color: 'Blue', notes: 'second entry' },
+            ]
+          },
+        }
+        permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+        obsRepo.find(Arg.any(), Arg.any()).mimicks(async (spec: any, mapper: any) => {
+          return { type: 'all', observations: [ observation ].map(mapper) }
+        })
+        const res = await readObservations({ context, search: { view: 'map' } })
+
+        expect(res.error).to.be.null
+        expect(res.success).to.deep.equal([
+          {
+            id: observation.id,
+            type: 'Feature',
+            geometry: observation.geometry,
+            properties: {
+              eventId: mageEvent.id,
+              lastModified: observation.lastModified,
+              state: ObservationStateName.Active,
+              accuracy: 12,
+              style: {
+                stroke: '#ff0000',
+                strokeWidth: 3,
+                icon: { formId: 135, primary: 'Vehicle', variant: 'Red' }
+              }
+            }
+          }
+        ])
+      })
+
+      it('leaves the state undefined when the observation has no states', async function() {
+
+        const observation: ObservationAttrs = { ...minimalObservationAttrs(), eventId: mageEvent.id }
+        const mapView = api.exoObservationMapViewFor(observation, mageEvent)
+
+        expect(mapView.properties.state).to.be.undefined
+        expect(mapView.properties.style).to.deep.equal({ icon: {} })
+      })
+    })
+  })
+
+  describe('reading an observation', function() {
+
+    let readObservation: api.ReadObservation
+
+    beforeEach(function() {
+      readObservation = ReadObservation(permissions, obsRepoFactory, userRepo)
+    })
+
+    it('fails without permission', async function() {
+
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(permissionDenied('read observation', 'test1'))
+      const res = await readObservation({ context, observationId: uniqid() })
+
+      expect(res.success).to.be.null
+      expect(res.error?.code).to.equal(ErrPermissionDenied)
+      obsRepo.didNotReceive().findById(Arg.any())
+    })
+
+    it('returns entity not found when the observation does not exist', async function() {
+
+      const observationId = uniqid()
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.findById(observationId).resolves(null)
+      const res = await readObservation({ context, observationId })
+
+      expect(res.success).to.be.null
+      expect(res.error?.code).to.equal(ErrEntityNotFound)
+    })
+
+    it('returns the observation with its creator user populated', async function() {
+
+      const creator: User = {
+        id: uniqid(),
+        active: true,
+        enabled: true,
+        authenticationId: 'auth1',
+        createdAt: new Date(),
+        displayName: 'User One',
+        lastUpdated: new Date(),
+        phones: [],
+        roleId: uniqid(),
+        username: 'user.one',
+      }
+      const observation = Observation.evaluate({ ...minimalObservationAttrs(), eventId: mageEvent.id, userId: creator.id }, mageEvent)
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.findById(observation.id).resolves(observation)
+      userRepo.findAllByIds([ creator.id ]).resolves({ [creator.id]: creator })
+      const res = await readObservation({ context, observationId: observation.id })
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(observation, creator))
+      expect((res.success as api.ExoObservation).user).to.deep.equal({ id: creator.id, displayName: 'User One' })
+    })
+
+    it('returns the observation with its important flagger user populated', async function() {
+
+      const flagger: User = {
+        id: uniqid(),
+        active: true,
+        enabled: true,
+        authenticationId: 'auth2',
+        createdAt: new Date(),
+        displayName: 'User Two',
+        lastUpdated: new Date(),
+        phones: [],
+        roleId: uniqid(),
+        username: 'user.two',
+      }
+      const observation = Observation.evaluate({
+        ...minimalObservationAttrs(),
+        eventId: mageEvent.id,
+        important: { userId: flagger.id, timestamp: new Date(), description: 'look here' }
+      }, mageEvent)
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.findById(observation.id).resolves(observation)
+      userRepo.findAllByIds([ flagger.id ]).resolves({ [flagger.id]: flagger })
+      const res = await readObservation({ context, observationId: observation.id })
+
+      expect(res.error).to.be.null
+      expect((res.success as api.ExoObservation).important?.user).to.deep.equal({ id: flagger.id, displayName: 'User Two' })
+    })
+
+    it('applies the given mapping function', async function() {
+
+      const observation = Observation.evaluate({ ...minimalObservationAttrs(), eventId: mageEvent.id }, mageEvent)
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.findById(observation.id).resolves(observation)
+      const res = await readObservation({ context, observationId: observation.id, mapping: x => x.id })
+
+      expect(res.success).to.equal(observation.id)
+    })
+
+    it('returns an infrastructure error if the repository throws', async function() {
+
+      permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
+      obsRepo.findById(Arg.any()).rejects(new Error('database error'))
+      const res = await readObservation({ context, observationId: uniqid() })
+
+      expect(res.success).to.be.null
       expect(res.error?.code).to.equal(ErrInfrastructure)
     })
   })

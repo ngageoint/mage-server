@@ -1,11 +1,12 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppResponse } from '../app.api.global'
 import { EventRequestContext } from '../events/app.api.events'
-import { Attachment, AttachmentId, Condition, copyObservationAttrs, FindObservationsSort, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationUserExpanded, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, Condition, copyObservationAttrs, FindObservationsSort, FindObservationsView, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationFieldFilter, ObservationId, ObservationImportantFlag, ObservationState, ObservationStateName, ObservationStyle, ObservationUserExpanded, styleForObservation, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
 import { TeamId } from '../../entities/teams/entities.teams'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
+import { MageEvent } from '../../entities/events/entities.events'
 
 
 
@@ -37,15 +38,25 @@ export interface ObservationSearch {
   orderBy?: FindObservationsSort
   paging?: PagingParameters
   populateUserNames?: boolean
+  view?: FindObservationsView
 }
 
-export interface ReadObservationsRequest<T = ExoObservation> extends ObservationRequest {
+export interface ReadObservationsRequest<T = ExoObservation | ExoObservationMapView> extends ObservationRequest {
   search: ObservationSearch
-  mapping?: (x: ExoObservation) => T
+  mapping?: (x: ExoObservation | ExoObservationMapView) => T
 }
 
 export interface ReadObservations {
   <T>(req: ReadObservationsRequest<T>): Promise<AppResponse<T[] | PageOf<T>, PermissionDeniedError | InvalidInputError | InfrastructureError>>
+}
+
+export interface ReadObservationRequest<T = ExoObservation> extends ObservationRequest {
+  observationId: ObservationId
+  mapping?: (x: ExoObservation) => T
+}
+
+export interface ReadObservation {
+  <T>(req: ReadObservationRequest<T>): Promise<AppResponse<T, PermissionDeniedError | EntityNotFoundError | InfrastructureError>>
 }
 
 export interface AllocateObservationId {
@@ -90,6 +101,13 @@ export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important' 
   state?: ObservationState
   attachments: ExoAttachment[],
   noGeometry?: boolean
+}
+
+export type ExoObservationMapView = Pick<ObservationAttrs, 'id' | 'type' | 'geometry'> & {
+  properties: Pick<ObservationAttrs, 'eventId' | 'lastModified'> & Pick<ObservationFeatureProperties, 'accuracy'> & {
+    state?: ObservationStateName
+    style: ObservationStyle
+  }
 }
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator' | 'processingHook' | 'stagedContentId' | 'processingRetryCount'> & {
@@ -161,6 +179,21 @@ export function exoObservationFor(
       ...from.important,
       user: from.important.userId === importantFlagger?.id ? exoObservationUserLiteFor(importantFlagger) : void (0)
     } : void (0)
+  }
+}
+
+export function exoObservationMapViewFor(from: ObservationAttrs, event: MageEvent): ExoObservationMapView {
+  return {
+    id: from.id,
+    type: from.type,
+    geometry: from.geometry,
+    properties: {
+      eventId: from.eventId,
+      lastModified: from.lastModified,
+      state: from.states[0]?.name,
+      accuracy: from.properties.accuracy,
+      style: styleForObservation(from, event)
+    }
   }
 }
 

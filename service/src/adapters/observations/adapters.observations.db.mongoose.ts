@@ -90,7 +90,15 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   ): Promise<FindObservationsResult<T>> {
     const filter = buildObservationFilter(spec.where)
     const sort = buildObservationSort(spec.orderBy)
-    const query = this.model.find(filter).sort(sort)
+    const projection = spec.view === 'map' ? {
+      type: 1,
+      geometry: 1,
+      lastModified: 1,
+      states: { $slice: 1 },
+      'properties.accuracy': 1,
+      'properties.forms': { $slice: 1 },
+    } : null
+    const query = this.model.find(filter, projection).sort(sort)
     if (spec.populateUserNames) {
       query
         .populate({ path: 'userId', select: 'displayName' })
@@ -275,15 +283,15 @@ function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.Obs
       type: doc.type,
       geometry: doc.geometry,
       bbox: doc.bbox,
-      states: doc.states.map(stateAttrsForDoc),
+      states: (doc.states ?? []).map(stateAttrsForDoc),
       properties: {
         ...doc.properties,
-        forms: doc.properties.forms.map(formEntryForDoc)
+        forms: (doc.properties?.forms ?? []).map(formEntryForDoc)
       },
-      attachments: doc.attachments.map(attachmentAttrsForDoc),
+      attachments: (doc.attachments ?? []).map(attachmentAttrsForDoc),
       deviceId: doc.deviceId?.toHexString(),
       important: importantFlagAttrsForDoc(doc),
-      favoriteUserIds: doc.favoriteUserIds?.map(x => x.toHexString()),
+      favoriteUserIds: (doc.favoriteUserIds ?? []).map(x => x.toHexString()),
     }
     const populatedUserId = doc.populated('userId') as mongoose.Types.ObjectId | undefined
     if (populatedUserId) {

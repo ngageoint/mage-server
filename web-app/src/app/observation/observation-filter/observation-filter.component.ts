@@ -9,7 +9,7 @@ import { DatetimePickerComponent } from '../../datetime-picker/datetime-picker.c
 import { FilterService } from '../../filter/filter.service'
 import { EventMemberFilterComponent, MemberFilterSelection } from '../../event/event-member-filter.component'
 import { Condition } from '../../entities/observation/filter/entities.observation.filter'
-import { FilterChoice, INTERVAL_CHOICES, Interval } from '../../filter/filter.types'
+import { DEFAULT_OBSERVATION_FILTER, FilterChoice, INTERVAL_CHOICES, Interval } from '../../filter/filter.types'
 import { ObservationFieldFilterComponent } from './observation-field-filter.component'
 import moment from 'moment'
 
@@ -47,7 +47,7 @@ export class ObservationFilterDialogComponent implements OnInit {
   condition = signal<Condition | undefined>(undefined)
   showIncompleteConditionError = signal(false)
   timeZone = signal<'local' | 'gmt'>('local')
-  intervalChoice = signal<FilterChoice>(this.intervalChoices[1])
+  intervalChoice = signal<FilterChoice>(DEFAULT_OBSERVATION_FILTER.timeInterval.choice!)
   defaultStartDate: Date
   startDate: Date
   defaultEndDate: Date
@@ -71,7 +71,7 @@ export class ObservationFilterDialogComponent implements OnInit {
     this.condition.set(observationFilter?.fieldFilter?.condition)
 
     const savedInterval = observationFilter?.timeInterval
-    this.intervalChoice.set(savedInterval?.choice ?? this.intervalChoices[1])
+    this.intervalChoice.set(savedInterval?.choice ?? DEFAULT_OBSERVATION_FILTER.timeInterval.choice!)
     this.timeZone.set(savedInterval?.options?.localTime === false ? 'gmt' : 'local')
     this.defaultStartDate = savedInterval?.options?.startDate ?? moment().startOf('day').toDate()
     this.defaultEndDate = savedInterval?.options?.endDate ?? moment().endOf('day').toDate()

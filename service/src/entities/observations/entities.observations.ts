@@ -4,15 +4,15 @@ import { validateAttachmentsForField } from './entities.observations.fields.atta
 import { validateGeometryFieldType } from './entities.observations.fields.geometry'
 import {
   Attachment,
-  AttachmentId, FieldConstraintKey, FormEntry, FormEntryId,
+  AttachmentId, FieldConstraintKey, FormEntry, FormEntryId, FormFieldEntry,
   ObservationAttrs, ObservationFeatureProperties, ObservationId,
   ObservationImportantFlag,
   ObservationState,
   Thumbnail
 } from './entities.observations.types'
-import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
+import { LineStyle, PageOf, PagingParameters, PendingEntityId } from '../entities.global'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
-import { Form, FormFieldType, FormId } from '../events/entities.events.forms'
+import { Form, FormFieldType, FormId, PrimaryFieldStyle } from '../events/entities.events.forms'
 import { User, UserId } from '../users/entities.users'
 
 export * from './entities.observations.types'
@@ -505,6 +505,53 @@ export function formEntryForId(formEntryId: FormEntryId, observation: Observatio
   return observation.properties.forms.find(x => x.id === formEntryId) || null
 }
 
+export type ObservationIconRef = {
+  formId?: FormId
+  primary?: string
+  variant?: string
+}
+
+export type ObservationStyle = LineStyle & {
+  icon: ObservationIconRef
+}
+
+export function styleForObservation(observation: ObservationAttrs, event: MageEvent): ObservationStyle {
+  const firstEntry = observation.properties.forms[0]
+  const form = firstEntry ? event.formFor(firstEntry.formId) : null
+  const primary = form?.primaryField ? styleFieldValue(firstEntry[form.primaryField]) : undefined
+  const variant = form?.variantField ? styleFieldValue(firstEntry[form.variantField]) : undefined
+
+  let lineStyle: LineStyle = event.style || {}
+  const formStyle = form?.style
+  if (formStyle) {
+    const primaryStyle = primary ? formStyle[primary] as PrimaryFieldStyle | undefined : undefined
+    const variantStyle = primaryStyle && variant ? primaryStyle[variant] : undefined
+    lineStyle = variantStyle || primaryStyle || formStyle
+  }
+
+  const style: ObservationStyle = { icon: iconRefFor(form, primary, variant) }
+  for (const key of [ 'fill', 'stroke', 'fillOpacity', 'strokeOpacity', 'strokeWidth' ] as (keyof LineStyle)[]) {
+    if (lineStyle[key] !== undefined) {
+      (style as any)[key] = lineStyle[key]
+    }
+  }
+  return style
+}
+
+function iconRefFor(form: Form | null, primary: string | undefined, variant: string | undefined): ObservationIconRef {
+  if (!form) {
+    return {}
+  }
+  if (!primary) {
+    return { formId: form.id }
+  }
+  return variant ? { formId: form.id, primary, variant } : { formId: form.id, primary }
+}
+
+function styleFieldValue(entry: FormFieldEntry | undefined): string | undefined {
+  return typeof entry === 'string' && entry.length ? entry : undefined
+}
+
 /**
  * Remove the form entry with the given ID and return the resulting
  * (potentially invalid) observation.
@@ -755,17 +802,27 @@ export type FindObservationsWhere = {
 export type FindObservationsSortField = 'lastModified' | 'timestamp'
 export type FindObservationsSort = { field: FindObservationsSortField, order?: 1 | -1 }
 
+/**
+ * `summary` returns full observation documents.  `map` returns only the
+ * geometry, last modified time, current state, accuracy, and first form entry,
+ * which is enough to place an observation on a map and resolve its style.
+ * The repository returns every other attribute empty or undefined.
+ */
+export type FindObservationsView = 'summary' | 'map'
+
 export type FindObservationsSpecPopulated = {
   where: FindObservationsWhere
   populateUserNames: true
   orderBy?: FindObservationsSort
   paging?: PagingParameters
+  view?: FindObservationsView
 }
 export type FindObservationsSpecUnpopulated = {
   where: FindObservationsWhere
   populateUserNames?: false
   orderBy?: FindObservationsSort
   paging?: PagingParameters
+  view?: FindObservationsView
 }
 export type FindObservationsSpec = FindObservationsSpecPopulated | FindObservationsSpecUnpopulated
 

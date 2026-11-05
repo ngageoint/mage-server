@@ -29,7 +29,7 @@ import { MemberPage } from "./event.types";
 import { MageEvent, Form, FormField, EventId } from "../entities/event/entities.event";
 import { Layer } from "../entities/layer/entities.layer";
 import { Team } from "../entities/team/entities.team";
-import { Attachment, Observation, ObservationStateName } from "../entities/observation/entities.observation";
+import { Attachment, Observation, ObservationMapFeature, ObservationStateName } from "../entities/observation/entities.observation";
 import { EventObservationFilter } from "../filter/filter.types";
 
 export interface FetchResult<T> {
@@ -64,8 +64,8 @@ interface LocationsCache {
 export class EventService {
   private destroy$ = new Subject<void>();
 
-  private mapObservationsSubject = new BehaviorSubject<Observation[] | null>(null);
-  readonly mapObservations$: Observable<Observation[] | null> = this.mapObservationsSubject.asObservable();
+  private mapObservationsSubject = new BehaviorSubject<ObservationMapFeature[] | null>(null);
+  readonly mapObservations$: Observable<ObservationMapFeature[] | null> = this.mapObservationsSubject.asObservable();
 
   private observationPageSubject = new BehaviorSubject<PagedFetchResult<Observation> | null>(null);
   readonly observationPage$: Observable<PagedFetchResult<Observation> | null> = this.observationPageSubject.asObservable();
@@ -76,7 +76,7 @@ export class EventService {
   private mapObservations: {
     event: MageEvent | null,
     lastModified?: string,
-    byId: Record<string, Observation>
+    byId: Record<string, ObservationMapFeature>
   } = { event: null, byId: {} };
 
   private locations: LocationsCache | null = null;
@@ -334,7 +334,7 @@ export class EventService {
     return this.observationService.addObservationFavorite(event, observation)
       .pipe(
         tap((update: Observation) => {
-          this.mapObservations.byId[update.id] = update;
+          this.mapObservations.byId[update.id] = this.observationService.mapFeatureForObservation(update);
           this.mapObservationsChanged();
           this.updateObservationInPage(update);
         })
@@ -350,7 +350,7 @@ export class EventService {
             delete this.mapObservations.byId[update.id];
             this.observationPageTrigger$.next({ userInitiated: true });
           } else {
-            this.mapObservations.byId[update.id] = update;
+            this.mapObservations.byId[update.id] = this.observationService.mapFeatureForObservation(update);
             this.updateObservationInPage(update);
           }
           this.mapObservationsChanged();
@@ -363,7 +363,7 @@ export class EventService {
     return this.observationService.markObservationAsImportantForEvent(event, observation, important)
       .pipe(
         tap((update: Observation) => {
-          this.mapObservations.byId[update.id] = update;
+          this.mapObservations.byId[update.id] = this.observationService.mapFeatureForObservation(update);
           this.mapObservationsChanged();
           this.updateObservationInPage(update);
         })
@@ -379,7 +379,7 @@ export class EventService {
             delete this.mapObservations.byId[update.id];
             this.observationPageTrigger$.next({ userInitiated: true });
           } else {
-            this.mapObservations.byId[update.id] = update;
+            this.mapObservations.byId[update.id] = this.observationService.mapFeatureForObservation(update);
             this.updateObservationInPage(update);
           }
           this.mapObservationsChanged();
@@ -554,7 +554,6 @@ export class EventService {
     const observationFilter = this.filterService.getObservationFilter();
 
     const params: ObservationsRequestOptions = {
-      populate: true,
       ...this.buildObservationFilterParams(observationFilter)
     };
 
@@ -567,7 +566,7 @@ export class EventService {
     return this.observationService
       .getObservationsForMap(event, params)
       .pipe(
-        map((observations: Observation[]) => this.parseMapObservations(observations, lastModified)),
+        map((observations: ObservationMapFeature[]) => this.parseMapObservations(observations, lastModified)),
         catchError((err) => {
           console.error(`error fetching map observations for event ${event.id}`, err);
           return of(null);
@@ -687,22 +686,22 @@ export class EventService {
     });
   }
 
-  parseMapObservations(observations: Observation[], lastModified: string | undefined = undefined): void {
-    const added: Observation[] = [];
-    const updated: Observation[] = [];
-    const removed: Observation[] = [];
+  parseMapObservations(observations: ObservationMapFeature[], lastModified: string | undefined = undefined): void {
+    const added: ObservationMapFeature[] = [];
+    const updated: ObservationMapFeature[] = [];
+    const removed: ObservationMapFeature[] = [];
 
-    const trackLastModified = (observation: Observation) => {
-      const observationLastModified = observation.lastModified;
+    const trackLastModified = (observation: ObservationMapFeature) => {
+      const observationLastModified = observation.properties.lastModified;
       if (observationLastModified && (!lastModified || observationLastModified > lastModified)) {
         lastModified = observationLastModified;
       }
     };
 
     const observationsById = this.mapObservations.byId;
-    observations.forEach((observation: Observation) => {
+    observations.forEach((observation: ObservationMapFeature) => {
       trackLastModified(observation);
-      if (observation.state?.name === ObservationStateName.Archived) {
+      if (observation.properties.state === ObservationStateName.Archived) {
         if (observationsById[observation.id]) {
           removed.push(observation);
           delete observationsById[observation.id];
@@ -712,7 +711,7 @@ export class EventService {
         if (!local) {
           added.push(observation);
           observationsById[observation.id] = observation;
-        } else if (local.lastModified !== observation.lastModified) {
+        } else if (local.properties.lastModified !== observation.properties.lastModified) {
           updated.push(observation);
           observationsById[observation.id] = observation;
         }
