@@ -646,8 +646,9 @@ describe('observations use case interactions', function() {
 
         permissions.ensureReadObservationPermission(Arg.all()).resolves(null)
         obsRepo.find(Arg.any(), Arg.any()).resolves({ type: 'all', observations: [] })
-        await readObservations({ context, search: { view: 'map' } })
+        const res = await readObservations({ context, search: { view: 'map' } })
 
+        expect(res.error).to.be.null
         obsRepo.received(1).find(Arg.is((spec: any) => spec.view === 'map'), Arg.any())
       })
 

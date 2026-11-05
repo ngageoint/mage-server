@@ -436,17 +436,19 @@ describe('observations web controller', function () {
     it('parses view=map into the search view', async function () {
 
       app.readObservations(Arg.any()).resolves(AppResponse.success([]))
-      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
         .query({ view: 'map' })
 
+      expect(res.status).to.equal(200)
       app.received(1).readObservations(Arg.is(req => req.search.view === 'map'))
     })
 
     it('leaves the search view undefined when no view is given', async function () {
 
       app.readObservations(Arg.any()).resolves(AppResponse.success([]))
-      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
 
+      expect(res.status).to.equal(200)
       app.received(1).readObservations(Arg.is(req => req.search.view === undefined))
     })
 
