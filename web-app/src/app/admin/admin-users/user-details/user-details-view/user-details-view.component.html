@@ -14,7 +14,7 @@
       <div class="profile-header">
         <div class="media-content">
           @if (user.avatarUrl) {
-            <img [src]="userAvatarImgUrl" width="64" height="64" class="avatar-image">
+            <user-avatar [user]="user" [avatarWidth]="64" [avatarHeight]="64"></user-avatar>
           } @else {
             <div class="avatar-placeholder">
               <mat-icon fontSet="material-symbols-outlined">person</mat-icon>
