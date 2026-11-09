@@ -70,7 +70,7 @@ export class ObservationViewComponent {
   event = input<any>()
   observation = input<any>()
 
-  close = output<void>()
+  close = output<void>({ alias: 'closed' })
   delete = output<any>()
 
   isUserFavorite = linkedSignal(() => Boolean(this.observation()?.favoriteUserIds?.includes(this.sessionService.user.id)))
