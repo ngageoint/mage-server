@@ -10,7 +10,7 @@ import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
 import { jsonForAttachment, jsonForObservation, ObservationAppLayer, ObservationRoutes } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
-import { AttachmentStore, FormEntry, Observation, ObservationAttrs, ObservationFeatureProperties, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { AttachmentStore, FormEntry, Observation, ObservationAttrs, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { ExoAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
 import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
@@ -567,24 +567,7 @@ describe('observations web controller', function () {
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
     })
 
-    it('retains only valid properties', async function () {
-
-      const validProperties: Required<ObservationFeatureProperties> = {
-        timestamp: new Date(Date.now() - 500),
-        provider: 'gps',
-        accuracy: 350,
-        delta: 7654,
-        forms: [
-          { id: 'entry1', formId: 1, field1: 123, field2: 'rocks' }
-        ]
-      }
-      const augmentedValidProperties = {
-        ...validProperties,
-        wutIsThis: 'why is it here?',
-        unacceptable: { why: 'trash' },
-        tryAgain: new Date()
-      }
-    })
+    it('retains only valid properties')
 
     it('uses event id only from the path', async function () {
 
