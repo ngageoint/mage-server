@@ -70,7 +70,7 @@ export class ObservationViewComponent {
   event = input<any>()
   observation = input<any>()
 
-  close = output<void>({ alias: 'closed' })
+  closed = output<void>()
   delete = output<any>()
 
   isUserFavorite = linkedSignal(() => Boolean(this.observation()?.favoriteUserIds?.includes(this.sessionService.user.id)))
@@ -128,7 +128,7 @@ export class ObservationViewComponent {
   secondaryFeedField = computed(() => this.feedField('secondaryFeedField'))
 
   onClose(): void {
-    this.close.emit()
+    this.closed.emit()
   }
 
   toggleFavorite(): void {

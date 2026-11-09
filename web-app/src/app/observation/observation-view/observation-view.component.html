@@ -136,7 +136,7 @@
       </mat-card-actions>
     </mat-card>
 
-    @for (form of observationForm()?.forms; track form.id; let i = $index) {
+    @for (form of observationForm()?.forms; track form.remoteId; let i = $index) {
       <div class="form-card">
         <observation-view-form [form]="form" [attachments]="observation().attachments" [expand]="i === 0"></observation-view-form>
       </div>
