@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { GeometryModule } from '../../geometry/geometry.module';
+import { FormField } from '../../entities/event/entities.event';
 import { ObservationViewAttachmentComponent } from './observation-view-attachment/observation-view-attachment.component';
 import { ObservationViewCheckboxComponent } from './observation-view-checkbox/observation-view-checkbox.component';
 import { ObservationViewDateComponent } from './observation-view-date/observation-view-date.component';
@@ -72,10 +73,10 @@ export class ObservationViewFormComponent {
     this.isExpanded.update(expanded => !expanded)
   }
 
-  nonArchivedFields(fields: any[]): any[] {
-    return fields
+  nonArchivedFields(fields: FormField[] | undefined): FormField[] {
+    return (fields ?? [])
       .filter(field => !field.archived)
-      .sort((a: { id: number }, b: { id: number }) => a.id - b.id);
+      .sort((a, b) => a.id - b.id);
   }
 
   hasContent(): boolean {

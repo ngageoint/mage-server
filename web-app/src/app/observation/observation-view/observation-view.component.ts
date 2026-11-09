@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, EventEmitter, Output, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal, linkedSignal } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,7 +24,7 @@ import { FormProperties, Observation } from '../../entities/observation/entities
 import { SessionService } from 'mage-web-app/http/session.service';
 import { GeometryModule } from '../../geometry/geometry.module';
 import { MomentModule } from '../../moment/moment.module';
-import { MapClipModule } from '../../map/clip/map-clip.module';
+import { MapClipComponent } from '../../map/clip/clip.component';
 import { ObservationViewFormComponent } from './observation-view-form.component';
 
 @Component({
@@ -55,7 +55,7 @@ import { ObservationViewFormComponent } from './observation-view-form.component'
         MatTooltipModule,
         GeometryModule,
         MomentModule,
-        MapClipModule,
+        MapClipComponent,
         ObservationViewFormComponent
     ]
 })
@@ -70,12 +70,12 @@ export class ObservationViewComponent {
   event = input<any>()
   observation = input<any>()
 
-  @Output() close = new EventEmitter<void>()
-  @Output() delete = new EventEmitter<any>()
+  close = output<void>()
+  delete = output<any>()
 
-  isUserFavorite = signal(false)
+  isUserFavorite = linkedSignal(() => Boolean(this.observation()?.favoriteUserIds?.includes(this.sessionService.user.id)))
   importantEditorOpen = signal(false)
-  importantEditorDescription = signal<string | undefined>(undefined)
+  importantEditorDescription = linkedSignal<string | undefined>(() => this.observation()?.important?.description)
 
   canEdit = computed(() => {
     if (!this.observation() || !this.event()) return false
@@ -124,24 +124,8 @@ export class ObservationViewComponent {
     }
   })
 
-  favorites = computed(() => this.observation()?.favoriteUserIds?.length ?? 0)
-
   primaryFeedField = computed(() => this.feedField('primaryFeedField'))
   secondaryFeedField = computed(() => this.feedField('secondaryFeedField'))
-
-  constructor() {
-    effect(() => {
-      const observation = this.observation()
-      const event = this.event()
-      if (!observation || !event) return
-
-      this.isUserFavorite.set(observation.favoriteUserIds.includes(this.sessionService.user.id))
-    })
-
-    effect(() => {
-      this.importantEditorDescription.set(this.observation()?.important?.description ?? undefined)
-    })
-  }
 
   onClose(): void {
     this.close.emit()
@@ -241,7 +225,7 @@ export class ObservationViewComponent {
     if (!observation || !forms || observation.properties.forms.length === 0) return undefined
 
     const firstForm = observation.properties.forms[0]
-    const observationForm = forms.find(form => form.id === firstForm.formId) as any
+    const observationForm = forms.find(form => form.id === firstForm.formId)
 
     if (observationForm?.[key] && firstForm[observationForm[key]]) {
       const field = observationForm.fields.find(field => field.name === observationForm[key])

@@ -1,4 +1,4 @@
-import { Component, input, ElementRef, OnDestroy, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core'
+import { Component, input, ElementRef, OnDestroy, OnChanges, SimpleChanges, OnInit, viewChild } from '@angular/core'
 import { Feature } from 'geojson'
 import { Map, GeoJSON, PathOptions, Layer, control, TileLayer, WMSOptions, Circle, LatLng } from 'leaflet'
 import { MapService } from '../map.service'
@@ -26,7 +26,7 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   feature = input<Feature>()
   accuracy = input<PointAccuracy>()
 
-  @ViewChild('map', { static: true }) mapElement: ElementRef
+  mapElement = viewChild.required<ElementRef>('map')
 
   map: Map
   layer: GeoJSON
@@ -45,7 +45,7 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     const mapPosition = this.localStorageService.getMapPosition();
 
-    this.map = new Map(this.mapElement.nativeElement, {
+    this.map = new Map(this.mapElement().nativeElement, {
       center: mapPosition.center,
       zoom: 15,
       minZoom: 0,

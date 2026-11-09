@@ -68,7 +68,7 @@ import { EventMemberFilterComponent } from '../event/event-member-filter.compone
 import { LocationFilterDialogComponent } from '../user/location/location-filter.component';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 
-import { MapClipModule } from '../map/clip/map-clip.module';
+import { MapClipComponent } from '../map/clip/clip.component';
 import { GeometryModule } from '../geometry/geometry.module';
 import { ObservationDeleteComponent } from '../observation/observation-delete/observation-delete.component';
 import { ObservationListItemComponent } from '../observation/observation-list/observation-list-item.component';
@@ -265,7 +265,7 @@ class AngularModule { }
     FeedIconModule,
     FeedItemSummaryModule,
     GeometryModule,
-    MapClipModule,
+    MapClipComponent,
     IngressModule,
     MomentModule,
     ObservationAttachmentModule,
