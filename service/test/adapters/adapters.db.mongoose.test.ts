@@ -55,10 +55,12 @@ describe('wait for mongoose connection utility', function() {
 
   }).timeout(retryDelay + 1)
 
-  it('resolves when the connection succeeds', function() {
+  it('resolves when the connection succeeds', async function() {
 
     connectStub.onFirstCall().resolves(mongooseInstance)
-    return waitForConnection()
+    await waitForConnection()
+
+    expect(connectStub).to.have.been.calledOnce
   })
 
   it('rejects when the connection timeout passes', async function() {

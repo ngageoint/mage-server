@@ -1,11 +1,7 @@
 
 describe('image plugin initialization', () => {
 
-  it('fetches the plugin state', () => {
+  it('fetches the plugin state')
 
-  })
-
-  it('starts processing interval when enabled', () => {
-
-  })
+  it('starts processing interval when enabled')
 })

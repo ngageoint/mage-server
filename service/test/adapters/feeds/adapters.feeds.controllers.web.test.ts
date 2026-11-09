@@ -1816,8 +1816,6 @@ invalid request
 
   describe('localization', function() {
 
-    it.skip('passes language from accept-language header', function() {
-
-    })
+    it('passes language from accept-language header')
   })
 })

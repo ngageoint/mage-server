@@ -568,8 +568,10 @@ describe("Password Validator Tests", function () {
       .expects('getUserByAuthenticationId')
       .yields(null, user)
 
-    sinon.mock(TokenModel)
+    const tokenMock = sinon.mock(TokenModel)
+    tokenMock
       .expects('removeTokensForUser')
+      .withArgs(user)
       .yields(null, {})
 
     sinon.mock(Authentication.Model.collection)
@@ -577,5 +579,7 @@ describe("Password Validator Tests", function () {
       .yields(null, authentication);
 
     await authentication.save();
+
+    expect(tokenMock.verify()).to.be.true;
   });
 });
