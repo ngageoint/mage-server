@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Component, EventEmitter, Output, computed, effect, inject, input, signal } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
@@ -43,7 +43,7 @@ import { ObservationViewFormComponent } from './observation-view-form.component'
         ])
     ],
     imports: [
-        CommonModule,
+        DecimalPipe,
         FormsModule,
         MatButtonModule,
         MatCardModule,

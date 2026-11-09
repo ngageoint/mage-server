@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { AttachmentComponent } from '../../attachment/attachment.component';
@@ -7,7 +6,7 @@ import { AttachmentComponent } from '../../attachment/attachment.component';
     selector: 'observation-view-attachment',
     templateUrl: './observation-view-attachment.component.html',
     styleUrls: ['./observation-view-attachment.component.scss'],
-    imports: [CommonModule, MatGridListModule, AttachmentComponent]
+    imports: [MatGridListModule, AttachmentComponent]
 })
 export class ObservationViewAttachmentComponent {
   form = input<any>()

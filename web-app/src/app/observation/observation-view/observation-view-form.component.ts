@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, linkedSignal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -35,7 +34,6 @@ import { ObservationViewTextareaComponent } from './observation-view-textarea/ob
         ])
     ],
     imports: [
-        CommonModule,
         MatButtonModule,
         MatCardModule,
         MatIconModule,
@@ -56,7 +54,7 @@ export class ObservationViewFormComponent {
   geometryStyle = input<any>()
 
   expand = input(false)
-  isExpanded = signal(this.expand())
+  isExpanded = linkedSignal(() => this.expand())
 
   primaryField = computed(() => {
     const form = this.form()
