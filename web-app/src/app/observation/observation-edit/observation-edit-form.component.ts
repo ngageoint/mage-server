@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { FormPreference } from 'core-lib-src/user'
 
@@ -25,7 +25,7 @@ import { FormPreference } from 'core-lib-src/user'
     ],
     standalone: false
 })
-export class ObservationEditFormComponent {
+export class ObservationEditFormComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup
   @Input() formPreferences: FormPreference
   @Input() definition: any
