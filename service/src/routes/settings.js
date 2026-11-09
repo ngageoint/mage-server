@@ -36,6 +36,10 @@ module.exports = function(app, security) {
           const newHeaderText = req.body.headerText || '';
           const previousShowHeader = !!(existing && existing.settings && existing.settings.showHeader);
           const newShowHeader = !!req.body.showHeader;
+          const previousShowDisclaimer = !!(existing && existing.settings && existing.settings.show);
+          const newShowDisclaimer = !!req.body.show;
+          const previousDisclaimerText = (existing && existing.settings && existing.settings.text) || '';
+          const newDisclaimerText = req.body.text || '';
           return Setting.updateSettingByType(req.params.type, {settings: req.body}).then(setting => {
             if (req.params.type === 'banner' && newShowHeader !== previousShowHeader) {
               log.info('banner header visibility changed', {
@@ -49,6 +53,21 @@ module.exports = function(app, security) {
               log.info('banner header text changed', {
                 headerText: newHeaderText,
                 previousHeaderText: previousHeaderText,
+                changedBy: req.user.username,
+                changedTime: new Date().toISOString()
+              });
+            }
+            if (req.params.type === 'disclaimer' && newShowDisclaimer !== previousShowDisclaimer) {
+              log.info(newShowDisclaimer ? 'disclaimer message added' : 'disclaimer message removed', {
+                text: newDisclaimerText,
+                changedBy: req.user.username,
+                changedTime: new Date().toISOString()
+              });
+            }
+            if (req.params.type === 'disclaimer' && newDisclaimerText !== previousDisclaimerText) {
+              log.info('disclaimer message text changed', {
+                text: newDisclaimerText,
+                previousText: previousDisclaimerText,
                 changedBy: req.user.username,
                 changedTime: new Date().toISOString()
               });

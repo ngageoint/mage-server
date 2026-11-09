@@ -7,6 +7,9 @@ import { EventAclRepository } from '../../entities/events/entities.events.acl'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 import { EventPermissionServiceImpl } from '../../permissions/permissions.events'
 import { userRoleHasPermission, UserWithRole } from '../../permissions/permissions.role-based.base'
+import logger from '../../logger'
+
+const log = logger.child({ component: 'events' })
 
 export function ListEventAcl(permissionService: EventPermissionServiceImpl, userRepo: UserRepository): ListEventAcl {
   return async function(req: ListEventAclRequest): ReturnType<ListEventAcl> {
@@ -42,9 +45,21 @@ export function SetEventAclRole(permissionService: EventPermissionServiceImpl, a
     if (req.role !== EventRole.OWNER && isLastOwner(event.acl, req.user)) {
       return AppResponse.error(invalidInput('event must have at least one owner', [ req.role, 'role' ]))
     }
+    const previousRole = event.acl[req.user]?.role
     const acl = await aclRepo.setUserRole(event.id, req.user, req.role)
     if (!acl) {
       return AppResponse.error(entityNotFound(event.id, 'MageEvent', 'event removed before update'))
+    }
+    const principal = req.context.requestingPrincipal() as UserWithRole
+    if (previousRole !== req.role) {
+      log.info('user event role set', {
+        event: event.name,
+        user: user.username,
+        previousRole: previousRole ?? null,
+        newRole: req.role,
+        setBy: principal.username,
+        setTime: new Date().toISOString()
+      })
     }
     return AppResponse.success(await aclEntries(acl, userRepo))
   }

@@ -574,6 +574,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+
+        log.info('layer added to event', {
+          event: req.event!.name,
+          layerName: req.body.name,
+          addedBy: req.user!.username,
+          addedTime: new Date().toISOString()
+        });
+
         res.json(event);
       });
     }
