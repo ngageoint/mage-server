@@ -175,7 +175,7 @@ describe('mongoose observation repository', function () {
       const found = await repo.idModel.findById(id)
       const idCount = await repo.idModel.countDocuments({})
 
-      expect(id).to.be.a.string
+      expect(id).to.be.a('string')
       expect(id).to.not.be.empty
       expect(parsed.equals(found?._id)).to.be.true
       expect(idCount).to.equal(1)
@@ -784,7 +784,7 @@ describe('mongoose observation repository', function () {
         receivedEventUntyped.type = 'wut'
         receivedEventUntyped.observation = mod
         receivedEventUntyped.removedAttachments = []
-      }).to.throw
+      }).to.throw()
       expect(receivedEvent.type).to.equal(ObservationDomainEventType.AttachmentsRemoved)
       expect(receivedEvent.observation).to.equal(saved)
       expect(removedAttachments.length).to.equal(1)
