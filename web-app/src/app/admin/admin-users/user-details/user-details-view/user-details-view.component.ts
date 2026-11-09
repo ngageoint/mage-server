@@ -23,7 +23,8 @@ import { AdminEventsService } from '../../../services/admin-events.service';
 import { DeleteUserComponent } from '../../delete-user/delete-user.component';
 import { ChangePasswordComponent } from '../../change-password/change-password.component';
 import { User } from '../../user';
-import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
+import { userIconUrl } from '../../../../entities/user/user';
+import { UserAvatarComponent } from '../../../../user/user-avatar/user-avatar.component';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { LoginsComponent } from '../../../admin-logins/admin-logins.component';
@@ -46,7 +47,8 @@ import { LoginsComponent } from '../../../admin-logins/admin-logins.component';
       MatProgressSpinnerModule,
       MatTooltipModule,
       RouterModule,
-      LoginsComponent
+      LoginsComponent,
+      UserAvatarComponent
     ]
 })
 export class UserDetailsViewComponent implements OnInit, OnDestroy {
@@ -359,9 +361,5 @@ export class UserDetailsViewComponent implements OnInit, OnDestroy {
 
   get userIconImgUrl(): string | null {
     return userIconUrl(this.user, this.sessionService?.getToken?.());
-  }
-
-  get userAvatarImgUrl(): string | null {
-    return userAvatarUrl(this.user, this.sessionService?.getToken?.());
   }
 }
