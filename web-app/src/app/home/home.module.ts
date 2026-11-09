@@ -220,7 +220,6 @@ class AngularModule { }
 
     NavigationComponent,
     ObservationEditComponent,
-    ObservationEditDiscardComponent,
     ObservationEditFormPickerComponent,
     ObservationOptionsComponent,
     ObservationViewAttachmentComponent,
@@ -256,6 +255,7 @@ class AngularModule { }
     LayersComponent,
     LocationFilterDialogComponent,
     ObservationDeleteComponent,
+    ObservationEditDiscardComponent,
     ObservationFavoritesComponent,
     ObservationListComponent,
     ObservationListItemComponent,

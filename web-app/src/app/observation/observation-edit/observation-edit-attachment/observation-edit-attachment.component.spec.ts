@@ -28,8 +28,8 @@ describe('ObservationEditAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationEditAttachmentComponent, TestHostComponent],
-      imports: [MatIconModule]
+      declarations: [TestHostComponent],
+      imports: [MatIconModule, ObservationEditAttachmentComponent]
     })
     .compileComponents();
   }));

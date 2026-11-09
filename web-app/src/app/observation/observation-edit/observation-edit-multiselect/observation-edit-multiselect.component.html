@@ -1,14 +1,13 @@
-<mat-form-field appearance="fill" [formGroup]="formGroup">
-  <mat-label>{{ definition.title }}</mat-label>
+<mat-form-field appearance="fill" [formGroup]="formGroup()">
+  <mat-label>{{ definition()?.title }}</mat-label>
 
-  <mat-chip-grid #chipGrid formControlName="{{ definition.name }}">
-    <mat-chip-row
-      *ngFor="let choice of formGroup.get(definition.name).value"
-      (removed)="remove(choice)"
-    >
-      {{ choice }}
-      <mat-icon matChipRemove>cancel</mat-icon>
-    </mat-chip-row>
+  <mat-chip-grid #chipGrid formControlName="{{ definition()?.name }}">
+    @for (choice of formGroup()?.get(definition()?.name)?.value; track choice) {
+      <mat-chip-row (removed)="remove(choice)">
+        {{ choice }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip-row>
+    }
 
     <input
       #choiceInput
@@ -24,49 +23,51 @@
   </mat-chip-grid>
 
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-    <ng-container *ngIf="recentChoices$ | async as recentChoices">
-      <mat-optgroup [label]="'Recents'" *ngIf="recentChoices.length !== 0">
-        <mat-option *ngFor="let choice of recentChoices" [value]="choice.title">
-          <span
-            [ngClass]="{
-              'select__choice--disabled':
-                control.value && control.value.includes(choice.title)
-            }"
-          >
-            {{ choice.title }}
-          </span>
-        </mat-option>
-      </mat-optgroup>
-      <ng-container *ngIf="filteredChoices$ | async as filteredChoices">
-        <mat-optgroup [label]="'All'" *ngIf="recentChoices.length !== 0; else noRecents">
-          <mat-option *ngFor="let choice of filteredChoices" [value]="choice.title">
-            <span
-              [ngClass]="{
-                'select__choice--disabled':
-                  control.value && control.value.includes(choice.title)
-              }"
-            >
-              {{ choice.title }}
-            </span>
-          </mat-option>
+    @if (recentChoices$ | async; as recentChoices) {
+      @if (recentChoices.length !== 0) {
+        <mat-optgroup [label]="'Recents'">
+          @for (choice of recentChoices; track choice.title) {
+            <mat-option [value]="choice.title">
+              <span
+                [class.select__choice--disabled]="control.value && control.value.includes(choice.title)"
+              >
+                {{ choice.title }}
+              </span>
+            </mat-option>
+          }
         </mat-optgroup>
-        <ng-template #noRecents>
-          <mat-option *ngFor="let choice of filteredChoices" [value]="choice.title">
-            <span
-              [ngClass]="{
-                'select__choice--disabled':
-                  control.value && control.value.includes(choice.title)
-              }"
-            >
-              {{ choice.title }}
-            </span>
-          </mat-option>
-        </ng-template>
-      </ng-container>
-    </ng-container>
+      }
+      @if (filteredChoices$ | async; as filteredChoices) {
+        @if (recentChoices.length !== 0) {
+          <mat-optgroup [label]="'All'">
+            @for (choice of filteredChoices; track choice.title) {
+              <mat-option [value]="choice.title">
+                <span
+                  [class.select__choice--disabled]="control.value && control.value.includes(choice.title)"
+                >
+                  {{ choice.title }}
+                </span>
+              </mat-option>
+            }
+          </mat-optgroup>
+        } @else {
+          @for (choice of filteredChoices; track choice.title) {
+            <mat-option [value]="choice.title">
+              <span
+                [class.select__choice--disabled]="control.value && control.value.includes(choice.title)"
+              >
+                {{ choice.title }}
+              </span>
+            </mat-option>
+          }
+        }
+      }
+    }
   </mat-autocomplete>
 
-  <mat-error *ngIf="formGroup.get(definition.name)?.invalid">
-    You must enter a value
-  </mat-error>
+  @if (formGroup()?.get(definition()?.name)?.invalid) {
+    <mat-error>
+      You must enter a value
+    </mat-error>
+  }
 </mat-form-field>
