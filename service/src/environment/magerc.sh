@@ -35,7 +35,7 @@ export MAGE_HTTP_REQUEST_LOG_METHODS=GET,POST,PUT,PATCH,DELETE
 export MAGE_LOG_FORMAT=json
 # the URL that specifies MAGE's connection to mongodb
 export MAGE_MONGO_URL=mongodb://127.0.0.1:27017/magedb
-# whether to use secure, TLS sockets to connect to mongo
+# whether to use TLS with x509 certificate authentication, requires MAGE_MONGO_X509_KEY_FILE; for TLS without x509, add tls=true to MAGE_MONGO_URL or use a mongodb+srv URL
 export MAGE_MONGO_SSL=false
 # the size of MAGE's mongodb connection pool
 export MAGE_MONGO_MIN_POOL_SIZE=5

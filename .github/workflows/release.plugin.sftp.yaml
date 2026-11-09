@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
-        run: npm i -g json
+        run: npm i -g --ignore-scripts json@11.0.0
       - name: check service
         env:
           VERSION: ${{ inputs.version }}

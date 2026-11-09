@@ -2124,17 +2124,15 @@ describe('observation entities', function () {
         ])
       })
 
-      it.skip('removes child attachments of removed form entries', function () {
-        /*
-        TODO: better to just let the observation become invalid if assigning
-        attrs with removed form enties and orphaned attachments?  but then is
-        Observation.assignTo() really worth anything?
-        */
-      })
+      /*
+      TODO: better to just let the observation become invalid if assigning
+      attrs with removed form enties and orphaned attachments?  but then is
+      Observation.assignTo() really worth anything?
+      */
+      it('removes child attachments of removed form entries')
 
-      it.skip('TODO: adds attachments', function () {
-        // TODO: attachment added event?
-      })
+      // TODO: attachment added event?
+      it('TODO: adds attachments')
 
       it('updates attachments', function () {
 
@@ -2345,7 +2343,7 @@ describe('observation entities', function () {
         expect(after.validation.hasErrors).to.be.false
       })
 
-      it.skip('TODO: fails if the observation id does not match', function () { })
+      it('TODO: fails if the observation id does not match')
 
       it('fails if the event id does not match', function () {
 
@@ -2401,7 +2399,7 @@ describe('observation entities', function () {
         ])
       })
 
-      it.skip('TODO: fails if the device id does not match', function () { })
+      it('TODO: fails if the device id does not match')
     })
 
     describe('form entries', function () {

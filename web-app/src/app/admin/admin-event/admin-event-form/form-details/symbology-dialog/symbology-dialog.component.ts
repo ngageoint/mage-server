@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
@@ -36,7 +36,7 @@ export interface SymbologyDialogData {
         MatInputModule
     ]
 })
-export class SymbologyDialogComponent implements OnInit {
+export class SymbologyDialogComponent {
     private readonly dialogRef = inject(MatDialogRef<SymbologyDialogComponent>);
     readonly data = inject<SymbologyDialogData>(MAT_DIALOG_DATA);
 
@@ -67,8 +67,6 @@ export class SymbologyDialogComponent implements OnInit {
 
         this.iconPreview.set(this.data.icon || null);
     }
-
-    ngOnInit(): void { }
 
     onFileSelected(event: any): void {
         const file = event.target.files[0];

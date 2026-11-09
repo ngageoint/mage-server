@@ -118,9 +118,7 @@ exports.getTeamById = function (id, options, callback) {
     options = {};
   }
 
-  const conditions = {
-    _id: id
-  };
+  let query = Team.findById(id);
   if (options.access) {
     const accesses = [{
       userIds: {
@@ -134,10 +132,8 @@ exports.getTeamById = function (id, options, callback) {
       accesses.push(access);
     });
 
-    conditions['$or'] = accesses;
+    query = query.or(accesses);
   }
-
-  let query = Team.findOne(conditions);
 
   if (options.populate !== false) {
     query = query.populate('userIds');

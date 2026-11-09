@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'lib-image',
@@ -9,11 +9,8 @@ import { Component, OnInit } from '@angular/core';
   `,
   styles: []
 })
-export class ImageComponent implements OnInit {
+export class ImageComponent {
 
   constructor() { }
-
-  ngOnInit() {
-  }
 
 }

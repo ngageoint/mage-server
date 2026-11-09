@@ -414,6 +414,11 @@ describe('UserDashboardComponent', () => {
   }));
 
   it('should complete destroy$ on destroy', () => {
+    let completed = false;
+    (component as any).destroy$.subscribe({ complete: () => (completed = true) });
+
     component.ngOnDestroy();
+
+    expect(completed).toBeTrue();
   });
 });

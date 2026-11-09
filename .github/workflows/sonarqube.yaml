@@ -24,6 +24,7 @@ env:
   SONAR_ORGANIZATION: ${{ github.repository_owner }}
   SONAR_PROJECT: ${{ github.repository_owner }}_${{ github.event.repository.name }}
   SONAR_BRANCH: ${{ inputs.ref || github.ref_name }}
+  SONAR_TEST_FILES: '**/test/**,**/functionalTests/**,**/spec/**,**/e2e/**,**/*.spec.ts,**/*.spec.js,**/*.test.ts,**/*.test.js,**/*.mock.ts,**/*.spec-helper.ts,**/src/test.ts,**/karma.conf.js,**/.mocharc*.js,**/test_ts-node.js'
 
 jobs:
   sonarqube:
@@ -67,6 +68,10 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.projectKey=${{ env.SONAR_PROJECT }}
+            -Dsonar.sources=.
+            -Dsonar.exclusions=${{ env.SONAR_TEST_FILES }}
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=${{ env.SONAR_TEST_FILES }}
             -Dsonar.coverage.exclusions=**
             ${{ steps.branch.outputs.args }}
       - name: wait for analysis
