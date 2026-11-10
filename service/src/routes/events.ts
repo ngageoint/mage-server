@@ -434,9 +434,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/form/icons.zip',
     security.authentication.bearerAuthentication,
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function (req, res) {
+    function (req, res, next) {
       new api.Icon(req.event!._id).getZipPath(function (err: any, zipPath: string) {
-        res.on('finish', function () {
+        if (err) {
+          fs.remove(zipPath, function () {});
+          return next(err);
+        }
+        res.on('close', function () {
           fs.remove(zipPath, function () {
             console.log('Deleted the temp icon zip %s', zipPath);
           });
