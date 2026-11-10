@@ -23,7 +23,8 @@ import { MatInputModule } from '@angular/material/input';
 
 import { UserService } from '../../../../user/user.service';
 import { User } from '../../user';
-import { userAvatarUrl, userIconUrl } from '../../../../entities/user/user';
+import { userIconUrl } from '../../../../entities/user/user';
+import { UserAvatarComponent } from '../../../../user/user-avatar/user-avatar.component';
 import { AdminBreadcrumbService } from '../../../admin-breadcrumb/admin-breadcrumb.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 
@@ -48,7 +49,8 @@ interface IconMetadata {
       MatCardModule,
       MatFormFieldModule,
       MatSelectModule,
-      MatInputModule
+      MatInputModule,
+      UserAvatarComponent
     ]
 })
 export class UserDetailsEditComponent implements OnInit {
@@ -424,9 +426,5 @@ export class UserDetailsEditComponent implements OnInit {
 
   get userIconImgUrl(): string | null {
     return userIconUrl(this.user, this.sessionService?.getToken?.());
-  }
-
-  get userAvatarImgUrl(): string | null {
-    return userAvatarUrl(this.user, this.sessionService?.getToken?.());
   }
 }

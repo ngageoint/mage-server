@@ -108,6 +108,8 @@ describe('user model location cascade', function() {
       })
 
       await user.deleteOne()
+
+      expect(await UserModel.findById(user._id)).to.be.null
     } finally {
       userModule.initialize({
         userLocationRepo: new MongooseUserLocationRepository(locationModel),

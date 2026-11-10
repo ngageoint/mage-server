@@ -19,7 +19,7 @@ import { MatTimepickerModule } from '@angular/material/timepicker';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { InputMaskModule } from '@ngneat/input-mask';
 import { GeometryModule } from '../../geometry/geometry.module';
-import { MapClipModule } from '../../map/clip/map-clip.module';
+import { MapClipComponent } from '../../map/clip/clip.component';
 import { ObservationAttachmentModule } from '../attachment/observation-attachment.module';
 import {
   ObservationEditCheckboxComponent,
@@ -63,7 +63,7 @@ import { ObservationEditPasswordComponent } from './observation-edit-password/ob
     ReactiveFormsModule,
     GeometryModule,
     InputMaskModule.forRoot(),
-    MapClipModule,
+    MapClipComponent,
     NgxMatSelectSearchModule,
     ObservationAttachmentModule,
     MatAutocompleteModule,

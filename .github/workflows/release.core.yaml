@@ -46,7 +46,7 @@ jobs:
         with:
           package_path: ./package.json
       - name: install json util
-        run: npm i -g json
+        run: npm i -g --ignore-scripts json@11.0.0
       - name: check project
         env:
           VERSION: ${{ inputs.version }}
@@ -97,13 +97,15 @@ jobs:
     name: create release
     needs: [config, build_and_test-service, build_and_test-web-app, sonarqube_report]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: setup node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
-        run: npm i -g json
+        run: npm i -g --ignore-scripts json@11.0.0
       - name: download service artifacts
         uses: actions/download-artifact@v8
         with:
@@ -129,17 +131,22 @@ jobs:
           echo "instance package.json"
           cat package.json
       - name: create release
-        uses: softprops/action-gh-release@v3
-        with:
-          name: ${{ inputs.version }}
-          prerelease: ${{ inputs.is_prerelease }}
-          draft: ${{ inputs.is_draft }}
-          tag_name: ${{ inputs.version }}
-          target_commitish: ${{ github.sha }}
-          files: |
-            package.json
-            ngageoint-mage.*.tgz
-            mage-*-sonarqube.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          IS_PRERELEASE: ${{ inputs.is_prerelease }}
+          IS_DRAFT: ${{ inputs.is_draft }}
+        run: |
+          flags=()
+          [[ "${IS_PRERELEASE}" == "true" ]] && flags+=(--prerelease)
+          [[ "${IS_DRAFT}" == "true" ]] && flags+=(--draft)
+          gh release create "${VERSION}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${VERSION}" \
+            --target "${GITHUB_SHA}" \
+            --notes "" \
+            "${flags[@]}" \
+            package.json ngageoint-mage.*.tgz mage-*-sonarqube.json
 
   publish_packages:
     name: publish packages

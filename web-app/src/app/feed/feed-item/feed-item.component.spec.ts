@@ -115,11 +115,11 @@ describe('FeedItemComponent', () => {
         MatDividerModule,
         MatCardModule,
         GeometryModule,
-        FeedIconModule
+        FeedIconModule,
+        MapClipComponent
       ],
       declarations: [
         FeedItemComponent,
-        MapClipComponent,
         TestHostComponent,
         MomentPipe
       ]

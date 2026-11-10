@@ -56,12 +56,16 @@ describe("File System Secret Store Tests", function () {
         }
     });
 
-    it('Test delete data that does not exist', function (done) {
+    it('Test delete data that does not exist', function () {
         const dataId = '12345';
         const fsStore = new FileSystemSecretStore();
 
+        sinon.stub(fs, 'existsSync').returns(false);
+        const unlinkSync = sinon.stub(fs, 'unlinkSync');
+
         fsStore.delete(dataId);
-        done();
+
+        expect(unlinkSync.called).to.be.false;
     });
 
     it('Test delete data, wrong permissions', function (done) {

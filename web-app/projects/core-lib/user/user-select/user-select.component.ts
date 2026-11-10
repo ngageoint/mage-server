@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnChanges, SimpleChanges, ViewChild, forwardRef, OnInit } from '@angular/core'
+import { Component, ViewChild, forwardRef, OnInit } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgSelectComponent } from '@ng-select/ng-select'
 import { User } from '../user.model'
@@ -24,7 +24,7 @@ const trackByUserId = (user: User) => user.id
     ],
     standalone: false
 })
-export class UserSelectComponent implements OnInit, OnChanges, AfterViewInit, ControlValueAccessor {
+export class UserSelectComponent implements OnInit, ControlValueAccessor {
 
   readonly baseFindParams: Readonly<UserSearchParams> = Object.freeze({
     pageSize: 100,
@@ -68,12 +68,6 @@ export class UserSelectComponent implements OnInit, OnChanges, AfterViewInit, Co
       }
       this.fetchNextPage()
     })
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-  }
-
-  ngAfterViewInit() {
   }
 
   writeValue(x: User | null): void {

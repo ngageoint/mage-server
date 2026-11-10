@@ -214,9 +214,11 @@ Object.keys(fixture).forEach(geoJsonType => {
   }
 });
 
-expect(fixture.FeatureCollection.valid['featurecollection with all features'].features.length).to.be.greaterThan(1);
-
 describe('GeoJSON schema', function() {
+
+  it('builds the feature collection fixture from every valid geometry', function() {
+    expect(fixture.FeatureCollection.valid['featurecollection with all features'].features.length).to.be.greaterThan(1);
+  });
 
   const schemaPath = path.join(__dirname, '..', '..', 'src', 'docs', 'geojson.yaml');
   const schemaDoc = YAML.parse(fs.readFileSync(schemaPath).toString('utf-8'));
