@@ -1,6 +1,6 @@
 import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import mongoose from 'mongoose'
-import { toAttrs } from './mongoose-helpers'
+import { TakPushSettingsAttrs, TakPushSettingsRepository } from '../entities/tak-push-settings'
 
 const TakPushSettingsSchema = new mongoose.Schema({
   eventId: { type: Number, required: true },
@@ -20,27 +20,11 @@ const TakPushSettingsSchema = new mongoose.Schema({
 
 TakPushSettingsSchema.index({ eventId: 1 }, { unique: true })
 
-export interface TakPushSettingsAttrs {
-  eventId: MageEventId
-  enabled: boolean
-  enabledAt?: Date
-  locationSharingEnabled: boolean
-}
-
-export type TakPushSettingsDocument = mongoose.Document
-export type TakPushSettingsMongooseModel = mongoose.Model<TakPushSettingsDocument>
+export type TakPushSettingsMongooseModel = mongoose.Model<TakPushSettingsAttrs>
 const TakPushSettingsModelName: string = 'TakPushSettings'
 
 export function TakPushSettingsModel(connection: mongoose.Connection, collectionName: string): TakPushSettingsMongooseModel {
-  return connection.model<TakPushSettingsDocument>(TakPushSettingsModelName, TakPushSettingsSchema, collectionName)
-}
-
-export interface TakPushSettingsRepository {
-  isEnabled(eventId: MageEventId): Promise<boolean>
-  setEnabled(eventId: MageEventId, enabled: boolean): Promise<TakPushSettingsAttrs>
-  findAllEnabled(): Promise<TakPushSettingsAttrs[]>
-  isLocationSharingEnabled(eventId: MageEventId): Promise<boolean>
-  setLocationSharingEnabled(eventId: MageEventId, enabled: boolean): Promise<TakPushSettingsAttrs>
+  return connection.model<TakPushSettingsAttrs>(TakPushSettingsModelName, TakPushSettingsSchema, collectionName)
 }
 
 export class MongooseTakPushSettingsRepository implements TakPushSettingsRepository {
@@ -51,8 +35,7 @@ export class MongooseTakPushSettingsRepository implements TakPushSettingsReposit
   }
 
   private async findSettings(eventId: MageEventId): Promise<TakPushSettingsAttrs | null> {
-    const document = await this.model.findOne({ eventId })
-    return document ? toAttrs<TakPushSettingsAttrs>(document) : null
+    return await this.model.findOne({ eventId })
   }
 
   async isEnabled(eventId: MageEventId): Promise<boolean> {
@@ -70,12 +53,11 @@ export class MongooseTakPushSettingsRepository implements TakPushSettingsReposit
       { $set: update },
       { upsert: true, new: true }
     )
-    return toAttrs<TakPushSettingsAttrs>(document!)
+    return document!
   }
 
   async findAllEnabled(): Promise<TakPushSettingsAttrs[]> {
-    const documents = await this.model.find({ enabled: true })
-    return documents.map(document => toAttrs<TakPushSettingsAttrs>(document))
+    return await this.model.find({ enabled: true })
   }
 
   async isLocationSharingEnabled(eventId: MageEventId): Promise<boolean> {
@@ -89,6 +71,6 @@ export class MongooseTakPushSettingsRepository implements TakPushSettingsReposit
       { $set: { eventId, locationSharingEnabled: enabled } },
       { upsert: true, new: true }
     )
-    return toAttrs<TakPushSettingsAttrs>(document!)
+    return document!
   }
 }

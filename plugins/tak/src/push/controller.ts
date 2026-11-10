@@ -3,8 +3,8 @@ import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@n
 import { buildCotEventXml } from '../cot/build'
 import { sendCotEvent } from '../transport.tcp'
 import { TakPushRepository } from '../adapters/tak-push.mongoose'
-import { TakPushIneligibleRepository } from '../adapters/tak-push-ineligible.mongoose'
-import { TakPushSettingsRepository } from '../adapters/tak-push-settings.mongoose'
+import { TakPushIneligibleRepository } from '../entities/tak-push-ineligible'
+import { TakPushSettingsRepository } from '../entities/tak-push-settings'
 import { TakSendTargetResolver } from './resolve-connection'
 
 export const PAGE_SIZE = 1000

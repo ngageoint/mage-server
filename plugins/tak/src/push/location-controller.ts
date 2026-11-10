@@ -3,7 +3,7 @@ import { User, UserRepository } from '@ngageoint/mage.service/lib/entities/users
 import { UserLocation, UserLocationSavedDomainEvent } from '../entities/user-location'
 import { buildLocationCotEventXml } from '../cot/build-location'
 import { sendCotEvent } from '../transport.tcp'
-import { TakPushSettingsRepository } from '../adapters/tak-push-settings.mongoose'
+import { TakPushSettingsRepository } from '../entities/tak-push-settings'
 import { ResolvedTakSendTarget, TakSendTargetResolver } from './resolve-connection'
 
 // Drives the MAGE user location -> TAK push feature, separate from
