@@ -18,16 +18,16 @@ interface NumberField {
     imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule]
 })
 export class ObservationEditNumberComponent implements OnInit {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<NumberField>()
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<NumberField>()
 
   ngOnInit(): void {
     const definition = this.definition()
-    const control = this.formGroup()?.get(definition?.name)
+    const control = this.formGroup().get(definition.name)
     const validators: ValidatorFn[] = []
-    if (definition?.required) validators.push(Validators.required)
-    if (definition?.min != null) validators.push(Validators.min(definition.min))
-    if (definition?.max != null) validators.push(Validators.max(definition.max))
+    if (definition.required) validators.push(Validators.required)
+    if (definition.min != null) validators.push(Validators.min(definition.min))
+    if (definition.max != null) validators.push(Validators.max(definition.max))
     control?.setValidators(validators)
   }
 }

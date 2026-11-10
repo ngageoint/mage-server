@@ -1,15 +1,15 @@
 <div [formGroup]="formGroup()">
   <mat-form-field appearance="fill">
-    <mat-label>{{definition()?.title}}</mat-label>
-    <input matInput type="number" formControlName="{{definition()?.name}}" [required]="definition()?.required">
-    @if (formGroup()?.get(definition()?.name)?.hasError('required')) {
+    <mat-label>{{definition().title}}</mat-label>
+    <input matInput type="number" formControlName="{{definition().name}}" [required]="definition().required">
+    @if (formGroup().get(definition().name)?.hasError('required')) {
       <mat-error>You must enter a value</mat-error>
     }
-    @if (formGroup()?.get(definition()?.name)?.hasError('min')) {
-      <mat-error>Must be greater than {{definition()?.min}}</mat-error>
+    @if (formGroup().get(definition().name)?.hasError('min')) {
+      <mat-error>Must be greater than {{definition().min}}</mat-error>
     }
-    @if (formGroup()?.get(definition()?.name)?.hasError('max')) {
-      <mat-error>Must be less than {{definition()?.max}}</mat-error>
+    @if (formGroup().get(definition().name)?.hasError('max')) {
+      <mat-error>Must be less than {{definition().max}}</mat-error>
     }
   </mat-form-field>
 </div>

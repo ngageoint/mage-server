@@ -17,13 +17,13 @@ interface CheckboxField {
     imports: [ReactiveFormsModule, MatCheckboxModule, MatFormFieldModule]
 })
 export class ObservationEditCheckboxComponent implements OnInit {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<CheckboxField>()
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<CheckboxField>()
 
   control: UntypedFormControl
 
   ngOnInit(): void {
-    this.control = this.formGroup()?.get(this.definition()?.name) as UntypedFormControl
+    this.control = this.formGroup().get(this.definition().name) as UntypedFormControl
   }
 
   checked(event: MatCheckboxChange): void {

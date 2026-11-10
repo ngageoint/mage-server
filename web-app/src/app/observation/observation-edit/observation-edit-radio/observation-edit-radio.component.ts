@@ -17,6 +17,6 @@ interface RadioField {
     imports: [ReactiveFormsModule, MatFormFieldModule, MatRadioModule]
 })
 export class ObservationEditRadioComponent {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<RadioField>()
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<RadioField>()
 }

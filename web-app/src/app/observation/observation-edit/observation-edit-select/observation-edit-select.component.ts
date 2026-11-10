@@ -27,9 +27,11 @@ interface SelectField {
     imports: [AsyncPipe, ReactiveFormsModule, MatFormFieldModule, MatSelectModule, NgxMatSelectSearchModule]
 })
 export class ObservationEditSelectComponent implements OnInit {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<SelectField>()
-  recentChoices = input<RecentChoice[]>([])
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<SelectField>()
+  recentChoices = input<RecentChoice[], RecentChoice[] | null | undefined>([], {
+    transform: value => value ?? []
+  })
 
   recentChoicesFromDefinition: Choice[] = []
   searchControl: UntypedFormControl = new UntypedFormControl();
@@ -39,7 +41,7 @@ export class ObservationEditSelectComponent implements OnInit {
   ngOnInit(): void {
     const definition = this.definition()
 
-    this.recentChoicesFromDefinition = definition?.maxRecent
+    this.recentChoicesFromDefinition = definition.maxRecent
       ? this.recentChoices()
         .map(recent => definition.choices.find(choice => choice.title === recent))
         .filter((choice): choice is Choice => choice !== undefined)
@@ -51,7 +53,7 @@ export class ObservationEditSelectComponent implements OnInit {
         return !value || typeof value === 'string' ? value : value.title
       }),
       map(title => {
-        return title ? this.filter(title) : definition?.choices.slice() ?? []
+        return title ? this.filter(title) : definition.choices.slice()
       })
     );
 
@@ -70,7 +72,7 @@ export class ObservationEditSelectComponent implements OnInit {
   private filter(title: string): Choice[] {
     const filterValue = title.toLowerCase();
 
-    return this.definition()?.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0) ?? [];
+    return this.definition().choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0);
   }
 
 }

@@ -16,6 +16,6 @@ interface TextField {
     imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule]
 })
 export class ObservationEditTextComponent {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<TextField>()
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<TextField>()
 }

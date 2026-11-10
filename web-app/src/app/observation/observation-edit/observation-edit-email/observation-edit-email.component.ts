@@ -16,6 +16,6 @@ interface EmailField {
     imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule]
 })
 export class ObservationEditEmailComponent {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<EmailField>()
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<EmailField>()
 }

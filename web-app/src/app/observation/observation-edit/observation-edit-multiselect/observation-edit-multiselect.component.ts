@@ -30,9 +30,11 @@ interface MultiSelectField {
     imports: [AsyncPipe, ReactiveFormsModule, MatAutocompleteModule, MatChipsModule, MatFormFieldModule, MatIconModule, MatInputModule]
 })
 export class ObservationEditMultiselectComponent implements OnInit {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<MultiSelectField>()
-  recentChoices = input<RecentChoice[]>([])
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<MultiSelectField>()
+  recentChoices = input<RecentChoice[], RecentChoice[] | null | undefined>([], {
+    transform: value => value ?? []
+  })
 
   choiceInput = viewChild.required<ElementRef<HTMLInputElement>>('choiceInput')
   autocomplete = viewChild.required(MatAutocompleteTrigger)
@@ -46,9 +48,9 @@ export class ObservationEditMultiselectComponent implements OnInit {
 
   ngOnInit(): void {
     const definition = this.definition()
-    this.control = this.formGroup()?.get(definition?.name) as UntypedFormControl
+    this.control = this.formGroup().get(definition.name) as UntypedFormControl
 
-    this.recentChoicesFromDefinition = definition?.maxRecent
+    this.recentChoicesFromDefinition = definition.maxRecent
       ? this.recentChoices()
         .map(recent => definition.choices.find(choice => choice.title === recent))
         .filter((choice): choice is Choice => choice !== undefined)
@@ -57,7 +59,7 @@ export class ObservationEditMultiselectComponent implements OnInit {
     this.filteredChoices$ = this.choiceControl.valueChanges.pipe(
       startWith(''),
       map(value => !value || typeof value === 'string' ? value : value.title),
-      map(title => title ? this.filter(title) : definition?.choices.slice() ?? [])
+      map(title => title ? this.filter(title) : definition.choices.slice())
     )
 
     this.recentChoices$ = this.choiceControl.valueChanges.pipe(
@@ -68,7 +70,7 @@ export class ObservationEditMultiselectComponent implements OnInit {
   }
 
   add(event: MatChipInputEvent): void {
-    const choice = this.definition()?.choices.find((choice: Choice) => choice.title === event.value)
+    const choice = this.definition().choices.find((choice: Choice) => choice.title === event.value)
     if (!choice) return
 
     this.addChoice(choice.title)
@@ -108,6 +110,6 @@ export class ObservationEditMultiselectComponent implements OnInit {
 
   private filter(value: string): Choice[] {
     const filterValue = value.toLowerCase()
-    return this.definition()?.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0) ?? []
+    return this.definition().choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0)
   }
 }

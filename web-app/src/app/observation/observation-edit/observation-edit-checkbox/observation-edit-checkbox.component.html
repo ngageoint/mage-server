@@ -1,17 +1,17 @@
 <div class="checkbox-content" [formGroup]="formGroup()">
   <mat-checkbox
-    [checked]="definition()?.value"
+    [checked]="definition().value"
     (change)="checked($event)"
   >
-    {{ definition()?.title }}{{ definition()?.required ? ' *' : '' }}
+    {{ definition().title }}{{ definition().required ? ' *' : '' }}
   </mat-checkbox>
 
   @if (
-    formGroup()?.get(definition()?.name)?.hasError('required') &&
-    formGroup()?.get(definition()?.name)?.touched
+    formGroup().get(definition().name)?.hasError('required') &&
+    formGroup().get(definition().name)?.touched
   ) {
     <mat-error>
-      {{ definition()?.title }} is required
+      {{ definition().title }} is required
     </mat-error>
   }
 </div>

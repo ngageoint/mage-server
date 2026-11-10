@@ -16,6 +16,6 @@ interface PasswordField {
     imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule]
 })
 export class ObservationEditPasswordComponent {
-  formGroup = input<UntypedFormGroup>()
-  definition = input<PasswordField>()
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<PasswordField>()
 }

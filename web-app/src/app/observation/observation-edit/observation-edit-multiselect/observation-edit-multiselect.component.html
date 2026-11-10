@@ -1,8 +1,8 @@
 <mat-form-field appearance="fill" [formGroup]="formGroup()">
-  <mat-label>{{ definition()?.title }}</mat-label>
+  <mat-label>{{ definition().title }}</mat-label>
 
-  <mat-chip-grid #chipGrid formControlName="{{ definition()?.name }}">
-    @for (choice of formGroup()?.get(definition()?.name)?.value; track choice) {
+  <mat-chip-grid #chipGrid formControlName="{{ definition().name }}">
+    @for (choice of formGroup().get(definition().name)?.value; track choice) {
       <mat-chip-row (removed)="remove(choice)">
         {{ choice }}
         <mat-icon matChipRemove>cancel</mat-icon>
@@ -65,7 +65,7 @@
     }
   </mat-autocomplete>
 
-  @if (formGroup()?.get(definition()?.name)?.invalid) {
+  @if (formGroup().get(definition().name)?.invalid) {
     <mat-error>
       You must enter a value
     </mat-error>

@@ -1,15 +1,16 @@
 <div class="attachment-field">
   <div class="attachment-field__header">
     <div class="attachment-field__label">
-      {{ definition()?.title }}{{ definition()?.min > 0 ? ' *' : '' }}
+      {{ definition().title }}{{ definition().min > 0 ? ' *' : '' }}
     </div>
   </div>
 
   <div class="attachment-field__body">
-    @if (allAttachments().length) {
+    @let all = allAttachments();
+    @if (all.length) {
       <div class="edit-attachments__grid">
-        @for (attachment of allAttachments(); track attachment.id; let isFirst = $first) {
-          <div class="edit-attachments__item" [class.edit-attachments__item--full]="isFirst && allAttachments().length % 2 === 1">
+        @for (attachment of all; track attachment.id; let isFirst = $first) {
+          <div class="edit-attachments__item" [class.edit-attachments__item--full]="isFirst && all.length % 2 === 1">
             @if (!attachment.file) {
               <observation-attachment [attachment]="attachment" edit="true"
                 (delete)="deleteAttachment(attachment)"></observation-attachment>
