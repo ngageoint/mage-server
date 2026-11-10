@@ -2,28 +2,36 @@ import { defaultHashUtil } from './password-hashing'
 
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-'
 
-export type PasswordRequirements = {
+export type PasswordRequirements = Partial<{
   passwordMinLengthEnabled: boolean
   passwordMinLength: number
-  /** Minimum number of alpha characters, A-Z, case-insensitive */
   minCharsEnabled: boolean
+  /** Minimum number of alpha characters, A-Z, case-insensitive */
   minChars: number
   maxConCharsEnabled: boolean
+  /** Maximum consecutive characters */
   maxConChars: number
   lowLettersEnabled: boolean
+  /** Minimum lower-case letters */
   lowLetters: number
   highLettersEnabled: boolean
+  /** Minimum upper-case letters */
   highLetters: number
   numbersEnabled: boolean
+  /** Minimum numbers */
   numbers: number
   specialCharsEnabled: boolean
+  /** Minimum special characters */
   specialChars: number
   restrictSpecialCharsEnabled: boolean
+  /** Allow only these special characters */
   restrictSpecialChars: string
   passwordHistoryCountEnabled: boolean
+  /** Maximum number of passwords to keep to compare for uniqueness */
   passwordHistoryCount: number
+  /** Return the given help text in the password validation result to inform the user about the password requirements */
   helpText: string
-}
+}>
 
 export type PasswordValidationResult = {
   valid: boolean
@@ -46,16 +54,16 @@ export async function validatePasswordRequirements(password: string, policy: Pas
     validateMinimumNumbers(policy, password) &&
     validateMinimumSpecialCharacters(policy, password) &&
     (await validatePasswordHistory(policy, password, previousPasswords))
-  return { valid, errorMessage: valid ? null : policy.helpText }
+  return { valid, errorMessage: valid ? null : (policy.helpText || 'The password does not meet complexity requirements.') }
 }
 
 function validatePasswordLength(policy: PasswordRequirements, password: string): boolean {
-  return policy.passwordMinLengthEnabled &&
+  return !!policy.passwordMinLengthEnabled && typeof policy.passwordMinLength === 'number' &&
     password.length >= policy.passwordMinLength
 }
 
 function validateMinimumCharacters(policy: PasswordRequirements, password: string): boolean {
-  if (!policy.minCharsEnabled) {
+  if (!policy.minCharsEnabled || typeof policy.minChars !== 'number') {
     return true
   }
   let letterCount = 0
@@ -68,7 +76,7 @@ function validateMinimumCharacters(policy: PasswordRequirements, password: strin
 }
 
 function validateMaximumConsecutiveCharacters(policy: PasswordRequirements, password: string): boolean {
-  if (!policy.maxConCharsEnabled) {
+  if (!policy.maxConCharsEnabled || typeof policy.maxConChars !== 'number') {
     return true
   }
   const tooManyConsecutiveLetters = new RegExp(`[a-z]{${policy.maxConChars + 1}}`, 'i')
@@ -76,7 +84,7 @@ function validateMaximumConsecutiveCharacters(policy: PasswordRequirements, pass
 }
 
 function validateMinimumLowercaseCharacters(policy: PasswordRequirements, password: string): boolean {
-  if (!policy.lowLettersEnabled) {
+  if (!policy.lowLettersEnabled || typeof policy.lowLetters !== 'number') {
     return true
   }
   let letterCount = 0
@@ -89,7 +97,7 @@ function validateMinimumLowercaseCharacters(policy: PasswordRequirements, passwo
 }
 
 function validateMinimumUppercaseCharacters(policy: PasswordRequirements, password: string): boolean {
-  if (!policy.highLettersEnabled) {
+  if (!policy.highLettersEnabled || typeof policy.highLetters !== 'number') {
     return true
   }
   let letterCount = 0
@@ -102,7 +110,7 @@ function validateMinimumUppercaseCharacters(policy: PasswordRequirements, passwo
 }
 
 function validateMinimumNumbers(policy: PasswordRequirements, password: string): boolean {
-  if (!policy.numbersEnabled) {
+  if (!policy.numbersEnabled || typeof policy.numbers !== 'number') {
     return true
   }
   let numberCount = 0
@@ -115,12 +123,12 @@ function validateMinimumNumbers(policy: PasswordRequirements, password: string):
 }
 
 function validateMinimumSpecialCharacters(policy: PasswordRequirements, password: string): boolean {
-  if (!policy.specialCharsEnabled) {
+  if (!policy.specialCharsEnabled || typeof policy.specialChars !== 'number') {
     return true
   }
   let allowedChars = null
   let forbiddenChars = null
-  if (policy.restrictSpecialCharsEnabled) {
+  if (policy.restrictSpecialCharsEnabled && typeof policy.restrictSpecialChars === 'string') {
     forbiddenChars = new RegExp('[' + createRestrictedRegex(policy.restrictSpecialChars) + ']')
     allowedChars = new RegExp('[' + policy.restrictSpecialChars + ']')
   }
