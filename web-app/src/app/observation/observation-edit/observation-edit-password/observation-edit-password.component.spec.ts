@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +12,7 @@ import { testRequiredFieldValidation } from '../observation-edit-field-validatio
     selector: `host-component`,
     template: `<observation-edit-password [definition]="definition" [formGroup]="formGroup"></observation-edit-password>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    imports: [ObservationEditPasswordComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -25,7 +25,7 @@ class TestHostComponent {
     required: true
   }
 
-  @ViewChild(ObservationEditPasswordComponent) component: ObservationEditPasswordComponent
+  component = viewChild.required(ObservationEditPasswordComponent)
 }
 
 describe('ObservationEditPasswordComponent', () => {
@@ -35,8 +35,7 @@ describe('ObservationEditPasswordComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule, ObservationEditPasswordComponent],
-      declarations: [TestHostComponent]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule, ObservationEditPasswordComponent, TestHostComponent]
     })
     .compileComponents()
   }))
@@ -45,7 +44,7 @@ describe('ObservationEditPasswordComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent)
     hostComponent = fixture.componentInstance
     fixture.detectChanges();
-    component = hostComponent.component
+    component = hostComponent.component()
   })
 
   it('should create', () => {

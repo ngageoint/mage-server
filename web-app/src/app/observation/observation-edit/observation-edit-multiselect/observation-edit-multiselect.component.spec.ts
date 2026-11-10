@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, viewChild } from '@angular/core'
 
 import { ObservationEditMultiselectComponent } from './observation-edit-multiselect.component'
 import { MatAutocompleteModule as MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -15,7 +15,7 @@ import { By } from '@angular/platform-browser'
     selector: `host-component`,
     template: `<observation-edit-multiselect [definition]="definition" [formGroup]="formGroup" [recentChoices]="recentChoices"></observation-edit-multiselect>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    imports: [ObservationEditMultiselectComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -38,7 +38,7 @@ class TestHostComponent {
 
   recentChoices: string[] = []
 
-  @ViewChild(ObservationEditMultiselectComponent) component: ObservationEditMultiselectComponent
+  component = viewChild.required(ObservationEditMultiselectComponent)
 }
 
 describe('ObservationEditMultiselectComponent', () => {
@@ -49,8 +49,7 @@ describe('ObservationEditMultiselectComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule, ObservationEditMultiselectComponent],
-      declarations: [TestHostComponent],
+      imports: [FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule, ObservationEditMultiselectComponent, TestHostComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
       .compileComponents()
@@ -61,7 +60,7 @@ describe('ObservationEditMultiselectComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent)
     hostComponent = fixture.componentInstance
     fixture.detectChanges();
-    component = hostComponent.component
+    component = hostComponent.component()
   })
 
   it('should create', () => {
@@ -124,7 +123,7 @@ describe('ObservationEditMultiselectComponent', () => {
       freshHost.recentChoices = ['green', 'blue', 'red']
       freshFixture.detectChanges()
 
-      freshHost.component.recentChoices$.subscribe(recent => {
+      freshHost.component().recentChoices$.subscribe(recent => {
         expect(recent.map(c => c.title)).toEqual(['green', 'blue', 'red'])
         done()
       })
@@ -136,7 +135,7 @@ describe('ObservationEditMultiselectComponent', () => {
       freshHost.recentChoices = ['red', 'not-a-real-choice']
       freshFixture.detectChanges()
 
-      freshHost.component.recentChoices$.subscribe(recent => {
+      freshHost.component().recentChoices$.subscribe(recent => {
         expect(recent.map(c => c.title)).toEqual(['red'])
         done()
       })
@@ -149,7 +148,7 @@ describe('ObservationEditMultiselectComponent', () => {
       freshHost.recentChoices = ['green', 'blue', 'red']
       freshFixture.detectChanges()
 
-      freshHost.component.recentChoices$.subscribe(recent => {
+      freshHost.component().recentChoices$.subscribe(recent => {
         expect(recent).toEqual([])
         done()
       })

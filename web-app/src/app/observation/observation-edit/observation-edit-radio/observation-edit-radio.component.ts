@@ -3,9 +3,6 @@ import { ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatRadioModule } from '@angular/material/radio';
 
-/**
- * TODO: move to forms model module (which doesn't exist yet)
- */
 interface RadioField {
   title: string,
   name: string,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +12,7 @@ import { testRequiredFieldValidation } from '../observation-edit-field-validatio
     selector: `host-component`,
     template: `<observation-edit-textarea [formGroup]="formGroup" [definition]="definition"></observation-edit-textarea>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    imports: [ObservationEditTextareaComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -25,7 +25,7 @@ class TestHostComponent {
     required: true
   }
 
-  @ViewChild(ObservationEditTextareaComponent) component: ObservationEditTextareaComponent
+  component = viewChild.required(ObservationEditTextareaComponent)
 }
 
 describe('ObservationEditTextareaComponent', () => {
@@ -35,8 +35,7 @@ describe('ObservationEditTextareaComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule, ObservationEditTextareaComponent],
-      declarations: [TestHostComponent]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule, ObservationEditTextareaComponent, TestHostComponent]
     })
       .compileComponents()
   }))
@@ -45,7 +44,7 @@ describe('ObservationEditTextareaComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent)
     hostComponent = fixture.componentInstance
     fixture.detectChanges();
-    component = hostComponent.component
+    component = hostComponent.component()
   })
 
   it('should create', () => {

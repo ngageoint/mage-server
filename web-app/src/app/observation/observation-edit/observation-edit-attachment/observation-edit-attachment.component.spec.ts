@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 
@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
     selector: `host-component`,
     template: `<observation-edit-attachment [definition]="definition" [formGroup]="formGroup" [attachments]="attachments"></observation-edit-attachment>`,
-    standalone: false
+    imports: [ObservationEditAttachmentComponent]
 })
 class TestHostComponent {
   attachments = []
@@ -18,7 +18,7 @@ class TestHostComponent {
   definition = {
     name: 'attachment'
   }
-  @ViewChild(ObservationEditAttachmentComponent) component: ObservationEditAttachmentComponent
+  component = viewChild.required(ObservationEditAttachmentComponent)
 }
 
 describe('ObservationEditAttachmentComponent', () => {
@@ -28,8 +28,7 @@ describe('ObservationEditAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [TestHostComponent],
-      imports: [MatIconModule, ObservationEditAttachmentComponent]
+      imports: [MatIconModule, ObservationEditAttachmentComponent, TestHostComponent]
     })
     .compileComponents();
   }));
@@ -38,7 +37,7 @@ describe('ObservationEditAttachmentComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent)
     hostComponent = fixture.componentInstance
     fixture.detectChanges();
-    component = hostComponent.component
+    component = hostComponent.component()
   })
 
   it('should create', () => {

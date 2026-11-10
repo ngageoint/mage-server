@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, viewChild } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatError as MatError, MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,7 @@ import { ObservationEditRadioComponent } from './observation-edit-radio.componen
     selector: `host-component`,
     template: `<observation-edit-radio [definition]="definition" [formGroup]="formGroup"></observation-edit-radio>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    imports: [ObservationEditRadioComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -28,7 +28,7 @@ class TestHostComponent {
     }]
   }
 
-  @ViewChild(ObservationEditRadioComponent) component: ObservationEditRadioComponent
+  component = viewChild.required(ObservationEditRadioComponent)
 }
 
 describe('ObservationEditRadioComponent', () => {
@@ -38,8 +38,7 @@ describe('ObservationEditRadioComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatRadioModule, ObservationEditRadioComponent],
-      declarations: [TestHostComponent]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatRadioModule, ObservationEditRadioComponent, TestHostComponent]
     })
       .compileComponents()
   }))
@@ -48,7 +47,7 @@ describe('ObservationEditRadioComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent)
     hostComponent = fixture.componentInstance
     fixture.detectChanges();
-    component = hostComponent.component
+    component = hostComponent.component()
   })
 
   it('should create', () => {

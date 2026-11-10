@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, input, OnInit } from '@angular/core';
+import { Component, ElementRef, input, OnInit, viewChild } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
@@ -34,8 +34,8 @@ export class ObservationEditMultiselectComponent implements OnInit {
   definition = input<MultiSelectField>()
   recentChoices = input<RecentChoice[]>([])
 
-  @ViewChild('choiceInput', { static: false }) choiceInput!: ElementRef<HTMLInputElement>
-  @ViewChild(MatAutocompleteTrigger, { static: false }) autocomplete!: MatAutocompleteTrigger
+  choiceInput = viewChild.required<ElementRef<HTMLInputElement>>('choiceInput')
+  autocomplete = viewChild.required(MatAutocompleteTrigger)
 
   separatorKeysCodes: number[] = [ENTER, COMMA]
   control!: UntypedFormControl
@@ -72,8 +72,8 @@ export class ObservationEditMultiselectComponent implements OnInit {
     if (!choice) return
 
     this.addChoice(choice.title)
-    this.choiceInput.nativeElement.value = ''
-    this.autocomplete.closePanel()
+    this.choiceInput().nativeElement.value = ''
+    this.autocomplete().closePanel()
   }
 
   remove(choice: string): void {
@@ -90,7 +90,7 @@ export class ObservationEditMultiselectComponent implements OnInit {
 
   selected(event: MatAutocompleteSelectedEvent): void {
     this.addChoice(event.option.value)
-    this.choiceInput.nativeElement.value = ''
+    this.choiceInput().nativeElement.value = ''
   }
 
   private addChoice(choice: string): void {
