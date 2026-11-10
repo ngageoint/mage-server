@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 
 import { UserDetailsEditComponent } from './user-details-edit.component';
@@ -66,7 +68,9 @@ describe('UserDetailsEditComponent', () => {
       ],
       providers: [
         { provide: UserService, useValue: mockUserService },
-        { provide: SessionService, useValue: mockSessionService }
+        { provide: SessionService, useValue: mockSessionService },
+        provideHttpClient(),
+        provideHttpClientTesting()
       ]
     }).compileComponents();
 
@@ -165,15 +169,38 @@ describe('UserDetailsEditComponent', () => {
     expect(cancelled).toBeTrue();
   });
 
-  it('should compute authenticated icon/avatar preview URLs', () => {
+  it('should compute the authenticated icon preview URL', () => {
     const iconUrl = component.userIconImgUrl as string;
-    const avatarUrl = component.userAvatarImgUrl as string;
 
     expect(iconUrl).toContain('access_token=token-123');
     expect(iconUrl).toContain('_dc=123');
+  });
 
-    expect(avatarUrl).toContain('access_token=token-123');
-    expect(avatarUrl).toContain('_dc=123');
+  it('should load the avatar with the user avatar component instead of a token URL', () => {
+    fixture.detectChanges();
+
+    TestBed.inject(HttpTestingController).expectOne('/api/users/test-user-id/avatar');
+    const avatar: HTMLElement = fixture.nativeElement.querySelector('.media-edit');
+    expect(avatar.querySelector('user-avatar')).not.toBeNull();
+    expect(avatar.innerHTML).not.toContain('access_token');
+  });
+
+  it('should show the selected avatar file preview', () => {
+    component.avatarPreviewUrl.set('data:image/png;base64,AAAA');
+    fixture.detectChanges();
+
+    const avatar: HTMLElement = fixture.nativeElement.querySelector('.media-edit');
+    expect(avatar.querySelector('user-avatar')).toBeNull();
+    expect(avatar.querySelector('img.avatar-image')?.getAttribute('src')).toBe('data:image/png;base64,AAAA');
+  });
+
+  it('should show the placeholder when the user has no avatar', () => {
+    component.user = { ...mockUser, avatarUrl: undefined };
+    fixture.detectChanges();
+
+    const avatar: HTMLElement = fixture.nativeElement.querySelector('.media-edit');
+    expect(avatar.querySelector('user-avatar')).toBeNull();
+    expect(avatar.querySelector('.avatar-placeholder')).not.toBeNull();
   });
 
 });

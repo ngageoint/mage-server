@@ -4,7 +4,8 @@ import {
   EventEmitter,
   ViewChild,
   ElementRef,
-  AfterViewInit
+  AfterViewInit,
+  OnInit
 } from '@angular/core';
 import { DomEvent } from 'leaflet';
 import { MapSettingsService } from '../settings/map.settings.service';
@@ -30,7 +31,7 @@ export interface SearchEvent {
     styleUrls: ['./search.component.scss'],
     standalone: false
 })
-export class SearchComponent implements AfterViewInit {
+export class SearchComponent implements OnInit, AfterViewInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   @ViewChild('searchList') matList!: ElementRef<HTMLElement>;
 

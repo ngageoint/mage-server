@@ -1,5 +1,18 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, computed, input, linkedSignal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { GeometryModule } from '../../geometry/geometry.module';
+import { FormField } from '../../entities/event/entities.event';
+import { ObservationViewAttachmentComponent } from './observation-view-attachment/observation-view-attachment.component';
+import { ObservationViewCheckboxComponent } from './observation-view-checkbox/observation-view-checkbox.component';
+import { ObservationViewDateComponent } from './observation-view-date/observation-view-date.component';
+import { ObservationViewGeometryComponent } from './observation-view-geometry/observation-view-geometry.component';
+import { ObservationViewMultiselectdropdownComponent } from './observation-view-multiselectdropdown/observation-view-multiselectdropdown.component';
+import { ObservationViewPasswordComponent } from './observation-view-password/observation-view-password.component';
+import { ObservationViewTextComponent } from './observation-view-text/observation-view-text.component';
+import { ObservationViewTextareaComponent } from './observation-view-textarea/observation-view-textarea.component';
 
 @Component({
     selector: 'observation-view-form',
@@ -21,51 +34,62 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
             transition('* <=> *', animate('300ms ease-out'))
         ])
     ],
-    standalone: false
+    imports: [
+        MatButtonModule,
+        MatCardModule,
+        MatIconModule,
+        GeometryModule,
+        ObservationViewAttachmentComponent,
+        ObservationViewCheckboxComponent,
+        ObservationViewDateComponent,
+        ObservationViewGeometryComponent,
+        ObservationViewMultiselectdropdownComponent,
+        ObservationViewPasswordComponent,
+        ObservationViewTextComponent,
+        ObservationViewTextareaComponent
+    ]
 })
-export class ObservationViewFormComponent implements OnInit, OnChanges {
-  @Input() form: any
-  @Input() attachments: any[]
-  @Input() expand: boolean
-  @Input() geometryStyle: any;
+export class ObservationViewFormComponent {
+  form = input<any>()
+  attachments = input<any[]>([])
+  geometryStyle = input<any>()
 
-  primaryField: any = {}
-  secondaryField: any = {}
+  expand = input(false)
+  isExpanded = linkedSignal(() => this.expand())
 
-  ngOnInit(): void {
-    this.updateView()
+  primaryField = computed(() => {
+    const form = this.form()
+    if (!form?.primaryFeedField) return undefined
+    return form.fields.find(field => field.name === form.primaryFeedField)
+  })
+
+  secondaryField = computed(() => {
+    const form = this.form()
+    if (!form?.secondaryFeedField) return undefined
+    return form.fields.find(field => field.name === form.secondaryFeedField)
+  })
+
+  toggleExpand(): void {
+    this.isExpanded.update(expanded => !expanded)
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.updateView()
-  }
-
-  nonArchivedFields(fields: any[]): any[] {
-    return fields
+  nonArchivedFields(fields: FormField[] | undefined): FormField[] {
+    return (fields ?? [])
       .filter(field => !field.archived)
-      .sort((a: { id: number }, b: { id: number }) => a.id - b.id);
+      .sort((a, b) => a.id - b.id);
   }
 
   hasContent(): boolean {
-    const fields: any[] = this.form.fields
+    const form = this.form()
+    const fields: any[] = form?.fields ?? []
     return fields
       .filter(field => !field.archived)
       .some(field => {
         if (field.type === 'attachment') {
-          return this.attachments.filter(attachment => attachment.observationFormId === this.form.remoteId).length
+          return this.attachments().filter(attachment => attachment.observationFormId === form?.remoteId).length
         } else {
           return field.value
         }
       })
-  }
-
-  private updateView(): void {
-    if (this.form.primaryFeedField) {
-      this.primaryField = this.form.fields.find(field => field.name === this.form.primaryFeedField)
-    }
-
-    if (this.form.secondaryFeedField) {
-      this.secondaryField = this.form.fields.find(field => field.name === this.form.secondaryFeedField)
-    }
   }
 }

@@ -1,3 +1,5 @@
+import { PathOptions } from 'leaflet'
+
 export type Style = {
   fill: string
   fillOpacity: number
@@ -5,6 +7,10 @@ export type Style = {
   strokeOpacity: number
   strokeWidth: number
   iconUrl?: string
+}
+
+export type MapFeatureStyle = Pick<PathOptions, 'color' | 'fillColor' | 'fillOpacity' | 'opacity' | 'weight'> & {
+  iconUrl: string
 }
 
 export enum WebSearchType {

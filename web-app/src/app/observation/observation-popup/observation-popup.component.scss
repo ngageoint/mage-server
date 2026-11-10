@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   min-height: 88px;
-  padding: 8px 8px 8px 16px;
+  padding: 0 16px;
   gap: 8px;
 }
 
@@ -11,6 +11,20 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+.popup__status {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.popup__status--error mat-icon {
+  color: var(--mat-sys-error);
 }
 
 .item-overline {

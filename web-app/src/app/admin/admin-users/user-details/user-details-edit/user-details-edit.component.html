@@ -16,8 +16,10 @@
     <div class="detail-row media-row">
       <span class="detail-label">Avatar</span>
       <div class="media-edit">
-        @if (avatarPreviewUrl() || user.avatarUrl) {
-          <img [src]="avatarPreviewUrl() || userAvatarImgUrl" width="64" height="64" class="avatar-image">
+        @if (avatarPreviewUrl()) {
+          <img [src]="avatarPreviewUrl()" width="64" height="64" class="avatar-image">
+        } @else if (user.avatarUrl) {
+          <user-avatar [user]="user" [avatarWidth]="64" [avatarHeight]="64"></user-avatar>
         } @else {
           <div class="avatar-placeholder">
             <mat-icon fontSet="material-symbols-outlined">person</mat-icon>

@@ -41,8 +41,8 @@ describe('ObservationEditFormComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatIconModule, MatCardModule, MatListModule ],
-      declarations: [ObservationEditFormComponent, TestHostComponent, MapClipComponent]
+      imports: [NoopAnimationsModule, MatIconModule, MatCardModule, MatListModule, MapClipComponent ],
+      declarations: [ObservationEditFormComponent, TestHostComponent]
     }).compileComponents();
   }));
 

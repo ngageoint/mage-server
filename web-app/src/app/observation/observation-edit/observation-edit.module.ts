@@ -14,7 +14,7 @@ import { MatTimepickerModule } from '@angular/material/timepicker';
 
 import { InputMaskModule } from '@ngneat/input-mask';
 import { GeometryModule } from '../../geometry/geometry.module';
-import { MapClipModule } from '../../map/clip/map-clip.module';
+import { MapClipComponent } from '../../map/clip/clip.component';
 import {
   ObservationEditCheckboxComponent,
   ObservationEditDateComponent,
@@ -57,7 +57,7 @@ import { ObservationEditPasswordComponent } from './observation-edit-password/ob
     ObservationEditTextareaComponent,
     GeometryModule,
     InputMaskModule.forRoot(),
-    MapClipModule,
+    MapClipComponent,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
