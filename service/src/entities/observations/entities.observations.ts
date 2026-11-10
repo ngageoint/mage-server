@@ -1,5 +1,5 @@
 import { BBox, Geometry } from 'geojson'
-import { validateFieldEntry } from './entities.observations.fields'
+import { validateFieldEntry, validateUserFieldEntry } from './entities.observations.fields'
 import { validateAttachmentsForField } from './entities.observations.fields.attachment'
 import { validateGeometryFieldType } from './entities.observations.fields.geometry'
 import {
@@ -1190,6 +1190,7 @@ function validateAttachment(attachment: Attachment, observation: ObservationAttr
 function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryError: FormEntryValidationError, validation: ObservationValidationContext): void {
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
+  const userFieldNames = new Set(form.userFields || [])
   activeFields.forEach(field => {
     if (field.type === FormFieldType.Attachment) {
       const attachmentFieldResult = validateAttachmentsForField(field, formEntry.id, validation.observationAttrs)
@@ -1203,7 +1204,9 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
       return
     }
     const fieldEntry = formEntry[field.name]
-    const fieldEntryResult = validateFieldEntry(fieldEntry, field)
+    const fieldEntryResult = userFieldNames.has(field.name) ?
+      validateUserFieldEntry(fieldEntry, field) :
+      validateFieldEntry(fieldEntry, field)
     if (fieldEntryResult.invalid) {
       const err = new FormFieldValidationError({
         fieldName: field.name,
