@@ -1,14 +1,15 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { parseISO8601 } from '../../utilities/dates'
-import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMapView, ObservationRequest, ObservationSearch, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservation, ReadObservations, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest, parseConditionFilter } from '../../app.api/observations/app.api.observations'
 import {
   AttachmentStore,
   FindObservationsSort,
   FindObservationsSortField,
   ObservationFieldFilter,
   ObservationState,
-  ObservationStateName
+  ObservationStateName,
+  ObservationStyle
 } from '../../entities/observations/entities.observations'
 import busboy from 'busboy'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
@@ -22,6 +23,7 @@ declare module 'express-serve-static-core' {
 }
 
 export interface ObservationAppLayer {
+  readObservation: ReadObservation
   readObservations: ReadObservations
   allocateObservationId: AllocateObservationId
   saveObservation: SaveObservation
@@ -38,7 +40,10 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
     if (search instanceof MageError) {
       return next(search)
     }
-    const mapping = ((observation: ExoObservation): WebObservation => jsonForObservation(observation, qualifiedBaseUrl(req)))
+    const baseUrl = qualifiedBaseUrl(req)
+    const mapping: (observation: ExoObservation | ExoObservationMapView) => WebObservation | WebObservationMapView = search.view === 'map' ?
+      observation => jsonForObservationMapView(observation as ExoObservationMapView, req.getRoot()) :
+      observation => jsonForObservation(observation as ExoObservation, baseUrl)
     const appReq = createAppRequest(req, { search, mapping })
     const appRes = await app.readObservations(appReq)
     if (appRes.success) {
@@ -187,6 +192,16 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
     })
 
   routes.route('/:observationId')
+    .get(async (req, res, next) => {
+      const baseUrl = qualifiedBaseUrl(req)
+      const mapping = (observation: ExoObservation): WebObservation => jsonForObservation(observation, baseUrl)
+      const appReq = createAppRequest(req, { observationId: req.params.observationId, mapping })
+      const appRes = await app.readObservation(appReq)
+      if (appRes.success) {
+        return res.json(appRes.success)
+      }
+      next(appRes.error)
+    })
     .put(async (req, res, next) => {
       const body = req.body
       const observationId = req.params.observationId
@@ -237,6 +252,27 @@ export function jsonForObservation(o: ExoObservation, baseUrl: string): WebObser
 
 export function jsonForAttachment(a: ExoAttachment, observationUrl: string): WebAttachment {
   return { ...a, url: a.contentStored ? `${observationUrl}/attachments/${a.id}` : void(0) }
+}
+
+export type WebObservationMapView = Omit<ExoObservationMapView, 'properties'> & {
+  properties: Omit<ExoObservationMapView['properties'], 'style'> & {
+    style: Omit<ObservationStyle, 'icon'> & { iconUrl: string }
+  }
+}
+
+export function jsonForObservationMapView(o: ExoObservationMapView, rootUrl: string): WebObservationMapView {
+  const { icon, ...lineStyle } = o.properties.style
+  const iconPath = [ icon.formId, icon.primary, icon.variant ]
+    .filter(x => x !== undefined)
+    .map(x => `/${encodeURIComponent(String(x))}`)
+    .join('')
+  return {
+    ...o,
+    properties: {
+      ...o.properties,
+      style: { ...lineStyle, iconUrl: `${rootUrl}/api/events/${o.properties.eventId}/icons${iconPath}` }
+    }
+  }
 }
 
 function qualifiedBaseUrl(req: express.Request): string {
@@ -358,6 +394,13 @@ function parseFilterParam(keyword: any, body: any): ObservationFieldFilter | und
 function parseObservationParams(query: any, body: any): ObservationSearch | InvalidInputError {
   const params = { ...query, ...body }
   const find: ObservationSearch = {}
+
+  if (params.view) {
+    if (params.view !== 'summary' && params.view !== 'map') {
+      return invalidInput('view must be summary or map', [ 'view' ])
+    }
+    find.view = params.view
+  }
 
   if (params.startDate) {
     const startDate = parseISO8601(params.startDate)

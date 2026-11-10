@@ -52,7 +52,7 @@ describe('LocationFilterDialogComponent', () => {
       fixture.detectChanges();
       expect(component.initialMemberFilter).toBeNull();
       expect(component.memberFilter).toBeNull();
-      expect(component.intervalChoice()).toEqual(INTERVAL_CHOICES[1]);
+      expect(component.intervalChoice()).toEqual(INTERVAL_CHOICES[0]);
       expect(component.timeZone()).toBe('local');
     });
 

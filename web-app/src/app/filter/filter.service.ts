@@ -114,7 +114,7 @@ export class FilterService {
   }
 
   getEffectiveTimeInterval(timeInterval?: Interval): { start?: Date, end?: Date } {
-    const choice = timeInterval?.choice?.filter ?? 'today';
+    const choice = timeInterval?.choice?.filter ?? 'all';
     if (choice === 'all') return {};
     if (choice === 'today') {
       return { start: moment().startOf('day').toDate(), end: moment().endOf('day').toDate() };

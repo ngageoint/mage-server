@@ -6,7 +6,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { DatetimePickerComponent } from '../../datetime-picker/datetime-picker.component'
 import { FilterService } from '../../filter/filter.service'
 import { EventMemberFilterComponent, MemberFilterSelection } from '../../event/event-member-filter.component'
-import { FilterChoice, INTERVAL_CHOICES, Interval } from '../../filter/filter.types'
+import { DEFAULT_LOCATION_FILTER, FilterChoice, INTERVAL_CHOICES, Interval } from '../../filter/filter.types'
 import moment from 'moment'
 
 @Component({
@@ -33,7 +33,7 @@ export class LocationFilterDialogComponent implements OnInit {
   initialMemberFilter: MemberFilterSelection | null = null
   memberFilter: MemberFilterSelection | null = null
   timeZone = signal<'local' | 'gmt'>('local')
-  intervalChoice = signal<FilterChoice>(this.intervalChoices[1])
+  intervalChoice = signal<FilterChoice>(DEFAULT_LOCATION_FILTER.timeInterval.choice!)
   defaultStartDate: Date
   startDate: Date
   defaultEndDate: Date
@@ -53,7 +53,7 @@ export class LocationFilterDialogComponent implements OnInit {
     this.memberFilter = this.initialMemberFilter
 
     const savedInterval = locationFilter?.timeInterval
-    this.intervalChoice.set(savedInterval?.choice ?? this.intervalChoices[1])
+    this.intervalChoice.set(savedInterval?.choice ?? DEFAULT_LOCATION_FILTER.timeInterval.choice!)
     this.timeZone.set(savedInterval?.options?.localTime === false ? 'gmt' : 'local')
     this.defaultStartDate = savedInterval?.options?.startDate ?? moment().startOf('day').toDate()
     this.defaultEndDate = savedInterval?.options?.endDate ?? moment().endOf('day').toDate()

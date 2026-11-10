@@ -38,6 +38,7 @@ import {
   putAttachmentThumbnailForMinDimension,
   removeAttachment,
   removeFormEntry,
+  styleForObservation,
   Thumbnail,
   thumbnailIndexForTargetDimension,
   validateObservation,
@@ -3155,6 +3156,142 @@ describe('observation entities', function () {
         expect(thumbnailIndexForTargetDimension(339, att)).to.equal(2)
         expect(thumbnailIndexForTargetDimension(400, att)).to.be.undefined
       })
+    })
+  })
+
+  describe('resolving observation style', function() {
+
+    const eventStyle = { fill: '#111111', stroke: '#222222', fillOpacity: 0.1, strokeOpacity: 0.2, strokeWidth: 1 }
+    const formStyle = { fill: '#333333', stroke: '#444444', fillOpacity: 0.3, strokeOpacity: 0.4, strokeWidth: 2 }
+    const primaryStyle = { fill: '#555555', stroke: '#666666', fillOpacity: 0.5, strokeOpacity: 0.6, strokeWidth: 3 }
+    const variantStyle = { fill: '#777777', stroke: '#888888', fillOpacity: 0.7, strokeOpacity: 0.8, strokeWidth: 4 }
+
+    let eventAttrs: MageEventAttrs
+
+    beforeEach(function() {
+      eventAttrs = {
+        id: 1,
+        name: 'Style Event',
+        acl: {},
+        feedIds: [],
+        layerIds: [],
+        style: eventStyle,
+        forms: [
+          {
+            id: 10,
+            name: 'Styled Form',
+            archived: false,
+            color: '#000000',
+            primaryField: 'type',
+            variantField: 'color',
+            fields: [],
+            userFields: [],
+            style: {
+              ...formStyle,
+              Vehicle: {
+                ...primaryStyle,
+                Red: variantStyle
+              }
+            }
+          },
+          {
+            id: 20,
+            name: 'Unstyled Form',
+            archived: false,
+            color: '#000000',
+            primaryField: 'type',
+            fields: [],
+            userFields: []
+          }
+        ]
+      }
+    })
+
+    function observationWithEntry(entry?: Partial<FormEntry>): ObservationAttrs {
+      const attrs = makeObservationAttrs(eventAttrs)
+      if (entry) {
+        attrs.properties.forms = [ { id: 'entry1', formId: 10, ...entry } as FormEntry ]
+      }
+      return attrs
+    }
+
+    it('uses the event style and icon without a form entry', function() {
+
+      const style = styleForObservation(observationWithEntry(), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...eventStyle, icon: {} })
+    })
+
+    it('uses the form style when the primary value has no style', function() {
+
+      const style = styleForObservation(observationWithEntry({ type: 'Boat' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...formStyle, icon: { formId: 10, primary: 'Boat' } })
+    })
+
+    it('uses the primary style when the variant value has no style', function() {
+
+      const style = styleForObservation(observationWithEntry({ type: 'Vehicle', color: 'Blue' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...primaryStyle, icon: { formId: 10, primary: 'Vehicle', variant: 'Blue' } })
+    })
+
+    it('uses the variant style when the primary and variant values have a style', function() {
+
+      const style = styleForObservation(observationWithEntry({ type: 'Vehicle', color: 'Red' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...variantStyle, icon: { formId: 10, primary: 'Vehicle', variant: 'Red' } })
+    })
+
+    it('uses the event style when the form has no style', function() {
+
+      const style = styleForObservation(observationWithEntry({ formId: 20, type: 'Vehicle' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...eventStyle, icon: { formId: 20, primary: 'Vehicle' } })
+    })
+
+    it('omits the variant from the icon without a primary value', function() {
+
+      const style = styleForObservation(observationWithEntry({ color: 'Red' }), new MageEvent(eventAttrs))
+
+      expect(style.icon).to.deep.equal({ formId: 10 })
+    })
+
+    it('uses the event style and no form icon when the form does not exist', function() {
+
+      const style = styleForObservation(observationWithEntry({ formId: 99, type: 'Vehicle' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...eventStyle, icon: {} })
+    })
+
+    it('keeps unencoded field values in the icon', function() {
+
+      const style = styleForObservation(observationWithEntry({ type: 'Fire Truck', color: 'Red/Blue' }), new MageEvent(eventAttrs))
+
+      expect(style.icon).to.deep.equal({ formId: 10, primary: 'Fire Truck', variant: 'Red/Blue' })
+    })
+
+    it('omits style keys the resolved style does not define', function() {
+
+      eventAttrs.style = { stroke: '#222222' }
+
+      const style = styleForObservation(observationWithEntry(), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ stroke: '#222222', icon: {} })
+    })
+
+    it('ignores an empty primary value', function() {
+
+      const style = styleForObservation(observationWithEntry({ type: '', color: 'Red' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...formStyle, icon: { formId: 10 } })
+    })
+
+    it('ignores an empty variant value', function() {
+
+      const style = styleForObservation(observationWithEntry({ type: 'Vehicle', color: '' }), new MageEvent(eventAttrs))
+
+      expect(style).to.deep.equal({ ...primaryStyle, icon: { formId: 10, primary: 'Vehicle' } })
     })
   })
 })

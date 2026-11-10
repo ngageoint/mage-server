@@ -1088,6 +1088,54 @@ describe('mongoose observation repository', function () {
           expect((result.observations[0] as UsersExpandedObservationAttrs).user).to.be.undefined
         }
       })
+
+      it('returns only map attributes for the map view', async function () {
+
+        const result = await repo.find({ where: { ids: [ obsA.id, obsB.id, obsC.id ] }, view: 'map' })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          const a = result.observations.find(x => x.id === obsA.id)!
+          const b = result.observations.find(x => x.id === obsB.id)!
+          const c = result.observations.find(x => x.id === obsC.id)!
+          expect(b.geometry).to.deep.equal(obsB.geometry)
+          expect(b.lastModified).to.deep.equal(obsB.lastModified)
+          expect(b.properties.forms).to.deep.equal(obsB.properties.forms)
+          expect(b.properties.timestamp).to.be.undefined
+          expect(b.attachments).to.deep.equal([])
+          expect(b.important).to.be.undefined
+          expect(b.userId).to.be.undefined
+          expect(a.favoriteUserIds).to.deep.equal([])
+          expect(c.states.map(x => x.name)).to.deep.equal([ ObservationStateName.Archived ])
+        }
+      })
+
+      it('returns only the first form entry and state, and the accuracy, for the map view', async function () {
+
+        const id = await repo.allocateObservationId()
+        const [ entryId1, entryId2 ] = await repo.nextFormEntryIds(2)
+        const attrs = observationStub(id, event.id)
+        attrs.properties.accuracy = 25
+        attrs.properties.forms = [
+          { id: entryId1, formId: event.forms[0].id, field1: 'first' },
+          { id: entryId2, formId: event.forms[0].id, field1: 'second' }
+        ]
+        attrs.states = [
+          { id: (new mongoose.Types.ObjectId()).toHexString(), name: ObservationStateName.Archived },
+          { id: (new mongoose.Types.ObjectId()).toHexString(), name: ObservationStateName.Active }
+        ]
+        await repo.save(Observation.evaluate(attrs, event))
+
+        const result = await repo.find({ where: { ids: [ id ] }, view: 'map' })
+
+        expect(result.type).to.equal('all')
+        if (result.type === 'all') {
+          const found = result.observations[0]
+          expect(found.properties.accuracy).to.equal(25)
+          expect(found.properties.forms.map(x => x.field1)).to.deep.equal([ 'first' ])
+          expect(found.states.map(x => x.name)).to.deep.equal([ ObservationStateName.Archived ])
+        }
+      })
     })
   })
 })
