@@ -11,7 +11,15 @@ export interface User {
   id: UserId
   username: string
   displayName: string
+  /**
+   * A user account is inactive until an admin approves it after initial enrollment.
+   * TODO: change to optional property `pendingApproval`?  or maybe combine with
+   * `enabled` into an `accessStatus` that could have a status tag and a timestamp.
+   */
   active: boolean
+  /**
+   * Admins can disable or enable a user account at any time.
+   */
   enabled: boolean
   createdAt: Date
   lastUpdated: Date
@@ -132,14 +140,13 @@ export class UserAccountSeed implements Readonly<UserAccountSeedSpec> {
     assert(args[0] === UserAccountSeedConstructorToken, Error('illegal private constructor access'))
     const spec = args[1] as UserAccountSeedSpec
     this.#seed = {
-      roleId: spec.roleId,
-      authenticationId: spec.authenticationId,
       username: spec.username.toLowerCase(),
       displayName: spec.displayName,
+      roleId: spec.roleId,
+      authenticationId: spec.authenticationId,
       active: spec.active,
       enabled: spec.enabled,
       email: spec.email,
-      ...{ icon: spec.icon },
       phones: spec.phones.map(x => ({ ...x })),
       icon: spec.icon ? { ...spec.icon } : undefined,
       avatar: spec.avatar ? { ...spec.avatar } : undefined,
