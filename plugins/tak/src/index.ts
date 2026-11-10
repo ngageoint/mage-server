@@ -123,8 +123,8 @@ const hooks: InitPluginHook<typeof InjectedServices> = {
 
           routes.route('/settings')
             .get(async (req, res) => {
-              const eventId = parseInt(req.query['eventId'] as string)
-              if (isNaN(eventId)) {
+              const eventId = Number.parseInt(req.query['eventId'] as string)
+              if (Number.isNaN(eventId)) {
                 return res.status(400).json({ error: 'eventId query param is required' })
               }
               const status = await pushController.findPushStatusForEvent(eventId)
